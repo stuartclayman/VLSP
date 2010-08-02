@@ -28,7 +28,7 @@ JC = javac
 #
 
 .java.class:
-	$(JC) $(JFLAGS) $*.java
+	$(JC) $(JFLAGS) $*.java 
 CLASSES = \
 	usr/controllers/GlobalController.java \
 	usr/controllers/LocalController.java \
@@ -39,7 +39,31 @@ CLASSES = \
 	usr/controllers/GlobalSocketController.java \
 	usr/controllers/PayLoad.java \
 	usr/controllers/SimEvent.java \
-	usr/controllers/EventScheduler.java
+	usr/controllers/EventScheduler.java \
+	usr/router/ManagementConsole.java \
+	usr/router/Router.java \
+	usr/router/QuitCommand.java \
+	usr/router/SimpleRouterFabric.java \
+	usr/router/AbstractCommand.java \
+	usr/router/CreateConnection.java \
+	usr/router/RouterConnections.java \
+  	usr/router/RouterController.java \
+	usr/router/NetIF.java \
+	usr/router/RouterPort.java \
+	usr/router/RouterFabric.java \
+	usr/router/Request.java \
+	usr/router/TCPNetIF.java \
+	usr/router/Command.java \
+	usr/net/Datagram.java \
+	usr/net/DatagramConnection.java \
+	usr/net/DatagramPatch.java \
+	usr/net/DatagramQueueingConnection.java \
+	usr/net/IPV4Datagram.java \
+	usr/net/Address.java \
+	usr/net/IPV4Address.java \
+	usr/test/RouterTest1.java \
+	usr/test/StubClient.java \
+	usr/test/StubServer.java
 
 
 #

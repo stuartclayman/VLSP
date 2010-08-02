@@ -21,10 +21,11 @@ class ControlOptions {
 
     /** init function sets up basic information */
     public void init () {
-      globalControlPort_= 8888;
+      
       localControllers_= new ArrayList<LocalHostInfo>();
       
       // Temporary bodge for testing TODO Fix.
+      globalControlPort_= 8888;
       remoteLoginCommand_ = "/usr/bin/ssh";
       remoteLoginFlags_ = "-n";
       remoteLoginUser_="richard";
@@ -32,7 +33,7 @@ class ControlOptions {
         "java -cp /home/richard/code/userspacerouter usr.controllers.LocalController";
       LocalHostInfo tmp= new LocalHostInfo(4000);
       addNewHost(tmp);
-      for (int i= 4001; i < 4010;i++) {
+      for (int i= 4001; i < 4003;i++) {
           tmp= new LocalHostInfo(i);
           addNewHost(tmp);
       }

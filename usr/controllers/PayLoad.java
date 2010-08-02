@@ -70,7 +70,7 @@ class PayLoad {
       if (messageType_ == SHUTDOWN_MESSAGE) {
         if (messageLen_ != 0) {
            throw new java.io.IOException("Expected zero length message "+
-             "with message type ALIVE_MESSAGE");
+             "with message type SHUTDOWN_MESSAGE");
         }
         data_= null;
         return;
@@ -87,7 +87,8 @@ class PayLoad {
       }
       String className= data_.getClass().getSimpleName();
       if (messageType_ == ALIVE_MESSAGE) {
-          if (className != "LocalHostInfo") {
+          if (!(data_ instanceof LocalHostInfo)) {
+             System.err.println("\""+className+"\"");
              System.err.println("Decoded corrupted object from ALIVE datagram");
              System.exit(-1);
           }
