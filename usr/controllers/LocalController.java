@@ -78,7 +78,7 @@ class LocalController {
         }
         PayLoad dg= new PayLoad(PayLoad.ALIVE_MESSAGE,hostInfo_);
         dg.sendPayLoad(globalSocket_);
-        System.out.println("Sent packet");
+//        System.out.println("Sent packet");
     }
     
     public LocalController (int port) {

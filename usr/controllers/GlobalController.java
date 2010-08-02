@@ -21,6 +21,8 @@ class GlobalController {
     private ArrayList <Socket> localControllerSockets_= null;
     private ArrayList <Process> childProcesses_= null;
     private ArrayList <BufferedReader> childOutput_= null;
+    private ArrayList <BufferedReader> childError_= null;
+    private ArrayList <String> childNames_= null;
     private int aliveCount= 0;
     private EventScheduler scheduler_= null;
     private boolean simulationRunning_= true;
@@ -110,15 +112,29 @@ class GlobalController {
     }
     
     private boolean checkControllerOutput() {
-        Iterator i= childOutput_.iterator();
-//        int j=0;
-        while (i.hasNext()) {
-            BufferedReader m= (BufferedReader)i.next();
+        for (int i=0; i < childOutput_.size();i++) {
+            BufferedReader m= childOutput_.get(i);
 //            j+=1;
 //           System.out.println("Checking for messages from "+j);
             try {
                 if (m.ready()) {
-                    System.out.println("REMOTE: "+m.readLine());
+                    System.out.println("Remote "+childNames_.get(i) + 
+                      ":"+ m.readLine());
+                    return true;
+                }    
+                
+            }
+            catch (java.io.IOException e) {
+                System.err.println("Error reading output from remote proc");
+                System.exit(-1);
+            } 
+            m= childError_.get(i);
+//            j+=1;
+//           System.out.println("Checking for messages from "+j);
+            try {
+                if (m.ready()) {
+                    System.out.println("Remote error: "+childNames_.get(i) + 
+                      ":"+ m.readLine());
                     return true;
                 }    
                 
@@ -153,7 +169,9 @@ class GlobalController {
         if (!options_.isSimulation()) {
             globalSocketController_.stopListening();
             killAllControllers();
+            while (checkMessages()) {};
             globalSocketController_.killListenerSockets();
+            while (checkMessages()) {};
         }
         
     }
@@ -199,6 +217,8 @@ class GlobalController {
         Process child= null;
         childProcesses_= new ArrayList<Process>();
         childOutput_= new ArrayList<BufferedReader>();
+        childError_= new ArrayList<BufferedReader>();
+        childNames_= new ArrayList<String>();
         while (i.hasNext()) {
             
             LocalHostInfo lh= (LocalHostInfo)i.next();
@@ -217,6 +237,11 @@ class GlobalController {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br= new BufferedReader(isr);
             childOutput_.add(br);
+            is= child.getErrorStream();
+            isr = new InputStreamReader(is);
+            br= new BufferedReader(isr);
+            childError_.add(br);
+            childNames_.add(lh.getName()+":"+lh.getPort());
             try {
                 Thread.sleep(1000);  // Simple wait is to
                             // ensure controllers start up
