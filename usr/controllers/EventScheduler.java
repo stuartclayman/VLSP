@@ -1,7 +1,7 @@
 /** This class deals with the scheduling of events
   it keeps a time ordered list of events and returns the first
 */
-
+package usr.controllers;
 import java.util.*;
 
 class EventScheduler {

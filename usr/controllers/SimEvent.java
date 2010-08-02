@@ -1,3 +1,5 @@
+package usr.controllers;
+
 class SimEvent {
     private int eventType_;
     private Object eventData_;

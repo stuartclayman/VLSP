@@ -3,6 +3,7 @@
   * It deals with finding out IP addresses, ports and so on
 */
 
+package usr.controllers;
 
 class LocalHostInfo implements java.io.Serializable {
     private String hostName_;      // Name of host -- should be resolvable

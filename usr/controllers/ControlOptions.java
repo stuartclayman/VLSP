@@ -2,6 +2,7 @@
  * XML file or string to generate them
  * The options specify hosts and controls used in simulation
  */
+package usr.controllers;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,7 +29,7 @@ class ControlOptions {
       remoteLoginFlags_ = "-n";
       remoteLoginUser_="richard";
       remoteStartController_ = 
-        "java -cp /home/richard/code/reservoirrouter LocalController";
+        "java -cp /home/richard/code/userspacerouter usr.controllers.LocalController";
       LocalHostInfo tmp= new LocalHostInfo(4000);
       addNewHost(tmp);
       for (int i= 4001; i < 4010;i++) {
