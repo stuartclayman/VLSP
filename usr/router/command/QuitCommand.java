@@ -1,5 +1,6 @@
-package usr.router;
+package usr.router.command;
 
+import usr.router.Command;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
@@ -19,7 +20,7 @@ public class QuitCommand extends AbstractCommand {
      */
     public void evaluate() {
         try {
-            respond("500 QUIT");
+            respond("500 BYE");
             managementConsole.endConnection(channel);
         } catch (IOException ioe) {
             System.err.println("MC: QUIT failed");

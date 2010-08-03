@@ -272,7 +272,7 @@ public class ManagementConsole implements Runnable {
     /**
      * End a connection
      */
-    void endConnection(SocketChannel c) {
+    public void endConnection(SocketChannel c) {
         System.err.println("MC: endConnection: " + c.socket());
 
         unregisterChannel(c);
@@ -465,7 +465,7 @@ public class ManagementConsole implements Runnable {
                             continue;
                         } else {
                             Address address = rp.netIF.getAddress();
-                            String portString = " port" + rp.portNo + " " + rp.netIF.getName() + " " + rp.netIF.getWeight() + " " + (address == null ? "No_Address" : address.toString());
+                            String portString = " port" + rp.portNo + " " + rp.netIF.getName() + " " + rp.netIF.getRemoteRouterName() + " " + rp.netIF.getWeight() + " " + (address == null ? "No_Address" : address.toString());
                             respond(sc, (count + portString));
                             count++;
                         }               
@@ -480,11 +480,12 @@ public class ManagementConsole implements Runnable {
                     String args = value.substring(19).trim();
                     String[] parts = args.split(" ");
 
-                    if (parts.length == 3) {
+                    if (parts.length == 4) {
 
                         String connectionID = parts[0];
-                        String weightStr = parts[1];
-                        String remotePort = parts[2];
+                        String remoteRouterName = parts[1];
+                        String weightStr = parts[2];
+                        String remotePort = parts[3];
 
                         Scanner scanner;
 
@@ -526,6 +527,8 @@ public class ManagementConsole implements Runnable {
                             netIF.setName(connectionID);
                             // set its weight
                             netIF.setWeight(weight);
+                            // set remote router
+                            netIF.setRemoteRouterName(remoteRouterName);
                         
                             // now plug netIF into Router
                             controller.plugInNetIF(netIF);

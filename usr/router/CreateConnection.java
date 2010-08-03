@@ -145,6 +145,7 @@ public class CreateConnection implements Runnable {
 
         System.err.println("CC: createConnection: connectionPort at " + host + " is " + connectionPort);
 
+
         /*
          * Now connect to connections port of remote router.
          */
@@ -152,6 +153,7 @@ public class CreateConnection implements Runnable {
         // make a socket connection for the router - to - router path
         Socket connection = null;
         NetIF netIF = null;
+        InetSocketAddress refAddr;
         String latestConnectionId = "/Router-" + controller.getName() + "/Connection-" + controller.getConnectionCount();
 
         try {
@@ -170,16 +172,13 @@ public class CreateConnection implements Runnable {
 
             System.err.println("CC: connection socket: " + connection);
 
-            InetSocketAddress refAddr = new InetSocketAddress(connection.getInetAddress(), connection.getLocalPort());;
+            refAddr = new InetSocketAddress(connection.getInetAddress(), connection.getLocalPort());;
             //System.err.println("CreateConnection => " + refAddr + " # " + refAddr.hashCode());
 
             // wrap SocketChannel as a NetIF
 
             netIF = new TCPNetIF(connection);
-            netIF.setName(latestConnectionId);
-            netIF.setWeight(weight);
-            netIF.setID(refAddr.hashCode());
-            
+
             System.out.println("CC: netif = " + netIF);
 
 
@@ -196,6 +195,47 @@ public class CreateConnection implements Runnable {
         /*
          * Tell the remote router abput this connection
          */
+
+        /*
+         * Get name of remote router
+         */
+        try {
+            output.println("GET_NAME");
+
+            routerResponse = input.readLine(); 
+
+        } catch (IOException ioexc) {
+            System.err.println("CC: Cannot GET_NAME from " + host + " -> " + ioexc);
+            controller.respond(channel, "401 CREATE_CONNECTION Cannot GET_NAME from host: " + host);
+            return;
+        }
+
+        /*
+         * Process the response
+         */
+
+        // TODO: check for null or ""
+        if (routerResponse == null || routerResponse.equals("")) {
+            controller.respond(channel, "401 CREATE_CONNECTION response for GET_NAME from host: " + host + " is empty");
+            return;
+        }
+
+        // Ok now we need to find the name of the remote router
+        parts = routerResponse.split(" ");
+        
+
+        if (!parts[0].equals("201")) {
+            System.err.println("CC: Remote router at " + host + " did not return GET_NAME correctly");
+            controller.respond(channel, "401 CREATE_CONNECTION response for GET_NAME from host: " + host + " is incorrect: " + routerResponse);
+            return;
+        }
+
+
+        // now get router name
+        String remoteRouterName = parts[1];
+        
+
+
         /*
          * Interact with remote router
          */
@@ -206,7 +246,7 @@ public class CreateConnection implements Runnable {
             // attempt this 3 times
             for (int attempts=0; attempts < 3; attempts++) {
                 // send INCOMING_CONNECTION command
-                output.println("INCOMING_CONNECTION " + latestConnectionId + " " + weight + " " + connection.getLocalPort());
+                output.println("INCOMING_CONNECTION " + latestConnectionId + " " + controller.getName() + " " + weight + " " + connection.getLocalPort());
 
                 routerResponse = input.readLine(); 
 
@@ -265,6 +305,11 @@ public class CreateConnection implements Runnable {
         }
 
         // now plug netIF into Router
+        netIF.setName(latestConnectionId);
+        netIF.setWeight(weight);
+        netIF.setID(refAddr.hashCode());
+        netIF.setRemoteRouterName(remoteRouterName);
+
         RouterPort port = controller.plugInNetIF(netIF);
 
 
