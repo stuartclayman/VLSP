@@ -24,76 +24,80 @@ public class IncomingConnectionCommand extends AbstractCommand {
     /**
      * Evaluate the Command.
      */
-    public void evaluate(String req) {
+    public boolean evaluate(String req) {
         SocketChannel sc = getChannel();
 
-        try {
-            String args = req.substring(19).trim();
-            String[] parts = args.split(" ");
+        boolean result = true;
 
-            if (parts.length == 4) {
+        String args = req.substring(19).trim();
+        String[] parts = args.split(" ");
 
-                String connectionID = parts[0];
-                String remoteRouterName = parts[1];
-                String weightStr = parts[2];
-                String remotePort = parts[3];
+        if (parts.length == 4) {
 
-                Scanner scanner;
+            String connectionID = parts[0];
+            String remoteRouterName = parts[1];
+            String weightStr = parts[2];
+            String remotePort = parts[3];
 
-                // get remote port
-                scanner = new Scanner(remotePort);
-                int port;
+            Scanner scanner;
 
-                try {
-                    port = scanner.nextInt();
-                } catch (Exception e) {
-                    error("INCOMING_CONNECTION bad port number");
-                    return;
-                }
+            // get remote port
+            scanner = new Scanner(remotePort);
+            int port;
 
-                // get connection weight
-                scanner = new Scanner(weightStr);
-                int weight = 0;
-
-                try {
-                    weight = scanner.nextInt();
-                } catch (Exception e) {
-                    error("INCOMING_CONNECTION invalid value for weight");
-                    return;
-                }
-
-
-                InetSocketAddress refAddr = new InetSocketAddress(sc.socket().getInetAddress(), port);
-                //System.err.println("ManagementConsole => " + refAddr + " # " + refAddr.hashCode());
-
-                /*
-                 * Lookup netif and set its name
-                 */
-                NetIF netIF = controller.getNetIFByID(refAddr.hashCode());
-
-                if (netIF != null) {
-                    System.err.println("MC: Found NetIF " + netIF + " by id " + refAddr.hashCode());
-
-                    // set its name
-                    netIF.setName(connectionID);
-                    // set its weight
-                    netIF.setWeight(weight);
-                    // set remote router
-                    netIF.setRemoteRouterName(remoteRouterName);
-                        
-                    // now plug netIF into Router
-                    controller.plugInNetIF(netIF);
-
-                    success("" +  connectionID);
-                } else {
-                    error("Cannot find NetIF for port " + port);
-                }
-            } else {
-                error("INCOMING_CONNECTION wrong no of args ");
+            try {
+                port = scanner.nextInt();
+            } catch (Exception e) {
+                error("INCOMING_CONNECTION bad port number");
+                return true;
             }
-        } catch (IOException ioe) {
+
+            // get connection weight
+            scanner = new Scanner(weightStr);
+            int weight = 0;
+
+            try {
+                weight = scanner.nextInt();
+            } catch (Exception e) {
+                error("INCOMING_CONNECTION invalid value for weight");
+                return true;
+            }
+
+
+            InetSocketAddress refAddr = new InetSocketAddress(sc.socket().getInetAddress(), port);
+            //System.err.println("ManagementConsole => " + refAddr + " # " + refAddr.hashCode());
+
+            /*
+             * Lookup netif and set its name
+             */
+            NetIF netIF = controller.getNetIFByID(refAddr.hashCode());
+
+            if (netIF != null) {
+                System.err.println("MC: Found NetIF " + netIF + " by id " + refAddr.hashCode());
+
+                // set its name
+                netIF.setName(connectionID);
+                // set its weight
+                netIF.setWeight(weight);
+                // set remote router
+                netIF.setRemoteRouterName(remoteRouterName);
+                        
+                // now plug netIF into Router
+                controller.plugInNetIF(netIF);
+
+                result = success("" +  connectionID);
+            } else {
+                error("Cannot find NetIF for port " + port);
+            }
+        } else {
+            error("INCOMING_CONNECTION wrong no of args ");
+        }
+
+        if (!result) {
             System.err.println("MC: INCOMING_CONNECTION failed");
         }
+
+        return result;
     }
 
 }

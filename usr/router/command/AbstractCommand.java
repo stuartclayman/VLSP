@@ -40,8 +40,9 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
 
     /**
      * Evaluate the Command.
+     * Returns false if there is a problem responding down the channel
      */
-    public abstract void evaluate(String req);
+    public abstract boolean evaluate(String req);
 
     /**
      * Get the name of command as a string.
@@ -80,35 +81,50 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
     }
 
     /**
-     * Respond to the client successfully
+     * Respond to the client successfully.
+     * Returns false if it cannot send the response.
      */
-    void success(String s) throws IOException {
+    boolean success(String s) {
         StringBuilder sb = new StringBuilder();
         sb.append(getSuccessCode());
         sb.append(" ");
         sb.append(s);
-        sb.append("\n");
         String resp = sb.toString();
         System.err.print("MC: <<< RESPONSE: " + resp);
 
-        respond(resp);
+        return respond(resp);
     }
 
     /**
      * Respond to the client with an error
+     * Returns false if it cannot send the response.
      */
-    void error(String s) throws IOException {
+    boolean error(String s) {
         StringBuilder sb = new StringBuilder();
         sb.append(getErrorCode());
         sb.append(" ");
         sb.append(s);
-        sb.append("\n");
         String resp = sb.toString();
         System.err.print("MC: <<< RESPONSE: " + resp);
 
-
-        respond(resp);
+        return respond(resp);
     }
+
+    /**
+     * Send an item of a list response.
+     * Returns false if it cannot send the response.
+     */
+    boolean list(String s) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getSuccessCode());
+        sb.append("-");
+        sb.append(s);
+        String resp = sb.toString();
+        System.err.print("MC: <<< ITEM: " + resp);
+
+        return respond(resp);
+    }
+
 
     /**
      * Hash code

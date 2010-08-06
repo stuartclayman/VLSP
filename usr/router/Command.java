@@ -9,8 +9,9 @@ import java.nio.channels.SocketChannel;
 public interface Command {
     /**
      * Evaluate the Command.
+     * Returns false if there is a problem responding down the channel
      */
-    public void evaluate(String request);
+    public boolean evaluate(String request);
 
     /**
      * Get the name of command as a string.

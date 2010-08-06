@@ -18,13 +18,16 @@ public class GetConnectionPortCommand extends AbstractCommand {
     /**
      * Evaluate the Command.
      */
-    public void evaluate(String req) {
-        try {
-            int port = controller.getConnectionPort();
-            success(""+port);
-        } catch (IOException ioe) {
+    public boolean evaluate(String req) {
+        int port = controller.getConnectionPort();
+        
+        boolean result = success(""+port);
+
+        if (!result) {
             System.err.println("MC: GET_CONNECTION_PORT failed");
         }
+
+        return result;
     }
 
 }

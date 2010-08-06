@@ -263,7 +263,7 @@ public class RouterController implements Runnable {
 
     /**
      * Respond to the client
-     */
+     *
     void respond(SocketChannel sc, String s) {
         try {
             management.respond(sc, s);
@@ -271,6 +271,6 @@ public class RouterController implements Runnable {
             System.err.println("RC: cannot respond to " + sc + " -> " + ioe);
         }
     }
-
+    */
 
 }

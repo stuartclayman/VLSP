@@ -62,6 +62,7 @@ public class ManagementConsole implements Runnable {
         // setp the Commands
         commandMap = new HashMap<String, Command>();
 
+        register(new UnknownCommand());
         register(new QuitCommand(500, 400));
         register(new GetNameCommand(201, 400));
         register(new SetNameCommand(202, 400));
@@ -104,6 +105,14 @@ public class ManagementConsole implements Runnable {
      * and serializes input.
      */
     public boolean start() {
+        // check the UnknownCommand exists
+        Command unknown = commandMap.get("__UNKNOWN__");
+
+        if (unknown == null) {
+            System.err.println("MC: the UnknownCommand has not been registered");
+            return false;
+        }
+
 	// initialise the socket
         try {
             // Create a non-blocking server socket channel on port
@@ -304,6 +313,7 @@ public class ManagementConsole implements Runnable {
         try {
             c.close();
         } catch (IOException ioe) {
+            System.err.println("MC: CANNOT close : " + c.socket());
         }
     }
 
@@ -348,7 +358,12 @@ public class ManagementConsole implements Runnable {
             String value = charset.decode(buffer).toString().trim();
 
             // inform the input handler
-            handleInput(value, sc);
+            boolean result = handleInput(value, sc);
+
+            if (result == false) {
+                // there was an error in responding down the channel
+                // TODO:  decide what to do
+            }
 
         } else {
             // EOF for the connection
@@ -358,12 +373,13 @@ public class ManagementConsole implements Runnable {
 
     /**
      * Respond to the client
-     */
+     *
     void respond(SocketChannel sc, String s) throws IOException {
         s = s.concat("\n");
         System.err.print("MC: <<< RESPONSE: " + s);
         sc.write(ByteBuffer.wrap(s.getBytes()));
     }
+    */
 
     /**
      * Register a command.
@@ -393,13 +409,14 @@ public class ManagementConsole implements Runnable {
      * Asynchronous commands include:
      * CREATE_CONNECTION ip_addr/port connection_ID - create a new network interface to
      * a router on the address ip_addr/port
-     * 
+     * Returns false if there is a problem responding down the channel
      */
-    protected void handleInput(String value, SocketChannel sc) {
+    protected boolean handleInput(String value, SocketChannel sc) {
         System.out.println("MC: >>> " + value);
 
         if (value == null && value.length() == 0) {
             // empty - do nothing
+            return true;
         } else {
             // find the command
             int endOfCommand = value.indexOf(' ');
@@ -416,23 +433,22 @@ public class ManagementConsole implements Runnable {
 
             // now lookup the command
             Command command = commandMap.get(commandName);
+            boolean result;
 
             if (command != null) {
                 // we got a command
-
-                // so bind it to the channel
-                command.setChannel(sc);
-                // and evaluate the input
-                command.evaluate(value);
-
             } else {
-                // its an unknown command
-                try {
-                    respond(sc, "400 UNKNOWN " + value);
-                } catch (IOException ioe) {
-                    System.err.println("MC: Response to " + value + " failed");
-                }       
+                //fetch the UnknownCommand
+                command = commandMap.get("__UNKNOWN__");
             }
+
+            // so bind it to the channel
+            command.setChannel(sc);
+            // and evaluate the input
+            result = command.evaluate(value);
+
+            return result;
+
         }
     }
 

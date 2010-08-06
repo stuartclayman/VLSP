@@ -29,9 +29,17 @@ public abstract class ChannelResponder {
 
     /**
      * Respond with a given string.
+     * Returns false if it cannot send the response down the channel.
      */
-    public void respond(String message) throws IOException {
-        channel.write(ByteBuffer.wrap(message.getBytes()));
+    public boolean respond(String message) {
+        message = message.concat("\n");
+
+        try {
+            channel.write(ByteBuffer.wrap(message.getBytes()));
+            return true;
+        } catch (IOException ioe) {
+            return false;
+        }
     }
 
 }

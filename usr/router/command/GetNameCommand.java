@@ -18,13 +18,16 @@ public class GetNameCommand extends AbstractCommand {
     /**
      * Evaluate the Command.
      */
-    public void evaluate(String req) {
-        try {
-            String name = controller.getName();
-            success(name);
-        } catch (IOException ioe) {
+    public boolean evaluate(String req) {
+        String name = controller.getName();
+        
+        boolean result = success(name);
+
+        if (!result) {
             System.err.println("MC: GET_NAME failed");
         }
+
+        return result;
     }
 
 }

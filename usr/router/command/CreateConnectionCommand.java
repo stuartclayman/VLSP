@@ -18,7 +18,7 @@ public class CreateConnectionCommand extends AbstractCommand {
     /**
      * Evaluate the Command.
      */
-    public void evaluate(String req) {
+    public boolean evaluate(String req) {
         // it is an asynchronous command
         // and will be processed a bit later
         SocketChannel sc = getChannel();
@@ -26,6 +26,7 @@ public class CreateConnectionCommand extends AbstractCommand {
         managementConsole.addRequest(new Request(sc, req));
         System.err.println("MC: Requests = " + managementConsole.queue());
 
+        return true;
     }
 
 }

@@ -18,14 +18,11 @@ public class QuitCommand extends AbstractCommand {
     /**
      * Evaluate the Command.
      */
-    public void evaluate(String req) {
-        try {
-            success("BYE");
-            managementConsole.endConnection(getChannel());
-        } catch (IOException ioe) {
-            System.err.println("MC: QUIT failed");
-        }
+    public boolean evaluate(String req) {
+        success("BYE");
+        managementConsole.endConnection(getChannel());
 
+        return true;
     }
 
 }

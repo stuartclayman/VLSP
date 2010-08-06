@@ -35,7 +35,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         String[] parts = value.split(" ");
         if (parts.length != 3) {
             System.err.println("CC: INVALID createConnection command: " + request);
-            controller.respond(channel, "401 CREATE_CONNECTION wrong no of args");
+            respond("401 CREATE_CONNECTION wrong no of args");
             return;
         }
 
@@ -43,7 +43,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         String[] ipParts = parts[1].split("/");
         if (ipParts.length != 2) {
             System.err.println("CC: INVALID createConnection ip address: " + request);
-            controller.respond(channel, "401 CREATE_CONNECTION invalid address " + parts[1]);
+            respond("401 CREATE_CONNECTION invalid address " + parts[1]);
             return;
         }
 
@@ -55,7 +55,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         try {
             portNumber = sc.nextInt();
         } catch (Exception e) {
-            controller.respond(channel, "401 CREATE_CONNECTION invalid port " + ipParts[1]);
+            respond("401 CREATE_CONNECTION invalid port " + ipParts[1]);
             return;
         }
 
@@ -66,7 +66,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         try {
             weight = sc.nextInt();
         }  catch (Exception e) {
-            controller.respond(channel, "401 CREATE_CONNECTION invalid weight " + parts[2]);
+            respond("401 CREATE_CONNECTION invalid weight " + parts[2]);
             return;
         }
 
@@ -94,12 +94,12 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         } catch (UnknownHostException uhe) {
             System.err.println("CC: Unknown host: " + host);
-            controller.respond(channel, "401 CREATE_CONNECTION Unknown host: " + host);
+            respond("401 CREATE_CONNECTION Unknown host: " + host);
             return;
 
         } catch (IOException ioexc) {
             System.err.println("CC: Cannot interact with " + host + " on port " + portNumber + " -> " + ioexc);
-            controller.respond(channel, "401 CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
+            respond("401 CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
             return;
         }
 
@@ -116,7 +116,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         } catch (IOException ioexc) {
             System.err.println("CC: Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
-            controller.respond(channel, "401 CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
+            respond("401 CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
             return;
         }
 
@@ -126,7 +126,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         // TODO: check for null or ""
         if (routerResponse == null || routerResponse.equals("")) {
-            controller.respond(channel, "401 CREATE_CONNECTION response for GET_CONNECTION_PORT from host: " + host + " is empty");
+            respond("401 CREATE_CONNECTION response for GET_CONNECTION_PORT from host: " + host + " is empty");
             return;
         }
 
@@ -137,7 +137,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         if (code != 203) {
             System.err.println("CC: Remote router at " + host + " did not return GET_CONNECTION_PORT correctly");
-            controller.respond(channel, "401 CREATE_CONNECTION response for GET_CONNECTION_PORT from host: " + host + " is incorrect: " + routerResponse);
+            respond("401 CREATE_CONNECTION response for GET_CONNECTION_PORT from host: " + host + " is incorrect: " + routerResponse);
             return;
         }
 
@@ -185,11 +185,11 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         } catch (UnknownHostException uhe) {
             System.err.println("CC: Unknown host: " + host);
-            controller.respond(channel, "401 CREATE_CONNECTION Unknown host: " + host);
+            respond("401 CREATE_CONNECTION Unknown host: " + host);
             return;
         } catch (IOException ioexc) {
             System.err.println("CC: Cannot connect to " + host + " on port " + connectionPort + " -> " + ioexc);
-            controller.respond(channel, "401 CREATE_CONNECTION Cannot interact with host: " + host + " on port " + connectionPort);
+            respond("401 CREATE_CONNECTION Cannot interact with host: " + host + " on port " + connectionPort);
             return;
         }
 
@@ -207,7 +207,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         } catch (IOException ioexc) {
             System.err.println("CC: Cannot GET_NAME from " + host + " -> " + ioexc);
-            controller.respond(channel, "401 CREATE_CONNECTION Cannot GET_NAME from host: " + host);
+            respond("401 CREATE_CONNECTION Cannot GET_NAME from host: " + host);
             return;
         }
 
@@ -217,7 +217,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         // TODO: check for null or ""
         if (routerResponse == null || routerResponse.equals("")) {
-            controller.respond(channel, "401 CREATE_CONNECTION response for GET_NAME from host: " + host + " is empty");
+            respond("401 CREATE_CONNECTION response for GET_NAME from host: " + host + " is empty");
             return;
         }
 
@@ -227,7 +227,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         if (!parts[0].equals("201")) {
             System.err.println("CC: Remote router at " + host + " did not return GET_NAME correctly");
-            controller.respond(channel, "401 CREATE_CONNECTION response for GET_NAME from host: " + host + " is incorrect: " + routerResponse);
+            respond("401 CREATE_CONNECTION response for GET_NAME from host: " + host + " is incorrect: " + routerResponse);
             return;
         }
 
@@ -273,13 +273,13 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                 // everything ok
             } else {
                 // connection setup failed
-                controller.respond(channel, routerResponse);
+                respond(routerResponse);
                 return;
             }
 
         } catch (IOException ioexc) {
             System.err.println("CC: INCOMING_CONNECTION with host error " + host + " -> " + ioexc);
-            controller.respond(channel, "401 CREATE_CONNECTION Cannot interact with host: " + host);
+            respond("401 CREATE_CONNECTION Cannot interact with host: " + host);
             return;
         }
 
@@ -301,7 +301,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         } catch (IOException ioexc) {
             System.err.println("CC: Cannot close connection to " + host);
-            controller.respond(channel, "401 CREATE_CONNECTION Cannot close connection with host: " + host);
+            respond("401 CREATE_CONNECTION Cannot close connection with host: " + host);
             return;
         }
 
@@ -315,7 +315,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
 
         // everything is successful
-        controller.respond(channel, "299 CREATE_CONNECTION " + latestConnectionId + " port" + port.getPortNo());
+        respond("299 CREATE_CONNECTION " + latestConnectionId + " port" + port.getPortNo());
 
     }
 }
