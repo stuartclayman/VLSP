@@ -11,17 +11,17 @@ public class QuitCommand extends AbstractCommand {
     /**
      * Construct a QuitCommand.
      */
-    public QuitCommand(int succCode, int errCode, SocketChannel sc) {
-        super("QUIT", succCode, errCode, sc);
+    public QuitCommand(int succCode, int errCode) {
+        super("QUIT", succCode, errCode);
     }
 
     /**
      * Evaluate the Command.
      */
-    public void evaluate() {
+    public void evaluate(String req) {
         try {
-            respond("500 BYE");
-            managementConsole.endConnection(channel);
+            success("BYE");
+            managementConsole.endConnection(getChannel());
         } catch (IOException ioe) {
             System.err.println("MC: QUIT failed");
         }

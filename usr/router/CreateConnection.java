@@ -10,7 +10,7 @@ import java.nio.channels.SocketChannel;
  * A CreateConnection object, creates a connection from one router
  * to another.
  */
-public class CreateConnection implements Runnable {
+public class CreateConnection extends ChannelResponder implements Runnable {
     RouterController controller;
     Request request;
 
@@ -23,6 +23,7 @@ public class CreateConnection implements Runnable {
     public CreateConnection(RouterController controller, Request request) {
         this.controller = controller;
         this.request = request;
+        setChannel(request.channel);
     }
 
     public void run() {

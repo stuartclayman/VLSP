@@ -10,7 +10,7 @@ public interface Command {
     /**
      * Evaluate the Command.
      */
-    public void evaluate();
+    public void evaluate(String request);
 
     /**
      * Get the name of command as a string.
@@ -32,6 +32,11 @@ public interface Command {
      * is a handler for.
      */
     public SocketChannel getChannel();
+
+    /**
+     * Set the SocketChannel this command 
+     */
+    public void setChannel(SocketChannel ch);
 
     /**
      * Set the ManagementConsole this is a command for.

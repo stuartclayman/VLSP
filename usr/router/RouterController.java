@@ -211,7 +211,7 @@ public class RouterController implements Runnable {
     /**
      * Keep a handle on a NetIF created from INCOMING_CONNECTION
      */
-    void addNetIF(NetIF netIF) {
+    public void addNetIF(NetIF netIF) {
         int id = netIF.getID();
 
         System.err.println("RC: addNetIF " + id + " for " + netIF);
@@ -223,7 +223,7 @@ public class RouterController implements Runnable {
     /**
      * Find a NetIF by an id.
      */
-    NetIF getNetIFByID(int id) {
+    public NetIF getNetIFByID(int id) {
         //System.err.println("RC: getNetIF " + id);
         return netIFMap.get(id);
     }
@@ -231,14 +231,14 @@ public class RouterController implements Runnable {
     /**
      * List all the temporary connections held by the Controller
      */
-    Collection<NetIF> listNetIF() {
+    public Collection<NetIF> listNetIF() {
         return netIFMap.values();
     }
 
     /**
      * Plug a NetIF into the RouterFabric
      */
-    RouterPort plugInNetIF(NetIF netIF) {
+    public RouterPort plugInNetIF(NetIF netIF) {
         RouterPort rp = router.plugInNetIF(netIF);
         System.err.println("RC: removeNetIFLocal "  + netIF);
 

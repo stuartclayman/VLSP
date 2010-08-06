@@ -2,6 +2,7 @@ package usr.router;
 
 import usr.net.Address;
 import usr.net.IPV4Address;
+import usr.router.command.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.io.*;
@@ -57,7 +58,19 @@ public class ManagementConsole implements Runnable {
         this.port = port;
         requestQueue = new LinkedBlockingQueue<Request>();
         channelKeys = new HashMap<SocketChannel, SelectionKey>();
+
+        // setp the Commands
         commandMap = new HashMap<String, Command>();
+
+        register(new QuitCommand(500, 400));
+        register(new GetNameCommand(201, 400));
+        register(new SetNameCommand(202, 400));
+        register(new GetConnectionPortCommand(203, 400));
+        register(new ListConnectionsCommand(205, 400));
+        register(new IncomingConnectionCommand(204, 402));
+        register(new CreateConnectionCommand(299, 401));
+
+        register(new SetAddressCommand(206, 403));
     }
 
     /**
@@ -70,9 +83,19 @@ public class ManagementConsole implements Runnable {
     /**
      * Get a handle on the queue
      */
-    BlockingQueue<Request> queue() {
+    public BlockingQueue<Request> queue() {
         return requestQueue;
     }
+
+    /**
+     * Add a Request to the queue
+     */
+    public BlockingQueue<Request> addRequest(Request q) {
+        requestQueue.add(q);
+        return requestQueue;
+    }
+
+
 
     /**
      * Start the listener.
@@ -312,6 +335,9 @@ public class ManagementConsole implements Runnable {
             buffer.clear();
             read = sc.read(buffer);
         } catch (IOException ioe) {
+            // bad error
+            endConnection(sc);
+            return;
         }
 
         // check what was read
@@ -374,181 +400,30 @@ public class ManagementConsole implements Runnable {
 
         if (value == null && value.length() == 0) {
             // empty - do nothing
-        } else {            
-            // check for synchronous commands that return immediately
-            if (value.equals("QUIT")) {   // check if the client is quitting
+        } else {
+            // find the command
+            int endOfCommand = value.indexOf(' ');
+            String commandName;
 
-                try {
-                    respond(sc, "500 QUIT");
-                    endConnection(sc);
-                } catch (IOException ioe) {
-                    System.err.println("MC: QUIT failed");
-                }
+            // get the command from the input
+            if (endOfCommand == -1) {
+                // if there is no space the whole input is the command name
+                commandName = value;
+            } else {
+                // from 0 to first space
+                commandName = value.substring(0, endOfCommand);
+            }
 
-            } else if (value.equals("GET_NAME")) {
-                try {
-                    String name = controller.getName();
-                    respond(sc, "201 " + name);
-                } catch (IOException ioe) {
-                    System.err.println("MC: GET_NAME failed");
-                }
+            // now lookup the command
+            Command command = commandMap.get(commandName);
 
-            } else if (value.startsWith("SET_NAME")) {
-                try {
-                    String name = value.substring(8).trim();
-                    controller.setName(name);
-                    respond(sc, "202 " + name);
-                } catch (IOException ioe) {
-                    System.err.println("MC: SET_NAME failed");
-                }
+            if (command != null) {
+                // we got a command
 
-            } else if (value.startsWith("SET_ADDRESS")) {
-                try {
-                    String rest = value.substring(11).trim();
-                    String[] parts = rest.split(" ");
-                    
-                    if (parts.length == 3) {
-
-                        String routerPortName = parts[0];
-                        String type = parts[1];
-                        String addr = parts[2];
-                        Address address = null;
-                        
-                        // find port
-                        String portNo = routerPortName.substring(4);
-                        Scanner scanner = new Scanner(portNo);
-                        int p = scanner.nextInt();
-                        RouterPort routerPort = controller.getPort(p);
-
-                        if (routerPort == null || routerPort == RouterPort.EMPTY) {
-                            respond(sc, "403 SET_ADDRESS invalid port " + routerPortName);
-                        }
-
-                        // instantiate the address
-                        if (type.toUpperCase().equals("IPV4")) {
-                            try {
-                                address = new IPV4Address(addr);
-                            } catch (UnknownHostException uhe) {
-                                respond(sc, "403 SET_ADDRESS UnknownHostException " + addr);
-                            }
-                        } else {
-                            respond(sc, "403 SET_ADDRESS unknown type " + type);
-                        }
-
-                        // set address on netIF in port
-                        NetIF netIF = routerPort.getNetIF();
-                        netIF.setAddress(address);
-
-                        respond(sc, "202 " + routerPortName);
-                    } else {
-                        respond(sc, "403 SET_ADDRESS wrong no of args ");
-                    }
-                } catch (IOException ioe) {
-                    System.err.println("MC: SET_ADDRESS failed");
-                }
-
-            } else if (value.equals("GET_CONNECTION_PORT")) {
-                try {
-                    int port = controller.getConnectionPort();
-                    respond(sc, "203 " + port);
-                } catch (IOException ioe) {
-                    System.err.println("MC: GET_CONNECTION_PORT failed");
-                }
-
-            } else if (value.equals("LIST_CONNECTIONS")) {
-                try {
-                    List<RouterPort> ports = controller.listPorts();
-                    respond(sc, "204 " + "START");
-                    int count = 0;
-                    for (RouterPort rp : ports) {
-                        if (rp.equals(RouterPort.EMPTY)) {
-                            continue;
-                        } else {
-                            Address address = rp.netIF.getAddress();
-                            String portString = " port" + rp.portNo + " " + rp.netIF.getName() + " " + rp.netIF.getRemoteRouterName() + " " + rp.netIF.getWeight() + " " + (address == null ? "No_Address" : address.toString());
-                            respond(sc, (count + portString));
-                            count++;
-                        }               
-                    }             
-                    respond(sc, "204 " + "END");
-                } catch (IOException ioe) {
-                    System.err.println("MC: LIST_CONNECTIONS failed");
-                }
-
-            } else if (value.startsWith("INCOMING_CONNECTION")) {
-                try {
-                    String args = value.substring(19).trim();
-                    String[] parts = args.split(" ");
-
-                    if (parts.length == 4) {
-
-                        String connectionID = parts[0];
-                        String remoteRouterName = parts[1];
-                        String weightStr = parts[2];
-                        String remotePort = parts[3];
-
-                        Scanner scanner;
-
-                        // get remote port
-                        scanner = new Scanner(remotePort);
-                        int port;
-
-                        try {
-                            port = scanner.nextInt();
-                        } catch (Exception e) {
-                            respond(sc, "402 INCOMING_CONNECTION bad port number");
-                            return;
-                        }
-
-                        // get connection weight
-                        scanner = new Scanner(weightStr);
-                        int weight = 0;
-
-                        try {
-                            weight = scanner.nextInt();
-                        } catch (Exception e) {
-                            respond(sc, "402 INCOMING_CONNECTION invalid value for weight");
-                            return;
-                        }
-
-
-                        InetSocketAddress refAddr = new InetSocketAddress(sc.socket().getInetAddress(), port);
-                        //System.err.println("ManagementConsole => " + refAddr + " # " + refAddr.hashCode());
-
-                        /*
-                         * Lookup netif and set its name
-                         */
-                        NetIF netIF = controller.getNetIFByID(refAddr.hashCode());
-
-                        if (netIF != null) {
-                            System.err.println("MC: Found NetIF " + netIF + " by id " + refAddr.hashCode());
-
-                            // set its name
-                            netIF.setName(connectionID);
-                            // set its weight
-                            netIF.setWeight(weight);
-                            // set remote router
-                            netIF.setRemoteRouterName(remoteRouterName);
-                        
-                            // now plug netIF into Router
-                            controller.plugInNetIF(netIF);
-
-                            respond(sc, "204 " +  connectionID);
-                        } else {
-                            respond(sc, "402 Cannot find NetIF for port " + port);
-                        }
-                    } else {
-                         respond(sc, "402 INCOMING_CONNECTION wrong no of args ");
-                    }
-                } catch (IOException ioe) {
-                    System.err.println("MC: INCOMING_CONNECTION failed");
-                }
-
-            } else if (value.startsWith("CREATE_CONNECTION")) {
-                // it is an asynchronous command
-                // and will be processed a bit later
-                requestQueue.add(new Request(sc, value));
-                System.err.println("MC: Requests = " + requestQueue);
+                // so bind it to the channel
+                command.setChannel(sc);
+                // and evaluate the input
+                command.evaluate(value);
 
             } else {
                 // its an unknown command
@@ -560,5 +435,7 @@ public class ManagementConsole implements Runnable {
             }
         }
     }
+
+
 
 }

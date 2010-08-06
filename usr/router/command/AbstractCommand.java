@@ -3,6 +3,7 @@ package usr.router.command;
 import usr.router.Command;
 import usr.router.ManagementConsole;
 import usr.router.RouterController;
+import usr.router.ChannelResponder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -11,7 +12,7 @@ import java.nio.channels.SocketChannel;
  * A Command processes a command handled by the ManagementConsole
  * of a Router.
  */
-public abstract class AbstractCommand implements Command {
+public abstract class AbstractCommand extends ChannelResponder implements Command {
     // The name of the command
     String name;
 
@@ -20,9 +21,6 @@ public abstract class AbstractCommand implements Command {
 
     // The error code
     int errorCode;
-
-    // The SocketChannel
-    SocketChannel channel;
 
     // The ManagementConsole
     ManagementConsole managementConsole;
@@ -34,17 +32,16 @@ public abstract class AbstractCommand implements Command {
      * Construct a Command given a success code, an error code
      * and the SocketChannel.
      */
-    AbstractCommand(String name, int succCode, int errCode, SocketChannel sc) {
+    AbstractCommand(String name, int succCode, int errCode) {
         successCode = succCode;
         errorCode = errCode;
-        channel = sc;
         this.name = name;
     }
 
     /**
      * Evaluate the Command.
      */
-    public abstract void evaluate();
+    public abstract void evaluate(String req);
 
     /**
      * Get the name of command as a string.
@@ -75,14 +72,6 @@ public abstract class AbstractCommand implements Command {
     }
 
     /**
-     * Get the SocketChannel this command 
-     * is a handler for.
-     */
-    public SocketChannel getChannel() {
-        return channel;
-    }
-
-    /**
      * Set the ManagementConsole this is a command for.
      */
     public void setManagementConsole(ManagementConsole mc) {
@@ -91,12 +80,40 @@ public abstract class AbstractCommand implements Command {
     }
 
     /**
-     * Respond to the client
+     * Respond to the client successfully
      */
-    void respond(String s) throws IOException {
-        s = s.concat("\n");
-        System.err.print("MC: <<< RESPONSE: " + s);
-        channel.write(ByteBuffer.wrap(s.getBytes()));
+    void success(String s) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getSuccessCode());
+        sb.append(" ");
+        sb.append(s);
+        sb.append("\n");
+        String resp = sb.toString();
+        System.err.print("MC: <<< RESPONSE: " + resp);
+
+        respond(resp);
     }
 
+    /**
+     * Respond to the client with an error
+     */
+    void error(String s) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getErrorCode());
+        sb.append(" ");
+        sb.append(s);
+        sb.append("\n");
+        String resp = sb.toString();
+        System.err.print("MC: <<< RESPONSE: " + resp);
+
+
+        respond(resp);
+    }
+
+    /**
+     * Hash code
+     */
+    public int hashCode() {
+        return name.hashCode();
+    }
 }
