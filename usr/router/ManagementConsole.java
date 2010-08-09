@@ -75,6 +75,7 @@ public class ManagementConsole implements Runnable {
         register(new GetNameCommand());
         register(new SetNameCommand());
         register(new GetConnectionPortCommand());
+        register(new GetAddressCommand());
         register(new SetAddressCommand());
         register(new ListConnectionsCommand());
         register(new IncomingConnectionCommand());

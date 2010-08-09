@@ -39,11 +39,20 @@ public class MCRP {
     }
 
     /**
+     * Get the address of a port on the router.
+     */
+    public final static class GET_ADDRESS {
+        public final static String CMD =  "GET_ADDRESS";
+        public final static int CODE = 206;
+        public final static int ERROR = 403;
+    }
+
+    /**
      * Set the address of a port on the router.
      */
     public final static class SET_ADDRESS {
         public final static String CMD =  "SET_ADDRESS";
-        public final static int CODE = 206;
+        public final static int CODE = 207;
         public final static int ERROR = 403;
     }
 

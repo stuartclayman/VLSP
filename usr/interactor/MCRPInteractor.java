@@ -147,6 +147,19 @@ public class MCRPInteractor {
 
 
     /**
+     * Get the address of a port on the router.
+     * Need to specify the address type and address value.
+     * @param port the port name
+     */
+    public String getAddress(String port) throws IOException, MCRPException {
+        String toSend = MCRP.GET_ADDRESS.CMD + " " + port ; 
+	MCRPResponse response = interact(toSend);
+	expect(MCRP.GET_ADDRESS.CODE);
+
+        return response.get(0)[1];
+    }
+
+    /**
      * Set the address of a port on the router.
      * Need to specify the address type and address value.
      * @param port the port name
