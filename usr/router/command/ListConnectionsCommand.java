@@ -13,8 +13,8 @@ public class ListConnectionsCommand extends AbstractCommand {
     /**
      * Construct a ListConnectionsCommand.
      */
-    public ListConnectionsCommand(int succCode, int errCode) {
-        super("LIST_CONNECTIONS", succCode, errCode);
+    public ListConnectionsCommand() {
+        super(MCRP.LIST_CONNECTIONS.CMD, MCRP.LIST_CONNECTIONS.CODE, MCRP.ERROR.CODE);
     }
 
     /**

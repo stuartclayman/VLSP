@@ -9,13 +9,15 @@ import java.net.UnknownHostException;
 
 /**
  * The SET_ADDRESS command.
+ * SET_ADDRESS port type address
+ * SET_ADDRESS port0 IPV4 192.168.1.53
  */
 public class SetAddressCommand extends AbstractCommand {
     /**
      * Construct a SetAddressCommand.
      */
-    public SetAddressCommand(int succCode, int errCode) {
-        super("SET_ADDRESS", succCode, errCode);
+    public SetAddressCommand() {
+        super(MCRP.SET_ADDRESS.CMD, MCRP.SET_ADDRESS.CODE, MCRP.SET_ADDRESS.ERROR);
     }
 
     /**
@@ -41,7 +43,7 @@ public class SetAddressCommand extends AbstractCommand {
             RouterPort routerPort = controller.getPort(p);
 
             if (routerPort == null || routerPort == RouterPort.EMPTY) {
-                error("SET_ADDRESS invalid port " + routerPortName);
+                error(getName() + " invalid port " + routerPortName);
             }
 
             // instantiate the address
@@ -49,10 +51,10 @@ public class SetAddressCommand extends AbstractCommand {
                 try {
                     address = new IPV4Address(addr);
                 } catch (UnknownHostException uhe) {
-                    error("SET_ADDRESS UnknownHostException " + addr);
+                    error(getName() + " UnknownHostException " + addr);
                 }
             } else {
-                error("SET_ADDRESS unknown type " + type);
+                error(getName() + " unknown address type " + type);
             }
 
             // set address on netIF in port
@@ -61,11 +63,11 @@ public class SetAddressCommand extends AbstractCommand {
 
             result = success(routerPortName);
         } else {
-            error("SET_ADDRESS wrong no of args ");
+            error(getName() + " wrong no of args ");
         }
 
         if (!result) {
-            System.err.println("MC: SET_ADDRESS failed");
+            System.err.println("MC: " + getName() + " failed");
         }
 
         return result;

@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.router.Command;
+import usr.router.MCRP;
 import usr.router.NetIF;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
@@ -12,13 +13,15 @@ import java.nio.*;
 
 /**
  * The INCOMING_CONNECTION command.
+ * INCOMING_CONNECTION connectionID routerName weight port
+ * INCOMING_CONNECTION /Router-Router283836798/Connection-1 Router283836798 20 57352
  */
 public class IncomingConnectionCommand extends AbstractCommand {
     /**
      * Construct a IncomingConnectionCommand
      */
-    public IncomingConnectionCommand(int succCode, int errCode) {
-        super("INCOMING_CONNECTION", succCode, errCode);
+    public IncomingConnectionCommand() {
+        super(MCRP.INCOMING_CONNECTION.CMD, MCRP.INCOMING_CONNECTION.CODE, MCRP.INCOMING_CONNECTION.ERROR);
     }
 
     /**
@@ -48,7 +51,7 @@ public class IncomingConnectionCommand extends AbstractCommand {
             try {
                 port = scanner.nextInt();
             } catch (Exception e) {
-                error("INCOMING_CONNECTION bad port number");
+                error(getName() + " bad port number");
                 return true;
             }
 
@@ -59,7 +62,7 @@ public class IncomingConnectionCommand extends AbstractCommand {
             try {
                 weight = scanner.nextInt();
             } catch (Exception e) {
-                error("INCOMING_CONNECTION invalid value for weight");
+                error(getName() + " invalid value for weight");
                 return true;
             }
 
@@ -90,11 +93,11 @@ public class IncomingConnectionCommand extends AbstractCommand {
                 error("Cannot find NetIF for port " + port);
             }
         } else {
-            error("INCOMING_CONNECTION wrong no of args ");
+            error(getName() + " wrong no of args ");
         }
 
         if (!result) {
-            System.err.println("MC: INCOMING_CONNECTION failed");
+            System.err.println("MC: " + getName() + " failed");
         }
 
         return result;

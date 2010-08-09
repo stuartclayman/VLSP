@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.router.Command;
+import usr.router.MCRP;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
@@ -11,8 +12,8 @@ public class GetNameCommand extends AbstractCommand {
     /**
      * Construct a GetNameCommand.
      */
-    public GetNameCommand(int succCode, int errCode) {
-        super("GET_NAME", succCode, errCode);
+    public GetNameCommand() {
+        super(MCRP.GET_NAME.CMD, MCRP.GET_NAME.CODE, MCRP.ERROR.CODE);
     }
 
     /**
@@ -24,7 +25,7 @@ public class GetNameCommand extends AbstractCommand {
         boolean result = success(name);
 
         if (!result) {
-            System.err.println("MC: GET_NAME failed");
+            System.err.println("MC: " + getName() + " response failed");
         }
 
         return result;

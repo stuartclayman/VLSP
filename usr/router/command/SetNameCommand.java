@@ -1,18 +1,21 @@
 package usr.router.command;
 
 import usr.router.Command;
+import usr.router.MCRP;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 /**
  * The SET_NAME command.
+ * SET_NAME name
+ * SET_NAME Router-47
  */
 public class SetNameCommand extends AbstractCommand {
     /**
      * Construct a SetNameCommand.
      */
-    public SetNameCommand(int succCode, int errCode) {
-        super("SET_NAME", succCode, errCode);
+    public SetNameCommand() {
+        super(MCRP.SET_NAME.CMD, MCRP.SET_NAME.CODE, MCRP.ERROR.CODE);
     }
 
     /**
@@ -25,7 +28,7 @@ public class SetNameCommand extends AbstractCommand {
         boolean result = success(name);
 
         if (!result) {
-            System.err.println("MC: SET_NAME response failed");
+            System.err.println("MC: " + getName() + " response failed");
         }
 
         return result;

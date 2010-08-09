@@ -90,7 +90,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append(" ");
         sb.append(s);
         String resp = sb.toString();
-        System.err.print("MC: <<< RESPONSE: " + resp);
+        System.err.println("MC: <<< RESPONSE: " + resp);
 
         return respond(resp);
     }
@@ -105,7 +105,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append(" ");
         sb.append(s);
         String resp = sb.toString();
-        System.err.print("MC: <<< RESPONSE: " + resp);
+        System.err.println("MC: <<< RESPONSE: " + resp);
 
         return respond(resp);
     }
@@ -120,7 +120,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append("-");
         sb.append(s);
         String resp = sb.toString();
-        System.err.print("MC: <<< ITEM: " + resp);
+        System.err.println("MC: <<< ITEM: " + resp);
 
         return respond(resp);
     }

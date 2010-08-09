@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.router.Command;
+import usr.router.MCRP;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
@@ -11,8 +12,8 @@ public class GetConnectionPortCommand extends AbstractCommand {
     /**
      * Construct a GetConnectionPortCommand
      */
-    public GetConnectionPortCommand(int succCode, int errCode) {
-        super("GET_CONNECTION_PORT", succCode, errCode);
+    public GetConnectionPortCommand() {
+        super(MCRP.GET_CONNECTION_PORT.CMD, MCRP.GET_CONNECTION_PORT.CODE, MCRP.ERROR.CODE);
     }
 
     /**

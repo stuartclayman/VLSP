@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.router.Command;
+import usr.router.MCRP;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
@@ -12,7 +13,7 @@ public class UnknownCommand extends AbstractCommand {
      * Construct a UnknownCommand
      */
     public UnknownCommand() {
-        super("__UNKNOWN__", 400, 400);
+        super("__UNKNOWN__", MCRP.ERROR.CODE, MCRP.ERROR.CODE);
     }
 
     /**

@@ -10,9 +10,12 @@ import java.nio.channels.SocketChannel;
 public class CreateConnectionCommand extends AbstractCommand {
     /**
      * Construct a CreateConnectionCommand.
+     * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
+     * interface to a router on the address ip_addr/port with a 
+     * connection weight of connection_weight
      */
-    public CreateConnectionCommand(int succCode, int errCode) {
-        super("CREATE_CONNECTION", succCode, errCode);
+    public CreateConnectionCommand() {
+        super(MCRP.CREATE_CONNECTION.CMD, MCRP.CREATE_CONNECTION.CODE, MCRP.CREATE_CONNECTION.ERROR);
     }
 
     /**

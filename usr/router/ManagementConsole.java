@@ -14,6 +14,8 @@ import java.nio.charset.Charset;
 /**
  * A ManagementConsole listens for connections
  * for doing router management.
+ * <p>
+ * It implements the MCRP (Management Console Router Protocol).
  */
 public class ManagementConsole implements Runnable {
     // The RouterController 
@@ -22,9 +24,6 @@ public class ManagementConsole implements Runnable {
     // the port this router is listening on
     int port;
     
-    // A queue of requests
-    BlockingQueue<Request> requestQueue;
-
     // A Server socket
     ServerSocketChannel channel = null;
     ServerSocket serverSocket = null;
@@ -44,11 +43,17 @@ public class ManagementConsole implements Runnable {
     // HashMap of command name -> Command
     HashMap<String, Command> commandMap;
 
+    // A queue of requests
+    BlockingQueue<Request> requestQueue;
+
     // The Thread
     Thread myThread;
 
     // are we running
     boolean running = false;
+
+    // The Finite State Machine
+    FSMState fsm;
 
     /**
      * Construct a ManagementConsole, given a specific port.
@@ -59,19 +64,23 @@ public class ManagementConsole implements Runnable {
         requestQueue = new LinkedBlockingQueue<Request>();
         channelKeys = new HashMap<SocketChannel, SelectionKey>();
 
+        // FSM
+        fsm = FSMState.STATE0;
+
         // setp the Commands
         commandMap = new HashMap<String, Command>();
 
         register(new UnknownCommand());
-        register(new QuitCommand(500, 400));
-        register(new GetNameCommand(201, 400));
-        register(new SetNameCommand(202, 400));
-        register(new GetConnectionPortCommand(203, 400));
-        register(new ListConnectionsCommand(205, 400));
-        register(new IncomingConnectionCommand(204, 402));
-        register(new CreateConnectionCommand(299, 401));
+        register(new QuitCommand());
+        register(new GetNameCommand());
+        register(new SetNameCommand());
+        register(new GetConnectionPortCommand());
+        register(new SetAddressCommand());
+        register(new ListConnectionsCommand());
+        register(new IncomingConnectionCommand());
+        register(new CreateConnectionCommand());
 
-        register(new SetAddressCommand(206, 403));
+
     }
 
     /**
@@ -127,6 +136,9 @@ public class ManagementConsole implements Runnable {
 
             boolean ready = setUp();
 
+            // FSM
+            fsm = FSMState.START;
+
 
             myThread = new Thread(this, "ManagementConsole" + hashCode());
             running = true;
@@ -152,6 +164,10 @@ public class ManagementConsole implements Runnable {
 
             boolean shutdown = shutDown();
 
+            // FSM
+            fsm = FSMState.STOP;
+
+
             return shutdown;
 
         } catch (Exception e) {
@@ -166,6 +182,9 @@ public class ManagementConsole implements Runnable {
     public void run() {
         while (running) {
             try {
+                // FSM
+                fsm = FSMState.SELECTING;
+
                 // select() on all channels
                 int num = selector.select();
 
@@ -182,6 +201,9 @@ public class ManagementConsole implements Runnable {
                         if ((key.readyOps() & SelectionKey.OP_ACCEPT) == SelectionKey.OP_ACCEPT) {
                             // do we have an accept
 
+                            // FSM
+                            fsm = FSMState.CONNECTING;
+
                             // Accept the incoming connection.
                             Socket local = serverSocket.accept();
 
@@ -191,6 +213,10 @@ public class ManagementConsole implements Runnable {
 
                         } else if ((key.readyOps() & SelectionKey.OP_READ) == SelectionKey.OP_READ) {
                             // do we have a read
+
+                            // FSM
+                            fsm = FSMState.PROCESSING;
+
                             // get the channel
                             SocketChannel sc = (SocketChannel)key.channel();
 
@@ -334,7 +360,7 @@ public class ManagementConsole implements Runnable {
 
     /**
      * Process some input.
-     * This reads everything that is available, and queues it immediately.
+     * This reads everything that is available, and processes it immediately.
      * This does not deal with end of line or end of input delineator.
      */
     void processInput(SocketChannel sc) {
@@ -342,7 +368,9 @@ public class ManagementConsole implements Runnable {
 
         // read some data
         try {
+            // clear buffer
             buffer.clear();
+            // read into buffer
             read = sc.read(buffer);
         } catch (IOException ioe) {
             // bad error
@@ -352,12 +380,14 @@ public class ManagementConsole implements Runnable {
 
         // check what was read
         if (read != -1) {
+            // set buffer ready
             buffer.flip();
 
             // convert buffer to string
             String value = charset.decode(buffer).toString().trim();
 
             // inform the input handler
+            // with the value and the channel the input came from
             boolean result = handleInput(value, sc);
 
             if (result == false) {
@@ -371,15 +401,6 @@ public class ManagementConsole implements Runnable {
         }
     }
 
-    /**
-     * Respond to the client
-     *
-    void respond(SocketChannel sc, String s) throws IOException {
-        s = s.concat("\n");
-        System.err.print("MC: <<< RESPONSE: " + s);
-        sc.write(ByteBuffer.wrap(s.getBytes()));
-    }
-    */
 
     /**
      * Register a command.
@@ -442,7 +463,7 @@ public class ManagementConsole implements Runnable {
                 command = commandMap.get("__UNKNOWN__");
             }
 
-            // so bind it to the channel
+            // so bind the command to the channel
             command.setChannel(sc);
             // and evaluate the input
             result = command.evaluate(value);
@@ -453,5 +474,17 @@ public class ManagementConsole implements Runnable {
     }
 
 
+    /**
+     * The state that the FSM of the ManagementConsole might get to.
+     */
+    enum FSMState {
+                    STATE0,      // state 0
+                    START,       // the ManagementConsole is starting
+                    STOP,        // the ManagementConsole is stopping
+                    SELECTING,   // the ManagementConsole is in a select()
+                    CONNECTING,  // the ManagementConsole is seetting up a new connection
+                    PROCESSING   // the ManagementConsole is processing a command
+    }
 
 }
+

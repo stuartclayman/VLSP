@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.router.Command;
+import usr.router.MCRP;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
@@ -11,8 +12,8 @@ public class QuitCommand extends AbstractCommand {
     /**
      * Construct a QuitCommand.
      */
-    public QuitCommand(int succCode, int errCode) {
-        super("QUIT", succCode, errCode);
+    public QuitCommand() {
+        super(MCRP.QUIT.CMD, MCRP.QUIT.CODE, MCRP.ERROR.CODE);
     }
 
     /**
