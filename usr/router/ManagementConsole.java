@@ -71,6 +71,13 @@ public class ManagementConsole implements Runnable {
         commandMap = new HashMap<String, Command>();
 
         register(new UnknownCommand());
+        registerCommands();
+    }
+
+    /**
+     * Actually register relevant commands.
+     */
+    public void registerCommands() {
         register(new QuitCommand());
         register(new GetNameCommand());
         register(new SetNameCommand());
@@ -80,8 +87,6 @@ public class ManagementConsole implements Runnable {
         register(new ListConnectionsCommand());
         register(new IncomingConnectionCommand());
         register(new CreateConnectionCommand());
-
-
     }
 
     /**
