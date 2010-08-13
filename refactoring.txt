@@ -1,4 +1,5 @@
 ManagementConsole is now an abstract class in interactor pacakge.
 Its constructor with arguments has become an initialise function.
+RouterManagementConsole is the concrete instantiation for routers.
 
-
+Must now refactor RouterController
