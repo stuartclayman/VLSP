@@ -1,5 +1,6 @@
 package usr.router;
 
+import usr.interactor.ManagementConsole;
 import java.util.Scanner;
 import java.util.Queue;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ public class RouterController implements Runnable {
     Router router;
 
     // The management console listener
-    ManagementConsole management;
+    RouterManagementConsole management;
 
     // The port this router listening on for management
     int managementConsolePort;
@@ -73,7 +74,7 @@ public class RouterController implements Runnable {
         this.managementConsolePort = mPort;
 
         // delegate listening of commands to a ManagementConsole object
-        management = new ManagementConsole(this, mPort);
+        management = new RouterManagementConsole(this, mPort);
 
         newConnectionPort = r2rPort;
 

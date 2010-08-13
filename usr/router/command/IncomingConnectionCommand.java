@@ -1,6 +1,7 @@
 package usr.router.command;
 
-import usr.router.Command;
+import usr.interactor.Command;
+import usr.router.RouterManagementConsole;
 import usr.router.MCRP;
 import usr.router.NetIF;
 import java.io.IOException;

@@ -1,7 +1,7 @@
 package usr.router.command;
 
-import usr.router.Command;
-import usr.router.ManagementConsole;
+import usr.interactor.Command;
+import usr.router.RouterManagementConsole;
 import usr.router.RouterController;
 import usr.router.ChannelResponder;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
     int errorCode;
 
     // The ManagementConsole
-    ManagementConsole managementConsole;
+    RouterManagementConsole managementConsole;
 
     // The RouterController
     RouterController controller;
@@ -75,7 +75,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
     /**
      * Set the ManagementConsole this is a command for.
      */
-    public void setManagementConsole(ManagementConsole mc) {
+    public void setManagementConsole(RouterManagementConsole mc) {
         managementConsole = mc;
         controller = managementConsole.getRouterController();
     }

@@ -1,7 +1,8 @@
-package usr.router;
+package usr.interactor;
 
 import usr.net.Address;
 import usr.net.IPV4Address;
+import usr.router.*;
 import usr.router.command.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -17,49 +18,47 @@ import java.nio.charset.Charset;
  * <p>
  * It implements the MCRP (Management Console Router Protocol).
  */
-public class ManagementConsole implements Runnable {
-    // The RouterController 
-    RouterController controller;
+public abstract class ManagementConsole implements Runnable {
 
     // the port this router is listening on
-    int port;
+    protected int port;
     
     // A Server socket
-    ServerSocketChannel channel = null;
-    ServerSocket serverSocket = null;
+    protected ServerSocketChannel channel = null;
+    protected ServerSocket serverSocket = null;
 
     // A network Selector
-    Selector selector;
+    protected Selector selector;
 
     // read data from channel into the buffer
-    ByteBuffer buffer = ByteBuffer.allocate(4096);
+    protected ByteBuffer buffer = ByteBuffer.allocate(4096);
 
     // default Charset
-    Charset charset = Charset.forName("UTF-8");
+    protected Charset charset = Charset.forName("UTF-8");
 
     // HashMap of SocketChannel -> SelectionKey
-    HashMap<SocketChannel, SelectionKey> channelKeys;
+    protected HashMap<SocketChannel, SelectionKey> channelKeys;
 
     // HashMap of command name -> Command
-    HashMap<String, Command> commandMap;
+    protected HashMap<String, Command> commandMap;
 
     // A queue of requests
-    BlockingQueue<Request> requestQueue;
+    protected BlockingQueue<Request> requestQueue;
 
     // The Thread
-    Thread myThread;
+    protected Thread myThread;
 
     // are we running
-    boolean running = false;
+    protected boolean running = false;
 
     // The Finite State Machine
-    FSMState fsm;
+    protected FSMState fsm;
 
     /**
      * Construct a ManagementConsole, given a specific port.
      */
-    public ManagementConsole(RouterController cont, int port) {
-        controller = cont;
+
+    public void initialise (int port) {
         this.port = port;
         requestQueue = new LinkedBlockingQueue<Request>();
         channelKeys = new HashMap<SocketChannel, SelectionKey>();
@@ -70,31 +69,17 @@ public class ManagementConsole implements Runnable {
         // setp the Commands
         commandMap = new HashMap<String, Command>();
 
-        register(new UnknownCommand());
+        
         registerCommands();
     }
-
-    /**
-     * Actually register relevant commands.
-     */
-    public void registerCommands() {
-        register(new QuitCommand());
-        register(new GetNameCommand());
-        register(new SetNameCommand());
-        register(new GetConnectionPortCommand());
-        register(new GetAddressCommand());
-        register(new SetAddressCommand());
-        register(new ListConnectionsCommand());
-        register(new IncomingConnectionCommand());
-        register(new CreateConnectionCommand());
+    
+    public ManagementConsole() {
+    
     }
 
-    /**
-     * Get the RouterController this is a ManagementConsole for.
-     */
-    public RouterController getRouterController() {
-        return controller;
-    }
+    public abstract void  registerCommands();
+
+
 
     /**
      * Get a handle on the queue
@@ -252,7 +237,7 @@ public class ManagementConsole implements Runnable {
     /**
      * Set up.
      */
-    boolean setUp() {
+    protected boolean setUp() {
         try {
             selector = Selector.open();
 
@@ -286,7 +271,7 @@ public class ManagementConsole implements Runnable {
     /**
      * Shutdown
      */
-    boolean shutDown() {
+    protected boolean shutDown() {
         System.err.println("MC: Shutdown");
 
         try {
@@ -305,7 +290,7 @@ public class ManagementConsole implements Runnable {
     /**
      * Start reading from a new connection.
      */
-    void newConnection(Socket s) {
+    protected void newConnection(Socket s) {
         System.err.println("MC: newConnection: " + s);
 
         SocketChannel sc;
@@ -352,7 +337,7 @@ public class ManagementConsole implements Runnable {
     /**
      * Unregister a channel from the Selector.
      */
-    void unregisterChannel(SocketChannel c) {
+    protected void unregisterChannel(SocketChannel c) {
         // find the SelectionKey for this channel
         SelectionKey key = channelKeys.get(c);
 
@@ -369,7 +354,7 @@ public class ManagementConsole implements Runnable {
      * This reads everything that is available, and processes it immediately.
      * This does not deal with end of line or end of input delineator.
      */
-    void processInput(SocketChannel sc) {
+    protected void processInput(SocketChannel sc) {
         int read = -1;
 
         // read some data
@@ -408,16 +393,6 @@ public class ManagementConsole implements Runnable {
     }
 
 
-    /**
-     * Register a command.
-     */
-    void register(Command command) {
-        String commandName = command.getName();
-
-        command.setManagementConsole(this);
-
-        commandMap.put(commandName, command);
-    }
 
     /**
      * Handle the input.

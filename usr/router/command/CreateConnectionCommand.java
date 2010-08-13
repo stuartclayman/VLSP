@@ -1,5 +1,7 @@
 package usr.router.command;
 
+import usr.interactor.Command;
+import usr.router.RouterManagementConsole;
 import usr.router.*;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
