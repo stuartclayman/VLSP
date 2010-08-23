@@ -12,7 +12,7 @@ import java.lang.*;
 import java.util.*;
 import java.net.*;
 
-class LocalController {
+public class LocalController {
     private LocalHostInfo hostInfo_;
     private java.net.Socket clientSocket_;
     private LocalHostInfo globalController_;

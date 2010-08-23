@@ -1,4 +1,4 @@
-package usr.router;
+package usr.interactor;
 
 /**
  * Request strings and response codes for the MCRP protocol.

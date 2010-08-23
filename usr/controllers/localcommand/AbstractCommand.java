@@ -1,9 +1,7 @@
-package usr.router.command;
+package usr.controllers.localcommand;
 
+import usr.controllers.*;
 import usr.interactor.*;
-import usr.router.RouterManagementConsole;
-import usr.router.RouterController;
-import usr.interactor.ChannelResponder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -23,10 +21,10 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
     int errorCode;
 
     // The ManagementConsole
-    RouterManagementConsole managementConsole;
+    LocalControllerManagementConsole managementConsole;
 
     // The RouterController
-    RouterController controller;
+    LocalController controller;
 
     /**
      * Construct a Command given a success code, an error code
@@ -75,9 +73,9 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
     /**
      * Set the ManagementConsole this is a command for.
      */
-    public void setManagementConsole(RouterManagementConsole mc) {
+    public void setManagementConsole(LocalControllerManagementConsole mc) {
         managementConsole = mc;
-        controller = managementConsole.getRouterController();
+        controller = managementConsole.getLocalController();
     }
 
     /**

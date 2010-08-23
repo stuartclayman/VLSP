@@ -32,6 +32,7 @@ JC = javac
 CLASSES = \
   usr/controllers/EventScheduler.java \
   usr/controllers/GlobalController.java \
+  usr/controllers/GlobalControllerManagementConsole.java \
   usr/controllers/LocalControllerListener.java \
   usr/controllers/LocalHostInfo.java \
   usr/controllers/PayLoad.java \
@@ -40,6 +41,11 @@ CLASSES = \
   usr/controllers/ControlOptions.java \
   usr/controllers/GlobalSocketController.java \
   usr/controllers/LocalController.java \
+  usr/controllers/LocalControllerManagementConsole.java \
+  usr/controllers/localcommand/QuitCommand.java \
+  usr/controllers/localcommand/AbstractCommand.java \
+  usr/controllers/globalcommand/QuitCommand.java \
+  usr/controllers/globalcommand/AbstractCommand.java \
   usr/test/RouterTest1.java \
   usr/test/StubServer.java \
   usr/test/StubClient.java \
@@ -65,8 +71,6 @@ CLASSES = \
   usr/router/RouterFabric.java \
   usr/router/Request.java \
   usr/router/TCPNetIF.java \
-  usr/router/MCRP.java \
-  usr/router/ChannelResponder.java \
   usr/net/Datagram.java \
   usr/net/DatagramConnection.java \
   usr/net/DatagramPatch.java \
@@ -74,7 +78,9 @@ CLASSES = \
   usr/net/IPV4Datagram.java \
   usr/net/Address.java \
   usr/net/IPV4Address.java \
+  usr/interactor/ChannelResponder.java \
   usr/interactor/Command.java \
+  usr/interactor/MCRP.java \
   usr/interactor/ManagementConsole.java \
   usr/interactor/MCRPException.java \
   usr/interactor/MCRPResponse.java \

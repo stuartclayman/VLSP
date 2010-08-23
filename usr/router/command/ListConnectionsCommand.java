@@ -1,6 +1,6 @@
 package usr.router.command;
 
-import usr.interactor.Command;
+import usr.interactor.*;
 import usr.router.RouterManagementConsole;
 import usr.router.*;
 import usr.net.Address;

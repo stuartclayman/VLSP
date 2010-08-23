@@ -11,7 +11,7 @@ import java.net.*;
  * contacts local controllers to set up virtual routers and then
  * gives set up and tear down instructions directly to them.
  */
-class GlobalController {
+public class GlobalController {
     private long simulationTime;
     private String xmlFile_;
     private LocalHostInfo myHostInfo_;
@@ -30,6 +30,8 @@ class GlobalController {
     private Thread ProcessOutputThread_;
     private int noControllers_= 0;
     
+    
+    
     public static void main(String[] args) {
        
       if (args.length != 1) {
@@ -42,6 +44,10 @@ class GlobalController {
       gControl.init();
       gControl.simulate();
       gControl.shutDown();
+    }
+
+    public GlobalController () {
+    
     }
 
     private void init() {

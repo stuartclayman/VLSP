@@ -1,5 +1,6 @@
 package usr.interactor;
 
+import usr.controllers.*;
 import usr.router.*;
 import java.nio.channels.SocketChannel;
 
@@ -43,5 +44,7 @@ public interface Command {
     /**
      * Set the ManagementConsole this is a command for.
      */
-    public void setManagementConsole(RouterManagementConsole mc);
+    public abstract void setManagementConsole(RouterManagementConsole mc);
+    public abstract void setManagementConsole(LocalControllerManagementConsole mc);
+    public abstract void setManagementConsole(GlobalControllerManagementConsole mc);
 }

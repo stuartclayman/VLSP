@@ -2,7 +2,6 @@
 
 package usr.interactor;
 
-import usr.router.MCRP;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
