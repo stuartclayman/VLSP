@@ -17,7 +17,7 @@ public class GlobalController {
     private LocalHostInfo myHostInfo_;
     private ControlOptions options_;
     private boolean listening_;
-    private GlobalSocketController globalSocketController_ = null;
+    private GlobalControllerManagementConsole console_= null;
     private ArrayList <Socket> localControllerSockets_= null;
     private ArrayList <Process> childProcesses_= null;
     private ArrayList <BufferedReader> childOutput_= null;
@@ -57,6 +57,7 @@ public class GlobalController {
       
       myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
       if (!options_.isSimulation()) {
+          console_= new GlobalControllerManagementConsole(this,myHostInfo_.getPort());
           initVirtualRouters();
       }
       initSchedule();
@@ -110,11 +111,9 @@ public class GlobalController {
     
     private boolean checkMessages() {
         if (options_.startLocalControllers()) {
-             if (checkControllerOutput()) {
-                 return true;
-             }
+             return checkControllerOutput();
         }
-        return checkLocalControllerMessages();
+        return false;
     }
     
     private boolean checkControllerOutput() {
@@ -152,20 +151,7 @@ public class GlobalController {
         }
         return false;
     }
-    
-    private boolean checkLocalControllerMessages() {
-//        System.out.println("Dequeue payload");
-        PayLoad p= globalSocketController_.dequeue();
-        if (p == null) {
-//            System.out.println("ya got nothing");
-            return false;
-        }
-        if (p.getMessageType() == PayLoad.ALIVE_MESSAGE) {
-            LocalHostInfo lhost= (LocalHostInfo) p.getObject();
-            aliveMessage(lhost);
-        }
-        return true;
-    }
+
     
     private void executeEvent(SimEvent e) {
         
@@ -173,10 +159,7 @@ public class GlobalController {
     
     private void shutDown() {
         if (!options_.isSimulation()) {
-            globalSocketController_.stopListening();
             killAllControllers();
-            while (checkMessages()) {};
-            globalSocketController_.killListenerSockets();
             while (checkMessages()) {};
         }
         
@@ -198,7 +181,6 @@ public class GlobalController {
     rather than simulation */
     
     private void initVirtualRouters() {
-        startListening();
         noControllers_= options_.noControllers();
         if (options_.startLocalControllers()) {
             
@@ -266,26 +248,6 @@ public class GlobalController {
         System.out.println("Now alive "+aliveCount);
     }
     
-    private void startListening() {
-        
-        java.net.ServerSocket serverSocket= null;
-        try {
-             serverSocket = new java.net.ServerSocket(myHostInfo_.getPort());
-        } catch (java.io.IOException e) {
-            System.err.println("Could not listen on port:"+
-              String.valueOf(myHostInfo_.getPort()));
-            System.err.println(e.getMessage());
-            System.exit(-1);
-        }
-        System.out.println("Starting listener controller");
-        globalSocketController_ = new GlobalSocketController(serverSocket,
-          this);
-        Thread th= new Thread(globalSocketController_);
-        th.start();
-
-    }
-    
-    
     public synchronized void waitUntil(long time){
         long now= System. currentTimeMillis();
         if (time <= now)
@@ -310,17 +272,7 @@ public class GlobalController {
         localControllerSockets_= new ArrayList <Socket> (noControllers_);
         for (int i= 0; i < noControllers_;i++) {
            LocalHostInfo lh= options_.getController(i);
-           Socket skt= null;
-           try {
-               skt= new Socket(lh.getIp(),lh.getPort());
-           } catch (IOException e) {
-               System.err.println("Cannot open socket to "+lh.getName() +
-                 ":"+String.valueOf(lh.getPort()));
-               System.exit(-1);
            
-           }
-           checkController(skt);
-           localControllerSockets_.add(skt);
         }
     }
     

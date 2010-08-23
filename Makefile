@@ -44,6 +44,7 @@ CLASSES = \
   usr/controllers/LocalControllerManagementConsole.java \
   usr/controllers/localcommand/QuitCommand.java \
   usr/controllers/localcommand/AbstractCommand.java \
+  usr/controllers/localcommand/LocalCheckCommand.java \
   usr/controllers/localcommand/LocalCommand.java \
   usr/controllers/globalcommand/QuitCommand.java \
   usr/controllers/globalcommand/AbstractCommand.java \

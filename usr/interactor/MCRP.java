@@ -74,6 +74,12 @@ public class MCRP {
         public final static int CODE = 205;
     }
 
+    public final static class CHECK_LOCAL_CONTROLLER {
+       public final static String CMD = "CHECK_LOCAL_CONTROLLER";
+       public final static int CODE= 206;
+       public final static int ERROR = 402;
+    }
+
     /**
      * Create a new router-to-router data connection to another router.
      */
@@ -92,5 +98,7 @@ public class MCRP {
         public final static int CODE = 400;
         public final static int ERROR = 400;
     }
+    
+
 }
 

@@ -4,6 +4,7 @@ import usr.net.Address;
 import usr.net.IPV4Address;
 import usr.interactor.*;
 import usr.controllers.localcommand.*;
+import java.nio.channels.SocketChannel;
 
 /**
  * A ManagementConsole listens for connections
@@ -27,6 +28,7 @@ public class LocalControllerManagementConsole extends ManagementConsole implemen
 
     public void registerCommands() {
         register(new UnknownCommand());
+        register(new LocalCheckCommand());
         register(new QuitCommand());
     }
     
@@ -36,6 +38,10 @@ public class LocalControllerManagementConsole extends ManagementConsole implemen
         command.setManagementConsole(this);
 
         commandMap.put(commandName, command);
+    }
+
+    public void contactFromGlobal(SocketChannel skt) {
+    
     }
 
 }
