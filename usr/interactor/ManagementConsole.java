@@ -2,8 +2,6 @@ package usr.interactor;
 
 import usr.net.Address;
 import usr.net.IPV4Address;
-import usr.router.*;
-import usr.router.command.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.io.*;

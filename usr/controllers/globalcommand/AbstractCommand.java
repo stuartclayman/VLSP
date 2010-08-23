@@ -10,7 +10,7 @@ import java.nio.channels.SocketChannel;
  * A Command processes a command handled by the ManagementConsole
  * of a Router.
  */
-public abstract class AbstractCommand extends ChannelResponder implements Command {
+public abstract class AbstractCommand extends ChannelResponder implements GlobalCommand {
     // The name of the command
     String name;
 

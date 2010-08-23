@@ -14,13 +14,11 @@ import java.net.*;
 
 public class LocalController {
     private LocalHostInfo hostInfo_;
-    private java.net.Socket clientSocket_;
     private LocalHostInfo globalController_;
     private Thread listenThread_;
-    private ServerSocket serverSocket_= null;
-    private Socket globalSocket_= null;
-    private boolean listening_= true;
-    private LocalControllerListener listener_= null;
+//    private LocalControllerListener listener_= null;
+    private LocalControllerManagementConsole console_= null;
+    private boolean listening_ = true;
 
     public static void main(String[] args) {
         
@@ -48,20 +46,8 @@ public class LocalController {
     }
     /** Received shut Down data gram from global */
     public void shutDown() {
-        listening_= false;
-        listener_.notListening();
 
         System.out.println("Got shutdown");
-
-        
-        try {
-            if (!serverSocket_.isClosed()) {
-                serverSocket_.close();
-            }
-        } catch (java.io.IOException e) {
-            System.err.println("Error closing socket");
-            System.exit(-1);
-        }
     }
     
     /** Received alive message from global 
@@ -69,50 +55,18 @@ public class LocalController {
     public void aliveMessage(LocalHostInfo gc) {
         globalController_= gc;
         System.out.println("Got keep alive");
-        try {
-            globalSocket_= new Socket(gc.getIp(), gc.getPort());
-        } catch (java.io.IOException e) {
-            System.err.println("Unable to open socket to global host");
-            System.err.println(e.getMessage());
-            System.exit(-1);
-        }
-        PayLoad dg= new PayLoad(PayLoad.ALIVE_MESSAGE,hostInfo_);
-        dg.sendPayLoad(globalSocket_);
-//        System.out.println("Sent packet");
+ 
+        // Fixme -- respond
     }
     
     public LocalController (int port) {
         hostInfo_= new LocalHostInfo(port);
-        startListening();
+        console_= new LocalControllerManagementConsole(this, port);
+        console_.start();
     }
     
     
-    private void startListening() {
-        
-        try {
-          serverSocket_ = new ServerSocket(hostInfo_.getPort());
-        } catch (java.io.IOException e) {
-          System.err.println("Could not listen on port:"+
-            String.valueOf(hostInfo_.getPort()));
-          System.exit(-1);
-        }
-
-        while (listening_) {
-           
-            try {
-                //System.out.println("In accept loop");
-                Socket skt= serverSocket_.accept();
-                listener_= new LocalControllerListener(skt,this);
-                //Thread th= new Thread(listener_);
-                //th.start();
-                listener_.listen();
-            } catch (java.io.IOException e) {
-                if (!listening_)
-                    return;
-            }
-        }
-
-    }
+    
     
 
 }

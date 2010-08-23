@@ -30,7 +30,7 @@ public class LocalControllerManagementConsole extends ManagementConsole implemen
         register(new QuitCommand());
     }
     
-    void register(Command command) {
+    void register(LocalCommand command) {
         String commandName = command.getName();
 
         command.setManagementConsole(this);

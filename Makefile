@@ -44,8 +44,10 @@ CLASSES = \
   usr/controllers/LocalControllerManagementConsole.java \
   usr/controllers/localcommand/QuitCommand.java \
   usr/controllers/localcommand/AbstractCommand.java \
+  usr/controllers/localcommand/LocalCommand.java \
   usr/controllers/globalcommand/QuitCommand.java \
   usr/controllers/globalcommand/AbstractCommand.java \
+  usr/controllers/globalcommand/GlobalCommand.java \
   usr/test/RouterTest1.java \
   usr/test/StubServer.java \
   usr/test/StubClient.java \
@@ -60,6 +62,7 @@ CLASSES = \
   usr/router/command/SetNameCommand.java \
   usr/router/command/ListConnectionsCommand.java \
   usr/router/command/UnknownCommand.java \
+  usr/router/command/RouterCommand.java \
   usr/router/RouterManagementConsole.java \
   usr/router/Router.java \
   usr/router/SimpleRouterFabric.java \
@@ -69,7 +72,6 @@ CLASSES = \
   usr/router/NetIF.java \
   usr/router/RouterPort.java \
   usr/router/RouterFabric.java \
-  usr/router/Request.java \
   usr/router/TCPNetIF.java \
   usr/net/Datagram.java \
   usr/net/DatagramConnection.java \
@@ -90,6 +92,7 @@ CLASSES = \
   usr/interactor/ID.java \
   usr/interactor/MCRPInteractor.java \
   usr/interactor/InputHandler.java \
+  usr/interactor/Request.java \
   usr/interactor/MCRPNoConnectionException.java
 
 

@@ -44,7 +44,10 @@ public interface Command {
     /**
      * Set the ManagementConsole this is a command for.
      */
-    public abstract void setManagementConsole(RouterManagementConsole mc);
-    public abstract void setManagementConsole(LocalControllerManagementConsole mc);
-    public abstract void setManagementConsole(GlobalControllerManagementConsole mc);
+  //  public void setManagementConsole(ManagementConsole mc) 
+  //  {
+  //  
+  //  }
+//   public abstract <T extends ManagementConsole> void setManagementConsole(T mc);
+
 }

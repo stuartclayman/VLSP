@@ -44,7 +44,7 @@ public class RouterManagementConsole extends ManagementConsole implements Runnab
         register(new CreateConnectionCommand());
     }
     
-    void register(Command command) {
+    void register(RouterCommand command) {
         String commandName = command.getName();
 
         command.setManagementConsole(this);

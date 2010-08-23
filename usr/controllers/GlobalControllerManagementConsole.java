@@ -30,7 +30,7 @@ public class GlobalControllerManagementConsole extends ManagementConsole impleme
         register(new QuitCommand());
     }
     
-    void register(Command command) {
+    void register(GlobalCommand command) {
         String commandName = command.getName();
 
         command.setManagementConsole(this);
