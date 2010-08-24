@@ -43,12 +43,15 @@ CLASSES = \
   usr/controllers/LocalController.java \
   usr/controllers/LocalControllerManagementConsole.java \
   usr/controllers/localcommand/QuitCommand.java \
+  usr/controllers/localcommand/UnknownCommand.java \
   usr/controllers/localcommand/AbstractCommand.java \
   usr/controllers/localcommand/LocalCheckCommand.java \
+  usr/controllers/localcommand/ShutDownCommand.java \
   usr/controllers/localcommand/LocalCommand.java \
   usr/controllers/globalcommand/QuitCommand.java \
   usr/controllers/globalcommand/AbstractCommand.java \
   usr/controllers/globalcommand/GlobalCommand.java \
+  usr/controllers/globalcommand/UnknownCommand.java \
   usr/test/RouterTest1.java \
   usr/test/StubServer.java \
   usr/test/StubClient.java \
@@ -92,6 +95,9 @@ CLASSES = \
   usr/interactor/MCRPEventListener.java \
   usr/interactor/ID.java \
   usr/interactor/MCRPInteractor.java \
+  usr/interactor/RouterInteractor.java \
+  usr/interactor/GlobalControllerInteractor.java \
+  usr/interactor/LocalControllerInteractor.java \
   usr/interactor/InputHandler.java \
   usr/interactor/Request.java \
   usr/interactor/MCRPNoConnectionException.java

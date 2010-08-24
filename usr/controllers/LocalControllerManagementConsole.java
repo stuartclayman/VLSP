@@ -29,6 +29,7 @@ public class LocalControllerManagementConsole extends ManagementConsole implemen
     public void registerCommands() {
         register(new UnknownCommand());
         register(new LocalCheckCommand());
+        register(new ShutDownCommand());
         register(new QuitCommand());
     }
     

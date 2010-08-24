@@ -73,11 +73,24 @@ public class MCRP {
         public final static String CMD =  "LIST_CONNECTIONS";
         public final static int CODE = 205;
     }
+    
+    /** Connect to and confirm existence of a local controller
+    */
 
     public final static class CHECK_LOCAL_CONTROLLER {
        public final static String CMD = "CHECK_LOCAL_CONTROLLER";
        public final static int CODE= 206;
-       public final static int ERROR = 402;
+       public final static int ERROR = 404;
+    }
+
+
+    /**
+     * Shut down this Controller.
+     */
+    public final static class SHUT_DOWN {
+        public final static String CMD =  "SHUT_DOWN";
+        public final static int CODE = 207;
+        public final static int ERROR = 405;
     }
 
     /**
@@ -88,7 +101,8 @@ public class MCRP {
         public final static int CODE = 299;
         public final static int ERROR = 401;
     }
-
+    
+   
     /**
      * The standard error code.
      */

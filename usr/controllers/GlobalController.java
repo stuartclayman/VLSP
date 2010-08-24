@@ -1,6 +1,8 @@
 
 
 package usr.controllers;
+
+import usr.interactor.*;
 import java.lang.*;
 import java.util.*;
 import java.io.*;
@@ -18,7 +20,7 @@ public class GlobalController {
     private ControlOptions options_;
     private boolean listening_;
     private GlobalControllerManagementConsole console_= null;
-    private ArrayList <Socket> localControllerSockets_= null;
+    private ArrayList <GlobalControllerInteractor> localControllers_ = null;
     private ArrayList <Process> childProcesses_= null;
     private ArrayList <BufferedReader> childOutput_= null;
     private ArrayList <BufferedReader> childError_= null;
@@ -269,9 +271,21 @@ public class GlobalController {
     /** Check all controllers listed are functioning
     */
     private void checkAllControllers() {
-        localControllerSockets_= new ArrayList <Socket> (noControllers_);
+        localControllers_= new ArrayList<GlobalControllerInteractor>();
+        GlobalControllerInteractor inter= null;
         for (int i= 0; i < noControllers_;i++) {
            LocalHostInfo lh= options_.getController(i);
+           
+           try {
+              inter= new GlobalControllerInteractor(lh.getIp(), lh.getPort());
+           } catch (IOException e) {
+              System.err.println("Unable to make connection to "+
+                lh.getName()+" "+lh.getPort()+"\n");
+              System.err.println(e);
+              System.exit(-1);
+           }
+           
+           localControllers_.add(inter);
            
         }
     }
@@ -281,8 +295,7 @@ public class GlobalController {
     private void killAllControllers() {
       System.out.println("Stopping all controllers");
       for (int i= 0; i < noControllers_; i++) {
-          PayLoad pl= new PayLoad(PayLoad.SHUTDOWN_MESSAGE,null);
-          pl.sendPayLoad(localControllerSockets_.get(i));
+          
           
       }
     }
