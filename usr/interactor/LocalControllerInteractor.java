@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.*;
+import usr.common.LocalHostInfo;
 import java.util.List;
 import java.util.ArrayList;    /* Calls for ManagementConsole */
 
@@ -29,5 +30,16 @@ public class LocalControllerInteractor extends MCRPInteractor
 	initialize(addr, port);
     }
 
+    public LocalControllerInteractor(LocalHostInfo lh) throws UnknownHostException, IOException  {
+	initialize(lh.getIp(), lh.getPort());
+    }
+
+
+    public MCRPInteractor respondToGlobalController(LocalHostInfo lc) throws IOException, MCRPException {
+      String command= MCRP.OK_LOCAL_CONTROLLER.CMD+" "+lc.getName()+" "+ lc.getPort();
+	    interact(command);
+	    expect(MCRP.OK_LOCAL_CONTROLLER.CODE);
+	    return this;
+    }
 
 }

@@ -27,6 +27,7 @@ public class GlobalControllerManagementConsole extends ManagementConsole impleme
     public void registerCommands() {
       
         register(new UnknownCommand());
+        register(new LocalOKCommand());
         register(new QuitCommand());
     }
     

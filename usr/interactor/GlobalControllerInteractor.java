@@ -1,6 +1,7 @@
 package usr.interactor;
 
 import java.net.Socket;
+import usr.common.LocalHostInfo;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.*;
@@ -19,18 +20,33 @@ public class GlobalControllerInteractor extends MCRPInteractor
 	initialize(InetAddress.getByName(addr), port);
     }
 
-    /**
-     * Constructor for a MCRP connection
-     * to the ManagementConsole of a router.
-     * @param addr the InetAddress of the host
-     * @param port the port the server is listening on
-     */
     public GlobalControllerInteractor(InetAddress addr, int port) throws UnknownHostException, IOException  {
 	initialize(addr, port);
+    }
+    
+    public GlobalControllerInteractor(LocalHostInfo lh) throws UnknownHostException, IOException  {
+	initialize(lh.getIp(), lh.getPort());
+    }
+    
+    public MCRPInteractor shutDown() throws IOException, MCRPException {
+         
+	    interact(MCRP.SHUT_DOWN.CMD);
+	     expect(MCRP.SHUT_DOWN.CODE);
+	     return this;
     }
 
     public MCRPInteractor checkLocalController(String host, int port) throws IOException, MCRPException {
         String toSend = MCRP.CHECK_LOCAL_CONTROLLER.CMD + 
+            " " + host + " " + port;
+	    interact(toSend);
+	  expect(MCRP.CHECK_LOCAL_CONTROLLER.CODE);
+	return this;
+    }
+    
+    public MCRPInteractor checkLocalController(LocalHostInfo gc) throws IOException, MCRPException {
+      String host= gc.getName();
+      int port= gc.getPort();
+      String toSend = MCRP.CHECK_LOCAL_CONTROLLER.CMD + 
             " " + host + " " + port;
 	    interact(toSend);
 	  expect(MCRP.CHECK_LOCAL_CONTROLLER.CODE);

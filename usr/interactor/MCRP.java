@@ -93,6 +93,15 @@ public class MCRP {
         public final static int ERROR = 405;
     }
 
+    /** Connect to and confirm existence of a local controller
+    */
+
+    public final static class OK_LOCAL_CONTROLLER {
+       public final static String CMD = "OK_LOCAL_CONTROLLER";
+       public final static int CODE= 208;
+       public final static int ERROR = 406;
+    }
+
     /**
      * Create a new router-to-router data connection to another router.
      */

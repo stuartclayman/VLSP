@@ -7,6 +7,7 @@ import java.lang.*;
 import java.util.*;
 import java.io.*;
 import java.net.*;
+import usr.common.LocalHostInfo;
 
 /**
  * The global controller is in overall control of the software.  It
@@ -60,6 +61,7 @@ public class GlobalController {
       myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
       if (!options_.isSimulation()) {
           console_= new GlobalControllerManagementConsole(this,myHostInfo_.getPort());
+          console_.start();
           initVirtualRouters();
       }
       initSchedule();
@@ -156,14 +158,17 @@ public class GlobalController {
 
     
     private void executeEvent(SimEvent e) {
-        
+        System.out.println("Event at "+e.getTime());
     }
     
     private void shutDown() {
         if (!options_.isSimulation()) {
             killAllControllers();
             while (checkMessages()) {};
+            console_.stop();
         }
+        System.out.println("All stopped, shut down now!");
+        
         
     }
     
@@ -277,7 +282,7 @@ public class GlobalController {
            LocalHostInfo lh= options_.getController(i);
            
            try {
-              inter= new GlobalControllerInteractor(lh.getIp(), lh.getPort());
+              inter= new GlobalControllerInteractor(lh);
            } catch (IOException e) {
               System.err.println("Unable to make connection to "+
                 lh.getName()+" "+lh.getPort()+"\n");
@@ -286,7 +291,13 @@ public class GlobalController {
            }
            
            localControllers_.add(inter);
+           try {
+             inter.checkLocalController(myHostInfo_);
+           } catch (java.io.IOException e) {
            
+           } catch (usr.interactor.MCRPException e) {
+           
+           }
         }
     }
     
@@ -294,20 +305,24 @@ public class GlobalController {
     */
     private void killAllControllers() {
       System.out.println("Stopping all controllers");
+      GlobalControllerInteractor inter;
       for (int i= 0; i < noControllers_; i++) {
-          
-          
+          inter= localControllers_.get(i);
+          try {
+              inter.shutDown();
+          } catch (java.io.IOException e) {
+              System.err.println ("Cannot send shut down to local Controller");
+              System.err.println (e.getMessage());
+              System.exit(-1);   
+          } catch (usr.interactor.MCRPException e) {
+              System.err.println ("Cannot send shut down to local Controller");
+              System.err.println (e.getMessage());
+              System.exit(-1);           
+          }
       }
     }
 
-    /** Check local controller is up and functioning 
-    */
-    private void checkController(Socket skt) {
-        PayLoad dg= new PayLoad(PayLoad.ALIVE_MESSAGE,myHostInfo_);
-        dg.sendPayLoad(skt);
-        
-    }
-    
+   
    
    
 }

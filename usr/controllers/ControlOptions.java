@@ -3,7 +3,7 @@
  * The options specify hosts and controls used in simulation
  */
 package usr.controllers;
-
+import usr.common.LocalHostInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -23,7 +23,7 @@ class ControlOptions {
     public void init () {
       
       localControllers_= new ArrayList<LocalHostInfo>();
-      
+      startLocalControllers_= false;
       // Temporary bodge for testing TODO Fix.
       globalControlPort_= 8888;
       remoteLoginCommand_ = "/usr/bin/ssh";

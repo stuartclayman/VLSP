@@ -3,9 +3,10 @@
   * It deals with finding out IP addresses, ports and so on
 */
 
-package usr.controllers;
+package usr.common;
+import java.net.InetAddress;
 
-class LocalHostInfo implements java.io.Serializable {
+public class LocalHostInfo implements java.io.Serializable {
     private String hostName_;      // Name of host -- should be resolvable
     private int port_;          // Port host listens on
     private java.net.InetAddress ipAddress_;  // IP address of host
@@ -25,6 +26,30 @@ class LocalHostInfo implements java.io.Serializable {
           e.getMessage());
       }
       hostName_= ipAddress_.getHostName();
+//      System.out.println(hostName_+" "+ipAddress_.getHostAddress());
+    }
+    
+    
+    public LocalHostInfo (java.net.InetAddress ip, int port) {
+      
+      port_= port;
+      ipAddress_= ip;
+      hostName_= ipAddress_.getHostName();
+//      System.out.println(hostName_+" "+ipAddress_.getHostAddress());
+    }
+    
+    public LocalHostInfo (String hostName, int port) {
+      
+      port_= port;
+      
+      hostName_= hostName;
+      try {
+         ipAddress_= InetAddress.getByName(hostName);
+      } catch (java.net.UnknownHostException e) {
+          System.err.println("Cannot resolve host "+hostName);
+          System.err.println(e.getMessage());
+          System.exit(-1);
+      }
 //      System.out.println(hostName_+" "+ipAddress_.getHostAddress());
     }
     

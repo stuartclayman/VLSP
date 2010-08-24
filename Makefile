@@ -30,16 +30,12 @@ JC = javac
 .java.class:
 	$(JC) $(JFLAGS) $*.java 
 CLASSES = \
+  usr/common/LocalHostInfo.java \
   usr/controllers/EventScheduler.java \
   usr/controllers/GlobalController.java \
   usr/controllers/GlobalControllerManagementConsole.java \
-  usr/controllers/LocalControllerListener.java \
-  usr/controllers/LocalHostInfo.java \
-  usr/controllers/PayLoad.java \
-  usr/controllers/GlobalControllerListener.java \
   usr/controllers/SimEvent.java \
   usr/controllers/ControlOptions.java \
-  usr/controllers/GlobalSocketController.java \
   usr/controllers/LocalController.java \
   usr/controllers/LocalControllerManagementConsole.java \
   usr/controllers/localcommand/QuitCommand.java \
@@ -52,6 +48,7 @@ CLASSES = \
   usr/controllers/globalcommand/AbstractCommand.java \
   usr/controllers/globalcommand/GlobalCommand.java \
   usr/controllers/globalcommand/UnknownCommand.java \
+  usr/controllers/globalcommand/LocalOKCommand.java \
   usr/test/RouterTest1.java \
   usr/test/StubServer.java \
   usr/test/StubClient.java \
@@ -126,5 +123,5 @@ classes: $(CLASSES:.java=.class)
 #
 
 clean:
-	$(RM) *.class
+	find . -name "*.class" -exec rm {} \;
 

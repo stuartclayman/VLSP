@@ -1,10 +1,10 @@
 package usr.controllers;
 
-import usr.net.Address;
-import usr.net.IPV4Address;
 import usr.interactor.*;
+import java.net.*;
 import usr.controllers.localcommand.*;
 import java.nio.channels.SocketChannel;
+import usr.common.LocalHostInfo;
 
 /**
  * A ManagementConsole listens for connections
@@ -14,16 +14,16 @@ import java.nio.channels.SocketChannel;
  */
 public class LocalControllerManagementConsole extends ManagementConsole implements Runnable {
 
-    private LocalController _localController;
+    private LocalController localController_;
     
     public LocalControllerManagementConsole(LocalController lc, int port) {
        
-       _localController= lc;
+       localController_= lc;
        initialise(port);
     }
 
     public LocalController getLocalController() {
-       return _localController;
+       return localController_;
     }
 
     public void registerCommands() {
@@ -41,8 +41,9 @@ public class LocalControllerManagementConsole extends ManagementConsole implemen
         commandMap.put(commandName, command);
     }
 
-    public void contactFromGlobal(SocketChannel skt) {
-    
+    public void contactFromGlobal(LocalHostInfo gc) {
+        localController_.aliveMessage(gc);
+        
     }
 
 }

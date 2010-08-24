@@ -11,12 +11,15 @@ package usr.controllers;
 import java.lang.*;
 import java.util.*;
 import java.net.*;
+import usr.interactor.*;
+
+import usr.common.LocalHostInfo;
 
 public class LocalController {
     private LocalHostInfo hostInfo_;
     private LocalHostInfo globalController_;
     private Thread listenThread_;
-//    private LocalControllerListener listener_= null;
+    private LocalControllerInteractor lcInteractor_= null;
     private LocalControllerManagementConsole console_= null;
     private boolean listening_ = true;
 
@@ -44,10 +47,19 @@ public class LocalController {
         
 
     }
+    
+    /** Constructor for local controller starting on port */
+    public LocalController (int port) {
+        hostInfo_= new LocalHostInfo(port);
+        console_= new LocalControllerManagementConsole(this, port);
+        console_.start();
+    }
+    
     /** Received shut Down data gram from global */
     public void shutDown() {
 
         System.out.println("Got shutdown");
+        System.exit(-1);
     }
     
     /** Received alive message from global 
@@ -55,15 +67,26 @@ public class LocalController {
     public void aliveMessage(LocalHostInfo gc) {
         globalController_= gc;
         System.out.println("Got keep alive");
- 
-        // Fixme -- respond
+        try {
+            System.out.println("Sending to "+gc.getName()+":"+gc.getPort());
+            lcInteractor_= new LocalControllerInteractor(gc);
+            lcInteractor_.respondToGlobalController(gc);
+        } catch (java.net.UnknownHostException e) {
+            System.err.println("Cannot contact global controller");
+            System.err.println(e.getMessage());
+            System.exit(-1);
+        } catch (java.io.IOException e) {
+            System.err.println("Cannot contact global controller");
+            System.err.println(e.getMessage());
+            System.exit(-1);
+        }catch (usr.interactor.MCRPException e) {
+            System.err.println("Cannot contact global controller");
+            System.err.println(e.getMessage());
+            System.exit(-1);
+        }
+       
     }
     
-    public LocalController (int port) {
-        hostInfo_= new LocalHostInfo(port);
-        console_= new LocalControllerManagementConsole(this, port);
-        console_.start();
-    }
     
     
     
