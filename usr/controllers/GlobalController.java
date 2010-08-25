@@ -8,6 +8,7 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 import usr.common.LocalHostInfo;
+import java.util.concurrent.*;
 
 /**
  * The global controller is in overall control of the software.  It
@@ -119,7 +120,18 @@ public class GlobalController {
         if (options_.startLocalControllers()) {
              return checkControllerOutput();
         }
-        return false;
+        return checkQueueMessages();
+        
+    }
+    
+    private boolean checkQueueMessages()
+    {
+        BlockingQueue<Request> queue = console_.queue();
+        if (queue.size() == 0)
+           return false;
+        Request req= queue.remove();
+        System.err.println("TODO -- need to deal with event here!");
+        return true;
     }
     
     private boolean checkControllerOutput() {
@@ -217,7 +229,7 @@ public class GlobalController {
         childNames_= new ArrayList<String>();
         while (i.hasNext()) {
             
-            LocalHostInfo lh= (LocalHostInfo)i.next();
+            LocalControllerInfo lh= (LocalControllerInfo)i.next();
             String []cmd= options_.localControllerStartCommand(lh);
             try {
                 child = new ProcessBuilder(cmd).start();

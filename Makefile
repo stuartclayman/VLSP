@@ -49,6 +49,8 @@ CLASSES = \
   usr/controllers/globalcommand/GlobalCommand.java \
   usr/controllers/globalcommand/UnknownCommand.java \
   usr/controllers/globalcommand/LocalOKCommand.java \
+  usr/controllers/LocalControllerInfo.java \
+  usr/controllers/XMLNoTagException.java \
   usr/test/RouterTest1.java \
   usr/test/StubServer.java \
   usr/test/StubClient.java \

@@ -6,7 +6,8 @@
 package usr.common;
 import java.net.InetAddress;
 
-public class LocalHostInfo implements java.io.Serializable {
+
+public class LocalHostInfo  {
     private String hostName_;      // Name of host -- should be resolvable
     private int port_;          // Port host listens on
     private java.net.InetAddress ipAddress_;  // IP address of host
@@ -53,6 +54,8 @@ public class LocalHostInfo implements java.io.Serializable {
 //      System.out.println(hostName_+" "+ipAddress_.getHostAddress());
     }
     
+
+    
     /** Accessor function for port_
     */
     public int getPort() {
@@ -70,20 +73,5 @@ public class LocalHostInfo implements java.io.Serializable {
     public String getName() {
       return hostName_;
     }
-    
-    private void writeObject(java.io.ObjectOutputStream out) 
-      throws java.io.IOException {
-        out.defaultWriteObject();
-    }
-    
-    private void readObject(java.io.ObjectInputStream in)
-      throws java.io.IOException, java.lang.ClassNotFoundException {
-        in.defaultReadObject(); 
-    }
-    
-    private void readObjectNoData() throws java.io.ObjectStreamException {
-    
-    }
-
     
 }

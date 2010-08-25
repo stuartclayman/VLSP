@@ -3,7 +3,6 @@
  * The options specify hosts and controls used in simulation
  */
 package usr.controllers;
-import usr.common.LocalHostInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.File;
@@ -17,7 +16,7 @@ import org.xml.sax.SAXParseException;
 
 
 class ControlOptions {
-    private ArrayList<LocalHostInfo> localControllers_;
+    private ArrayList<LocalControllerInfo> localControllers_;
     private int globalControlPort_ = 8888;
     private int simulationLength_= 20000;
     private String remoteLoginCommand_= null;
@@ -32,9 +31,7 @@ class ControlOptions {
     /** init function sets up basic information */
     public void init () {
       
-      localControllers_= new ArrayList<LocalHostInfo>();
-      startLocalControllers_= true;
-      globalControlPort_= 8888;
+      localControllers_= new ArrayList<LocalControllerInfo>();
       remoteLoginCommand_ = "/usr/bin/ssh";
       remoteLoginFlags_ = "-n";
       remoteLoginUser_="richard";
@@ -46,7 +43,7 @@ class ControlOptions {
     
     /** Adds information about a new host to the list
     */
-    private void addNewHost(LocalHostInfo host) {
+    private void addNewHost(LocalControllerInfo host) {
       localControllers_.add(host);
     }
 
@@ -113,9 +110,25 @@ class ControlOptions {
            startLocalControllers_= parseSingleBool(gcn, "StartLocalControllers", "GlobalController",true);
         } catch (SAXException e) {
             throw e;
-        } catch (XMLNoTagException e) {
-           
+        } catch (XMLNoTagException e) {  
         }
+        try {
+            String s= parseSingleString(gcn, "RemoteLoginUser","GlobalController",true);
+            if (s != "")
+                remoteLoginUser_= s;
+        } catch (SAXException e) {
+                throw e;
+        } catch (XMLNoTagException e) {
+        }
+        try {
+            String s= parseSingleString(gcn, "RemoteStartController","GlobalController",true);
+            if (s != "") 
+               remoteStartController_= s;
+        } catch (SAXException e) {
+             throw e;
+        } catch (XMLNoTagException e) {
+        }
+        
     }
     /**
         Process tags which specify local controllers
@@ -126,11 +139,35 @@ class ControlOptions {
         int port;
         for (int i= 0; i < lcs.getLength(); i++) {
             Node lc= lcs.item(i);
+            LocalControllerInfo lh= null;
             try {
-                hostName= parseSingleText(lc, "Name", "LocalController",false);
+                hostName= parseSingleString(lc, "Name", "LocalController",false);
                 port= parseSingleInt(lc, "Port","LocalController",false);
-                LocalHostInfo lh= new LocalHostInfo(hostName, port);
+                lh= new LocalControllerInfo(hostName, port);
                 localControllers_.add(lh);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+                System.err.println("Unexpected exception in processLocalControllers");
+                System.exit(-1);
+            }
+            try {
+                int mr= parseSingleInt(lc, "MaxRouters","LocalController",true);
+                lh.setMaxRouters(mr);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            try {
+                String s= parseSingleString(lc, "RemoteLoginUser","LocalController",true);
+                lh.setRemoteLoginUser(s);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            try {
+                String s= parseSingleString(lc, "RemoteStartController","LocalController",true);
+                lh.setRemoteStartController(s);
             } catch (SAXException e) {
                 throw e;
             } catch (XMLNoTagException e) {
@@ -143,7 +180,7 @@ class ControlOptions {
     private boolean parseSingleBool(Node node, String tag, String parent, boolean optional) 
         throws SAXException, XMLNoTagException
     { 
-        String str= parseSingleText(node,tag,parent,optional);
+        String str= parseSingleString(node,tag,parent,optional);
         if (str.equals("true"))
           return true;
         if (str.equals("false"))
@@ -155,13 +192,13 @@ class ControlOptions {
     private int parseSingleInt(Node node, String tag, String parent, boolean optional) 
         throws SAXException, XMLNoTagException
     { 
-        String str= parseSingleText(node,tag,parent,optional);
+        String str= parseSingleString(node,tag,parent,optional);
         int i= Integer.parseInt(str);
         return i;
     }
     
     // Parse tags to get text
-    private String parseSingleText(Node node, String tag, String parent, 
+    private String parseSingleString(Node node, String tag, String parent, 
         boolean optional) 
         throws SAXException, XMLNoTagException
     {
@@ -190,7 +227,7 @@ class ControlOptions {
     /** Return string to launch local controller on remote
     machine given machine name 
     */
-    public String [] localControllerStartCommand(LocalHostInfo lh) {
+    public String [] localControllerStartCommand(LocalControllerInfo lh) {
         String [] cmd= new String[5];
         cmd[0] = remoteLoginCommand_;
         cmd[1] = remoteLoginFlags_;
@@ -212,7 +249,7 @@ class ControlOptions {
     
     /** Accessor function returns the i th controller 
     */
-    public LocalHostInfo getController(int i) {
+    public LocalControllerInfo getController(int i) {
       return localControllers_.get(i);
     }
     

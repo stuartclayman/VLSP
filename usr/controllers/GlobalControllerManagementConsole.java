@@ -3,7 +3,7 @@ package usr.controllers;
 
 import usr.interactor.*;
 import usr.controllers.globalcommand.*;
-
+import java.util.concurrent.*;
 
 /**
  * A ManagementConsole listens for connections
@@ -13,15 +13,21 @@ import usr.controllers.globalcommand.*;
  */
 public class GlobalControllerManagementConsole extends ManagementConsole implements Runnable {
 
-    private GlobalController _globalController;
+    private GlobalController globalController_;
     public GlobalControllerManagementConsole(GlobalController gc, int port) {
        
-       _globalController= gc;
+       globalController_= gc;
        initialise(port);
     }
 
     public GlobalController getGlobalController() {
-       return _globalController;
+       return globalController_;
+    }
+
+    public BlockingQueue<Request> addRequest(Request q) {
+        super.requestQueue.add(q);
+        globalController_.notify();
+        return requestQueue;
     }
 
     public void registerCommands() {
