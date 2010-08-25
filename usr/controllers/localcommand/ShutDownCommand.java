@@ -20,8 +20,7 @@ public class ShutDownCommand extends AbstractCommand {
      */
     public boolean evaluate(String req) {
         success("BYE");
-        managementConsole.endConnection(getChannel());
-        managementConsole.stop();
+        managementConsole.localController_.shutDown();
         return true;
     }
 

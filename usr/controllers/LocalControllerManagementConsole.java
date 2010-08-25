@@ -14,7 +14,7 @@ import usr.common.LocalHostInfo;
  */
 public class LocalControllerManagementConsole extends ManagementConsole implements Runnable {
 
-    private LocalController localController_;
+    public LocalController localController_;
     
     public LocalControllerManagementConsole(LocalController lc, int port) {
        

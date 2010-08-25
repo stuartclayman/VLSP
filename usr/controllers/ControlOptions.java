@@ -10,7 +10,7 @@ import java.util.Iterator;
 class ControlOptions {
     private ArrayList<LocalHostInfo> localControllers_;
     private int globalControlPort_;
-    private int simulationLength_= 10000;
+    private int simulationLength_= 20000;
     private String remoteLoginCommand_= null;
     private String remoteStartController_= null;
     private String remoteLoginFlags_ = null;
@@ -23,7 +23,7 @@ class ControlOptions {
     public void init () {
       
       localControllers_= new ArrayList<LocalHostInfo>();
-      startLocalControllers_= false;
+      startLocalControllers_= true;
       // Temporary bodge for testing TODO Fix.
       globalControlPort_= 8888;
       remoteLoginCommand_ = "/usr/bin/ssh";

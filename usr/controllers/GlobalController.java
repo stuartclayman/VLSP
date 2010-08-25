@@ -46,6 +46,8 @@ public class GlobalController {
       gControl.xmlFile_= args[0];
       gControl.init();
       gControl.simulate();
+      System.out.println("Simulation complete");
+      System.out.flush();
       gControl.shutDown();
     }
 
@@ -127,8 +129,8 @@ public class GlobalController {
 //           System.out.println("Checking for messages from "+j);
             try {
                 if (m.ready()) {
-                    System.out.println("Remote "+childNames_.get(i) + 
-                      ":"+ m.readLine());
+                    System.out.println("Remote stdout: "+childNames_.get(i) + 
+                      ": "+ m.readLine());
                     return true;
                 }    
                 
@@ -142,8 +144,8 @@ public class GlobalController {
 //           System.out.println("Checking for messages from "+j);
             try {
                 if (m.ready()) {
-                    System.out.println("Remote error: "+childNames_.get(i) + 
-                      ":"+ m.readLine());
+                    System.out.println("Remote stderr: "+childNames_.get(i) + 
+                      ": "+ m.readLine());
                     return true;
                 }    
                 
@@ -168,7 +170,7 @@ public class GlobalController {
             console_.stop();
         }
         System.out.println("All stopped, shut down now!");
-        
+
         
     }
     
@@ -320,6 +322,7 @@ public class GlobalController {
               System.exit(-1);           
           }
       }
+      System.out.println("Stop messages sent to all controllers");
     }
 
    

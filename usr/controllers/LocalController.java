@@ -59,6 +59,7 @@ public class LocalController {
     public void shutDown() {
 
         System.out.println("Got shutdown");
+        console_.stop();
         System.exit(-1);
     }
     
