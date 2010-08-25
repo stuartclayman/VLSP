@@ -167,10 +167,10 @@ public class GlobalController {
         if (!options_.isSimulation()) {
             killAllControllers();
             while (checkMessages()) {};
-            console_.stop();
+           // console_.stop();
         }
         System.out.println("All stopped, shut down now!");
-
+        System.exit(-1);
         
     }
     
