@@ -146,7 +146,7 @@ public abstract class ManagementConsole implements Runnable {
      * Stop the listener.
      */
     public boolean stop() {
-         try {
+        try {
             running = false;
             myThread.interrupt();
 
@@ -227,6 +227,8 @@ public abstract class ManagementConsole implements Runnable {
                 ioe.printStackTrace();
             }
         }
+
+        
     }
 
     /**

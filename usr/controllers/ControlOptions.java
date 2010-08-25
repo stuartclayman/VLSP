@@ -6,10 +6,19 @@ package usr.controllers;
 import usr.common.LocalHostInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.io.File;
+import org.w3c.dom.Document;
+import org.w3c.dom.*;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException; 
+
 
 class ControlOptions {
     private ArrayList<LocalHostInfo> localControllers_;
-    private int globalControlPort_;
+    private int globalControlPort_ = 8888;
     private int simulationLength_= 20000;
     private String remoteLoginCommand_= null;
     private String remoteStartController_= null;
@@ -17,6 +26,7 @@ class ControlOptions {
     private String remoteLoginUser_= null;
     private boolean startLocalControllers_= true;
     private boolean isSimulation_= false;
+    private int controllerWaitTime_= 600;
 
 
     /** init function sets up basic information */
@@ -24,19 +34,13 @@ class ControlOptions {
       
       localControllers_= new ArrayList<LocalHostInfo>();
       startLocalControllers_= true;
-      // Temporary bodge for testing TODO Fix.
       globalControlPort_= 8888;
       remoteLoginCommand_ = "/usr/bin/ssh";
       remoteLoginFlags_ = "-n";
       remoteLoginUser_="richard";
       remoteStartController_ = 
         "java -cp /home/richard/code/userspacerouter usr.controllers.LocalController";
-      LocalHostInfo tmp= new LocalHostInfo(4000);
-      addNewHost(tmp);
-      for (int i= 4001; i < 4003;i++) {
-          tmp= new LocalHostInfo(i);
-          addNewHost(tmp);
-      }
+
 
     }
     
@@ -49,9 +53,138 @@ class ControlOptions {
     /** Read control options from XML file 
     */
     public ControlOptions (String fName) {
-      System.out.println("To write function to read "+fName);
       init();
+      try { DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+            Document doc = docBuilder.parse (new File(fName));
+
+            // normalize text representation
+            doc.getDocumentElement ().normalize ();
+            String basenode= doc.getDocumentElement().getNodeName();
+            if (!basenode.equals("SimOptions")) {
+                throw new SAXException("Base tag should be SimOptions");
+            }
+            NodeList lcs= doc.getElementsByTagName("LocalController");
+            processLocalControllers(lcs);
+            NodeList gcs= doc.getElementsByTagName("GlobalController");
+            processGlobalController(gcs);
+
+      } catch (java.io.FileNotFoundException e) {
+          System.err.println("Cannot find file "+fName);
+          System.exit(-1);
+      }catch (SAXParseException err) {
+          System.err.println ("** Parsing error" + ", line " 
+             + err.getLineNumber () + ", uri " + err.getSystemId ());
+          System.err.println(" " + err.getMessage ());
+          System.exit(-1);
+
+      }catch (SAXException e) {
+          System.err.println("Exception in SAX XML parser.");
+          System.err.println(e.getMessage());
+          System.exit(-1);
+          
+      }catch (Throwable t) {
+          t.printStackTrace ();
+          System.exit(-1);
+      }
+      
      
+    }
+    
+    
+    /** Process tags for global controller
+    */
+    
+    private void processGlobalController(NodeList gc) throws SAXException {
+        if (gc.getLength() > 1) {
+            throw new SAXException ("Only one GlobalController tag allowed.");
+        }
+        if (gc.getLength() == 0) 
+            return;
+        Node gcn= gc.item(0);
+        try {
+           globalControlPort_= parseSingleInt(gcn, "Port","GlobalController",true);
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+           startLocalControllers_= parseSingleBool(gcn, "StartLocalControllers", "GlobalController",true);
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+    }
+    /**
+        Process tags which specify local controllers
+    */
+    private void processLocalControllers(NodeList lcs) throws SAXException {
+        
+        String hostName;
+        int port;
+        for (int i= 0; i < lcs.getLength(); i++) {
+            Node lc= lcs.item(i);
+            try {
+                hostName= parseSingleText(lc, "Name", "LocalController",false);
+                port= parseSingleInt(lc, "Port","LocalController",false);
+                LocalHostInfo lh= new LocalHostInfo(hostName, port);
+                localControllers_.add(lh);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+        }
+
+    }
+    
+    // Parse tags to get boolean
+    private boolean parseSingleBool(Node node, String tag, String parent, boolean optional) 
+        throws SAXException, XMLNoTagException
+    { 
+        String str= parseSingleText(node,tag,parent,optional);
+        if (str.equals("true"))
+          return true;
+        if (str.equals("false"))
+          return false;
+        throw new SAXException ("Tag "+tag+" parent "+parent+" is not boolean "+str);
+    }
+    
+    // Parse tags to get int
+    private int parseSingleInt(Node node, String tag, String parent, boolean optional) 
+        throws SAXException, XMLNoTagException
+    { 
+        String str= parseSingleText(node,tag,parent,optional);
+        int i= Integer.parseInt(str);
+        return i;
+    }
+    
+    // Parse tags to get text
+    private String parseSingleText(Node node, String tag, String parent, 
+        boolean optional) 
+        throws SAXException, XMLNoTagException
+    {
+    
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            throw new SAXException("Expecting node element with tag "+tag);
+        }
+        Element el = (Element)node;
+        NodeList hNameList = el.getElementsByTagName(tag);
+        if (hNameList.getLength() !=1 && optional == false) {
+            throw new SAXException(parent+" element requires exactly one tag "+
+              tag);
+        }
+        if (hNameList.getLength() > 1 ) {
+            throw new SAXException(parent + " element can only have one tag "+
+              tag);
+        }
+        if (hNameList.getLength() == 0) {
+            throw new XMLNoTagException();
+        }
+        Element hElement = (Element)hNameList.item(0);
+        NodeList textFNList = hElement.getChildNodes();
+        return ((Node)textFNList.item(0)).getNodeValue().trim();
     }
     
     /** Return string to launch local controller on remote
@@ -105,7 +238,11 @@ class ControlOptions {
     */
     public int getGlobalPort() {
       return globalControlPort_;
-    }   
+    }  
+    
+    public int getControllerWaitTime() {
+        return controllerWaitTime_;
+    } 
    
     /** Return length of simulation
     */

@@ -58,20 +58,24 @@ public class LocalController {
     /** Received shut Down data gram from global */
     public void shutDown() {
 
-        System.out.println("Got shutdown");
+        System.out.println("Local controller got shutdown message from global controller.");
         console_.stop();
         System.exit(-1);
+    }
+    
+    public LocalHostInfo getHostInfo() {
+        return hostInfo_;
     }
     
     /** Received alive message from global 
     */
     public void aliveMessage(LocalHostInfo gc) {
         globalController_= gc;
-        System.out.println("Got keep alive");
+        System.out.println("Got alive message from global controller.");
         try {
             System.out.println("Sending to "+gc.getName()+":"+gc.getPort());
             lcInteractor_= new LocalControllerInteractor(gc);
-            lcInteractor_.respondToGlobalController(gc);
+            lcInteractor_.respondToGlobalController(hostInfo_);
         } catch (java.net.UnknownHostException e) {
             System.err.println("Cannot contact global controller");
             System.err.println(e.getMessage());

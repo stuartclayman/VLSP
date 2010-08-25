@@ -252,8 +252,7 @@ public class GlobalController {
     public void aliveMessage(LocalHostInfo lh)
     {   
         aliveCount+= 1;
-        System.out.println("Got alive from "+lh.getName()+":"+lh.getPort());
-        System.out.println("Now alive "+aliveCount);
+        System.out.println("Received alive count from "+lh.getName()+":"+lh.getPort());
     }
     
     public synchronized void waitUntil(long time){
@@ -276,7 +275,7 @@ public class GlobalController {
 
     /** Check all controllers listed are functioning
     */
-    private void checkAllControllers() {
+    private synchronized void checkAllControllers() {
         localControllers_= new ArrayList<GlobalControllerInteractor>();
         GlobalControllerInteractor inter= null;
         for (int i= 0; i < noControllers_;i++) {
@@ -300,6 +299,23 @@ public class GlobalController {
            
            }
         }
+        // Wait to see if we have all controllers.
+        for (int i= 0; i < options_.getControllerWaitTime(); i++) {
+            while (checkMessages()) {};
+            if (aliveCount == noControllers_) {
+               System.out.println("All controllers responded with alive message.");
+               return;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch(InterruptedException e){
+                
+            }
+            
+        }
+        System.err.println("Only "+aliveCount+" from "+noControllers_+
+           " local Controllers responded.");
+        System.exit(-1);
     }
     
     /** Send shutdown message to all controllers

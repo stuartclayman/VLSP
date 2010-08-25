@@ -1,0 +1,18 @@
+<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <StartLocalControllers>true</StartLocalControllers>
+  </GlobalController>
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10000</Port>
+  </LocalController>
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10001</Port>
+  </LocalController>
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10002</Port>
+  </LocalController>
+</SimOptions>
