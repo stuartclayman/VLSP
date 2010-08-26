@@ -14,5 +14,6 @@
   <LocalController>
      <Name>localhost</Name>
      <Port>10002</Port>
+     <RemoteLoginUser>dave</RemoteLoginUser>
   </LocalController>
 </SimOptions>

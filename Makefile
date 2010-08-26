@@ -31,6 +31,9 @@ JC = javac
 	$(JC) $(JFLAGS) $*.java 
 CLASSES = \
   usr/common/LocalHostInfo.java \
+  usr/common/ProbDistribution.java \
+  usr/common/ProbElement.java \
+  usr/common/ProbException.java \
   usr/controllers/EventScheduler.java \
   usr/controllers/GlobalController.java \
   usr/controllers/GlobalControllerManagementConsole.java \
@@ -54,6 +57,7 @@ CLASSES = \
   usr/test/RouterTest1.java \
   usr/test/StubServer.java \
   usr/test/StubClient.java \
+  usr/test/VariateTest.java \
   usr/router/command/QuitCommand.java \
   usr/router/command/AbstractCommand.java \
   usr/router/command/GetNameCommand.java \

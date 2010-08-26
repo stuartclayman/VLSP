@@ -333,6 +333,8 @@ public class GlobalController {
     /** Send shutdown message to all controllers
     */
     private void killAllControllers() {
+      if (localControllers_ == null) 
+          return;
       System.out.println("Stopping all controllers");
       GlobalControllerInteractor inter;
       for (int i= 0; i < noControllers_; i++) {
@@ -341,19 +343,19 @@ public class GlobalController {
               inter.shutDown();
           } catch (java.io.IOException e) {
               System.err.println ("Cannot send shut down to local Controller");
-              System.err.println (e.getMessage());
-              System.exit(-1);   
+              System.err.println (e.getMessage()); 
           } catch (usr.interactor.MCRPException e) {
               System.err.println ("Cannot send shut down to local Controller");
-              System.err.println (e.getMessage());
-              System.exit(-1);           
+              System.err.println (e.getMessage());          
           }
       }
       System.out.println("Stop messages sent to all controllers");
     }
 
+    protected void finalize() {
+        killAllControllers();
    
-   
+    }
    
 }
 
