@@ -1,0 +1,68 @@
+<project name="UserSpaceRouting" default="usage" basedir=".">
+
+  <!-- Initializations -->
+  <target name="init">    
+    <echo message="------------ Building User Space Routing ----------"/>
+    <echo message=""/>
+    <property name="sources" value="${basedir}"/>
+    <property name="classes" value="${basedir}/classes"/>
+    <property name="external.jars" value="" />
+    <property name="api" value="${basedir}/docs"/>    
+    <property name="year" value="2010"/>
+    <property name="jars" value="${basedir}"/>
+    <property name="release" value="0.1.0" />
+  </target>
+
+  <!-- Build -->
+  <target name="build" depends="init">
+    <echo message="------ Compiling application"/>
+    <mkdir dir="${classes}"/>
+    <javac srcdir="${sources}" classpath="${external.jars}" target="1.5" >
+	   <!-- destdir="${classes}" -->
+    <include name="usr/**" />
+    </javac>
+
+  </target>
+
+  <!-- Archive -->
+  <target name="dist" depends="build">
+    <echo message="------ Building Jar file"/>
+    <jar jarfile="${jars}/user-space-routing-${release}.jar" basedir="${basedir}" includes="eu/**" excludes="**/*.java" />
+      <!-- basedir="${classes}" -->
+    <jar jarfile="${jars}/user-space-routing-src-${release}.jar" basedir="${basedir}" includes="usr/**" excludes="**/*.class" />
+  </target>
+
+  <!-- JavaDoc -->
+  <target name="javadoc" depends="build">
+     <echo message="------ Running JavaDoc"/>
+     <javadoc packagenames="usr.*"
+              sourcepath="${sources}"
+              destdir="${api}"
+	      classpath="${external.jars}"
+	      excludepackagenames="usr.test"
+              bottom="User Space Routing ${release}"
+              author="false">
+      <classpath>
+        <pathelement location="${classes}"/>
+      </classpath>
+     </javadoc>
+  </target>
+
+  <!-- ALL -->
+  <target name="all" depends="dist, javadoc">
+  </target>
+
+  <!-- Usage -->
+  <target name="usage">
+     <echo message="*** User Space Routing ANT build script ***"/>
+     <echo message="Usage : "/>
+     <echo message="   ant [target]"/>
+     <echo message=""/>     
+     <echo message="   target : "/>     
+     <echo message="            build : Build Application"/>     
+     <echo message="            dist  : Build Application + Archive (JAR)"/>     
+     <echo message="            javadoc  : Build Application + Javadoc"/>     
+     <echo message="            all   : Build Application + Archive + JavaDoc"/>       
+  </target>
+       
+</project>
