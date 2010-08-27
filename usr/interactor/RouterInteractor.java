@@ -1,12 +1,12 @@
 package usr.interactor;
 
-import usr.console.MCRP;
+import usr.protocol.MCRP;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.*;
 import java.util.List;
-import java.util.ArrayList;    /* Calls for ManagementConsole */
+import java.util.ArrayList;
 
 class RouterInteractor extends MCRPInteractor
 {
@@ -29,6 +29,8 @@ class RouterInteractor extends MCRPInteractor
     public RouterInteractor(InetAddress addr, int port) throws UnknownHostException, IOException  {
 	initialize(addr, port);
     }
+
+    /* Calls for Router ManagementConsole */
 
     /**
      * Quit talking to the router

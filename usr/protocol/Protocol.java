@@ -1,4 +1,4 @@
-package usr.console;
+package usr.protocol;
 
 /**
  * Marker for a protocol.

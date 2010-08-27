@@ -1,6 +1,6 @@
 package usr.localcontroller.command;
 
-import usr.console.MCRP;
+import usr.protocol.MCRP;
 import usr.router.RouterManagementConsole;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;

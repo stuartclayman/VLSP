@@ -1,6 +1,6 @@
 package usr.router.command;
 
-import usr.console.MCRP;
+import usr.protocol.MCRP;
 import usr.console.Request;
 import usr.router.RouterManagementConsole;
 import java.io.IOException;

@@ -1,7 +1,7 @@
 package usr.globalcontroller.command;
 
+import usr.protocol.MCRP;
 import usr.globalcontroller.*;
-import usr.console.MCRP;
 import java.nio.channels.SocketChannel;
 import usr.common.LocalHostInfo;
 

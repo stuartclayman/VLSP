@@ -1,6 +1,6 @@
 package usr.router.command;
 
-import usr.console.MCRP;
+import usr.protocol.MCRP;
 import usr.router.RouterManagementConsole;
 import usr.router.RouterPort;
 import usr.router.NetIF;

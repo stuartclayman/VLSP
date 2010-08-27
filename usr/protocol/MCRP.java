@@ -1,4 +1,4 @@
-package usr.console;
+package usr.protocol;
 
 /**
  * Request strings and response codes for the MCRP protocol.
