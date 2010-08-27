@@ -8,6 +8,7 @@ import usr.common.LocalHostInfo;
 
 public class LocalControllerInfo extends LocalHostInfo {
     private int maxRouters_= 100;
+    private int currRouters_= 0;
     private String remoteLoginUser_ = null;
     private String remoteStartController_ = null;
     
@@ -28,6 +29,19 @@ public class LocalControllerInfo extends LocalHostInfo {
     
     public int getMaxRouters() {
        return maxRouters_;
+    }
+    
+    public void addRouter() {
+        currRouters_++;
+    }
+    
+    public void delRouter() {
+        currRouters_--;
+    }
+    
+    public double getUsage() {
+        double usage= currRouters_/maxRouters_;
+        return usage;
     }
     
     public void setMaxRouters(int maxR) {

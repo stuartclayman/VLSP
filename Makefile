@@ -34,10 +34,12 @@ CLASSES = \
   usr/common/ProbDistribution.java \
   usr/common/ProbElement.java \
   usr/common/ProbException.java \
+  usr/common/Pair.java \
   usr/controllers/EventScheduler.java \
   usr/controllers/GlobalController.java \
   usr/controllers/GlobalControllerManagementConsole.java \
   usr/controllers/SimEvent.java \
+  usr/controllers/BasicRouterInfo.java \
   usr/controllers/ControlOptions.java \
   usr/controllers/LocalController.java \
   usr/controllers/LocalControllerManagementConsole.java \
@@ -46,6 +48,7 @@ CLASSES = \
   usr/controllers/localcommand/AbstractCommand.java \
   usr/controllers/localcommand/LocalCheckCommand.java \
   usr/controllers/localcommand/ShutDownCommand.java \
+  usr/controllers/localcommand/NewRouterCommand.java \
   usr/controllers/localcommand/LocalCommand.java \
   usr/controllers/globalcommand/QuitCommand.java \
   usr/controllers/globalcommand/AbstractCommand.java \

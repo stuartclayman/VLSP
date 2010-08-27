@@ -102,6 +102,15 @@ public class MCRP {
        public final static int ERROR = 406;
     }
 
+    /** Local controller starts router */
+    
+    public final static class NEW_ROUTER {
+        public final static String CMD = "NEW_ROUTER";
+        public final static int CODE= 209;
+        public final static int ERROR= 407;
+    }
+   
+
     /**
      * Create a new router-to-router data connection to another router.
      */
@@ -110,8 +119,7 @@ public class MCRP {
         public final static int CODE = 299;
         public final static int ERROR = 401;
     }
-    
-   
+
     /**
      * The standard error code.
      */

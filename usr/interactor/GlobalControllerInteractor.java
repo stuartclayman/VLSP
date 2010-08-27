@@ -35,6 +35,13 @@ public class GlobalControllerInteractor extends MCRPInteractor
 	     return this;
     }
 
+    public MCRPInteractor newRouter(int routerId) throws IOException, MCRPException  {
+        String toSend = MCRP.NEW_ROUTER.CMD+" "+routerId;
+        interact(toSend);
+        expect(MCRP.NEW_ROUTER.CODE);
+        return this;
+    }
+
     public MCRPInteractor checkLocalController(String host, int port) throws IOException, MCRPException {
         String toSend = MCRP.CHECK_LOCAL_CONTROLLER.CMD + 
             " " + host + " " + port;

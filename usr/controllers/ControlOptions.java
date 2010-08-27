@@ -47,6 +47,7 @@ class ControlOptions {
       localControllers_.add(host);
     }
 
+
     /** Read control options from XML file 
     */
     public ControlOptions (String fName) {

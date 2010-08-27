@@ -12,17 +12,21 @@ import java.lang.*;
 import java.util.*;
 import java.net.*;
 import usr.interactor.*;
+import usr.router.*;
 
 import usr.common.LocalHostInfo;
 
 public class LocalController {
-    private LocalHostInfo hostInfo_;
+    private LocalControllerInfo hostInfo_;
     private LocalHostInfo globalController_;
     private Thread listenThread_;
     private LocalControllerInteractor lcInteractor_= null;
     private LocalControllerManagementConsole console_= null;
     private boolean listening_ = true;
-
+    private int maxPort_= 20000;  // Ports in use
+    private ArrayList <BasicRouterInfo> routers_= null;
+    private ArrayList <Router> routerList_= null;
+    
     public static void main(String[] args) {
         
         LocalController self_;
@@ -33,6 +37,7 @@ public class LocalController {
             System.exit(-1);
         }
         int port= 0;
+        
         try {
           port= Integer.parseInt(args[0]);
           if (port < 0) 
@@ -50,7 +55,9 @@ public class LocalController {
     
     /** Constructor for local controller starting on port */
     public LocalController (int port) {
-        hostInfo_= new LocalHostInfo(port);
+        hostInfo_= new LocalControllerInfo(port);
+        routers_= new ArrayList<BasicRouterInfo>();
+        routerList_= new ArrayList<Router>();
         console_= new LocalControllerManagementConsole(this, port);
         console_.start();
     }
@@ -59,11 +66,16 @@ public class LocalController {
     public void shutDown() {
 
         System.out.println("Local controller got shutdown message from global controller.");
+        System.out.println("Stopping all running routers"); // TODO send proper shut down
+        for (int i= 0; i < routers_.size(); i++) {
+            Router r= routerList_.get(i);
+            r.stop();
+        }
         console_.stop();
         System.exit(-1);
     }
     
-    public LocalHostInfo getHostInfo() {
+    public LocalControllerInfo getHostInfo() {
         return hostInfo_;
     }
     
@@ -92,7 +104,21 @@ public class LocalController {
        
     }
     
+    /** Received start new router command
+    */
     
+    public boolean requestNewRouter (int routerId) 
+    
+    {
+        System.out.println("Starting Router on port "+maxPort_);
+        Router router= new Router(maxPort_);
+        router.start();
+        routerList_.add(router);
+        BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,maxPort_);
+        routers_.add(br);
+        maxPort_+=2;
+        return true;
+    }    
     
     
     

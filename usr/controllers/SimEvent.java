@@ -7,6 +7,10 @@ class SimEvent {
     
     public static final int EVENT_END_SIMULATION= 1;
     public static final int EVENT_START_SIMULATION= 2;
+    public static final int EVENT_START_ROUTER= 3;
+    public static final int EVENT_END_ROUTER= 4;
+    public static final int EVENT_START_LINK= 5;
+    public static final int EVENT_END_LINK= 6;
     
     public SimEvent(int type, long time, Object data) 
     {

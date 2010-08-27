@@ -31,6 +31,7 @@ public class LocalControllerManagementConsole extends ManagementConsole implemen
         register(new LocalCheckCommand());
         register(new ShutDownCommand());
         register(new QuitCommand());
+        register(new NewRouterCommand());
     }
     
     void register(LocalCommand command) {
@@ -39,6 +40,11 @@ public class LocalControllerManagementConsole extends ManagementConsole implemen
         command.setManagementConsole(this);
 
         commandMap.put(commandName, command);
+    }
+    
+    public boolean requestNewRouter(int rId)
+    {
+        return localController_.requestNewRouter(rId);
     }
 
     public void contactFromGlobal(LocalHostInfo gc) {

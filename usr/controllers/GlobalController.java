@@ -7,7 +7,7 @@ import java.lang.*;
 import java.util.*;
 import java.io.*;
 import java.net.*;
-import usr.common.LocalHostInfo;
+import usr.common.*;
 import java.util.concurrent.*;
 
 /**
@@ -27,9 +27,12 @@ public class GlobalController {
     private ArrayList <BufferedReader> childOutput_= null;
     private ArrayList <BufferedReader> childError_= null;
     private ArrayList <String> childNames_= null;
+    private HashMap <LocalControllerInfo,GlobalControllerInteractor>
+      interactorMap_= null;
     private int aliveCount= 0;
     private EventScheduler scheduler_= null;
     private boolean simulationRunning_= true;
+    private int maxRouterId_=0;
 
     private Thread ProcessOutputThread_;
     private int noControllers_= 0;
@@ -49,7 +52,6 @@ public class GlobalController {
       gControl.simulate();
       System.out.println("Simulation complete");
       System.out.flush();
-      gControl.shutDown();
     }
 
     public GlobalController () {
@@ -172,10 +174,132 @@ public class GlobalController {
 
     
     private void executeEvent(SimEvent e) {
-        System.out.println("Event at "+e.getTime());
+        int type= e.getType();
+        try {
+            if (type == SimEvent.EVENT_START_SIMULATION) {
+                startSimulation();
+                return;
+            }
+            if (type == SimEvent.EVENT_END_SIMULATION) {
+                endSimulation();
+                return;
+            }
+            if (type == SimEvent.EVENT_START_ROUTER) {
+                
+                startRouter();
+                return;
+            }
+            if (type == SimEvent.EVENT_END_ROUTER) {
+                int routerNo= (Integer)e.getData();
+                endRouter(routerNo);
+                return;
+            }
+            if (type == SimEvent.EVENT_START_LINK) {
+                int router1= 0, router2= 0;
+                Pair<?,?> pair= (Pair<?,?>)e.getData();
+                router1= (Integer)pair.getFirst();
+                router2= (Integer)pair.getSecond();
+                endLink(router1, router2);
+                
+                return;
+            }
+            if (type == SimEvent.EVENT_END_LINK) {
+                int router1= 0, router2= 0;
+                Pair<?,?> pair= (Pair<?,?>)e.getData();
+                router1= (Integer)pair.getFirst();
+                router2= (Integer)pair.getSecond();
+                endLink(router1, router2);
+                return;
+            }
+            System.err.println("Unexected event type "+type+" shutting down!");
+            shutDown();
+        } catch (ClassCastException ex) {
+            System.err.println("Event "+type+" had wrong object");
+            shutDown();
+        }
     }
     
+    /** Event for start Simulation */
+    private void startSimulation() {
+    
+    }
+    
+    /** Event for end Simulation */
+    private void endSimulation() {
+        simulationRunning_= false;
+        shutDown();
+    }
+    
+    /** Event to start a router */
+    private void startRouter() {
+        if (options_.isSimulation()) {
+            System.err.println("TODO write simulated router code");
+        } else {
+            startVirtualRouter();
+        }
+    }
+    
+    private void bailOut() {
+        System.err.println("Bailing out of simulation!");
+        shutDown();
+        System.exit(-1);
+    }
+    
+    private void startVirtualRouter() 
+    {
+        // Find least used local controller
+
+        LocalControllerInfo lc;
+        LocalControllerInfo leastUsed= options_.getController(0);
+        double minUse= leastUsed.getUsage();
+        double thisUsage;
+        for (int i= 1; i < noControllers_; i++) {
+            lc= options_.getController(i);
+            thisUsage= lc.getUsage();
+//            System.out.println(i+" Usage "+thisUsage);
+            if (thisUsage == 0.0) {
+               leastUsed= lc;
+               break;
+            }
+            if (thisUsage < minUse) {
+                minUse= thisUsage;
+                leastUsed= lc;
+            }
+        }
+        GlobalControllerInteractor gci= interactorMap_.get(leastUsed);
+        maxRouterId_++;
+        try {
+            gci.newRouter(maxRouterId_);
+        } catch (IOException e) {
+            System.err.println("Could not start new router");
+            System.err.println(e.getMessage());
+            bailOut();
+        } catch (MCRPException e) {
+            System.err.println("Could not start new router");
+            System.err.println(e.getMessage());
+            bailOut();
+        }
+        
+    }
+    
+    /** Event to end a router */
+    private void endRouter(int routerId) {
+    
+    }
+    
+    /** Event to link two routers */
+    private void startLink(int router1Id, int router2Id) {
+    
+    }
+    
+    /** Event to unlink two routers */
+    private void endLink (int router1Id, int router2Id) {
+    
+    }
+    
+    
     private void shutDown() {
+        System.err.println ("SHUTDOWN CALLED!");
         if (!options_.isSimulation()) {
             killAllControllers();
             while (checkMessages()) {};
@@ -194,7 +318,10 @@ public class GlobalController {
         }
         scheduler_= new EventScheduler();
         SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION,time,null);
+        SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER,
+            EventScheduler.afterPause(options_.getSimulationLength())/2,null);
         scheduler_.addEvent(e);
+        scheduler_.addEvent(e2);
     }
     
     /** Initialisation steps for when we are using virtual routers
@@ -285,13 +412,15 @@ public class GlobalController {
      }
      
 
-    /** Check all controllers listed are functioning
+    /** Check all controllers listed are functioning and
+    creates interactors
     */
     private synchronized void checkAllControllers() {
         localControllers_= new ArrayList<GlobalControllerInteractor>();
+        interactorMap_= new HashMap<LocalControllerInfo,GlobalControllerInteractor>();
         GlobalControllerInteractor inter= null;
         for (int i= 0; i < noControllers_;i++) {
-           LocalHostInfo lh= options_.getController(i);
+           LocalControllerInfo lh= options_.getController(i);
            
            try {
               inter= new GlobalControllerInteractor(lh);
@@ -303,6 +432,7 @@ public class GlobalController {
            }
            
            localControllers_.add(inter);
+           interactorMap_.put(lh,inter);
            try {
              inter.checkLocalController(myHostInfo_);
            } catch (java.io.IOException e) {
@@ -311,6 +441,7 @@ public class GlobalController {
            
            }
         }
+        
         // Wait to see if we have all controllers.
         for (int i= 0; i < options_.getControllerWaitTime(); i++) {
             while (checkMessages()) {};
