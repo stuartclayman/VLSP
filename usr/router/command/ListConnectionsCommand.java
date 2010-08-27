@@ -11,7 +11,7 @@ import java.nio.channels.SocketChannel;
 /**
  * The LIST_CONNECTIONS command.
  */
-public class ListConnectionsCommand extends AbstractCommand {
+public class ListConnectionsCommand extends RouterCommand {
     /**
      * Construct a ListConnectionsCommand.
      */

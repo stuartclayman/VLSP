@@ -44,10 +44,6 @@ public interface Command {
     /**
      * Set the ManagementConsole this is a command for.
      */
-  //  public void setManagementConsole(ManagementConsole mc) 
-  //  {
-  //  
-  //  }
-//   public abstract <T extends ManagementConsole> void setManagementConsole(T mc);
+    public void setManagementConsole(ManagementConsole mc);
 
 }

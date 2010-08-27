@@ -8,7 +8,7 @@ import usr.common.LocalHostInfo;
 /**
  * The QUIT command.
  */
-public class LocalCheckCommand extends AbstractCommand {
+public class LocalCheckCommand extends LocalCommand {
     /**
      * Construct a QuitCommand.
      */

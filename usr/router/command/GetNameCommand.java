@@ -8,7 +8,7 @@ import java.nio.channels.SocketChannel;
 /**
  * The GET_NAME command.
  */
-public class GetNameCommand extends AbstractCommand {
+public class GetNameCommand extends RouterCommand {
     /**
      * Construct a GetNameCommand.
      */

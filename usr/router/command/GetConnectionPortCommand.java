@@ -8,7 +8,7 @@ import java.nio.channels.SocketChannel;
 /**
  * The GET_CONNECTION_PORT command.
  */
-public class GetConnectionPortCommand extends AbstractCommand {
+public class GetConnectionPortCommand extends RouterCommand {
     /**
      * Construct a GetConnectionPortCommand
      */

@@ -15,7 +15,7 @@ import java.net.UnknownHostException;
  * SET_ADDRESS port type address
  * SET_ADDRESS port0 IPV4 192.168.1.53
  */
-public class SetAddressCommand extends AbstractCommand {
+public class SetAddressCommand extends RouterCommand {
     /**
      * Construct a SetAddressCommand.
      */

@@ -16,7 +16,7 @@ import java.nio.*;
  * INCOMING_CONNECTION connectionID routerName weight port
  * INCOMING_CONNECTION /Router-Router283836798/Connection-1 Router283836798 20 57352
  */
-public class IncomingConnectionCommand extends AbstractCommand {
+public class IncomingConnectionCommand extends RouterCommand {
     /**
      * Construct a IncomingConnectionCommand
      */

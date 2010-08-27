@@ -21,7 +21,7 @@ import java.nio.channels.SocketChannel;
  * any other RouterController, so that many can exist on
  * the same host.
  */
-public class RouterController implements Runnable {
+public class RouterController implements ComponentController, Runnable {
     // The Router this is a Controller for
     Router router;
 
@@ -122,6 +122,13 @@ public class RouterController implements Runnable {
      */
     public int getConnectionPort() {
         return newConnectionPort;
+    }
+
+    /**
+     * Get the ManagementConsole.
+     */
+    public ManagementConsole getManagementConsole() {
+        return management;
     }
 
     /**

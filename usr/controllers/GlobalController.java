@@ -15,7 +15,7 @@ import java.util.concurrent.*;
  * contacts local controllers to set up virtual routers and then
  * gives set up and tear down instructions directly to them.
  */
-public class GlobalController {
+public class GlobalController implements ComponentController {
     private long simulationTime;
     private String xmlFile_;
     private LocalHostInfo myHostInfo_;
@@ -388,6 +388,13 @@ public class GlobalController {
         }
     }
     
+    /**
+     * Get the ManagementConsole this ComponentController interacts with.
+     */
+    public ManagementConsole getManagementConsole() {
+        return console_;
+    }
+
     public void aliveMessage(LocalHostInfo lh)
     {   
         aliveCount+= 1;

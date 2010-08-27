@@ -7,7 +7,7 @@ import java.nio.channels.SocketChannel;
 /**
  * The command to execute if the incoming command is unknown.
  */
-public class UnknownCommand extends AbstractCommand {
+public class UnknownCommand extends GlobalCommand {
     /**
      * Construct a UnknownCommand
      */

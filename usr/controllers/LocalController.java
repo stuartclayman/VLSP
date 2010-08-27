@@ -16,7 +16,7 @@ import usr.router.*;
 
 import usr.common.LocalHostInfo;
 
-public class LocalController {
+public class LocalController implements ComponentController {
     private LocalControllerInfo hostInfo_;
     private LocalHostInfo globalController_;
     private Thread listenThread_;
@@ -118,7 +118,17 @@ public class LocalController {
         routers_.add(br);
         maxPort_+=2;
         return true;
-    }    
+    }
+
+
+    /**
+     * Get the ManagementConsole this ComponentController interacts with.
+     */
+    public ManagementConsole getManagementConsole() {
+        return console_;
+    }
+
+    
     
     
     

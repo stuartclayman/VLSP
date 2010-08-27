@@ -18,7 +18,7 @@ import java.nio.charset.Charset;
  * <p>
  * It implements the MCRP (Management Console Router Protocol).
  */
-public class RouterManagementConsole extends ManagementConsole implements Runnable {
+public class RouterManagementConsole extends AbstractManagementConsole implements Runnable {
 
     private RouterController _routerController;
     public RouterManagementConsole(RouterController rc, int port) {
@@ -27,7 +27,11 @@ public class RouterManagementConsole extends ManagementConsole implements Runnab
        initialise(port);
     }
 
-    public RouterController getRouterController() {
+    /**
+     * Get the ComponentController this ManagementConsole
+     * interacts with.
+     */
+    public ComponentController getComponentController() {
        return _routerController;
     }
 
@@ -44,12 +48,4 @@ public class RouterManagementConsole extends ManagementConsole implements Runnab
         register(new CreateConnectionCommand());
     }
     
-    void register(RouterCommand command) {
-        String commandName = command.getName();
-
-        command.setManagementConsole(this);
-
-        commandMap.put(commandName, command);
-    }
-
 }

@@ -7,7 +7,7 @@ import java.nio.channels.SocketChannel;
 /**
  * The QUIT command.
  */
-public class NewRouterCommand extends AbstractCommand {
+public class NewRouterCommand extends LocalCommand {
     /**
      * Construct a QuitCommand.
      */

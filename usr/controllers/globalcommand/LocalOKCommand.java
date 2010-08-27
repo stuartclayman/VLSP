@@ -5,7 +5,7 @@ import usr.interactor.*;
 import java.nio.channels.SocketChannel;
 import usr.common.LocalHostInfo;
 
-public class LocalOKCommand extends AbstractCommand {
+public class LocalOKCommand extends GlobalCommand {
     /**
      * Construct a QuitCommand.
      */

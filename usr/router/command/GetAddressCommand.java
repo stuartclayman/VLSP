@@ -14,7 +14,7 @@ import java.net.UnknownHostException;
  * GET_ADDRESS port 
  * GET_ADDRESS port0
  */
-public class GetAddressCommand extends AbstractCommand {
+public class GetAddressCommand extends RouterCommand {
     /**
      * Construct a GetAddressCommand.
      */

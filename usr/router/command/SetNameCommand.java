@@ -10,7 +10,7 @@ import java.nio.channels.SocketChannel;
  * SET_NAME name
  * SET_NAME Router-47
  */
-public class SetNameCommand extends AbstractCommand {
+public class SetNameCommand extends RouterCommand {
     /**
      * Construct a SetNameCommand.
      */

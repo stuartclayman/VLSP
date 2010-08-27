@@ -7,7 +7,7 @@ import java.nio.channels.SocketChannel;
 /**
  * The QUIT command.
  */
-public class ShutDownCommand extends AbstractCommand {
+public class ShutDownCommand extends LocalCommand {
     /**
      * Construct a QuitCommand.
      */

@@ -12,7 +12,7 @@ import usr.common.LocalHostInfo;
  * <p>
  * It implements the MCRP (Management Console Router Protocol).
  */
-public class LocalControllerManagementConsole extends ManagementConsole implements Runnable {
+public class LocalControllerManagementConsole extends AbstractManagementConsole implements Runnable {
 
     public LocalController localController_;
     
@@ -22,7 +22,7 @@ public class LocalControllerManagementConsole extends ManagementConsole implemen
        initialise(port);
     }
 
-    public LocalController getLocalController() {
+    public ComponentController getComponentController() {
        return localController_;
     }
 
@@ -33,15 +33,7 @@ public class LocalControllerManagementConsole extends ManagementConsole implemen
         register(new QuitCommand());
         register(new NewRouterCommand());
     }
-    
-    void register(LocalCommand command) {
-        String commandName = command.getName();
-
-        command.setManagementConsole(this);
-
-        commandMap.put(commandName, command);
-    }
-    
+        
     public boolean requestNewRouter(int rId)
     {
         return localController_.requestNewRouter(rId);

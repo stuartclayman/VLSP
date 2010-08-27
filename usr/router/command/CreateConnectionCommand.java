@@ -9,7 +9,7 @@ import java.nio.channels.SocketChannel;
 /**
  * The CREATE_CONNECTION command.
  */
-public class CreateConnectionCommand extends AbstractCommand {
+public class CreateConnectionCommand extends RouterCommand {
     /**
      * Construct a CreateConnectionCommand.
      * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
