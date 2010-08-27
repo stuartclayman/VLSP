@@ -11,10 +11,10 @@ package usr.controllers;
 import java.lang.*;
 import java.util.*;
 import java.net.*;
-import usr.interactor.*;
+import usr.console.*;
 import usr.router.*;
-
 import usr.common.LocalHostInfo;
+import usr.interactor.LocalControllerInteractor;
 
 public class LocalController implements ComponentController {
     private LocalControllerInfo hostInfo_;

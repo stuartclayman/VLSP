@@ -1,4 +1,4 @@
-package usr.interactor;
+package usr.console;
 
 /**
  * A ComponentController is the controller for a component

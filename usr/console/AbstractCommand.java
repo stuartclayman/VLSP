@@ -1,16 +1,14 @@
-package usr.interactor;
+package usr.console;
 
-import usr.interactor.*;
 import usr.router.RouterManagementConsole;
 import usr.router.RouterController;
-import usr.interactor.ChannelResponder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 /**
- * A Command processes a command handled by the ManagementConsole
- * of a Router.
+ * A Command object processes a command handled by the ManagementConsole
+ * of a ComponentController.
  */
 public abstract class AbstractCommand extends ChannelResponder implements Command {
     // The name of the command

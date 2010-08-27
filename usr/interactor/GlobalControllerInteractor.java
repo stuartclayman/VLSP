@@ -1,5 +1,6 @@
 package usr.interactor;
 
+import usr.console.MCRP;
 import java.net.Socket;
 import usr.common.LocalHostInfo;
 import java.net.InetAddress;

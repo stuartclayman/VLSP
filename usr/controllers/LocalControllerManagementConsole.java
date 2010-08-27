@@ -1,6 +1,6 @@
 package usr.controllers;
 
-import usr.interactor.*;
+import usr.console.*;
 import java.net.*;
 import usr.controllers.localcommand.*;
 import java.nio.channels.SocketChannel;

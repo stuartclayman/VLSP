@@ -1,7 +1,7 @@
 package usr.router;
 
 import java.util.Scanner;
-import usr.interactor.*;
+import usr.console.*;
 import java.io.*;
 import java.net.*;
 import java.nio.channels.SocketChannel;

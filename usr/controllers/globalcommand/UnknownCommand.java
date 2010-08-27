@@ -1,6 +1,6 @@
 package usr.controllers.globalcommand;
 
-import usr.interactor.*;
+import usr.console.MCRP;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 

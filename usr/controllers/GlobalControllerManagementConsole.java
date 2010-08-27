@@ -1,7 +1,7 @@
 package usr.controllers;
 
 
-import usr.interactor.*;
+import usr.console.*;
 import usr.controllers.globalcommand.*;
 import java.util.concurrent.*;
 

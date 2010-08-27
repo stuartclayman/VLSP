@@ -1,9 +1,9 @@
-package usr.interactor;
+package usr.console;
 
 /**
  * Request strings and response codes for the MCRP protocol.
  */
-public class MCRP {
+public class MCRP implements Protocol {
     /**
      * Quit talking to the router
      * Close a connection to the ManagementConsole of the router.

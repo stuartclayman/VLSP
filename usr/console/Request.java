@@ -1,9 +1,9 @@
-package usr.interactor;
+package usr.console;
 
 import java.nio.channels.SocketChannel;
 
 /**
- * A request to a Router.
+ * A request to a Component.
  */
 public class Request {
     public final SocketChannel channel;

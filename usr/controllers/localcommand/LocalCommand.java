@@ -1,7 +1,7 @@
 package usr.controllers.localcommand;
 
 import usr.controllers.*;
-import usr.interactor.*;
+import usr.console.*;
 
 /**
  * A Command processes a command handled by the ManagementConsole

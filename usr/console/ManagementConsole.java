@@ -1,4 +1,4 @@
-package usr.interactor;
+package usr.console;
 
 import usr.net.Address;
 import usr.net.IPV4Address;
@@ -12,9 +12,7 @@ import java.nio.charset.Charset;
 
 /**
  * A ManagementConsole listens for connections
- * for doing router management.
- * <p>
- * It implements the MCRP (Management Console Router Protocol).
+ * for doing component management.
  */
 public interface ManagementConsole extends Runnable {
     /**

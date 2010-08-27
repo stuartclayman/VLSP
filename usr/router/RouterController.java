@@ -1,6 +1,6 @@
 package usr.router;
 
-import usr.interactor.*;
+import usr.console.*;
 import java.util.Scanner;
 import java.util.Queue;
 import java.util.HashMap;

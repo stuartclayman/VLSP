@@ -1,12 +1,12 @@
-package usr.interactor;
+package usr.console;
 
 import usr.controllers.*;
 import usr.router.*;
 import java.nio.channels.SocketChannel;
 
 /**
- * A Command processes a command handled by the ManagementConsole
- * of a Router.
+ * A Command object processes a command handled by the ManagementConsole
+ * of a ComponentController.
  */
 public interface Command {
     /**

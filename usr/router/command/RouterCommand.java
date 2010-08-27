@@ -1,6 +1,6 @@
 package usr.router.command;
 
-import usr.interactor.*;
+import usr.console.*;
 import usr.router.*;
 
 /**

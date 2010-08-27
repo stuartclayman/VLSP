@@ -1,7 +1,7 @@
 package usr.controllers.globalcommand;
 
 import usr.controllers.*;
-import usr.interactor.*;
+import usr.console.*;
 import java.nio.channels.SocketChannel;
 
 /**

@@ -2,13 +2,15 @@
 
 package usr.controllers;
 
-import usr.interactor.*;
+import usr.console.*;
 import java.lang.*;
 import java.util.*;
 import java.io.*;
 import java.net.*;
 import usr.common.*;
 import java.util.concurrent.*;
+import usr.interactor.*;
+
 
 /**
  * The global controller is in overall control of the software.  It
