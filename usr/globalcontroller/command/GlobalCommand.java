@@ -1,8 +1,7 @@
-package usr.controllers.globalcommand;
+package usr.globalcontroller.command;
 
-import usr.controllers.*;
+import usr.globalcontroller.*;
 import usr.console.*;
-import java.nio.channels.SocketChannel;
 
 /**
  * A Command processes a command handled by the ManagementConsole

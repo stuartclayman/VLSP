@@ -1,4 +1,4 @@
-package usr.controllers;
+package usr.globalcontroller;
 
 class SimEvent {
     private int eventType_;

@@ -2,7 +2,9 @@
  * XML file or string to generate them
  * The options specify hosts and controls used in simulation
  */
-package usr.controllers;
+package usr.globalcontroller;
+
+import usr.localcontroller.LocalControllerInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.File;

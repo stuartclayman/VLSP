@@ -1,4 +1,4 @@
-package usr.controllers;
+package usr.localcontroller;
 
 /**
 Class provides simple information that the global and local

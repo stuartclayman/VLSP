@@ -1,8 +1,8 @@
-package usr.controllers;
+package usr.globalcontroller;
 
 
 import usr.console.*;
-import usr.controllers.globalcommand.*;
+import usr.globalcontroller.command.*;
 import java.util.concurrent.*;
 
 /**

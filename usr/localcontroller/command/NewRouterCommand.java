@@ -1,4 +1,4 @@
-package usr.controllers.localcommand;
+package usr.localcontroller.command;
 
 import usr.console.MCRP;
 import java.io.IOException;

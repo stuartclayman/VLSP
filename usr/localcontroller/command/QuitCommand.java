@@ -1,4 +1,4 @@
-package usr.controllers.globalcommand;
+package usr.localcontroller.command;
 
 import usr.console.MCRP;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import java.nio.channels.SocketChannel;
 /**
  * The QUIT command.
  */
-public class QuitCommand extends GlobalCommand {
+public class QuitCommand extends LocalCommand {
     /**
      * Construct a QuitCommand.
      */

@@ -1,14 +1,14 @@
-package usr.controllers;
+package usr.localcontroller;
 
 import usr.console.*;
 import java.net.*;
-import usr.controllers.localcommand.*;
+import usr.localcontroller.command.*;
 import java.nio.channels.SocketChannel;
 import usr.common.LocalHostInfo;
 
 /**
- * A ManagementConsole listens for connections
- * for doing router management.
+ * A ManagementConsole listens for the LocalController.
+ * It listens for commands.
  * <p>
  * It implements the MCRP (Management Console Router Protocol).
  */

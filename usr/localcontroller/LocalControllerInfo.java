@@ -1,11 +1,11 @@
+package usr.localcontroller;
+
+import usr.common.LocalHostInfo;
+
 /**
   * LocalHostInfo contains basic info about one host in the system
   * It deals with finding out IP addresses, ports and so on
-*/
-
-package usr.controllers;
-import usr.common.LocalHostInfo;
-
+  */
 public class LocalControllerInfo extends LocalHostInfo {
     private int maxRouters_= 100;
     private int currRouters_= 0;

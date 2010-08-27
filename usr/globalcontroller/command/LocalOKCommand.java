@@ -1,13 +1,16 @@
-package usr.controllers.globalcommand;
+package usr.globalcontroller.command;
 
-import usr.controllers.*;
+import usr.globalcontroller.*;
 import usr.console.MCRP;
 import java.nio.channels.SocketChannel;
 import usr.common.LocalHostInfo;
 
+/**
+ * A LocalOKCommand.
+ */
 public class LocalOKCommand extends GlobalCommand {
     /**
-     * Construct a QuitCommand.
+     * Construct a LocalOKCommand.
      */
     public LocalOKCommand() {
         super(MCRP.OK_LOCAL_CONTROLLER.CMD, MCRP.OK_LOCAL_CONTROLLER.CODE, 

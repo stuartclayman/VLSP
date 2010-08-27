@@ -1,7 +1,7 @@
 // MCRPNoConnectionException.java
 
 
-package usr.controllers;
+package usr.globalcontroller;
 
 /**
  * An XMLNoTagException is thrown if parsing XML where
@@ -9,10 +9,17 @@ package usr.controllers;
  */
 public class XMLNoTagException extends Exception {
     /**
-     * Construct a MCRPNoConnectionException
+     * Construct a XMLNoTagException
      */
     public XMLNoTagException() {
 	super();
+    }
+
+    /**
+     * Construct a XMLNoTagException
+     */
+    public XMLNoTagException(String s) {
+	super(s);
     }
 
 

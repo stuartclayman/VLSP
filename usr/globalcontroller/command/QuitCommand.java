@@ -1,4 +1,4 @@
-package usr.controllers.localcommand;
+package usr.globalcontroller.command;
 
 import usr.console.MCRP;
 import java.io.IOException;
@@ -7,12 +7,12 @@ import java.nio.channels.SocketChannel;
 /**
  * The QUIT command.
  */
-public class ShutDownCommand extends LocalCommand {
+public class QuitCommand extends GlobalCommand {
     /**
      * Construct a QuitCommand.
      */
-    public ShutDownCommand() {
-        super(MCRP.SHUT_DOWN.CMD, MCRP.SHUT_DOWN.CODE, MCRP.ERROR.CODE);
+    public QuitCommand() {
+        super(MCRP.QUIT.CMD, MCRP.QUIT.CODE, MCRP.ERROR.CODE);
     }
 
     /**
@@ -20,7 +20,8 @@ public class ShutDownCommand extends LocalCommand {
      */
     public boolean evaluate(String req) {
         success("BYE");
-        managementConsole.localController_.shutDown();
+        managementConsole.endConnection(getChannel());
+
         return true;
     }
 

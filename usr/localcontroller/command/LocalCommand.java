@@ -1,6 +1,6 @@
-package usr.controllers.localcommand;
+package usr.localcontroller.command;
 
-import usr.controllers.*;
+import usr.localcontroller.*;
 import usr.console.*;
 
 /**

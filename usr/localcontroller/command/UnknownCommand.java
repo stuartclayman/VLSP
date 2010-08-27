@@ -1,13 +1,14 @@
-package usr.controllers.globalcommand;
+package usr.localcontroller.command;
 
 import usr.console.MCRP;
+import usr.router.RouterManagementConsole;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 /**
  * The command to execute if the incoming command is unknown.
  */
-public class UnknownCommand extends GlobalCommand {
+public class UnknownCommand extends LocalCommand {
     /**
      * Construct a UnknownCommand
      */

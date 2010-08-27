@@ -1,13 +1,5 @@
-/** The local controller is intended to run on every machine.  
- * Its job is to start up router processes as needed.
- * It should be started by being given a port to listen on
- * specified on the command line
- * java LocalController.java 8080
- * In its own start up the Global Controller will contact each
- * Local Controller to give it more state
-**/
+package usr.localcontroller;
 
-package usr.controllers;
 import java.lang.*;
 import java.util.*;
 import java.net.*;
@@ -16,6 +8,14 @@ import usr.router.*;
 import usr.common.LocalHostInfo;
 import usr.interactor.LocalControllerInteractor;
 
+/** The local controller is intended to run on every machine.  
+ * Its job is to start up router processes as needed.
+ * It should be started by being given a port to listen on
+ * specified on the command line
+ * java LocalController.java 8080
+ * In its own start up the Global Controller will contact each
+ * Local Controller to give it more state
+*/
 public class LocalController implements ComponentController {
     private LocalControllerInfo hostInfo_;
     private LocalHostInfo globalController_;

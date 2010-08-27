@@ -1,7 +1,8 @@
 
 
-package usr.controllers;
+package usr.globalcontroller;
 
+import usr.localcontroller.*;
 import usr.console.*;
 import java.lang.*;
 import java.util.*;
