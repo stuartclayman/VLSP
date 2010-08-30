@@ -38,8 +38,7 @@ class ControlOptions {
       remoteLoginFlags_ = "-n";
       remoteLoginUser_="richard";
       remoteStartController_ = 
-        "java -cp /home/richard/code/userspacerouter usr.controllers.LocalController";
-
+        "java -cp /home/richard/code/userspacerouter usr.localcontroller.LocalController";
 
     }
     
@@ -231,6 +230,7 @@ class ControlOptions {
     machine given machine name 
     */
     public String [] localControllerStartCommand(LocalControllerInfo lh) {
+        // its a remote command
         String [] cmd= new String[5];
         cmd[0] = remoteLoginCommand_;
         cmd[1] = remoteLoginFlags_;

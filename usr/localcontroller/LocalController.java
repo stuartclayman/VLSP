@@ -6,7 +6,8 @@ import java.net.*;
 import usr.console.*;
 import usr.router.*;
 import usr.common.LocalHostInfo;
-import usr.interactor.LocalControllerInteractor;
+import usr.interactor.*;
+
 
 /** The local controller is intended to run on every machine.  
  * Its job is to start up router processes as needed.
@@ -20,13 +21,16 @@ public class LocalController implements ComponentController {
     private LocalControllerInfo hostInfo_;
     private LocalHostInfo globalController_;
     private Thread listenThread_;
-    private LocalControllerInteractor lcInteractor_= null;
+    private GlobalControllerInteractor gcInteractor_= null;
     private LocalControllerManagementConsole console_= null;
     private boolean listening_ = true;
     private int maxPort_= 20000;  // Ports in use
     private ArrayList <BasicRouterInfo> routers_= null;
     private ArrayList <Router> routerList_= null;
     
+    /**
+     * Main entry point.
+     */
     public static void main(String[] args) {
         
         LocalController self_;
@@ -75,19 +79,23 @@ public class LocalController implements ComponentController {
         System.exit(-1);
     }
     
+    /**
+     * Get the host info the the host this is a LocalController for.
+     */
     public LocalControllerInfo getHostInfo() {
         return hostInfo_;
     }
     
-    /** Received alive message from global 
-    */
+    /** 
+     * Received alive message from GlobalController. 
+     */
     public void aliveMessage(LocalHostInfo gc) {
         globalController_= gc;
         System.out.println("Got alive message from global controller.");
         try {
             System.out.println("Sending to "+gc.getName()+":"+gc.getPort());
-            lcInteractor_= new LocalControllerInteractor(gc);
-            lcInteractor_.respondToGlobalController(hostInfo_);
+            gcInteractor_= new GlobalControllerInteractor(gc);
+            gcInteractor_.respondToGlobalController(hostInfo_);
         } catch (java.net.UnknownHostException e) {
             System.err.println("Cannot contact global controller");
             System.err.println(e.getMessage());
@@ -104,9 +112,9 @@ public class LocalController implements ComponentController {
        
     }
     
-    /** Received start new router command
+    /** 
+     * Received start new router command
     */
-    
     public boolean requestNewRouter (int routerId) 
     
     {
@@ -129,9 +137,7 @@ public class LocalController implements ComponentController {
     }
 
     
-    
-    
+}
     
 
-}
 

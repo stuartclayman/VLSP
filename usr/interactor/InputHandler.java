@@ -2,21 +2,19 @@
 
 package usr.interactor;
 
+import java.io.Reader;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.EOFException;
 
 /**
- * A class to handle the input from the Router ManagementConsole.
+ * A class to handle the input from a ManagementConsole.
  * It will listen for a response from the console, or
  * it will listen for asynchronous events.
  * In either case it will callback to the MCRPInteractor object
  * with the relevant call.
  * The object runs in it;s own thread.
  */
-
-import java.io.Reader;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.EOFException;
-
 public class InputHandler implements Runnable {
     // The MCRPInteractor object that started this handler
     MCRPInteractor mcrp = null;
@@ -44,6 +42,9 @@ public class InputHandler implements Runnable {
 
     /**
      * The main guts of the thread.
+     * It gets an answer from the remote end and processes it
+     * in order to determine if if is a normal response or
+     * an event.
      */
     public void run() {
 	// sit in a loop and grab input

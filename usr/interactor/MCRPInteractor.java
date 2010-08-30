@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 /**
  * This class implements the MCRP protocol for interacting
- * with the ManagementConsole of a Router.
+ * with the ManagementConsole of a Component.
  * It has methods for most requests in the MCRP protocol.
  * Most of the methods will throw an MCRPException if
  * somethnig is wrong.
@@ -21,10 +21,10 @@ import java.util.ArrayList;
  * <li> MCRPNotReadyException: if this object is not ready to
  * accept a new request </li>
  * <li> MCRPNoConnectionException, if this object is not connected to
- * the router, probably after a quit(). </li>
+ * a component, probably after a quit(). </li>
  * </ul>
  */
-abstract class MCRPInteractor {
+public abstract class MCRPInteractor {
 
     // The socket to the server
     Socket socket = null;
@@ -38,7 +38,7 @@ abstract class MCRPInteractor {
     // on the input.
     InputHandler inputHandler = null;
 
-    // The last response from the router
+    // The last response from the component
     MCRPResponse lastResponse = null;
 
     // An exception thrown when trying to get data from the server
@@ -61,7 +61,7 @@ abstract class MCRPInteractor {
     /* Initialize the connection */
 
     /**
-     * Initialize a connection to the ManagementConsole of a router.
+     * Initialize a connection to the ManagementConsole of a component.
      * @param addr the address of the server
      * @param port the port the server is listening on
      */

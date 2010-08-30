@@ -2,7 +2,7 @@
 
 package usr.globalcontroller;
 
-import usr.localcontroller.*;
+import usr.localcontroller.LocalControllerInfo;
 import usr.console.*;
 import java.lang.*;
 import java.util.*;
@@ -12,10 +12,9 @@ import usr.common.*;
 import java.util.concurrent.*;
 import usr.interactor.*;
 
-
 /**
- * The global controller is in overall control of the software.  It
- * contacts local controllers to set up virtual routers and then
+ * The GlobalController is in overall control of the software.  It
+ * contacts LocalControllers to set up virtual routers and then
  * gives set up and tear down instructions directly to them.
  */
 public class GlobalController implements ComponentController {
@@ -25,13 +24,12 @@ public class GlobalController implements ComponentController {
     private ControlOptions options_;
     private boolean listening_;
     private GlobalControllerManagementConsole console_= null;
-    private ArrayList <GlobalControllerInteractor> localControllers_ = null;
+    private ArrayList <LocalControllerInteractor> localControllers_ = null;
     private ArrayList <Process> childProcesses_= null;
     private ArrayList <BufferedReader> childOutput_= null;
     private ArrayList <BufferedReader> childError_= null;
     private ArrayList <String> childNames_= null;
-    private HashMap <LocalControllerInfo,GlobalControllerInteractor>
-      interactorMap_= null;
+    private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
     private int aliveCount= 0;
     private EventScheduler scheduler_= null;
     private boolean simulationRunning_= true;
@@ -42,6 +40,9 @@ public class GlobalController implements ComponentController {
     
     
     
+    /**
+     * Main entry point.
+     */
     public static void main(String[] args) {
        
       if (args.length != 1) {
@@ -57,8 +58,10 @@ public class GlobalController implements ComponentController {
       System.out.flush();
     }
 
+    /**
+     * Construct a GlobalController.
+     */
     public GlobalController () {
-    
     }
 
     private void init() {
@@ -202,7 +205,7 @@ public class GlobalController implements ComponentController {
                 Pair<?,?> pair= (Pair<?,?>)e.getData();
                 router1= (Integer)pair.getFirst();
                 router2= (Integer)pair.getSecond();
-                endLink(router1, router2);
+                startLink(router1, router2);
                 
                 return;
             }
@@ -269,10 +272,10 @@ public class GlobalController implements ComponentController {
                 leastUsed= lc;
             }
         }
-        GlobalControllerInteractor gci= interactorMap_.get(leastUsed);
+        LocalControllerInteractor lci= interactorMap_.get(leastUsed);
         maxRouterId_++;
         try {
-            gci.newRouter(maxRouterId_);
+            lci.newRouter(maxRouterId_);
         } catch (IOException e) {
             System.err.println("Could not start new router");
             System.err.println(e.getMessage());
@@ -362,11 +365,12 @@ public class GlobalController implements ComponentController {
             LocalControllerInfo lh= (LocalControllerInfo)i.next();
             String []cmd= options_.localControllerStartCommand(lh);
             try {
+                System.out.println("Starting process " + Arrays.asList(cmd));
                 child = new ProcessBuilder(cmd).start();
             } 
             catch (java.io.IOException e) {
                System.err.println("Unable to execute remote command "+
-                 String.valueOf(cmd));
+                 Arrays.asList(cmd));
                System.err.println(e.getMessage());
                System.exit(-1);
             }
@@ -398,12 +402,19 @@ public class GlobalController implements ComponentController {
         return console_;
     }
 
+    /**
+     * An alive message has been received from the host specified
+     * in LocalHostInfo.
+     */
     public void aliveMessage(LocalHostInfo lh)
     {   
         aliveCount+= 1;
         System.out.println("Received alive count from "+lh.getName()+":"+lh.getPort());
     }
     
+    /**
+     * Wait until a specified absolute time is milliseconds.
+     */
     public synchronized void waitUntil(long time){
         long now= System. currentTimeMillis();
         if (time <= now)
@@ -416,24 +427,27 @@ public class GlobalController implements ComponentController {
     }
 
 
-     
-     public synchronized void wakeUp() {
+    /**
+     * Wakeup the controller.
+     */
+    public synchronized void wakeUp() {
         notify();  // or All version
-     }
+    }
      
 
-    /** Check all controllers listed are functioning and
-    creates interactors
+    /** 
+     * Check all controllers listed are functioning and
+     * creates interactors with the LocalControllers.
     */
     private synchronized void checkAllControllers() {
-        localControllers_= new ArrayList<GlobalControllerInteractor>();
-        interactorMap_= new HashMap<LocalControllerInfo,GlobalControllerInteractor>();
-        GlobalControllerInteractor inter= null;
+        localControllers_= new ArrayList<LocalControllerInteractor>();
+        interactorMap_= new HashMap<LocalControllerInfo, LocalControllerInteractor>();
+        LocalControllerInteractor inter= null;
         for (int i= 0; i < noControllers_;i++) {
            LocalControllerInfo lh= options_.getController(i);
            
            try {
-              inter= new GlobalControllerInteractor(lh);
+              inter= new LocalControllerInteractor(lh);
            } catch (IOException e) {
               System.err.println("Unable to make connection to "+
                 lh.getName()+" "+lh.getPort()+"\n");
@@ -471,13 +485,14 @@ public class GlobalController implements ComponentController {
         System.exit(-1);
     }
     
-    /** Send shutdown message to all controllers
-    */
+    /** 
+     * Send shutdown message to all controllers
+     */
     private void killAllControllers() {
       if (localControllers_ == null) 
           return;
       System.out.println("Stopping all controllers");
-      GlobalControllerInteractor inter;
+      LocalControllerInteractor inter;
       for (int i= 0; i < noControllers_; i++) {
           inter= localControllers_.get(i);
           try {

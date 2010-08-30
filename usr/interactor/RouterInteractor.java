@@ -8,8 +8,12 @@ import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
 
-class RouterInteractor extends MCRPInteractor
-{
+/**
+ * This class implements the MCRP protocol and acts as a client
+ * for interacting with the ManagementConsole of a Router.
+ */
+public class RouterInteractor extends MCRPInteractor {
+
     /**
      * Constructor for a MCRP connection
      * to the ManagementConsole of a router.
