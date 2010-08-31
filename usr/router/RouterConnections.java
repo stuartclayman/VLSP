@@ -47,9 +47,9 @@ public class RouterConnections implements Runnable {
             serverSocket = channel.socket();
             serverSocket.bind(new InetSocketAddress(port));
 
-            System.out.println("R2R: Listening on port: " + port);
+            System.out.println(leadin() + "Listening on port: " + port);
 
-            System.err.println("R2R: Ready to accept on " + serverSocket);
+            System.err.println(leadin() + "Ready to accept on " + serverSocket);
 
 
             myThread = new Thread(this, "RouterConnections" + hashCode());
@@ -59,7 +59,7 @@ public class RouterConnections implements Runnable {
             return true;
         }
 	catch (IOException ioe) {
-            System.err.println("R2R: cannot listen on port: " + port);
+            System.err.println(leadin() + "Cannot listen on port: " + port);
             return false;
         }
 
@@ -89,9 +89,9 @@ public class RouterConnections implements Runnable {
             try {
                 Socket local = serverSocket.accept();
 
-                System.err.println("R2R: Did accept on: " + serverSocket);
+                System.err.println(leadin() + "Did accept on: " + serverSocket);
 
-                System.out.println("R2R: newConnection: " + local);
+                System.out.println(leadin() + "newConnection: " + local);
 
                 InetSocketAddress refAddr = new InetSocketAddress(local.getInetAddress(), local.getPort());
                 //System.err.println("RouterConnections => " + refAddr + " # " + refAddr.hashCode());
@@ -100,16 +100,31 @@ public class RouterConnections implements Runnable {
                 NetIF netIF = new TCPNetIF(local);
                 netIF.setID(refAddr.hashCode());
 
-                System.out.println("R2R: netif = " + netIF);
+                System.out.println(leadin() + "netif = " + netIF);
 
                 controller.addNetIF(netIF);
 
             } catch (IOException ioe) {
-                System.err.println("R2R: accept failed");
+                System.err.println(leadin() + "accept failed");
             }
 
         }
         
     }
+
+    /**
+     * Create the String to print out before a message
+     */
+    String leadin() {
+        final String R2R = "R2R: ";
+
+        if (controller == null) {
+            return R2R;
+        } else {
+            return controller.getName() + " " + R2R;
+        }
+
+    }
+
 
 }

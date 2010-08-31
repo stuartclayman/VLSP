@@ -25,7 +25,7 @@ public class GetConnectionPortCommand extends RouterCommand {
         boolean result = success(""+port);
 
         if (!result) {
-            System.err.println("MC: GET_CONNECTION_PORT failed");
+            System.err.println(leadin() + "GET_CONNECTION_PORT failed");
         }
 
         return result;

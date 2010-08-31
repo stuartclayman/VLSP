@@ -27,6 +27,8 @@ public class LocalController implements ComponentController {
     private int maxPort_= 20000;  // Ports in use
     private ArrayList <BasicRouterInfo> routers_= null;
     private ArrayList <Router> routerList_= null;
+
+    private String myName = "LocalController";
     
     /**
      * Main entry point.
@@ -128,6 +130,12 @@ public class LocalController implements ComponentController {
         return true;
     }
 
+    /**
+     * Get the name of this LocalController.
+     */
+    public String getName() {
+        return myName + ":" + hostInfo_.getPort();
+    }
 
     /**
      * Get the ManagementConsole this ComponentController interacts with.

@@ -97,10 +97,17 @@ public class RouterController implements ComponentController, Runnable {
 
     /**
      * Set the name of this RouterController.
+     * This can only be done before the Router has started to
+     * communicate with other elements.
+     * @return false if the name cannot be set
      */
-    public RouterController setName(String name) {
-        this.name = name;
-        return this;
+    public boolean setName(String name) {
+        if (connectionCount == 0) {
+            this.name = name;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -135,7 +142,7 @@ public class RouterController implements ComponentController, Runnable {
      * Start me up.
      */
     public boolean start() {
-        System.out.println("RC: start");
+        System.out.println(leadin() + "start");
 
         // start my own thread
         myThread = new Thread(this);
@@ -155,7 +162,7 @@ public class RouterController implements ComponentController, Runnable {
      * Stop the RouterController.
      */
     public boolean stop() {
-        System.out.println("RC: stop");
+        System.out.println(leadin() + "stop");
 
         // stop the listener
         boolean stoppedL = management.stop();
@@ -193,7 +200,7 @@ public class RouterController implements ComponentController, Runnable {
                 Request nextRequest = queue.take();
                 String value = nextRequest.value;
 
-                System.out.println("RC: nextRequest = " + nextRequest);
+                System.out.println(leadin() + "nextRequest = " + nextRequest);
                 
                 // now process the next request
                 if (value.startsWith("CREATE_CONNECTION")) {
@@ -203,12 +210,12 @@ public class RouterController implements ComponentController, Runnable {
                     pool.execute(new CreateConnection(this, nextRequest));
 
                 } else {
-                    System.err.println("RC: Unknown request " + nextRequest);
+                    System.err.println(leadin() + "Unknown request " + nextRequest);
                 }
                     
 
             } catch (InterruptedException ie) {
-                //System.err.println("RC: BlockingQueue: interrupt " + ie);
+                //System.err.println(leadin() + "BlockingQueue: interrupt " + ie);
             }
         }
 
@@ -222,7 +229,7 @@ public class RouterController implements ComponentController, Runnable {
     public void addNetIF(NetIF netIF) {
         int id = netIF.getID();
 
-        System.err.println("RC: addNetIF " + id + " for " + netIF);
+        System.err.println(leadin() + "addNetIF " + id + " for " + netIF);
 
         netIFMap.put(id, netIF);
 
@@ -232,7 +239,7 @@ public class RouterController implements ComponentController, Runnable {
      * Find a NetIF by an id.
      */
     public NetIF getNetIFByID(int id) {
-        //System.err.println("RC: getNetIF " + id);
+        //System.err.println(leadin() + "getNetIF " + id);
         return netIFMap.get(id);
     }
 
@@ -248,7 +255,7 @@ public class RouterController implements ComponentController, Runnable {
      */
     public RouterPort plugInNetIF(NetIF netIF) {
         RouterPort rp = router.plugInNetIF(netIF);
-        System.err.println("RC: removeNetIFLocal "  + netIF);
+        System.err.println(leadin() + "removeNetIFLocal "  + netIF);
 
         netIFMap.remove(netIF.getID());
 
@@ -269,16 +276,17 @@ public class RouterController implements ComponentController, Runnable {
         return router.listPorts();
     }
 
+
     /**
-     * Respond to the client
-     *
-    void respond(SocketChannel sc, String s) {
-        try {
-            management.respond(sc, s);
-        } catch (IOException ioe) {
-            System.err.println("RC: cannot respond to " + sc + " -> " + ioe);
-        }
+     * Create the String to print out before a message
+     */
+    String leadin() {
+        final String RC = "RC: ";
+
+        return getName() + " " + RC;
     }
-    */
+
+
+
 
 }

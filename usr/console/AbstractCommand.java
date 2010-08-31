@@ -81,7 +81,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append(" ");
         sb.append(s);
         String resp = sb.toString();
-        System.err.println("MC: <<< RESPONSE: " + resp);
+        System.err.println(leadin() + "<<< RESPONSE: " + resp);
 
         return respond(resp);
     }
@@ -96,7 +96,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append(" ");
         sb.append(s);
         String resp = sb.toString();
-        System.err.println("MC: <<< RESPONSE: " + resp);
+        System.err.println(leadin() + "<<< RESPONSE: " + resp);
 
         return respond(resp);
     }
@@ -111,7 +111,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append("-");
         sb.append(s);
         String resp = sb.toString();
-        System.err.println("MC: <<< ITEM: " + resp);
+        System.err.println(leadin() + "<<< ITEM: " + resp);
 
         return respond(resp);
     }
@@ -123,4 +123,22 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
     public int hashCode() {
         return name.hashCode();
     }
+
+    /**
+     * Create the String to print out before a message
+     */
+    protected String leadin() {
+        final String MC = "MC: ";
+        ManagementConsole mc = getManagementConsole();
+        ComponentController controller = mc.getComponentController();
+
+        if (controller == null) {
+            return MC;
+        } else {
+            return controller.getName() + " " + MC;
+        }
+
+    }
+
+
 }

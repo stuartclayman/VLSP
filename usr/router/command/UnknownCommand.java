@@ -23,7 +23,7 @@ public class UnknownCommand extends RouterCommand {
         boolean result = error("UNKNOWN " + req);
 
         if (!result) {
-            System.err.println("MC: UNKNOWN failed");
+            System.err.println(leadin() + "UNKNOWN failed");
         }
 
         return result;

@@ -12,12 +12,12 @@ public class RouterTest1 {
 
         if (args.length == 0) {
             int port = 15151;
-            router = new Router(port);
+            router = new Router(port, "Router-" + port + "-" + (port+1));
         } else if (args.length == 1) {
             int mPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
-            router = new Router(mPort);
+            router = new Router(mPort, "Router-" + mPort + "-" + (mPort+1));
         } else if (args.length == 2) {
             int mPort = 0;
             int r2rPort = 0;
@@ -25,7 +25,7 @@ public class RouterTest1 {
             mPort = sc.nextInt();
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
-            router = new Router(mPort, r2rPort);
+            router = new Router(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
         } else {
             help();
         }

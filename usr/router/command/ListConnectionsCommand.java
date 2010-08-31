@@ -41,7 +41,7 @@ public class ListConnectionsCommand extends RouterCommand {
         boolean result = success("END " + count);
 
         if (!result) {
-            System.err.println("MC: LIST_CONNECTIONS response failed");
+            System.err.println(leadin() + "LIST_CONNECTIONS response failed");
         }
 
         return result;

@@ -25,7 +25,7 @@ public class GetNameCommand extends RouterCommand {
         boolean result = success(name);
 
         if (!result) {
-            System.err.println("MC: " + getName() + " response failed");
+            System.err.println(leadin() + getName() + " response failed");
         }
 
         return result;

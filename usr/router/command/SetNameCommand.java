@@ -23,12 +23,18 @@ public class SetNameCommand extends RouterCommand {
      */
     public boolean evaluate(String req) {
         String name = req.substring(8).trim();
-        controller.setName(name);
+        boolean nameSet = controller.setName(name);
 
-        boolean result = success(name);
+        boolean result;
+
+        if (nameSet) {
+            result = success(name);
+        } else {
+            result = error("Cannot set name after communication");
+        }
 
         if (!result) {
-            System.err.println("MC: " + getName() + " response failed");
+            System.err.println(leadin() + getName() + " response failed");
         }
 
         return result;

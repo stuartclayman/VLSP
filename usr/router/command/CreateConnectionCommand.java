@@ -29,7 +29,7 @@ public class CreateConnectionCommand extends RouterCommand {
         SocketChannel sc = getChannel();
 
         managementConsole.addRequest(new Request(sc, req));
-        System.err.println("MC: Requests = " + managementConsole.queue());
+        System.err.println(leadin() + "Requests = " + managementConsole.queue());
 
         return true;
     }

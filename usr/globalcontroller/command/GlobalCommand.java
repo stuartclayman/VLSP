@@ -23,6 +23,13 @@ public abstract class GlobalCommand extends AbstractCommand {
 
 
     /**
+     * Get the ManagementConsole this is a command for.
+     */
+    public ManagementConsole getManagementConsole() {
+        return managementConsole;
+    }
+
+    /**
      * Set the ManagementConsole this is a command for.
      */
     public void setManagementConsole(ManagementConsole mc) {

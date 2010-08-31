@@ -121,7 +121,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         Command unknown = commandMap.get("__UNKNOWN__");
 
         if (unknown == null) {
-            System.err.println("MC: the UnknownCommand has not been registered");
+            System.err.println(leadin() + "the UnknownCommand has not been registered");
             return false;
         }
 
@@ -135,7 +135,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
 
 
-            System.err.println("MC: Listening on port: " + port);
+            System.out.println(leadin() + "Listening on port: " + port);
 
             boolean ready = setUp();
 
@@ -150,7 +150,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             return ready;
         }
 	catch (IOException ioe) {
-            System.err.println("MC: Cannot listen on port: " + port);
+            System.err.println(leadin() + "Cannot listen on port: " + port);
             return false;
         }
 
@@ -210,7 +210,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                             // Accept the incoming connection.
                             Socket local = serverSocket.accept();
 
-                            System.err.println("MC: Did accept on: " + serverSocket);
+                            System.err.println(leadin() + "Did accept on: " + serverSocket);
                             // Deal with incoming connection
                             newConnection(local);
 
@@ -226,7 +226,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                             // and process some input from it
                             processInput( sc );
                         } else {
-                            System.err.println("MC: Unexpected behaviour on " + key);
+                            System.err.println(leadin() + "Unexpected behaviour on " + key);
                         }
 
                     }
@@ -257,24 +257,24 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
             // check channel
             if (ssc == null) {
-                System.err.println("MC: no channel for " + serverSocket);
+                System.err.println(leadin() + "no channel for " + serverSocket);
                 return false;
             } else {
                 // set channel to be non-blocking
                 // already done earlier
                 // ssc.configureBlocking(false);
 
-                System.err.println("MC: Registering " + ssc);
+                System.err.println(leadin() + "Registering " + ssc);
 
                 // register this channel with the selector
                 SelectionKey key = ssc.register( selector, SelectionKey.OP_ACCEPT );
 
-                System.err.println("MC: Ready to accept on " + serverSocket);
+                System.err.println(leadin() + "Ready to accept on " + serverSocket);
                 return true;
             }
         } catch (IOException ioe) {
             // cant process socket, so
-                System.err.println("MC: IOException on channel for " + serverSocket);
+                System.err.println(leadin() + "IOException on channel for " + serverSocket);
                 return false;            
         }
     }
@@ -283,15 +283,15 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Shutdown
      */
     protected boolean shutDown() {
-        System.err.println("MC: Shutdown");
+        System.out.println(leadin() + "Shutdown");
 
         try {
             // close main socket
             serverSocket.close();
-            System.err.println("MC: Stopped listening on port: " + port);
+            System.err.println(leadin() + "Stopped listening on port: " + port);
             return true;
         } catch (Exception e) {
-            System.err.println("MC: Cannot close socket on port: " + port);
+            System.err.println(leadin() + "Cannot close socket on port: " + port);
             return false;
         }
     }
@@ -302,14 +302,14 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Start reading from a new connection.
      */
     protected void newConnection(Socket s) {
-        System.err.println("MC: newConnection: " + s);
+        System.err.println(leadin() + "newConnection: " + s);
 
         SocketChannel sc;
         try {
             // Make sure channel for new connection is nonblocking
             sc = s.getChannel();
             sc.configureBlocking( false );
-            System.err.println("MC: Registering " + sc);
+            System.err.println(leadin() + "Registering " + sc);
             // Register it with the Selector, for reading.
             SelectionKey key = sc.register( selector, SelectionKey.OP_READ );
 
@@ -320,7 +320,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             //System.err.println("channelKeys = " + channelKeys);
 
         } catch (IOException ioe) {
-            System.err.println("MC: Error on socket " + s);
+            System.err.println(leadin() + "Error on socket " + s);
             try {
                 s.close();
             } catch (Exception e) {
@@ -333,7 +333,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * End a connection
      */
     public void endConnection(SocketChannel c) {
-        System.err.println("MC: endConnection: " + c.socket());
+        System.err.println(leadin() + "endConnection: " + c.socket());
 
         unregisterChannel(c);
 
@@ -341,7 +341,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         try {
             c.close();
         } catch (IOException ioe) {
-            System.err.println("MC: CANNOT close : " + c.socket());
+            System.err.println(leadin() + "CANNOT close : " + c.socket());
         }
     }
 
@@ -355,7 +355,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         // Remove it from the Selector
         key.cancel();
 
-        //System.err.println("MC: Selector keys = " + selector.keys());
+        //System.err.println(leadin() + "Selector keys = " + selector.keys());
 
         channelKeys.remove(c);
     }
@@ -413,7 +413,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Returns false if there is a problem responding down the channel
      */
     protected boolean handleInput(String value, SocketChannel sc) {
-        System.out.println("MC: >>> " + value);
+        System.err.println(leadin() + ">>> " + value);
 
         if (value == null && value.length() == 0) {
             // empty - do nothing
@@ -452,6 +452,22 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
         }
     }
+
+    /**
+     * Create the String to print out before a message
+     */
+    String leadin() {
+        final String MC = "MC: ";
+        ComponentController control = getComponentController();
+
+        if (control == null) {
+            return MC;
+        } else {
+            return control.getName() + " " + MC;
+        }
+
+    }
+
 
 }
 

@@ -36,7 +36,7 @@ public class SimpleRouterFabric implements RouterFabric {
 
         ports.set(nextFree, rp);
 
-        System.err.println("RF: plugged NetIF: " + netIF + " into port " + nextFree);
+        System.err.println(leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
 
         return rp;
     }
@@ -121,4 +121,16 @@ public class SimpleRouterFabric implements RouterFabric {
 
         return limit;
     }
+
+    /**
+     * Create the String to print out before a message
+     */
+    String leadin() {
+        final String RF = "RF: ";
+        RouterController controller = router.getRouterController();
+
+        return controller.getName() + " " + RF;
+    }
+
+
 }

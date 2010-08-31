@@ -41,6 +41,11 @@ public interface Command {
     public void setChannel(SocketChannel ch);
 
     /**
+     * Get the ManagementConsole this is a command for.
+     */
+    public ManagementConsole getManagementConsole();
+
+    /**
      * Set the ManagementConsole this is a command for.
      */
     public void setManagementConsole(ManagementConsole mc);

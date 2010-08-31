@@ -70,7 +70,7 @@ public class SetAddressCommand extends RouterCommand {
         }
 
         if (!result) {
-            System.err.println("MC: " + getName() + " failed");
+            System.err.println(leadin() + getName() + " failed");
         }
 
         return result;

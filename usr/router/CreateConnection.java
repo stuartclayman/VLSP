@@ -36,7 +36,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         // check command
         String[] parts = value.split(" ");
         if (parts.length != 3) {
-            System.err.println("CC: INVALID createConnection command: " + request);
+            System.err.println(leadin() + "INVALID createConnection command: " + request);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION wrong no of args");
             return;
         }
@@ -44,7 +44,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         // check ip addr spec
         String[] ipParts = parts[1].split("/");
         if (ipParts.length != 2) {
-            System.err.println("CC: INVALID createConnection ip address: " + request);
+            System.err.println(leadin() + "INVALID createConnection ip address: " + request);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid address " + parts[1]);
             return;
         }
@@ -88,19 +88,19 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 	    // make a socket connection to a remote router
             managementSocket = new Socket(InetAddress.getByName(host), portNumber);
 
-            System.out.println("CC: socket to host " + host + " = " + managementSocket);
+            System.out.println(leadin() + "socket to host " + host + " = " + managementSocket);
 
             // initialise I/O and communication sender -> receiver
             input = new BufferedReader(new InputStreamReader(managementSocket.getInputStream()));
             output = new PrintWriter(managementSocket.getOutputStream(), true);
 
         } catch (UnknownHostException uhe) {
-            System.err.println("CC: Unknown host: " + host);
+            System.err.println(leadin() + "Unknown host: " + host);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
             return;
 
         } catch (IOException ioexc) {
-            System.err.println("CC: Cannot interact with " + host + " on port " + portNumber + " -> " + ioexc);
+            System.err.println(leadin() + "Cannot interact with " + host + " on port " + portNumber + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
             return;
         }
@@ -117,7 +117,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             routerResponse = input.readLine(); 
 
         } catch (IOException ioexc) {
-            System.err.println("CC: Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
+            System.err.println(leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
             return;
         }
@@ -138,7 +138,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         int code = scanner.nextInt();
 
         if (code != MCRP.GET_CONNECTION_PORT.CODE) {
-            System.err.println("CC: Remote router at " + host + " did not return GET_CONNECTION_PORT correctly");
+            System.err.println(leadin() + "Remote router at " + host + " did not return GET_CONNECTION_PORT correctly");
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION response for GET_CONNECTION_PORT from host: " + host + " is incorrect: " + routerResponse);
             return;
         }
@@ -146,7 +146,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         // now get connection port
         int connectionPort = scanner.nextInt();
 
-        System.err.println("CC: createConnection: connectionPort at " + host + " is " + connectionPort);
+        System.err.println(leadin() + "createConnection: connectionPort at " + host + " is " + connectionPort);
 
 
         /*
@@ -173,7 +173,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             // now connect
             connection.connect(routerConnections);
 
-            System.err.println("CC: connection socket: " + connection);
+            System.err.println(leadin() + "connection socket: " + connection);
 
             refAddr = new InetSocketAddress(connection.getInetAddress(), connection.getLocalPort());;
             //System.err.println("CreateConnection => " + refAddr + " # " + refAddr.hashCode());
@@ -182,15 +182,15 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
             netIF = new TCPNetIF(connection);
 
-            System.out.println("CC: netif = " + netIF);
+            System.out.println(leadin() + "netif = " + netIF);
 
 
         } catch (UnknownHostException uhe) {
-            System.err.println("CC: Unknown host: " + host);
+            System.err.println(leadin() + "Unknown host: " + host);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
             return;
         } catch (IOException ioexc) {
-            System.err.println("CC: Cannot connect to " + host + " on port " + connectionPort + " -> " + ioexc);
+            System.err.println(leadin() + "Cannot connect to " + host + " on port " + connectionPort + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + connectionPort);
             return;
         }
@@ -208,7 +208,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             routerResponse = input.readLine(); 
 
         } catch (IOException ioexc) {
-            System.err.println("CC: Cannot GET_NAME from " + host + " -> " + ioexc);
+            System.err.println(leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
             return;
         }
@@ -228,7 +228,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         
 
         if (!parts[0].equals(Integer.toString(MCRP.GET_NAME.CODE))) {
-            System.err.println("CC: Remote router at " + host + " did not return GET_NAME correctly");
+            System.err.println(leadin() + "Remote router at " + host + " did not return GET_NAME correctly");
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION response for GET_NAME from host: " + host + " is incorrect: " + routerResponse);
             return;
         }
@@ -282,7 +282,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             }
 
         } catch (IOException ioexc) {
-            System.err.println("CC: INCOMING_CONNECTION with host error " + host + " -> " + ioexc);
+            System.err.println(leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
             return;
         }
@@ -301,10 +301,10 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             // close connection to remote router
             managementSocket.close();
 
-            System.out.println("CC: closed = " + host);
+            System.out.println(leadin() + "closed = " + host);
 
         } catch (IOException ioexc) {
-            System.err.println("CC: Cannot close connection to " + host);
+            System.err.println(leadin() + "Cannot close connection to " + host);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot close connection with host: " + host);
             return;
         }
@@ -322,4 +322,20 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         respond(MCRP.CREATE_CONNECTION.CODE + " CREATE_CONNECTION " + latestConnectionId + " port" + port.getPortNo());
 
     }
+
+    /**
+     * Create the String to print out before a message
+     */
+    String leadin() {
+        final String CC = "CC: ";
+
+        if (controller == null) {
+            return CC;
+        } else {
+            return controller.getName() + " " + CC;
+        }
+
+    }
+
+
 }
