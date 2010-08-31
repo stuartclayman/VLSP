@@ -163,4 +163,15 @@ public class RouterInteractor extends MCRPInteractor {
 	return this;
     }
 
+    /**
+     * Shutdown the Router we are interacting with.
+     */
+    public MCRPInteractor shutDown() throws IOException, MCRPException {
+         
+        interact(MCRP.SHUT_DOWN.CMD);
+        expect(MCRP.SHUT_DOWN.CODE);
+        return this;
+    }
+
+
 }

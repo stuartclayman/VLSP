@@ -1,13 +1,14 @@
-package usr.localcontroller.command;
+package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.router.RouterManagementConsole;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 /**
  * The SHUT_DOWN command.
  */
-public class ShutDownCommand extends LocalCommand {
+public class ShutDownCommand extends RouterCommand {
     /**
      * Construct a ShutDownCommand.
      */
@@ -20,7 +21,7 @@ public class ShutDownCommand extends LocalCommand {
      */
     public boolean evaluate(String req) {
         success("SHUTDOWN");
-        managementConsole.localController_.shutDown();
+        controller.shutDown();
         return true;
     }
 

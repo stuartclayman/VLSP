@@ -46,6 +46,7 @@ public class RouterManagementConsole extends AbstractManagementConsole implement
         register(new ListConnectionsCommand());
         register(new IncomingConnectionCommand());
         register(new CreateConnectionCommand());
+        register(new ShutDownCommand());
     }
     
 }

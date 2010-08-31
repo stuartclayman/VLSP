@@ -178,6 +178,14 @@ public class RouterController implements ComponentController, Runnable {
     }
 
     /**
+     * Shutdown the Router.
+     */
+    public void shutDown() {
+        System.out.println(leadin() + "SHUTDOWN");
+        stop();
+    }
+
+    /**
      * The main thread loop.
      * It processes asynchronous commands from the request queue.
      * <p>

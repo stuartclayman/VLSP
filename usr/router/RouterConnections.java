@@ -105,7 +105,10 @@ public class RouterConnections implements Runnable {
                 controller.addNetIF(netIF);
 
             } catch (IOException ioe) {
-                System.err.println(leadin() + "accept failed");
+                // only print if running, not when stopping
+                if (running) {
+                    System.err.println(leadin() + "accept failed");
+                }
             }
 
         }

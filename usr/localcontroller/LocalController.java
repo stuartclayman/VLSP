@@ -2,10 +2,12 @@ package usr.localcontroller;
 
 import java.lang.*;
 import java.util.*;
+import java.io.IOException;
 import java.net.*;
 import usr.console.*;
 import usr.router.*;
 import usr.common.LocalHostInfo;
+import usr.common.ProcessWrapper;
 import usr.interactor.*;
 
 
@@ -26,7 +28,9 @@ public class LocalController implements ComponentController {
     private boolean listening_ = true;
     private int maxPort_= 20000;  // Ports in use
     private ArrayList <BasicRouterInfo> routers_= null;
+    private ArrayList <RouterInteractor> routerInteractors_ = null;
     private ArrayList <Router> routerList_= null;
+    private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
 
     private String myName = "LocalController";
     
@@ -64,6 +68,8 @@ public class LocalController implements ComponentController {
         hostInfo_= new LocalControllerInfo(port);
         routers_= new ArrayList<BasicRouterInfo>();
         routerList_= new ArrayList<Router>();
+        childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
+        routerInteractors_ = new ArrayList<RouterInteractor>();
         console_= new LocalControllerManagementConsole(this, port);
         console_.start();
     }
@@ -72,10 +78,23 @@ public class LocalController implements ComponentController {
     public void shutDown() {
 
         System.out.println("Local controller got shutdown message from global controller.");
-        System.out.println("Stopping all running routers"); // TODO send proper shut down
+        System.out.println("Stopping all running routers"); 
+        // TODO send proper shut down
         for (int i= 0; i < routers_.size(); i++) {
-            Router r= routerList_.get(i);
-            r.stop();
+            ///Router r= routerList_.get(i);
+            ///r.stop();
+
+            RouterInteractor interactor = routerInteractors_.get(i);
+            try {
+                interactor.shutDown();
+            } catch (java.io.IOException e) {
+                System.err.println (leadin() + "Cannot send shut down to Router");
+                System.err.println (e.getMessage()); 
+            } catch (usr.interactor.MCRPException e) {
+                System.err.println (leadin() + "Cannot send shut down to Router");
+                System.err.println (e.getMessage());          
+            }
+
         }
         console_.stop();
         System.exit(-1);
@@ -120,14 +139,67 @@ public class LocalController implements ComponentController {
     public boolean requestNewRouter (int routerId) 
     
     {
-        System.out.println("Starting Router on port "+maxPort_);
-        Router router= new Router(maxPort_, "Router-" + routerId);
-        router.start();
-        routerList_.add(router);
-        BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,maxPort_);
-        routers_.add(br);
-        maxPort_+=2;
-        return true;
+
+        Process child;
+
+        String [] cmd= new String[3];
+        cmd[0] = "/usr/bin/java";
+        cmd[1] = "usr.router.Router";
+        cmd[2] = String.valueOf(maxPort_);
+
+        try {
+            System.out.println(leadin() + "Starting Router on port "+maxPort_);
+
+            child = new ProcessBuilder(cmd).start();
+
+            String procName = "Router-" + maxPort_;
+            childProcessWrappers_.put(procName, new ProcessWrapper(child, procName));
+
+        } catch (java.io.IOException e) {
+            System.err.println(leadin() + "Unable to execute command "+ Arrays.asList(cmd));
+            System.err.println(e.getMessage());
+            //System.exit(-1);
+            return false;
+        }
+
+        /// In JVM Router
+        ///Router router= new Router(maxPort_, "Router-" + routerId);
+        ///router.start();
+        ///routerList_.add(router);
+
+        // Separate JVM Router
+        // create a RouterInteractor
+        // try 5 times, with 500 millisecond gap
+        int tries = 0;
+        int millis = 500;
+        for (tries = 0; tries < 5; tries++) {
+            // sleep a bit
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException ie) {
+            }
+
+            // try and connect
+            try {
+                RouterInteractor interactor = new RouterInteractor("localhost", maxPort_);
+                routerInteractors_.add(interactor);
+                break;
+            } catch (UnknownHostException uhe) {
+            } catch (IOException e) {
+            }
+        }
+
+        if (tries == 4) {
+            // we didnt connect
+            System.err.println(leadin() + "Unable to connect to Router on port " + maxPort_);
+            return false;
+        } else {
+            // we connected
+            BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,maxPort_);
+            routers_.add(br);
+            maxPort_+=2;
+            return true;
+        }
     }
 
     /**
@@ -144,8 +216,20 @@ public class LocalController implements ComponentController {
         return console_;
     }
 
+
+    /**
+     * Create the String to print out before a message
+     */
+    String leadin() {
+        final String LC = "LC: ";
+
+        return getName() + " " + LC;
+    }
+
+
+
     
 }
-    
+
 
 
