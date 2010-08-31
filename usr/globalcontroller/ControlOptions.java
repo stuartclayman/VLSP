@@ -36,9 +36,8 @@ class ControlOptions {
       localControllers_= new ArrayList<LocalControllerInfo>();
       remoteLoginCommand_ = "/usr/bin/ssh";
       remoteLoginFlags_ = "-n";
-      remoteLoginUser_="richard";
       remoteStartController_ = 
-        "java -cp /home/richard/code/userspacerouter usr.localcontroller.LocalController";
+        "java -cp $(HOME)/code/userspacerouter usr.localcontroller.LocalController";
 
     }
     

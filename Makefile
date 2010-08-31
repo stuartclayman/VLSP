@@ -30,39 +30,13 @@ JC = javac
 .java.class:
 	$(JC) $(JFLAGS) $*.java 
 CLASSES = \
-  usr/common/LocalHostInfo.java \
-  usr/common/ProbDistribution.java \
-  usr/common/ProbElement.java \
-  usr/common/ProbException.java \
-  usr/common/Pair.java \
-  usr/controllers/EventScheduler.java \
-  usr/controllers/GlobalController.java \
-  usr/controllers/GlobalControllerManagementConsole.java \
-  usr/controllers/SimEvent.java \
-  usr/controllers/BasicRouterInfo.java \
-  usr/controllers/ControlOptions.java \
-  usr/controllers/LocalController.java \
-  usr/controllers/LocalControllerManagementConsole.java \
-  usr/controllers/localcommand/QuitCommand.java \
-  usr/controllers/localcommand/UnknownCommand.java \
-  usr/controllers/localcommand/AbstractCommand.java \
-  usr/controllers/localcommand/LocalCheckCommand.java \
-  usr/controllers/localcommand/ShutDownCommand.java \
-  usr/controllers/localcommand/NewRouterCommand.java \
-  usr/controllers/localcommand/LocalCommand.java \
-  usr/controllers/globalcommand/QuitCommand.java \
-  usr/controllers/globalcommand/AbstractCommand.java \
-  usr/controllers/globalcommand/GlobalCommand.java \
-  usr/controllers/globalcommand/UnknownCommand.java \
-  usr/controllers/globalcommand/LocalOKCommand.java \
-  usr/controllers/LocalControllerInfo.java \
-  usr/controllers/XMLNoTagException.java \
   usr/test/RouterTest1.java \
   usr/test/StubServer.java \
   usr/test/StubClient.java \
   usr/test/VariateTest.java \
+  usr/router/Router.java \
   usr/router/command/QuitCommand.java \
-  usr/router/command/AbstractCommand.java \
+  usr/router/command/package-info.java \
   usr/router/command/GetNameCommand.java \
   usr/router/command/SetAddressCommand.java \
   usr/router/command/CreateConnectionCommand.java \
@@ -73,8 +47,6 @@ CLASSES = \
   usr/router/command/ListConnectionsCommand.java \
   usr/router/command/UnknownCommand.java \
   usr/router/command/RouterCommand.java \
-  usr/router/RouterManagementConsole.java \
-  usr/router/Router.java \
   usr/router/SimpleRouterFabric.java \
   usr/router/CreateConnection.java \
   usr/router/RouterConnections.java \
@@ -83,6 +55,8 @@ CLASSES = \
   usr/router/RouterPort.java \
   usr/router/RouterFabric.java \
   usr/router/TCPNetIF.java \
+  usr/router/RouterManagementConsole.java \
+  usr/router/package-info.java \
   usr/net/Datagram.java \
   usr/net/DatagramConnection.java \
   usr/net/DatagramPatch.java \
@@ -90,10 +64,7 @@ CLASSES = \
   usr/net/IPV4Datagram.java \
   usr/net/Address.java \
   usr/net/IPV4Address.java \
-  usr/interactor/ChannelResponder.java \
-  usr/interactor/Command.java \
-  usr/interactor/MCRP.java \
-  usr/interactor/ManagementConsole.java \
+  usr/net/package-info.java \
   usr/interactor/MCRPException.java \
   usr/interactor/MCRPResponse.java \
   usr/interactor/MCRPEvent.java \
@@ -101,12 +72,53 @@ CLASSES = \
   usr/interactor/MCRPEventListener.java \
   usr/interactor/ID.java \
   usr/interactor/MCRPInteractor.java \
+  usr/interactor/InputHandler.java \
+  usr/interactor/MCRPNoConnectionException.java \
+  usr/interactor/package-info.java \
   usr/interactor/RouterInteractor.java \
   usr/interactor/GlobalControllerInteractor.java \
   usr/interactor/LocalControllerInteractor.java \
-  usr/interactor/InputHandler.java \
-  usr/interactor/Request.java \
-  usr/interactor/MCRPNoConnectionException.java
+  usr/common/LocalHostInfo.java \
+  usr/common/ProbDistribution.java \
+  usr/common/ProbElement.java \
+  usr/common/ProbException.java \
+  usr/common/Pair.java \
+  usr/common/package-info.java \
+  usr/protocol/MCRP.java \
+  usr/protocol/Protocol.java \
+  usr/protocol/package-info.java \
+  usr/console/ManagementConsole.java \
+  usr/console/AbstractCommand.java \
+  usr/console/AbstractManagementConsole.java \
+  usr/console/package-info.java \
+  usr/console/ComponentController.java \
+  usr/console/Request.java \
+  usr/console/ChannelResponder.java \
+  usr/console/Command.java \
+  usr/globalcontroller/command/GlobalCommand.java \
+  usr/globalcontroller/command/QuitCommand.java \
+  usr/globalcontroller/command/LocalOKCommand.java \
+  usr/globalcontroller/command/package-info.java \
+  usr/globalcontroller/command/UnknownCommand.java \
+  usr/globalcontroller/EventScheduler.java \
+  usr/globalcontroller/GlobalController.java \
+  usr/globalcontroller/GlobalControllerManagementConsole.java \
+  usr/globalcontroller/package-info.java \
+  usr/globalcontroller/XMLNoTagException.java \
+  usr/globalcontroller/SimEvent.java \
+  usr/globalcontroller/ControlOptions.java \
+  usr/localcontroller/command/QuitCommand.java \
+  usr/localcontroller/command/package-info.java \
+  usr/localcontroller/command/LocalCheckCommand.java \
+  usr/localcontroller/command/LocalCommand.java \
+  usr/localcontroller/command/NewRouterCommand.java \
+  usr/localcontroller/command/ShutDownCommand.java \
+  usr/localcontroller/command/UnknownCommand.java \
+  usr/localcontroller/package-info.java \
+  usr/localcontroller/LocalControllerInfo.java \
+  usr/localcontroller/BasicRouterInfo.java \
+  usr/localcontroller/LocalController.java \
+  usr/localcontroller/LocalControllerManagementConsole.java
 
 
 
