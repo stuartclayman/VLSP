@@ -31,6 +31,7 @@ public class LocalController implements ComponentController {
     private ArrayList <RouterInteractor> routerInteractors_ = null;
     private ArrayList <Router> routerList_= null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
+    private String classPath_= null;
 
     private String myName = "LocalController";
     
@@ -71,6 +72,8 @@ public class LocalController implements ComponentController {
         childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
         routerInteractors_ = new ArrayList<RouterInteractor>();
         console_= new LocalControllerManagementConsole(this, port);
+        Properties prop = System.getProperties();
+        classPath_= prop.getProperty("java.class.path",null);
         console_.start();
     }
     
@@ -142,10 +145,12 @@ public class LocalController implements ComponentController {
 
         Process child;
 
-        String [] cmd= new String[3];
+        String [] cmd= new String[5];
         cmd[0] = "/usr/bin/java";
-        cmd[1] = "usr.router.Router";
-        cmd[2] = String.valueOf(maxPort_);
+        cmd[1] = "-cp";
+        cmd[2] = classPath_;
+        cmd[3] = "usr.router.Router";
+        cmd[4] = String.valueOf(maxPort_);
 
         try {
             System.out.println(leadin() + "Starting Router on port "+maxPort_);
