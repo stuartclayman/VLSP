@@ -230,29 +230,40 @@ class ControlOptions {
     machine given machine name 
     */
     public String [] localControllerStartCommand(LocalControllerInfo lh) {
-        // its a remote command
-        String [] cmd= new String[5];
-        cmd[0] = remoteLoginCommand_;
-        cmd[1] = remoteLoginFlags_;
-        // For user name in turn try info from remote, or info
-        // from global or fall back to no username
-        String user= lh.getRemoteLoginUser();  
-        if (user == null)
-            user= remoteLoginUser_;
-        if (user == null) {
-            cmd[2]=lh.getName();
+        if (lh.getName().equals("localhost")) {
+            // no need to do remote command
+            String [] cmd= new String[3];
+            cmd[0] = "/usr/bin/java";
+            cmd[1] = "usr.localcontroller.LocalController";
+            cmd[2] = String.valueOf(lh.getPort());
+            return cmd;
+
         } else {
-            cmd[2] = user+"@"+lh.getName();
+            // its a remote command
+            String [] cmd= new String[5];
+            cmd[0] = remoteLoginCommand_;
+            cmd[1] = remoteLoginFlags_;
+            // For user name in turn try info from remote, or info
+            // from global or fall back to no username
+            String user= lh.getRemoteLoginUser();  
+            if (user == null)
+                user= remoteLoginUser_;
+            if (user == null) {
+                cmd[2]=lh.getName();
+            } else {
+                cmd[2] = user+"@"+lh.getName();
+            }
+            String remote= lh.getRemoteStartController();
+            if (remote == null) {
+                remote= remoteStartController_;
+            }
+            cmd[3] = remote;
+            cmd[4] = String.valueOf(lh.getPort());
+            return cmd;
         }
-        String remote= lh.getRemoteStartController();
-        if (remote == null) {
-            remote= remoteStartController_;
-        }
-        cmd[3] = remote;
-        cmd[4] = String.valueOf(lh.getPort());
-        return cmd;
     }
-    
+
+
     /** Accessor function returns the number of controllers 
     */
     public int noControllers() {
