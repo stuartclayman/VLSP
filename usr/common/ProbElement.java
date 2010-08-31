@@ -33,7 +33,7 @@ public class ProbElement
         } else if (typeStr.equals("Uniform")) {
            type= UNIFORM_DIST;
         } else if (typeStr.equals("Pareto")) {
-           type= UNIFORM_DIST;
+           type= PARETO_DIST;
         }
         if (type == 0) {
            throw new ProbException("Unknown distribution type");
@@ -75,7 +75,7 @@ public class ProbElement
         double power,x;
         double p= Math.random();
         power = 1.0/beta;
-        x = Math.pow(-Math.log(1.0 - p),power)/lambda;
+        x = lambda*Math.pow(-Math.log(1.0 - p),power);
 
         return x;
 
@@ -136,8 +136,8 @@ public class ProbElement
     public static double paretoVariate(double scale, double shape)
     {
         double x, U;
-        U= Math.random();
-        x= scale/Math.pow(U,1.0/shape);
+        U= exponentialVariate(1.0/shape);
+        x= scale*Math.exp(U);
         return x;
     }
     
