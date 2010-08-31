@@ -121,7 +121,7 @@ public class LocalController implements ComponentController {
     
     {
         System.out.println("Starting Router on port "+maxPort_);
-        Router router= new Router(maxPort_);
+        Router router= new Router(maxPort_, "Router-" + routerId);
         router.start();
         routerList_.add(router);
         BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,maxPort_);

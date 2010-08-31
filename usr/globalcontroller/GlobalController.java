@@ -25,9 +25,10 @@ public class GlobalController implements ComponentController {
     private boolean listening_;
     private GlobalControllerManagementConsole console_= null;
     private ArrayList <LocalControllerInteractor> localControllers_ = null;
-    private ArrayList <Process> childProcesses_= null;
-    private ArrayList <BufferedReader> childOutput_= null;
-    private ArrayList <BufferedReader> childError_= null;
+    ///private ArrayList <Process> childProcesses_= null;
+    ///private ArrayList <BufferedReader> childOutput_= null;
+    ///private ArrayList <BufferedReader> childError_= null;
+    private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
     private ArrayList <String> childNames_= null;
     private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
     private int aliveCount= 0;
@@ -63,6 +64,11 @@ public class GlobalController implements ComponentController {
      * Construct a GlobalController.
      */
     public GlobalController () {
+        ///childProcesses_= new ArrayList<Process>();
+        ///childOutput_= new ArrayList<BufferedReader>();
+        ///childError_= new ArrayList<BufferedReader>();
+        childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
+        childNames_= new ArrayList<String>();
     }
 
     private void init() {
@@ -144,6 +150,11 @@ public class GlobalController implements ComponentController {
     }
     
     private boolean checkControllerOutput() {
+        return false;
+    }
+
+    /*
+    private boolean checkControllerOutput() {
         for (int i=0; i < childOutput_.size();i++) {
             BufferedReader m= childOutput_.get(i);
 //            j+=1;
@@ -178,6 +189,7 @@ public class GlobalController implements ComponentController {
         }
         return false;
     }
+    */
 
     
     private void executeEvent(SimEvent e) {
@@ -357,10 +369,7 @@ public class GlobalController implements ComponentController {
     private void startLocalControllers() {
         Iterator i= options_.getControllersIterator();
         Process child= null;
-        childProcesses_= new ArrayList<Process>();
-        childOutput_= new ArrayList<BufferedReader>();
-        childError_= new ArrayList<BufferedReader>();
-        childNames_= new ArrayList<String>();
+
         while (i.hasNext()) {
             
             LocalControllerInfo lh= (LocalControllerInfo)i.next();
@@ -368,12 +377,17 @@ public class GlobalController implements ComponentController {
             try {
                 System.out.println(leadin() + "Starting process " + Arrays.asList(cmd));
                 child = new ProcessBuilder(cmd).start();
-            } 
-            catch (java.io.IOException e) {
+            } catch (java.io.IOException e) {
                 System.err.println(leadin() + "Unable to execute remote command "+ Arrays.asList(cmd));
                System.err.println(e.getMessage());
                System.exit(-1);
             }
+
+            String procName = lh.getName()+":"+lh.getPort();
+            childNames_.add(procName);
+            childProcessWrappers_.put(procName, new ProcessWrapper(child, procName));
+
+            /* old approach
             childProcesses_.add(child);
             InputStream is= child.getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
@@ -384,14 +398,17 @@ public class GlobalController implements ComponentController {
             br= new BufferedReader(isr);
             childError_.add(br);
             childNames_.add(lh.getName()+":"+lh.getPort());
+            */
+
             try {
-                Thread.sleep(1000);  // Simple wait is to
+                Thread.sleep(10);  // Simple wait is to
                             // ensure controllers start up
             }
             catch (java.lang.InterruptedException e) {
                 System.err.println(leadin() + "initVirtualRouters Got interrupt!");
                 System.exit(-1);    
             }
+
         }
     }
     
@@ -452,7 +469,8 @@ public class GlobalController implements ComponentController {
                System.err.println(leadin() + "Unable to make connection to "+
                 lh.getName()+" "+lh.getPort()+"\n");
               System.err.println(e);
-              System.exit(-1);
+              // TODO: something more robust 
+              //System.exit(-1);
            }
            
            localControllers_.add(inter);
