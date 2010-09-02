@@ -165,6 +165,16 @@ public class Router {
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
             router = new Router(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
+        } else if (args.length == 3) {
+            int mPort = 0;
+            int r2rPort = 0;
+            Scanner sc = new Scanner(args[0]);
+            mPort = sc.nextInt();
+            sc = new Scanner(args[1]);
+            r2rPort = sc.nextInt();
+            String name = args[2];
+
+            router = new Router(mPort, r2rPort, name);
         } else {
             help();
         }

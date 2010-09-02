@@ -143,22 +143,25 @@ public class LocalController implements ComponentController {
     
     {
 
+        String routerName = "Router-" + routerId;
+
         Process child;
 
-        String [] cmd= new String[5];
+        String [] cmd= new String[7];
         cmd[0] = "/usr/bin/java";
         cmd[1] = "-cp";
         cmd[2] = classPath_;
         cmd[3] = "usr.router.Router";
         cmd[4] = String.valueOf(maxPort_);
+        cmd[5] = String.valueOf(maxPort_ + 1);
+        cmd[6] = routerName;
 
         try {
             System.out.println(leadin() + "Starting Router on port "+maxPort_);
 
             child = new ProcessBuilder(cmd).start();
 
-            String procName = "Router-" + maxPort_;
-            childProcessWrappers_.put(procName, new ProcessWrapper(child, procName));
+            childProcessWrappers_.put(routerName, new ProcessWrapper(child, routerName));
 
         } catch (java.io.IOException e) {
             System.err.println(leadin() + "Unable to execute command "+ Arrays.asList(cmd));
@@ -210,7 +213,7 @@ public class LocalController implements ComponentController {
 
             // tell the router its new name
             try {
-                interactor.setName("Router-" + routerId);
+                interactor.setName(routerName);
             } catch (IOException ioexc) {
                 return false;
             } catch (MCRPException mcrpe) {
