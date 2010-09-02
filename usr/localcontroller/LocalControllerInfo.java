@@ -40,7 +40,7 @@ public class LocalControllerInfo extends LocalHostInfo {
     }
     
     public double getUsage() {
-        double usage= currRouters_/maxRouters_;
+        double usage= (double)currRouters_/maxRouters_;
         return usage;
     }
     

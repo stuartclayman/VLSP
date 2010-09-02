@@ -97,22 +97,25 @@ public class LocalController implements ComponentController {
             }
 
         }
-        System.out.println("Stopping process wrappers");
+        System.out.println(leadin() + "Stopping process wrappers");
         Collection <ProcessWrapper> pws= (Collection<ProcessWrapper>)childProcessWrappers_.values();
         for (ProcessWrapper pw: pws) { 
             //ProcessWrapper pw= pws.get(i);
             pw.stop();
         }
-        System.out.println("Stopping global controller interactor");
+        System.out.println(leadin() + "Stopping console");
+
+        console_.stop();
+        System.out.println(leadin() + "Stopping global controller interactor");
         try {        
           gcInteractor_.quit();
         } catch (Exception e) {
-            System.err.println("Cannot exit from global interactor");
+            
+            System.err.println(leadin() + "Cannot exit from global interactor");
+            System.err.println(e.getMessage());
             System.exit(-1);
         }
-        System.out.println("Stopping console");
 
-        console_.stop();
         
     }
     

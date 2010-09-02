@@ -286,6 +286,7 @@ public class GlobalController implements ComponentController {
             }
         }
         LocalControllerInteractor lci= interactorMap_.get(leastUsed);
+        leastUsed.addRouter();  // Increment count
         maxRouterId_++;
         try {
             lci.newRouter(maxRouterId_);
@@ -318,10 +319,18 @@ public class GlobalController implements ComponentController {
     
     
     private void shutDown() {
-        System.err.println (leadin() + "SHUTDOWN CALLED!");
+        System.out.println (leadin() + "SHUTDOWN CALLED!");
         if (!options_.isSimulation()) {
             killAllControllers();
             while (checkMessages()) {};
+            System.out.println(leadin()+ "Local controller shutdown called.  Pausing.");
+            try {
+               Thread.sleep(5000);
+            } catch (Exception e) {
+                System.err.println(leadin()+ e.getMessage());
+                System.exit(-1);
+            }
+            System.out.println(leadin()+"Stopping console");
             console_.stop();
         }
         System.out.println(leadin() + "All stopped, shut down now!");
@@ -345,7 +354,7 @@ public class GlobalController implements ComponentController {
             EventScheduler.afterPause(2*options_.getSimulationLength())/3,null);
         scheduler_.addEvent(e);
         scheduler_.addEvent(e2);
-        scheduler_.addEvent(e3);
+        //scheduler_.addEvent(e3);
     }
     
     /** Initialisation steps for when we are using virtual routers
@@ -473,9 +482,8 @@ public class GlobalController implements ComponentController {
            } catch (IOException e) {
                System.err.println(leadin() + "Unable to make connection to "+
                 lh.getName()+" "+lh.getPort()+"\n");
-              System.err.println(e);
-              // TODO: something more robust 
-              //System.exit(-1);
+              System.err.println(leadin() + e.getMessage());
+              bailOut();
            }
            
            localControllers_.add(inter);
@@ -505,7 +513,7 @@ public class GlobalController implements ComponentController {
         }
         System.err.println(leadin() + "Only "+aliveCount+" from "+noControllers_+
            " local Controllers responded.");
-        System.exit(-1);
+        bailOut();
     }
     
     /** 
@@ -516,7 +524,7 @@ public class GlobalController implements ComponentController {
           return;
       System.out.println(leadin() + "Stopping all controllers");
       LocalControllerInteractor inter;
-      for (int i= 0; i < noControllers_; i++) {
+      for (int i= 0; i < localControllers_.size(); i++) {
           inter= localControllers_.get(i);
           try {
               inter.shutDown();

@@ -21,6 +21,7 @@ public class MCRP implements Protocol {
     public final static class QUIT {
         public final static String CMD =  "QUIT";
         public final static int CODE = 200;
+        public final static int ERROR = 400;
     }
 
     /**
