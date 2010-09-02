@@ -1,6 +1,8 @@
 package usr.router;
 
 import usr.protocol.MCRP;
+import usr.interactor.RouterInteractor;
+import usr.interactor.MCRPException;
 import usr.console.*;
 import java.util.Scanner;
 import java.io.*;
@@ -78,70 +80,45 @@ public class CreateConnection extends ChannelResponder implements Runnable {
          * Connect to management port of remote router.
          */
 
-        // initialise Socket to management connection of remote router
-        Socket managementSocket = null;
-        BufferedReader input = null;
-        PrintWriter output = null;
-        String routerResponse = null;
+        // Create a RouterInteractor to the remote Router
+        RouterInteractor interactor = null;
+        String routerResponse;
+
 
         try {
-	    // make a socket connection to a remote router
-            managementSocket = new Socket(InetAddress.getByName(host), portNumber);
-
-            System.out.println(leadin() + "socket to host " + host + " = " + managementSocket);
-
-            // initialise I/O and communication sender -> receiver
-            input = new BufferedReader(new InputStreamReader(managementSocket.getInputStream()));
-            output = new PrintWriter(managementSocket.getOutputStream(), true);
+            interactor = new RouterInteractor(InetAddress.getByName(host), portNumber);
 
         } catch (UnknownHostException uhe) {
             System.err.println(leadin() + "Unknown host: " + host);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
             return;
-
         } catch (IOException ioexc) {
-            System.err.println(leadin() + "Cannot interact with " + host + " on port " + portNumber + " -> " + ioexc);
+            System.err.println(leadin() + "Cannot connect to " + host + " on port " + portNumber + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
             return;
         }
 
+
+
+
         // at this point we have a connection to 
         // the managementSocket of the remote router
 
-        /*
-         * Interact with remote router
-         */
         try {
-            output.println("GET_CONNECTION_PORT");
-
-            routerResponse = input.readLine(); 
-
+            routerResponse = interactor.getConnectionPort();
         } catch (IOException ioexc) {
             System.err.println(leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
             return;
-        }
-
-        /*
-         * Process the response
-         */
-
-        // TODO: check for null or ""
-        if (routerResponse == null || routerResponse.equals("")) {
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION response for GET_CONNECTION_PORT from host: " + host + " is empty");
+        } catch (MCRPException mcrpe) {
+            System.err.println(leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + mcrpe);
+            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
             return;
         }
 
         // Ok now we need to find the port the remote router
         // listens to for connections
         Scanner scanner = new Scanner(routerResponse);
-        int code = scanner.nextInt();
-
-        if (code != MCRP.GET_CONNECTION_PORT.CODE) {
-            System.err.println(leadin() + "Remote router at " + host + " did not return GET_CONNECTION_PORT correctly");
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION response for GET_CONNECTION_PORT from host: " + host + " is incorrect: " + routerResponse);
-            return;
-        }
 
         // now get connection port
         int connectionPort = scanner.nextInt();
@@ -202,66 +179,41 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         /*
          * Get name of remote router
          */
+
         try {
-            output.println("GET_NAME");
-
-            routerResponse = input.readLine(); 
-
+            routerResponse = interactor.getName();
         } catch (IOException ioexc) {
             System.err.println(leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
             return;
-        }
-
-        /*
-         * Process the response
-         */
-
-        // TODO: check for null or ""
-        if (routerResponse == null || routerResponse.equals("")) {
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION response for GET_NAME from host: " + host + " is empty");
+        } catch (MCRPException mcrpe) {
+            System.err.println(leadin() + "Cannot GET_NAME from " + host + " -> " + mcrpe);
+            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
             return;
         }
-
-        // Ok now we need to find the name of the remote router
-        parts = routerResponse.split(" ");
-        
-
-        if (!parts[0].equals(Integer.toString(MCRP.GET_NAME.CODE))) {
-            System.err.println(leadin() + "Remote router at " + host + " did not return GET_NAME correctly");
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION response for GET_NAME from host: " + host + " is incorrect: " + routerResponse);
-            return;
-        }
-
 
         // now get router name
-        String remoteRouterName = parts[1];
+        String remoteRouterName = routerResponse;
         
-
-
         /*
          * Interact with remote router
          */
         try {
-            String icCode = "";
-            String other = "";
             boolean interactionOK = false;
 
             // attempt this 3 times
-            for (int attempts=0; attempts < 3; attempts++) {
+            int attempts;
+            for (attempts=0; attempts < 3; attempts++) {
                 // send INCOMING_CONNECTION command
-                output.println("INCOMING_CONNECTION " + latestConnectionId + " " + controller.getName() + " " + weight + " " + connection.getLocalPort());
 
-                routerResponse = input.readLine(); 
+                try {
+                    interactor.incomingConnection(latestConnectionId, controller.getName(), weight, connection.getLocalPort());
 
-                String[] icParts = routerResponse.split(" ");
-                icCode = icParts[0];
-                other = icParts[1];
-
-                if (icCode.equals(Integer.toString(MCRP.INCOMING_CONNECTION.CODE))) {
                     // connection setup ok
                     interactionOK = true;
                     break;
+                } catch (Exception e) {
+                    System.err.println(leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " + attempts);
                 }
 
                 // if we get here, then the INCOMING_CONNECTION
@@ -270,6 +222,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ie) {
+                    System.err.println("CC: SLEEP");
                 }
             }
 
@@ -277,12 +230,12 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                 // everything ok
             } else {
                 // connection setup failed
-                respond(routerResponse);
+                respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
                 return;
             }
 
-        } catch (IOException ioexc) {
-            System.err.println(leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + ioexc);
+        } catch (Exception exc) {
+            System.err.println(leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
             return;
         }
@@ -295,19 +248,17 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         /*
          * Close connection to management port of remote router.
          */
-
-        // close connection to management connection of remote router
-        try {
-            // close connection to remote router
-            managementSocket.close();
-
-            System.out.println(leadin() + "closed = " + host);
-
-        } catch (IOException ioexc) {
-            System.err.println(leadin() + "Cannot close connection to " + host);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot close connection with host: " + host);
+        try { 
+            interactor.quit();
+        } catch (Exception e) {
+            System.err.println(leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e);
+            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot quit with host: " + host);
             return;
         }
+
+        // close connection to management connection of remote router
+
+        System.out.println(leadin() + "closed = " + host);
 
         // now plug netIF into Router
         netIF.setName(latestConnectionId);
