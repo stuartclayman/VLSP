@@ -337,10 +337,15 @@ public class GlobalController implements ComponentController {
         }
         scheduler_= new EventScheduler();
         SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION,time,null);
+        
+        // TODO remove this hack.
         SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER,
             EventScheduler.afterPause(options_.getSimulationLength())/2,null);
+        SimEvent e3= new SimEvent(SimEvent.EVENT_START_ROUTER,
+            EventScheduler.afterPause(2*options_.getSimulationLength())/3,null);
         scheduler_.addEvent(e);
         scheduler_.addEvent(e2);
+        scheduler_.addEvent(e3);
     }
     
     /** Initialisation steps for when we are using virtual routers
