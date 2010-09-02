@@ -16,9 +16,11 @@ public class ProcessWrapper {
     String name;
 
     // InputStream thread
+    ProcessListener iListener;
     Thread iThread;
 
     // ErrorStream thread
+    ProcessListener eListener;
     Thread eThread;
 
     /**
@@ -29,9 +31,9 @@ public class ProcessWrapper {
         this.name = name;
 
         // allocate a ProcessListener for the InputStream
-        ProcessListener iListener = new ProcessListener(proc.getInputStream(), "stdout", this);
+        iListener = new ProcessListener(proc.getInputStream(), "stdout", this);
         // allocate a ProcessListener for the ErrorStream
-        ProcessListener eListener = new ProcessListener(proc.getErrorStream(), "stderr", this);
+        eListener = new ProcessListener(proc.getErrorStream(), "stderr", this);
 
         // allocate a Thread for the InputStream Listener
         iThread = new Thread(iListener);
@@ -69,6 +71,15 @@ public class ProcessWrapper {
     }
 
     /**
+     * Stop the process wrapper.
+     */
+    public void stop() {
+        process.destroy();
+        iListener.stop();
+        eListener.stop();
+    }
+       
+    /**
      * Listen on an InputStream
      */
     class ProcessListener implements Runnable {
@@ -91,6 +102,14 @@ public class ProcessWrapper {
             input = is;
             this.label = label;
             this.wrapper = wrapper;
+        }
+
+        /**
+         * End the Listener.
+         */
+        public void stop() {
+            notifyAll();
+            running = false;
         }
 
         /**
