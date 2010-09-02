@@ -36,7 +36,6 @@ CLASSES = \
   usr/test/VariateTest.java \
   usr/router/Router.java \
   usr/router/command/QuitCommand.java \
-  usr/router/command/package-info.java \
   usr/router/command/GetNameCommand.java \
   usr/router/command/SetAddressCommand.java \
   usr/router/command/CreateConnectionCommand.java \
@@ -56,7 +55,6 @@ CLASSES = \
   usr/router/RouterFabric.java \
   usr/router/TCPNetIF.java \
   usr/router/RouterManagementConsole.java \
-  usr/router/package-info.java \
   usr/net/Datagram.java \
   usr/net/DatagramConnection.java \
   usr/net/DatagramPatch.java \
@@ -64,7 +62,6 @@ CLASSES = \
   usr/net/IPV4Datagram.java \
   usr/net/Address.java \
   usr/net/IPV4Address.java \
-  usr/net/package-info.java \
   usr/interactor/MCRPException.java \
   usr/interactor/MCRPResponse.java \
   usr/interactor/MCRPEvent.java \
@@ -83,14 +80,12 @@ CLASSES = \
   usr/common/ProbElement.java \
   usr/common/ProbException.java \
   usr/common/Pair.java \
-  usr/common/package-info.java \
   usr/protocol/MCRP.java \
   usr/protocol/Protocol.java \
   usr/protocol/package-info.java \
   usr/console/ManagementConsole.java \
   usr/console/AbstractCommand.java \
   usr/console/AbstractManagementConsole.java \
-  usr/console/package-info.java \
   usr/console/ComponentController.java \
   usr/console/Request.java \
   usr/console/ChannelResponder.java \
@@ -108,13 +103,11 @@ CLASSES = \
   usr/globalcontroller/SimEvent.java \
   usr/globalcontroller/ControlOptions.java \
   usr/localcontroller/command/QuitCommand.java \
-  usr/localcontroller/command/package-info.java \
   usr/localcontroller/command/LocalCheckCommand.java \
   usr/localcontroller/command/LocalCommand.java \
   usr/localcontroller/command/NewRouterCommand.java \
   usr/localcontroller/command/ShutDownCommand.java \
   usr/localcontroller/command/UnknownCommand.java \
-  usr/localcontroller/package-info.java \
   usr/localcontroller/LocalControllerInfo.java \
   usr/localcontroller/BasicRouterInfo.java \
   usr/localcontroller/LocalController.java \

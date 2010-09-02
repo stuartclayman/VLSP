@@ -55,5 +55,15 @@ public class GlobalControllerInteractor extends MCRPInteractor
 	    expect(MCRP.OK_LOCAL_CONTROLLER.CODE);
 	    return this;
     }
+    
+       /**
+     * Quit talking to the router
+     * Close a connection to the ManagementConsole of the router.
+     */
+    public MCRPInteractor quit() throws IOException, MCRPException {
+	    interact(MCRP.QUIT.CMD);
+	    expect(MCRP.QUIT.CODE);
+	    return this;
+    }
 
 }

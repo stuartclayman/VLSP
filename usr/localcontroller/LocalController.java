@@ -60,7 +60,6 @@ public class LocalController implements ComponentController {
           System.exit(-1);
         }
         self_= new LocalController(port);
-        
 
     }
     
@@ -82,7 +81,6 @@ public class LocalController implements ComponentController {
 
         System.out.println("Local controller got shutdown message from global controller.");
         System.out.println("Stopping all running routers"); 
-        // TODO send proper shut down
         for (int i= 0; i < routers_.size(); i++) {
             ///Router r= routerList_.get(i);
             ///r.stop();
@@ -99,8 +97,23 @@ public class LocalController implements ComponentController {
             }
 
         }
+        System.out.println("Stopping process wrappers");
+        Collection <ProcessWrapper> pws= (Collection<ProcessWrapper>)childProcessWrappers_.values();
+        for (ProcessWrapper pw: pws) { 
+            //ProcessWrapper pw= pws.get(i);
+            pw.stop();
+        }
+        System.out.println("Stopping global controller interactor");
+        try {        
+          gcInteractor_.quit();
+        } catch (Exception e) {
+            System.err.println("Cannot exit from global interactor");
+            System.exit(-1);
+        }
+        System.out.println("Stopping console");
+
         console_.stop();
-        System.exit(-1);
+        
     }
     
     /**

@@ -107,7 +107,7 @@ public class ProcessWrapper {
         /**
          * End the Listener.
          */
-        public void stop() {
+        public synchronized void stop() {
             notifyAll();
             running = false;
         }
