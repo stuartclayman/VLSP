@@ -81,14 +81,37 @@ public class RouterInteractor extends MCRPInteractor {
 
 
     /**
-     * Get the address of a port on the router.
-     * Need to specify the address type and address value.
+     * Get the name of a port on the router.
      * @param port the port name
      */
-    public String getAddress(String port) throws IOException, MCRPException {
-        String toSend = MCRP.GET_ADDRESS.CMD + " " + port ; 
+    public String getPortName(String port) throws IOException, MCRPException {
+        String toSend = MCRP.GET_PORT_NAME.CMD + " " + port ; 
 	MCRPResponse response = interact(toSend);
-	expect(MCRP.GET_ADDRESS.CODE);
+	expect(MCRP.GET_PORT_NAME.CODE);
+
+        return response.get(0)[1];
+    }
+
+    /**
+     * Get the name of a remote router of a port on the router.
+     * @param port the port name
+     */
+    public String getPortRemoteRouterName(String port) throws IOException, MCRPException {
+        String toSend = MCRP.GET_PORT_REMOTE_ROUTER.CMD + " " + port ; 
+	MCRPResponse response = interact(toSend);
+	expect(MCRP.GET_PORT_REMOTE_ROUTER.CODE);
+
+        return response.get(0)[1];
+    }
+
+    /**
+     * Get the address of a port on the router.
+     * @param port the port name
+     */
+    public String getPortAddress(String port) throws IOException, MCRPException {
+        String toSend = MCRP.GET_PORT_ADDRESS.CMD + " " + port ; 
+	MCRPResponse response = interact(toSend);
+	expect(MCRP.GET_PORT_ADDRESS.CODE);
 
         return response.get(0)[1];
     }
@@ -100,10 +123,35 @@ public class RouterInteractor extends MCRPInteractor {
      * @param type the type of the address
      * @param addr the value for the address
      */
-    public MCRPInteractor setAddress(String port, String type, String addr) throws IOException, MCRPException {
-        String toSend = MCRP.SET_ADDRESS.CMD + " " + port + " " + type + " " + addr; 
+    public MCRPInteractor setPortAddress(String port, String type, String addr) throws IOException, MCRPException {
+        String toSend = MCRP.SET_PORT_ADDRESS.CMD + " " + port + " " + type + " " + addr; 
 	interact(toSend);
-	expect(MCRP.SET_ADDRESS.CODE);
+	expect(MCRP.SET_PORT_ADDRESS.CODE);
+	return this;
+    }
+
+    /**
+     * Get the weight of a port on the router.
+     * @param port the port name
+     */
+    public String getPortWeight(String port) throws IOException, MCRPException {
+        String toSend = MCRP.GET_PORT_WEIGHT.CMD + " " + port ; 
+	MCRPResponse response = interact(toSend);
+	expect(MCRP.GET_PORT_WEIGHT.CODE);
+
+        return response.get(0)[1];
+    }
+
+    /**
+     * Set the weight of a port on the router.
+     * Need to specify the weight type and weight value.
+     * @param port the port name
+     * @param weight the value for the weight
+     */
+    public MCRPInteractor setPortWeight(String port, String weight) throws IOException, MCRPException {
+        String toSend = MCRP.SET_PORT_WEIGHT.CMD + " " + port + " " + weight; 
+	interact(toSend);
+	expect(MCRP.SET_PORT_WEIGHT.CODE);
 	return this;
     }
 

@@ -22,7 +22,7 @@ public class SetNameCommand extends RouterCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        String name = req.substring(8).trim();
+        String name = req.substring(MCRP.SET_NAME.CMD.length()).trim();
         boolean nameSet = controller.setName(name);
 
         boolean result;

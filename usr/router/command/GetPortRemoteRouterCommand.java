@@ -11,16 +11,16 @@ import java.nio.channels.SocketChannel;
 import java.net.UnknownHostException;
 
 /**
- * The SET_PORT_ADDRESS command.
- * SET_PORT_ADDRESS port type address
- * SET_PORT_ADDRESS port0 IPV4 192.168.1.53
+ * The GET_PORT_REMOTE_ROUTER command.
+ * GET_PORT_REMOTE_ROUTER port 
+ * GET_PORT_REMOTE_ROUTER port0
  */
-public class SetAddressCommand extends RouterCommand {
+public class GetPortRemoteRouterCommand extends RouterCommand {
     /**
-     * Construct a SetAddressCommand.
+     * Construct a GetPortRemoteRouterCommand
      */
-    public SetAddressCommand() {
-        super(MCRP.SET_PORT_ADDRESS.CMD, MCRP.SET_PORT_ADDRESS.CODE, MCRP.SET_PORT_ADDRESS.ERROR);
+    public GetPortRemoteRouterCommand() {
+        super(MCRP.GET_PORT_REMOTE_ROUTER.CMD, MCRP.GET_PORT_REMOTE_ROUTER.CODE, MCRP.GET_PORT_REMOTE_ROUTER.ERROR);
     }
 
     /**
@@ -29,15 +29,12 @@ public class SetAddressCommand extends RouterCommand {
     public boolean evaluate(String req) {
         boolean result = true;
 
-        String rest = req.substring(MCRP.SET_PORT_ADDRESS.CMD.length()).trim();
+        String rest = req.substring(MCRP.GET_PORT_REMOTE_ROUTER.CMD.length()).trim();
         String[] parts = rest.split(" ");
                     
-        if (parts.length == 3) {
+        if (parts.length == 1) {
 
             String routerPortName = parts[0];
-            String type = parts[1];
-            String addr = parts[2];
-            Address address = null;
                         
             // find port
             String portNo = routerPortName.substring(4);
@@ -49,24 +46,16 @@ public class SetAddressCommand extends RouterCommand {
                 error(getName() + " invalid port " + routerPortName);
             }
 
-            // instantiate the address
-            if (type.toUpperCase().equals("IPV4")) {
-                try {
-                    address = new IPV4Address(addr);
-                } catch (UnknownHostException uhe) {
-                    error(getName() + " UnknownHostException " + addr);
-                }
+            // get name on netIF in port
+            NetIF netIF = routerPort.getNetIF();
+            String name = netIF.getRemoteRouterName();
+
+            if (name != null) {
+                result = success(name.toString());
             } else {
-                error(getName() + " unknown address type " + type);
+                result = success("");
             }
 
-            // set address on netIF in port
-            if (address != null) {
-                NetIF netIF = routerPort.getNetIF();
-                netIF.setAddress(address);
-
-                result = success(routerPortName);
-            }
         } else {
             error(getName() + " wrong no of args ");
         }

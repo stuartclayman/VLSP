@@ -6,11 +6,11 @@ import java.nio.channels.SocketChannel;
 import usr.common.LocalHostInfo;
 
 /**
- * The QUIT command.
+ * The CHECK_LOCAL_CONTROLLER command.
  */
 public class LocalCheckCommand extends LocalCommand {
     /**
-     * Construct a QuitCommand.
+     * Construct a LocalCheckCommand.
      */
     public LocalCheckCommand() {
         super(MCRP.CHECK_LOCAL_CONTROLLER.CMD, MCRP.CHECK_LOCAL_CONTROLLER.CODE, 

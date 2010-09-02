@@ -4,9 +4,19 @@ package usr.protocol;
  * Request strings and response codes for the MCRP protocol.
  */
 public class MCRP implements Protocol {
+    // This contains 4 lots of commands
+    // Generic
+    // Router
+    // GlobalController
+    // LocalController
+
+    /*
+     * Generic commands - 200 - 219
+     */
+
     /**
-     * Quit talking to the router
-     * Close a connection to the ManagementConsole of the router.
+     * Quit talking to the Component.
+     * Close a connection to the ManagementConsole of the Component.
      */
     public final static class QUIT {
         public final static String CMD =  "QUIT";
@@ -14,11 +24,24 @@ public class MCRP implements Protocol {
     }
 
     /**
+     * Shut down this Controller.
+     */
+    public final static class SHUT_DOWN {
+        public final static String CMD =  "SHUT_DOWN";
+        public final static int CODE = 201;
+        public final static int ERROR = 401;
+    }
+
+    /*
+     * Router Commands - 220 - 249
+     */
+
+    /**
      * Get the name of the router.
      */
     public final static class GET_NAME {
         public final static String CMD =  "GET_NAME";
-        public final static int CODE = 201;
+        public final static int CODE = 221;
     }
 
     /**
@@ -26,7 +49,7 @@ public class MCRP implements Protocol {
      */
     public final static class SET_NAME {
         public final static String CMD =  "SET_NAME";
-        public final static int CODE = 202;
+        public final static int CODE = 222;
     }
 
     /**
@@ -35,25 +58,15 @@ public class MCRP implements Protocol {
      */
     public final static class GET_CONNECTION_PORT {
         public final static String CMD =  "GET_CONNECTION_PORT";
-        public final static int CODE = 203;
+        public final static int CODE = 223;
     }
 
     /**
-     * Get the address of a port on the router.
+     * List all the router-to-router connections that the router has.
      */
-    public final static class GET_ADDRESS {
-        public final static String CMD =  "GET_ADDRESS";
-        public final static int CODE = 206;
-        public final static int ERROR = 403;
-    }
-
-    /**
-     * Set the address of a port on the router.
-     */
-    public final static class SET_ADDRESS {
-        public final static String CMD =  "SET_ADDRESS";
-        public final static int CODE = 207;
-        public final static int ERROR = 403;
+    public final static class LIST_CONNECTIONS {
+        public final static String CMD =  "LIST_CONNECTIONS";
+        public final static int CODE = 224;
     }
 
     /**
@@ -62,63 +75,123 @@ public class MCRP implements Protocol {
      */
     public final static class INCOMING_CONNECTION {
         public final static String CMD =  "INCOMING_CONNECTION";
-        public final static int CODE = 204;
+        public final static int CODE = 225;
         public final static int ERROR = 402;
     }
-
-    /**
-     * List all the router-to-router connections that the router has.
-     */
-    public final static class LIST_CONNECTIONS {
-        public final static String CMD =  "LIST_CONNECTIONS";
-        public final static int CODE = 205;
-    }
-    
-    /** Connect to and confirm existence of a local controller
-    */
-
-    public final static class CHECK_LOCAL_CONTROLLER {
-       public final static String CMD = "CHECK_LOCAL_CONTROLLER";
-       public final static int CODE= 206;
-       public final static int ERROR = 404;
-    }
-
-
-    /**
-     * Shut down this Controller.
-     */
-    public final static class SHUT_DOWN {
-        public final static String CMD =  "SHUT_DOWN";
-        public final static int CODE = 207;
-        public final static int ERROR = 405;
-    }
-
-    /** Connect to and confirm existence of a local controller
-    */
-
-    public final static class OK_LOCAL_CONTROLLER {
-       public final static String CMD = "OK_LOCAL_CONTROLLER";
-       public final static int CODE= 208;
-       public final static int ERROR = 406;
-    }
-
-    /** Local controller starts router */
-    
-    public final static class NEW_ROUTER {
-        public final static String CMD = "NEW_ROUTER";
-        public final static int CODE= 209;
-        public final static int ERROR= 407;
-    }
-   
 
     /**
      * Create a new router-to-router data connection to another router.
      */
     public final static class CREATE_CONNECTION {
         public final static String CMD =  "CREATE_CONNECTION";
-        public final static int CODE = 299;
+        public final static int CODE = 249;
         public final static int ERROR = 401;
     }
+
+
+    /*
+     * Port of a Router
+     */
+
+    /**
+     * Get the name of a port on the router.
+     */
+    public final static class GET_PORT_NAME {
+        public final static String CMD =  "GET_PORT_NAME";
+        public final static int CODE = 231;
+        public final static int ERROR = 403;
+    }
+
+    /**
+     * Get the name of a remote router of a port on the router.
+     */
+    public final static class GET_PORT_REMOTE_ROUTER {
+        public final static String CMD =  "GET_PORT_REMOTE_ROUTER";
+        public final static int CODE = 232;
+        public final static int ERROR = 403;
+    }
+
+    /**
+     * Get the address of a port on the router.
+     */
+    public final static class GET_PORT_ADDRESS {
+        public final static String CMD =  "GET_PORT_ADDRESS";
+        public final static int CODE = 233;
+        public final static int ERROR = 403;
+    }
+
+    /**
+     * Set the address of a port on the router.
+     */
+    public final static class SET_PORT_ADDRESS {
+        public final static String CMD =  "SET_PORT_ADDRESS";
+        public final static int CODE = 234;
+        public final static int ERROR = 403;
+    }
+
+    
+    /**
+     * Get the weight of a port on the router.
+     */
+    public final static class GET_PORT_WEIGHT {
+        public final static String CMD =  "GET_PORT_WEIGHT";
+        public final static int CODE = 235;
+        public final static int ERROR = 403;
+    }
+
+    /**
+     * Set the weight of a port on the router.
+     */
+    public final static class SET_PORT_WEIGHT {
+        public final static String CMD =  "SET_PORT_WEIGHT";
+        public final static int CODE = 236;
+        public final static int ERROR = 403;
+    }
+
+    
+
+
+
+    /*
+     * Global Controller commands - 250 - 269
+     */
+
+    /** 
+     * Connect to and confirm existence of a local controller
+     */
+
+    public final static class OK_LOCAL_CONTROLLER {
+       public final static String CMD = "OK_LOCAL_CONTROLLER";
+       public final static int CODE= 250;
+       public final static int ERROR = 410;
+    }
+
+    /*
+     * Local Controller commands - 270 - 289
+     */
+
+    /** 
+     * Connect to and confirm existence of a local controller
+     */
+
+    public final static class CHECK_LOCAL_CONTROLLER {
+       public final static String CMD = "CHECK_LOCAL_CONTROLLER";
+       public final static int CODE= 270;
+       public final static int ERROR = 420;
+    }
+
+    /** Local controller starts router */
+    
+    public final static class NEW_ROUTER {
+        public final static String CMD = "NEW_ROUTER";
+        public final static int CODE= 271;
+        public final static int ERROR= 421;
+    }
+   
+
+    /*
+     * Spare - 290 - 299
+     */
 
     /**
      * The standard error code.

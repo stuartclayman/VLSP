@@ -11,16 +11,16 @@ import java.nio.channels.SocketChannel;
 import java.net.UnknownHostException;
 
 /**
- * The SET_PORT_ADDRESS command.
- * SET_PORT_ADDRESS port type address
- * SET_PORT_ADDRESS port0 IPV4 192.168.1.53
+ * The SET_PORT_WEIGHT command.
+ * SET_PORT_WEIGHT port weight
+ * SET_PORT_WEIGHT port0 15
  */
-public class SetAddressCommand extends RouterCommand {
+public class SetWeightCommand extends RouterCommand {
     /**
-     * Construct a SetAddressCommand.
+     * Construct a SetWeightCommand.
      */
-    public SetAddressCommand() {
-        super(MCRP.SET_PORT_ADDRESS.CMD, MCRP.SET_PORT_ADDRESS.CODE, MCRP.SET_PORT_ADDRESS.ERROR);
+    public SetWeightCommand() {
+        super(MCRP.SET_PORT_WEIGHT.CMD, MCRP.SET_PORT_WEIGHT.CODE, MCRP.SET_PORT_WEIGHT.ERROR);
     }
 
     /**
@@ -29,15 +29,13 @@ public class SetAddressCommand extends RouterCommand {
     public boolean evaluate(String req) {
         boolean result = true;
 
-        String rest = req.substring(MCRP.SET_PORT_ADDRESS.CMD.length()).trim();
+        String rest = req.substring(MCRP.SET_PORT_WEIGHT.CMD.length()).trim();
         String[] parts = rest.split(" ");
                     
-        if (parts.length == 3) {
+        if (parts.length == 2) {
 
             String routerPortName = parts[0];
-            String type = parts[1];
-            String addr = parts[2];
-            Address address = null;
+            String weightStr = parts[1];
                         
             // find port
             String portNo = routerPortName.substring(4);
@@ -49,24 +47,22 @@ public class SetAddressCommand extends RouterCommand {
                 error(getName() + " invalid port " + routerPortName);
             }
 
-            // instantiate the address
-            if (type.toUpperCase().equals("IPV4")) {
-                try {
-                    address = new IPV4Address(addr);
-                } catch (UnknownHostException uhe) {
-                    error(getName() + " UnknownHostException " + addr);
-                }
-            } else {
-                error(getName() + " unknown address type " + type);
+            // instantiate the weight
+            int weight = Integer.MIN_VALUE;
+            try {
+                weight = Integer.parseInt(weightStr);
+            } catch (NumberFormatException nfe) {
+                error(getName() + " weight is not a number " + weightStr);
             }
 
-            // set address on netIF in port
-            if (address != null) {
+            // set weight on netIF in port
+            if (weight != Integer.MIN_VALUE) {
                 NetIF netIF = routerPort.getNetIF();
-                netIF.setAddress(address);
+                netIF.setWeight(weight);
 
                 result = success(routerPortName);
             }
+
         } else {
             error(getName() + " wrong no of args ");
         }

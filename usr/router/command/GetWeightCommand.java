@@ -11,16 +11,16 @@ import java.nio.channels.SocketChannel;
 import java.net.UnknownHostException;
 
 /**
- * The GET_PORT_ADDRESS command.
- * GET_PORT_ADDRESS port 
- * GET_PORT_ADDRESS port0
+ * The GET_PORT_WEIGHT command.
+ * GET_PORT_WEIGHT port 
+ * GET_PORT_WEIGHT port0
  */
-public class GetAddressCommand extends RouterCommand {
+public class GetWeightCommand extends RouterCommand {
     /**
-     * Construct a GetAddressCommand.
+     * Construct a GetWeightCommand.
      */
-    public GetAddressCommand() {
-        super(MCRP.GET_PORT_ADDRESS.CMD, MCRP.GET_PORT_ADDRESS.CODE, MCRP.GET_PORT_ADDRESS.ERROR);
+    public GetWeightCommand() {
+        super(MCRP.GET_PORT_WEIGHT.CMD, MCRP.GET_PORT_WEIGHT.CODE, MCRP.GET_PORT_WEIGHT.ERROR);
     }
 
     /**
@@ -29,7 +29,7 @@ public class GetAddressCommand extends RouterCommand {
     public boolean evaluate(String req) {
         boolean result = true;
 
-        String rest = req.substring(MCRP.GET_PORT_ADDRESS.CMD.length()).trim();
+        String rest = req.substring(MCRP.GET_PORT_WEIGHT.CMD.length()).trim();
         String[] parts = rest.split(" ");
                     
         if (parts.length == 1) {
@@ -46,15 +46,12 @@ public class GetAddressCommand extends RouterCommand {
                 error(getName() + " invalid port " + routerPortName);
             }
 
-            // get address on netIF in port
+            // get weight on netIF in port
             NetIF netIF = routerPort.getNetIF();
-            Address address = netIF.getAddress();
+            int weight = netIF.getWeight();
 
-            if (address != null) {
-                result = success(address.toString());
-            } else {
-                result = success("");
-            }
+            result = success(Integer.toString(weight));
+
 
         } else {
             error(getName() + " wrong no of args ");

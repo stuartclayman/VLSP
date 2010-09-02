@@ -32,7 +32,7 @@ public class IncomingConnectionCommand extends RouterCommand {
 
         boolean result = true;
 
-        String args = req.substring(19).trim();
+        String args = req.substring(MCRP.INCOMING_CONNECTION.CMD.length()).trim();
         String[] parts = args.split(" ");
 
         if (parts.length == 4) {
