@@ -174,9 +174,12 @@ public class LocalController implements ComponentController {
 
         // Separate JVM Router
         // create a RouterInteractor
+        RouterInteractor interactor = null;
+
         // try 5 times, with 500 millisecond gap
         int tries = 0;
         int millis = 500;
+        boolean isOK = false;
         for (tries = 0; tries < 5; tries++) {
             // sleep a bit
             try {
@@ -186,15 +189,16 @@ public class LocalController implements ComponentController {
 
             // try and connect
             try {
-                RouterInteractor interactor = new RouterInteractor("localhost", maxPort_);
+                interactor = new RouterInteractor("localhost", maxPort_);
                 routerInteractors_.add(interactor);
+                isOK = true;
                 break;
             } catch (UnknownHostException uhe) {
             } catch (IOException e) {
             }
         }
 
-        if (tries == 4) {
+        if (! isOK) {
             // we didnt connect
             System.err.println(leadin() + "Unable to connect to Router on port " + maxPort_);
             return false;
@@ -203,6 +207,16 @@ public class LocalController implements ComponentController {
             BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,maxPort_);
             routers_.add(br);
             maxPort_+=2;
+
+            // tell the router its new name
+            try {
+                interactor.setName("Router-" + routerId);
+            } catch (IOException ioexc) {
+                return false;
+            } catch (MCRPException mcrpe) {
+                return false;
+            }
+
             return true;
         }
     }
