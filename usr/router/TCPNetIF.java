@@ -133,6 +133,16 @@ public class TCPNetIF implements NetIF {
         return connection.readDatagram();
     }
 
+
+    
+    /**
+     * Close a NetIF
+     */
+    public void close() {
+        connection.close();
+    }
+        
+
     /**
      * Get the interface stats.
      * A map of values like:

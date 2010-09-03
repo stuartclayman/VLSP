@@ -141,6 +141,20 @@ public class Router {
     }
 
     /**
+     * Close ports
+     */
+    public void closePorts() {
+        fabric.closePorts();
+    }
+
+    /**
+     * Close port.
+     */
+    public void closePort(RouterPort port) {
+        fabric.closePort(port);
+    }
+
+    /**
      * Create the String to print out before a message
      */
     String leadin() {

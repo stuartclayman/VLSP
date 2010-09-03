@@ -211,6 +211,16 @@ public class DatagramConnection {
             }
     }
 
+    /**
+     * Close the connection.
+     */
+    public void close() {
+        try {
+            socket.close();
+        } catch (IOException ioe) {
+            throw new Error("Socket: " + socket + " can't close");
+        }
+    }
 
     /**
      * Get the socket.

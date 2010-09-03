@@ -170,6 +170,9 @@ public class RouterController implements ComponentController, Runnable {
         // stop the connections
         boolean stoppedC = connections.stop();
 
+        // close fabric ports
+        router.closePorts();
+
         // stop my own thread
         running = false;
         myThread.interrupt();

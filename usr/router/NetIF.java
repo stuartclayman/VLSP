@@ -85,4 +85,10 @@ public interface NetIF {
      * Read a Datagram.
      */
     public Datagram readDatagram();
+
+
+    /**
+     * Close a NetIF
+     */
+    public void close();
 }

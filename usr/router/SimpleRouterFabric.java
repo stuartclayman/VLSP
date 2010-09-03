@@ -72,6 +72,31 @@ public class SimpleRouterFabric implements RouterFabric {
         return ports;
     }
 
+    /**
+     * Close ports.
+     */
+    public void closePorts() {
+        for (RouterPort port : ports) {
+            closePort(port);
+        }
+    }
+
+    /**
+     * Close port.
+     */
+    public void closePort(RouterPort port) {
+        if (port.equals(RouterPort.EMPTY)) {
+            // nothing to do
+        } else {
+            System.err.println(leadin() + "closing port " + port);
+            
+            NetIF netIF = port.getNetIF();
+            netIF.close();
+        }
+    }
+
+
+
     /*
      * Port processing
      */

@@ -25,4 +25,16 @@ public interface RouterFabric {
      * Get a list of all the ports with Network Interfaces.
      */
     public List<RouterPort> listPorts();
+
+
+    /**
+     * Close ports
+     */
+    public void closePorts();
+
+    /**
+     * Close port.
+     */
+    public void closePort(RouterPort port);
+
 }
