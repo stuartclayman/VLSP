@@ -19,8 +19,8 @@ public class ShutDownCommand extends LocalCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
+        controller.shutDown();
         success("SHUTDOWN");
-        managementConsole.localController_.shutDown();
         return true;
     }
 

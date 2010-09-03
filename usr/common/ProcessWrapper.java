@@ -36,9 +36,9 @@ public class ProcessWrapper {
         eListener = new ProcessListener(proc.getErrorStream(), "stderr", this);
 
         // allocate a Thread for the InputStream Listener
-        iThread = new Thread(iListener);
+        iThread = new Thread(iListener, name + "-InputStream");
         // allocate a Thread for the ErrorStream Listener
-        eThread = new Thread(eListener);
+        eThread = new Thread(eListener, name + "-ErrorStream");
 
         // start both threads
         iThread.start();

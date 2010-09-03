@@ -35,7 +35,7 @@ public class InputHandler implements Runnable {
         this.mcrp = mcrp;
 	this.input = new BufferedReader(inp);
 
-	myThread = new Thread(this);
+	myThread = new Thread(this, mcrp.getClass().getName() + "-" + "InputHandler-" + hashCode());
 	running = true;
 	myThread.start();
     }

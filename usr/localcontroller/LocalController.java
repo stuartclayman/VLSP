@@ -8,6 +8,7 @@ import usr.console.*;
 import usr.router.*;
 import usr.common.LocalHostInfo;
 import usr.common.ProcessWrapper;
+import usr.common.ThreadTools;
 import usr.interactor.*;
 
 
@@ -22,7 +23,6 @@ import usr.interactor.*;
 public class LocalController implements ComponentController {
     private LocalControllerInfo hostInfo_;
     private LocalHostInfo globalController_;
-    private Thread listenThread_;
     private GlobalControllerInteractor gcInteractor_= null;
     private LocalControllerManagementConsole console_= null;
     private boolean listening_ = true;
@@ -80,10 +80,11 @@ public class LocalController implements ComponentController {
     public void shutDown() {
 
         System.out.println("Local controller got shutdown message from global controller.");
+
+        ThreadTools.findAllThreads("LC top of shutDown:");
+
         System.out.println("Stopping all running routers"); 
         for (int i= 0; i < routers_.size(); i++) {
-            ///Router r= routerList_.get(i);
-            ///r.stop();
 
             RouterInteractor interactor = routerInteractors_.get(i);
             try {
@@ -96,16 +97,18 @@ public class LocalController implements ComponentController {
                 System.err.println (e.getMessage());          
             }
 
+            ThreadTools.findAllThreads("LC after router shutDown:");
+
+
+
         }
+
         System.out.println(leadin() + "Stopping process wrappers");
         Collection <ProcessWrapper> pws= (Collection<ProcessWrapper>)childProcessWrappers_.values();
         for (ProcessWrapper pw: pws) { 
-            //ProcessWrapper pw= pws.get(i);
             pw.stop();
         }
-        System.out.println(leadin() + "Stopping console");
 
-        console_.stop();
         System.out.println(leadin() + "Stopping global controller interactor");
         try {        
           gcInteractor_.quit();
@@ -115,6 +118,22 @@ public class LocalController implements ComponentController {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
+
+
+        System.out.println(leadin() + "Stopping console");
+        console_.stop();
+
+        System.out.println(leadin()+ "Pausing.");
+
+        try {
+            Thread.sleep(10);
+        } catch (Exception e) {
+            System.err.println(leadin()+ e.getMessage());
+            System.exit(-1);
+        }
+
+
+        ThreadTools.findAllThreads("LC end of shutDown:");
 
         
     }

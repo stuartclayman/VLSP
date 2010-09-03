@@ -20,8 +20,8 @@ public class ShutDownCommand extends RouterCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        success("SHUTDOWN");
         controller.shutDown();
+        success("SHUTDOWN");
         return true;
     }
 

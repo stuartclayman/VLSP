@@ -143,7 +143,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             fsm = FSMState.START;
 
 
-            myThread = new Thread(this, "ManagementConsole" + hashCode());
+            myThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
             running = true;
             myThread.start();
 
@@ -161,22 +161,25 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      */
     public boolean stop() {
         try {
+            // interrupt any waits
             running = false;
             myThread.interrupt();
 
 
+            // call shutdown
             boolean shutdown = shutDown();
 
             // FSM
             fsm = FSMState.STOP;
 
+            // wait for the thread to end
+            waitFor();
 
             return shutdown;
 
         } catch (Exception e) {
             return false;
         }
-
     }
 
     /**
@@ -242,8 +245,32 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             }
         }
 
+        System.err.println(leadin() + " End of thread " +  Thread.currentThread());
+
+        // notify we have reached the end of this thread
+        theEnd();
         
     }
+
+    /**
+     * Wait for this thread.
+     */
+    private synchronized void waitFor() {
+        // System.out.println(leadin() + "waitFor");
+        try {
+            wait();
+        } catch (InterruptedException ie) {
+        }
+    }
+    
+    /**
+     * Notify this thread.
+     */
+    private synchronized void theEnd() {
+        // System.out.println(leadin() + "theEnd");
+        notify();
+    }
+
 
     /**
      * Set up.
@@ -289,6 +316,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             // close main socket
             serverSocket.close();
             System.err.println(leadin() + "Stopped listening on port: " + port);
+
             return true;
         } catch (Exception e) {
             System.err.println(leadin() + "Cannot close socket on port: " + port);

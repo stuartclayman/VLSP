@@ -181,9 +181,36 @@ public class RouterController implements ComponentController, Runnable {
      * Shutdown the Router.
      */
     public void shutDown() {
-        System.out.println(leadin() + "SHUTDOWN");
+        // We have to stop the ManagementConsole and the RouterConnections
+        // The we have to wait for this thread to terminate
+        System.out.println(leadin() + "Shutdown");
+
+        // stop other ManagementConsole and RouterConnections
         stop();
+
+        // wait for myself
+        waitFor();
     }
+
+    /**
+     * Wait for this thread.
+     */
+    private synchronized void waitFor() {
+        // System.out.println(leadin() + "waitFor");
+        try {
+            wait();
+        } catch (InterruptedException ie) {
+        }
+    }
+
+    /**
+     * Notify this thread.
+     */
+    private synchronized void theEnd() {
+        // System.out.println(leadin() + "theEnd");
+        notify();
+    }
+
 
     /**
      * The main thread loop.
@@ -227,7 +254,11 @@ public class RouterController implements ComponentController, Runnable {
             }
         }
 
+        // shutdown Thread pool
         pool.shutdown();
+
+        // notify we have reached the end of this thread
+        theEnd();
     }
 
 

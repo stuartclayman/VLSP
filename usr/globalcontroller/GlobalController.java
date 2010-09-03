@@ -25,9 +25,6 @@ public class GlobalController implements ComponentController {
     private boolean listening_;
     private GlobalControllerManagementConsole console_= null;
     private ArrayList <LocalControllerInteractor> localControllers_ = null;
-    ///private ArrayList <Process> childProcesses_= null;
-    ///private ArrayList <BufferedReader> childOutput_= null;
-    ///private ArrayList <BufferedReader> childError_= null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
     private ArrayList <String> childNames_= null;
     private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
@@ -321,17 +318,29 @@ public class GlobalController implements ComponentController {
     private void shutDown() {
         System.out.println (leadin() + "SHUTDOWN CALLED!");
         if (!options_.isSimulation()) {
+
+            ThreadTools.findAllThreads("GC pre killAllControllers:");
+
             killAllControllers();
+
+            ThreadTools.findAllThreads("GC post killAllControllers:");
+
             while (checkMessages()) {};
-            System.out.println(leadin()+ "Local controller shutdown called.  Pausing.");
+
+            System.out.println(leadin()+ "Pausing.");
+
             try {
-               Thread.sleep(5000);
+               Thread.sleep(10);
             } catch (Exception e) {
                 System.err.println(leadin()+ e.getMessage());
                 System.exit(-1);
             }
+
+            ThreadTools.findAllThreads("GC post checkMessages:");
+
             System.out.println(leadin()+"Stopping console");
             console_.stop();
+            ThreadTools.findAllThreads("GC post stop console:");
         }
         System.out.println(leadin() + "All stopped, shut down now!");
 
@@ -366,15 +375,20 @@ public class GlobalController implements ComponentController {
             
             System.out.println(leadin() + "Starting Local Controllers");
             startLocalControllers();
-            try {
-                Thread.sleep(5000);  // Simple wait is to
-                            // ensure controllers start up
-            }
-            catch (java.lang.InterruptedException e) {
-                System.err.println(leadin() + "initVirtualRouters Got interrupt!");
-                System.exit(-1);    
+
+            for (int w=0; w < 5; w++) {
+                try {
+                    //System.out.println(1000 * (w + 1));
+                    Thread.sleep(1000);  // Simple wait is to
+                    // ensure controllers start up
+                }
+                catch (java.lang.InterruptedException e) {
+                    System.err.println(leadin() + "initVirtualRouters Got interrupt!");
+                    System.exit(-1);    
+                }
             }
         }
+
         
         System.out.println(leadin() + "Checking existence of local Controllers");
         checkAllControllers();
@@ -400,19 +414,6 @@ public class GlobalController implements ComponentController {
             String procName = lh.getName()+":"+lh.getPort();
             childNames_.add(procName);
             childProcessWrappers_.put(procName, new ProcessWrapper(child, procName));
-
-            /* old approach
-            childProcesses_.add(child);
-            InputStream is= child.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br= new BufferedReader(isr);
-            childOutput_.add(br);
-            is= child.getErrorStream();
-            isr = new InputStreamReader(is);
-            br= new BufferedReader(isr);
-            childError_.add(br);
-            childNames_.add(lh.getName()+":"+lh.getPort());
-            */
 
             try {
                 Thread.sleep(10);  // Simple wait is to
@@ -527,7 +528,11 @@ public class GlobalController implements ComponentController {
       for (int i= 0; i < localControllers_.size(); i++) {
           inter= localControllers_.get(i);
           try {
+
               inter.shutDown();
+
+              ThreadTools.findAllThreads("GC post kill :" + i);
+
           } catch (java.io.IOException e) {
               System.err.println (leadin() + "Cannot send shut down to local Controller");
               System.err.println (e.getMessage()); 
@@ -537,6 +542,13 @@ public class GlobalController implements ComponentController {
           }
       }
       System.out.println(leadin() + "Stop messages sent to all controllers");
+
+        System.out.println(leadin() + "Stopping process wrappers");
+        Collection <ProcessWrapper> pws= (Collection<ProcessWrapper>)childProcessWrappers_.values();
+        for (ProcessWrapper pw: pws) { 
+            pw.stop();
+        }
+
     }
 
     protected void finalize() {
