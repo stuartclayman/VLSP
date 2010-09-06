@@ -31,7 +31,17 @@ public class RouterPort {
         return netIF;
     }
 
-    public String toString() {
+    /**
+     * Get name
+     */
+    public String getName() {
         return "port" + portNo + " " + netIF;
+    }
+
+    /**
+     * To String
+     */
+    public String toString() {
+        return getName() + ": " + netIF;
     }
 }

@@ -149,11 +149,11 @@ public class RouterController implements ComponentController, Runnable {
         running = true;
         myThread.start();
 
-        // start listener
-        boolean startedL = management.start();
-
-        // start connections
+        // start router to router connections listener
         boolean startedC = connections.start();
+
+        // start management console listener
+        boolean startedL = management.start();
 
         return startedL && startedC;
     }
@@ -164,18 +164,18 @@ public class RouterController implements ComponentController, Runnable {
     public boolean stop() {
         System.out.println(leadin() + "stop");
 
-        // stop the listener
+        // stop the management console listener
         boolean stoppedL = management.stop();
 
-        // stop the connections
+        // stop the router to router connections
         boolean stoppedC = connections.stop();
-
-        // close fabric ports
-        router.closePorts();
 
         // stop my own thread
         running = false;
         myThread.interrupt();
+
+        // wait for myself
+        waitFor();
 
         return stoppedL && stoppedC;
     }
@@ -189,10 +189,8 @@ public class RouterController implements ComponentController, Runnable {
         System.out.println(leadin() + "Shutdown");
 
         // stop other ManagementConsole and RouterConnections
-        stop();
+        router.stop();
 
-        // wait for myself
-        waitFor();
     }
 
     /**

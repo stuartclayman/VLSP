@@ -37,4 +37,13 @@ public interface RouterFabric {
      */
     public void closePort(RouterPort port);
 
+    /**
+     * Start me up.
+     */
+    public boolean start();
+
+    /**
+     * Stop the RouterController.
+     */
+    public boolean stop();
 }

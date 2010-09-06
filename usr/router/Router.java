@@ -70,18 +70,24 @@ public class Router {
     public boolean start() {
         System.out.println(leadin() + "start");
 
+        boolean fabricStart = fabric.start();
         boolean controllerStart = controller.start();
-        
-        return controllerStart;
+
+        return controllerStart && fabricStart;
     }
         
     /**
      * Stop the router
      */
     public boolean stop() {
-        controller.stop();
-
         System.out.println(leadin() + "stop");
+
+        // close fabric ports
+        closePorts();
+
+
+        controller.stop();
+        fabric.stop();
 
         return true;
     }

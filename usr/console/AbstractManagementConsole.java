@@ -161,21 +161,22 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      */
     public boolean stop() {
         try {
-            // interrupt any waits
             running = false;
-            myThread.interrupt();
 
-
-            // call shutdown
-            boolean shutdown = shutDown();
+            // call Cleardown
+            boolean cleardown = clearDown();
 
             // FSM
             fsm = FSMState.STOP;
 
+            // interrupt any waits
+            myThread.interrupt();
+
+
             // wait for the thread to end
             waitFor();
 
-            return shutdown;
+            return cleardown;
 
         } catch (Exception e) {
             return false;
@@ -256,7 +257,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Wait for this thread.
      */
     private synchronized void waitFor() {
-        // System.out.println(leadin() + "waitFor");
+        //System.out.println(leadin() + "waitFor");
         try {
             wait();
         } catch (InterruptedException ie) {
@@ -267,7 +268,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Notify this thread.
      */
     private synchronized void theEnd() {
-        // System.out.println(leadin() + "theEnd");
+        //System.out.println(leadin() + "theEnd");
         notify();
     }
 
@@ -291,7 +292,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                 // already done earlier
                 // ssc.configureBlocking(false);
 
-                System.err.println(leadin() + "Registering " + ssc);
+                // System.err.println(leadin() + "Registering " + ssc);
 
                 // register this channel with the selector
                 SelectionKey key = ssc.register( selector, SelectionKey.OP_ACCEPT );
@@ -307,10 +308,10 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     }
 
     /**
-     * Shutdown
+     * Cleardown
      */
-    protected boolean shutDown() {
-        System.out.println(leadin() + "Shutdown");
+    protected boolean clearDown() {
+        System.out.println(leadin() + "Cleardown");
 
         try {
             // close main socket

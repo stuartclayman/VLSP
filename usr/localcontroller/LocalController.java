@@ -214,11 +214,12 @@ public class LocalController implements ComponentController {
         // create a RouterInteractor
         RouterInteractor interactor = null;
 
-        // try 5 times, with 500 millisecond gap
+        // try 10 times, with 500 millisecond gap
+        int MAX_TRIES = 10;
         int tries = 0;
         int millis = 500;
         boolean isOK = false;
-        for (tries = 0; tries < 5; tries++) {
+        for (tries = 0; tries < MAX_TRIES; tries++) {
             // sleep a bit
             try {
                 Thread.sleep(millis);

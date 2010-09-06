@@ -6,12 +6,21 @@ import java.util.ArrayList;
 /**
  * A RouterFabric within UserSpaceRouting.
  */
-public class SimpleRouterFabric implements RouterFabric {
+public class SimpleRouterFabric implements RouterFabric, Runnable {
     // The Router this is fabric for
     Router router;
 
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
+
+    // The Thread
+    Thread myThread;
+
+    // are we running
+    boolean running = false;
+
+    // how many millis to wait between port checks
+    int checkTime = 60000;
 
     /**
      * Construct a SimpleRouterFabric.
@@ -25,6 +34,92 @@ public class SimpleRouterFabric implements RouterFabric {
             resetPort(p);
         }
     }
+
+    /**
+     * Start me up.
+     */
+    public boolean start() {
+        System.out.println(leadin() + "start");
+
+        // start my own thread
+        myThread = new Thread(this);
+        running = true;
+        myThread.start();
+
+        return true;
+    }
+
+
+    /**
+     * Stop the RouterController.
+     */
+    public boolean stop() {
+        System.out.println(leadin() + "stop");
+
+        // stop my own thread
+        running = false;
+        myThread.interrupt();
+
+        // wait for myself
+        waitFor();
+
+        return true;
+    }
+
+    /**
+     * The main thread loop.
+     * It occasionally checks to see if the
+     * NetIFs plugged into the ports are alive.
+     */
+    public void run() {
+
+        while (running) {
+            try {
+                // sleep a bit
+                Thread.sleep(checkTime);
+
+                // visit each port
+                int limit = ports.size();
+                for (int p = 0;  p < limit; p++) {
+                    RouterPort port = ports.get(p);
+
+                    // check if port is plugged in
+                    if (port.equals(RouterPort.EMPTY)) {
+                        continue;
+                    } else {
+                    }
+                }
+                
+            } catch (InterruptedException ie) {
+                //System.err.println(leadin() + "SimpleRouterFabric: interrupt " + ie);
+            }
+        }
+
+        // notify we have reached the end of this thread
+        theEnd();
+    }
+
+
+    /**
+     * Wait for this thread.
+     */
+    private synchronized void waitFor() {
+        // System.out.println(leadin() + "waitFor");
+        try {
+            wait();
+        } catch (InterruptedException ie) {
+        }
+    }
+
+    /**
+     * Notify this thread.
+     */
+    private synchronized void theEnd() {
+        // System.out.println(leadin() + "theEnd");
+        notify();
+    }
+
+
 
     /**
      * Add a Network Interface to this Router.
