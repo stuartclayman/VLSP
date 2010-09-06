@@ -74,9 +74,21 @@ public class ProcessWrapper {
      * Stop the process wrapper.
      */
     public void stop() {
-        process.destroy();
-        iListener.stop();
-        eListener.stop();
+        try {
+            // disconnect the process
+            process.getOutputStream().close();
+            process.getInputStream().close();
+            process.getErrorStream().close();
+
+            // stop listeners
+            iListener.stop();
+            eListener.stop();
+
+            // now splat it
+            process.destroy();
+
+        } catch (IOException ioe) {
+        }
     }
        
     /**
