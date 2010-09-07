@@ -13,6 +13,17 @@ class RoutingTable {
         
     }
     
+    RoutingTable(String table, RouterFabric fabric)
+    {
+        table_= new HashMap<String,RoutingTableEntry>();
+        String []entries= table.split("\n");
+        RoutingTableEntry e;
+        for (String s: entries) {
+            e= new RoutingTableEntry(s, fabric);
+            table_.put(e.getRouterId(), e);
+        }
+    }
+    
     /** A new network interface arrives -- add to
     routing table if necessary */
     void addNetIF(NetIF inter) {
@@ -43,7 +54,7 @@ class RoutingTable {
         // Update entry if no entry exists, if new entry is cheaper
         // or if newEntry is on same interface (indicating an
         // increase in cost
-        if (oldEntry == null || || oldEntry.inter.equals(router)
+        if (oldEntry == null || oldEntry.getNetIF().equals(router)
             || oldEntry.getCost() > 
             newEntry.getCost() + weight) {
             oldEntry= new RoutingTableEntry(router,newEntry.getCost() +

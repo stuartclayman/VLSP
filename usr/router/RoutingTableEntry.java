@@ -11,6 +11,12 @@ class RoutingTableEntry {
         inter_= inter;
     }
     
+    RoutingTableEntry(String tableEntry, RouterFabric fabric) {
+        String []components= tableEntry.split(" ");
+        
+        
+    }
+    
     String getRouterId() {
         return routerId_;
     }
