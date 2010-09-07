@@ -51,6 +51,7 @@ public class RouterManagementConsole extends AbstractManagementConsole implement
         register(new SetAddressCommand());
         register(new GetWeightCommand());
         register(new SetWeightCommand());
+        register(new ListRoutingTableCommand());
     }
     
 }

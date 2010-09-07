@@ -429,7 +429,7 @@ public class GlobalController implements ComponentController {
         SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION,time,null);
         scheduler_.addEvent(e);
         // TODO remove this hack.
-        int mr= 50;
+        int mr= 5;
         for (int i= 0; i < mr; i++) {
             SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER,
             EventScheduler.afterPause(options_.getSimulationLength())/2,null);

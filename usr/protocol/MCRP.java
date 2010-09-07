@@ -198,6 +198,15 @@ public class MCRP implements Protocol {
         public final static int ERROR= 422;
     }
 
+  /**  Router lists routing table */
+    
+    public final static class LIST_ROUTING_TABLE {
+        public final static String CMD = "LIST_ROUTING_TABLE";
+        public final static int CODE= 273;
+        public final static int ERROR= 423;
+    }
+
+
     /*
      * Spare - 290 - 299
      */

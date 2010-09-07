@@ -46,4 +46,8 @@ public interface RouterFabric {
      * Stop the RouterController.
      */
     public boolean stop();
+    
+    /** List Routing table */
+    
+    public String listRoutingTable();
 }

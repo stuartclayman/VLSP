@@ -124,6 +124,11 @@ public class Router {
         return controller.setName(name);
     }
 
+    /** Get the routing table as a string */
+    public String listRoutingTable() {
+        return fabric.listRoutingTable();
+    }
+
 
     /**
      * Plug in a NetIF to the Router.

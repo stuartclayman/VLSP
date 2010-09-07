@@ -77,6 +77,9 @@ CLASSES = \
   usr/router/command/QuitCommand.java \
   usr/router/command/UnknownCommand.java \
   usr/router/command/SetAddressCommand.java \
+  usr/router/command/ListRoutingTableCommand.java \
+  usr/router/RoutingTable.java \
+  usr/router/RoutingTableEntry.java \
   usr/router/RouterFabric.java \
   usr/router/RouterManagementConsole.java \
   usr/router/NetIF.java \

@@ -275,6 +275,11 @@ public class RouterController implements ComponentController, Runnable {
 
     }
 
+    /** Return a routing table as a string */
+    public String listRoutingTable() {
+        return router.listRoutingTable();
+    }
+
     /**
      * Find a NetIF by an id.
      */

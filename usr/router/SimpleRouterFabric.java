@@ -10,6 +10,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
     // The Router this is fabric for
     Router router;
 
+    RoutingTable table_= null;
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
 
@@ -27,7 +28,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
      */
     public SimpleRouterFabric(Router router) {
         this.router = router;
-
+        table_= new RoutingTable();
         int limit = 32;
         ports = new ArrayList<RouterPort>(limit);
         for (int p=0; p < limit; p++) {
@@ -132,7 +133,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         ports.set(nextFree, rp);
 
         System.err.println(leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
-
+        table_.addNetIF(netIF);
         return rp;
     }
 
@@ -201,6 +202,11 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
      */
     void resetPort(int p) {
         ports.add(p, RouterPort.EMPTY);
+    }
+    
+    //** Return the routing table as a string */
+    public String listRoutingTable() {
+        return table_.listRoutingTable();
     }
 
     /**
