@@ -40,7 +40,11 @@ class RoutingTable {
         String router= inter.getRemoteRouterName();
         int weight= inter.getWeight();
         RoutingTableEntry oldEntry= table_.get(router);
-        if (oldEntry == null || oldEntry.getCost() > 
+        // Update entry if no entry exists, if new entry is cheaper
+        // or if newEntry is on same interface (indicating an
+        // increase in cost
+        if (oldEntry == null || || oldEntry.inter.equals(router)
+            || oldEntry.getCost() > 
             newEntry.getCost() + weight) {
             oldEntry= new RoutingTableEntry(router,newEntry.getCost() +
                weight, inter);
