@@ -28,6 +28,8 @@ public class GlobalController implements ComponentController {
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
     private ArrayList <String> childNames_= null;
     private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
+    private HashMap <Integer, BasicRouterInfo> routerIdMap_= null;
+    private HashMap <LocalControllerInfo, PortPool> portPools_= null;
     private int aliveCount= 0;
     private EventScheduler scheduler_= null;
     private boolean simulationRunning_= true;
@@ -58,28 +60,64 @@ public class GlobalController implements ComponentController {
     }
 
     /**
-     * Construct a GlobalController.
+     * Construct a GlobalController -- this constructor contains things
+     which apply whether we are simulation or 
      */
     public GlobalController () {
+    
         ///childProcesses_= new ArrayList<Process>();
         ///childOutput_= new ArrayList<BufferedReader>();
         ///childError_= new ArrayList<BufferedReader>();
-        childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
-        childNames_= new ArrayList<String>();
+        
     }
 
     private void init() {
       
       options_= new ControlOptions(xmlFile_);
-      
-      
       myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
       if (!options_.isSimulation()) {
-          console_= new GlobalControllerManagementConsole(this,myHostInfo_.getPort());
-          console_.start();
-          initVirtualRouters();
+          initEmulation();
       }
       initSchedule();
+    }
+    
+    /**
+    Initialisation if we are emulating on hardware.
+    */
+    private void initEmulation () {
+          childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
+          childNames_= new ArrayList<String>();
+          routerIdMap_= new HashMap<Integer, BasicRouterInfo>();
+          console_= new GlobalControllerManagementConsole(this,myHostInfo_.getPort());
+          console_.start();
+          portPools_= new HashMap<LocalControllerInfo,PortPool>();
+          noControllers_= options_.noControllers();
+          LocalControllerInfo lh;
+          for(int i= 0; i < noControllers_; i++) {
+              lh = options_.getController(i);
+              portPools_.put(lh,new PortPool(lh.getLowPort(),lh.getHighPort()));
+          }
+          if (options_.startLocalControllers()) {
+            
+              System.out.println(leadin() + "Starting Local Controllers");
+              startLocalControllers();
+
+            for (int w=0; w < options_.getControllerWaitTime(); w++) {
+                try {
+                    //System.out.println(1000 * (w + 1));
+                    Thread.sleep(1000);  // Simple wait is to
+                    // ensure controllers start up
+                }
+                catch (java.lang.InterruptedException e) {
+                    System.err.println(leadin() + "initVirtualRouters Got interrupt!");
+                    System.exit(-1);    
+                }
+            }
+        }
+
+        
+        System.out.println(leadin() + "Checking existence of local Controllers");
+        checkAllControllers();
     }
     
     private void simulate() {
@@ -242,6 +280,7 @@ public class GlobalController implements ComponentController {
     
     /** Event for end Simulation */
     private void endSimulation() {
+        System.out.println(leadin() + "End of simulation event");
         simulationRunning_= false;
         shutDown();
     }
@@ -283,10 +322,15 @@ public class GlobalController implements ComponentController {
             }
         }
         LocalControllerInteractor lci= interactorMap_.get(leastUsed);
-        leastUsed.addRouter();  // Increment count
-        maxRouterId_++;
+        PortPool pp= portPools_.get(leastUsed);
         try {
-            lci.newRouter(maxRouterId_);
+            int port= pp.findPort(2);
+            leastUsed.addRouter();  // Increment count
+            maxRouterId_++;
+            BasicRouterInfo br= new BasicRouterInfo(maxRouterId_,simulationTime,
+                leastUsed,port);
+            routerIdMap_.put(maxRouterId_,br);
+            lci.newRouter(maxRouterId_, port);
         } catch (IOException e) {
             System.err.println(leadin() +"Could not start new router");
             System.err.println(e.getMessage());
@@ -306,7 +350,35 @@ public class GlobalController implements ComponentController {
     
     /** Event to link two routers */
     private void startLink(int router1Id, int router2Id) {
-    
+        
+        BasicRouterInfo br1,br2;
+        LocalControllerInfo lc;
+        LocalControllerInteractor lci;
+        br1= routerIdMap_.get(router1Id);
+        br2= routerIdMap_.get(router2Id);
+        //System.out.println("Got router Ids"+br1.getHost()+br2.getHost());
+        
+        lc= br1.getLocalControllerInfo();
+        //System.out.println("Got LC");
+        lci= interactorMap_.get(lc);
+        //System.out.println("Got LCI");
+        System.out.println(leadin() + "Global controller linking routers "+
+            br1.getHost() +":"+ br1.getManagementPort()+ " and "+
+               br2.getHost()+":"+ br2.getManagementPort());
+        try {
+            lci.connectRouters(br1.getHost(), br1.getManagementPort(),
+               br2.getHost(), br2.getManagementPort());
+        } catch (IOException e) {
+            System.err.println(leadin() + "Cannot link routers");
+            System.err.println(leadin() + e.getMessage());
+            bailOut();
+        }
+        catch (MCRPException e) {
+            System.err.println(leadin() + "Cannot link routers");
+            System.err.println(leadin() + e.getMessage());
+            bailOut();
+        }
+
     }
     
     /** Event to unlink two routers */
@@ -355,44 +427,22 @@ public class GlobalController implements ComponentController {
         }
         scheduler_= new EventScheduler();
         SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION,time,null);
-        
-        // TODO remove this hack.
-        SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER,
-            EventScheduler.afterPause(options_.getSimulationLength())/2,null);
-        SimEvent e3= new SimEvent(SimEvent.EVENT_START_ROUTER,
-            EventScheduler.afterPause(2*options_.getSimulationLength())/3,null);
         scheduler_.addEvent(e);
-        scheduler_.addEvent(e2);
-        //scheduler_.addEvent(e3);
-    }
-    
-    /** Initialisation steps for when we are using virtual routers
-    rather than simulation */
-    
-    private void initVirtualRouters() {
-        noControllers_= options_.noControllers();
-        if (options_.startLocalControllers()) {
-            
-            System.out.println(leadin() + "Starting Local Controllers");
-            startLocalControllers();
-
-            for (int w=0; w < 5; w++) {
-                try {
-                    //System.out.println(1000 * (w + 1));
-                    Thread.sleep(1000);  // Simple wait is to
-                    // ensure controllers start up
-                }
-                catch (java.lang.InterruptedException e) {
-                    System.err.println(leadin() + "initVirtualRouters Got interrupt!");
-                    System.exit(-1);    
-                }
-            }
+        // TODO remove this hack.
+        int mr= 50;
+        for (int i= 0; i < mr; i++) {
+            SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER,
+            EventScheduler.afterPause(options_.getSimulationLength())/2,null);
+            scheduler_.addEvent(e2);
         }
-
-        
-        System.out.println(leadin() + "Checking existence of local Controllers");
-        checkAllControllers();
+        for (int i= 0; i < mr-1; i++) {
+            SimEvent e2= new SimEvent(SimEvent.EVENT_START_LINK,
+                EventScheduler.afterPause(options_.getSimulationLength())/2+1000,
+              new Pair<Integer,Integer>(i+1,i+2));
+            scheduler_.addEvent(e2);
+        }
     }
+    
     
     private void startLocalControllers() {
         Iterator i= options_.getControllersIterator();

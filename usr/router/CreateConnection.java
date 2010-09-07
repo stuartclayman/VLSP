@@ -44,7 +44,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         }
 
         // check ip addr spec
-        String[] ipParts = parts[1].split("/");
+        String[] ipParts = parts[1].split(":");
         if (ipParts.length != 2) {
             System.err.println(leadin() + "INVALID createConnection ip address: " + request);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid address " + parts[1]);

@@ -7,6 +7,7 @@ import java.net.*;
 import usr.console.*;
 import usr.router.*;
 import usr.common.LocalHostInfo;
+import usr.common.BasicRouterInfo;
 import usr.common.ProcessWrapper;
 import usr.common.ThreadTools;
 import usr.interactor.*;
@@ -26,11 +27,12 @@ public class LocalController implements ComponentController {
     private GlobalControllerInteractor gcInteractor_= null;
     private LocalControllerManagementConsole console_= null;
     private boolean listening_ = true;
-    private int maxPort_= 20000;  // Ports in use
     private ArrayList <BasicRouterInfo> routers_= null;
     private ArrayList <RouterInteractor> routerInteractors_ = null;
     private ArrayList <Router> routerList_= null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
+    private HashMap<Integer, BasicRouterInfo> routerMap_ = null;
+
     private String classPath_= null;
 
     private String myName = "LocalController";
@@ -69,6 +71,7 @@ public class LocalController implements ComponentController {
         routers_= new ArrayList<BasicRouterInfo>();
         routerList_= new ArrayList<Router>();
         childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
+        routerMap_ = new HashMap<Integer, BasicRouterInfo>();
         routerInteractors_ = new ArrayList<RouterInteractor>();
         console_= new LocalControllerManagementConsole(this, port);
         Properties prop = System.getProperties();
@@ -174,7 +177,7 @@ public class LocalController implements ComponentController {
     /** 
      * Received start new router command
     */
-    public boolean requestNewRouter (int routerId) 
+    public boolean requestNewRouter (int routerId, int port1, int port2) 
     
     {
 
@@ -187,12 +190,12 @@ public class LocalController implements ComponentController {
         cmd[1] = "-cp";
         cmd[2] = classPath_;
         cmd[3] = "usr.router.Router";
-        cmd[4] = String.valueOf(maxPort_);
-        cmd[5] = String.valueOf(maxPort_ + 1);
+        cmd[4] = String.valueOf(port1);
+        cmd[5] = String.valueOf(port2);
         cmd[6] = routerName;
 
         try {
-            System.out.println(leadin() + "Starting Router on port "+maxPort_);
+            System.out.println(leadin() + "Starting Router on ports "+port1+" "+port2);
 
             child = new ProcessBuilder(cmd).start();
 
@@ -214,10 +217,10 @@ public class LocalController implements ComponentController {
         // create a RouterInteractor
         RouterInteractor interactor = null;
 
-        // try 10 times, with 500 millisecond gap
-        int MAX_TRIES = 10;
+        // try 50 times, with 100 millisecond gap
+        int MAX_TRIES = 50;
         int tries = 0;
-        int millis = 500;
+        int millis = 100;
         boolean isOK = false;
         for (tries = 0; tries < MAX_TRIES; tries++) {
             // sleep a bit
@@ -228,7 +231,7 @@ public class LocalController implements ComponentController {
 
             // try and connect
             try {
-                interactor = new RouterInteractor("localhost", maxPort_);
+                interactor = new RouterInteractor("localhost", port1);
                 routerInteractors_.add(interactor);
                 isOK = true;
                 break;
@@ -239,13 +242,12 @@ public class LocalController implements ComponentController {
 
         if (! isOK) {
             // we didnt connect
-            System.err.println(leadin() + "Unable to connect to Router on port " + maxPort_);
+            System.err.println(leadin() + "Unable to connect to Router on port " + port1);
             return false;
         } else {
             // we connected
-            BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,maxPort_);
+            BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,port1);
             routers_.add(br);
-            maxPort_+=2;
 
             // tell the router its new name
             try {
@@ -255,9 +257,30 @@ public class LocalController implements ComponentController {
             } catch (MCRPException mcrpe) {
                 return false;
             }
-
+            routerMap_.put(routerId,br);
             return true;
         }
+    }
+    
+    
+
+    public boolean connectRouters(LocalHostInfo r1, LocalHostInfo r2) {
+       System.out.println (leadin() + "Got connect request for routers");
+
+       RouterInteractor ri= findRouterInteractor(r1.getPort());
+       if (ri == null)
+          return false;
+       try {
+           String address= r2.getName()+":"+r2.getPort();
+           ri.createConnection(address,1);
+       }
+       catch (Exception e) {
+           System.err.println("Cannot connect routers");
+           System.err.println(e.getMessage());
+           return false;
+       }
+       
+       return true;
     }
 
     /**
@@ -274,6 +297,15 @@ public class LocalController implements ComponentController {
         return console_;
     }
 
+    private RouterInteractor findRouterInteractor(int port) 
+    {
+        for (RouterInteractor r: routerInteractors_) {
+          if (port == r.getPort())
+              return r;
+        }
+        System.err.println(leadin()+"Unable to find router interactor listening on port"+port);
+        return null;
+    }
 
     /**
      * Create the String to print out before a message

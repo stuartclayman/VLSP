@@ -190,6 +190,14 @@ public class MCRP implements Protocol {
     }
    
 
+    /** Local controller joins routers */
+    
+    public final static class CONNECT_ROUTERS {
+        public final static String CMD = "CONNECT_ROUTERS";
+        public final static int CODE= 272;
+        public final static int ERROR= 422;
+    }
+
     /*
      * Spare - 290 - 299
      */

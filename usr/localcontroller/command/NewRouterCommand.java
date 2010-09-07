@@ -20,18 +20,20 @@ public class NewRouterCommand extends LocalCommand {
      */
     public boolean evaluate(String req) {
         String []args= req.split(" ");
-        if (args.length != 2) {
-            error("Expected two arguments for New Router Command");
+        if (args.length != 4) {
+            error("Expected four arguments for New Router Command");
             return false;
         }
-        int rId;
+        int rId,port1,port2;
         try {
             rId= Integer.parseInt(args[1]);
+            port1= Integer.parseInt(args[2]);
+            port2= Integer.parseInt(args[3]);
         } catch (NumberFormatException e) {
             error("Argument for new router command must be int");
             return false;
         }
-        if (managementConsole.requestNewRouter(rId)) {
+        if (managementConsole.requestNewRouter(rId,port1,port2)) {
             success("NEW ROUTER STARTED");
             return true;
         }

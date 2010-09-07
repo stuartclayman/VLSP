@@ -19,15 +19,17 @@ import org.xml.sax.SAXParseException;
 
 class ControlOptions {
     private ArrayList<LocalControllerInfo> localControllers_;
-    private int globalControlPort_ = 8888;
-    private int simulationLength_= 20000;
-    private String remoteLoginCommand_= null;
-    private String remoteStartController_= null;
-    private String remoteLoginFlags_ = null;
-    private String remoteLoginUser_= null;
-    private boolean startLocalControllers_= true;
-    private boolean isSimulation_= false;
-    private int controllerWaitTime_= 600;
+    private int globalControlPort_ = 8888;  // Port global controller listens on
+    private int simulationLength_= 20000;   // Sim length (seconds)
+    private String remoteLoginCommand_= null;  // Command used to login to start local controller
+    private String remoteStartController_= null;  // Command used on local controller to start it
+    private String remoteLoginFlags_ = null;   //  Flags used for ssh to login to remote machine
+    private String remoteLoginUser_= null;     // User on remote machines to login with.
+    private boolean startLocalControllers_= true;   // If true Global Controller starts local controllers
+    private boolean isSimulation_= false;    //  If true simulation in software not emulation in hardware
+    private int controllerWaitTime_= 6;    
+    private int lowPort_= 10000;
+    private int highPort_= 20000;
 
 
     /** init function sets up basic information */
@@ -129,6 +131,20 @@ class ControlOptions {
              throw e;
         } catch (XMLNoTagException e) {
         }
+        try {
+            int l= parseSingleInt(gcn, "LowPort","GlobalController",true);
+            lowPort_= l;
+        } catch (SAXException e) {
+             throw e;
+        } catch (XMLNoTagException e) {
+        }
+        try {
+            int h= parseSingleInt(gcn, "HighPort","GlobalController",true);
+            highPort_= h;
+        } catch (SAXException e) {
+             throw e;
+        } catch (XMLNoTagException e) {
+        }
         
     }
     /**
@@ -145,6 +161,8 @@ class ControlOptions {
                 hostName= parseSingleString(lc, "Name", "LocalController",false);
                 port= parseSingleInt(lc, "Port","LocalController",false);
                 lh= new LocalControllerInfo(hostName, port);
+                lh.setHighPort(highPort_);
+                lh.setLowPort(lowPort_);
                 localControllers_.add(lh);
             } catch (SAXException e) {
                 throw e;
@@ -171,6 +189,20 @@ class ControlOptions {
                 lh.setRemoteStartController(s);
             } catch (SAXException e) {
                 throw e;
+            } catch (XMLNoTagException e) {
+            }
+            try {
+                int l= parseSingleInt(lc, "LowPort","GlobalController",true);
+                lh.setLowPort(l);
+            } catch (SAXException e) {
+               throw e;
+            } catch (XMLNoTagException e) {
+            }
+            try {
+                int h= parseSingleInt(lc, "HighPort","GlobalController",true);
+                lh.setHighPort(h);
+            } catch (SAXException e) {
+                 throw e;
             } catch (XMLNoTagException e) {
             }
         }

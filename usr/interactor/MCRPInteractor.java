@@ -30,6 +30,7 @@ public abstract class MCRPInteractor {
     Socket socket = null;
     Reader input = null;
     PrintWriter output = null;
+    int port_;
 
     // The handler for socket input.
     // It runs in a separate Thread
@@ -66,6 +67,7 @@ public abstract class MCRPInteractor {
      * @param port the port the server is listening on
      */
     protected void initialize(InetAddress addr, int port) throws UnknownHostException, IOException  {
+        port_= port;
 	// set the fsm to FSM_READY
 	fsm = FSMState.FSM_READY;
 
@@ -359,6 +361,10 @@ public abstract class MCRPInteractor {
 				    " Message is: " + message);
 	}
 
+    }
+    
+    public int getPort() {
+        return port_;
     }
 
 
