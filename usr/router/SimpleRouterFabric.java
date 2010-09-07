@@ -226,6 +226,20 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         return null;
     }
     
+    /** Find the netIF which connects to a given end host 
+      @ return null if none exists*/
+    
+    public NetIF findNetIF(String endHostName) {
+        int limit = ports.size();
+        for (int p = 0;  p < limit; p++) {
+            RouterPort port = ports.get(p);
+            if (port.getNetIF().getRemoteRouterName().equals(endHostName)) {
+                return port.getNetIF();
+            }
+        }
+        return null;
+    }
+    
     /**
      * Find the next free port to use.
      * Start at port 0 and work way up.

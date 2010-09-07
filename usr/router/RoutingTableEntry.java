@@ -12,9 +12,22 @@ class RoutingTableEntry {
     }
     
     RoutingTableEntry(String tableEntry, RouterFabric fabric) {
-        String []components= tableEntry.split(" ");
-        
-        
+        String []args= tableEntry.split(" ");
+        if (args.length != 3) {
+            System.err.println("Attempt to construct routing table entry "+
+             "from incorrect string" + tableEntry);
+            System.exit(-1);
+        }
+        routerId_= args[0];
+        try {
+            cost_= Integer.parseInt(args[1]);
+            inter_= fabric.findNetIF(args[2]);
+            
+        } catch (Exception e) {
+            System.err.println("Attempt to construct routing table entry "+
+             "from incorrect string" + tableEntry);
+            System.exit(-1);
+        }
     }
     
     String getRouterId() {

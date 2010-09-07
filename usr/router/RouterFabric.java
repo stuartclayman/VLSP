@@ -27,6 +27,9 @@ public interface RouterFabric {
     public List<RouterPort> listPorts();
 
 
+    /** Return the interface which connects to a given host */
+    public NetIF findNetIF(String host);
+
     /**
      * Close ports
      */
