@@ -13,6 +13,8 @@ class RoutingTable {
         
     }
     
+    /** Construct a new routing table from a string assuming
+     the table is centred here */ 
     RoutingTable(String table, RouterFabric fabric)
     {
         table_= new HashMap<String,RoutingTableEntry>();
@@ -20,6 +22,19 @@ class RoutingTable {
         RoutingTableEntry e;
         for (String s: entries) {
             e= new RoutingTableEntry(s, fabric);
+            table_.put(e.getRouterId(), e);
+        }
+    }
+    
+    /** Construct a new routing table with the assumption that
+    everything on it comes down a given interface */
+    RoutingTable(String table, NetIF netif)
+    {
+        table_= new HashMap<String,RoutingTableEntry>();
+        String []entries= table.split("\n");
+        RoutingTableEntry e;
+        for (String s: entries) {
+            e= new RoutingTableEntry(s, netif);
             table_.put(e.getRouterId(), e);
         }
     }

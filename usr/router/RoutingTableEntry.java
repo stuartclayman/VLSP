@@ -30,6 +30,25 @@ class RoutingTableEntry {
         }
     }
     
+     RoutingTableEntry(String tableEntry, NetIF inter) {
+        String []args= tableEntry.split(" ");
+        if (args.length != 3) {
+            System.err.println("Attempt to construct routing table entry "+
+             "from incorrect string" + tableEntry);
+            System.exit(-1);
+        }
+        routerId_= args[0];
+        try {
+            cost_= Integer.parseInt(args[1]);
+            inter_= inter;
+            
+        } catch (Exception e) {
+            System.err.println("Attempt to construct routing table entry "+
+             "from incorrect string" + tableEntry);
+            System.exit(-1);
+        }
+    }
+    
     String getRouterId() {
         return routerId_;
     }
