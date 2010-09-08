@@ -124,9 +124,11 @@ public class Router {
         return controller.setName(name);
     }
 
-    /** Get the routing table as a string */
-    public String listRoutingTable() {
-        return fabric.listRoutingTable();
+    /** 
+     * Get the routing table
+     */
+    public RoutingTable getRoutingTable() {
+        return fabric.getRoutingTable();
     }
 
 

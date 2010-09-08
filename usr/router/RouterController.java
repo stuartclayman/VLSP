@@ -276,8 +276,8 @@ public class RouterController implements ComponentController, Runnable {
     }
 
     /** Return a routing table as a string */
-    public String listRoutingTable() {
-        return router.listRoutingTable();
+    public RoutingTable getRoutingTable() {
+        return router.getRoutingTable();
     }
 
     /**
@@ -300,7 +300,7 @@ public class RouterController implements ComponentController, Runnable {
      */
     public RouterPort plugInNetIF(NetIF netIF) {
         RouterPort rp = router.plugInNetIF(netIF);
-        System.err.println(leadin() + "removeNetIFLocal "  + netIF);
+        //System.err.println(leadin() + "plugInNetIF "  + netIF);
 
         netIFMap.remove(netIF.getID());
 

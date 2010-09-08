@@ -10,7 +10,9 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
     // The Router this is fabric for
     Router router;
 
+    // The RoutingTable
     RoutingTable table_= null;
+
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
 
@@ -204,9 +206,11 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         ports.add(p, RouterPort.EMPTY);
     }
     
-    //** Return the routing table as a string */
-    public String listRoutingTable() {
-        return table_.listRoutingTable();
+    /**
+     * Return the routing table 
+     */
+    public RoutingTable getRoutingTable() {
+        return table_;
     }
 
     /**

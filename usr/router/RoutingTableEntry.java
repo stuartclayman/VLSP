@@ -1,6 +1,9 @@
 package usr.router;
 
-class RoutingTableEntry {
+/**
+ * An entry in a routing table.
+ */
+public class RoutingTableEntry {
     private String routerId_;
     private int cost_;
     NetIF inter_;
@@ -65,9 +68,13 @@ class RoutingTableEntry {
         cost_= cost;
     }
     
-    String getEntryAsString() {
+    public String getEntryAsString() {
+        return this.toString();
+    }
+     
+    public String toString() {
         String entry= routerId_ + " " + cost_ + " " + 
-            inter_.getRemoteRouterName()+"\n";
+            inter_.getRemoteRouterName();
         return entry;
     }
 

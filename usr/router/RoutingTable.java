@@ -4,10 +4,11 @@ import java.util.*;
 
 /** Class holds a routing table 
 */
-class RoutingTable {
-    
+public class RoutingTable {
+    // The routing table
     HashMap <String, RoutingTableEntry> table_= null;
     
+    /** Construct a new routing table */
     RoutingTable() {
         table_= new HashMap<String,RoutingTableEntry>();
         
@@ -38,6 +39,21 @@ class RoutingTable {
             table_.put(e.getRouterId(), e);
         }
     }
+
+    /**
+     * The size of the RoutingTable.
+     */
+    public int size() {
+        return table_.size();
+    }
+
+    /**
+     * Get all the RoutingTable entries.
+     */
+    public Collection<RoutingTableEntry> getEntries() 
+    {
+        return table_.values();    
+    }
     
     /** A new network interface arrives -- add to
     routing table if necessary */
@@ -51,17 +67,18 @@ class RoutingTable {
         }
     }
     
+    /**
+     * Merge a RoutingTable into this one.
+     */
     void mergeTables(RoutingTable table2, NetIF inter) {
         for (RoutingTableEntry e: table2.getEntries()) {
             mergeEntry(e, inter);
         }
     }
     
-    private Collection <RoutingTableEntry> getEntries() 
-    {
-        return table_.values();    
-    }
-    
+    /**
+     * Merge an entry in this RoutingTable.
+     */
     void mergeEntry(RoutingTableEntry newEntry, NetIF inter) {
         String router= inter.getRemoteRouterName();
         int weight= inter.getWeight();
@@ -78,11 +95,15 @@ class RoutingTable {
         }
     }
     
-    public String listRoutingTable() {
-        String table= new String();
+    /**
+     * To string
+     */
+    public String toString() {
+        StringBuilder table= new StringBuilder();
         for (RoutingTableEntry e: getEntries()) {
-            table+= e.getEntryAsString();
+            table.append(e.getEntryAsString());
+            table.append("\n");
         }
-        return table;
+        return table.toString();
     }
 }

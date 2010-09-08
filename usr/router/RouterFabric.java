@@ -52,5 +52,5 @@ public interface RouterFabric {
     
     /** List Routing table */
     
-    public String listRoutingTable();
+    public RoutingTable getRoutingTable();
 }
