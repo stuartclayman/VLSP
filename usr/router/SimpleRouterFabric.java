@@ -231,7 +231,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
     }
     
     /** Find the netIF which connects to a given end host 
-      @ return null if none exists*/
+      @return null if none exists*/
     
     public NetIF findNetIF(String endHostName) {
         int limit = ports.size();

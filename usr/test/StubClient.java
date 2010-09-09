@@ -9,22 +9,18 @@ import java.nio.channels.*;
 
 public class StubClient {
     final static int PORT_NUMBER = 4433;
-    DatagramConnection connection;
+    ConnectionOverTCP connection;
 
     public StubClient(String host, int port) {
-        Socket socket = null;
-
         try {
 	    // initialise socket
-            SocketChannel channel = SocketChannel.open();
-            socket = channel.socket();
-            socket.connect(new InetSocketAddress(host, port));
-            // WAS socket = new Socket(InetAddress.getByName(host), port);
+            TCPEndPointSrc src = new TCPEndPointSrc(host, port);
+            connection = new ConnectionOverTCP(src);
+            connection.setAddress(new IPV4Address("localhost"));
 
+            connection.connect();
             System.err.println("Connected to: " + host);
 
-            connection = new DatagramConnection(socket);
-            connection.setAddress(new IPV4Address("localhost"));
 
         } catch (UnknownHostException uhe) {
             System.err.println("StubClient: Unknown host " + host);
@@ -68,8 +64,9 @@ public class StubClient {
                 System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
         }
-    }
 
+        connection.close();
+    }
 
 
     public static void main(String[] args) throws IOException {

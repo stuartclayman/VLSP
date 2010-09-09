@@ -1,11 +1,11 @@
 package usr.router;
 
+import usr.net.*;
 import java.util.Scanner;
 import java.net.*;
 import java.nio.channels.*;
 import java.io.IOException;
 import java.io.PrintWriter;
-
 
 /**
  * A RouterConnections accepts new connections from exisiting routers.
@@ -87,17 +87,22 @@ public class RouterConnections implements Runnable {
     public void run() {
         while (running) {
             try {
-                Socket local = serverSocket.accept();
+                TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
+                ConnectionOverTCP connection = new  ConnectionOverTCP(dst);
+                connection.connect();
+
+                Socket local = connection.getSocket();
 
                 System.err.println(leadin() + "Did accept on: " + serverSocket);
 
-                System.out.println(leadin() + "newConnection: " + local);
+                System.out.println(leadin() + "newConnection: " + dst.getSocket());
 
                 InetSocketAddress refAddr = new InetSocketAddress(local.getInetAddress(), local.getPort());
-                //System.err.println("RouterConnections => " + refAddr + " # " + refAddr.hashCode());
+
+                System.err.println("RouterConnections  => " + refAddr + " # " + refAddr.hashCode());
 
 
-                NetIF netIF = new TCPNetIF(local);
+                NetIF netIF = new TCPNetIF(dst);
                 netIF.setID(refAddr.hashCode());
 
                 System.out.println(leadin() + "netif = " + netIF);

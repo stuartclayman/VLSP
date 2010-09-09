@@ -32,6 +32,16 @@ public interface Datagram {
     public int getTTL();
 
     /**
+     * Get the protocol
+     */
+    public byte getProtocol();
+
+    /**
+     * Set the protocol
+     */
+    public Datagram setProtocol(int p);
+
+    /**
      * Get src address.
      */
     public Address getSrcAddress();

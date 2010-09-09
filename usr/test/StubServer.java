@@ -9,42 +9,33 @@ import java.nio.channels.*;
 
 public class StubServer {
     final static int PORT_NUMBER = 4433;
-    DatagramConnection connection;
+    ConnectionOverTCP connection;
     ServerSocket serverSocket;
+    // and channel
+    ServerSocketChannel channel;
 
     public StubServer(int listenPort) throws IOException {
 	// initialise the socket
         try {
-            ServerSocketChannel channel = ServerSocketChannel.open();
+            channel = ServerSocketChannel.open();
             serverSocket = channel.socket();
             serverSocket.bind(new InetSocketAddress(listenPort));
-            // WAS serverSocket = new ServerSocket(listenPort);
 
-            System.err.println("StubServer: Listening on port: " + PORT_NUMBER);
+            TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
+
+            connection = new ConnectionOverTCP(dst);
+            connection.connect();
+            System.err.println("StubServer: Listening on port: " + listenPort);
         } catch (IOException ioe) {
-            System.err.println("StubServer: Cannot listen on port: " + PORT_NUMBER);
+            System.err.println("StubServer: Cannot listen on port: " + listenPort);
             throw ioe;
         }
     }
 
     /**
-     * Accept a connection.
-     */
-    void accept() throws IOException {
-	// wait for the receiver and server to connect (order unimportant)
-	Socket receiverSocket = serverSocket.accept();
-	System.out.println("StubServer: Received connection from: " +
-				receiverSocket.getInetAddress().getHostName());
-
-
-        connection = new DatagramConnection(receiverSocket);
-
-    }
-
-    /**
      * Read stuff
      */
-    void readALot() {
+    void readALot() throws IOException {
         Datagram datagram;
         int count = 0;
 
@@ -77,13 +68,17 @@ public class StubServer {
         NumberFormat millisFormat = new DecimalFormat("000"); 
         System.err.println("elapsed[" + count + "] = " + secs + ":" + millisFormat.format(millis));
 
+        connection.close();
+
+        // and go again
+        connection.connect();
+
     }
 
     public static void main(String[] args) throws IOException {
         StubServer server = new StubServer(PORT_NUMBER);
 
         while (true) {
-            server.accept();
             server.readALot();
         }
     }

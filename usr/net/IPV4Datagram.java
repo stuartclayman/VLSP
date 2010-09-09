@@ -112,12 +112,29 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     }
 
     /**
+     * Get the protocol
+     */
+    public byte getProtocol() {
+        return fullDatagram.get(9);
+    }
+
+    /**
+     * Set the protocol
+     */
+    public Datagram setProtocol(int p) {
+        fullDatagram.put(9, (byte)p);
+
+        return this;
+    }
+
+
+    /**
      * Get src address.
      */
     public Address getSrcAddress() {
         // get 4 bytes for address
         byte[] address = new byte[4];
-        fullDatagram.position(9);
+        fullDatagram.position(10);
         fullDatagram.get(address, 0, 4);
 
         try {
@@ -135,7 +152,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         // put src addr
         // to be filled in later
-        fullDatagram.position(9);
+        fullDatagram.position(10);
         if (srcAddr == null) {
             fullDatagram.put(IPV4Address.EMPTY, 0, 4);
         } else {
@@ -151,7 +168,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     public Address getDstAddress() {
         // get 4 bytes for address
         byte[] address = new byte[4];
-        fullDatagram.position(13);
+        fullDatagram.position(14);
         fullDatagram.get(address, 0, 4);
 
         try {
@@ -169,7 +186,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         // put dst addr
         // to be filled in later
-        fullDatagram.position(13);
+        fullDatagram.position(14);
         if (dstAddr == null) {
             fullDatagram.put(IPV4Address.EMPTY, 0, 4);
         } else {
@@ -309,9 +326,13 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         int ttl = 0;
         fullDatagram.put(8, (byte)ttl);
 
+        // protocol
+        int protocol = 0;
+        fullDatagram.put(9, (byte)protocol);
+
         // put src addr
         // to be filled in later
-        fullDatagram.position(9);
+        fullDatagram.position(10);
         if (srcAddr == null) {
             fullDatagram.put(IPV4Address.EMPTY, 0, 4);
         } else {
@@ -320,15 +341,14 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         // put dst addr
         // to be filled in later
-        fullDatagram.position(13);
+        fullDatagram.position(14);
         if (dstAddr == null) {
             fullDatagram.put(IPV4Address.EMPTY, 0, 4);
         } else {
             fullDatagram.put(dstAddr.asByteArray(), 0, 4);
         }
 
-        // 3 spare bytes
-        fullDatagram.put(17, (byte)0);
+        // 2 spare bytes
         fullDatagram.put(18, (byte)0);
         fullDatagram.put(19, (byte)0);
 

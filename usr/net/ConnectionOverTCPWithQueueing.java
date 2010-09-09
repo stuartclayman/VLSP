@@ -12,15 +12,23 @@ import java.util.LinkedList;
  * as USR Datagrams.
  * This queues up all Datagrams that get received on rach read.
  */
-public class DatagramQueueingConnection extends DatagramConnection {
+public class ConnectionOverTCPWithQueueing extends ConnectionOverTCP {
     // a Queue of incoming Datagrams
     Queue<Datagram> queue;
 
     /**
-     * Construct a DatagramConnection given a socket.
+     * Construct a DatagramConnection given a TCPEndPointSrc.
      */
-    public DatagramQueueingConnection(Socket s) {
-        super(s);
+    public ConnectionOverTCPWithQueueing(TCPEndPointSrc src) throws IOException {
+        super(src);
+        queue = new LinkedList<Datagram>();    
+    }
+
+    /**
+     * Construct a DatagramConnection given a TCPEndPointDst.
+     */
+    public ConnectionOverTCPWithQueueing(TCPEndPointDst dst) throws IOException{
+        super(dst);
         queue = new LinkedList<Datagram>();    
     }
 

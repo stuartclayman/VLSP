@@ -7,17 +7,15 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * Set a UDP so that it sends data as USR Datagrams.
+ * Create a connection that sends data 
+ * as USR Datagrams over UDP.
  */
-public class DatagramUDP {
-    // The underlying Socket
-    DatagramSocket socket;
+public class ConnectionOverUDP implements Connection {
+    // End point
+    UDPEndPoint endPoint;
 
     // The local address for this connection
     Address localAddress;
-
-    // port no at remote end
-    int port;
 
     // A ByteBuffer to read into
     int BUF_SIZE = 2048;
@@ -31,13 +29,38 @@ public class DatagramUDP {
     int current = 0;
 
     /**
-     * Construct a DatagramUDP given a DatagramSocket.
+     * Construct a ConnectionOverUDP given a UDPEndPointSrc
      */
-    public DatagramUDP(DatagramSocket s) {
-        socket = s; 
+    public ConnectionOverUDP(UDPEndPointSrc src) throws IOException {
+        endPoint = src;
         recvArray = new byte[BUF_SIZE];
         recvPacket = new DatagramPacket(recvArray, recvArray.length);
         buffer = ByteBuffer.wrap(recvArray);
+    }
+
+    /**
+     * Construct a ConnectionOverUDP given a UDPEndPointDst
+     */
+    public ConnectionOverUDP(UDPEndPointDst dst) throws IOException {
+        endPoint = dst;
+        recvArray = new byte[BUF_SIZE];
+        recvPacket = new DatagramPacket(recvArray, recvArray.length);
+        buffer = ByteBuffer.wrap(recvArray);
+    }
+
+    /**
+     * Connect.
+     */
+    public boolean connect() throws IOException {
+        endPoint.connect();
+
+        DatagramSocket socket = endPoint.getSocket(); 
+
+        if (socket == null) {
+            throw new Error("EndPoint: " + endPoint + " is not connected");
+        }
+                
+        return true;
     }
 
     /**
@@ -50,43 +73,39 @@ public class DatagramUDP {
     /**
      * Set the Address for this connection.
      */
-    public DatagramUDP setAddress(Address addr) {
+    public Connection setAddress(Address addr) {
         localAddress = addr;
         return this;
     }
 
     /**
-     * Get the port no for this connection.
-     */
-    public int getPort() {
-        return port;
-    }
-
-    /**
-     * Set the port no. for this connection.
-     */
-    public DatagramUDP setPort(int port) {
-        this.port = port;
-        return this;
-    }
-
-
-    /**
      * Send a Datagram.
      */
     public boolean sendDatagram(Datagram dg) {
-        // set the source address and port on the Datagram
+        DatagramSocket socket = getSocket();
+
+        // set the address
         dg.setSrcAddress(localAddress);
 
         try {
             // convert byte buffer to a DatagramPacket
             byte[] data = ((DatagramPatch)dg).toByteBuffer().array();
             DatagramPacket packet = new DatagramPacket(data, data.length);
-            InetAddress addr = localAddress.asInetAddress();
-            packet.setPort(port);
-            packet.setAddress(addr);
 
-            //System.err.println("DatagramUDP sendDatagram: packet = " + packet);
+            // set destination address
+            // These are in the endPoint
+            if (endPoint instanceof UDPEndPointSrc) {
+                // this is good
+                UDPEndPointSrc src = (UDPEndPointSrc)endPoint;
+
+                InetAddress addr = InetAddress.getByName(src.getHostName());
+                packet.setAddress(addr);
+                packet.setPort(src.getPort());
+            } else {
+                throw new Error("ConnectionOverUDP: cannot send from an EndPoitn destination");
+            }
+
+            //System.err.println("ConnectionOverUDP sendDatagram: packet = " + packet);
             
             // send it
             socket.send(packet);
@@ -102,6 +121,8 @@ public class DatagramUDP {
      * Read a Datagram.
      */
     public Datagram readDatagram() {
+        DatagramSocket socket = getSocket();
+
             try {
                 int startPosition = buffer.position();
                 int count = 0;
@@ -116,7 +137,7 @@ public class DatagramUDP {
                 buffer.clear();
                 buffer.limit(count);                    
 
-                // System.err.println("DatagramUDP readDatagram: buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
+                // System.err.println("ConnectionOverUDP readDatagram: buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
 
                 totalLen = (short)count;
 
@@ -139,17 +160,24 @@ public class DatagramUDP {
     }
 
     /**
+     * Get the EndPoint of this Connection.
+     */
+    public EndPoint getEndPoint() {
+        return endPoint;
+    }
+
+    /**
      * Get the DatagramSocket.
      */
     public DatagramSocket getSocket() {
-        return socket;
+        return endPoint.getSocket();
     }
 
     /**
      * To String
      */
     public String toString() {
-        return socket.toString();
+        return endPoint.toString();
     }
 
 

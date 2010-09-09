@@ -4,6 +4,7 @@ import usr.protocol.MCRP;
 import usr.interactor.RouterInteractor;
 import usr.interactor.MCRPException;
 import usr.console.*;
+import usr.net.*;
 import java.util.Scanner;
 import java.io.*;
 import java.net.*;
@@ -131,33 +132,31 @@ public class CreateConnection extends ChannelResponder implements Runnable {
          */
 
         // make a socket connection for the router - to - router path
-        Socket connection = null;
+        Socket socket = null;
         NetIF netIF = null;
         InetSocketAddress refAddr;
         String latestConnectionId = "/Router-" + controller.getName() + "/Connection-" + controller.getConnectionCount();
 
         try {
 	    // make a socket connection to a remote router
-            // connection = new Socket();
 
-            SocketChannel connectionChannel = SocketChannel.open();
-            //connectionChannel.configureBlocking(true);
-            connection = connectionChannel.socket();
+            TCPEndPointSrc src = new TCPEndPointSrc(host, connectionPort);
+            Connection connection = new  ConnectionOverTCP(src);
+            connection.connect();
 
-            InetSocketAddress routerConnections = new InetSocketAddress(InetAddress.getByName(host), connectionPort);
+            socket = src.getSocket();
 
+            System.err.println(leadin() + "connection socket: " + socket);
 
-            // now connect
-            connection.connect(routerConnections);
-
-            System.err.println(leadin() + "connection socket: " + connection);
-
-            refAddr = new InetSocketAddress(connection.getInetAddress(), connection.getLocalPort());;
+            refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
             //System.err.println("CreateConnection => " + refAddr + " # " + refAddr.hashCode());
 
-            // wrap SocketChannel as a NetIF
+            // wrap EndPoint as a NetIF
 
-            netIF = new TCPNetIF(connection);
+            netIF = new TCPNetIF(src);
+            netIF.setName(latestConnectionId);
+            netIF.setWeight(weight);
+            netIF.setID(refAddr.hashCode());
 
             System.out.println(leadin() + "netif = " + netIF);
 
@@ -204,10 +203,16 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             // attempt this 3 times
             int attempts;
             for (attempts=0; attempts < 3; attempts++) {
+                // we sleep a bit between each try
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ie) {
+                    System.err.println("CC: SLEEP");
+                }
                 // send INCOMING_CONNECTION command
 
                 try {
-                    interactor.incomingConnection(latestConnectionId, controller.getName(), weight, connection.getLocalPort());
+                    interactor.incomingConnection(latestConnectionId, controller.getName(), weight, socket.getLocalPort());
 
                     // connection setup ok
                     interactionOK = true;
@@ -216,14 +221,6 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                     System.err.println(leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " + attempts);
                 }
 
-                // if we get here, then the INCOMING_CONNECTION
-                // did not succeed
-                // so we sleep a bit
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ie) {
-                    System.err.println("CC: SLEEP");
-                }
             }
 
             if (interactionOK) {
@@ -261,9 +258,6 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         System.out.println(leadin() + "closed = " + host);
 
         // now plug netIF into Router
-        netIF.setName(latestConnectionId);
-        netIF.setWeight(weight);
-        netIF.setID(refAddr.hashCode());
         netIF.setRemoteRouterName(remoteRouterName);
 
         RouterPort port = controller.plugInNetIF(netIF);

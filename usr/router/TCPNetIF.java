@@ -1,9 +1,6 @@
 package usr.router;
 
-import usr.net.Address;
-import usr.net.IPV4Address;
-import usr.net.Datagram;
-import usr.net.DatagramConnection;
+import usr.net.*;
 import java.io.*;
 import java.net.*;
 import java.util.Map;
@@ -13,7 +10,7 @@ import java.util.Map;
  */
 public class TCPNetIF implements NetIF {
     // The connection
-    DatagramConnection connection;
+    ConnectionOverTCP connection;
 
     // The name
     String name;
@@ -30,8 +27,15 @@ public class TCPNetIF implements NetIF {
     /**
      * Construct a TCPNetIF around a Socket.
      */
-    public TCPNetIF(Socket s) {
-        connection = new DatagramConnection(s);
+    public TCPNetIF(TCPEndPointSrc src) throws IOException {
+        connection = new ConnectionOverTCP(src);
+    }
+
+    /**
+     * Construct a TCPNetIF around a Socket.
+     */
+    public TCPNetIF(TCPEndPointDst dst) throws IOException {
+        connection = new ConnectionOverTCP(dst);
     }
 
     /**

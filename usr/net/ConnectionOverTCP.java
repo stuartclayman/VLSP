@@ -8,12 +8,14 @@ import java.util.Queue;
 import java.util.LinkedList;
 
 /**
- * Create a network connection that sends data 
- * as USR Datagrams.
+ * Create a connection that sends data 
+ * as USR Datagrams over TCP.
  */
-public class DatagramConnection {
+public class ConnectionOverTCP implements Connection {
+    // End point
+    TCPEndPoint endPoint;
+
     // The underlying connection
-    Socket socket;
     SocketChannel channel;
 
     // The local address for this connection
@@ -21,20 +23,47 @@ public class DatagramConnection {
 
     // A ByteBuffer to read into
     int BUF_SIZE = 2048;
-    ByteBuffer buffer = ByteBuffer.allocate(BUF_SIZE);
+    ByteBuffer buffer;
+
     // current position in the ByteBuffer
     int current = 0;
 
     /**
-     * Construct a DatagramConnection given a socket.
+     * Construct a ConnectionOverTCP given a TCPEndPointSrc
      */
-    public DatagramConnection(Socket s) {
-        socket = s; 
+    public ConnectionOverTCP(TCPEndPointSrc src) throws IOException {
+        endPoint = src;
+        buffer = ByteBuffer.allocate(BUF_SIZE);
+    }
+
+    /**
+     * Construct a ConnectionOverTCP given a TCPEndPointDst
+     */
+    public ConnectionOverTCP(TCPEndPointDst dst) throws IOException {
+        endPoint = dst;
+        buffer = ByteBuffer.allocate(BUF_SIZE);
+    }
+
+    /**
+     * Connect.
+     */
+    public boolean connect() throws IOException {
+        endPoint.connect();
+
+        Socket socket = endPoint.getSocket(); 
+
+        if (socket == null) {
+            throw new Error("EndPoint: " + endPoint + " is not connected");
+        }
+        
+
         channel = socket.getChannel();
 
         if (channel == null) {
-            throw new Error("Socket: " + s + " has no channel");
+            throw new Error("Socket: " + socket + " has no channel");
         }
+        
+        return true;
     }
 
     /**
@@ -47,7 +76,7 @@ public class DatagramConnection {
     /**
      * Set the Address for this connection.
      */
-    public DatagramConnection setAddress(Address addr) {
+    public Connection setAddress(Address addr) {
         localAddress = addr;
         return this;
     }
@@ -66,7 +95,7 @@ public class DatagramConnection {
             if (count == -1) {
                 return false;
             } else {
-                // System.err.println("DatagramConnection: write " + count);
+                // System.err.println("ConnectionOverTCP: write " + count);
 
                 return true;
             }
@@ -87,7 +116,7 @@ public class DatagramConnection {
 
                 // empty buffer, so read
                 if (buffer.position() == 0 ) {
-                    // System.err.println("DatagramConnection readDatagram: pre-read buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
+                    // System.err.println("ConnectionOverTCP readDatagram: pre-read buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
                     count = channel.read(buffer);
 
                     if (count == -1) {
@@ -100,7 +129,7 @@ public class DatagramConnection {
                     }
                 }
 
-                // System.err.println("DatagramConnection readDatagram: buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
+                // System.err.println("ConnectionOverTCP readDatagram: buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
 
                 // check if there is enough to find the message total len
                 boolean canCheckTotalLen = false;
@@ -130,7 +159,7 @@ public class DatagramConnection {
                     buffer.put(spare);
                     buffer.position(remaining);
 
-                    // System.err.println("DatagramConnection readDatagram: post-shuffle buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
+                    // System.err.println("ConnectionOverTCP readDatagram: post-shuffle buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
                     // need to read the next part of message
                     count = channel.read(buffer);
 
@@ -156,12 +185,12 @@ public class DatagramConnection {
                 if (false) { // if (buffer.capacity() < totalLen) {
                     ByteBuffer biggerBuf = ByteBuffer.allocate(totalLen);
                     BUF_SIZE = totalLen;
-                    // System.err.println("DatagramConnection readDatagram: realloc buffer = " + biggerBuf.position() + " < " + biggerBuf.limit() + " < " + biggerBuf.capacity());
+                    // System.err.println("ConnectionOverTCP readDatagram: realloc buffer = " + biggerBuf.position() + " < " + biggerBuf.limit() + " < " + biggerBuf.capacity());
 
                     buffer.position(current); 
                     biggerBuf.put(buffer);
 
-                    // System.err.println("DatagramConnection readDatagram: post-copy buffer = " + biggerBuf.position() + " < " + biggerBuf.limit() + " < " + biggerBuf.capacity());
+                    // System.err.println("ConnectionOverTCP readDatagram: post-copy buffer = " + biggerBuf.position() + " < " + biggerBuf.limit() + " < " + biggerBuf.capacity());
                     buffer = biggerBuf;
 
                     // need to read the next part of the message
@@ -215,6 +244,12 @@ public class DatagramConnection {
      * Close the connection.
      */
     public void close() {
+        // send a ControlMessage
+        // TODO:  implement control messages
+        // controlClose();
+
+        Socket socket = getSocket();
+
         try {
             socket.close();
         } catch (IOException ioe) {
@@ -223,17 +258,39 @@ public class DatagramConnection {
     }
 
     /**
+     * Get the EndPoint of this Connection.
+     */
+    public EndPoint getEndPoint() {
+        return endPoint;
+    }
+
+    /**
      * Get the socket.
      */
     public Socket getSocket() {
-        return socket;
+        return endPoint.getSocket();
     }
 
     /**
      * To String
      */
     public String toString() {
-        return socket.toString();
+        return endPoint.toString() + " " + getSocket().toString();
+    }
+
+
+    /**
+     * Consturct and send a control message.
+     */
+    protected boolean controlClose() {
+        ByteBuffer buffer = ByteBuffer.allocate(5);
+        buffer.put("CLOSE".getBytes());
+        Datagram datagram = new IPV4Datagram(buffer);
+        datagram.setProtocol(1);
+
+        return sendDatagram(datagram);
+
+        
     }
 
 

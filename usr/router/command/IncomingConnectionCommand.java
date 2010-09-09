@@ -66,7 +66,8 @@ public class IncomingConnectionCommand extends RouterCommand {
                 return true;
             }
 
-
+            // create an address from the same host, but
+            // using the passed in port number
             InetSocketAddress refAddr = new InetSocketAddress(sc.socket().getInetAddress(), port);
             //System.err.println("ManagementConsole => " + refAddr + " # " + refAddr.hashCode());
 
