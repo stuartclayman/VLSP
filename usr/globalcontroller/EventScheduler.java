@@ -22,11 +22,15 @@ class EventScheduler {
         return schedule_.remove(0);
     }
     
+    /*
+     * Not needed anymore
+     * Run simulation using relative time from start of simulation.
     public static long afterPause(long pause) {
-        long time= System.currentTimeMillis();
-        return time+pause;
+        ////SC long time= System.currentTimeMillis();
+        return pause; ////SC time+pause;
     }
-    
+    */
+
     /** Adds an event to the schedule in time order
     */
     public void addEvent(SimEvent e) {

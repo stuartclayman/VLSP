@@ -30,4 +30,38 @@ class SimEvent {
     public Object getData() {
         return eventData_;
     }
+
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(eventTime_);
+        builder.append(" ");
+
+        switch (eventType_) {
+        case EVENT_END_SIMULATION: 
+            builder.append("EVENT_END_SIMULATION");
+            break;
+        case EVENT_START_SIMULATION:
+            builder.append("EVENT_START_SIMULATION");
+            break;
+        case EVENT_START_ROUTER:
+            builder.append("EVENT_START_ROUTER");
+            break;
+        case EVENT_END_ROUTER: 
+            builder.append("EVENT_END_ROUTER");
+            break;
+        case EVENT_START_LINK:
+            builder.append("EVENT_START_LINK");
+            break;
+        case EVENT_END_LINK: 
+            builder.append("EVENT_END_LINK");
+            break;
+        }
+
+        if (eventData_ != null) {
+            builder.append(" ");
+            builder.append(eventData_);
+        }
+
+        return builder.toString();
+    }
 }

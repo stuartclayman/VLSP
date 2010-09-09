@@ -19,6 +19,8 @@ import usr.interactor.*;
  */
 public class GlobalController implements ComponentController {
     private long simulationTime;
+    private long simulationStartTime;
+    private long lastEventLength;
     private String xmlFile_;
     private LocalHostInfo myHostInfo_;
     private ControlOptions options_;
@@ -102,22 +104,23 @@ public class GlobalController implements ComponentController {
               System.out.println(leadin() + "Starting Local Controllers");
               startLocalControllers();
 
-            for (int w=0; w < options_.getControllerWaitTime(); w++) {
-                try {
-                    //System.out.println(1000 * (w + 1));
-                    Thread.sleep(1000);  // Simple wait is to
-                    // ensure controllers start up
-                }
-                catch (java.lang.InterruptedException e) {
-                    System.err.println(leadin() + "initVirtualRouters Got interrupt!");
-                    System.exit(-1);    
-                }
-            }
-        }
+              // a bit of a sleep
+              for (int w=0; w < options_.getControllerWaitTime(); w++) {
+                  try {
+                      System.out.print((options_.getControllerWaitTime() - w) + " ");
+                      Thread.sleep(1000);  // Simple wait is to
+                      // ensure controllers start up
+                  }
+                  catch (java.lang.InterruptedException e) {
+                      System.err.println(leadin() + "initVirtualRouters Got interrupt!");
+                      System.exit(-1);    
+                  }
+              }
+          }
 
         
-        System.out.println(leadin() + "Checking existence of local Controllers");
-        checkAllControllers();
+          System.out.println(leadin() + "Checking existence of local Controllers");
+          checkAllControllers();
     }
     
     private void simulate() {
@@ -153,7 +156,8 @@ public class GlobalController implements ComponentController {
             while(simulationRunning_) {
                 long eventTime= e.getTime();
                 simulationTime= System.currentTimeMillis();
-                if (eventTime <= simulationTime) {
+                //// SC
+                if ((simulationStartTime + eventTime) <= simulationTime) {
                     executeEvent(e);
                     break;
                 }
@@ -161,7 +165,7 @@ public class GlobalController implements ComponentController {
 //                    System.out.println(leadin() + "Check msg true");
                     continue;
                 }
-                waitUntil(eventTime);
+                waitUntil(simulationStartTime + eventTime);
             }    
         }  
     }
@@ -228,59 +232,68 @@ public class GlobalController implements ComponentController {
 
     
     private void executeEvent(SimEvent e) {
+        long eventBegin = System.currentTimeMillis();
+
+        System.out.println("SIMULATION: " + "<" + lastEventLength + "> " +
+                           eventBegin +  " => " +  e);
+ 
         int type= e.getType();
         try {
             if (type == SimEvent.EVENT_START_SIMULATION) {
                 startSimulation();
-                return;
             }
-            if (type == SimEvent.EVENT_END_SIMULATION) {
+            else if (type == SimEvent.EVENT_END_SIMULATION) {
                 endSimulation();
-                return;
             }
-            if (type == SimEvent.EVENT_START_ROUTER) {
+            else if (type == SimEvent.EVENT_START_ROUTER) {
                 
                 startRouter();
-                return;
             }
-            if (type == SimEvent.EVENT_END_ROUTER) {
+            else if (type == SimEvent.EVENT_END_ROUTER) {
                 int routerNo= (Integer)e.getData();
                 endRouter(routerNo);
-                return;
             }
-            if (type == SimEvent.EVENT_START_LINK) {
+            else if (type == SimEvent.EVENT_START_LINK) {
                 int router1= 0, router2= 0;
                 Pair<?,?> pair= (Pair<?,?>)e.getData();
                 router1= (Integer)pair.getFirst();
                 router2= (Integer)pair.getSecond();
                 startLink(router1, router2);
-                
-                return;
             }
-            if (type == SimEvent.EVENT_END_LINK) {
+            else if (type == SimEvent.EVENT_END_LINK) {
                 int router1= 0, router2= 0;
                 Pair<?,?> pair= (Pair<?,?>)e.getData();
                 router1= (Integer)pair.getFirst();
                 router2= (Integer)pair.getSecond();
                 endLink(router1, router2);
+            }
+            else {
+                System.err.println(leadin() + "Unexected event type "+type+" shutting down!");
+                shutDown();
                 return;
             }
-            System.err.println(leadin() + "Unexected event type "+type+" shutting down!");
-            shutDown();
+
+            long eventEnd = System.currentTimeMillis();
+
+            lastEventLength = eventEnd - eventBegin;
+
         } catch (ClassCastException ex) {
             System.err.println(leadin() + "Event "+type+" had wrong object");
             shutDown();
+            return;
         }
     }
     
     /** Event for start Simulation */
     private void startSimulation() {
-    
+        simulationStartTime = System.currentTimeMillis();
+        lastEventLength = 0;
+        System.out.println(leadin() + "Start of simulation event at: " + simulationStartTime);    
     }
     
     /** Event for end Simulation */
     private void endSimulation() {
-        System.out.println(leadin() + "End of simulation event");
+        System.out.println(leadin() + "End of simulation event at " + System.currentTimeMillis());
         simulationRunning_= false;
         shutDown();
     }
@@ -423,22 +436,30 @@ public class GlobalController implements ComponentController {
         if (options_.isSimulation()) {
             time= options_.getSimulationLength();
         } else {
-            time= EventScheduler.afterPause(options_.getSimulationLength());
+            time= options_.getSimulationLength();
         }
         scheduler_= new EventScheduler();
-        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION,time,null);
+
+        // simulation start
+        SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null);
+        scheduler_.addEvent(e0);
+
+        // simulation end
+        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, time, null);
         scheduler_.addEvent(e);
+
         // TODO remove this hack.
         int mr= 5;
         for (int i= 0; i < mr; i++) {
-            SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER,
-            EventScheduler.afterPause(options_.getSimulationLength())/2,null);
+            SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER, 
+                                      options_.getSimulationLength()/3-1000,
+                                      null);
             scheduler_.addEvent(e2);
         }
         for (int i= 0; i < mr-1; i++) {
-            SimEvent e2= new SimEvent(SimEvent.EVENT_START_LINK,
-                EventScheduler.afterPause(options_.getSimulationLength())/2+1000,
-              new Pair<Integer,Integer>(i+1,i+2));
+            SimEvent e2= new SimEvent(SimEvent.EVENT_START_LINK, 
+                                      options_.getSimulationLength()/2+1000,
+                                      new Pair<Integer,Integer>(i+1,i+2));
             scheduler_.addEvent(e2);
         }
     }
@@ -498,11 +519,18 @@ public class GlobalController implements ComponentController {
      * Wait until a specified absolute time is milliseconds.
      */
     public synchronized void waitUntil(long time){
-        long now= System. currentTimeMillis();
+        long now = System.currentTimeMillis();
+
         if (time <= now)
             return;
         try {
-            wait(time - now);
+            long timeout = time - now;
+
+            System.out.println("SIMULATION: " +  "<" + lastEventLength + "> " +
+                               System.currentTimeMillis() +  " waiting " + timeout);
+            wait(timeout);
+
+            lastEventLength = System.currentTimeMillis() - now;
         } catch(InterruptedException e){
             checkMessages();
         }
