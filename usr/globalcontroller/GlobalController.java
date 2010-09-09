@@ -104,7 +104,9 @@ public class GlobalController implements ComponentController {
               System.out.println(leadin() + "Starting Local Controllers");
               startLocalControllers();
 
-              // a bit of a sleep
+              /*
+               * We dont; need to do this anymore
+               * checkAllControllers() has better timeout code
               for (int w=0; w < options_.getControllerWaitTime(); w++) {
                   try {
                       System.out.print((options_.getControllerWaitTime() - w) + " ");
@@ -116,6 +118,8 @@ public class GlobalController implements ComponentController {
                       System.exit(-1);    
                   }
               }
+              */
+
           }
 
         
@@ -550,48 +554,83 @@ public class GlobalController implements ComponentController {
      * creates interactors with the LocalControllers.
     */
     private synchronized void checkAllControllers() {
+        // try 10 times, with 500 millisecond gap
+        int MAX_TRIES = 10;
+        int tries = 0;
+        int millis = 500;
+        boolean isOK = false;
         localControllers_= new ArrayList<LocalControllerInteractor>();
         interactorMap_= new HashMap<LocalControllerInfo, LocalControllerInteractor>();
         LocalControllerInteractor inter= null;
-        for (int i= 0; i < noControllers_;i++) {
-           LocalControllerInfo lh= options_.getController(i);
+
+        // lopp a bit and try and talk to the LocalControllers
+        for (tries = 0; tries < MAX_TRIES; tries++) {
+            // sleep a bit
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException ie) {
+            }
+
+            // visit every LocalController
+            for (int i= 0; i < noControllers_;i++) {
+                LocalControllerInfo lh= options_.getController(i);
            
-           try {
-              inter= new LocalControllerInteractor(lh);
-           } catch (IOException e) {
-               System.err.println(leadin() + "Unable to make connection to "+
-                lh.getName()+" "+lh.getPort()+"\n");
-              System.err.println(leadin() + e.getMessage());
-              bailOut();
-           }
+                if (interactorMap_.get(lh) == null) {
+                    // we have not seen this LocalController before
+                    // try and connect
+                    try {
+                        System.err.println(leadin() + "Trying to make connection to "+
+                                           lh.getName()+" "+lh.getPort());
+                        inter= new LocalControllerInteractor(lh);
+
+                        localControllers_.add(inter);
+                        interactorMap_.put(lh,inter);
+                        try {
+                            inter.checkLocalController(myHostInfo_);
+                        } catch (java.io.IOException e) {
+                        } catch (usr.interactor.MCRPException e) {
+                        }
+                    } catch (IOException e) {
+                    }
            
-           localControllers_.add(inter);
-           interactorMap_.put(lh,inter);
-           try {
-             inter.checkLocalController(myHostInfo_);
-           } catch (java.io.IOException e) {
-           
-           } catch (usr.interactor.MCRPException e) {
-           
-           }
+                }
+            }
+
+            // check if we have connected to all of them
+            // check if the no of controllers == the no of interactors
+            // if so, we dont have to do all lopps
+            if (noControllers_ == localControllers_.size()) {
+                System.err.println(leadin() + "All LocalControllers connected after " + (tries+1) + " tries");
+                isOK = true;
+                break;
+            }
         }
-        
+
+        // if we did all loops and it's not OK
+        if (!isOK) {
+            // couldnt reach all LocalControllers
+            // We can keep a list of failures if we need to.
+            System.err.println(leadin() + "Can;t talk to all LocalControllers");
+            bailOut();
+        }
+
+
         // Wait to see if we have all controllers.
         for (int i= 0; i < options_.getControllerWaitTime(); i++) {
             while (checkMessages()) {};
             if (aliveCount == noControllers_) {
                 System.out.println(leadin() + "All controllers responded with alive message.");
-               return;
+                return;
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch(InterruptedException e){
                 
             }
             
         }
         System.err.println(leadin() + "Only "+aliveCount+" from "+noControllers_+
-           " local Controllers responded.");
+                           " local Controllers responded.");
         bailOut();
     }
     
