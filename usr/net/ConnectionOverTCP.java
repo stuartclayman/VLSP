@@ -6,17 +6,28 @@ import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Create a connection that sends data 
  * as USR Datagrams over TCP.
+ * <p>
+ * On the reading side, it queues up Datagrams that come
+ * from the remote end.
+ * <p>
+ * It also implements control datagrams, so one end can inform the
+ * other end of stuff.
  */
-public class ConnectionOverTCP implements Connection {
+public class ConnectionOverTCP implements Connection, Runnable {
     // End point
     TCPEndPoint endPoint;
 
     // The underlying connection
     SocketChannel channel;
+
+    // got a remote close 
+    boolean remoteClose = false;
 
     // The local address for this connection
     Address localAddress;
@@ -28,12 +39,34 @@ public class ConnectionOverTCP implements Connection {
     // current position in the ByteBuffer
     int current = 0;
 
+    // Read Thread
+    Thread readThread = null;
+    boolean paused = false;
+    boolean reading = false;
+
+    // Thread doing queue.take()
+    Thread takeThread = null;
+    boolean waitingForQueue = false;
+
+
+    // Is the thread running
+    boolean running = false;
+
+    // a Queue of incoming Datagrams
+    BlockingQueue<Datagram> queue;
+
+    // queue high limit
+    int QUEUE_PAUSE_LIMIT = 40;
+    // queue low limit
+    int QUEUE_TOO_LOW = 10;
+
     /**
      * Construct a ConnectionOverTCP given a TCPEndPointSrc
      */
     public ConnectionOverTCP(TCPEndPointSrc src) throws IOException {
         endPoint = src;
         buffer = ByteBuffer.allocate(BUF_SIZE);
+        queue = new LinkedBlockingQueue<Datagram>();    
     }
 
     /**
@@ -42,6 +75,7 @@ public class ConnectionOverTCP implements Connection {
     public ConnectionOverTCP(TCPEndPointDst dst) throws IOException {
         endPoint = dst;
         buffer = ByteBuffer.allocate(BUF_SIZE);
+        queue = new LinkedBlockingQueue<Datagram>();    
     }
 
     /**
@@ -63,6 +97,8 @@ public class ConnectionOverTCP implements Connection {
             throw new Error("Socket: " + socket + " has no channel");
         }
         
+        start();
+
         return true;
     }
 
@@ -90,7 +126,7 @@ public class ConnectionOverTCP implements Connection {
         dg.setSrcAddress(localAddress);
 
         try {
-            int count = channel.write(((DatagramPatch)dg).toByteBuffer());
+            int count = getChannel().write(((DatagramPatch)dg).toByteBuffer());
 
             if (count == -1) {
                 return false;
@@ -108,6 +144,47 @@ public class ConnectionOverTCP implements Connection {
      * Read a Datagram.
      */
     public Datagram readDatagram() {
+        // Get a Datagram from queue while queue has something in it
+        // Only grab data if we are running or if there is residual 
+        // stuff in the queue
+        if ((running && queue.size() >= 0) || (!running && queue.size() > 0)) {
+            // return a Datagram
+            try {
+                waitingForQueue = true;
+
+                // which thread is doing the queue take()
+                takeThread = Thread.currentThread();
+
+                Datagram dg = queue.take();
+
+                waitingForQueue = false;
+
+                // if the reader is paused and
+                // the queue is empty 
+                // start reading again
+                if (paused && queue.size() == QUEUE_TOO_LOW) {
+                    readAgain();
+                }
+
+
+                return dg;
+            } catch (InterruptedException ie) {
+                //System.err.println("ConnectionOverTCP: readDatagram() interrupt");
+                waitingForQueue = false;
+                return null;
+            }
+
+        } else {
+            //System.err.println("ConnectionOverTCP: readDatagram() return null");
+            return null;
+        }
+    }
+
+    /**
+     * Read a Datagram.
+     * This actually reads from the network connection.
+     */
+    Datagram readDatagramAndWait() {
             try {
                 int startPosition = buffer.position();
                 int count = 0;
@@ -245,8 +322,15 @@ public class ConnectionOverTCP implements Connection {
      */
     public void close() {
         // send a ControlMessage
-        // TODO:  implement control messages
-        // controlClose();
+        if (!remoteClose) {
+            // if the close is initiated locally
+            // send a control message to the other end
+            controlClose();
+            /*} else {
+              System.err.println("ConnectionOverTCP: got remote close"); */
+        }
+
+        stop();
 
         Socket socket = getSocket();
 
@@ -272,19 +356,154 @@ public class ConnectionOverTCP implements Connection {
     }
 
     /**
+     * Get the channel.
+     */
+    private SocketChannel getChannel() {
+        return endPoint.getSocket().getChannel();
+    }
+
+    /**
      * To String
      */
     public String toString() {
         return endPoint.toString() + " " + getSocket().toString();
     }
 
+    /*
+     * Methods to do with reading using a thread.
+     */
+
+    /**
+     * Thread body to read from Connection.
+     * This reads the Datagrams from the network
+     * and queues them up ready to be collected.
+     * If the queue is at the high limit then it waits until 
+     * the queue has been drained to a certain level, the low limit,
+     * and is told to start reading again.
+     * <p>
+     * However, if the Datagram is a control Datagram, then it is 
+     * processed immediately and not put on the queue.
+     */
+    public void run() {
+        //TODO: 
+        // 1. implement more control packets
+        // 2. implement state machine so NetIf can see the state of a Connection
+        // 3. PAUSE a connection so it is connected but no traffic flows over it
+
+        //System.err.println("ConnectionOverTCP: " + readThread + " top of run()");
+
+	// sit in a loop and grab input
+	while (running) {
+            // if the queue has reached its limit
+            // dont read any more until we get an interrupt
+            if (queue.size() >= QUEUE_PAUSE_LIMIT) {
+
+                //System.err.println("run() about to wait()");
+                try {
+                    synchronized (this) {
+                        paused = true;
+                        wait();
+                    }
+                } catch (InterruptedException ie) {
+                    paused = false;
+                    //System.err.println("run() out of wait()");
+                }
+            }
+
+            // now go and read
+            reading = true;
+
+            Datagram datagram = readDatagramAndWait();
+
+            reading = false;
+
+            // check the return value
+            if (datagram == null) {
+                // EOF
+                running = false;
+            } else {
+                if (datagram.getProtocol() == 1) {
+                    // its a control datagram
+                    processControlDatagram(datagram);
+                } else {
+                    // data
+                    // add to queue
+                    queue.add(datagram);
+                }
+            }
+        }
+
+        // the end
+        theEnd();
+
+    }
+
+    /**
+     * Notify main thread.
+     */
+    private void theEnd() {
+        if (waitingForQueue) {
+            System.err.println("ConnectionOverTCP:  interrupt " + takeThread);
+            takeThread.interrupt();
+        }
+    }
+
+    /**
+     * Notify read thread.
+     */
+    private void readAgain() {
+        // This causes the wait() in run() to be interrupted
+        // and then real reading will start again
+        readThread.interrupt();
+    }
+    
+    /**
+     * Start the thread.
+     */
+    public void start() {
+        if (running == false) {
+            readThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
+            running = true;
+            readThread.start();
+        }
+    }
+
+    /**
+     * Stop the thread.
+     */
+    public void stop() {
+        if (running == true) {
+            try {
+                running = false;
+                readThread.interrupt();
+            } catch (Exception e) {
+                System.err.println("ConnectionOverTCP: Exception in stop() " + e);
+            }
+        }
+    }
+
+
+    /**
+     * Process a control datagram
+     */
+    protected void processControlDatagram(Datagram dg) {
+        System.err.println("Control Datagram " + dg);
+
+        byte[] payload = dg.getPayload();
+
+        if (payload[0] == 'C') {
+            remoteClose = true;
+            close();
+        }
+
+    }
 
     /**
      * Consturct and send a control message.
      */
     protected boolean controlClose() {
-        ByteBuffer buffer = ByteBuffer.allocate(5);
-        buffer.put("CLOSE".getBytes());
+        ByteBuffer buffer = ByteBuffer.allocate(1);
+        buffer.put("C".getBytes());
         Datagram datagram = new IPV4Datagram(buffer);
         datagram.setProtocol(1);
 

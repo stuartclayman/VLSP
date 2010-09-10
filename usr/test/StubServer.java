@@ -69,17 +69,11 @@ public class StubServer {
         System.err.println("elapsed[" + count + "] = " + secs + ":" + millisFormat.format(millis));
 
         connection.close();
-
-        // and go again
-        connection.connect();
-
     }
 
     public static void main(String[] args) throws IOException {
         StubServer server = new StubServer(PORT_NUMBER);
 
-        while (true) {
-            server.readALot();
-        }
+        server.readALot();
     }
 }
