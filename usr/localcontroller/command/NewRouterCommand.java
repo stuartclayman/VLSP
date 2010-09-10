@@ -9,10 +9,10 @@ import java.nio.channels.SocketChannel;
  */
 public class NewRouterCommand extends LocalCommand {
     /**
-     * Construct a QuitCommand.
+     * Construct a NewRouterCommand.
      */
     public NewRouterCommand() {
-        super(MCRP.NEW_ROUTER.CMD, MCRP.NEW_ROUTER.CODE, MCRP.NEW_ROUTER.CODE);
+        super(MCRP.NEW_ROUTER.CMD, MCRP.NEW_ROUTER.CODE, MCRP.NEW_ROUTER.ERROR);
     }
 
     /**

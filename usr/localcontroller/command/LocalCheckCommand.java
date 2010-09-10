@@ -13,8 +13,7 @@ public class LocalCheckCommand extends LocalCommand {
      * Construct a LocalCheckCommand.
      */
     public LocalCheckCommand() {
-        super(MCRP.CHECK_LOCAL_CONTROLLER.CMD, MCRP.CHECK_LOCAL_CONTROLLER.CODE, 
-          MCRP.CHECK_LOCAL_CONTROLLER.CODE);
+        super(MCRP.CHECK_LOCAL_CONTROLLER.CMD, MCRP.CHECK_LOCAL_CONTROLLER.CODE, MCRP.CHECK_LOCAL_CONTROLLER.ERROR);
     }
 
     /**

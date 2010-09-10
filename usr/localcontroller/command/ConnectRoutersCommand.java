@@ -13,7 +13,7 @@ public class ConnectRoutersCommand extends LocalCommand {
      * Construct a ConnectRoutersCommand.
      */
     public ConnectRoutersCommand() {
-        super(MCRP.CONNECT_ROUTERS.CMD, MCRP.CONNECT_ROUTERS.CODE, MCRP.CONNECT_ROUTERS.CODE);
+        super(MCRP.CONNECT_ROUTERS.CMD, MCRP.CONNECT_ROUTERS.CODE, MCRP.CONNECT_ROUTERS.ERROR);
     }
 
     /**
