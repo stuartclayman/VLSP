@@ -113,4 +113,7 @@ public class LocalHostInfo  {
        highPort_= high;
     }
     
+    public String toString() {
+        return hostName_ + ":" + port_;
+    }
 }
