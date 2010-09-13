@@ -4,7 +4,7 @@
 package usr.globalcontroller;
 import java.util.*;
 
-class EventScheduler {
+public class EventScheduler {
     private ArrayList <SimEvent> schedule_= null;
     
   

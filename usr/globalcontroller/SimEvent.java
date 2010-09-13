@@ -1,6 +1,6 @@
 package usr.globalcontroller;
 
-class SimEvent {
+public class SimEvent {
     private int eventType_;
     private Object eventData_;
     private long eventTime_;

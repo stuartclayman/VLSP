@@ -109,6 +109,11 @@ CLASSES = \
   usr/common/ProbElement.java \
   usr/common/BasicRouterInfo.java \
   usr/common/PortPool.java \
+  usr/engine/EventEngine.java \
+  usr/engine/EmptyEventEngine.java \
+  usr/engine/TestEventEngine.java \
+  usr/engine/ProbabilisticEventEngine.java \
+  usr/engine/ScriptEngine.java \
   usr/interactor/MCRPEvent.java \
   usr/interactor/ID.java \
   usr/interactor/InputHandler.java \

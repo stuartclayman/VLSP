@@ -21,4 +21,9 @@
      <LowPort>13000</LowPort>
      <HighPort>14000</HighPort>
   </LocalController>
+  <EventEngine>
+     <Name>Script</Name>
+     <EndTime>10000</EndTime>
+     <Parameters>TestScript</Parameters>
+  </EventEngine>
 </SimOptions>

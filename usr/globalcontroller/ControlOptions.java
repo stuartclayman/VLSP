@@ -15,12 +15,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException; 
+import usr.engine.*;
 
 
 class ControlOptions {
     private ArrayList<LocalControllerInfo> localControllers_;
     private int globalControlPort_ = 8888;  // Port global controller listens on
-    private int simulationLength_= 20000;   // Sim length (seconds)
     private String remoteLoginCommand_= null;  // Command used to login to start local controller
     private String remoteStartController_= null;  // Command used on local controller to start it
     private String remoteLoginFlags_ = null;   //  Flags used for ssh to login to remote machine
@@ -30,6 +30,7 @@ class ControlOptions {
     private int controllerWaitTime_= 6;    
     private int lowPort_= 10000;
     private int highPort_= 20000;
+    EventEngine engine_;
 
 
     /** init function sets up basic information */
@@ -54,6 +55,10 @@ class ControlOptions {
     */
     public ControlOptions (String fName) {
       init();
+      readXML(fName); 
+    }
+    
+    void readXML(String fName) {
       try { DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
             Document doc = docBuilder.parse (new File(fName));
@@ -68,6 +73,8 @@ class ControlOptions {
             processLocalControllers(lcs);
             NodeList gcs= doc.getElementsByTagName("GlobalController");
             processGlobalController(gcs);
+            NodeList eng= doc.getElementsByTagName("EventEngine");
+            processEventEngine(eng);
 
       } catch (java.io.FileNotFoundException e) {
           System.err.println("Cannot find file "+fName);
@@ -208,6 +215,48 @@ class ControlOptions {
         }
 
     }
+
+
+    /**
+        Process tags which specify local controllers
+    */
+    private void processEventEngine(NodeList eng) throws SAXException {
+      if (eng.getLength() != 1) {
+          throw new SAXException
+            ("Must be exactly one EventEngine tag in control file");
+      }
+      Node n= eng.item(0);
+      String engine="";
+      int endtime= 0;
+      String parms="";
+      
+      try {
+          engine= parseSingleString(n,"Name","EventEngine",false);
+          endtime= parseSingleInt(n,"EndTime","EventEngine",false);
+          parms= parseSingleString(n,"Parameters","EventEngine",true);
+      } catch (SAXException e) {
+          throw e;
+      } catch (XMLNoTagException e) {
+      }
+      if (engine.equals("Empty")) {
+          engine_= new EmptyEventEngine(endtime,parms);
+          return;
+      }
+      if (engine.equals("Test")) {
+          engine_= new TestEventEngine(endtime,parms);
+          return;
+      }
+      if (engine.equals("Probabilistic")) {
+          engine_= new ProbabilisticEventEngine(endtime,parms);
+          return;
+      }
+      if (engine.equals("Script")) {
+          engine_= new ScriptEngine(endtime,parms);
+          return;
+      }
+      throw new SAXException("Could not find engine type "+engine);
+    
+    }
     
     // Parse tags to get boolean
     private boolean parseSingleBool(Node node, String tag, String parent, boolean optional) 
@@ -335,11 +384,23 @@ class ControlOptions {
         return controllerWaitTime_;
     } 
    
-    /** Return length of simulation
-    */
     
-    public int getSimulationLength() {
-        return simulationLength_;
+    /** Initialise event list */
+    public void initialEvents(EventScheduler s, GlobalController g)
+    {
+        engine_.initialEvents(s,g);
+    }
+    
+    /** Add or remove events following a simulation event */
+    public void preceedEvent(SimEvent e, EventScheduler s, GlobalController g)
+     {
+        engine_.preceedEvent(e,s,g);
+     }
+    /** Add or remove events following a simulation event */
+    public void followEvent(SimEvent e, EventScheduler s, GlobalController g)
+    {
+        engine_.followEvent(e,s,g);
     }
 }
+
 

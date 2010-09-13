@@ -237,7 +237,7 @@ public class GlobalController implements ComponentController {
     
     private void executeEvent(SimEvent e) {
         long eventBegin = System.currentTimeMillis();
-
+        options_.preceedEvent(e,scheduler_,this);
         System.out.println("SIMULATION: " + "<" + lastEventLength + "> " +
                            eventBegin +  " => " +  e);
  
@@ -272,13 +272,12 @@ public class GlobalController implements ComponentController {
                 endLink(router1, router2);
             }
             else {
-                System.err.println(leadin() + "Unexected event type "+type+" shutting down!");
+                System.err.println(leadin() + "Unexected event type "
+                  +type+" shutting down!");
                 shutDown();
                 return;
             }
-
             long eventEnd = System.currentTimeMillis();
-
             lastEventLength = eventEnd - eventBegin;
 
         } catch (ClassCastException ex) {
@@ -286,6 +285,8 @@ public class GlobalController implements ComponentController {
             shutDown();
             return;
         }
+        options_.followEvent(e,scheduler_,this);
+
     }
     
     /** Event for start Simulation */
@@ -436,36 +437,9 @@ public class GlobalController implements ComponentController {
     }
     
     private void initSchedule() {
-        long time;
-        if (options_.isSimulation()) {
-            time= options_.getSimulationLength();
-        } else {
-            time= options_.getSimulationLength();
-        }
         scheduler_= new EventScheduler();
-
-        // simulation start
-        SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null);
-        scheduler_.addEvent(e0);
-
-        // simulation end
-        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, time, null);
-        scheduler_.addEvent(e);
-
-        // TODO remove this hack.
-        int mr= 5;
-        for (int i= 0; i < mr; i++) {
-            SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER, 
-                                      options_.getSimulationLength()/3-1000,
-                                      null);
-            scheduler_.addEvent(e2);
-        }
-        for (int i= 0; i < mr-1; i++) {
-            SimEvent e2= new SimEvent(SimEvent.EVENT_START_LINK, 
-                                      options_.getSimulationLength()/2+1000,
-                                      new Pair<Integer,Integer>(i+1,i+2));
-            scheduler_.addEvent(e2);
-        }
+        options_.initialEvents(scheduler_,this);
+        
     }
     
     
@@ -610,7 +584,7 @@ public class GlobalController implements ComponentController {
         if (!isOK) {
             // couldnt reach all LocalControllers
             // We can keep a list of failures if we need to.
-            System.err.println(leadin() + "Can;t talk to all LocalControllers");
+            System.err.println(leadin() + "Can't talk to all LocalControllers");
             bailOut();
         }
 
@@ -669,8 +643,13 @@ public class GlobalController implements ComponentController {
     }
 
     protected void finalize() {
-        killAllControllers();
+        //killAllControllers()
+        bailOut();
    
+    }
+
+    public ControlOptions getOptions() {
+        return options_;
     }
 
     /**
