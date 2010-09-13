@@ -40,11 +40,8 @@ CLASSES = \
   usr/localcontroller/command/UnknownCommand.java \
   usr/localcontroller/LocalControllerInfo.java \
   usr/localcontroller/LocalControllerManagementConsole.java \
-  usr/net/DatagramQueueingConnection.java \
   usr/net/Datagram.java \
   usr/net/Address.java \
-  usr/net/DatagramConnection.java \
-  usr/net/DatagramUDP.java \
   usr/net/DatagramPatch.java \
   usr/net/IPV4Datagram.java \
   usr/net/IPV4Address.java \
