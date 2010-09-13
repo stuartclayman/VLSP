@@ -24,6 +24,48 @@
 
   </target>
 
+  <!-- Jar -->
+ <target name="jars" depends="build">
+     <delete file="localcontroller.jar"/>
+     <delete file="MANIFEST.MF"/>
+     <manifest file="MANIFEST.MF">
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Main-Class" value="usr.localcontroller.LocalController"/>
+    </manifest>
+
+    <jar destfile="localcontroller.jar"
+         basedir="."
+         includes="**/*.class"
+         manifest="MANIFEST.MF"
+         />
+     
+     <delete file="globalcontroller.jar"/>
+     <delete file="MANIFEST.MF"/>
+     <manifest file="MANIFEST.MF">
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Main-Class" value="usr.globalcontroller.GlobalController"/>
+    </manifest>
+
+    <jar destfile="globalcontroller.jar"
+         basedir="."
+         includes="**/*.class"
+         manifest="MANIFEST.MF"
+         />
+         
+    <delete file="router.jar"/>
+     <delete file="MANIFEST.MF"/>
+     <manifest file="MANIFEST.MF">
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Main-Class" value="usr.router.Router"/>
+    </manifest>
+
+    <jar destfile="router.jar"
+         basedir="."
+         includes="**/*.class"
+         manifest="MANIFEST.MF"
+         />
+  </target>
+
   <!-- Archive -->
   <target name="dist" depends="build">
     <echo message="------ Building Jar file"/>
