@@ -236,6 +236,7 @@ public class GlobalController implements ComponentController {
 
     
     private void executeEvent(SimEvent e) {
+        Object extraParms= null;
         long eventBegin = System.currentTimeMillis();
         options_.preceedEvent(e,scheduler_,this);
         System.out.println("SIMULATION: " + "<" + lastEventLength + "> " +
@@ -285,7 +286,7 @@ public class GlobalController implements ComponentController {
             shutDown();
             return;
         }
-        options_.followEvent(e,scheduler_,this);
+        options_.followEvent(e,scheduler_,this, extraParms);
 
     }
     

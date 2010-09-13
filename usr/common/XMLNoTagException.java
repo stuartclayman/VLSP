@@ -1,7 +1,7 @@
 // MCRPNoConnectionException.java
 
 
-package usr.globalcontroller;
+package usr.common;
 
 /**
  * An XMLNoTagException is thrown if parsing XML where

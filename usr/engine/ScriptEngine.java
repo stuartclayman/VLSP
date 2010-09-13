@@ -44,7 +44,8 @@ public class ScriptEngine implements EventEngine {
     }
     
     /** Add or remove events following a simulation event */
-    public void followEvent(SimEvent e, EventScheduler s,  GlobalController g)
+    public void followEvent(SimEvent e, EventScheduler s,  GlobalController g,
+      Object o)
     {
     
     }

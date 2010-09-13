@@ -21,8 +21,9 @@ public class VariateTest {
             parm2= Double.parseDouble(args[3]);
         if (args.length > 4)
             parm3= Double.parseDouble(args[4]);
+        double[]parms= {parm1,parm2,parm3};
         try {
-            ProbElement el= new ProbElement(distType, parm1, parm2, parm3);
+            ProbElement el= new ProbElement(distType, parms);
             for (i= 0; i < noTests; i++) {
             
                 System.out.println(el.getVariate());

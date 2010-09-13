@@ -8,6 +8,7 @@ import usr.localcontroller.LocalControllerInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.File;
+import usr.engine.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
 
@@ -16,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException; 
 import usr.engine.*;
+import usr.common.*;
 
 
 class ControlOptions {
@@ -110,20 +112,20 @@ class ControlOptions {
             return;
         Node gcn= gc.item(0);
         try {
-           globalControlPort_= parseSingleInt(gcn, "Port","GlobalController",true);
+           globalControlPort_= ReadXMLUtils.parseSingleInt(gcn, "Port","GlobalController",true);
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
            
         }
         try {
-           startLocalControllers_= parseSingleBool(gcn, "StartLocalControllers", "GlobalController",true);
+           startLocalControllers_= ReadXMLUtils.parseSingleBool(gcn, "StartLocalControllers", "GlobalController",true);
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {  
         }
         try {
-            String s= parseSingleString(gcn, "RemoteLoginUser","GlobalController",true);
+            String s= ReadXMLUtils.parseSingleString(gcn, "RemoteLoginUser","GlobalController",true);
             if (s != "")
                 remoteLoginUser_= s;
         } catch (SAXException e) {
@@ -131,7 +133,7 @@ class ControlOptions {
         } catch (XMLNoTagException e) {
         }
         try {
-            String s= parseSingleString(gcn, "RemoteStartController","GlobalController",true);
+            String s= ReadXMLUtils.parseSingleString(gcn, "RemoteStartController","GlobalController",true);
             if (s != "") 
                remoteStartController_= s;
         } catch (SAXException e) {
@@ -139,14 +141,14 @@ class ControlOptions {
         } catch (XMLNoTagException e) {
         }
         try {
-            int l= parseSingleInt(gcn, "LowPort","GlobalController",true);
+            int l= ReadXMLUtils.parseSingleInt(gcn, "LowPort","GlobalController",true);
             lowPort_= l;
         } catch (SAXException e) {
              throw e;
         } catch (XMLNoTagException e) {
         }
         try {
-            int h= parseSingleInt(gcn, "HighPort","GlobalController",true);
+            int h= ReadXMLUtils.parseSingleInt(gcn, "HighPort","GlobalController",true);
             highPort_= h;
         } catch (SAXException e) {
              throw e;
@@ -165,8 +167,8 @@ class ControlOptions {
             Node lc= lcs.item(i);
             LocalControllerInfo lh= null;
             try {
-                hostName= parseSingleString(lc, "Name", "LocalController",false);
-                port= parseSingleInt(lc, "Port","LocalController",false);
+                hostName= ReadXMLUtils.parseSingleString(lc, "Name", "LocalController",false);
+                port= ReadXMLUtils.parseSingleInt(lc, "Port","LocalController",false);
                 lh= new LocalControllerInfo(hostName, port);
                 lh.setHighPort(highPort_);
                 lh.setLowPort(lowPort_);
@@ -178,35 +180,35 @@ class ControlOptions {
                 System.exit(-1);
             }
             try {
-                int mr= parseSingleInt(lc, "MaxRouters","LocalController",true);
+                int mr= ReadXMLUtils.parseSingleInt(lc, "MaxRouters","LocalController",true);
                 lh.setMaxRouters(mr);
             } catch (SAXException e) {
                 throw e;
             } catch (XMLNoTagException e) {
             }
             try {
-                String s= parseSingleString(lc, "RemoteLoginUser","LocalController",true);
+                String s= ReadXMLUtils.parseSingleString(lc, "RemoteLoginUser","LocalController",true);
                 lh.setRemoteLoginUser(s);
             } catch (SAXException e) {
                 throw e;
             } catch (XMLNoTagException e) {
             }
             try {
-                String s= parseSingleString(lc, "RemoteStartController","LocalController",true);
+                String s= ReadXMLUtils.parseSingleString(lc, "RemoteStartController","LocalController",true);
                 lh.setRemoteStartController(s);
             } catch (SAXException e) {
                 throw e;
             } catch (XMLNoTagException e) {
             }
             try {
-                int l= parseSingleInt(lc, "LowPort","GlobalController",true);
+                int l= ReadXMLUtils.parseSingleInt(lc, "LowPort","GlobalController",true);
                 lh.setLowPort(l);
             } catch (SAXException e) {
                throw e;
             } catch (XMLNoTagException e) {
             }
             try {
-                int h= parseSingleInt(lc, "HighPort","GlobalController",true);
+                int h= ReadXMLUtils.parseSingleInt(lc, "HighPort","GlobalController",true);
                 lh.setHighPort(h);
             } catch (SAXException e) {
                  throw e;
@@ -231,9 +233,9 @@ class ControlOptions {
       String parms="";
       
       try {
-          engine= parseSingleString(n,"Name","EventEngine",false);
-          endtime= parseSingleInt(n,"EndTime","EventEngine",false);
-          parms= parseSingleString(n,"Parameters","EventEngine",true);
+          engine= ReadXMLUtils.parseSingleString(n,"Name","EventEngine",false);
+          endtime= ReadXMLUtils.parseSingleInt(n,"EndTime","EventEngine",false);
+          parms= ReadXMLUtils.parseSingleString(n,"Parameters","EventEngine",true);
       } catch (SAXException e) {
           throw e;
       } catch (XMLNoTagException e) {
@@ -258,53 +260,7 @@ class ControlOptions {
     
     }
     
-    // Parse tags to get boolean
-    private boolean parseSingleBool(Node node, String tag, String parent, boolean optional) 
-        throws SAXException, XMLNoTagException
-    { 
-        String str= parseSingleString(node,tag,parent,optional);
-        if (str.equals("true"))
-          return true;
-        if (str.equals("false"))
-          return false;
-        throw new SAXException ("Tag "+tag+" parent "+parent+" is not boolean "+str);
-    }
-    
-    // Parse tags to get int
-    private int parseSingleInt(Node node, String tag, String parent, boolean optional) 
-        throws SAXException, XMLNoTagException
-    { 
-        String str= parseSingleString(node,tag,parent,optional);
-        int i= Integer.parseInt(str);
-        return i;
-    }
-    
-    // Parse tags to get text
-    private String parseSingleString(Node node, String tag, String parent, 
-        boolean optional) 
-        throws SAXException, XMLNoTagException
-    {
-    
-        if (node.getNodeType() != Node.ELEMENT_NODE) {
-            throw new SAXException("Expecting node element with tag "+tag);
-        }
-        Element el = (Element)node;
-        NodeList hNameList = el.getElementsByTagName(tag);
-        if (hNameList.getLength() !=1 && optional == false) {
-            throw new SAXException(parent+" element requires exactly one tag "+
-              tag);
-        }
-        if (hNameList.getLength() > 1 ) {
-            throw new SAXException(parent + " element can only have one tag "+
-              tag);
-        }
-        if (hNameList.getLength() == 0) {
-            throw new XMLNoTagException();
-        }
-        Element hElement = (Element)hNameList.item(0);
-        NodeList textFNList = hElement.getChildNodes();
-        return ((Node)textFNList.item(0)).getNodeValue().trim();
-    }
+
     
     /** Return string to launch local controller on remote
     machine given machine name 
@@ -396,10 +352,12 @@ class ControlOptions {
      {
         engine_.preceedEvent(e,s,g);
      }
-    /** Add or remove events following a simulation event */
-    public void followEvent(SimEvent e, EventScheduler s, GlobalController g)
+    /** Add or remove events following a simulation event -- object allows
+    global controller to pass extra parameters related to event if necessary*/
+    public void followEvent(SimEvent e, EventScheduler s, GlobalController g,
+      Object o)
     {
-        engine_.followEvent(e,s,g);
+        engine_.followEvent(e,s,g,o);
     }
 }
 

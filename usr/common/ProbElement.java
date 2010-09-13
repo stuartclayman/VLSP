@@ -11,17 +11,15 @@ public class ProbElement
     static final int UNIFORM_DIST= 4;
     static final int PARETO_DIST= 5;
     double weight_;
-    double parm1_;
-    double parm2_;
-    double parm3_;
+    double parm1_= 0.0;
+    double parm2_= 0.0;
+    double parm3_= 0.0;
     
-    public ProbElement(String typeStr, double parm1, 
-      double parm2, double parm3) throws ProbException
+    public ProbElement(String typeStr, double []parms) throws ProbException
     {
-        this(typeStr, 1.0, parm1, parm2, parm3);
+        this(typeStr, 1.0, parms);
     }
-    public ProbElement(String typeStr, double weight, double parm1, 
-      double parm2, double parm3) 
+    public ProbElement(String typeStr, double weight, double []parms) 
         throws ProbException {
         int type= 0;
         if (typeStr.equals("Exponential")) {
@@ -40,9 +38,16 @@ public class ProbElement
         }
         distType_= type;
         weight_= weight;
-        parm1_= parm1;
-        parm2_= parm2;
-        parm3_= parm3;
+        //System.out.println("Weight "+weight+" type "+type);
+        if (parms.length > 0) {
+           parm1_= parms[0];
+        }
+        if (parms.length > 1) {
+           parm2_= parms[1];
+        }
+        if (parms.length > 2) {
+           parm3_= parms[2];
+        }
            
     }
 
