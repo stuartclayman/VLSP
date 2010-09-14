@@ -222,6 +222,30 @@ public class MCRP implements Protocol {
         public final static int ERROR= 425;
     }
 
+     /**  Request to router to read an options string */
+    
+    public final static class READ_OPTIONS_STRING {
+        public final static String CMD = "READ_OPTIONS_STRING";
+        public final static int CODE= 276;
+        public final static int ERROR= 426;
+    }
+
+    /**  Request to router to read an options string */
+    
+    public final static class READ_OPTIONS_FILE {
+        public final static String CMD = "READ_OPTIONS_FILE";
+        public final static int CODE= 277;
+        public final static int ERROR= 427;
+    }
+
+    /**  Router configuration string to send to local controller */
+    
+    public final static class ROUTER_CONFIG {
+        public final static String CMD = "ROUTER_CONFIG";
+        public final static int CODE= 278;
+        public final static int ERROR= 428;
+    }
+
     /*
      * Spare - 290 - 299
      */

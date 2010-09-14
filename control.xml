@@ -26,4 +26,7 @@
      <EndTime>100</EndTime>
      <Parameters>probdists.xml</Parameters>
   </EventEngine>
+  <RouterOptions>
+      routeroptions.xml
+  </RouterOptions>
 </SimOptions>

@@ -26,4 +26,7 @@
      <EndTime>30</EndTime>
      <Parameters>TestScript</Parameters>
   </EventEngine>
+  <RouterOptions>
+    routeroptions.xml
+  </RouterOptions>
 </SimOptions>

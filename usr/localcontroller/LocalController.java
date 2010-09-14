@@ -32,10 +32,12 @@ public class LocalController implements ComponentController {
     private ArrayList <Router> routerList_= null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
     private HashMap<Integer, BasicRouterInfo> routerMap_ = null;
-
+    private String routerConfig_= "";  // String contains config for routers
     private String classPath_= null;
 
     private String myName = "LocalController";
+    
+    private String routerConfigString_= "";
     
     /**
      * Main entry point.
@@ -249,9 +251,12 @@ public class LocalController implements ComponentController {
             BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,port1);
             routers_.add(br);
 
-            // tell the router its new name
+            // tell the router its new name and config if available
             try {
                 interactor.setName(routerName);
+                if (routerConfigString_ != "") {
+                    interactor.setConfigString(routerConfigString_);
+                }
             } catch (IOException ioexc) {
                 return false;
             } catch (MCRPException mcrpe) {
@@ -325,6 +330,12 @@ public class LocalController implements ComponentController {
     public String getName() {
         return myName + ":" + hostInfo_.getPort();
     }
+    
+    /** Set string which configures routers */
+    public void setRouterOptions(String str) 
+    {
+        routerConfigString_= str;
+    } 
 
     /**
      * Get the ManagementConsole this ComponentController interacts with.

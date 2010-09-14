@@ -45,13 +45,15 @@ CLASSES = \
   usr/router/command/SetNameCommand.java \
   usr/router/command/ListConnectionsCommand.java \
   usr/router/command/UnknownCommand.java \
+  usr/router/command/ReadOptionsFileCommand.java \
+  usr/router/command/EndLinkCommand.java \
+  usr/router/command/ReadOptionsStringCommand.java \
   usr/router/command/RouterCommand.java \
   usr/router/command/ShutDownCommand.java \
   usr/router/command/GetPortRemoteRouterCommand.java \
   usr/router/command/SetWeightCommand.java \
   usr/router/command/GetPortNameCommand.java \
   usr/router/command/GetWeightCommand.java \
-  usr/router/command/EndLinkCommand.java \
   usr/router/command/ListRoutingTableCommand.java \
   usr/router/SimpleRouterFabric.java \
   usr/router/CreateConnection.java \
@@ -61,9 +63,11 @@ CLASSES = \
   usr/router/RouterPort.java \
   usr/router/RouterFabric.java \
   usr/router/TCPNetIF.java \
+  usr/router/EndLink.java \
   usr/router/RouterManagementConsole.java \
   usr/router/RoutingTable.java \
   usr/router/RoutingTableEntry.java \
+  usr/router/RouterOptions.java \
   usr/net/Datagram.java \
   usr/net/TCPEndPointSrc.java \
   usr/net/DatagramPatch.java \
@@ -129,6 +133,7 @@ CLASSES = \
   usr/localcontroller/command/ConnectRoutersCommand.java \
   usr/localcontroller/command/EndRouterCommand.java \
   usr/localcontroller/command/EndLinkCommand.java \
+  usr/localcontroller/command/RouterConfigCommand.java \
   usr/localcontroller/LocalControllerInfo.java \
   usr/localcontroller/LocalController.java \
   usr/localcontroller/LocalControllerManagementConsole.java \
@@ -137,7 +142,6 @@ CLASSES = \
   usr/engine/TestEventEngine.java \
   usr/engine/ScriptEngine.java \
   usr/engine/ProbabilisticEventEngine.java
-
 
 #
 # the default make target entry

@@ -7,7 +7,7 @@ package usr.globalcontroller;
 import usr.localcontroller.LocalControllerInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.io.File;
+import java.io.*;
 import usr.engine.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -18,6 +18,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException; 
 import usr.engine.*;
 import usr.common.*;
+import usr.router.RouterOptions;
 
 
 class ControlOptions {
@@ -32,8 +33,10 @@ class ControlOptions {
     private int controllerWaitTime_= 6;    
     private int lowPort_= 10000;   // Default lowest port to be used on local controller 
     private int highPort_= 20000;  // Default highest port to be used on local controller
-    private int maxLag_= 10000;
-    EventEngine engine_;
+    private int maxLag_= 10000;  // Maximum lag tolerable in simulation in millisec
+    private String routerOptionsString_= ""; //
+    private RouterOptions routerOptions_= null;
+    EventEngine engine_;   // Engine used to create new events for sim
 
 
     /** init function sets up basic information */
@@ -44,7 +47,7 @@ class ControlOptions {
       remoteLoginFlags_ = "-n";
       remoteStartController_ = 
         "java -cp $(HOME)/code/userspacerouter usr.localcontroller.LocalController";
-
+      routerOptions_= new RouterOptions(null);
     }
     
     /** Adds information about a new host to the list
@@ -78,6 +81,8 @@ class ControlOptions {
             processGlobalController(gcs);
             NodeList eng= doc.getElementsByTagName("EventEngine");
             processEventEngine(eng);
+            NodeList ro= doc.getElementsByTagName("RouterOptions");
+            processRouterOptions(ro);
 
       } catch (java.io.FileNotFoundException e) {
           System.err.println("Cannot find file "+fName);
@@ -261,6 +266,32 @@ class ControlOptions {
     
     }
     
+    private void processRouterOptions(NodeList n) throws SAXException, 
+      FileNotFoundException, IOException, 
+      javax.xml.parsers.ParserConfigurationException {
+        if (n.getLength() == 0) {
+            return;
+        }
+        if (n.getLength() > 1) {
+            throw new SAXException ("Cannot have more than one RouterOptions section");
+        }
+        Element hElement = (Element)n.item(0);
+        NodeList textFNList = hElement.getChildNodes();
+        String fName= ((Node)textFNList.item(0)).getNodeValue().trim();
+        //System.err.println("Read router file "+fName);    
+        BufferedReader reader = new BufferedReader( new FileReader (fName));
+        String line  = null;
+        StringBuilder stringBuilder = new StringBuilder();
+          
+        String ls = System.getProperty("line.separator");
+        while( ( line = reader.readLine() ) != null ) {
+           stringBuilder.append( line );
+           stringBuilder.append( ls );
+        }
+        routerOptionsString_= stringBuilder.toString();
+        //System.err.println("User Options String "+routerOptionsString_);
+        routerOptions_.setOptionsFromString(routerOptionsString_);
+    }
 
     
     /** Return string to launch local controller on remote
@@ -359,6 +390,10 @@ class ControlOptions {
       Object o)
     {
         engine_.followEvent(e,s,g,o);
+    }
+    
+    public String getRouterOptionsString() {
+        return routerOptionsString_; 
     }
     
     /** Accessor function for max lag -- maximum time delay for simulation */

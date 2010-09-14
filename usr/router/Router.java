@@ -10,6 +10,9 @@ public class Router {
     // The Router switching fabric
     RouterFabric fabric;
 
+    // Router options
+    RouterOptions options_;
+
     // The Router controller
     RouterController controller;
 
@@ -22,6 +25,7 @@ public class Router {
     public Router(int port) {
         controller = new RouterController(this, port);
         fabric = new SimpleRouterFabric(this);
+        options_= new RouterOptions(this);
     }
 
     /**
@@ -34,6 +38,7 @@ public class Router {
     public Router(int port, String name) {
         controller = new RouterController(this, port);
         fabric = new SimpleRouterFabric(this);
+        options_= new RouterOptions(this);
         setName(name);
     }
 
@@ -47,6 +52,7 @@ public class Router {
     public Router(int mPort, int r2rPort) {
         controller = new RouterController(this, mPort, r2rPort);
         fabric = new SimpleRouterFabric(this);
+        options_= new RouterOptions(this);
     }
 
     /**
@@ -60,6 +66,7 @@ public class Router {
     public Router(int mPort, int r2rPort, String name) {
         controller = new RouterController(this, mPort, r2rPort);
         fabric = new SimpleRouterFabric(this);
+        options_= new RouterOptions(this);
         setName(name);
     }
 
@@ -212,6 +219,34 @@ public class Router {
             router.stop();
         }
 
+    }
+    
+        /** Read a string containing router options */
+    public boolean readOptionsString(String str) 
+    {
+        try { 
+            //System.err.println("TRYING TO PARSE STRING "+str);
+            options_.setOptionsFromString(str);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Cannot parse options string");
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
+    
+    /** Read a file containing router options */
+    
+    public boolean readOptionsFile(String fName)
+    {
+        try { 
+            options_.setOptionsFromFile(fName);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Cannot parse options string");
+            System.err.println(e.getMessage());
+            return false;
+        }    
     }
 
     private static void help() {

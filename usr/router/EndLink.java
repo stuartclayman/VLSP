@@ -44,8 +44,14 @@ public class EndLink extends ChannelResponder implements Runnable {
         }
         int rId;
         rId= Integer.parseInt(parts[1]);
+        NetIF netif= controller.findNetIF("Router-"+rId);
+        if (netif == null) {
+            respond(MCRP.END_LINK.ERROR + " END_LINK cannot find link to "+rId);
+            return;
+        } 
         System.err.println(leadin() + "END_LINK COMMAND STILL TO BE WRITTEN");
         respond(MCRP.END_LINK.CODE + " END_LINK to " + rId);
+        
     }
 
     /**

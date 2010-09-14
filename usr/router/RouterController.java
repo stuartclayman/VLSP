@@ -329,6 +329,29 @@ public class RouterController implements ComponentController, Runnable {
         return router.listPorts();
     }
 
+    /** Return the netIF associated with a certain router name
+    */
+    public NetIF findNetIF(String rName) {
+        NetIF net= router.getRouterFabric().findNetIF(rName);
+        if (net == null) {
+            System.err.println(leadin()+" cannot find connection to "+
+                rName); 
+        }
+        return net;
+    }
+    
+    /** Read a string containing router options */
+    public boolean readOptionsString(String str) 
+    {
+        return router.readOptionsString(str);
+    }
+    
+    /** Read a file containing router options */
+    
+    public boolean readOptionsFile(String fName)
+    {
+        return router.readOptionsFile(fName);
+    }
 
     /**
      * Create the String to print out before a message
@@ -339,7 +362,7 @@ public class RouterController implements ComponentController, Runnable {
         return getName() + " " + RC;
     }
 
-
+    
 
 
 }

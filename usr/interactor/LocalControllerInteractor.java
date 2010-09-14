@@ -95,6 +95,15 @@ public class LocalControllerInteractor extends MCRPInteractor
         return this;
     }
 
+    /** Set the configuration string for a router */
+    public MCRPInteractor setConfigString(String config) throws IOException, 
+        MCRPException {
+          String toSend = MCRP.ROUTER_CONFIG.CMD + " "+ config;
+          interact(toSend);
+          expect(MCRP.ROUTER_CONFIG.CODE);
+          return this;
+
+    }
 
   /** Ask the Local Controller to end a link */
     public MCRPInteractor endLink(String host1, int port1, int rId)throws IOException, MCRPException {

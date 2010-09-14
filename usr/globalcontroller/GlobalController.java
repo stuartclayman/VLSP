@@ -502,7 +502,7 @@ public class GlobalController implements ComponentController {
         ArrayList <Integer> out;
         ArrayList <Integer> in;
         int arrayPos;
-        System.out.println(leadin()+"Adding link from "+router1Id+" "+router2Id);
+        //System.out.println(leadin()+"Adding link from "+router1Id+" "+router2Id);
         // remove r2 from outlinks of r1
         out= outLinks_.get(router1Id);
         arrayPos= out.indexOf(router2Id);
@@ -643,7 +643,8 @@ public class GlobalController implements ComponentController {
     public void aliveMessage(LocalHostInfo lh)
     {   
         aliveCount+= 1;
-        System.out.println(leadin() + "Received alive count from "+lh.getName()+":"+lh.getPort());
+        System.out.println(leadin() + "Received alive count from "+
+          lh.getName()+":"+lh.getPort());
     }
     
     /**
@@ -711,17 +712,16 @@ public class GlobalController implements ComponentController {
                     // try and connect
                     try {
                         System.out.println(leadin() + "Trying to make connection to "+
-                                           lh.getName()+" "+lh.getPort());
+                           lh.getName()+" "+lh.getPort());
                         inter= new LocalControllerInteractor(lh);
-
+                        
                         localControllers_.add(inter);
                         interactorMap_.put(lh,inter);
-                        try {
-                            inter.checkLocalController(myHostInfo_);
-                        } catch (java.io.IOException e) {
-                        } catch (usr.interactor.MCRPException e) {
+                        inter.checkLocalController(myHostInfo_);
+                        if (options_.getRouterOptionsString() != "") {
+                            inter.setConfigString(options_.getRouterOptionsString());
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                     }
            
                 }

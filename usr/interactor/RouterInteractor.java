@@ -211,11 +211,22 @@ public class RouterInteractor extends MCRPInteractor {
 	return this;
     }
     
+      /** End the link from this router to the router with a given id */
     public MCRPInteractor endLink(int rId) throws IOException, 
         MCRPException {
           String toSend = MCRP.END_LINK.CMD + " "+ rId;
           interact(toSend);
           expect(MCRP.END_LINK.CODE);
+          return this;
+
+    }
+    
+    /** Set the configuration string for a router */
+    public MCRPInteractor setConfigString(String config) throws IOException, 
+        MCRPException {
+          String toSend = MCRP.READ_OPTIONS_STRING.CMD + " "+ config;
+          interact(toSend);
+          expect(MCRP.READ_OPTIONS_STRING.CODE);
           return this;
 
     }
