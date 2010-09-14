@@ -12,7 +12,7 @@ public class TestEventEngine implements EventEngine {
     /** Contructor from Parameter string */
     public TestEventEngine(int time, String parms) 
     {
-        timeToEnd_= time;
+        timeToEnd_= time*1000;
     }
     
     /** Initial events to add to schedule */

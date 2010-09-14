@@ -30,8 +30,9 @@ class ControlOptions {
     private boolean startLocalControllers_= true;   // If true Global Controller starts local controllers
     private boolean isSimulation_= false;    //  If true simulation in software not emulation in hardware
     private int controllerWaitTime_= 6;    
-    private int lowPort_= 10000;
-    private int highPort_= 20000;
+    private int lowPort_= 10000;   // Default lowest port to be used on local controller 
+    private int highPort_= 20000;  // Default highest port to be used on local controller
+    private int maxLag_= 10000;
     EventEngine engine_;
 
 
@@ -358,6 +359,11 @@ class ControlOptions {
       Object o)
     {
         engine_.followEvent(e,s,g,o);
+    }
+    
+    /** Accessor function for max lag -- maximum time delay for simulation */
+    public int getMaxLag() {
+        return maxLag_;
     }
 }
 

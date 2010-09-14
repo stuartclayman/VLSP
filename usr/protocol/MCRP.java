@@ -205,7 +205,22 @@ public class MCRP implements Protocol {
         public final static int CODE= 273;
         public final static int ERROR= 423;
     }
+    
+      /**  Request to Local Controller to shut down a router */
+    
+    public final static class ROUTER_SHUT_DOWN {
+        public final static String CMD = "ROUTER_SHUT_DOWN";
+        public final static int CODE= 274;
+        public final static int ERROR= 424;
+    }
 
+     /**  Request to Local Controller to end a link */
+    
+    public final static class END_LINK {
+        public final static String CMD = "END_LINK";
+        public final static int CODE= 275;
+        public final static int ERROR= 425;
+    }
 
     /*
      * Spare - 290 - 299

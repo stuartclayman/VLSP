@@ -7,17 +7,15 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 /**
- * The CREATE_CONNECTION command.
+ * The END_LINK command.
  */
-public class CreateConnectionCommand extends RouterCommand {
+public class EndLinkCommand extends RouterCommand {
     /**
-     * Construct a CreateConnectionCommand.
-     * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
-     * interface to a router on the address ip_addr/port with a 
-     * connection weight of connection_weight
+     * Construct an EndLinkCommand
      */
-    public CreateConnectionCommand() {
-        super(MCRP.CREATE_CONNECTION.CMD, MCRP.CREATE_CONNECTION.CODE, MCRP.CREATE_CONNECTION.ERROR);
+    public EndLinkCommand() {
+        super(MCRP.END_LINK.CMD, MCRP.END_LINK.CODE, 
+          MCRP.END_LINK.ERROR);
     }
 
     /**
@@ -30,8 +28,8 @@ public class CreateConnectionCommand extends RouterCommand {
 
         managementConsole.addRequest(new Request(sc, req));
         System.out.println(leadin() + "Requests = " + managementConsole.queue());
-
         return true;
+
     }
 
 }

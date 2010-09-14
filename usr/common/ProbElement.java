@@ -85,11 +85,11 @@ public class ProbElement
         return x;
 
    }
-   public static double exponentialVariate(double lambda) {
-        //Weibulls wobble but they don't fall down
+   public static double exponentialVariate(double mean) {
+        // uses mean not rate
         double p, x;
         p= Math.random();
-        x = - Math.log(1.0 - p)/lambda;
+        x = - Math.log(1.0 - p)*mean;
 
         return x;
 

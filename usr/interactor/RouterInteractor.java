@@ -210,7 +210,16 @@ public class RouterInteractor extends MCRPInteractor {
 	expect(MCRP.CREATE_CONNECTION.CODE);
 	return this;
     }
+    
+    public MCRPInteractor endLink(int rId) throws IOException, 
+        MCRPException {
+          String toSend = MCRP.END_LINK.CMD + " "+ rId;
+          interact(toSend);
+          expect(MCRP.END_LINK.CODE);
+          return this;
 
+    }
+    
     /**
      * Shutdown the Router we are interacting with.
      */

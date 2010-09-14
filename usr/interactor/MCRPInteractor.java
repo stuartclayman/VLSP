@@ -140,7 +140,7 @@ public abstract class MCRPInteractor {
 	lastResponse = response;
 
 	if (debug) {
-	    System.err.println("MCRPInteractor: response code = " + lastResponse.getCode());
+	    System.out.println("MCRPInteractor: response code = " + lastResponse.getCode());
 	}
 
 	fsm = FSMState.FSM_READY;
@@ -324,8 +324,8 @@ public abstract class MCRPInteractor {
      */
     private void send(String str) {
 	if (debug) {
-	    System.err.print(">> " + str);
-	    System.err.print(" ");
+	    System.out.print(">> " + str);
+	    System.out.print(" ");
 	}
 
 	output.print(str);

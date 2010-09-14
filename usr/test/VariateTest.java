@@ -1,37 +1,67 @@
 package usr.test;
 
-import usr.common.ProbElement;
-import usr.common.ProbException;
+import usr.common.*;
 
 
+import org.w3c.dom.Document;
+import org.w3c.dom.*;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException; 
+import java.io.*;
 
 public class VariateTest {
     public static void main(String[] args) {
         int i;
         int noTests;
-        String distType;
-        double parm1= 0.0 , parm2= 0.0, parm3= 0.0;
-        if (args.length < 3) {
-            System.out.println("Need arguments --  no_variates Type(string), parm 1, parm2, parm3");
+        ProbDistribution dist= null;
+        if (args.length != 2) {
+            System.out.println("Need arguments --  distribution file and no tests");
         }
-        distType= args[1];
-        noTests= Integer.parseInt(args[0]);
-        parm1= Double.parseDouble(args[2]);
-        if (args.length > 3)
-            parm2= Double.parseDouble(args[3]);
-        if (args.length > 4)
-            parm3= Double.parseDouble(args[4]);
-        double[]parms= {parm1,parm2,parm3};
-        try {
-            ProbElement el= new ProbElement(distType, parms);
-            for (i= 0; i < noTests; i++) {
-            
-                System.out.println(el.getVariate());
-            } 
-        } catch (ProbException e){
-                System.out.println(e.getMessage());
-                System.exit(-1);
+        
+      try { DocumentBuilderFactory docBuilderFactory = 
+          DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+        Document doc = docBuilder.parse (new File(args[0]));
+
+        // normalize text representation
+        doc.getDocumentElement ().normalize ();
+        String basenode= doc.getDocumentElement().getNodeName();
+        if (!basenode.equals("VariateTest")) {
+            throw new SAXException("Base tag should be VariateTest");
         }
+        NodeList td= doc.getElementsByTagName("TestDist");
+        dist= ReadXMLUtils.parseProbDist(td,"TestDist");
+        if (dist == null) {
+            throw new SAXException ("Must specific TestDist");
+        }
+          
+    } catch (java.io.FileNotFoundException e) {
+          System.err.println("Cannot find file "+args[0]);
+          System.exit(-1);
+      }catch (SAXParseException err) {
+          System.err.println ("** Parsing error" + ", line " 
+             + err.getLineNumber () + ", uri " + err.getSystemId ());
+          System.err.println(" " + err.getMessage ());
+          System.exit(-1);
+
+      }catch (SAXException e) {
+          System.err.println("Exception in SAX XML parser.");
+          System.err.println(e.getMessage());
+          System.exit(-1);
+          
+      }catch (Throwable t) {
+          t.printStackTrace ();
+          System.exit(-1);
+      }
+        
+        
+        noTests= Integer.parseInt(args[1]);
+        for (i= 0; i < noTests; i++) {
+            System.out.println(dist.getVariate());
+        } 
     }
 
 }

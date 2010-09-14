@@ -214,7 +214,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                             // Accept the incoming connection.
                             Socket local = serverSocket.accept();
 
-                            System.err.println(leadin() + "Did accept on: " + serverSocket);
+                            System.out.println(leadin() + "Did accept on: " + serverSocket);
                             // Deal with incoming connection
                             newConnection(local);
 
@@ -246,7 +246,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             }
         }
 
-        System.err.println(leadin() + " End of thread " +  Thread.currentThread());
+        System.out.println(leadin() + " End of thread " +  Thread.currentThread());
 
         // notify we have reached the end of this thread
         theEnd();
@@ -297,7 +297,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                 // register this channel with the selector
                 SelectionKey key = ssc.register( selector, SelectionKey.OP_ACCEPT );
 
-                System.err.println(leadin() + "Ready to accept on " + serverSocket);
+                System.out.println(leadin() + "Ready to accept on " + serverSocket);
                 return true;
             }
         } catch (IOException ioe) {
@@ -316,7 +316,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         try {
             // close main socket
             serverSocket.close();
-            System.err.println(leadin() + "Stopped listening on port: " + port);
+            System.out.println(leadin() + "Stopped listening on port: " + port);
 
             return true;
         } catch (Exception e) {
@@ -331,14 +331,14 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Start reading from a new connection.
      */
     protected void newConnection(Socket s) {
-        System.err.println(leadin() + "newConnection: " + s);
+        System.out.println(leadin() + "newConnection: " + s);
 
         SocketChannel sc;
         try {
             // Make sure channel for new connection is nonblocking
             sc = s.getChannel();
             sc.configureBlocking( false );
-            System.err.println(leadin() + "Registering " + sc);
+            System.out.println(leadin() + "Registering " + sc);
             // Register it with the Selector, for reading.
             SelectionKey key = sc.register( selector, SelectionKey.OP_READ );
 
@@ -362,7 +362,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * End a connection
      */
     public void endConnection(SocketChannel c) {
-        System.err.println(leadin() + "endConnection: " + c.socket());
+        System.out.println(leadin() + "endConnection: " + c.socket());
 
         unregisterChannel(c);
 
@@ -442,7 +442,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Returns false if there is a problem responding down the channel
      */
     protected boolean handleInput(String value, SocketChannel sc) {
-        System.err.println(leadin() + ">>> " + value);
+        System.out.println(leadin() + ">>> " + value);
 
         if (value == null && value.length() == 0) {
             // empty - do nothing

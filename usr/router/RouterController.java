@@ -12,6 +12,7 @@ import java.io.*;
 import java.nio.*;
 import java.nio.charset.Charset;
 import java.nio.channels.SocketChannel;
+import usr.protocol.*;
 
 /**
  * The Router Controller provides the management and control
@@ -245,7 +246,14 @@ public class RouterController implements ComponentController, Runnable {
 
                     pool.execute(new CreateConnection(this, nextRequest));
 
-                } else {
+                } else if (value.startsWith("END_LINK")) {
+                    // incr connection count
+                    connectionCount--;
+                    pool.execute(new EndLink(this,nextRequest));
+                    
+                }  
+                
+                else {
                     System.err.println(leadin() + "Unknown request " + nextRequest);
                 }
                     
@@ -269,7 +277,7 @@ public class RouterController implements ComponentController, Runnable {
     public void addNetIF(NetIF netIF) {
         int id = netIF.getID();
 
-        System.err.println(leadin() + "addNetIF " + id + " for " + netIF);
+        System.out.println(leadin() + "addNetIF " + id + " for " + netIF);
 
         netIFMap.put(id, netIF);
 

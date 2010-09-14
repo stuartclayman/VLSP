@@ -3,19 +3,19 @@
             <ProbElement>
                  <Type>Exponential</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>500.0</Parameter>
+                 <Parameter>10</Parameter>
             </ProbElement>
       </NodeBirthDist>
       <NodeDeathDist>
             <ProbElement>
                  <Type>Exponential</Type>
                  <Weight>0.1</Weight>
-                 <Parameter>500.0</Parameter>
+                 <Parameter>50</Parameter>
             </ProbElement>
             <ProbElement>
                  <Type>Weibull</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>50.0</Parameter>
+                 <Parameter>500.0</Parameter>
                  <Parameter>1.5</Parameter>
             </ProbElement>
       </NodeDeathDist>

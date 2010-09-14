@@ -16,7 +16,7 @@ public class ScriptEngine implements EventEngine {
     /** Contructor from Parameter string */
     public ScriptEngine(int time, String parms) 
     {
-        timeToEnd_= time;
+        timeToEnd_= time*1000;
         readScript(parms);
     }
     
@@ -88,14 +88,30 @@ public class ScriptEngine implements EventEngine {
             }
             if (type.equals("START_LINK")) {
                if (args.length < 4) {
-                   throw new Exception ("START_LINK requires two link ids "+
+                   throw new Exception ("START_LINK requires two router ids "+
                      s);
                }
                Integer l1= Integer.parseInt(args[2].trim());
                Integer l2= Integer.parseInt(args[3].trim());
                Pair<Integer,Integer> pair= new Pair
-                   <Integer,Integer>(1,1);
+                   <Integer,Integer>(l1,l2);
                return new SimEvent(SimEvent.EVENT_START_LINK,time,pair);
+            }
+            if (type.equals("END_ROUTER")) {
+                if (args.length != 3) 
+                   throw new Exception("END_ROUTER requires router id "+s);
+                Integer r= Integer.parseInt(args[2].trim());
+                return new SimEvent(SimEvent.EVENT_END_ROUTER,time,r);
+            }
+            if (type.equals("END_LINK")) {
+                if (args.length != 4) 
+                    throw new Exception ("END_LINK requires 2 router ids "+
+                      s);
+                Integer r1= Integer.parseInt(args[2].trim());
+                Integer r2= Integer.parseInt(args[3].trim());
+    
+                Pair <Integer,Integer> link= new Pair<Integer,Integer>(r1,r2);
+                return new SimEvent(SimEvent.EVENT_END_LINK,time,link);
             }
             throw new Exception("Unrecognised event in script line "+s);
              

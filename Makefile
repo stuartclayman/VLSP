@@ -51,6 +51,7 @@ CLASSES = \
   usr/router/command/SetWeightCommand.java \
   usr/router/command/GetPortNameCommand.java \
   usr/router/command/GetWeightCommand.java \
+  usr/router/command/EndLinkCommand.java \
   usr/router/command/ListRoutingTableCommand.java \
   usr/router/SimpleRouterFabric.java \
   usr/router/CreateConnection.java \
@@ -88,8 +89,8 @@ CLASSES = \
   usr/interactor/InputHandler.java \
   usr/interactor/MCRPNoConnectionException.java \
   usr/interactor/GlobalControllerInteractor.java \
-  usr/interactor/RouterInteractor.java \
   usr/interactor/LocalControllerInteractor.java \
+  usr/interactor/RouterInteractor.java \
   usr/common/LocalHostInfo.java \
   usr/common/ProbDistribution.java \
   usr/common/ProbElement.java \
@@ -126,6 +127,8 @@ CLASSES = \
   usr/localcontroller/command/ShutDownCommand.java \
   usr/localcontroller/command/UnknownCommand.java \
   usr/localcontroller/command/ConnectRoutersCommand.java \
+  usr/localcontroller/command/EndRouterCommand.java \
+  usr/localcontroller/command/EndLinkCommand.java \
   usr/localcontroller/LocalControllerInfo.java \
   usr/localcontroller/LocalController.java \
   usr/localcontroller/LocalControllerManagementConsole.java \
@@ -133,7 +136,7 @@ CLASSES = \
   usr/engine/EmptyEventEngine.java \
   usr/engine/TestEventEngine.java \
   usr/engine/ScriptEngine.java \
-  usr/engine/ProbabilisticEventEngine.java 
+  usr/engine/ProbabilisticEventEngine.java
 
 
 #

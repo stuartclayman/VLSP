@@ -487,7 +487,7 @@ public class ConnectionOverTCP implements Connection, Runnable {
      * Process a control datagram
      */
     protected void processControlDatagram(Datagram dg) {
-        System.err.println("Control Datagram " + dg);
+        System.out.println("Control Datagram " + dg);
 
         byte[] payload = dg.getPayload();
 

@@ -34,8 +34,19 @@ public class LocalControllerManagementConsole extends AbstractManagementConsole 
         register(new QuitCommand());
         register(new NewRouterCommand());
         register(new ConnectRoutersCommand());
+        register(new EndRouterCommand());
+        register(new EndLinkCommand());
     }
         
+    public boolean endRouter(LocalHostInfo r) {
+        return localController_.endRouter(r);
+    }    
+    
+    public boolean endLink(LocalHostInfo r1, int r2) 
+    {
+        return localController_.endLink(r1,r2);
+    }
+    
     public boolean requestNewRouter(int rId, int port1, int port2)
     {
         return localController_.requestNewRouter(rId, port1, port2);

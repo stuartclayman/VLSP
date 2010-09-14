@@ -52,7 +52,7 @@ public class LocalControllerInteractor extends MCRPInteractor
      */
     public MCRPInteractor shutDown() throws IOException, MCRPException {
          
-	    interact(MCRP.SHUT_DOWN.CMD);
+	     interact(MCRP.SHUT_DOWN.CMD);
 	     expect(MCRP.SHUT_DOWN.CODE);
 	     return this;
     }
@@ -65,7 +65,7 @@ public class LocalControllerInteractor extends MCRPInteractor
     }
 
     /**
-     * As the LocalController to start a new router.
+     * Ask the LocalController to start a new router.
      */
     public MCRPInteractor newRouter(int routerId, int port1, int port2) 
         throws IOException, MCRPException  {
@@ -75,6 +75,7 @@ public class LocalControllerInteractor extends MCRPInteractor
         return this;
     }
 
+    /** Ask the Local Controller to connect routers */
     public MCRPInteractor connectRouters(String host1, int port1, 
       String host2, int port2)throws IOException, MCRPException {
         String toSend = MCRP.CONNECT_ROUTERS.CMD+" "+host1+":"+port1+" "+
@@ -84,15 +85,34 @@ public class LocalControllerInteractor extends MCRPInteractor
         return this;
     }
 
+    /** Ask the Local Controller to stop a router */
+    public MCRPInteractor endRouter(String host1, int port1) 
+        throws IOException, MCRPException
+    {
+        String toSend= MCRP.ROUTER_SHUT_DOWN.CMD + " "+host1+":"+port1;
+        interact(toSend);
+        expect(MCRP.ROUTER_SHUT_DOWN.CODE);
+        return this;
+    }
+
+
+  /** Ask the Local Controller to end a link */
+    public MCRPInteractor endLink(String host1, int port1, int rId)throws IOException, MCRPException {
+        String toSend = MCRP.END_LINK.CMD+" "+host1+":"+port1+" "+rId;
+        interact(toSend);
+        expect(MCRP.END_LINK.CODE);
+        return this;
+    }
+
     /**
      * Check with a local controller.
      */
     public MCRPInteractor checkLocalController(String host, int port) throws IOException, MCRPException {
         String toSend = MCRP.CHECK_LOCAL_CONTROLLER.CMD + 
             " " + host + " " + port;
-	    interact(toSend);
-	  expect(MCRP.CHECK_LOCAL_CONTROLLER.CODE);
-	return this;
+	      interact(toSend);
+	      expect(MCRP.CHECK_LOCAL_CONTROLLER.CODE);
+	      return this;
     }
     
     /**

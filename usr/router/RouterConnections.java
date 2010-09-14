@@ -49,7 +49,7 @@ public class RouterConnections implements Runnable {
 
             System.out.println(leadin() + "Listening on port: " + port);
 
-            System.err.println(leadin() + "Ready to accept on " + serverSocket);
+            System.out.println(leadin() + "Ready to accept on " + serverSocket);
 
 
             myThread = new Thread(this, "RouterConnections" + hashCode());
@@ -93,13 +93,13 @@ public class RouterConnections implements Runnable {
 
                 Socket local = connection.getSocket();
 
-                System.err.println(leadin() + "Did accept on: " + serverSocket);
+                System.out.println(leadin() + "Did accept on: " + serverSocket);
 
                 System.out.println(leadin() + "newConnection: " + dst.getSocket());
 
                 InetSocketAddress refAddr = new InetSocketAddress(local.getInetAddress(), local.getPort());
 
-                System.err.println("RouterConnections  => " + refAddr + " # " + refAddr.hashCode());
+                System.out.println("RouterConnections  => " + refAddr + " # " + refAddr.hashCode());
 
 
                 NetIF netIF = new TCPNetIF(dst);

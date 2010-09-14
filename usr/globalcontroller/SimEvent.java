@@ -12,6 +12,9 @@ public class SimEvent {
     public static final int EVENT_START_LINK= 5;
     public static final int EVENT_END_LINK= 6;
     
+    
+    /** Create event -- note that time is time since start of 
+       event schedule  */
     public SimEvent(int type, long time, Object data) 
     {
         eventType_= type;

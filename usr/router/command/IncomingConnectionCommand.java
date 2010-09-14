@@ -77,7 +77,7 @@ public class IncomingConnectionCommand extends RouterCommand {
             NetIF netIF = controller.getNetIFByID(refAddr.hashCode());
 
             if (netIF != null) {
-                System.err.println(leadin() + "Found NetIF " + netIF + " by id " + refAddr.hashCode());
+                System.out.println(leadin() + "Found NetIF " + netIF + " by id " + refAddr.hashCode());
 
                 // set its name
                 netIF.setName(connectionID);

@@ -26,7 +26,7 @@ public class ProbabilisticEventEngine implements EventEngine {
     /** Contructor from Parameter string */
     public ProbabilisticEventEngine(int time, String parms) 
     {
-        timeToEnd_= time;
+        timeToEnd_= time*1000;
         parseXMLFile(parms);
     }
     
@@ -34,11 +34,15 @@ public class ProbabilisticEventEngine implements EventEngine {
     public void initialEvents(EventScheduler s, GlobalController g)
     {
         // simulation start
-        SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null);
-        s.addEvent(e0);
-        
+        SimEvent e;
+        e = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null);
+        s.addEvent(e);
+        // Add first node
+        long time= (int)(nodeCreateDist_.getVariate()*1000);
+        e = new SimEvent(SimEvent.EVENT_START_ROUTER, time, null);
+        s.addEvent(e);
         // simulation end
-        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null);
+        e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null);
         s.addEvent(e);
 
     }
@@ -46,14 +50,49 @@ public class ProbabilisticEventEngine implements EventEngine {
     /** Add or remove events following a simulation event */
     public void preceedEvent(SimEvent e, EventScheduler s,  GlobalController g) 
     {
-    
+
     }
     
     /** Add or remove events following a simulation event */
     public void followEvent(SimEvent e, EventScheduler s,  GlobalController g,
       Object o)
     {
+        if (e.getType() == SimEvent.EVENT_START_ROUTER) {
+            followRouter(e, s, g);
+            return;
+        }
+    }
     
+    private void followRouter(SimEvent e, EventScheduler s,  
+        GlobalController g) {
+        int routerId;
+        routerId= g.getMaxRouterId();
+        long now= e.getTime();
+        SimEvent e1= null;
+        long time;
+        // Schedule node death if this will happen
+        if (nodeDeathDist_ != null) {
+            time= (long)(nodeDeathDist_.getVariate()*1000);
+            e1= new SimEvent(SimEvent.EVENT_END_ROUTER, now+time, new Integer(routerId));
+            s.addEvent(e1);
+        }
+        //  Schedule new node
+        time= (long)(nodeCreateDist_.getVariate()*1000);
+        //System.err.println("Time to next router "+time);
+        e1= new SimEvent(SimEvent.EVENT_START_ROUTER, now+time, null);
+        s.addEvent(e1);
+        // Schedule links
+        int noLinks= 5;
+        int []nodes= g.getNodeList();
+        for (int i= 0; i < noLinks; i++) {
+            int newLink= nodes[(int)Math.floor(Math.random()*nodes.length)];
+            if (newLink == routerId || g.getLinkWeight(newLink,routerId) > 0) {
+                continue;
+            }
+            e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
+                new Pair<Integer,Integer>(newLink,routerId));
+            s.addEvent(e1);
+        }
     }
     
     /** Parse the XML to get probability distribution information*/
@@ -71,14 +110,14 @@ public class ProbabilisticEventEngine implements EventEngine {
             throw new SAXException("Base tag should be ProbabilisticEngine");
         }
         NodeList nbd= doc.getElementsByTagName("NodeBirthDist");
-        nodeCreateDist_= parseProbDist(nbd,"NodeBirthDist");
+        nodeCreateDist_= ReadXMLUtils.parseProbDist(nbd,"NodeBirthDist");
         if (nodeCreateDist_ == null) {
             throw new SAXException ("Must specific NodeBirthDist");
         }
         NodeList ndd= doc.getElementsByTagName("NodeDeathDist");
-        nodeDeathDist_= parseProbDist(ndd,"NodeDeathDist");
+        nodeDeathDist_= ReadXMLUtils.parseProbDist(ndd,"NodeDeathDist");
         NodeList ldd= doc.getElementsByTagName("LinkDeathDist");
-        linkDeathDist_= parseProbDist(ldd,"LinkDeathDist");
+        linkDeathDist_= ReadXMLUtils.parseProbDist(ldd,"LinkDeathDist");
           
     } catch (java.io.FileNotFoundException e) {
           System.err.println("Cannot find file "+fName);
@@ -100,45 +139,4 @@ public class ProbabilisticEventEngine implements EventEngine {
       }
     }
     
-    private ProbDistribution parseProbDist(NodeList n, String tagname) 
-      throws SAXException, ProbException, XMLNoTagException{
-        if (n.getLength() == 0) 
-            return null;
-        if (n.getLength() > 1) {
-            throw new SAXException("Only one tag of type "+tagname+
-              " allowed");
-        }
-        ProbDistribution d= new ProbDistribution();
-        
-        Element el= (Element)n.item(0);
-        
-        NodeList els= el.getElementsByTagName("ProbElement");
-        if (els.getLength() == 0) {
-            throw new SAXException("Must have at least one element of "+
-              "probability distribution in "+tagname);
-        }  
-        for (int i= 0; i < els.getLength(); i++) {
-           Node no= els.item(i);
-           ProbElement e= parseProbElement(no,tagname);
-           d.addPart(e);
-        }
-        try {
-           d.checkParts();
-        } catch (ProbException e) {
-            System.err.println(e.getMessage());
-            System.exit(-1);
-        }
-        return d;
-    }
-      
-    private ProbElement parseProbElement(Node n, String tagname) 
-      throws SAXException, ProbException, XMLNoTagException {
-        
-        String distName= ReadXMLUtils.parseSingleString(n,"Type",tagname,true);
-        double weight= ReadXMLUtils.parseSingleDouble(n,"Weight",tagname,true);
-        double []parms= ReadXMLUtils.parseArrayDouble(n,"Parameter",tagname);
-        ProbElement e= new ProbElement(distName,weight,parms); 
-       
-        return e;
-    }
 }

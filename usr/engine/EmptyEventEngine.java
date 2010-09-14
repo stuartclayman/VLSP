@@ -6,12 +6,12 @@ package usr.engine;
 import usr.globalcontroller.*;
 
 public class EmptyEventEngine implements EventEngine {
-    int timeToEnd_;
+    long timeToEnd_;
 
     /** Contructor from Parameter string */
     public EmptyEventEngine(int time, String parms) 
     {
-        timeToEnd_= time;
+        timeToEnd_= time*1000;
     }
     
     /** Initial events to add to schedule */

@@ -22,8 +22,8 @@
      <HighPort>14000</HighPort>
   </LocalController>
   <EventEngine>
-     <Name>Probabilistic</Name>
-     <EndTime>100</EndTime>
-     <Parameters>probdists.xml</Parameters>
+     <Name>Script</Name>
+     <EndTime>30</EndTime>
+     <Parameters>TestScript</Parameters>
   </EventEngine>
 </SimOptions>

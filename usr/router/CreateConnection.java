@@ -124,7 +124,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         // now get connection port
         int connectionPort = scanner.nextInt();
 
-        System.err.println(leadin() + "createConnection: connectionPort at " + host + " is " + connectionPort);
+        System.out.println(leadin() + "createConnection: connectionPort at " + host + " is " + connectionPort);
 
 
         /*
@@ -146,7 +146,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
             socket = src.getSocket();
 
-            System.err.println(leadin() + "connection socket: " + socket);
+            System.out.println(leadin() + "connection socket: " + socket);
 
             refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
             //System.err.println("CreateConnection => " + refAddr + " # " + refAddr.hashCode());

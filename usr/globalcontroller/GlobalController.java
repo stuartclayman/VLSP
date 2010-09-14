@@ -28,6 +28,10 @@ public class GlobalController implements ComponentController {
     private GlobalControllerManagementConsole console_= null;
     private ArrayList <LocalControllerInteractor> localControllers_ = null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
+    private HashMap<Pair<Integer,Integer>,Integer> linkWeights_= null;
+    private HashMap <Integer, ArrayList<Integer>> outLinks_= null;
+    private HashMap <Integer, ArrayList<Integer>> inLinks_= null;
+    private ArrayList <Integer> routerList_= null;
     private ArrayList <String> childNames_= null;
     private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
     private HashMap <Integer, BasicRouterInfo> routerIdMap_= null;
@@ -74,7 +78,10 @@ public class GlobalController implements ComponentController {
     }
 
     private void init() {
-      
+      linkWeights_ = new HashMap<Pair<Integer,Integer>,Integer> ();
+      outLinks_= new HashMap <Integer, ArrayList<Integer>> ();
+      inLinks_= new HashMap<Integer, ArrayList<Integer>> ();
+      routerList_= new ArrayList<Integer>();
       options_= new ControlOptions(xmlFile_);
       myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
       if (!options_.isSimulation()) {
@@ -103,30 +110,12 @@ public class GlobalController implements ComponentController {
             
               System.out.println(leadin() + "Starting Local Controllers");
               startLocalControllers();
-
-              /*
-               * We dont; need to do this anymore
-               * checkAllControllers() has better timeout code
-              for (int w=0; w < options_.getControllerWaitTime(); w++) {
-                  try {
-                      System.out.print((options_.getControllerWaitTime() - w) + " ");
-                      Thread.sleep(1000);  // Simple wait is to
-                      // ensure controllers start up
-                  }
-                  catch (java.lang.InterruptedException e) {
-                      System.err.println(leadin() + "initVirtualRouters Got interrupt!");
-                      System.exit(-1);    
-                  }
-              }
-              */
-
-          }
-
-        
+          }        
           System.out.println(leadin() + "Checking existence of local Controllers");
           checkAllControllers();
     }
     
+    /** Main loop for events */
     private void simulate() {
         if (options_.isSimulation()) {
             simulateSoftware();
@@ -136,6 +125,7 @@ public class GlobalController implements ComponentController {
     
     }
     
+    /** Main loop for events if software simulation */
     private void simulateSoftware() {
         long time= 0;
         while (simulationRunning_) {
@@ -149,8 +139,10 @@ public class GlobalController implements ComponentController {
         }
     }
     
+    /** Main loop for events if real time emulation */
     private void simulateHardware() {
     
+        simulationStartTime = System.currentTimeMillis();
         while (simulationRunning_) {
             SimEvent e= scheduler_.getFirstEvent();
             if (e == null) {
@@ -161,10 +153,19 @@ public class GlobalController implements ComponentController {
                 long eventTime= e.getTime();
                 simulationTime= System.currentTimeMillis();
                 //// SC
+                
+                if (simulationTime - (simulationStartTime + eventTime) > 
+                     options_.getMaxLag()) {
+                    System.err.println(leadin() +
+                      "Simulation lagging too much, slow down events");
+                    bailOut();
+                }
                 if ((simulationStartTime + eventTime) <= simulationTime) {
                     executeEvent(e);
                     break;
                 }
+                
+                
                 if (checkMessages()) {
 //                    System.out.println(leadin() + "Check msg true");
                     continue;
@@ -174,15 +175,8 @@ public class GlobalController implements ComponentController {
         }  
     }
     
-    private boolean checkMessages() {
-        if (options_.startLocalControllers()) {
-             return checkControllerOutput();
-        }
-        return checkQueueMessages();
-        
-    }
-    
-    private boolean checkQueueMessages()
+    /** Check queued messages at Global Controller */
+    private boolean checkMessages()
     {
         BlockingQueue<Request> queue = console_.queue();
         if (queue.size() == 0)
@@ -192,48 +186,14 @@ public class GlobalController implements ComponentController {
         return true;
     }
     
-    private boolean checkControllerOutput() {
-        return false;
-    }
+    
 
-    /*
-    private boolean checkControllerOutput() {
-        for (int i=0; i < childOutput_.size();i++) {
-            BufferedReader m= childOutput_.get(i);
-//            j+=1;
-//           System.out.println(leadin() + "Checking for messages from "+j);
-            try {
-                if (m.ready()) {
-                    System.out.println("Remote stdout: "+childNames_.get(i) + 
-                      ": "+ m.readLine());
-                    return true;
-                }    
-                
-            }
-            catch (java.io.IOException e) {
-                System.err.println(leadin() + "Error reading output from remote proc");
-                System.exit(-1);
-            } 
-            m= childError_.get(i);
-//            j+=1;
-//           System.out.println("Checking for messages from "+j);
-            try {
-                if (m.ready()) {
-                    System.out.println("Remote stderr: "+childNames_.get(i) + 
-                      ": "+ m.readLine());
-                    return true;
-                }    
-                
-            }
-            catch (java.io.IOException e) {
-                System.err.println(leadin() + "Error reading output from remote proc");
-                System.exit(-1);
-            } 
-        }
-        return false;
+     /** bail out of simulation relatively gracefully */
+    private void bailOut() {
+        System.err.println(leadin() + "Bailing out of simulation!");
+        shutDown();
+        System.exit(-1);
     }
-    */
-
     
     private void executeEvent(SimEvent e) {
         Object extraParms= null;
@@ -292,34 +252,41 @@ public class GlobalController implements ComponentController {
     
     /** Event for start Simulation */
     private void startSimulation() {
-        simulationStartTime = System.currentTimeMillis();
+        
         lastEventLength = 0;
-        System.out.println(leadin() + "Start of simulation event at: " + simulationStartTime);    
+        System.out.println(leadin() + "Start of simulation event at: " +  
+            System.currentTimeMillis());    
     }
     
     /** Event for end Simulation */
     private void endSimulation() {
-        System.out.println(leadin() + "End of simulation event at " + System.currentTimeMillis());
+        System.out.println(leadin() + "End of simulation event at " + 
+          System.currentTimeMillis());
         simulationRunning_= false;
         shutDown();
     }
     
+    /** Register existence of router */
+    private void registerRouter(int rId) 
+    {
+        routerList_.add(rId);
+    }
+    
     /** Event to start a router */
     private void startRouter() {
+        maxRouterId_++;
+        int rId= maxRouterId_;
+        
+        registerRouter(rId);
+        
         if (options_.isSimulation()) {
             System.err.println(leadin() + "TODO write simulated router code");
         } else {
-            startVirtualRouter();
+            startVirtualRouter(maxRouterId_);
         }
     }
     
-    private void bailOut() {
-        System.err.println(leadin() + "Bailing out of simulation!");
-        shutDown();
-        System.exit(-1);
-    }
-    
-    private void startVirtualRouter() 
+    private void startVirtualRouter(int id) 
     {
         // Find least used local controller
 
@@ -345,11 +312,11 @@ public class GlobalController implements ComponentController {
         try {
             int port= pp.findPort(2);
             leastUsed.addRouter();  // Increment count
-            maxRouterId_++;
-            BasicRouterInfo br= new BasicRouterInfo(maxRouterId_,simulationTime,
+            
+            BasicRouterInfo br= new BasicRouterInfo(id,simulationTime,
                 leastUsed,port);
-            routerIdMap_.put(maxRouterId_,br);
-            lci.newRouter(maxRouterId_, port);
+            routerIdMap_.put(id,br);
+            lci.newRouter(id, port);
         } catch (IOException e) {
             System.err.println(leadin() +"Could not start new router");
             System.err.println(e.getMessage());
@@ -362,13 +329,128 @@ public class GlobalController implements ComponentController {
         
     }
     
+    /** Unregister a router and all links from structures in 
+        GlobalController*/
+    private void unregisterRouter(int rId)
+    {
+        ArrayList<Integer> outBound= outLinks_.get(rId);
+        if (outBound != null) {
+            Object [] out2= outBound.toArray();
+            for (Object i: out2) {
+                unregisterLink(rId,(Integer)i);
+                //System.err.println("Unregister link "+rId+" "+i);
+            }
+        }
+        int index= routerList_.indexOf(rId);
+        //System.err.println("Router found at index "+index);
+        routerList_.remove(index);
+    }
+    
+    /** remove a router in simulation*/
+    private void endSimulationRouter(int rId) {
+         
+    }
+    
+    /** Send shutdown to a virtual router */
+    private void endVirtualRouter(int rId) {
+        BasicRouterInfo br= routerIdMap_.get(rId);
+        LocalControllerInteractor lci= interactorMap_.get
+            (br.getLocalControllerInfo());
+        try {
+            lci.endRouter(br.getHost(),br.getManagementPort());
+        } catch (Exception e) {
+            System.err.println(leadin()+ "Cannot shut down router "+
+              br.getHost()+":"+br.getManagementPort());
+            bailOut();
+        }
+        routerIdMap_.remove(rId);
+    }
+    
     /** Event to end a router */
     private void endRouter(int routerId) {
+        
+        if (options_.isSimulation()) {
+            endSimulationRouter(routerId);
+        } else {
+            endVirtualRouter(routerId);
+        }
+        unregisterRouter(routerId);
+    }
     
+    /** Register a link with structures necessary in Global
+    Controller */
+    private void registerLink(int router1Id, int router2Id) 
+    {
+        Pair <Integer, Integer> rnos= makeRouterPair(router1Id,router2Id);
+        linkWeights_.put(rnos,1);
+        ArrayList <Integer> out;
+        ArrayList <Integer> in;
+        ArrayList <Integer> newArray;
+        //System.err.println(leadin()+" Adding link from "+router1Id+" "+router2Id);
+        // Set outlinks from router1 Id
+        out= outLinks_.get(router1Id);
+        if (out == null) {
+            newArray = new ArrayList<Integer>();
+            newArray.add(router2Id);
+            outLinks_.put(router1Id,newArray);
+        } else {
+            out.add((Integer)router2Id);
+            //System.err.println("Links now ");
+            //for (Integer i: out) {
+            //    System.err.println(router1Id+" "+i);
+            //}
+            //outLinks_.put(router1Id,out);
+        }
+        // Set outlinks from router2 Id
+        out= outLinks_.get(router2Id);
+        if (out == null) {
+            newArray = new ArrayList<Integer>();
+            newArray.add(router1Id);
+            outLinks_.put(router2Id,newArray);
+        } else {
+            out.add((Integer)router1Id);
+            //outLinks_.put(router2Id,out);
+        }
+        // Set inlinks to router1Id
+        in= inLinks_.get(router1Id);
+        if (in == null) {
+            newArray= new ArrayList<Integer>();
+            newArray.add(router2Id);
+            inLinks_.put(router1Id,newArray);
+        } else {
+            in.add((Integer)router2Id);
+            //inLinks_.put(router1Id,in);
+        }
+        // Set inlinks to router2Id
+        in= inLinks_.get(router2Id);
+        if (in == null) {
+            newArray= new ArrayList<Integer>();
+            newArray.add(router1Id);
+            inLinks_.put(router2Id,newArray);
+        } else {
+            in.add((Integer)router1Id);
+            //inLinks_.put(router2Id,in);
+        }    
     }
     
     /** Event to link two routers */
     private void startLink(int router1Id, int router2Id) {
+        //System.err.println("Start link "+router1Id+" "+router2Id);
+        registerLink(router1Id, router2Id);
+        if (options_.isSimulation()) {
+            startSimulationLink(router1Id, router2Id);       
+        } else {
+            startVirtualLink(router1Id, router2Id);
+        }
+    }
+    
+    /** Start simulation link */
+    private void startSimulationLink(int router1Id, int router2Id) {
+    
+    }
+        
+    /** Send commands to start virtual link */
+    private void startVirtualLink(int router1Id, int router2Id) {
         
         BasicRouterInfo br1,br2;
         LocalControllerInfo lc;
@@ -400,9 +482,79 @@ public class GlobalController implements ComponentController {
 
     }
     
+    /** Create pair of integers with first integer smallest */
+    private Pair <Integer, Integer> makeRouterPair (int r1, int r2)
+    {
+        Pair <Integer, Integer> rpair;
+        if (r1 < r2)
+            rpair= new Pair<Integer,Integer>(r1,r2);
+        else 
+            rpair= new Pair<Integer,Integer>(r2,r1);
+        return rpair;
+    }
+    
+    /** Register a link with structures necessary in Global
+    Controller */
+    private void unregisterLink(int router1Id, int router2Id) 
+    {
+        Pair <Integer, Integer> rnos= makeRouterPair(router1Id,router2Id);
+        linkWeights_.remove(rnos);
+        ArrayList <Integer> out;
+        ArrayList <Integer> in;
+        int arrayPos;
+        System.out.println(leadin()+"Adding link from "+router1Id+" "+router2Id);
+        // remove r2 from outlinks of r1
+        out= outLinks_.get(router1Id);
+        arrayPos= out.indexOf(router2Id);
+        out.remove(arrayPos);
+        //outLinks_.put(router1Id,out);
+        // remove r1 from outlinks of r2
+        out= outLinks_.get(router2Id);
+        arrayPos= out.indexOf(router1Id);
+        out.remove(arrayPos);
+        //outLinks_.put(router2Id,out);
+        // remove r2 from inlinks to r1
+        in= inLinks_.get(router1Id);
+        arrayPos= in.indexOf(router2Id);
+        in.remove(arrayPos);
+        //inLinks_.put(router1Id,in);
+        // Set inlinks to router1Id
+        in= inLinks_.get(router2Id);
+        arrayPos= in.indexOf(router1Id);
+        in.remove(arrayPos);
+        //inLinks_.put(router2Id,in); 
+    }
+    
+    private void endSimulationLink(int router1Id, int router2Id)
+    /** Event to end simulation link between two routers */
+    {
+        
+    }
+    
+    /** Event to end virtual link between two routers */
+    private void endVirtualLink(int rId1, int rId2) {
+        BasicRouterInfo br1= routerIdMap_.get(rId1);
+        BasicRouterInfo br2= routerIdMap_.get(rId2);
+        LocalControllerInteractor lci= interactorMap_.get
+            (br1.getLocalControllerInfo());
+        try {
+            lci.endLink(br1.getHost(),br1.getManagementPort(),rId2);
+        } catch (Exception e) {
+            System.err.println(leadin()+ "Cannot shut down link "+
+              br1.getHost()+":"+br1.getManagementPort()+" " +
+              br2.getHost()+":"+br2.getManagementPort());
+            bailOut();
+        }
+    }
+    
     /** Event to unlink two routers */
     private void endLink (int router1Id, int router2Id) {
-    
+        unregisterLink(router1Id, router2Id);
+        if (options_.isSimulation()) {
+            endSimulationLink(router1Id, router2Id);
+        } else {
+            endVirtualLink(router1Id, router2Id);
+        }
     }
     
     
@@ -515,6 +667,10 @@ public class GlobalController implements ComponentController {
         }
     }
 
+    /**Accessor function for maxRouterId_*/
+    public int getMaxRouterId() {
+        return maxRouterId_;
+    }
 
     /**
      * Wakeup the controller.
@@ -554,7 +710,7 @@ public class GlobalController implements ComponentController {
                     // we have not seen this LocalController before
                     // try and connect
                     try {
-                        System.err.println(leadin() + "Trying to make connection to "+
+                        System.out.println(leadin() + "Trying to make connection to "+
                                            lh.getName()+" "+lh.getPort());
                         inter= new LocalControllerInteractor(lh);
 
@@ -575,7 +731,7 @@ public class GlobalController implements ComponentController {
             // check if the no of controllers == the no of interactors
             // if so, we dont have to do all lopps
             if (noControllers_ == localControllers_.size()) {
-                System.err.println(leadin() + "All LocalControllers connected after " + (tries+1) + " tries");
+                System.out.println(leadin() + "All LocalControllers connected after " + (tries+1) + " tries");
                 isOK = true;
                 break;
             }
@@ -642,6 +798,33 @@ public class GlobalController implements ComponentController {
         }
 
     }
+    
+    public int getLinkWeight(int l1, int l2) 
+    /** Return the weight from link1 to link2 */
+    {
+        Integer w;
+        Pair<Integer,Integer> links= null;
+        if (l1 < l2) {
+            links= new Pair<Integer,Integer>(l1,l2);
+        } else {
+            links= new Pair<Integer,Integer>(l2,l1);
+        }
+        w= linkWeights_.get(links);
+        if (w == null)
+            return 0;
+        return w;
+    }
+
+    /** Return a list of node ids */
+    public int[] getNodeList() {
+        Set<Integer> nodes= (Set<Integer>) routerIdMap_.keySet();
+        Object []nints= (Object []) nodes.toArray();
+        int []ints= new int [nints.length];
+        for (int i= 0; i < nints.length; i++) {
+            ints[i]= (Integer) nints[i];
+        }
+        return ints;
+    }
 
     protected void finalize() {
         //killAllControllers()
@@ -649,6 +832,7 @@ public class GlobalController implements ComponentController {
    
     }
 
+    /** Accessor function for ControlOptions structure options_ */
     public ControlOptions getOptions() {
         return options_;
     }

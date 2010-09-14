@@ -283,6 +283,42 @@ public class LocalController implements ComponentController {
        return true;
     }
 
+    /** Local controller receives request to end a router */
+    public boolean endRouter(LocalHostInfo r1) {
+        System.out.println(leadin() + 
+          "Got terminate request for router "+r1);
+        RouterInteractor ri= findRouterInteractor(r1.getPort());
+        if (ri == null)
+            return false;
+        try {
+            ri.shutDown();
+        } 
+        catch (Exception e) {
+            System.err.println(leadin()+"Error shutting down router");
+            System.err.println(leadin()+e.getMessage());
+            return false;
+        }
+        return true;    
+    }
+    
+    /** Local controller receives request to end a router */
+    public boolean endLink(LocalHostInfo r1, int r2) {
+        System.out.println(leadin() + 
+          "Got terminate request for link from"+r1+" to Id "+r2);
+        RouterInteractor ri= findRouterInteractor(r1.getPort());
+        if (ri == null)
+            return false;
+        try {
+            ri.endLink(r2);
+        } 
+        catch (Exception e) {
+            System.err.println(leadin()+"Error shutting down router");
+            System.err.println(leadin()+e.getMessage());
+            return false;
+        }
+        return true;    
+    }
+
     /**
      * Get the name of this LocalController.
      */

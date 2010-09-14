@@ -67,7 +67,11 @@ public class ProcessWrapper {
     public void print(String label, String line) {
         // could check if label is 'stderr' or 'stdout'
         // and do different things
-        System.out.println(label + " " + getName() + " " + line);
+        if (label.equals("stderr")) {
+           System.err.println(label + " " + getName() + " " + line);
+        } else {
+            System.out.println(label + " " + getName() + " " + line);
+        }
     }
 
     /**

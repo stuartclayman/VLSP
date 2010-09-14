@@ -134,7 +134,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
 
         ports.set(nextFree, rp);
 
-        System.err.println(leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
+        System.out.println(leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
         table_.addNetIF(netIF);
         return rp;
     }
@@ -186,7 +186,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         if (port.equals(RouterPort.EMPTY)) {
             // nothing to do
         } else {
-            System.err.println(leadin() + "closing port " + port);
+            System.out.println(leadin() + "closing port " + port);
             
             NetIF netIF = port.getNetIF();
             netIF.close();
