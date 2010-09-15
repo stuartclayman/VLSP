@@ -49,7 +49,7 @@ public class EndLink extends ChannelResponder implements Runnable {
             respond(MCRP.END_LINK.ERROR + " END_LINK cannot find link to "+rId);
             return;
         } 
-        System.err.println(leadin() + "END_LINK COMMAND STILL TO BE WRITTEN");
+        controller.removeNetIF(netif);
         respond(MCRP.END_LINK.CODE + " END_LINK to " + rId);
         
     }

@@ -2,6 +2,7 @@ package usr.router;
 
 import java.util.List;
 import java.util.ArrayList;
+import usr.net.*;
 
 /**
  * A RouterFabric within UserSpaceRouting.
@@ -90,6 +91,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
                     if (port.equals(RouterPort.EMPTY)) {
                         continue;
                     } else {
+                        queryPort(port);
                     }
                 }
                 
@@ -102,7 +104,18 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         theEnd();
     }
 
-
+    private void queryPort (RouterPort p)
+    {
+    
+        NetIF net= p.getNetIF();
+        Datagram dg= null;
+        while (true) {
+            dg= net.readDatagram();
+            if (dg == null)
+              return;           
+            System.err.println("Woo hoo -- read datagram!");
+        }
+    }
     /**
      * Wait for this thread.
      */
@@ -149,6 +162,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         if (port != null) {
             // disconnect netIF from port
             resetPort(port.getPortNo());
+            netIF.close();
             return true;
         } else {
             // didn't find netIF in any RouterPort

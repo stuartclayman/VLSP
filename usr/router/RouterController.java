@@ -322,6 +322,10 @@ public class RouterController implements ComponentController, Runnable {
         return router.getPort(p);
     }
 
+    public void removeNetIF(NetIF n) {
+       router.removeNetIF(n);
+    }
+
     /**
      * Get a list of all the ports with Network Interfaces.
      */

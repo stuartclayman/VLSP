@@ -221,6 +221,11 @@ public class Router {
 
     }
     
+    public void removeNetIF(NetIF n) {
+       fabric.removeNetIF(n);
+    }
+
+    
         /** Read a string containing router options */
     public boolean readOptionsString(String str) 
     {
