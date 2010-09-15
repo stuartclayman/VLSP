@@ -303,6 +303,19 @@ public class LocalController implements ComponentController {
             System.err.println(leadin()+e.getMessage());
             return false;
         }
+        int index= routerInteractors_.indexOf(ri);
+        routerInteractors_.remove(index);
+        int i;
+        for (i= 0; i < routers_.size(); i++) {
+            if (routers_.get(i).getManagementPort() == r1.getPort())
+                break;
+        }
+        if (i == routers_.size()) {
+            System.err.println(leadin()+"Router not registered with localcontroller");
+        }
+        BasicRouterInfo br= routers_.get(i);
+        routerMap_.remove(br.getId());
+        routers_.remove(i);
         return true;    
     }
     
