@@ -73,6 +73,8 @@ CLASSES = \
   usr/net/DatagramPatch.java \
   usr/net/Connection.java \
   usr/net/IPV4Datagram.java \
+  usr/net/SimpleDatagram.java \
+  usr/net/SimpleAddress.java \
   usr/net/Address.java \
   usr/net/IPV4Address.java \
   usr/net/EndPoint.java \
@@ -141,7 +143,8 @@ CLASSES = \
   usr/engine/EmptyEventEngine.java \
   usr/engine/TestEventEngine.java \
   usr/engine/ScriptEngine.java \
-  usr/engine/ProbabilisticEventEngine.java
+  usr/engine/ProbabilisticEventEngine.java \
+  usr/output/OutputType.java
 
 #
 # the default make target entry

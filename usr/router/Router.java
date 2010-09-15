@@ -243,7 +243,7 @@ public class Router {
             options_.setOptionsFromFile(fName);
             return true;
         } catch (Exception e) {
-            System.err.println("Cannot parse options string");
+            System.err.println("Cannot parse options file");
             System.err.println(e.getMessage());
             return false;
         }    
