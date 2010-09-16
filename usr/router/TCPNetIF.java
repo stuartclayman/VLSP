@@ -490,7 +490,9 @@ public class TCPNetIF implements NetIF , Runnable {
             // there is nothing in the queue
             // so close immediately
             // by telling the Fabric
-            listener.netIFClosing(this);
+            if (listener != null) {
+                listener.netIFClosing(this);
+            }
 
             // WAS close();
         } else {
