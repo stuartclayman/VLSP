@@ -174,7 +174,13 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
 
             // wait for the thread to end
-            waitFor();
+            // wait for myself
+            try {
+                myThread.join();
+            } catch (InterruptedException ie) {
+                // System.err.println("RouterController: stop - InterruptedException for myThread join on " + myThread);
+            }
+
 
             return cleardown;
 
@@ -246,31 +252,11 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             }
         }
 
-        System.out.println(leadin() + " End of thread " +  Thread.currentThread());
+        // System.out.println(leadin() + " End of thread " +  Thread.currentThread());
+        System.out.println(leadin() + "end");       
 
-        // notify we have reached the end of this thread
-        theEnd();
-        
     }
 
-    /**
-     * Wait for this thread.
-     */
-    private synchronized void waitFor() {
-        //System.out.println(leadin() + "waitFor");
-        try {
-            wait();
-        } catch (InterruptedException ie) {
-        }
-    }
-    
-    /**
-     * Notify this thread.
-     */
-    private synchronized void theEnd() {
-        //System.out.println(leadin() + "theEnd");
-        notify();
-    }
 
 
     /**

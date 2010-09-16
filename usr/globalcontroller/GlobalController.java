@@ -200,6 +200,7 @@ public class GlobalController implements ComponentController {
         long eventBegin = System.currentTimeMillis();
         options_.preceedEvent(e,scheduler_,this);
         System.out.println("SIMULATION: " + "<" + lastEventLength + "> " +
+                           e.getTime() + " @ " + 
                            eventBegin +  " => " +  e);
  
         int type= e.getType();
@@ -659,7 +660,8 @@ public class GlobalController implements ComponentController {
             long timeout = time - now;
 
             System.out.println("SIMULATION: " +  "<" + lastEventLength + "> " +
-                               System.currentTimeMillis() +  " waiting " + timeout);
+                               (now - simulationStartTime) + " @ " + 
+                               now +  " waiting " + timeout);
             wait(timeout);
 
             lastEventLength = System.currentTimeMillis() - now;

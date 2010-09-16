@@ -7,7 +7,7 @@ import usr.net.*;
 /**
  * A RouterFabric within UserSpaceRouting.
  */
-public class SimpleRouterFabric implements RouterFabric, Runnable {
+public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable {
     // The Router this is fabric for
     Router router;
 
@@ -35,7 +35,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         int limit = 32;
         ports = new ArrayList<RouterPort>(limit);
         for (int p=0; p < limit; p++) {
-            resetPort(p);
+            setupPort(p);
         }
     }
 
@@ -65,7 +65,11 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         myThread.interrupt();
 
         // wait for myself
-        waitFor();
+        try {
+            myThread.join();
+        } catch (InterruptedException ie) {
+            // System.err.println("SimpleRouterFabric: stop - InterruptedException for myThread join on " + myThread);
+        }
 
         return true;
     }
@@ -91,7 +95,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
                     if (port.equals(RouterPort.EMPTY)) {
                         continue;
                     } else {
-                        queryPort(port);
+                        // get some port info
                     }
                 }
                 
@@ -99,48 +103,12 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
                 //System.err.println(leadin() + "SimpleRouterFabric: interrupt " + ie);
             }
         }
-
-        // notify we have reached the end of this thread
-        theEnd();
     }
-
-    private void queryPort (RouterPort p)
-    {
-    
-        NetIF net= p.getNetIF();
-        Datagram dg= null;
-        while (true) {
-            dg= net.readDatagram();
-            if (dg == null)
-              return;           
-            System.err.println("Woo hoo -- read datagram!");
-        }
-    }
-    /**
-     * Wait for this thread.
-     */
-    private synchronized void waitFor() {
-        // System.out.println(leadin() + "waitFor");
-        try {
-            wait();
-        } catch (InterruptedException ie) {
-        }
-    }
-
-    /**
-     * Notify this thread.
-     */
-    private synchronized void theEnd() {
-        // System.out.println(leadin() + "theEnd");
-        notify();
-    }
-
-
 
     /**
      * Add a Network Interface to this Router.
      */
-    public RouterPort addNetIF(NetIF netIF) {
+    public synchronized RouterPort addNetIF(NetIF netIF) {
         int nextFree = findNextFreePort();
 
         RouterPort rp = new RouterPort(nextFree, netIF);
@@ -148,21 +116,27 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         ports.set(nextFree, rp);
 
         System.out.println(leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
+
+        // add this to the RoutingTable
         table_.addNetIF(netIF);
+
+        // tell the NetIF, this is its listener
+        netIF.setNetIFListener(this);
+
         return rp;
     }
 
     /**
      * Remove a Network Interface from this Router.
      */
-    public boolean removeNetIF(NetIF netIF) {
+    public synchronized boolean removeNetIF(NetIF netIF) {
         // find port associated with netIF
         RouterPort port = findNetIF(netIF);
 
         if (port != null) {
             // disconnect netIF from port
             resetPort(port.getPortNo());
-            netIF.close();
+            closePort(port);
             return true;
         } else {
             // didn't find netIF in any RouterPort
@@ -173,21 +147,21 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
     /**
      * Get port N.
      */
-    public RouterPort getPort(int p) {
+    public synchronized RouterPort getPort(int p) {
         return ports.get(p);
     }
 
     /**
      * Get a list of all the ports with Network Interfaces.
      */
-    public List<RouterPort> listPorts() {
+    public synchronized List<RouterPort> listPorts() {
         return ports;
     }
 
     /**
      * Close ports.
      */
-    public void closePorts() {
+    public synchronized void closePorts() {
         for (RouterPort port : ports) {
             closePort(port);
         }
@@ -196,7 +170,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
     /**
      * Close port.
      */
-    public void closePort(RouterPort port) {
+    public synchronized void closePort(RouterPort port) {
         if (port.equals(RouterPort.EMPTY)) {
             // nothing to do
         } else {
@@ -207,6 +181,22 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         }
     }
 
+    /**
+     * A NetIF has a datagram.
+     */
+    public boolean datagramArrived(NetIF netIF) {
+        System.err.println(leadin() + "Datagram Arrived on " + netIF);
+        return true;
+    }
+
+    /**
+     * A NetIF is closing.
+     */
+    public boolean netIFClosing(NetIF netIF) {
+        System.err.println(leadin() + "Remote close from " + netIF);
+
+        return removeNetIF(netIF);
+    }
 
 
     /*
@@ -214,16 +204,23 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
      */
 
     /**
+     * Setup a port
+     */
+    void setupPort(int p) {
+        ports.add(p, RouterPort.EMPTY);
+    }
+    
+    /**
      * Reset a port
      */
     void resetPort(int p) {
-        ports.add(p, RouterPort.EMPTY);
+        ports.set(p, RouterPort.EMPTY);
     }
     
     /**
      * Return the routing table 
      */
-    public RoutingTable getRoutingTable() {
+    public synchronized RoutingTable getRoutingTable() {
         return table_;
     }
 
@@ -232,12 +229,17 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
      * Skip through all ports to find a NetIF
      * @return null if a NetIF is not found.
      */
-    RouterPort findNetIF(NetIF netIF) {
+    synchronized RouterPort findNetIF(NetIF netIF) {
         int limit = ports.size();
         for (int p = 0;  p < limit; p++) {
             RouterPort port = ports.get(p);
-            if (port.getNetIF().equals(netIF)) {
+
+            if (port.equals(RouterPort.EMPTY)) {
+                continue;
+            } else if (port.getNetIF().equals(netIF)) {
                 return port;
+            } else {
+                ;
             }
         }
 
@@ -247,12 +249,17 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
     /** Find the netIF which connects to a given end host 
       @return null if none exists*/
     
-    public NetIF findNetIF(String endHostName) {
+    public synchronized NetIF findNetIF(String endHostName) {
         int limit = ports.size();
         for (int p = 0;  p < limit; p++) {
             RouterPort port = ports.get(p);
-            if (port.getNetIF().getRemoteRouterName().equals(endHostName)) {
+
+            if (port.equals(RouterPort.EMPTY)) {
+                continue;
+            } else if (port.getNetIF().getRemoteRouterName().equals(endHostName)) {
                 return port.getNetIF();
+            } else {
+                ;
             }
         }
         return null;
@@ -274,7 +281,7 @@ public class SimpleRouterFabric implements RouterFabric, Runnable {
         // so make more
         ports.ensureCapacity(limit + 8);
         for (int p = limit; p < (limit + 8); p++) {
-            resetPort(p);
+            setupPort(p);
         }
 
         return limit;

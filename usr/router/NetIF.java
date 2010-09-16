@@ -4,11 +4,17 @@ import usr.net.Address;
 import usr.net.Datagram;
 import java.util.Map;
 import java.net.Socket;
+import java.io.IOException;
 
 /**
  * A Network Interface for a Router.
  */
 public interface NetIF {
+    /**
+     * Connect
+     */
+    public boolean connect() throws IOException;
+
     /**
      * Get the name of this NetIF.
      */
@@ -91,4 +97,14 @@ public interface NetIF {
      * Close a NetIF
      */
     public void close();
+
+    /**
+     * Get the Listener of a NetIF.
+     */
+    public NetIFListener getNetIFListener();
+
+    /**
+     * Set the Listener of NetIF.
+     */
+    public NetIF setNetIFListener(NetIFListener l);
 }

@@ -147,6 +147,13 @@ public class Router {
     }
 
     /**
+     * Find a NetIF by name.
+     */
+    public NetIF findNetIF(String name) {
+        return fabric.findNetIF(name);
+    }
+
+    /**
      * Get port N.
      */
     public RouterPort getPort(int p) {

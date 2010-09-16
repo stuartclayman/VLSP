@@ -186,6 +186,7 @@ public class LocalController implements ComponentController {
         String routerName = "Router-" + routerId;
 
         Process child;
+        ProcessWrapper pw;
 
         String [] cmd= new String[7];
         cmd[0] = "/usr/bin/java";
@@ -200,8 +201,8 @@ public class LocalController implements ComponentController {
             System.out.println(leadin() + "Starting Router on ports "+port1+" "+port2);
 
             child = new ProcessBuilder(cmd).start();
-
-            childProcessWrappers_.put(routerName, new ProcessWrapper(child, routerName));
+            pw = new ProcessWrapper(child, routerName);
+            childProcessWrappers_.put(routerName, pw);
 
         } catch (java.io.IOException e) {
             System.err.println(leadin() + "Unable to execute command "+ Arrays.asList(cmd));
@@ -245,6 +246,8 @@ public class LocalController implements ComponentController {
         if (! isOK) {
             // we didnt connect
             System.err.println(leadin() + "Unable to connect to Router on port " + port1);
+            // stop process
+            pw.stop();
             return false;
         } else {
             // we connected

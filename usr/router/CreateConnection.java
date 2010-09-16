@@ -141,19 +141,15 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 	    // make a socket connection to a remote router
 
             TCPEndPointSrc src = new TCPEndPointSrc(host, connectionPort);
-            Connection connection = new  ConnectionOverTCP(src);
-            connection.connect();
+            netIF = new TCPNetIF(src);
+            netIF.connect();
 
             socket = src.getSocket();
 
             System.out.println(leadin() + "connection socket: " + socket);
 
             refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
-            //System.err.println("CreateConnection => " + refAddr + " # " + refAddr.hashCode());
 
-            // wrap EndPoint as a NetIF
-
-            netIF = new TCPNetIF(src);
             netIF.setName(latestConnectionId);
             netIF.setWeight(weight);
             netIF.setID(refAddr.hashCode());

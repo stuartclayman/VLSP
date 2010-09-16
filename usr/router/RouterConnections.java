@@ -88,10 +88,10 @@ public class RouterConnections implements Runnable {
         while (running) {
             try {
                 TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
-                ConnectionOverTCP connection = new  ConnectionOverTCP(dst);
-                connection.connect();
+                NetIF netIF = new TCPNetIF(dst);
+                netIF.connect();
 
-                Socket local = connection.getSocket();
+                Socket local = dst.getSocket();
 
                 System.out.println(leadin() + "Did accept on: " + serverSocket);
 
@@ -102,7 +102,6 @@ public class RouterConnections implements Runnable {
                 System.out.println("RouterConnections  => " + refAddr + " # " + refAddr.hashCode());
 
 
-                NetIF netIF = new TCPNetIF(dst);
                 netIF.setID(refAddr.hashCode());
 
                 System.out.println(leadin() + "netif = " + netIF);

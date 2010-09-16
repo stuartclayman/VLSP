@@ -176,7 +176,12 @@ public class RouterController implements ComponentController, Runnable {
         myThread.interrupt();
 
         // wait for myself
-        waitFor();
+        try {
+            myThread.join();
+        } catch (InterruptedException ie) {
+            // System.err.println("RouterController: stop - InterruptedException for myThread join on " + myThread);
+        }
+
 
         return stoppedL && stoppedC;
     }
@@ -192,25 +197,6 @@ public class RouterController implements ComponentController, Runnable {
         // stop other ManagementConsole and RouterConnections
         router.stop();
 
-    }
-
-    /**
-     * Wait for this thread.
-     */
-    private synchronized void waitFor() {
-        // System.out.println(leadin() + "waitFor");
-        try {
-            wait();
-        } catch (InterruptedException ie) {
-        }
-    }
-
-    /**
-     * Notify this thread.
-     */
-    private synchronized void theEnd() {
-        // System.out.println(leadin() + "theEnd");
-        notify();
     }
 
 
@@ -266,15 +252,13 @@ public class RouterController implements ComponentController, Runnable {
         // shutdown Thread pool
         pool.shutdown();
 
-        // notify we have reached the end of this thread
-        theEnd();
     }
 
 
     /**
      * Keep a handle on a NetIF created from INCOMING_CONNECTION
      */
-    public void addNetIF(NetIF netIF) {
+    public synchronized void addNetIF(NetIF netIF) {
         int id = netIF.getID();
 
         System.out.println(leadin() + "addNetIF " + id + " for " + netIF);
@@ -291,7 +275,7 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * Find a NetIF by an id.
      */
-    public NetIF getNetIFByID(int id) {
+    public synchronized NetIF getNetIFByID(int id) {
         //System.err.println(leadin() + "getNetIF " + id);
         return netIFMap.get(id);
     }
@@ -306,7 +290,7 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * Plug a NetIF into the RouterFabric
      */
-    public RouterPort plugInNetIF(NetIF netIF) {
+    public synchronized RouterPort plugInNetIF(NetIF netIF) {
         RouterPort rp = router.plugInNetIF(netIF);
         //System.err.println(leadin() + "plugInNetIF "  + netIF);
 
@@ -336,10 +320,9 @@ public class RouterController implements ComponentController, Runnable {
     /** Return the netIF associated with a certain router name
     */
     public NetIF findNetIF(String rName) {
-        NetIF net= router.getRouterFabric().findNetIF(rName);
+        NetIF net= router.findNetIF(rName);
         if (net == null) {
-            System.err.println(leadin()+" cannot find connection to "+
-                rName); 
+            System.err.println(leadin()+" cannot find connection to "+ rName); 
         }
         return net;
     }
