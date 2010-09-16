@@ -1,6 +1,8 @@
 package usr.test;
 
 import usr.net.*;
+import usr.router.NetIF;
+import usr.router.TCPNetIF;
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
@@ -10,16 +12,21 @@ import java.nio.channels.*;
 public class StubClient {
     final static int PORT_NUMBER = 4433;
     ConnectionOverTCP connection;
+    NetIF netIF;
 
     public StubClient(String host, int port) {
         try {
 	    // initialise socket
             TCPEndPointSrc src = new TCPEndPointSrc(host, port);
-            connection = new ConnectionOverTCP(src);
-            connection.setAddress(new IPV4Address("localhost"));
+            //connection = new ConnectionOverTCP(src);
+            //connection.setAddress(new IPV4Address("localhost"));
+            //connection.connect();
 
-            connection.connect();
-            System.err.println("Connected to: " + host);
+            netIF = new TCPNetIF(src);
+            netIF.connect();
+            
+
+            System.err.println("StubClient: Connected to: " + host);
 
 
         } catch (UnknownHostException uhe) {
@@ -50,7 +57,7 @@ public class StubClient {
                 System.err.println("UnknownHostException " + addr);
             }
 
-            if (connection.sendDatagram(datagram) == false) {
+            if (netIF.sendDatagram(datagram) == false) {
                 return;
             } else {
 
@@ -61,11 +68,11 @@ public class StubClient {
                 }
                 */
 
-                System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
+                //System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
         }
 
-        connection.close();
+        netIF.close();
     }
 
 

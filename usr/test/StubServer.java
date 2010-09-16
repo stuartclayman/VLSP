@@ -1,20 +1,58 @@
 package usr.test;
 
 import usr.net.*;
+import usr.router.NetIF;
+import usr.router.TCPNetIF;
+import usr.logging.*;
 import java.io.*;
 import java.net.*;
 import java.text.*;
+import java.util.BitSet;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 
 public class StubServer {
     final static int PORT_NUMBER = 4433;
+
+    static BitSet normal;
+    static BitSet error;
+
+    TCPNetIF netIF;
     ConnectionOverTCP connection;
     ServerSocket serverSocket;
     // and channel
     ServerSocketChannel channel;
+    Logger logger;
+
+    // total no of Datagrams in
+    int count = 0;
+    // last time count
+    int lastTimeCount = 0;
+    // no per second
+    int diffs = 0;
+
 
     public StubServer(int listenPort) throws IOException {
+        normal = new BitSet();
+        normal.set(1);
+        error = new BitSet();
+        error.set(2);
+
+        // allocate a new logger
+        logger = new Logger();
+        // tell it to output to stdout
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 1 set
+        logger.addOutput(System.out, normal);
+        // tell it to output to stderr
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 2 set
+        logger.addOutput(System.err, error);
+
+
+
 	// initialise the socket
         try {
             channel = ServerSocketChannel.open();
@@ -23,11 +61,13 @@ public class StubServer {
 
             TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
 
-            connection = new ConnectionOverTCP(dst);
-            connection.connect();
-            System.err.println("StubServer: Listening on port: " + listenPort);
+            //connection = new ConnectionOverTCP(dst);
+            //connection.connect();
+            netIF = new TCPNetIF(dst);
+            netIF.connect();
+            logger.log(error, "StubServer: Listening on port: " + listenPort + "\n");
         } catch (IOException ioe) {
-            System.err.println("StubServer: Cannot listen on port: " + listenPort);
+            logger.log(error, "StubServer: Cannot listen on port: " + listenPort + "\n");
             throw ioe;
         }
     }
@@ -37,13 +77,43 @@ public class StubServer {
      */
     void readALot() throws IOException {
         Datagram datagram;
-        int count = 0;
+
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() { 
+                boolean running = true;
+
+                public void run() {
+                    if (running) {
+                        diffs = count - lastTimeCount;
+                        System.err.println("Task count: " + count + " diff: "  + diffs);
+                        lastTimeCount = count;
+                    }
+                }
+
+                public boolean cancel() {
+                    logger.log(error, "cancel @ " + count);
+                    if (running) {
+                        running = false;
+                    } 
+
+
+                    return running;
+                }
+
+                public long scheduledExecutionTime() {
+                    logger.log(error, "scheduledExecutionTime:");
+                    return 0;
+                }
+            };
+
+        timer.schedule(task, 1000, 1000);
 
         long t0 = System.currentTimeMillis();
 
-        while ((datagram = connection.readDatagram()) != null) {
-            System.out.print(count + ". ");
-            System.out.print("HL: " + datagram.getHeaderLength() +
+        while ((datagram = netIF.readDatagram()) != null) {
+            logger.log(normal, count + ". ");
+            logger.log(normal,
+                             "HL: " + datagram.getHeaderLength() +
                              " TL: " + datagram.getTotalLength() +
                              " From: " + datagram.getSrcAddress() +
                              " To: " + datagram.getDstAddress() +
@@ -51,10 +121,11 @@ public class StubServer {
             byte[] payload = datagram.getPayload();
 
             if (payload == null) {
-                System.out.println("No payload");
+                logger.log(normal, "No payload");
             } else {
-                System.out.println(new String(payload));
+                logger.log(normal, new String(payload));
             }
+            logger.log(normal, "\n");
 
             count++;
         }
@@ -66,9 +137,11 @@ public class StubServer {
         int millis = (int) elapsed % 1000;
 
         NumberFormat millisFormat = new DecimalFormat("000"); 
-        System.err.println("elapsed[" + count + "] = " + secs + ":" + millisFormat.format(millis));
+        logger.log(error, "elapsed[" + count + "] = " + secs + ":" + millisFormat.format(millis) + "\n");
 
-        connection.close();
+        timer.cancel();
+
+        netIF.close();
     }
 
     public static void main(String[] args) throws IOException {
