@@ -224,8 +224,9 @@ public class TCPNetIF implements NetIF , Runnable {
                 if (remoteClose && queue.size() == 0) {
                     // we need to close 
                     // so tell the Fabric
-                    listener.netIFClosing(this);
-                    // WAS close();
+                    if (listener != null) {
+                        listener.netIFClosing(this);
+                    }
 
                     return null;
                 } else {
@@ -494,7 +495,6 @@ public class TCPNetIF implements NetIF , Runnable {
                 listener.netIFClosing(this);
             }
 
-            // WAS close();
         } else {
             // remoteClose is true
             // so we will close when the queue size gets to 0 
