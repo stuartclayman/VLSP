@@ -1,5 +1,6 @@
 package usr.net;
 
+import usr.protocol.Protocol;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.nio.ByteBuffer;
@@ -228,8 +229,11 @@ public class ConnectionOverTCP implements Connection {
 
                 byte[] latestDGData = new byte[totalLen];
                 buffer.get(latestDGData);
-                Datagram dg = new IPV4Datagram();                        
                 ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
+
+                // get an empty Datagram
+                Datagram dg = DatagramFactory.newDatagram(Protocol.DATA, null);  // WAS new IPV4Datagram();                        
+                // and fill in contents
                 ((DatagramPatch)dg).fromByteBuffer(newBB);
 
                 // align for next message

@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.net.*;
+import usr.protocol.Protocol;
 import java.io.*;
 import java.net.*;
 import java.util.Map;
@@ -472,7 +473,7 @@ public class TCPNetIF implements NetIF , Runnable {
         // System.out.println("TCPNetIF: -> controlClose");
         ByteBuffer buffer = ByteBuffer.allocate(1);
         buffer.put("C".getBytes());
-        Datagram datagram = new IPV4Datagram(buffer);
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
         datagram.setProtocol(1);
 
         return connection.sendDatagram(datagram);

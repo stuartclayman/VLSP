@@ -71,7 +71,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fillDatagram(payload);
     }
 
-    IPV4Datagram() {
+    public IPV4Datagram() {
     }
 
     /**
@@ -245,7 +245,6 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         return headerBytes;
     }
-
 
     /**
      * Get payload

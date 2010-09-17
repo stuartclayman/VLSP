@@ -1,5 +1,6 @@
 package usr.net;
 
+import usr.protocol.Protocol;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -144,9 +145,9 @@ public class ConnectionOverUDP implements Connection {
                 // now get Datagram
                 byte[] latestDGData = new byte[totalLen];
                 buffer.get(latestDGData);
-
-                Datagram dg = new IPV4Datagram();                        
                 ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
+
+                Datagram dg = DatagramFactory.newDatagram(Protocol.DATA, null); // WAS new IPV4Datagram();
                 ((DatagramPatch)dg).fromByteBuffer(newBB);
 
                 buffer.clear();
