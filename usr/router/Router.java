@@ -2,7 +2,9 @@ package usr.router;
 
 import java.util.List;
 import java.util.Scanner;
-
+import usr.net.*;
+import java.nio.*;
+import java.io.*;
 /**
  * A Router within UserSpaceRouting.
  */
@@ -245,6 +247,27 @@ public class Router {
             System.err.println(e.getMessage());
             return false;
         }
+    }
+    
+    public List<NetIF> listNetIF() {
+        return fabric.listNetIF();
+    }
+    
+    /** Send a routing table down an interface */
+    public void sendRoutingTable(NetIF netif) 
+    {
+        RoutingTable tab= getRoutingTable();
+        if (tab == null)
+            return;
+        String str= tab.toString();
+        if (str == null)
+            return;
+        //System.err.println(leadin()+"STRING"+str);
+        byte []b = str.getBytes();
+        //System.err.println(leadin()+"SENDING"+b);
+        IPV4Datagram dg= new IPV4Datagram(ByteBuffer.wrap(b));
+        netif.sendDatagram(dg);
+        //System.err.println(leadin()+" sent datagram");   
     }
     
     /** Read a file containing router options */

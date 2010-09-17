@@ -4,38 +4,38 @@ import java.util.*;
 
 /** Class holds a routing table 
 */
-public class RoutingTable {
+public class SimpleRoutingTable implements RoutingTable {
     // The routing table
-    HashMap <String, RoutingTableEntry> table_= null;
+    HashMap <String, SimpleRoutingTableEntry> table_= null;
     
     /** Construct a new routing table */
-    RoutingTable() {
-        table_= new HashMap<String,RoutingTableEntry>();
+    SimpleRoutingTable() {
+        table_= new HashMap<String,SimpleRoutingTableEntry>();
         
     }
     
     /** Construct a new routing table from a string assuming
      the table is centred here */ 
-    RoutingTable(String table, RouterFabric fabric)
+    SimpleRoutingTable(String table, RouterFabric fabric)
     {
-        table_= new HashMap<String,RoutingTableEntry>();
+        table_= new HashMap<String,SimpleRoutingTableEntry>();
         String []entries= table.split("\n");
-        RoutingTableEntry e;
+        SimpleRoutingTableEntry e;
         for (String s: entries) {
-            e= new RoutingTableEntry(s, fabric);
+            e= new SimpleRoutingTableEntry(s, fabric);
             table_.put(e.getRouterId(), e);
         }
     }
     
     /** Construct a new routing table with the assumption that
     everything on it comes down a given interface */
-    RoutingTable(String table, NetIF netif)
+    SimpleRoutingTable(String table, NetIF netif)
     {
-        table_= new HashMap<String,RoutingTableEntry>();
+        table_= new HashMap<String,SimpleRoutingTableEntry>();
         String []entries= table.split("\n");
         RoutingTableEntry e;
         for (String s: entries) {
-            e= new RoutingTableEntry(s, netif);
+            e= new SimpleRoutingTableEntry(s, netif);
             table_.put(e.getRouterId(), e);
         }
     }
@@ -50,7 +50,7 @@ public class RoutingTable {
     /**
      * Get all the RoutingTable entries.
      */
-    public Collection<RoutingTableEntry> getEntries() 
+    public Collection<SimpleRoutingTableEntry> getEntries() 
     {
         return table_.values();    
     }
@@ -60,9 +60,9 @@ public class RoutingTable {
     void addNetIF(NetIF inter) {
         String router= inter.getRemoteRouterName();
         int weight= inter.getWeight();
-        RoutingTableEntry e= table_.get(router);
+        SimpleRoutingTableEntry e= table_.get(router);
         if (e == null || e.getCost() > weight) {
-            e= new RoutingTableEntry(router,weight,inter);
+            e= new SimpleRoutingTableEntry(router,weight,inter);
             table_.put(router, e);
         }
     }
@@ -70,8 +70,8 @@ public class RoutingTable {
     /**
      * Merge a RoutingTable into this one.
      */
-    void mergeTables(RoutingTable table2, NetIF inter) {
-        for (RoutingTableEntry e: table2.getEntries()) {
+    void mergeTables(SimpleRoutingTable table2, NetIF inter) {
+        for (SimpleRoutingTableEntry e: table2.getEntries()) {
             mergeEntry(e, inter);
         }
     }
@@ -79,20 +79,25 @@ public class RoutingTable {
     /**
      * Merge an entry in this RoutingTable.
      */
-    void mergeEntry(RoutingTableEntry newEntry, NetIF inter) {
+    void mergeEntry(SimpleRoutingTableEntry newEntry, NetIF inter) {
         String router= inter.getRemoteRouterName();
         int weight= inter.getWeight();
-        RoutingTableEntry oldEntry= table_.get(router);
+        SimpleRoutingTableEntry oldEntry= table_.get(router);
         // Update entry if no entry exists, if new entry is cheaper
         // or if newEntry is on same interface (indicating an
         // increase in cost
         if (oldEntry == null || oldEntry.getNetIF().equals(router)
             || oldEntry.getCost() > 
             newEntry.getCost() + weight) {
-            oldEntry= new RoutingTableEntry(router,newEntry.getCost() +
+            oldEntry= new SimpleRoutingTableEntry(router,newEntry.getCost() +
                weight, inter);
             table_.put(router,oldEntry);    
         }
+    }
+    
+    
+    public removeNetIF(NetIF netif) {
+        System.err.println(leadin()+" to write removeNetIF");
     }
     
     /**
@@ -100,7 +105,7 @@ public class RoutingTable {
      */
     public String toString() {
         StringBuilder table= new StringBuilder();
-        for (RoutingTableEntry e: getEntries()) {
+        for (SimpleRoutingTableEntry e: getEntries()) {
             table.append(e.getEntryAsString());
             table.append("\n");
         }

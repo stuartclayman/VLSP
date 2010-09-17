@@ -261,7 +261,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         // everything is successful
         respond(MCRP.CREATE_CONNECTION.CODE + " CREATE_CONNECTION " + latestConnectionId + " port" + port.getPortNo());
-
+        controller.sendRoutingTable(netIF);
     }
 
     /**

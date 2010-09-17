@@ -204,11 +204,18 @@ public class SimpleDatagram implements Datagram, DatagramPatch {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
             ObjectOutputStream out = new ObjectOutputStream(bos); 
-            out.writeObject(this); 
+            out.writeObject(protocol_); 
+            out.writeObject(payload_);
+            out.writeObject(srcAddr_);
+            out.writeObject(srcPort_);
+            out.writeObject(dstAddr_);
+            out.writeObject(dstPort_);
             out.close(); // Get the bytes of the serialized object 
             buf = bos.toByteArray();
         } catch (java.io.IOException e) {
-        
+            System.err.println("IO Exception thrown");
+            System.err.println(e.getMessage());
+            return null;
         }
         return buf;
     }
@@ -217,7 +224,13 @@ public class SimpleDatagram implements Datagram, DatagramPatch {
      * To ByteBuffer.
      */
     public ByteBuffer toByteBuffer() {
-        return  ByteBuffer.wrap(toByteArray());
+        
+        byte[] b= toByteArray();
+        if (b == null) {
+            System.err.println("No byte buffer");
+            return null;
+        }
+        return ByteBuffer.wrap(b);
 
     }
 
@@ -230,19 +243,18 @@ public class SimpleDatagram implements Datagram, DatagramPatch {
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(by); 
             ObjectInputStream in = new ObjectInputStream(bis); 
-            o= in.readObject(); 
+            protocol_= (Byte)in.readObject(); 
+            payload_= (byte [])in.readObject();
+            srcAddr_= (SimpleAddress)in.readObject();
+            srcPort_= (Integer) in.readObject();
+            dstAddr_= (SimpleAddress)in.readObject();
+            dstPort_= (Integer)in.readObject();
             in.close(); // Get the bytes of the serialized object 
            
         } catch (Exception e) {
         
         }
-        SimpleDatagram g= (SimpleDatagram) o;
-        this.payload_= g.getPayload();
-        this.protocol_= g.getProtocol();
-        this.srcAddr_= g.getSrcAddress();
-        this.srcPort_= g.getSrcPort();
-        this.dstAddr_= g.getDstAddress();
-        this.dstPort_= g.getDstPort();
+        
         return true;
     }
 

@@ -245,7 +245,13 @@ public class MCRP implements Protocol {
         public final static int CODE= 278;
         public final static int ERROR= 428;
     }
-
+    /**  Router configuration string to send to local controller */
+    
+    public final static class PING_NEIGHBOURS {
+        public final static String CMD = "PING_NEIGHBOURS";
+        public final static int CODE= 279;
+        public final static int ERROR= 429;
+    }
     /*
      * Spare - 290 - 299
      */

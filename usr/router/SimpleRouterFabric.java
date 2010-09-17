@@ -12,7 +12,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     Router router;
 
     // The RoutingTable
-    RoutingTable table_= null;
+    SimpleRoutingTable table_= null;
 
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
@@ -31,7 +31,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public SimpleRouterFabric(Router router) {
         this.router = router;
-        table_= new RoutingTable();
+        table_= new SimpleRoutingTable();
         int limit = 32;
         ports = new ArrayList<RouterPort>(limit);
         for (int p=0; p < limit; p++) {
@@ -220,7 +220,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /**
      * Return the routing table 
      */
-    public synchronized RoutingTable getRoutingTable() {
+    public synchronized SimpleRoutingTable getRoutingTable() {
         return table_;
     }
 
@@ -244,6 +244,24 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
 
         return null;
+    }
+    
+     /** 
+     * Get a list of all connected Network Interfaces
+     */
+    public synchronized List<NetIF> listNetIF() {
+        ArrayList<NetIF> list = new ArrayList<NetIF>();
+        int limit = ports.size();
+        for (int p = 0;  p < limit; p++) {
+            RouterPort port = ports.get(p);
+
+            if (port.equals(RouterPort.EMPTY)) {
+                continue;
+            } 
+            list.add(port.getNetIF());
+        }
+
+        return list;
     }
     
     /** Find the netIF which connects to a given end host 

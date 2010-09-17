@@ -13,6 +13,7 @@ import java.nio.*;
 import java.nio.charset.Charset;
 import java.nio.channels.SocketChannel;
 import usr.protocol.*;
+import usr.net.*;
 
 /**
  * The Router Controller provides the management and control
@@ -255,6 +256,10 @@ public class RouterController implements ComponentController, Runnable {
     }
 
 
+    public void sendRoutingTable(NetIF netIF) {
+        router.sendRoutingTable(netIF);
+    }
+
     /**
      * Keep a handle on a NetIF created from INCOMING_CONNECTION
      */
@@ -262,7 +267,7 @@ public class RouterController implements ComponentController, Runnable {
         int id = netIF.getID();
 
         System.out.println(leadin() + "addNetIF " + id + " for " + netIF);
-
+        //System.err.println(leadin() + "addNetIF " + id + " for " + netIF);
         netIFMap.put(id, netIF);
 
     }
@@ -283,7 +288,7 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * List all the temporary connections held by the Controller
      */
-    public Collection<NetIF> listNetIF() {
+    public Collection<NetIF> listTempNetIF() {
         return netIFMap.values();
     }
 
@@ -297,6 +302,26 @@ public class RouterController implements ComponentController, Runnable {
         netIFMap.remove(netIF.getID());
 
         return rp;
+    }
+
+    /** ping neighbours of router */
+    
+    public void pingNeighbours() 
+    {
+        byte []b= new byte[1];
+        System.err.println("Pinging");
+        IPV4Datagram dg= new IPV4Datagram(ByteBuffer.wrap(b));
+        dg.setProtocol(0);
+        List<NetIF> nif= router.listNetIF();
+        if (nif == null)
+            return;
+        System.err.println("COLLECTION IS  "+nif);
+        for (NetIF n : nif) {
+            
+            if (n.sendDatagram(dg) == true) {
+                System.err.println("Ping sent");
+            }
+        }
     }
 
     /**

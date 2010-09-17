@@ -3,18 +3,18 @@ package usr.router;
 /**
  * An entry in a routing table.
  */
-public class RoutingTableEntry {
+public class SimpleRoutingTableEntry implements RoutingTableEntry {
     private String routerId_;
     private int cost_;
     NetIF inter_;
 
-    RoutingTableEntry(String id, int cost, NetIF inter) {
+    SimpleRoutingTableEntry(String id, int cost, NetIF inter) {
         routerId_= id;
         cost_= cost;
         inter_= inter;
     }
     
-    RoutingTableEntry(String tableEntry, RouterFabric fabric) {
+    SimpleRoutingTableEntry(String tableEntry, RouterFabric fabric) {
         String []args= tableEntry.split(" ");
         if (args.length != 3) {
             System.err.println("Attempt to construct routing table entry "+
@@ -33,7 +33,7 @@ public class RoutingTableEntry {
         }
     }
     
-     RoutingTableEntry(String tableEntry, NetIF inter) {
+     SimpleRoutingTableEntry(String tableEntry, NetIF inter) {
         String []args= tableEntry.split(" ");
         if (args.length != 3) {
             System.err.println("Attempt to construct routing table entry "+

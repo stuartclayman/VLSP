@@ -55,6 +55,7 @@ public class RouterManagementConsole extends AbstractManagementConsole implement
         register(new EndLinkCommand());
         register(new ReadOptionsFileCommand());
         register(new ReadOptionsStringCommand());
+        register(new PingNeighboursCommand());
     }
     
 }
