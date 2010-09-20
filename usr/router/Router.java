@@ -1,14 +1,21 @@
 package usr.router;
 
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.protocol.Protocol;
 import java.util.List;
 import java.util.Scanner;
-import usr.net.*;
-import java.nio.*;
+import java.nio.ByteBuffer;
 import java.io.*;
 /**
  * A Router within UserSpaceRouting.
  */
 public class Router {
+    /*
+     * A Router is some glue that holds the RouterController
+     * and the RouterFabric together.
+     */
+
     // The Router switching fabric
     RouterFabric fabric;
 
@@ -91,10 +98,6 @@ public class Router {
     public boolean stop() {
         System.out.println(leadin() + "stop");
 
-        // close fabric ports
-        closePorts();
-
-
         controller.stop();
         fabric.stop();
 
@@ -167,13 +170,6 @@ public class Router {
      */
     public List<RouterPort> listPorts() {
         return fabric.listPorts();
-    }
-
-    /**
-     * Close ports
-     */
-    public void closePorts() {
-        fabric.closePorts();
     }
 
     /**
@@ -265,7 +261,7 @@ public class Router {
         //System.err.println(leadin()+"STRING"+str);
         byte []b = str.getBytes();
         //System.err.println(leadin()+"SENDING"+b);
-        IPV4Datagram dg= new IPV4Datagram(ByteBuffer.wrap(b));
+        Datagram dg= DatagramFactory.newDatagram(Protocol.DATA, ByteBuffer.wrap(b));
         netif.sendDatagram(dg);
         //System.err.println(leadin()+" sent datagram");   
     }

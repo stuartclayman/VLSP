@@ -135,7 +135,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         Socket socket = null;
         NetIF netIF = null;
         InetSocketAddress refAddr;
-        String latestConnectionId = "/Router-" + controller.getName() + "/Connection-" + controller.getConnectionCount();
+        String latestConnectionId = "/" + controller.getName() + "/Connection-" + controller.getConnectionCount();
 
         try {
 	    // make a socket connection to a remote router
@@ -150,9 +150,14 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
             refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
 
+            // set its name
             netIF.setName(latestConnectionId);
+                // set its weight
             netIF.setWeight(weight);
+            // set its ID
             netIF.setID(refAddr.hashCode());
+            // set its Address
+            netIF.setAddress(new GIDAddress(controller.getGlobalID()));
 
             System.out.println(leadin() + "netif = " + netIF);
 
@@ -260,7 +265,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
 
         // everything is successful
-        respond(MCRP.CREATE_CONNECTION.CODE + " CREATE_CONNECTION " + latestConnectionId + " port" + port.getPortNo());
+        respond(MCRP.CREATE_CONNECTION.CODE + " " + latestConnectionId); // + " port" + port.getPortNo());
         controller.sendRoutingTable(netIF);
     }
 

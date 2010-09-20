@@ -60,29 +60,33 @@ public class LocalControllerInteractor extends MCRPInteractor
     /**
      * As the LocalController to start a new router.
      */
-    public MCRPInteractor newRouter(int routerId, int port) throws IOException, MCRPException  {
+    public String newRouter(int routerId, int port) throws IOException, MCRPException  {
         return newRouter(routerId,port,port+1);
     }
 
     /**
      * Ask the LocalController to start a new router.
      */
-    public MCRPInteractor newRouter(int routerId, int port1, int port2) 
+    public String newRouter(int routerId, int port1, int port2) 
         throws IOException, MCRPException  {
         String toSend = MCRP.NEW_ROUTER.CMD+" "+routerId+ " " + port1 + " " + port2;
-        interact(toSend);
+        MCRPResponse response = interact(toSend);
         expect(MCRP.NEW_ROUTER.CODE);
-        return this;
+
+        // return the router name
+        return response.get(0)[1];
     }
 
     /** Ask the Local Controller to connect routers */
-    public MCRPInteractor connectRouters(String host1, int port1, 
+    public String connectRouters(String host1, int port1, 
       String host2, int port2)throws IOException, MCRPException {
         String toSend = MCRP.CONNECT_ROUTERS.CMD+" "+host1+":"+port1+" "+
           host2+":"+port2;
-        interact(toSend);
+        MCRPResponse response = interact(toSend);
         expect(MCRP.CONNECT_ROUTERS.CODE);
-        return this;
+
+        // return the connection name
+        return response.get(0)[1];
     }
 
     /** Ask the Local Controller to stop a router */

@@ -4,22 +4,16 @@ import java.nio.ByteBuffer;
 import java.net.UnknownHostException;
 
 /**
- * A simple implementation of a IPV4 Datagram.
+ * A simple implementation of a GID Datagram.
  */
-public class IPV4Datagram implements Datagram, DatagramPatch {
+public class GIDDatagram implements Datagram, DatagramPatch {
     // The full datagram is 24 bytes plus the payload
-    // as an IPV4 Address is 4 bytes long
+    // as an GID Address is 4 bytes long
     final static int HEADER_SIZE = 24;
     final static int CHECKSUM_SIZE = 4;
 
     // The full datagram contents
     ByteBuffer fullDatagram;
-
-    // Src address
-    Address srcAddr = null;
-
-    // Src port
-    int srcPort = 0;
 
     // Dst address
     Address dstAddr = null;
@@ -30,9 +24,9 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
 
     /**
-     * Construct a IPV4Datagram given a payload.
+     * Construct a GIDDatagram given a payload.
      */
-    IPV4Datagram(ByteBuffer payload) {
+    GIDDatagram(ByteBuffer payload) {
         payload.rewind();
         int payloadSize = payload.limit();
 
@@ -42,9 +36,9 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     }
 
     /**
-     * Construct a IPV4Datagram given a payload and a destination address
+     * Construct a GIDDatagram given a payload and a destination address
      */
-    IPV4Datagram(ByteBuffer payload, Address address) {
+    GIDDatagram(ByteBuffer payload, Address address) {
         payload.rewind();
         dstAddr = address;
 
@@ -56,10 +50,10 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     }
 
     /**
-     * Construct a IPV4Datagram given a payload, a destination address,
+     * Construct a GIDDatagram given a payload, a destination address,
      * and a destination port.
      */
-    IPV4Datagram(ByteBuffer payload, Address address, int port) {
+    GIDDatagram(ByteBuffer payload, Address address, int port) {
         payload.rewind();
         dstAddr = address;
         dstPort = port;
@@ -71,7 +65,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fillDatagram(payload);
     }
 
-    IPV4Datagram() {
+    GIDDatagram() {
     }
 
     /**
@@ -137,26 +131,23 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fullDatagram.position(10);
         fullDatagram.get(address, 0, 4);
 
-        try {
-            return new IPV4Address(address);
-        } catch (UnknownHostException uhe) {
-            return null;
-        }
+        return new GIDAddress(address);
     }
 
     /**
      * Set the src address
      */
     public Datagram setSrcAddress(Address addr) {
-        srcAddr = addr;
+        if (addr != null && ! (addr instanceof GIDAddress)) {
+            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in GIDDatagram");
+        }
 
         // put src addr
-        // to be filled in later
-        fullDatagram.position(10);
-        if (srcAddr == null) {
-            fullDatagram.put(IPV4Address.EMPTY, 0, 4);
+        if (addr == null) {
+            fullDatagram.put(GIDAddress.EMPTY, 0, 4);
         } else {
-            fullDatagram.put(srcAddr.asByteArray(), 0, 4);
+            fullDatagram.position(10);
+            fullDatagram.put(addr.asByteArray(), 0, 4);
         }
 
         return this;
@@ -171,24 +162,24 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fullDatagram.position(14);
         fullDatagram.get(address, 0, 4);
 
-        try {
-            return new IPV4Address(address);
-        } catch (UnknownHostException uhe) {
-            return null;
-        }
+        return new GIDAddress(address);
     }
 
     /**
      * Set the dst address
      */
     public Datagram setDstAddress(Address addr) {
+        if (addr != null && ! (addr instanceof GIDAddress)) {
+            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in GIDDatagram");
+        }
+
         dstAddr = addr;
 
         // put dst addr
         // to be filled in later
         fullDatagram.position(14);
         if (dstAddr == null) {
-            fullDatagram.put(IPV4Address.EMPTY, 0, 4);
+            fullDatagram.put(GIDAddress.EMPTY, 0, 4);
         } else {
             fullDatagram.put(dstAddr.asByteArray(), 0, 4);
         }
@@ -208,8 +199,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
      * Set the src port
      */
     public Datagram setSrcPort(int p) {
-        srcPort = p;
-        fullDatagram.putShort(20, (short)srcPort);
+        fullDatagram.putShort(20, (short)p);
 
         return this;
     }
@@ -253,7 +243,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         int headerLen = getHeaderLength();
         int totalLen = getTotalLength();
 
-        // System.err.println("IPV4Datagram getPayload: headerLen = " + headerLen + " totalLen = " + totalLen);
+        // System.err.println("GIDDatagram getPayload: headerLen = " + headerLen + " totalLen = " + totalLen);
 
         fullDatagram.position(headerLen);
 
@@ -263,7 +253,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         //ByteBuffer payload =  ByteBuffer.wrap(payloadBytes);
 
-        // System.err.println("IPV4Datagram getPayload: payload = " + payload.position() + " < " + payload.limit() + " < " + payload.capacity());
+        // System.err.println("GIDDatagram getPayload: payload = " + payload.position() + " < " + payload.limit() + " < " + payload.capacity());
 
         return payloadBytes;
         
@@ -299,7 +289,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     public boolean fromByteBuffer(ByteBuffer b) {
         fullDatagram = b;
 
-        // System.err.println("IPV4Datagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
+        // System.err.println("GIDDatagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
         return true;
     }
@@ -330,19 +320,14 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fullDatagram.put(9, (byte)protocol);
 
         // put src addr
-        // to be filled in later
         fullDatagram.position(10);
-        if (srcAddr == null) {
-            fullDatagram.put(IPV4Address.EMPTY, 0, 4);
-        } else {
-            fullDatagram.put(srcAddr.asByteArray(), 0, 4);
-        }
+        fullDatagram.put(GIDAddress.EMPTY, 0, 4);
 
         // put dst addr
         // to be filled in later
         fullDatagram.position(14);
         if (dstAddr == null) {
-            fullDatagram.put(IPV4Address.EMPTY, 0, 4);
+            fullDatagram.put(GIDAddress.EMPTY, 0, 4);
         } else {
             fullDatagram.put(dstAddr.asByteArray(), 0, 4);
         }
@@ -352,8 +337,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fullDatagram.put(19, (byte)0);
 
         // put src port
-        // to be filled in later
-        fullDatagram.putShort(20, (short)srcPort);
+        fullDatagram.putShort(20, (short)0);
 
         // put dst port
         // to be filled in later
@@ -374,7 +358,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         fullDatagram.rewind();
 
-        // System.err.println("IPV4Address fillDatagram: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
+        // System.err.println("GIDAddress fillDatagram: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
     }
 

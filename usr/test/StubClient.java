@@ -3,6 +3,7 @@ package usr.test;
 import usr.net.*;
 import usr.router.NetIF;
 import usr.router.TCPNetIF;
+import usr.protocol.Protocol;
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
@@ -42,31 +43,21 @@ public class StubClient {
      * Write stuff
      */
     void writeALot(int count) {
-        Datagram datagram;
+        Datagram datagram = null;
 
         for (int i = 0; i < count; i++) {
             String line = "line " + i;
             ByteBuffer buffer = ByteBuffer.allocate(line.length());
             buffer.put(line.getBytes());
-            datagram = new IPV4Datagram(buffer);
+            //// ORIG datagram = new IPV4Datagram(buffer); 
+            datagram = DatagramFactory.newDatagram(Protocol.DATA, buffer);
 
-            String addr = "192.168.7.1";
-            try {
-                datagram.setDstAddress(new IPV4Address(addr));
-            } catch (UnknownHostException uhe) {
-                System.err.println("UnknownHostException " + addr);
-            }
+
+            datagram.setDstAddress(new GIDAddress(47));
 
             if (netIF.sendDatagram(datagram) == false) {
                 return;
             } else {
-
-                /*
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ie) {
-                }
-                */
 
                 //System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }

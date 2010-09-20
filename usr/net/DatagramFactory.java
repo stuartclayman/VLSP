@@ -8,8 +8,9 @@ import java.lang.reflect.Constructor;
 /**
  * The DatagramFactory will create a new datagram based on 
  * the protocol number.
- * For example, if the Protocol is IPV4_DATA, it will return
- * an IPV4Datagram.
+ * For example, if the Protocol is DATA, and the class set for
+ * the Protocol is usr.net.GIDDatagram, it will return
+ * an GIDDatagram.
  */
 public class DatagramFactory {
     // The list of Protocols to DatagramFactoryInfo objects
@@ -18,8 +19,8 @@ public class DatagramFactory {
 
     // class initiation code
     static {
-        setClassForProtocol("usr.net.IPV4Datagram", Protocol.DATA);
-        setClassForProtocol("usr.net.IPV4Datagram", Protocol.CONTROL);
+        setClassForProtocol("usr.net.GIDDatagram", Protocol.DATA);
+        setClassForProtocol("usr.net.GIDDatagram", Protocol.CONTROL);
     }
 
 
@@ -27,28 +28,33 @@ public class DatagramFactory {
      * Return the relevant Datagram.
      */
     public static Datagram newDatagram(int protocol, ByteBuffer payload) {
-        /*
-        if (payload == null) {
-            return new IPV4Datagram();
-        } else {
-            return new IPV4Datagram(payload);
-        }
-        */
-
-        // get DatagramFactoryInfo for protocol
-        DatagramFactoryInfo dfi = list.get(protocol);
+        DatagramFactoryInfo dfi = null;
 
         // now allocate object
         try {
+            // get DatagramFactoryInfo for protocol
+            dfi = list.get(protocol);
+
             if (payload == null) {
                 return (Datagram)dfi.cons0.newInstance();
             } else {
                 return (Datagram)dfi.cons1.newInstance(payload);            
             }
         } catch (Exception e) {
-            throw new Error("DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: " + dfi.className);
+            throw new Error("DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: " + dfi.className + " for protocol " + protocol);
         }
 
+    }
+
+    /**
+     * Return the Constructor for creating a Datagram with a ByteBuffer,
+     * for a given protocol.
+     */
+    public static Constructor<Datagram> getByteBufferConstructor(int protocol) {
+        // get DatagramFactoryInfo for protocol
+        DatagramFactoryInfo dfi = list.get(protocol);
+
+        return dfi.cons1;
     }
 
 
@@ -70,23 +76,23 @@ public class DatagramFactory {
 
 class DatagramFactoryInfo {
     public String className;
-    Constructor<? extends Datagram> cons0;
-    Constructor<? extends Datagram> cons1;
+    public Class clazz;
+    public Constructor<Datagram> cons0;
+    public Constructor<Datagram> cons1;
     
     public DatagramFactoryInfo(String name) {
         try {
             className = name;
 
             // get Class object
-            Class<?> c = (Class<?>)Class.forName(className);
+            clazz = Class.forName(className);
 
-            final Class<? extends Datagram> xc = c.asSubclass(Datagram.class);
             // find Constructor for when arg is null
-            cons0 = (Constructor<? extends Datagram>)xc.getConstructor();
+            cons0 = (Constructor<Datagram>)clazz.getDeclaredConstructor();
 
 
             // get Consturctor for when arg is ByteBuffer
-            cons1 = (Constructor<? extends Datagram>)xc.getConstructor(ByteBuffer.class);
+            cons1 = (Constructor<Datagram>)clazz.getDeclaredConstructor(ByteBuffer.class);
 
         } catch (Exception e) {
             System.err.println("DatagramFactoryInfo: Exception: " + e);

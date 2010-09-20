@@ -12,7 +12,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     Router router;
 
     // The RoutingTable
-    SimpleRoutingTable table_= null;
+    RoutingTable table_= null;
 
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
@@ -60,9 +60,13 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     public boolean stop() {
         System.out.println(leadin() + "stop");
 
+        // close fabric ports
+        closePorts();
+
         // stop my own thread
         running = false;
         myThread.interrupt();
+
 
         // wait for myself
         try {
@@ -135,8 +139,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         if (port != null) {
             // disconnect netIF from port
-            resetPort(port.getPortNo());
             closePort(port);
+            resetPort(port.getPortNo());
             return true;
         } else {
             // didn't find netIF in any RouterPort
@@ -163,7 +167,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public synchronized void closePorts() {
         for (RouterPort port : ports) {
-            closePort(port);
+            if (port.equals(RouterPort.EMPTY)) {
+                continue;
+            } else {
+                closePort(port);
+                resetPort(port.getPortNo());
+            }
         }
     }
 
@@ -177,14 +186,20 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             System.out.println(leadin() + "closing port " + port);
             
             NetIF netIF = port.getNetIF();
-            netIF.close();
+
+            if (!netIF.isClosed()) {
+                netIF.close();
+                System.out.println(leadin() + "closed port " + port);
+            } else {
+                System.out.println(leadin() + "ALREADY closed port " + port);
+            }
         }
     }
 
     /**
      * A NetIF has a datagram.
      */
-    public boolean datagramArrived(NetIF netIF) {
+    public synchronized boolean datagramArrived(NetIF netIF) {
         System.err.println(leadin() + "Datagram Arrived on " + netIF);
         return true;
     }
@@ -192,10 +207,17 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /**
      * A NetIF is closing.
      */
-    public boolean netIFClosing(NetIF netIF) {
+    public synchronized boolean netIFClosing(NetIF netIF) {
         System.err.println(leadin() + "Remote close from " + netIF);
 
-        return removeNetIF(netIF);
+        if (!netIF.isClosed()) {
+
+            boolean didit = removeNetIF(netIF);
+
+            return didit;
+        } else {
+            return false;
+        }
     }
 
 
@@ -206,21 +228,21 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /**
      * Setup a port
      */
-    void setupPort(int p) {
+    synchronized void setupPort(int p) {
         ports.add(p, RouterPort.EMPTY);
     }
     
     /**
      * Reset a port
      */
-    void resetPort(int p) {
+    synchronized void resetPort(int p) {
         ports.set(p, RouterPort.EMPTY);
     }
     
     /**
      * Return the routing table 
      */
-    public synchronized SimpleRoutingTable getRoutingTable() {
+    public synchronized RoutingTable getRoutingTable() {
         return table_;
     }
 
@@ -287,7 +309,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Find the next free port to use.
      * Start at port 0 and work way up.
      */
-    int findNextFreePort() {
+    synchronized int findNextFreePort() {
         int limit = ports.size();
         for (int p = 0;  p < limit; p++) {
             if (ports.get(p).equals(RouterPort.EMPTY)) {

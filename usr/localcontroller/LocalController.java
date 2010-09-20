@@ -178,8 +178,9 @@ public class LocalController implements ComponentController {
     
     /** 
      * Received start new router command
-    */
-    public boolean requestNewRouter (int routerId, int port1, int port2) 
+     * @return the name of the router, on success, or null, on failure.     
+     */
+    public String requestNewRouter (int routerId, int port1, int port2) 
     
     {
 
@@ -208,7 +209,7 @@ public class LocalController implements ComponentController {
             System.err.println(leadin() + "Unable to execute command "+ Arrays.asList(cmd));
             System.err.println(e.getMessage());
             //System.exit(-1);
-            return false;
+            return null;
         }
 
         /// In JVM Router
@@ -234,6 +235,7 @@ public class LocalController implements ComponentController {
 
             // try and connect
             try {
+                // connect to ManagementConsole of the router on port port1
                 interactor = new RouterInteractor("localhost", port1);
                 routerInteractors_.add(interactor);
                 isOK = true;
@@ -248,7 +250,7 @@ public class LocalController implements ComponentController {
             System.err.println(leadin() + "Unable to connect to Router on port " + port1);
             // stop process
             pw.stop();
-            return false;
+            return null;
         } else {
             // we connected
             BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,port1);
@@ -257,38 +259,52 @@ public class LocalController implements ComponentController {
             // tell the router its new name and config if available
             try {
                 interactor.setName(routerName);
+                interactor.setGlobalID(routerId);
+
                 if (routerConfigString_ != "") {
                     interactor.setConfigString(routerConfigString_);
                 }
             } catch (IOException ioexc) {
-                return false;
+                return null;
             } catch (MCRPException mcrpe) {
-                return false;
+                return null;
             }
             routerMap_.put(routerId,br);
-            return true;
+            return routerName;
         }
     }
     
     
 
-    public boolean connectRouters(LocalHostInfo r1, LocalHostInfo r2) {
+    /**
+     * Connect two Routers on two specified hosts.
+     * @return the name of the connection, on success, or null, on failure.
+     */
+    public String connectRouters(LocalHostInfo r1, LocalHostInfo r2) {
        System.out.println (leadin() + "Got connect request for routers");
 
        RouterInteractor ri= findRouterInteractor(r1.getPort());
-       if (ri == null)
-          return false;
-       try {
-           String address= r2.getName()+":"+r2.getPort();
-           ri.createConnection(address,1);
-       }
-       catch (Exception e) {
-           System.err.println("Cannot connect routers");
-           System.err.println(e.getMessage());
-           return false;
-       }
-       
-       return true;
+
+       if (ri == null) {
+           return null;
+       } else {
+           try {
+               String address= r2.getName()+":"+r2.getPort();
+
+               // Create a connection
+               String connectionName = ri.createConnection(address,1);
+
+               System.err.println(leadin() + "Connection from Router: " + r1 + " to Router: " + r2 + " is " + connectionName);
+
+
+               return connectionName;
+           }
+           catch (Exception e) {
+               System.err.println("Cannot connect routers");
+               System.err.println(e.getMessage());
+               return null;
+           }
+       }       
     }
 
     /** Local controller receives request to end a router */

@@ -3,6 +3,7 @@ package usr.router.command;
 import usr.protocol.MCRP;
 import usr.router.RouterManagementConsole;
 import usr.router.NetIF;
+import usr.net.GIDAddress;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.net.*;
@@ -14,7 +15,7 @@ import java.nio.*;
 /**
  * The INCOMING_CONNECTION command.
  * INCOMING_CONNECTION connectionID routerName weight port
- * INCOMING_CONNECTION /Router-Router283836798/Connection-1 Router283836798 20 57352
+ * INCOMING_CONNECTION /Router283836798/Connection-1 Router283836798 20 57352
  */
 public class IncomingConnectionCommand extends RouterCommand {
     /**
@@ -83,6 +84,8 @@ public class IncomingConnectionCommand extends RouterCommand {
                 netIF.setName(connectionID);
                 // set its weight
                 netIF.setWeight(weight);
+                // set its Address
+                netIF.setAddress(new GIDAddress(controller.getGlobalID()));
                 // set remote router
                 netIF.setRemoteRouterName(remoteRouterName);
                         

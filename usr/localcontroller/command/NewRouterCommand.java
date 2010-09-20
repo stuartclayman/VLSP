@@ -33,12 +33,16 @@ public class NewRouterCommand extends LocalCommand {
             error("Argument for new router command must be int");
             return false;
         }
-        if (managementConsole.requestNewRouter(rId,port1,port2)) {
-            success("NEW ROUTER STARTED");
+
+
+        String routerName = managementConsole.requestNewRouter(rId,port1,port2);
+        if (routerName != null) {
+            success(routerName);  // WAS success("NEW ROUTER STARTED");
             return true;
+        } else {
+            error("CANNOT START NEW ROUTER");
+            return false;
         }
-        error("CANNOT START NEW ROUTER");
-        return false;
     }
 
 }

@@ -314,10 +314,17 @@ public class GlobalController implements ComponentController {
             int port= pp.findPort(2);
             leastUsed.addRouter();  // Increment count
             
-            BasicRouterInfo br= new BasicRouterInfo(id,simulationTime,
-                leastUsed,port);
+            System.out.println(leadin() + "Creating router " + id);
+
+            String routerName = lci.newRouter(id, port);
+
+            BasicRouterInfo br= new BasicRouterInfo(id,simulationTime, leastUsed,port);
+            br.setName(routerName);
+
             routerIdMap_.put(id,br);
-            lci.newRouter(id, port);
+
+            System.out.println(leadin() + "Created router " + routerName);
+
         } catch (IOException e) {
             System.err.println(leadin() +"Could not start new router");
             System.err.println(e.getMessage());
@@ -465,11 +472,11 @@ public class GlobalController implements ComponentController {
         lci= interactorMap_.get(lc);
         //System.out.println("Got LCI");
         System.out.println(leadin() + "Global controller linking routers "+
-            br1.getHost() +":"+ br1.getManagementPort()+ " and "+
-               br2.getHost()+":"+ br2.getManagementPort());
+            br1 + " and "+ br2);
         try {
-            lci.connectRouters(br1.getHost(), br1.getManagementPort(),
+            String connectionName = lci.connectRouters(br1.getHost(), br1.getManagementPort(),
                br2.getHost(), br2.getManagementPort());
+            System.out.println(leadin() + br1 + " -> " + br2 + " = " + connectionName);
         } catch (IOException e) {
             System.err.println(leadin() + "Cannot link routers");
             System.err.println(leadin() + e.getMessage());

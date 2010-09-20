@@ -48,12 +48,12 @@ public class LocalControllerManagementConsole extends AbstractManagementConsole 
         return localController_.endLink(r1,r2);
     }
     
-    public boolean requestNewRouter(int rId, int port1, int port2)
+    public String requestNewRouter(int rId, int port1, int port2)
     {
         return localController_.requestNewRouter(rId, port1, port2);
     }
     
-    public boolean connectRouters(LocalHostInfo r1, LocalHostInfo r2)
+    public String connectRouters(LocalHostInfo r1, LocalHostInfo r2)
     {
         return localController_.connectRouters(r1, r2);
     }

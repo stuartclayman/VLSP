@@ -101,6 +101,11 @@ public interface NetIF {
     public void close();
 
     /**
+     * Is closed.
+     */
+    public boolean isClosed();
+
+    /**
      * Get the Listener of a NetIF.
      */
     public NetIFListener getNetIFListener();

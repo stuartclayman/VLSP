@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * This class implements the MCRP protocol and acts as a client
@@ -65,6 +66,39 @@ public class RouterInteractor extends MCRPInteractor {
         String toSend = MCRP.SET_NAME.CMD + " " + name;
 	interact(toSend);
 	expect(MCRP.SET_NAME.CODE);
+	return this;
+    }
+
+    /**
+     * Get the global ID of the router.
+     */
+    public int getGlobalID() throws IOException, MCRPException {
+	MCRPResponse response = interact(MCRP.GET_GLOBAL_ID.CMD);
+	expect(MCRP.GET_GLOBAL_ID.CODE);
+
+        String value = response.get(0)[1];
+
+        Scanner scanner = new Scanner(value);
+
+        if (scanner.hasNextInt()) {
+            int id = scanner.nextInt();
+
+            return id;
+        } else {
+            return -1;
+        }
+
+    }
+
+
+    /**
+     * Set the global ID of the router.
+     * @param id the ID of the router
+     */
+    public MCRPInteractor setGlobalID(int id) throws IOException, MCRPException {
+        String toSend = MCRP.SET_GLOBAL_ID.CMD + " " + id;
+	interact(toSend);
+	expect(MCRP.SET_GLOBAL_ID.CODE);
 	return this;
     }
 
@@ -203,12 +237,15 @@ public class RouterInteractor extends MCRPInteractor {
      * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
      * interface to a router on the address ip_addr/port with a 
      * connection weight of connection_weight
+     * @return the name of the created connection, e.g. /Router-28/Connection-1
      */
-    public MCRPInteractor createConnection(String address, int weight) throws IOException, MCRPException {
+    public String createConnection(String address, int weight) throws IOException, MCRPException {
         String toSend = MCRP.CREATE_CONNECTION.CMD + " " + address + " " + weight; 
-	interact(toSend);
+	MCRPResponse response = interact(toSend);
 	expect(MCRP.CREATE_CONNECTION.CODE);
-	return this;
+
+        // return the connection name
+	return response.get(0)[1];
     }
     
       /** End the link from this router to the router with a given id */

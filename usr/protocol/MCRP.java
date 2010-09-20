@@ -81,6 +81,22 @@ public class MCRP implements Protocol {
     }
 
     /**
+     * Get the global ID of the router.
+     */
+    public final static class GET_GLOBAL_ID {
+        public final static String CMD =  "GET_GLOBAL_ID";
+        public final static int CODE = 226;
+    }
+
+    /**
+     * Set the global ID of the router.
+     */
+    public final static class SET_GLOBAL_ID {
+        public final static String CMD =  "SET_GLOBAL_ID";
+        public final static int CODE = 227;
+    }
+
+    /**
      * Create a new router-to-router data connection to another router.
      */
     public final static class CREATE_CONNECTION {

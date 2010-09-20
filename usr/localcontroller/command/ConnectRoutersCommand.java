@@ -28,12 +28,15 @@ public class ConnectRoutersCommand extends LocalCommand {
         LocalHostInfo r1,r2;
         r1= new LocalHostInfo(args[1]);
         r2= new LocalHostInfo(args[2]);
-        if (managementConsole.connectRouters(r1,r2)) {
-            success("ROUTERS CONNECTED "+r1+" "+r2);
+
+        String connectionName = managementConsole.connectRouters(r1,r2);
+        if (connectionName != null) {
+            success(connectionName); // WAS success("ROUTERS CONNECTED "+r1+" "+r2);
             return true;
+        } else {
+            error("CANNOT CONNECT ROUTERS");
+            return false;
         }
-        error("CANNOT CONNECT ROUTERS");
-        return false;
     }
 
 }

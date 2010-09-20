@@ -48,6 +48,9 @@ public class RouterController implements ComponentController, Runnable {
     // My name
     String name;
 
+    // My Global ID
+    int globalID;
+
     // the no of connections
     int connectionCount;
 
@@ -71,7 +74,8 @@ public class RouterController implements ComponentController, Runnable {
     public RouterController(Router router, int mPort, int r2rPort) {
         this.router = router;
 
-        name = "Router" + hashCode();
+        name = "Router-" + hashCode();
+        globalID = hashCode();
 
         this.managementConsolePort = mPort;
 
@@ -106,6 +110,28 @@ public class RouterController implements ComponentController, Runnable {
     public boolean setName(String name) {
         if (connectionCount == 0) {
             this.name = name;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get the global ID of this RouterController.
+     */
+    public int getGlobalID() {
+        return globalID;
+    }
+
+    /**
+     * Set the global ID of this RouterController.
+     * This can only be done before the Router has started to
+     * communicate with other elements.
+     * @return false if the ID cannot be set
+     */
+    public boolean setGlobalID(int id) {
+        if (connectionCount == 0) {
+            this.globalID = id;
             return true;
         } else {
             return false;
@@ -310,8 +336,7 @@ public class RouterController implements ComponentController, Runnable {
     {
         byte []b= new byte[1];
         System.err.println("Pinging");
-        IPV4Datagram dg= new IPV4Datagram(ByteBuffer.wrap(b));
-        dg.setProtocol(0);
+        Datagram dg= DatagramFactory.newDatagram(Protocol.DATA, ByteBuffer.wrap(b));
         List<NetIF> nif= router.listNetIF();
         if (nif == null)
             return;

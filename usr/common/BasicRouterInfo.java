@@ -12,6 +12,8 @@ public class BasicRouterInfo {
     private int managementPort_;
     private int routingPort_;
     private int routerId_;
+    // the name of the router
+    private String name;
     
     public BasicRouterInfo(int id, long time, LocalControllerInfo lc, int port1) {
          this(id,time,lc,port1,port1+1);
@@ -22,6 +24,7 @@ public class BasicRouterInfo {
         controller_= lc;
         managementPort_= port1;
         routingPort_= port2;
+        routerId_ = id;
     }
     
     public int getId() {
@@ -42,5 +45,26 @@ public class BasicRouterInfo {
     
     public String getHost() {
         return controller_.getName();
+    }
+
+    /**
+     * Get the name of the router.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Set the name of the router.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * To string
+     */
+    public String toString() {
+        return getHost() + ":" + getManagementPort() + "@" + getId();
     }
 }

@@ -267,7 +267,7 @@ public class TCPNetIF implements NetIF , Runnable {
     /**
      * Close a NetIF
      */
-    public void close() {
+    public synchronized void close() {
         if (closed) {
             return;
         }
@@ -289,6 +289,13 @@ public class TCPNetIF implements NetIF , Runnable {
         connection.close();
 
         closed = true;
+    }
+
+    /**
+     * Is closed.
+     */
+    public synchronized boolean isClosed() {
+        return closed;
     }
         
     /**
@@ -358,7 +365,7 @@ public class TCPNetIF implements NetIF , Runnable {
                 running = false;
             } else {
 
-                if (datagram.getProtocol() == 1) {
+                if (datagram.getProtocol() == Protocol.CONTROL) {
                     // its a control datagram
                     processControlDatagram(datagram);
                     continue;
@@ -475,7 +482,6 @@ public class TCPNetIF implements NetIF , Runnable {
         ByteBuffer buffer = ByteBuffer.allocate(1);
         buffer.put("C".getBytes());
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
-        datagram.setProtocol(1);
 
         return connection.sendDatagram(datagram);
 
