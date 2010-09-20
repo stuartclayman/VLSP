@@ -47,6 +47,10 @@ public class IPV4Address implements Address {
     public int size() {
         return 4;
     }
+    
+   public boolean equals(Address addr) {
+      return addr.toString().equals(toString());
+   }
 
     /**
      * Get IPV4Address as an InetAddress

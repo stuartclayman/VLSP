@@ -18,40 +18,43 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     
     SimpleRoutingTableEntry(String tableEntry, RouterFabric fabric) {
         String []args= tableEntry.split(" ");
-        if (args.length != 3) {
+        if (args.length != 2 && args.length != 3) {
             System.err.println("Attempt to construct routing table entry "+
              "from incorrect string" + tableEntry);
             System.exit(-1);
         }
         try {
-            address_= new IPV4Address(args[0]); //TODO FIX THIS
+            int gid= Integer.parseInt(args[0]);
+            address_= new GIDAddress(gid); 
             cost_= Integer.parseInt(args[1]);
-            inter_= fabric.findNetIF(args[2]);
-            
+            if (args.length == 2) {
+               inter_= null; 
+            } else {
+               inter_= fabric.findNetIF(args[2]);
+            }
         } catch (Exception e) {
-            System.err.println("Attempt to construct routing table entry "+
-             "from incorrect string" + tableEntry);
-            System.exit(-1);
+            System.err.println("Cannot parse" + tableEntry);
+            return;
         }
     }
     
      SimpleRoutingTableEntry(String tableEntry, NetIF inter) {
         String []args= tableEntry.split(" ");
-        if (args.length != 3) {
+        if (args.length != 3 && args.length != 2) {
             System.err.println("Attempt to construct routing table entry "+
              "from incorrect string" + tableEntry);
             System.exit(-1);
         }
         
         try {
-            address_= new IPV4Address(args[0]); //TODO FIX THIS
+            int gid= Integer.parseInt(args[0]);
+            address_= new GIDAddress(gid); 
             cost_= Integer.parseInt(args[1]);
             inter_= inter;
             
         } catch (Exception e) {
-            System.err.println("Attempt to construct routing table entry "+
-             "from incorrect string" + tableEntry);
-            System.exit(-1);
+            System.err.println("Cannot parse" + tableEntry);
+            return;
         }
     }
     
@@ -74,8 +77,14 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     
      
     public String toString() {
-        String entry= address_ + " " + cost_ + " " + 
+        String entry;
+        if (inter_ == null) {
+          entry= address_.toString() + " " + cost_;
+        } else {
+          entry= address_.toString() + " " + cost_ + " " + 
             inter_.getRemoteRouterName();
+        }
+        //System.err.println("ENTRY: "+entry);
         return entry;
     }
 

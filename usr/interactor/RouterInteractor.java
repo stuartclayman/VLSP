@@ -249,7 +249,7 @@ public class RouterInteractor extends MCRPInteractor {
     }
     
       /** End the link from this router to the router with a given id */
-    public MCRPInteractor endLink(int rId) throws IOException, 
+    public MCRPInteractor endLink(String rId) throws IOException, 
         MCRPException {
           String toSend = MCRP.END_LINK.CMD + " "+ rId;
           interact(toSend);

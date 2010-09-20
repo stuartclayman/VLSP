@@ -3,6 +3,8 @@ package usr.router;
 import java.util.List;
 import java.util.ArrayList;
 import usr.net.*;
+import usr.protocol.Protocol;
+import java.nio.ByteBuffer;
 
 /**
  * A RouterFabric within UserSpaceRouting.
@@ -11,8 +13,11 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     // The Router this is fabric for
     Router router;
 
+    // Address for router
+    Address address_= null;
+
     // The RoutingTable
-    RoutingTable table_= null;
+    SimpleRoutingTable table_= null;
 
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
@@ -200,15 +205,57 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * A NetIF has a datagram.
      */
     public synchronized boolean datagramArrived(NetIF netIF) {
-        System.err.println(leadin() + "Datagram Arrived on " + netIF);
+        Datagram datagram= netIF.readDatagram();
+        if (datagram.getProtocol() == Protocol.CONTROL) {
+            processControlDatagram(datagram, netIF);
+        } else {
+            processDatagram(datagram, netIF);
+        }
         return true;
     }
+
+    void processDatagram(Datagram dg, NetIF netIF) {
+    
+    }
+
+     /**
+     * Process a control datagram
+     */
+    void processControlDatagram(Datagram dg,NetIF netIF) {
+        // System.out.println("TCPNetIF: <- Control Datagram " + dg);
+
+        byte[] payload = dg.getPayload();
+        if (payload.length == 0)
+            return;
+        byte controlChar= payload[0];
+        //System.err.println("RECEIVED DATAGRAM CONTROL TYPE "+(char)controlChar);
+        String data= new String(payload,1,payload.length-1);
+        if (controlChar == 'C') {
+            netIF.setRemoteClose(true);
+            netIF.remoteClose();
+        }
+        if (controlChar == 'T') {
+            receiveRoutingTable(data,netIF);
+        }
+
+    }
+
+
+    void receiveRoutingTable(String tab, NetIF netIF)
+    {
+      
+        SimpleRoutingTable t= new SimpleRoutingTable(tab,netIF);
+       // System.err.println("MERGING RECEIVED TABLES");
+        table_.mergeTables(t,netIF);
+    }
+
+
 
     /**
      * A NetIF is closing.
      */
     public synchronized boolean netIFClosing(NetIF netIF) {
-        System.err.println(leadin() + "Remote close from " + netIF);
+        System.out.println(leadin() + "Remote close from " + netIF);
 
         if (!netIF.isClosed()) {
 
@@ -237,6 +284,17 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     synchronized void resetPort(int p) {
         ports.set(p, RouterPort.EMPTY);
+    }
+    
+    
+    public synchronized void setAddress(int id) {
+        
+        address_= new GIDAddress(id);
+        table_.addMyAddress(address_);
+    }
+    
+    public synchronized Address getAddress() {
+        return address_;
     }
     
     /**

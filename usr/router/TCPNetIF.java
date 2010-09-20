@@ -65,6 +65,7 @@ public class TCPNetIF implements NetIF , Runnable {
     int QUEUE_TOO_LOW = 60;
 
 
+   
 
     /**
      * Construct a TCPNetIF around a Socket.
@@ -203,6 +204,11 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     public boolean sendDatagram(Datagram dg) {
         return connection.sendDatagram(dg);
+    }
+
+    public boolean equals(NetIF b) 
+    {
+        return getName().equals(b.getName());
     }
 
     /**
@@ -364,20 +370,11 @@ public class TCPNetIF implements NetIF , Runnable {
                 // EOF
                 running = false;
             } else {
-
-                if (datagram.getProtocol() == Protocol.CONTROL) {
-                    // its a control datagram
-                    processControlDatagram(datagram);
-                    continue;
-                } else {
-                    // otherwise its data, so
-                    // add to queue
-                    queue.add(datagram);
+                queue.add(datagram);
 
                     // inform the listener
-                    if (listener != null) {
-                        listener.datagramArrived(this);
-                    }
+                if (listener != null) {
+                    listener.datagramArrived(this);
                 }
             }
         }
@@ -459,20 +456,9 @@ public class TCPNetIF implements NetIF , Runnable {
     }
 
 
-    /**
-     * Process a control datagram
-     */
-    protected void processControlDatagram(Datagram dg) {
-        // System.out.println("TCPNetIF: <- Control Datagram " + dg);
-
-        byte[] payload = dg.getPayload();
-
-        if (payload[0] == 'C') {
-            remoteClose = true;
-            remoteClose(dg);
-        }
-
-    }
+    public void setRemoteClose(boolean rc) {
+        remoteClose= rc;
+    }   
 
     /**
      * Consturct and send a control message.
@@ -484,14 +470,24 @@ public class TCPNetIF implements NetIF , Runnable {
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
 
         return connection.sendDatagram(datagram);
-
-        
+ 
     }
 
+    public boolean sendRoutingTable(String table) {
+        String toSend="T"+table;
+        ByteBuffer buffer = ByteBuffer.allocate(toSend.length());
+        buffer.put(toSend.getBytes());
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
+        //System.err.println("SENDING ROUTING TABLE");
+        //System.err.println(table);
+        return connection.sendDatagram(datagram);
+        
+    }
+    
     /**
      * A remote close was received.
      */
-    private void remoteClose(Datagram dg) {
+    public void remoteClose() {
         // System.err.println("TCPNetIF: got remote close"); 
 
         // we check the queue to see if it has any data.

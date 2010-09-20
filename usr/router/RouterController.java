@@ -24,6 +24,10 @@ import usr.net.*;
  * the same host.
  */
 public class RouterController implements ComponentController, Runnable {
+    
+    //Has the address been set
+    boolean addressSet_= false;
+    
     // The Router this is a Controller for
     Router router;
 
@@ -125,17 +129,29 @@ public class RouterController implements ComponentController, Runnable {
 
     /**
      * Set the global ID of this RouterController.
-     * This can only be done before the Router has started to
+     * This can only be done once and must be done
+     * before the Router has started to
      * communicate with other elements.
      * @return false if the ID cannot be set
      */
     public boolean setGlobalID(int id) {
-        if (connectionCount == 0) {
-            this.globalID = id;
+        if (canSetAddress()) {
+            addressSet_= true;
+            router.setAddress(id);
             return true;
         } else {
             return false;
         }
+    }
+
+    /** The address for the router can be set only if it has
+    not been set before and the router has no connections*/
+    public boolean canSetAddress() {
+        if (addressSet_ == true)
+            return false;
+        if (connectionCount > 0)
+            return false;
+        return true;
     }
 
     /**
@@ -263,6 +279,7 @@ public class RouterController implements ComponentController, Runnable {
                     // incr connection count
                     connectionCount--;
                     pool.execute(new EndLink(this,nextRequest));
+                   
                     
                 }  
                 

@@ -294,7 +294,7 @@ public class LocalController implements ComponentController {
                // Create a connection
                String connectionName = ri.createConnection(address,1);
 
-               System.err.println(leadin() + "Connection from Router: " + r1 + " to Router: " + r2 + " is " + connectionName);
+               System.out.println(leadin() + "Connection from Router: " + r1 + " to Router: " + r2 + " is " + connectionName);
 
 
                return connectionName;
@@ -346,7 +346,7 @@ public class LocalController implements ComponentController {
         if (ri == null)
             return false;
         try {
-            ri.endLink(r2);
+            ri.endLink("Router-"+r2);
         } 
         catch (Exception e) {
             System.err.println(leadin()+"Error shutting down router");

@@ -51,7 +51,8 @@ public interface NetIF {
      */
     public Address getAddress();
 
-    
+    /** Setter function for remoteclose*/
+    public void setRemoteClose(boolean rc);
 
     /**
      * Set the Address for this connection.
@@ -100,6 +101,8 @@ public interface NetIF {
      */
     public void close();
 
+    public boolean equals(NetIF n);
+
     /**
      * Is closed.
      */
@@ -114,4 +117,12 @@ public interface NetIF {
      * Set the Listener of NetIF.
      */
     public NetIF setNetIFListener(NetIFListener l);
+    
+    /** Remote close received */
+    public void remoteClose();
+    
+    /** Routing table sent */
+    public boolean sendRoutingTable(String s);
+    
+    
 }

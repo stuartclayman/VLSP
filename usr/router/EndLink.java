@@ -42,9 +42,9 @@ public class EndLink extends ChannelResponder implements Runnable {
             respond(MCRP.END_LINK.ERROR + " END_LINK wrong no of args");
             return;
         }
-        int rId;
-        rId= Integer.parseInt(parts[1]);
-        NetIF netif= controller.findNetIF("Router-"+rId);
+        String rId= parts[1];
+        
+        NetIF netif= controller.findNetIF(rId);
         if (netif == null) {
             respond(MCRP.END_LINK.ERROR + " END_LINK cannot find link to "+rId);
             return;

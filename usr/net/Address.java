@@ -13,6 +13,9 @@ public interface Address {
      */
     public byte[] asByteArray();
 
+    /** Are addresses equal */
+    public boolean equals(Address a);
+
     /**
      * Get IPV4Address as an InetAddress
      * @throws UnsupportedOperationException if the actual kind of address

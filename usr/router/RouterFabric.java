@@ -1,6 +1,7 @@
 package usr.router;
 
 import java.util.List;
+import usr.net.*;
 
 /**
  * A RouterFabric within UserSpaceRouting.
@@ -38,6 +39,14 @@ public interface RouterFabric {
      * Close ports
      */
     public void closePorts();
+
+
+    /** Set an address from a global ID number */
+    public void setAddress(int a);
+    
+    
+    /** Get the address */
+    public Address getAddress();
 
     /**
      * Close port.
