@@ -51,6 +51,8 @@ public interface NetIF {
      */
     public Address getAddress();
 
+    
+
     /**
      * Set the Address for this connection.
      */

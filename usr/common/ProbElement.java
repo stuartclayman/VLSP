@@ -5,11 +5,13 @@ public class ProbElement
 {
 
     int distType_= 0;
-    static final int EXPO_DIST= 1;  // Exponential/Poisson
+    static final int EXPO_DIST= 1;  // Exponential
     static final int GAMMA_DIST= 2;
     static final int WEIBULL_DIST= 3;
     static final int UNIFORM_DIST= 4;
     static final int PARETO_DIST= 5;
+    static final int POISSON_DIST= 6;  // Poisson Distribution
+    static final int POISSON_MIN_ONE_DIST= 7;  // Poisson Distribution
     double weight_;
     double parm1_= 0.0;
     double parm2_= 0.0;
@@ -32,6 +34,10 @@ public class ProbElement
            type= UNIFORM_DIST;
         } else if (typeStr.equals("Pareto")) {
            type= PARETO_DIST;
+        } else if (typeStr.equals("Poisson")) {
+           type= POISSON_DIST;
+        } else if (typeStr.equals("PoissonMinOne")) {
+           type= POISSON_MIN_ONE_DIST;
         }
         if (type == 0) {
            throw new ProbException("Unknown distribution type");
@@ -66,6 +72,12 @@ public class ProbElement
         }
         if (distType_ == PARETO_DIST) {
             return paretoVariate(parm1_, parm2_);
+        }
+        if (distType_ == POISSON_DIST) {
+            return poissonVariate(parm1_);
+        }
+        if (distType_ == POISSON_MIN_ONE_DIST) {
+            return Math.max(1.0,poissonVariate(parm1_));
         }
         throw new ProbException("Unknown distribution type");
         
@@ -144,6 +156,20 @@ public class ProbElement
         U= exponentialVariate(1.0/shape);
         x= scale*Math.exp(U);
         return x;
+    }
+    
+    public static double poissonVariate(double mean)
+    {   
+       
+        double p= 1.0;
+        double L= Math.exp(-mean);
+        int k= 0;
+        do {
+            k= k+1;
+            p=p*Math.random();
+        } while (p > L);
+        return (double)(k-1);
+
     }
     
 }

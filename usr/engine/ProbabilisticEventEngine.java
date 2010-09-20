@@ -14,12 +14,13 @@ import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException; 
 import java.io.*;
+import java.util.*;
 
 public class ProbabilisticEventEngine implements EventEngine {
     int timeToEnd_;
     ProbDistribution nodeCreateDist_= null;
     ProbDistribution nodeDeathDist_= null;
-//    DiscreteProbDistribution linkCreateDist_= null;
+    ProbDistribution linkCreateDist_= null;
     ProbDistribution linkDeathDist_= null;
     
 
@@ -82,13 +83,25 @@ public class ProbabilisticEventEngine implements EventEngine {
         e1= new SimEvent(SimEvent.EVENT_START_ROUTER, now+time, null);
         s.addEvent(e1);
         // Schedule links
-        int noLinks= 5;
-        int []nodes= g.getNodeList();
+        int noLinks= linkCreateDist_.getIntVariate();
+        List <Integer>nodes= g.getNodeList();
+        nodes.remove(nodes.indexOf(routerId));
+        List <Integer>outlinks= (List<Integer>)g.getOutLinks(routerId);
+        if (outlinks != null) {
+          for (Integer l: outlinks) {
+              nodes.remove(nodes.indexOf(l));
+          }
+        }
+        //System.err.println("Trying to pick "+noLinks+" links");
         for (int i= 0; i < noLinks; i++) {
-            int newLink= nodes[(int)Math.floor(Math.random()*nodes.length)];
-            if (newLink == routerId || g.getLinkWeight(newLink,routerId) > 0) {
-                continue;
+            if (nodes.size() <= 0) {
+                break;
             }
+            //System.err.println("Choice set "+nodes);
+            int index= (int)Math.floor( Math.random()*nodes.size());
+            int newLink= nodes.get(index);
+            //System.err.println("Picked "+newLink);
+            nodes.remove(index);
             e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
                 new Pair<Integer,Integer>(newLink,routerId));
             s.addEvent(e1);
@@ -114,10 +127,16 @@ public class ProbabilisticEventEngine implements EventEngine {
         if (nodeCreateDist_ == null) {
             throw new SAXException ("Must specific NodeBirthDist");
         }
+        NodeList lcd= doc.getElementsByTagName("LinkCreateDist");
+        linkCreateDist_= ReadXMLUtils.parseProbDist(lcd,"LinkCreateDist");
+        if (linkCreateDist_ == null) {
+            throw new SAXException ("Must specific LinkCreateDist");
+        }
         NodeList ndd= doc.getElementsByTagName("NodeDeathDist");
         nodeDeathDist_= ReadXMLUtils.parseProbDist(ndd,"NodeDeathDist");
         NodeList ldd= doc.getElementsByTagName("LinkDeathDist");
         linkDeathDist_= ReadXMLUtils.parseProbDist(ldd,"LinkDeathDist");
+        
           
     } catch (java.io.FileNotFoundException e) {
           System.err.println("Cannot find file "+fName);

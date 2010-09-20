@@ -483,6 +483,12 @@ public class GlobalController implements ComponentController {
 
     }
     
+    /* Return a list of outlinks from a router */
+    public List<Integer> getOutLinks(int routerId)
+    {
+        return outLinks_.get(routerId);
+    }
+    
     /** Create pair of integers with first integer smallest */
     private Pair <Integer, Integer> makeRouterPair (int r1, int r2)
     {
@@ -818,14 +824,10 @@ public class GlobalController implements ComponentController {
     }
 
     /** Return a list of node ids */
-    public int[] getNodeList() {
-        Set<Integer> nodes= (Set<Integer>) routerIdMap_.keySet();
-        Object []nints= (Object []) nodes.toArray();
-        int []ints= new int [nints.length];
-        for (int i= 0; i < nints.length; i++) {
-            ints[i]= (Integer) nints[i];
-        }
-        return ints;
+    public List<Integer> getNodeList() {
+        Set<Integer> n=  routerIdMap_.keySet();
+        return new ArrayList<Integer>(n);
+       
     }
 
     protected void finalize() {

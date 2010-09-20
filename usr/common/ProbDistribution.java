@@ -27,6 +27,10 @@ public class ProbDistribution
         distParts_.add(e);
     }
     
+    public int getIntVariate() {
+        return (int)Math.round(getVariate()); 
+    }
+    
     public double getVariate() {
         double r= Math.random();
         ProbElement finalel= null;

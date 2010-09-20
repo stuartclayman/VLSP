@@ -19,5 +19,12 @@
                  <Parameter>1.5</Parameter>
             </ProbElement>
       </NodeDeathDist>
-    
+      <LinkCreateDist>
+            
+            <ProbElement>
+                 <Type>PoissonMinOne</Type>
+                 <Weight>1.0</Weight>
+                 <Parameter>5</Parameter>
+            </ProbElement>
+      </LinkCreateDist>
 </ProbabilisticEngine>
