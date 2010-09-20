@@ -7,7 +7,7 @@ public interface RoutingTable {
 
 public int size();
 
-public Collection<RoutingTableEntry> getEntries();
+public Collection<?> getEntries();
 
 public void addNetIF(NetIF inter);
 

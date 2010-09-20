@@ -1,15 +1,17 @@
 package usr.router;
 
+import usr.net.*;
+
 /**
  * An entry in a routing table.
  */
 public class SimpleRoutingTableEntry implements RoutingTableEntry {
-    private String routerId_;
+    private Address address_;
     private int cost_;
     NetIF inter_;
 
-    SimpleRoutingTableEntry(String id, int cost, NetIF inter) {
-        routerId_= id;
+    SimpleRoutingTableEntry(Address addr, int cost, NetIF inter) {
+        address_= addr;
         cost_= cost;
         inter_= inter;
     }
@@ -21,8 +23,8 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
              "from incorrect string" + tableEntry);
             System.exit(-1);
         }
-        routerId_= args[0];
         try {
+            address_= new SimpleAddress(args[0]); //TODO FIX THIS
             cost_= Integer.parseInt(args[1]);
             inter_= fabric.findNetIF(args[2]);
             
@@ -40,8 +42,9 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
              "from incorrect string" + tableEntry);
             System.exit(-1);
         }
-        routerId_= args[0];
+        
         try {
+            address_= new SimpleAddress(args[0]); //TODO FIX THIS
             cost_= Integer.parseInt(args[1]);
             inter_= inter;
             
@@ -52,11 +55,11 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         }
     }
     
-    String getRouterId() {
-        return routerId_;
+    public Address getAddress() {
+        return address_;
     }
     
-    NetIF getNetIF() {
+    public NetIF getNetIF() {
         return inter_;
     }
     
@@ -68,12 +71,10 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         cost_= cost;
     }
     
-    public String getEntryAsString() {
-        return this.toString();
-    }
+    
      
     public String toString() {
-        String entry= routerId_ + " " + cost_ + " " + 
+        String entry= address_ + " " + cost_ + " " + 
             inter_.getRemoteRouterName();
         return entry;
     }

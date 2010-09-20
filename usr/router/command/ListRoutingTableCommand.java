@@ -9,7 +9,7 @@ import usr.net.Address;
 import java.util.List;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-
+import java.util.*;
 /**
  * The LIST_ROUTING_TABLE command.
  */
@@ -28,7 +28,8 @@ public class ListRoutingTableCommand extends RouterCommand {
     public boolean evaluate(String req) {
         RoutingTable table = controller.getRoutingTable();
 
-        for (RoutingTableEntry e : table.getEntries()) {
+        Collection<RoutingTableEntry> c= (Collection<RoutingTableEntry>)table.getEntries();
+        for (RoutingTableEntry e : c) {
             list(e.toString());
         }
 

@@ -34,6 +34,7 @@ CLASSES = \
   usr/test/StubServer.java \
   usr/test/StubClient.java \
   usr/test/VariateTest.java \
+  usr/router/RoutingTableEntry.java \
   usr/router/Router.java \
   usr/router/command/QuitCommand.java \
   usr/router/command/GetNameCommand.java \
@@ -55,28 +56,30 @@ CLASSES = \
   usr/router/command/GetPortNameCommand.java \
   usr/router/command/GetWeightCommand.java \
   usr/router/command/ListRoutingTableCommand.java \
+  usr/router/command/PingNeighboursCommand.java \
   usr/router/SimpleRouterFabric.java \
+  usr/router/RouterFabric.java \
   usr/router/CreateConnection.java \
   usr/router/RouterConnections.java \
   usr/router/RouterController.java \
   usr/router/NetIF.java \
   usr/router/RouterPort.java \
-  usr/router/RouterFabric.java \
   usr/router/TCPNetIF.java \
   usr/router/EndLink.java \
   usr/router/RouterManagementConsole.java \
+  usr/router/SimpleRoutingTableEntry.java \
+  usr/router/SimpleRoutingTable.java \
   usr/router/RoutingTable.java \
-  usr/router/RoutingTableEntry.java \
   usr/router/RouterOptions.java \
+  usr/router/NetIFListener.java \
   usr/net/Datagram.java \
   usr/net/TCPEndPointSrc.java \
   usr/net/DatagramPatch.java \
   usr/net/Connection.java \
   usr/net/IPV4Datagram.java \
-  usr/net/SimpleDatagram.java \
-  usr/net/SimpleAddress.java \
   usr/net/Address.java \
   usr/net/IPV4Address.java \
+  usr/net/DatagramFactory.java \
   usr/net/EndPoint.java \
   usr/net/UDPEndPointSrc.java \
   usr/net/TCPEndPointDst.java \
@@ -85,6 +88,8 @@ CLASSES = \
   usr/net/ConnectionOverUDP.java \
   usr/net/TCPEndPoint.java \
   usr/net/UDPEndPoint.java \
+  usr/net/SimpleDatagram.java \
+  usr/net/SimpleAddress.java \
   usr/interactor/MCRPException.java \
   usr/interactor/MCRPResponse.java \
   usr/interactor/MCRPEvent.java \
@@ -144,8 +149,13 @@ CLASSES = \
   usr/engine/TestEventEngine.java \
   usr/engine/ScriptEngine.java \
   usr/engine/ProbabilisticEventEngine.java \
-  usr/output/OutputType.java
-
+  usr/management/APManager.java \
+  usr/output/OutputType.java \
+  usr/logging/Logger.java \
+  usr/logging/LogInput.java \
+  usr/logging/LogOutput.java \
+  usr/logging/LoggingOutputStream.java \
+  usr/logging/Logging.java
 #
 # the default make target entry
 #
