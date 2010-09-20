@@ -206,6 +206,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public synchronized boolean datagramArrived(NetIF netIF) {
         Datagram datagram= netIF.readDatagram();
+        
+        // TODO check if datagram belongs here or must be forwarded 
         if (datagram.getProtocol() == Protocol.CONTROL) {
             processControlDatagram(datagram, netIF);
         } else {
