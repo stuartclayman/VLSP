@@ -36,9 +36,12 @@ public class DatagramFactory {
             dfi = list.get(protocol);
 
             if (payload == null) {
-                return (Datagram)dfi.cons0.newInstance();
+                Datagram dg =  (Datagram)dfi.cons0.newInstance();
+                return dg;
             } else {
-                return (Datagram)dfi.cons1.newInstance(payload);            
+                Datagram dg =  (Datagram)dfi.cons1.newInstance(payload);            
+                dg.setProtocol(protocol);
+                return dg;
             }
         } catch (Exception e) {
             throw new Error("DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: " + dfi.className + " for protocol " + protocol);
@@ -88,11 +91,11 @@ class DatagramFactoryInfo {
 
             final Class<? extends Datagram> xc = c.asSubclass(Datagram.class);
             // find Constructor for when arg is null
-            cons0 = (Constructor<? extends Datagram>)xc.getConstructor();
+            cons0 = (Constructor<? extends Datagram>)xc.getDeclaredConstructor();
 
 
             // get Consturctor for when arg is ByteBuffer
-            cons1 = (Constructor<? extends Datagram>)xc.getConstructor(ByteBuffer.class);
+            cons1 = (Constructor<? extends Datagram>)xc.getDeclaredConstructor(ByteBuffer.class);
 
         } catch (Exception e) {
             System.err.println("DatagramFactoryInfo: Exception: " + e);
