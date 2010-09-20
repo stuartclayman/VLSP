@@ -29,7 +29,7 @@ public class ListRoutingTableCommand extends RouterCommand {
         RoutingTable table = controller.getRoutingTable();
 
         for (RoutingTableEntry e : table.getEntries()) {
-            list(e.getEntryAsString());
+            list(e.toString());
         }
 
         boolean result = success("END " + table.size());

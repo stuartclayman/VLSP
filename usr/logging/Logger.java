@@ -27,10 +27,10 @@ public class Logger implements Logging {
     /**
      * A map of output object to its BitSet.
      */
-    Map outputs = null;
+    Map <Object,BitSet>outputs = null;
 
     public Logger() {
-        outputs = new HashMap();
+        outputs = new HashMap<Object,BitSet>();
     }
 
     /**
@@ -152,7 +152,7 @@ public class Logger implements Logging {
      */
     private void addOutputLog(Object output, BitSet mask) {
 	if (outputs == null) {
-	    outputs = new HashMap();
+	    outputs = new HashMap<Object,BitSet>();
 	}
 
 	outputs.put(output, mask);

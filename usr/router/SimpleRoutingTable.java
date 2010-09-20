@@ -36,7 +36,7 @@ public class SimpleRoutingTable implements RoutingTable {
         RoutingTableEntry e;
         for (String s: entries) {
             e= new SimpleRoutingTableEntry(s, netif);
-            table_.put(e.getRouterId(), e);
+            table_.put((SimpleRoutingTableEntry)e.getRouterId(), e);
         }
     }
 
@@ -50,14 +50,14 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * Get all the RoutingTable entries.
      */
-    public Collection<SimpleRoutingTableEntry> getEntries() 
+    public Collection<RoutingTableEntry> getEntries() 
     {
         return table_.values();    
     }
     
     /** A new network interface arrives -- add to
     routing table if necessary */
-    void addNetIF(NetIF inter) {
+    public void addNetIF(NetIF inter) {
         String router= inter.getRemoteRouterName();
         int weight= inter.getWeight();
         SimpleRoutingTableEntry e= table_.get(router);
@@ -96,7 +96,7 @@ public class SimpleRoutingTable implements RoutingTable {
     }
     
     
-    public removeNetIF(NetIF netif) {
+    public void removeNetIF(NetIF netif) {
         System.err.println(leadin()+" to write removeNetIF");
     }
     
