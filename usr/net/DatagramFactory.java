@@ -70,23 +70,23 @@ public class DatagramFactory {
 
 class DatagramFactoryInfo {
     public String className;
-    public Class clazz;
-    public Constructor<Datagram> cons0;
-    public Constructor<Datagram> cons1;
-
+    Constructor<? extends Datagram> cons0;
+    Constructor<? extends Datagram> cons1;
+    
     public DatagramFactoryInfo(String name) {
         try {
             className = name;
 
             // get Class object
-            clazz = Class.forName(className);
+            Class<?> c = (Class<?>)Class.forName(className);
 
+            final Class<? extends Datagram> xc = c.asSubclass(Datagram.class);
             // find Constructor for when arg is null
-            cons0 = (Constructor<Datagram>)clazz.getConstructor();
+            cons0 = (Constructor<? extends Datagram>)xc.getConstructor();
 
 
             // get Consturctor for when arg is ByteBuffer
-            cons1 = (Constructor<Datagram>)clazz.getConstructor(ByteBuffer.class);
+            cons1 = (Constructor<? extends Datagram>)xc.getConstructor(ByteBuffer.class);
 
         } catch (Exception e) {
             System.err.println("DatagramFactoryInfo: Exception: " + e);

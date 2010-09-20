@@ -28,7 +28,7 @@ public class ListRoutingTableCommand extends RouterCommand {
     public boolean evaluate(String req) {
         RoutingTable table = controller.getRoutingTable();
 
-        Collection<RoutingTableEntry> c= (Collection<RoutingTableEntry>)table.getEntries();
+        Collection<? extends RoutingTableEntry> c= table.getEntries();
         for (RoutingTableEntry e : c) {
             list(e.toString());
         }
