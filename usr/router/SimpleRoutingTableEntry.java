@@ -24,7 +24,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
             System.exit(-1);
         }
         try {
-            address_= new SimpleAddress(args[0]); //TODO FIX THIS
+            address_= new IPV4Address(args[0]); //TODO FIX THIS
             cost_= Integer.parseInt(args[1]);
             inter_= fabric.findNetIF(args[2]);
             
@@ -44,7 +44,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         }
         
         try {
-            address_= new SimpleAddress(args[0]); //TODO FIX THIS
+            address_= new IPV4Address(args[0]); //TODO FIX THIS
             cost_= Integer.parseInt(args[1]);
             inter_= inter;
             

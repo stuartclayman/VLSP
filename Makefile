@@ -88,8 +88,6 @@ CLASSES = \
   usr/net/ConnectionOverUDP.java \
   usr/net/TCPEndPoint.java \
   usr/net/UDPEndPoint.java \
-  usr/net/SimpleDatagram.java \
-  usr/net/SimpleAddress.java \
   usr/interactor/MCRPException.java \
   usr/interactor/MCRPResponse.java \
   usr/interactor/MCRPEvent.java \
