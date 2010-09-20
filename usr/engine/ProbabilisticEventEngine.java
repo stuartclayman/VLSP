@@ -16,6 +16,10 @@ import org.xml.sax.SAXParseException;
 import java.io.*;
 import java.util.*;
 
+/**
+This engine uses probability distribtions to add events into the 
+event library
+*/
 public class ProbabilisticEventEngine implements EventEngine {
     int timeToEnd_;
     ProbDistribution nodeCreateDist_= null;
