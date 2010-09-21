@@ -106,7 +106,7 @@ public class RouterConnections implements Runnable {
 
                 System.out.println(leadin() + "netif = " + netIF);
 
-                controller.addNetIF(netIF);
+                controller.registerTemporaryNetIF(netIF);
 
             } catch (IOException ioe) {
                 // only print if running, not when stopping

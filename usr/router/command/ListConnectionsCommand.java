@@ -32,7 +32,16 @@ public class ListConnectionsCommand extends RouterCommand {
             } else {
                 NetIF netIF = rp.getNetIF();
                 Address address = netIF.getAddress();
-                String portString = "port" + rp.getPortNo() + " " + netIF.getName() + " " + netIF.getRemoteRouterName() + " " + netIF.getWeight() + " " + (address == null ? "No_Address" : address.toString());
+                Address remoteAddress = netIF.getRemoteRouterAddress();
+
+                String portString = "port" + rp.getPortNo() + " " + 
+                    netIF.getName() + " W(" + netIF.getWeight() + ") = " +
+                    controller.getName() + " " + 
+                    (address == null ? "No_Address" : "@(" + address + ")") +
+                    " => " + netIF.getRemoteRouterName() + " " +
+                    (remoteAddress == null ? "No_Remote_Address" : "@(" + remoteAddress + ")");
+
+
                 list(portString);
                 count++;
             }               

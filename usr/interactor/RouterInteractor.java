@@ -195,11 +195,12 @@ public class RouterInteractor extends MCRPInteractor {
      * on the router-to-router port.
      * @param connectionID the name for the incoming connection
      * @param name the name of the router making the connection
+     * @param id the id/address of the router making the connection
      * @param weight the weight of the connection
      * @param port the port number
      */
-    public MCRPInteractor incomingConnection(String connectionID, String name, int weight, int port) throws IOException, MCRPException {
-        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + weight  + " " + port ; 
+    public MCRPInteractor incomingConnection(String connectionID, String name, int id, int weight, int port) throws IOException, MCRPException {
+        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + id + " " + weight  + " " + port ; 
 	interact(toSend);
 	expect(MCRP.INCOMING_CONNECTION.CODE);
 	return this;

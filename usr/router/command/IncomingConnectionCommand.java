@@ -14,8 +14,8 @@ import java.nio.*;
 
 /**
  * The INCOMING_CONNECTION command.
- * INCOMING_CONNECTION connectionID routerName weight port
- * INCOMING_CONNECTION /Router283836798/Connection-1 Router283836798 20 57352
+ * INCOMING_CONNECTION connectionID routerName routerID weight TCP-port
+ * INCOMING_CONNECTION /Router283836798/Connection-1 Router283836798 4132 20 57352
  */
 public class IncomingConnectionCommand extends RouterCommand {
     /**
@@ -36,12 +36,13 @@ public class IncomingConnectionCommand extends RouterCommand {
         String args = req.substring(MCRP.INCOMING_CONNECTION.CMD.length()).trim();
         String[] parts = args.split(" ");
 
-        if (parts.length == 4) {
+        if (parts.length == 5) {
 
             String connectionID = parts[0];
             String remoteRouterName = parts[1];
-            String weightStr = parts[2];
-            String remotePort = parts[3];
+            String remoteRouterID = parts[2];
+            String weightStr = parts[3];
+            String remotePort = parts[4];
 
             Scanner scanner;
 
@@ -55,6 +56,18 @@ public class IncomingConnectionCommand extends RouterCommand {
                 error(getName() + " bad port number");
                 return true;
             }
+
+            // get remote address
+            scanner = new Scanner(remoteRouterID);
+            int remoteID;
+
+            try {
+                remoteID = scanner.nextInt();
+            } catch (Exception e) {
+                error(getName() + " invalid value for routerID");
+                return true;
+            }
+
 
             // get connection weight
             scanner = new Scanner(weightStr);
@@ -75,7 +88,7 @@ public class IncomingConnectionCommand extends RouterCommand {
             /*
              * Lookup netif and set its name
              */
-            NetIF netIF = controller.getNetIFByID(refAddr.hashCode());
+            NetIF netIF = controller.getTemporaryNetIFByID(refAddr.hashCode());
 
             if (netIF != null) {
                 System.out.println(leadin() + "Found NetIF " + netIF + " by id " + refAddr.hashCode());
@@ -88,9 +101,10 @@ public class IncomingConnectionCommand extends RouterCommand {
                 netIF.setAddress(new GIDAddress(controller.getGlobalID()));
                 // set remote router
                 netIF.setRemoteRouterName(remoteRouterName);
+                netIF.setRemoteRouterAddress(new GIDAddress(remoteID));
                         
                 // now plug netIF into Router
-                controller.plugInNetIF(netIF);
+                controller.plugTemporaryNetIFIntoPort(netIF);
 
                 result = success("" +  connectionID);
             } else {

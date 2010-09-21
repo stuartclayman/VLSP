@@ -58,8 +58,9 @@ public class RouterController implements ComponentController, Runnable {
     // the no of connections
     int connectionCount;
 
-    // Map of NetIFs
-    HashMap<Integer, NetIF> netIFMap;
+    // Map of NetIFs that are in the process of being finalized
+    // and are temporarily held here in the RouterController.
+    HashMap<Integer, NetIF> tempNetIFMap;
 
     /**
      * Construct a RouterController, given a specific port.
@@ -78,8 +79,8 @@ public class RouterController implements ComponentController, Runnable {
     public RouterController(Router router, int mPort, int r2rPort) {
         this.router = router;
 
-        name = "Router-" + hashCode();
-        globalID = hashCode();
+        name = "Router-" + mPort + "-" + r2rPort;
+        globalID = name.hashCode();
 
         this.managementConsolePort = mPort;
 
@@ -94,7 +95,7 @@ public class RouterController implements ComponentController, Runnable {
         connectionCount = 0;
 
         // a map of NetIFs
-        netIFMap = new HashMap<Integer, NetIF>();
+        tempNetIFMap = new HashMap<Integer, NetIF>();
 
     }
 
@@ -298,21 +299,9 @@ public class RouterController implements ComponentController, Runnable {
 
     }
 
-
+    /** Send a routing table via the specified NetIF. */
     public void sendRoutingTable(NetIF netIF) {
         router.sendRoutingTable(netIF);
-    }
-
-    /**
-     * Keep a handle on a NetIF created from INCOMING_CONNECTION
-     */
-    public synchronized void addNetIF(NetIF netIF) {
-        int id = netIF.getID();
-
-        System.out.println(leadin() + "addNetIF " + id + " for " + netIF);
-        //System.err.println(leadin() + "addNetIF " + id + " for " + netIF);
-        netIFMap.put(id, netIF);
-
     }
 
     /** Return a routing table as a string */
@@ -321,28 +310,40 @@ public class RouterController implements ComponentController, Runnable {
     }
 
     /**
+     * Keep a handle on a NetIF created from INCOMING_CONNECTION
+     */
+    synchronized void registerTemporaryNetIF(NetIF netIF) {
+        int id = netIF.getID();
+
+        System.out.println(leadin() + "addNetIF " + id + " for " + netIF);
+        //System.err.println(leadin() + "addNetIF " + id + " for " + netIF);
+        tempNetIFMap.put(id, netIF);
+
+    }
+
+    /**
      * Find a NetIF by an id.
      */
-    public synchronized NetIF getNetIFByID(int id) {
+    public synchronized NetIF getTemporaryNetIFByID(int id) {
         //System.err.println(leadin() + "getNetIF " + id);
-        return netIFMap.get(id);
+        return tempNetIFMap.get(id);
     }
 
     /**
      * List all the temporary connections held by the Controller
      */
-    public Collection<NetIF> listTempNetIF() {
-        return netIFMap.values();
+    synchronized Collection<NetIF> listTempNetIF() {
+        return tempNetIFMap.values();
     }
 
     /**
      * Plug a NetIF into the RouterFabric
      */
-    public synchronized RouterPort plugInNetIF(NetIF netIF) {
+    public synchronized RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
         RouterPort rp = router.plugInNetIF(netIF);
         //System.err.println(leadin() + "plugInNetIF "  + netIF);
 
-        netIFMap.remove(netIF.getID());
+        tempNetIFMap.remove(netIF.getID());
 
         return rp;
     }

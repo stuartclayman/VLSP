@@ -1,5 +1,3 @@
-
-
 package usr.globalcontroller;
 
 import usr.localcontroller.LocalControllerInfo;
@@ -70,11 +68,6 @@ public class GlobalController implements ComponentController {
      which apply whether we are simulation or 
      */
     public GlobalController () {
-    
-        ///childProcesses_= new ArrayList<Process>();
-        ///childOutput_= new ArrayList<BufferedReader>();
-        ///childError_= new ArrayList<BufferedReader>();
-        
     }
 
     private void init() {
@@ -152,7 +145,6 @@ public class GlobalController implements ComponentController {
             while(simulationRunning_) {
                 long eventTime= e.getTime();
                 simulationTime= System.currentTimeMillis();
-                //// SC
                 
                 if (simulationTime - (simulationStartTime + eventTime) > 
                      options_.getMaxLag()) {
@@ -167,7 +159,7 @@ public class GlobalController implements ComponentController {
                 
                 
                 if (checkMessages()) {
-//                    System.out.println(leadin() + "Check msg true");
+                    // System.out.println(leadin() + "Check msg true");
                     continue;
                 }
                 waitUntil(simulationStartTime + eventTime);
@@ -298,7 +290,7 @@ public class GlobalController implements ComponentController {
         for (int i= 1; i < noControllers_; i++) {
             lc= options_.getController(i);
             thisUsage= lc.getUsage();
-//            System.out.println(i+" Usage "+thisUsage);
+            // System.out.println(i+" Usage "+thisUsage);
             if (thisUsage == 0.0) {
                leastUsed= lc;
                break;
@@ -314,23 +306,25 @@ public class GlobalController implements ComponentController {
             int port= pp.findPort(2);
             leastUsed.addRouter();  // Increment count
             
-            System.out.println(leadin() + "Creating router " + id);
+            System.out.println(leadin() + "Creating router " + id + " on " + leastUsed);
 
+            // create the new router and get it's name
             String routerName = lci.newRouter(id, port);
 
             BasicRouterInfo br= new BasicRouterInfo(id,simulationTime, leastUsed,port);
             br.setName(routerName);
 
+            // keep a handle on this router
             routerIdMap_.put(id,br);
 
             System.out.println(leadin() + "Created router " + routerName);
 
         } catch (IOException e) {
-            System.err.println(leadin() +"Could not start new router");
+            System.err.println(leadin() +"Could not start new router on " + leastUsed);
             System.err.println(e.getMessage());
             bailOut();
         } catch (MCRPException e) {
-            System.err.println(leadin() + "Could not start new router");
+            System.err.println(leadin() + "Could not start new router on " + leastUsed);
             System.err.println(e.getMessage());
             bailOut();
         }
@@ -444,11 +438,20 @@ public class GlobalController implements ComponentController {
     /** Event to link two routers */
     private void startLink(int router1Id, int router2Id) {
         //System.err.println("Start link "+router1Id+" "+router2Id);
-        registerLink(router1Id, router2Id);
-        if (options_.isSimulation()) {
-            startSimulationLink(router1Id, router2Id);       
+
+        // check if this link already exists
+        ArrayList<Integer> outForRouter1 = outLinks_.get(router1Id);
+
+        if (outForRouter1 != null && outForRouter1.contains(router2Id)) {
+            // we already have this link
+            System.err.println(leadin() + "Link already exists: "+router1Id + " -> " + router2Id);
         } else {
-            startVirtualLink(router1Id, router2Id);
+            if (options_.isSimulation()) {
+                startSimulationLink(router1Id, router2Id);       
+            } else {
+                startVirtualLink(router1Id, router2Id);
+            }
+            registerLink(router1Id, router2Id);
         }
     }
     
@@ -838,7 +841,6 @@ public class GlobalController implements ComponentController {
     }
 
     protected void finalize() {
-        //killAllControllers()
         bailOut();
    
     }

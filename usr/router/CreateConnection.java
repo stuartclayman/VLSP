@@ -138,21 +138,22 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         String latestConnectionId = "/" + controller.getName() + "/Connection-" + controller.getConnectionCount();
 
         try {
-	    // make a socket connection to a remote router
-
+	    // make a connection to a remote router
             TCPEndPointSrc src = new TCPEndPointSrc(host, connectionPort);
             netIF = new TCPNetIF(src);
             netIF.connect();
 
+            // get socket so we can determine the Inet Address
             socket = src.getSocket();
 
             System.out.println(leadin() + "connection socket: " + socket);
 
             refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
 
+            // patch up the NetIF
             // set its name
             netIF.setName(latestConnectionId);
-                // set its weight
+            // set its weight
             netIF.setWeight(weight);
             // set its ID
             netIF.setID(refAddr.hashCode());
@@ -180,8 +181,16 @@ public class CreateConnection extends ChannelResponder implements Runnable {
          * Get name of remote router
          */
 
+        String remoteRouterName;
+        int remoteRouterID;
+
         try {
-            routerResponse = interactor.getName();
+        // now get router name
+
+            remoteRouterName = interactor.getName();
+
+            remoteRouterID = interactor.getGlobalID();
+
         } catch (IOException ioexc) {
             System.err.println(leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
@@ -192,8 +201,15 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             return;
         }
 
-        // now get router name
-        String remoteRouterName = routerResponse;
+        // set the remoteRouterName
+        netIF.setRemoteRouterName(remoteRouterName);
+        netIF.setRemoteRouterAddress(new GIDAddress(remoteRouterID));
+
+        /*
+         * Save the netIF temporarily
+         */
+        controller.registerTemporaryNetIF(netIF);
+
         
         /*
          * Interact with remote router
@@ -213,7 +229,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                 // send INCOMING_CONNECTION command
 
                 try {
-                    interactor.incomingConnection(latestConnectionId, controller.getName(), weight, socket.getLocalPort());
+                    interactor.incomingConnection(latestConnectionId, controller.getName(), controller.getGlobalID(), weight, socket.getLocalPort());
 
                     // connection setup ok
                     interactionOK = true;
@@ -239,11 +255,6 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         }
 
         /*
-         * Save the netIF.
-         */
-        controller.addNetIF(netIF);
-
-        /*
          * Close connection to management port of remote router.
          */
         try { 
@@ -258,10 +269,8 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         System.out.println(leadin() + "closed = " + host);
 
-        // now plug netIF into Router
-        netIF.setRemoteRouterName(remoteRouterName);
-
-        RouterPort port = controller.plugInNetIF(netIF);
+        // now plug the temporary netIF into Router
+        RouterPort port = controller.plugTemporaryNetIFIntoPort(netIF);
 
 
         // everything is successful

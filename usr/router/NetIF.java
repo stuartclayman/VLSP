@@ -51,9 +51,6 @@ public interface NetIF {
      */
     public Address getAddress();
 
-    /** Setter function for remoteclose*/
-    public void setRemoteClose(boolean rc);
-
     /**
      * Set the Address for this connection.
      */
@@ -70,6 +67,15 @@ public interface NetIF {
      */
     public NetIF setRemoteRouterName(String name);
 
+    /**
+     * Get the Address  of the remote router this NetIF is connected to
+     */
+    public Address getRemoteRouterAddress();
+
+    /**
+     * Set the Address  of the remote router this NetIF is connected to.
+     */
+    public NetIF setRemoteRouterAddress(Address addr);
 
     /**
      * Get the interface stats.
@@ -118,6 +124,9 @@ public interface NetIF {
      */
     public NetIF setNetIFListener(NetIFListener l);
     
+    /** Setter function for remoteclose*/
+    public void setRemoteClose(boolean rc);
+
     /** Remote close received */
     public void remoteClose();
     

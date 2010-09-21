@@ -63,8 +63,15 @@ public class GIDAddress implements Address {
         throw new UnsupportedOperationException("GIDAddress: does not support InetAddress");
     }
 
-    public boolean equals(Address addr) {
-        return addr.toString().equals(toString());
+    /**
+     * Equals
+     */
+    public boolean equals(Object addr) {
+        if (addr instanceof Address) {
+            return addr.toString().equals(toString());
+        } else {
+            return false;
+        }
     }
 
     /**

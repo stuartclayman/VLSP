@@ -56,6 +56,17 @@ public class SetAddressCommand extends RouterCommand {
                 } catch (UnknownHostException uhe) {
                     error(getName() + " UnknownHostException " + addr);
                 }
+
+            } else if (type.toUpperCase().equals("GID")) {
+                Scanner addrScan = new Scanner(addr);
+
+                if (addrScan.hasNextInt()) {
+                    int gid = addrScan.nextInt();
+                    address = new GIDAddress(gid);
+                } else {
+                    error(getName() + " Illegal GID address " + addr);
+                }
+
             } else {
                 error(getName() + " unknown address type " + type);
             }

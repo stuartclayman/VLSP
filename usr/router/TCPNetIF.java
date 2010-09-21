@@ -22,7 +22,7 @@ public class TCPNetIF implements NetIF , Runnable {
     // The connection
     ConnectionOverTCP connection;
 
-    // The name
+    // The name of this 
     String name;
 
     // The weight
@@ -31,8 +31,14 @@ public class TCPNetIF implements NetIF , Runnable {
     // int ID
     int id;
 
+    // Address at this end
+    Address address;
+
     // Remote router name
-    String routerName;
+    String remoteRouterName;
+
+    // Remote Router Address
+    Address remoteRouterAddress;
 
     // The Listener
     NetIFListener listener;
@@ -148,7 +154,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * Get the Address for this connection.
      */
     public Address getAddress() {
-        return connection.getAddress();
+        return address; // WAS connection.getAddress();
     }
 
     
@@ -156,6 +162,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * Set the Address for this connection.
      */
     public NetIF setAddress(Address addr) {
+        address = addr;
         connection.setAddress(addr);
         return this;
     }
@@ -165,7 +172,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * Get the name of the remote router this NetIF is connected to.
      */
     public String getRemoteRouterName() {
-        return routerName;
+        return remoteRouterName;
     }
 
 
@@ -173,9 +180,25 @@ public class TCPNetIF implements NetIF , Runnable {
      * Set the name of the remote router this NetIF is connected to.
      */
     public NetIF setRemoteRouterName(String name) {
-        routerName = name;
+        remoteRouterName = name;
         return this;
     }
+
+    /**
+     * Get the Address  of the remote router this NetIF is connected to
+     */
+    public Address getRemoteRouterAddress() {
+        return remoteRouterAddress;
+    }
+
+    /**
+     * Set the Address  of the remote router this NetIF is connected to.
+     */
+    public NetIF setRemoteRouterAddress(Address addr) {
+        remoteRouterAddress = addr;
+        return this;
+    }
+
 
     /**
      * Get the socket.
