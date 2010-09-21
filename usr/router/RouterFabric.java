@@ -40,14 +40,6 @@ public interface RouterFabric {
      */
     public void closePorts();
 
-
-    /** Set an address from a global ID number */
-    public void setAddress(int a);
-    
-    
-    /** Get the address */
-    public Address getAddress();
-
     /**
      * Close port.
      */

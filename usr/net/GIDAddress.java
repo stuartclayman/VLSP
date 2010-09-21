@@ -19,6 +19,7 @@ public class GIDAddress implements Address {
      */
     public GIDAddress(int addr) {
         globalAddress = addr;
+        System.out.println("SET GLOBAL ADDRESS "+addr);
 
          // convert int to byte[] 
         ByteBuffer buf = ByteBuffer.wrap(bytes);

@@ -289,16 +289,6 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
     
     
-    public synchronized void setAddress(int id) {
-        
-        address_= new GIDAddress(id);
-        table_.addMyAddress(address_);
-    }
-    
-    public synchronized Address getAddress() {
-        return address_;
-    }
-    
     /**
      * Return the routing table 
      */

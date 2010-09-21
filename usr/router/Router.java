@@ -225,17 +225,7 @@ public class Router {
         }
 
     }
-    
-    /** Set the router address */
-    
-    boolean setAddress(int id) 
-    {
-        if (controller.canSetAddress()) {
-           fabric.setAddress(id);
-           return true;
-        }
-        return false;
-    }
+
     
     /** Remove a network interface from the router */
     public void removeNetIF(NetIF n) {

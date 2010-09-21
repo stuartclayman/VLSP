@@ -81,6 +81,7 @@ public class RouterController implements ComponentController, Runnable {
 
         name = "Router-" + mPort + "-" + r2rPort;
         globalID = name.hashCode();
+        
 
         this.managementConsolePort = mPort;
 
@@ -130,26 +131,25 @@ public class RouterController implements ComponentController, Runnable {
 
     /**
      * Set the global ID of this RouterController.
-     * This can only be done once and must be done
-     * before the Router has started to
+     * This can only be done before the Router has started to
      * communicate with other elements.
      * @return false if the ID cannot be set
      */
     public boolean setGlobalID(int id) {
-        if (canSetAddress()) {
-            addressSet_= true;
-            router.setAddress(id);
+        if (connectionCount == 0) {
+            this.globalID = id;
             return true;
         } else {
             return false;
         }
     }
 
+
     /** The address for the router can be set only if it has
     not been set before and the router has no connections*/
     public boolean canSetAddress() {
         if (addressSet_ == true)
-            return false;
+             return false;
         if (connectionCount > 0)
             return false;
         return true;
