@@ -53,7 +53,7 @@ public class RouterController implements ComponentController, Runnable {
     String name;
 
     // My Global ID
-    int globalID;
+    int globalID= 0;
 
     // the no of connections
     int connectionCount;
@@ -81,6 +81,7 @@ public class RouterController implements ComponentController, Runnable {
 
         name = "Router-" + mPort + "-" + r2rPort;
         globalID = name.hashCode();
+        System.err.println("GID set initially "+globalID);
         
 
         this.managementConsolePort = mPort;
@@ -299,11 +300,7 @@ public class RouterController implements ComponentController, Runnable {
 
     }
 
-    /** Send a routing table via the specified NetIF. */
-    public void sendRoutingTable(NetIF netIF) {
-        router.sendRoutingTable(netIF);
-    }
-
+   
     /** Return a routing table as a string */
     public RoutingTable getRoutingTable() {
         return router.getRoutingTable();
@@ -366,7 +363,18 @@ public class RouterController implements ComponentController, Runnable {
             }
         }
     }
+    
+    /** Try to ping router with a given id */
+    public boolean ping(int id){
+        return router.ping(id);
+    }
 
+
+    /** Try to echo to a router with a given id */
+    public boolean echo(int id){
+        return router.echo(id);
+    }
+    
     /**
      * Get port N.
      */

@@ -13,8 +13,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     // The Router this is fabric for
     Router router;
 
-    // Address for router
-    Address address_= null;
+ 
 
     // The RoutingTable
     SimpleRoutingTable table_= null;
@@ -126,13 +125,29 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         System.out.println(leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
 
-        // add this to the RoutingTable
-        table_.addNetIF(netIF);
-
+        
         // tell the NetIF, this is its listener
         netIF.setNetIFListener(this);
-
+        
+        // add this to the RoutingTable
+        if (table_.addNetIF(netIF)) {
+            sendToOtherInterfaces(netIF);
+        }
         return rp;
+    }
+    
+    void sendToOtherInterfaces(NetIF inter) 
+      
+    {
+        List <NetIF> l= listNetIF();
+        if (listNetIF() == null) 
+            return;
+        for (NetIF i: listNetIF()) {
+            if (! i.equals(inter)) {
+                System.out.println(leadin()+"Sending routes to other interface "+i);
+                i.sendRoutingTable(table_.toString(),false);
+            }
+        }
     }
 
     /**
@@ -206,40 +221,117 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public synchronized boolean datagramArrived(NetIF netIF) {
         Datagram datagram= netIF.readDatagram();
-        
+        if (datagram == null)
+            return false;
+        //System.err.println("GOT DATAGRAM");
+        if (ourAddress(datagram.getDstAddress())) {
+            //System.err.println("OUR DATAGRAM");
+            receiveDatagram(datagram,netIF);
+        } else {
+            //System.err.println("FORWARDING DATAGRAM");
+            forwardDatagram(datagram);
+        }
+        return true;
+    }
+    
+    /** Is this datagram for us */
+    public boolean ourAddress(Address addr)
+    {
+        if (addr == null )
+            return true;
+        if (addr.equals(router.getAddress()))
+            return true;
+        for (NetIF n: listNetIF()) {
+           if (addr.equals(n.getAddress()))
+               return true;
+        }
+        return false;
+    }
+    
+    /** Datagram which has arrived is ours */
+    synchronized void  receiveDatagram(Datagram datagram, NetIF netIF) {
         // TODO check if datagram belongs here or must be forwarded 
         if (datagram.getProtocol() == Protocol.CONTROL) {
             processControlDatagram(datagram, netIF);
         } else {
             processDatagram(datagram, netIF);
         }
-        return true;
     }
 
-    void processDatagram(Datagram dg, NetIF netIF) {
+    /** Forward a datagram */
+    synchronized void forwardDatagram(Datagram dg)
+    {
+        Address addr= dg.getDstAddress();
+        System.out.println(leadin() + " datagram forwarding datagram to "+addr);
+        NetIF inter= table_.getInterface(addr);
+        if (inter == null) {  // Routing table returns no interface
+            System.out.println(leadin() + " no interface found on routing table "+addr);
+            if (ourAddress(addr)) {
+                receiveDatagram(dg, null);
+            }
+            
+        } else {
+            inter.sendDatagram(dg);
+        }
+    }
     
+    synchronized  void  processDatagram(Datagram dg, NetIF netIF) {
+        System.err.println("GOT ORDINARY DATAGRAM");
+        return;
     }
 
      /**
      * Process a control datagram
      */
-    void processControlDatagram(Datagram dg,NetIF netIF) {
-        // System.out.println("TCPNetIF: <- Control Datagram " + dg);
-
+    synchronized boolean  processControlDatagram(Datagram dg,NetIF netIF) {
+        System.out.println("TCPNetIF: <- Control Datagram " + dg);
+        // System.err.println("GOT CONTROL DATAGRAM");
         byte[] payload = dg.getPayload();
-        if (payload.length == 0)
-            return;
+        if (payload.length == 0) {
+            System.err.println("GOT LENGTH ZERO DATAGRAM");
+            return true;
+        }
         byte controlChar= payload[0];
+        System.out.println("TCPNetIF: <- Control Datagram type "+
+          (char)controlChar + " data "+ dg);
         //System.err.println("RECEIVED DATAGRAM CONTROL TYPE "+(char)controlChar);
         String data= new String(payload,1,payload.length-1);
         if (controlChar == 'C') {
             netIF.setRemoteClose(true);
             netIF.remoteClose();
+            return true;
         }
         if (controlChar == 'T') {
             receiveRoutingTable(data,netIF);
+            return true;
         }
+        if (controlChar == 'R') {
+            receiveRoutingTable(data,netIF);
+            netIF.sendRoutingTable(table_.toString(),false);
+            return true;
+        }
+        if (controlChar == 'E') {
+            System.out.println(leadin()+ "Received echo");
+            return true;
+        }
+        if (controlChar == 'P') {
+            System.out.println(leadin()+ "Received ping");
+            return pingResponse(dg);
+        }
+        System.err.println(leadin()+ "Received unknown control packet type "+
+          (char)controlChar);
+        return false;
 
+    }
+
+    /** Respond to a ping with an echo */
+    boolean pingResponse(Datagram dg)
+    {
+       
+        GIDAddress dst= (GIDAddress)dg.getSrcAddress();
+        System.out.println(leadin()+"Responding to ping with echo to "+dst);
+        int id= dst.getGlobalID();
+        return echo(id);
     }
 
 
@@ -247,8 +339,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     {
       
         SimpleRoutingTable t= new SimpleRoutingTable(tab,netIF);
-       // System.err.println("MERGING RECEIVED TABLES");
-        table_.mergeTables(t,netIF);
+        System.out.println(leadin()+ " merging routing table received on "+netIF);
+        if (table_.mergeTables(t,netIF)) {
+            sendToOtherInterfaces(netIF);
+        }
     }
 
 
@@ -375,6 +469,30 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
 
         return limit;
+    }
+    
+    public boolean ping (int id) {
+        GIDAddress dst= new GIDAddress(id);   
+        GIDAddress src= router.getAddress();
+        ByteBuffer buffer = ByteBuffer.allocate(1);
+        buffer.put("P".getBytes());
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+        datagram.setSrcAddress(src);
+        datagram.setDstAddress(dst);
+        forwardDatagram(datagram);
+        return true;
+    }
+    
+    public boolean echo (int id) {
+        GIDAddress dst= new GIDAddress(id);
+        GIDAddress src= router.getAddress();
+        ByteBuffer buffer = ByteBuffer.allocate(1);
+        buffer.put("E".getBytes());
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+        datagram.setSrcAddress(src);
+        datagram.setDstAddress(dst);
+        forwardDatagram(datagram);
+        return true;
     }
 
     /**

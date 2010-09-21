@@ -58,4 +58,10 @@ public interface RouterFabric {
     /** List Routing table */
     
     public RoutingTable getRoutingTable();
+    
+    /** Ping a given id -- expect a response */
+    public boolean ping(int id);
+    
+    /** Echo -- send datagram to id */
+    public boolean echo(int id);
 }

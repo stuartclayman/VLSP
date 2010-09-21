@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.nio.ByteBuffer;
 import java.io.*;
+import usr.net.GIDAddress;
 /**
  * A Router within UserSpaceRouting.
  */
@@ -79,6 +80,9 @@ public class Router {
         setName(name);
     }
 
+    public GIDAddress getAddress() {
+        return new GIDAddress(controller.getGlobalID());
+    }
 
     /**
      * Start the router
@@ -149,6 +153,17 @@ public class Router {
      */
     public RouterPort plugInNetIF(NetIF netIF) {
         return fabric.addNetIF(netIF);
+    }
+
+        /** Try to ping router with a given id */
+    public boolean ping(int id){
+        return fabric.ping(id);
+    }
+
+
+    /** Try to echo to a router with a given id */
+    public boolean echo(int id){
+        return fabric.echo(id);
     }
 
     /**
@@ -250,24 +265,7 @@ public class Router {
     public List<NetIF> listNetIF() {
         return fabric.listNetIF();
     }
-    
-    /** Send a routing table down an interface */
-    public void sendRoutingTable(NetIF netif) 
-    {
-        RoutingTable tab= getRoutingTable();
-        if (tab == null)
-            return;
-        String str= tab.toString();
-        if (str == null)
-            return;
-        //System.err.println(leadin()+"STRING"+str);
-        byte []b = str.getBytes();
-        //System.err.println(leadin()+"SENDING"+b);
-        Datagram dg= DatagramFactory.newDatagram(Protocol.DATA, ByteBuffer.wrap(b));
-        netif.sendDatagram(dg);
-        //System.err.println(leadin()+" sent datagram");   
-    }
-    
+   
     /** Read a file containing router options */
     
     public boolean readOptionsFile(String fName)

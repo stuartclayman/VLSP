@@ -158,6 +158,8 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      */
     public Address getDstAddress() {
         // get 4 bytes for address
+        if (dstAddr == null)
+            return null;
         byte[] address = new byte[4];
         fullDatagram.position(14);
         fullDatagram.get(address, 0, 4);
