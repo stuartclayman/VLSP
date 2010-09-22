@@ -81,7 +81,7 @@ public class RouterController implements ComponentController, Runnable {
 
         name = "Router-" + mPort + "-" + r2rPort;
         globalID = name.hashCode();
-        System.err.println("GID set initially "+globalID);
+        System.out.println("GID set initially "+globalID);
         
 
         this.managementConsolePort = mPort;
@@ -350,12 +350,12 @@ public class RouterController implements ComponentController, Runnable {
     public void pingNeighbours() 
     {
         byte []b= new byte[1];
-        System.err.println("Pinging");
+        //System.err.println("Pinging");
         Datagram dg= DatagramFactory.newDatagram(Protocol.DATA, ByteBuffer.wrap(b));
         List<NetIF> nif= router.listNetIF();
         if (nif == null)
             return;
-        System.err.println("COLLECTION IS  "+nif);
+        //System.err.println("COLLECTION IS  "+nif);
         for (NetIF n : nif) {
             
             if (n.sendDatagram(dg) == true) {
