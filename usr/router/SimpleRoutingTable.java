@@ -100,7 +100,7 @@ public class SimpleRoutingTable implements RoutingTable {
                     // If interface can no longer reach address remove it
                     if (e2 == null) {
                         toRemove.add(addrStr);  // flag removal and do later
-                        System.err.println ("REMOVE");
+                        //System.err.println ("REMOVE");
                         changed= true;
                         continue;
                     }
@@ -108,7 +108,7 @@ public class SimpleRoutingTable implements RoutingTable {
                     int receivedCost= e2.getCost()+inter.getWeight();
                     if (receivedCost > e.getCost()) {
                         e.setCost(receivedCost);
-                        System.err.println("COST CHANGE");
+                        //System.err.println("COST CHANGE");
                         changed= true;
                     }
                 }
@@ -155,14 +155,14 @@ public class SimpleRoutingTable implements RoutingTable {
         if (oldEntry == null) {
             SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(addr,newEntry.getCost() +
                weight, inter);
-            System.err.println("NEW ENTRY");
+           // System.err.println("NEW ENTRY");
             table_.put(addr.toString(),e);    
             return true;
         }
         // CASE 2 -- ENTRY EXISTED BUT WAS MORE EXPENSIVE
         int newCost= newEntry.getCost() + weight;
         if (oldEntry.getCost() > newCost) {
-            System.err.println ("CHEAPER ROUTE");
+            //System.err.println ("CHEAPER ROUTE");
             oldEntry.setCost(newCost);
             oldEntry.setNetIF(inter);
             return true;
@@ -170,7 +170,7 @@ public class SimpleRoutingTable implements RoutingTable {
         // CASE 3 -- ENTRY EXISTED WAS ON THIS INTERFACE 
         if (inter != null && inter.equals(oldEntry.getNetIF()) && newCost > oldEntry.getCost()) {
             oldEntry.setCost(newCost);
-            System.err.println ("MORE EXPENSIVE ROUTE BUT SAME INTERFACE");
+            //System.err.println ("MORE EXPENSIVE ROUTE BUT SAME INTERFACE");
             return true;
         }
         return false;
