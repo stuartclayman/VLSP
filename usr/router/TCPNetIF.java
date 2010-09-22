@@ -400,7 +400,7 @@ public class TCPNetIF implements NetIF , Runnable {
                 // EOF
                 running = false;
             } else {
-                System.err.println("TCPNetIF: got a Datagram");
+                //System.err.println("TCPNetIF: got a Datagram");
 
                 queue.add(datagram);
 

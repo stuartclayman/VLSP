@@ -158,7 +158,7 @@ public class ConnectionOverTCP implements Connection {
                     // there is part of a message
                     // copy from current to end of ByteBuffer
                     // to the start of the buffer
-                    int remaining = BUF_SIZE - current;
+                    int remaining = buffer.limit() - current;
                     byte[] spare = new byte[remaining];
 
                     // reposition to start of message

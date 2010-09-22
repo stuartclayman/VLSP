@@ -35,7 +35,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public SimpleRouterFabric(Router router) {
         this.router = router;
-        table_= new SimpleRoutingTable();
+        //table_= new SimpleRoutingTable();
         int limit = 32;
         ports = new ArrayList<RouterPort>(limit);
         for (int p=0; p < limit; p++) {
@@ -130,9 +130,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         netIF.setNetIFListener(this);
         
         // add this to the RoutingTable
-        if (table_.addNetIF(netIF)) {
-            sendToOtherInterfaces(netIF);
-        }
+        //if (table_.addNetIF(netIF)) {
+        //    sendToOtherInterfaces(netIF);
+        //}
         return rp;
     }
     
@@ -160,9 +160,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         if (port != null) {
             // disconnect netIF from port
-            table_.removeNetIF(netIF);
+            
             closePort(port);
             resetPort(port.getPortNo());
+            //table_.removeNetIF(netIF);
             return true;
         } else {
             // didn't find netIF in any RouterPort
@@ -281,6 +282,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     
     synchronized  void  processDatagram(Datagram dg, NetIF netIF) {
         System.err.println("GOT ORDINARY DATAGRAM");
+        
         return;
     }
 

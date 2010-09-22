@@ -246,8 +246,10 @@ public class Router {
     {
        
         byte []b= new byte[1];
+        b[0]='P';
         //System.err.println("Pinging");
-        Datagram dg= DatagramFactory.newDatagram(Protocol.DATA, ByteBuffer.wrap(b));
+        Datagram dg= DatagramFactory.newDatagram(Protocol.CONTROL, 
+            ByteBuffer.wrap(b));
         List<NetIF> nif= listNetIF();
         if (nif == null)
             return;

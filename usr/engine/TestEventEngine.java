@@ -29,13 +29,13 @@ public class TestEventEngine implements EventEngine {
         int mr= 25;
         for (int i= 0; i < mr; i++) {
             SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER, 
-                                      10,
+                                      2,
                                       null);
             s.addEvent(e2);
         }
         for (int i= 0; i < mr-1; i++) {
             SimEvent e2= new SimEvent(SimEvent.EVENT_START_LINK, 
-                                      12,
+                                      3,
                                       new Pair<Integer,Integer>(i+1,i+2));
             s.addEvent(e2);
         }
