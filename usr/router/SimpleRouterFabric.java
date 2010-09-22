@@ -136,7 +136,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         return rp;
     }
     
-    void sendToOtherInterfaces(NetIF inter) 
+    /** Send routing table to all other interfaces apart from inter*/
+    synchronized void sendToOtherInterfaces(NetIF inter) 
       
     {
         List <NetIF> l= listNetIF();
@@ -235,7 +236,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
     
     /** Is this datagram for us */
-    public boolean ourAddress(Address addr)
+    public synchronized boolean ourAddress(Address addr)
     {
         if (addr == null )
             return true;
@@ -325,7 +326,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
 
     /** Respond to a ping with an echo */
-    boolean pingResponse(Datagram dg)
+    synchronized boolean pingResponse(Datagram dg)
     {
        
         GIDAddress dst= (GIDAddress)dg.getSrcAddress();
@@ -334,11 +335,18 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         return echo(id);
     }
 
-
-    void receiveRoutingTable(String tab, NetIF netIF)
-    {
-      
-        SimpleRoutingTable t= new SimpleRoutingTable(tab,netIF);
+    /** Routing table received via netIF */
+    synchronized void receiveRoutingTable(String tab, NetIF netIF)
+    {   
+        SimpleRoutingTable t;
+        try {
+            t= new SimpleRoutingTable(tab,netIF);
+        } catch (Exception e) {
+            System.err.println(leadin()+"Received unreadable routing table");
+            System.err.println(leadin()+tab);
+            System.err.println(e.getMessage());
+            return;
+        }
         System.out.println(leadin()+ " merging routing table received on "+netIF);
         if (table_.mergeTables(t,netIF)) {
             sendToOtherInterfaces(netIF);
@@ -471,7 +479,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         return limit;
     }
     
-    public boolean ping (int id) {
+    /** Ping command received */
+    public synchronized boolean ping (int id) {
         GIDAddress dst= new GIDAddress(id);   
         GIDAddress src= router.getAddress();
         ByteBuffer buffer = ByteBuffer.allocate(1);
@@ -483,7 +492,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         return true;
     }
     
-    public boolean echo (int id) {
+    /** Echo command received */
+    public synchronized boolean echo (int id) {
         GIDAddress dst= new GIDAddress(id);
         GIDAddress src= router.getAddress();
         ByteBuffer buffer = ByteBuffer.allocate(1);

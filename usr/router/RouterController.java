@@ -81,7 +81,7 @@ public class RouterController implements ComponentController, Runnable {
 
         name = "Router-" + mPort + "-" + r2rPort;
         globalID = name.hashCode();
-        System.out.println("GID set initially "+globalID);
+        System.out.println(leadin()+" GID set initially "+globalID);
         
 
         this.managementConsolePort = mPort;

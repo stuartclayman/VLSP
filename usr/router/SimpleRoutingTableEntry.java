@@ -16,35 +16,40 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         inter_= inter;
     }
     
-    SimpleRoutingTableEntry(String tableEntry, RouterFabric fabric) {
+    SimpleRoutingTableEntry(String tableEntry, RouterFabric fabric) 
+      throws Exception
+{
         String []args= tableEntry.split(" ");
         if (args.length != 2 && args.length != 3) {
-            System.err.println("Attempt to construct routing table entry "+
+            throw new Exception
+             ("Attempt to construct routing table entry "+
              "from incorrect string" + tableEntry);
-            System.exit(-1);
         }
         try {
             int gid= Integer.parseInt(args[0]);
             address_= new GIDAddress(gid); 
             cost_= Integer.parseInt(args[1]);
-            System.err.println("READ GID "+gid+" cost "+cost_);
+            //System.err.println("READ GID "+gid+" cost "+cost_);
             if (args.length == 2) {
                inter_= null; 
             } else {
                inter_= fabric.findNetIF(args[2]);
             }
         } catch (Exception e) {
-            System.err.println("Cannot parse" + tableEntry);
-            return;
+            throw new Exception
+             ("Cannot parse routing table entry "+
+             "from incorrect string" + tableEntry);
         }
     }
     
-     SimpleRoutingTableEntry(String tableEntry, NetIF inter) {
+     SimpleRoutingTableEntry(String tableEntry, NetIF inter) throws 
+        Exception
+{
         String []args= tableEntry.split(" ");
         if (args.length != 3 && args.length != 2) {
-            System.err.println("Attempt to construct routing table entry "+
+            throw new Exception
+             ("Attempt to construct routing table entry "+
              "from incorrect string" + tableEntry);
-            System.exit(-1);
         }
         
         try {
@@ -54,8 +59,8 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
             inter_= inter;
            // System.err.println("READ GID "+gid+" cost "+cost_);
         } catch (Exception e) {
-            System.err.println("Cannot parse" + tableEntry);
-            return;
+            throw new Exception  ("Cannot parse routing table entry "+
+             "from incorrect string" + tableEntry);
         }
     }
     

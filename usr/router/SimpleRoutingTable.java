@@ -20,14 +20,20 @@ public class SimpleRoutingTable implements RoutingTable {
     /** Construct a new routing table with the assumption that
     everything on it comes down a given interface */
     SimpleRoutingTable(String table, NetIF netif)
+        throws Exception
     {
         table_= new HashMap<String,SimpleRoutingTableEntry>();
         String []entries= table.split("\n");
         SimpleRoutingTableEntry e;
         for (String s: entries) {
-            e= new SimpleRoutingTableEntry(s, netif);
-            Address a= e.getAddress();
-            table_.put(a.toString(), e);
+            try {
+                e= new SimpleRoutingTableEntry(s, netif);
+                Address a= e.getAddress();
+                table_.put(a.toString(), e);
+            } catch (Exception ex) {
+                throw ex;
+            }
+            
         }
     }
 
@@ -80,6 +86,33 @@ public class SimpleRoutingTable implements RoutingTable {
         Collection <SimpleRoutingTableEntry> es= table2.getEntries();
         if (es == null)
             return false;
+        // Check if this table is telling us to remove entries
+        if (inter != null) {
+            for (SimpleRoutingTableEntry e: getEntries()) {
+                // If this entry is on the same interface we are getting
+                // info from but route is longer or no entry then assume
+                // we need updating
+                if (inter.equals(e.getNetIF())) {
+                    Address a= e.getAddress();
+                    String addrStr= a.toString();
+                    SimpleRoutingTableEntry e2= table2.getEntry(addrStr);
+                    // If interface can no longer reach address remove it
+                    if (e2 == null) {
+                        table_.remove(addrStr);
+                        changed= true;
+                        continue;
+                    }
+                    // If cost has become higher add higher cost
+                    int receivedCost= e2.getCost()+inter.getWeight();
+                    if (receivedCost > e.getCost()) {
+                        SimpleRoutingTableEntry e3= new SimpleRoutingTableEntry(a,receivedCost,inter);
+                        table_.put(addrStr,e3);
+                        changed= true;
+                    }
+                }
+            }
+        }
+        // Add new entries as appropriate
         for (SimpleRoutingTableEntry e: table2.getEntries()) {
             if (mergeEntry(e, inter)) {
                 changed= true;
@@ -87,6 +120,11 @@ public class SimpleRoutingTable implements RoutingTable {
         }
         return changed;
     }
+    
+    /** Get an entry from the table */
+    SimpleRoutingTableEntry getEntry(String a) {
+        return table_.get(a);
+    } 
     
     /**
      * Merge an entry in this RoutingTable returns true if there has been
@@ -137,10 +175,18 @@ public class SimpleRoutingTable implements RoutingTable {
        return a.equals(b);
     }
     
-    /** Removes a network interface from a router */
+    /** Removes a network interface from a router returns true if 
+    routing table has changed*/
     public synchronized  boolean removeNetIF(NetIF netif) {
-        System.err.println("to write removeNetIF");
-        return false;
+        boolean changed= false;
+        for (SimpleRoutingTableEntry e: getEntries()) {
+            if (netif.equals(e.getNetIF())) {
+                String addr= e.getAddress().toString();
+                table_.remove(addr); 
+                changed= true;
+            }
+        }
+        return changed;
     }
     
     /**

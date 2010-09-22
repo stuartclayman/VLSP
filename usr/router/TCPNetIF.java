@@ -230,7 +230,9 @@ public class TCPNetIF implements NetIF , Runnable {
     }
 
     public boolean equals(NetIF b) 
-    {
+    { 
+        if (b == null)
+            return false;
         return getName().equals(b.getName());
     }
 
