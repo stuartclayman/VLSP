@@ -219,6 +219,11 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     public NetIF setNetIFListener(NetIFListener l) {
         listener = l;
+
+        // there is already something
+        if (queue.size() > 0) {
+            listener.datagramArrived(this);
+        }
         return this;
     }
 
@@ -395,11 +400,16 @@ public class TCPNetIF implements NetIF , Runnable {
                 // EOF
                 running = false;
             } else {
+                System.err.println("TCPNetIF: got a Datagram");
+
                 queue.add(datagram);
 
                     // inform the listener
                 if (listener != null) {
+                    //System.err.println("TCPNetIF: informed listener");
                     listener.datagramArrived(this);
+                } else {
+                    //System.err.println("TCPNetIF: NO listener");
                 }
             }
         }

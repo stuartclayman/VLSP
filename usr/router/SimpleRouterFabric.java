@@ -226,6 +226,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         if (datagram == null)
             return false;
         //System.err.println("GOT DATAGRAM");
+
         if (ourAddress(datagram.getDstAddress())) {
             //System.err.println("OUR DATAGRAM");
             receiveDatagram(datagram,netIF);
@@ -299,6 +300,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
           (char)controlChar + " data "+ dg);
         //System.err.println("RECEIVED DATAGRAM CONTROL TYPE "+(char)controlChar);
         String data= new String(payload,1,payload.length-1);
+
         if (controlChar == 'C') {
             netIF.setRemoteClose(true);
             netIF.remoteClose();
@@ -310,7 +312,14 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
         if (controlChar == 'R') {
             receiveRoutingTable(data,netIF);
-            netIF.sendRoutingTable(table_.toString(),false);
+            /*boolean sent = netIF.sendRoutingTable(table_.toString(),false);
+            
+            if (sent) {
+                System.out.println(leadin() + "Send routing table SUCCESS");
+            } else {
+                System.out.println(leadin() + "Send routing table FAILED");
+            }
+            */
             return true;
         }
         if (controlChar == 'E') {
@@ -323,6 +332,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
         System.err.println(leadin()+ "Received unknown control packet type "+
           (char)controlChar);
+
         return false;
 
     }
@@ -340,6 +350,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /** Routing table received via netIF */
     synchronized void receiveRoutingTable(String tab, NetIF netIF)
     {   
+
+        System.out.println(leadin()+"Received routing table");
+
         SimpleRoutingTable t;
         try {
             t= new SimpleRoutingTable(tab,netIF);
