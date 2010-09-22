@@ -160,6 +160,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         if (port != null) {
             // disconnect netIF from port
+            table_.removeNetIF(netIF);
             closePort(port);
             resetPort(port.getPortNo());
             return true;
@@ -263,15 +264,16 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     synchronized void forwardDatagram(Datagram dg)
     {
         Address addr= dg.getDstAddress();
-        System.out.println(leadin() + " datagram forwarding datagram to "+addr);
+        
         NetIF inter= table_.getInterface(addr);
         if (inter == null) {  // Routing table returns no interface
-            System.out.println(leadin() + " no interface found on routing table "+addr);
+            
             if (ourAddress(addr)) {
                 receiveDatagram(dg, null);
             }
-            
+            System.out.println(leadin() + " no route to "+addr);
         } else {
+            System.out.println(leadin() + " datagram forwarding datagram to "+addr);
             inter.sendDatagram(dg);
         }
     }

@@ -179,7 +179,9 @@ public class SimpleRoutingTable implements RoutingTable {
     routing table has changed*/
     public synchronized  boolean removeNetIF(NetIF netif) {
         boolean changed= false;
+        //System.err.println("REMOVE NET IF CALLED");
         for (SimpleRoutingTableEntry e: getEntries()) {
+            //System.err.println("TRYING TO REMOVE "+e.getAddress());
             if (netif.equals(e.getNetIF())) {
                 String addr= e.getAddress().toString();
                 table_.remove(addr); 
