@@ -241,6 +241,24 @@ public class Router {
 
     }
 
+
+     public void pingNeighbours() 
+    {
+       
+        byte []b= new byte[1];
+        //System.err.println("Pinging");
+        Datagram dg= DatagramFactory.newDatagram(Protocol.DATA, ByteBuffer.wrap(b));
+        List<NetIF> nif= listNetIF();
+        if (nif == null)
+            return;
+        //System.err.println("COLLECTION IS  "+nif);
+        for (NetIF n : nif) {
+            
+            if (n.sendDatagram(dg) == true) {
+                System.err.println("Ping sent");
+            }
+        }
+    }
     
     /** Remove a network interface from the router */
     public void removeNetIF(NetIF n) {

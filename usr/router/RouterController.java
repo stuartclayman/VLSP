@@ -349,19 +349,8 @@ public class RouterController implements ComponentController, Runnable {
     
     public void pingNeighbours() 
     {
-        byte []b= new byte[1];
-        //System.err.println("Pinging");
-        Datagram dg= DatagramFactory.newDatagram(Protocol.DATA, ByteBuffer.wrap(b));
-        List<NetIF> nif= router.listNetIF();
-        if (nif == null)
-            return;
-        //System.err.println("COLLECTION IS  "+nif);
-        for (NetIF n : nif) {
-            
-            if (n.sendDatagram(dg) == true) {
-                System.err.println("Ping sent");
-            }
-        }
+        router.pingNeighbours();
+        
     }
     
     /** Try to ping router with a given id */

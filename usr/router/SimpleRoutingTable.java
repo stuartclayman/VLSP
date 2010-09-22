@@ -73,7 +73,7 @@ public class SimpleRoutingTable implements RoutingTable {
         int weight= inter.getWeight();
         SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(newif, 0, null);
         boolean changed= mergeEntry(e, null); // Add local entry
-        inter.sendRoutingTable(toString(),true);
+        inter.sendRoutingTable(toString(),false);
         return changed;
     }
     
@@ -86,6 +86,7 @@ public class SimpleRoutingTable implements RoutingTable {
         Collection <SimpleRoutingTableEntry> es= table2.getEntries();
         if (es == null)
             return false;
+        ArrayList <String> toRemove= new ArrayList <String>();
         // Check if this table is telling us to remove entries
         if (inter != null) {
             for (SimpleRoutingTableEntry e: getEntries()) {
@@ -98,7 +99,7 @@ public class SimpleRoutingTable implements RoutingTable {
                     SimpleRoutingTableEntry e2= table2.getEntry(addrStr);
                     // If interface can no longer reach address remove it
                     if (e2 == null) {
-                        table_.remove(addrStr);
+                        toRemove.add(addrStr);  // flag removal and do later
                         changed= true;
                         continue;
                     }
@@ -110,6 +111,10 @@ public class SimpleRoutingTable implements RoutingTable {
                         changed= true;
                     }
                 }
+            }
+            // 
+            for (String a: toRemove) {
+                table_.remove(a);
             }
         }
         // Add new entries as appropriate
@@ -180,13 +185,18 @@ public class SimpleRoutingTable implements RoutingTable {
     public synchronized  boolean removeNetIF(NetIF netif) {
         boolean changed= false;
         //System.err.println("REMOVE NET IF CALLED");
+        ArrayList <String> toRemove= new ArrayList <String>();
         for (SimpleRoutingTableEntry e: getEntries()) {
             //System.err.println("TRYING TO REMOVE "+e.getAddress());
             if (netif.equals(e.getNetIF())) {
                 String addr= e.getAddress().toString();
-                table_.remove(addr); 
+                toRemove.add(addr);// Flag removal and do it later
                 changed= true;
             }
+        }
+        
+        for (String a: toRemove) {
+            table_.remove(a);
         }
         return changed;
     }

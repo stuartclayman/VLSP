@@ -288,7 +288,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Process a control datagram
      */
     synchronized boolean  processControlDatagram(Datagram dg,NetIF netIF) {
-        System.out.println("TCPNetIF: <- Control Datagram " + dg);
+        System.out.println(leadin()+"TCPNetIF: <- Control Datagram " + dg);
         // System.err.println("GOT CONTROL DATAGRAM");
         byte[] payload = dg.getPayload();
         if (payload.length == 0) {
@@ -296,7 +296,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             return true;
         }
         byte controlChar= payload[0];
-        System.out.println("TCPNetIF: <- Control Datagram type "+
+        System.out.println(leadin()+"TCPNetIF: <- Control Datagram type "+
           (char)controlChar + " data "+ dg);
         //System.err.println("RECEIVED DATAGRAM CONTROL TYPE "+(char)controlChar);
         String data= new String(payload,1,payload.length-1);
@@ -312,14 +312,13 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
         if (controlChar == 'R') {
             receiveRoutingTable(data,netIF);
-            /*boolean sent = netIF.sendRoutingTable(table_.toString(),false);
+            boolean sent = netIF.sendRoutingTable(table_.toString(),false);
             
             if (sent) {
                 System.out.println(leadin() + "Send routing table SUCCESS");
             } else {
                 System.out.println(leadin() + "Send routing table FAILED");
             }
-            */
             return true;
         }
         if (controlChar == 'E') {
