@@ -50,6 +50,12 @@ public class Router {
         fabric = new SimpleRouterFabric(this);
         options_= new RouterOptions(this);
         setName(name);
+        try {
+          int gid= Integer.parseInt(name);
+          controller.setGlobalID(gid);
+        } catch (Exception e) {
+        
+        }
     }
 
     /**
@@ -78,6 +84,12 @@ public class Router {
         fabric = new SimpleRouterFabric(this);
         options_= new RouterOptions(this);
         setName(name);
+        try {
+          int gid= Integer.parseInt(name);
+          controller.setGlobalID(gid);
+        } catch (Exception e) {
+        
+        }
     }
 
     public GIDAddress getAddress() {
@@ -229,7 +241,9 @@ public class Router {
             String name = args[2];
 
             router = new Router(mPort, r2rPort, name);
-        } else {
+        } 
+        
+        else {
             help();
         }
 

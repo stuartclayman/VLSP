@@ -35,7 +35,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public SimpleRouterFabric(Router router) {
         this.router = router;
-        //table_= new SimpleRoutingTable();
+        table_= new SimpleRoutingTable();
         int limit = 32;
         ports = new ArrayList<RouterPort>(limit);
         for (int p=0; p < limit; p++) {
@@ -130,14 +130,14 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         netIF.setNetIFListener(this);
         
         // add this to the RoutingTable
-        //if (table_.addNetIF(netIF)) {
-        //    sendToOtherInterfaces(netIF);
-        //}
+        if (table_.addNetIF(netIF)) {
+            sendToOtherInterfaces(netIF, false);
+        }
         return rp;
     }
     
     /** Send routing table to all other interfaces apart from inter*/
-    synchronized void sendToOtherInterfaces(NetIF inter) 
+    synchronized void sendToOtherInterfaces(NetIF inter, boolean reqResponse) 
       
     {
         List <NetIF> l= listNetIF();
@@ -146,7 +146,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         for (NetIF i: listNetIF()) {
             if (! i.equals(inter)) {
                 System.out.println(leadin()+"Sending routes to other interface "+i);
-                i.sendRoutingTable(table_.toString(),false);
+                i.sendRoutingTable(table_.toString(),reqResponse);
             }
         }
     }
@@ -163,7 +163,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             
             closePort(port);
             resetPort(port.getPortNo());
-            //table_.removeNetIF(netIF);
+            if (table_.removeNetIF(netIF)) {
+                sendToOtherInterfaces(null,false);
+            }
             return true;
         } else {
             // didn't find netIF in any RouterPort
@@ -230,7 +232,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         if (ourAddress(datagram.getDstAddress())) {
             //System.err.println("OUR DATAGRAM");
-            receiveDatagram(datagram,netIF);
+            receiveOurDatagram(datagram,netIF);
         } else {
             //System.err.println("FORWARDING DATAGRAM");
             forwardDatagram(datagram);
@@ -241,20 +243,23 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /** Is this datagram for us */
     public synchronized boolean ourAddress(Address addr)
     {
+        //System.out.println("DATAGRAM WITH NULL ADDRESS");
         if (addr == null )
             return true;
         if (addr.equals(router.getAddress()))
             return true;
-        for (NetIF n: listNetIF()) {
-           if (addr.equals(n.getAddress()))
+        for (NetIF n: listNetIF()) { 
+           if (addr.equals(n.getAddress())) {
+               //System.err.println ("ADDRESS MATCH "+addr+ " OUR INTERFACE "+n.getAddress());
                return true;
+           }
         }
         return false;
     }
     
     /** Datagram which has arrived is ours */
-    synchronized void  receiveDatagram(Datagram datagram, NetIF netIF) {
-        // TODO check if datagram belongs here or must be forwarded 
+    synchronized void  receiveOurDatagram(Datagram datagram, NetIF netIF) {
+         
         if (datagram.getProtocol() == Protocol.CONTROL) {
             processControlDatagram(datagram, netIF);
         } else {
@@ -262,21 +267,42 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
     }
 
-    /** Forward a datagram */
-    synchronized void forwardDatagram(Datagram dg)
+    /** Send a datagram */
+    synchronized void sendDatagram(Datagram dg)
     {
         Address addr= dg.getDstAddress();
-        
+        //System.err.println("Forwarding datagram with source "+dg.getSrcAddress());
         NetIF inter= table_.getInterface(addr);
         if (inter == null) {  // Routing table returns no interface
             
             if (ourAddress(addr)) {
-                receiveDatagram(dg, null);
+                receiveOurDatagram(dg, null);
+                return;
+            }
+            System.out.println(leadin() + " no route to "+addr);
+            // TODO -- THIS MIGHT BE DEALT WITH BETTER
+        } else {
+            //System.out.println(leadin() + " datagram forwarding datagram to "+addr);
+            inter.sendDatagram(dg);
+        }
+    }
+
+    /** Forward a datagram */
+    synchronized void forwardDatagram(Datagram dg)
+    {
+        Address addr= dg.getDstAddress();
+        //System.err.println("Forwarding datagram with source "+dg.getSrcAddress());
+        NetIF inter= table_.getInterface(addr);
+        if (inter == null) {  // Routing table returns no interface
+            
+            if (ourAddress(addr)) {
+                receiveOurDatagram(dg, null);
+                return;
             }
             System.out.println(leadin() + " no route to "+addr);
         } else {
-            System.out.println(leadin() + " datagram forwarding datagram to "+addr);
-            inter.sendDatagram(dg);
+            //System.out.println(leadin() + " datagram forwarding datagram to "+addr);
+            inter.forwardDatagram(dg);
         }
     }
     
@@ -365,7 +391,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
         System.out.println(leadin()+ " merging routing table received on "+netIF);
         if (table_.mergeTables(t,netIF)) {
-            sendToOtherInterfaces(netIF);
+            sendToOtherInterfaces(netIF,false);
         }
     }
 
@@ -502,9 +528,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         ByteBuffer buffer = ByteBuffer.allocate(1);
         buffer.put("P".getBytes());
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
-        datagram.setSrcAddress(src);
         datagram.setDstAddress(dst);
-        forwardDatagram(datagram);
+        sendDatagram(datagram);
+
         return true;
     }
     
@@ -515,9 +541,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         ByteBuffer buffer = ByteBuffer.allocate(1);
         buffer.put("E".getBytes());
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
-        datagram.setSrcAddress(src);
+
         datagram.setDstAddress(dst);
-        forwardDatagram(datagram);
+        sendDatagram(datagram);
         return true;
     }
 

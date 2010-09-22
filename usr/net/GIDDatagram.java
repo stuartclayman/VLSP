@@ -130,7 +130,8 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         byte[] address = new byte[4];
         fullDatagram.position(10);
         fullDatagram.get(address, 0, 4);
-
+        if (emptyAddress(address))
+            return null;
         return new GIDAddress(address);
     }
 
@@ -158,13 +159,23 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      */
     public Address getDstAddress() {
         // get 4 bytes for address
-        if (dstAddr == null)
-            return null;
+        //if (dstAddr == null)
+         //   return null;
         byte[] address = new byte[4];
         fullDatagram.position(14);
         fullDatagram.get(address, 0, 4);
-
+        if (emptyAddress(address))
+            return null;
         return new GIDAddress(address);
+    }
+
+    boolean emptyAddress(byte []address) 
+    {
+       for (int i= 0; i < 4; i++) {
+          if (address[i] != GIDAddress.EMPTY[i])
+            return false;
+       }
+       return true;
     }
 
     /**
@@ -189,6 +200,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         return this;
     }
 
+    
 
     /**
      * Get src port.
@@ -290,7 +302,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      */
     public boolean fromByteBuffer(ByteBuffer b) {
         fullDatagram = b;
-
+        
         // System.err.println("GIDDatagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
         return true;

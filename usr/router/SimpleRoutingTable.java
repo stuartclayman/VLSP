@@ -100,14 +100,15 @@ public class SimpleRoutingTable implements RoutingTable {
                     // If interface can no longer reach address remove it
                     if (e2 == null) {
                         toRemove.add(addrStr);  // flag removal and do later
+                        System.err.println ("REMOVE");
                         changed= true;
                         continue;
                     }
                     // If cost has become higher add higher cost
                     int receivedCost= e2.getCost()+inter.getWeight();
                     if (receivedCost > e.getCost()) {
-                        SimpleRoutingTableEntry e3= new SimpleRoutingTableEntry(a,receivedCost,inter);
-                        table_.put(addrStr,e3);
+                        e.setCost(receivedCost);
+                        System.err.println("COST CHANGE");
                         changed= true;
                     }
                 }
@@ -150,23 +151,26 @@ public class SimpleRoutingTable implements RoutingTable {
             weight= inter.getWeight();
       //  System.err.println("Weight = "+weight);
         SimpleRoutingTableEntry oldEntry= table_.get(addr.toString());
-        // Update entry if no entry exists, if new entry is cheaper
-        // or if newEntry is on same interface (indicating an
-        // increase in cost
-        //System.err.println("Merging new entry into routing table "+newEntry);
-      //  if (oldEntry == null) {
-      //    System.err.println("NO PREVIOUS ENTRY for addrss "+addr);
-       // } else {
-       //   System.err.println("Previous entry "+oldEntry);        
-       // }
-        if (oldEntry == null || interfaceMatch(oldEntry.getNetIF(),inter)
-            || oldEntry.getCost() > 
-            newEntry.getCost() + weight) {
+        // CASE 1 -- NO ENTRY EXISTED
+        if (oldEntry == null) {
             SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(addr,newEntry.getCost() +
                weight, inter);
-           // System.err.println("MERGING ENTRY TO "+addr+" cost "+newEntry.getCost() + " "+
-           //    weight);
+            System.err.println("NEW ENTRY");
             table_.put(addr.toString(),e);    
+            return true;
+        }
+        // CASE 2 -- ENTRY EXISTED BUT WAS MORE EXPENSIVE
+        int newCost= newEntry.getCost() + weight;
+        if (oldEntry.getCost() > newCost) {
+            System.err.println ("CHEAPER ROUTE");
+            oldEntry.setCost(newCost);
+            oldEntry.setNetIF(inter);
+            return true;
+        }
+        // CASE 3 -- ENTRY EXISTED WAS ON THIS INTERFACE 
+        if (inter != null && inter.equals(oldEntry.getNetIF()) && newCost > oldEntry.getCost()) {
+            oldEntry.setCost(newCost);
+            System.err.println ("MORE EXPENSIVE ROUTE BUT SAME INTERFACE");
             return true;
         }
         return false;

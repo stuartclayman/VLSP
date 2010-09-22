@@ -15,7 +15,9 @@ import java.util.LinkedList;
 public class ConnectionOverTCP implements Connection {
     // End point
     TCPEndPoint endPoint;
-
+    
+    static final int PACKETS_BEFORE_SHUFFLE= 10;
+    static final byte []checkbytes="USRD".getBytes();
     // The underlying connection
     SocketChannel channel;
 
@@ -23,18 +25,19 @@ public class ConnectionOverTCP implements Connection {
     Address localAddress;
 
     // A ByteBuffer to read into
-    int BUF_SIZE = 2048;
+    int bufferSize_ = 20000;
     ByteBuffer buffer;
 
     // current position in the ByteBuffer
-    int current = 0;
+    int bufferEndData_= 0;
+    int bufferStartData_= 0;
 
     /**
      * Construct a ConnectionOverTCP given a TCPEndPointSrc
      */
     public ConnectionOverTCP(TCPEndPointSrc src) throws IOException {
         endPoint = src;
-        buffer = ByteBuffer.allocate(BUF_SIZE);
+        buffer = ByteBuffer.allocate(bufferSize_);
     }
 
     /**
@@ -42,7 +45,7 @@ public class ConnectionOverTCP implements Connection {
      */
     public ConnectionOverTCP(TCPEndPointDst dst) throws IOException {
         endPoint = dst;
-        buffer = ByteBuffer.allocate(BUF_SIZE);
+        buffer = ByteBuffer.allocate(bufferSize_);
     }
 
     /**
@@ -89,6 +92,13 @@ public class ConnectionOverTCP implements Connection {
     public boolean sendDatagram(Datagram dg) {
         // set the source address and port on the Datagram
         dg.setSrcAddress(localAddress);
+        return forwardDatagram(dg);
+    }
+    
+    public boolean forwardDatagram(Datagram dg) {
+      //  System.err.println("SENDING DATAGRAM LENGTH "+dg.getTotalLength());
+        ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
+     //   System.err.println("WRITE as bytes "+ b.asCharBuffer());
 
         try {
             int count = getChannel().write(((DatagramPatch)dg).toByteBuffer());
@@ -117,143 +127,151 @@ public class ConnectionOverTCP implements Connection {
     /**
      * Read a Datagram.
      * This actually reads from the network connection.
+     * The datagram read is a GID type datagram or at least
+     * assumes length as a short in bits 5-8
      */
     Datagram readDatagramAndWait() {
-            try {
-                int startPosition = buffer.position();
-                int count = 0;
-                short totalLen = 0;
+    
+        // Read a datagram at pos bufferStartData_ -- it may be partly read into buffer
+        // and it may have other datagrams following it in buffer
 
-
-                // empty buffer, so read
-                if (buffer.position() == 0 ) {
-                    // System.err.println("ConnectionOverTCP readDatagram: pre-read buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
-                    count = channel.read(buffer);
-
-                    if (count == -1) {
-                        // reached EOF
-                        return null;
-                    } else {
-                        current = 0;
-                        buffer.clear();
-                        buffer.limit(count);                    
-                    }
-                }
-
-                // System.err.println("ConnectionOverTCP readDatagram: buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
-
-                // check if there is enough to find the message total len
-                boolean canCheckTotalLen = false;
-
-                if (buffer.limit() - buffer.position() > 8) {
-                    canCheckTotalLen = true;
-                    buffer.position(current + 5);
-                    totalLen = buffer.getShort();
-                } else {
-                    canCheckTotalLen = false;
-                }
-
-                // edge case, where we only have part of a message
-                if (!canCheckTotalLen || (totalLen + current > BUF_SIZE)) {
-                    // there is part of a message
-                    // copy from current to end of ByteBuffer
-                    // to the start of the buffer
-                    int remaining = buffer.limit() - current;
-                    byte[] spare = new byte[remaining];
-
-                    // reposition to start of message
-                    buffer.position(current);
-                    buffer.get(spare);
-
-                    // reset ByteBuffer and copy back in
-                    buffer.clear();
-                    buffer.put(spare);
-                    buffer.position(remaining);
-
-                    // System.err.println("ConnectionOverTCP readDatagram: post-shuffle buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
-                    // need to read the next part of message
-                    count = channel.read(buffer);
-
-
-                    // now we have enough message to get the totalLen
-
-                    if (count == -1) {
-                        // reached EOF
-                        return null;
-                    } else {
-                        current = 0;
-                        buffer.position(0);
-                        buffer.limit(count + remaining);
-
-                        buffer.position(current + 5);
-                        totalLen = buffer.getShort();
-
-                    }
-
-                }
-
-                // check if buffer is big enough
-                if (false) { // if (buffer.capacity() < totalLen) {
-                    ByteBuffer biggerBuf = ByteBuffer.allocate(totalLen);
-                    BUF_SIZE = totalLen;
-                    // System.err.println("ConnectionOverTCP readDatagram: realloc buffer = " + biggerBuf.position() + " < " + biggerBuf.limit() + " < " + biggerBuf.capacity());
-
-                    buffer.position(current); 
-                    biggerBuf.put(buffer);
-
-                    // System.err.println("ConnectionOverTCP readDatagram: post-copy buffer = " + biggerBuf.position() + " < " + biggerBuf.limit() + " < " + biggerBuf.capacity());
-                    buffer = biggerBuf;
-
-                    // need to read the next part of the message
-                    // and fill up buffer
-                    while (buffer.position() < buffer.capacity()) {
-                        count = channel.read(buffer);
-
-                        if (count == -1) {
-                            // reached EOF
-                            return null;
-                        } 
-                    }
-                }
-
-
-
-                /*
-                  System.err.println("Datagram start = " + buffer.position());
-                  System.err.println("Datagram current = " + current);
-                  System.err.println("Datagram totalLen = " + totalLen);
-                */
-
-                // now get Datagram
-                buffer.position(current);
-
-                byte[] latestDGData = new byte[totalLen];
-                buffer.get(latestDGData);
-                ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
-
-                // get an empty Datagram
-                Datagram dg = DatagramFactory.newDatagram(Protocol.DATA, null);  // WAS new IPV4Datagram();                        
-                // and fill in contents
-                ((DatagramPatch)dg).fromByteBuffer(newBB);
-
-                // align for next message
-                current += totalLen;
-                buffer.position(current);
-
-                // check if at end
-                if (buffer.position() == buffer.limit()) {
-                    // read last message
-                    buffer.clear();
-                }
-
-                return dg;
-
-            } catch (IOException ioe) {
-                // TODO:  return Datagram.ERROR object
-                return null;
-            }
+        try {
+          // Do we have enough space left in buffer to read at least
+          // packet length
+          if (bufferSize_ - bufferStartData_ < 8) {
+              shuffleBuffer();
+          }
+          
+          // Try to read more data
+          readMoreData();
+          // get at least enough data to read length or exit
+          if (bufferEndData_ - bufferStartData_ < 8) {
+              return null;
+          }
+          short packetLen= getPacketLen();
+          
+          // If our buffer is too short (want several packets before recopy)
+          //, make it longer and read more data
+         
+          if (packetLen * PACKETS_BEFORE_SHUFFLE > bufferSize_) {
+             // System.err.println("Increasing buffer size");
+              bufferSize_= packetLen * PACKETS_BEFORE_SHUFFLE;
+              ByteBuffer bigB= ByteBuffer.allocate(bufferSize_);
+              int bufferRead= bufferEndData_- bufferStartData_;
+              buffer.position(bufferStartData_);
+              buffer.limit(bufferEndData_);
+              bigB.put(buffer);
+              buffer=bigB;
+              bufferStartData_= 0;
+              bufferEndData_= bufferRead;
+              readMoreData();
+          }
+          // Because of buffer position we cannot read a full packet
+          if (packetLen > bufferSize_ - bufferStartData_) {
+          
+              shuffleBuffer();
+              readMoreData();  
+          }
+          
+          if (bufferEndData_ - bufferStartData_ < packetLen) {
+              return null;
+          }
+          // OK -- we got a full packet of data, let's make a datagram of it
+          
+          byte[] latestDGData = new byte[packetLen];
+          
+          //System.out.println("READING PACKET FROM "+bufferStartData_+ " to "+
+          //  bufferStartData_+packetLen);
+          buffer.position(bufferStartData_);
+          buffer.get(latestDGData);
+         // for (int i= 0; i < packetLen; i++) {
+          //    System.err.println("At pos"+i+" char is "+ (char) latestDGData[i]);
+         // }
+          
+          bufferStartData_+= packetLen;
+          ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
+          // get an empty Datagram
+          Datagram dg = DatagramFactory.newDatagram(Protocol.DATA, null);  // WAS new IPV4Datagram();                        
+          // and fill in contents
+          ((DatagramPatch)dg).fromByteBuffer(newBB);
+          
+          checkDatagram(latestDGData,dg);
+          return dg;
+          
+        } catch (IOException ioe) {
+             //System.err.println("Connection over TCP read error "+ioe.getMessage());
+             // TODO:  THIS ERROR DOES OCCUR SOMETIMES -- DO NOT KNOW WHY
+             return null;
+        }
+              
+     
+    } 
+    
+    void checkDatagram (byte []latestDGData, Datagram dg) 
+    {
+    if (latestDGData[0] != checkbytes[0] ||
+          latestDGData[1] != checkbytes[1] ||
+          latestDGData[2] != checkbytes[2] ||
+          latestDGData[3] != checkbytes[3])
+              {
+              System.err.println("Read incorrect datagram "+latestDGData);
+              System.err.println("Buffer size "+bufferSize_+" start pos "+bufferStartData_ +
+                " end Pos "+bufferEndData_);
+              ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
+              System.err.println("READ as bytes "+ b.asCharBuffer());
+              System.exit(-1);
+          }
     }
-
+    
+    void shuffleBuffer() 
+    {
+        //System.err.println("Shuffling the buffer");
+        int remaining= bufferEndData_-bufferStartData_;
+        if (remaining == 0) {
+            bufferStartData_= 0;
+            bufferEndData_= 0;
+            buffer.position(0);
+            return;
+        }
+        byte [] tmp= new byte[remaining];
+        buffer.position(bufferStartData_);
+        buffer.get(tmp);
+        buffer.position(0);
+        buffer.put(tmp);
+        bufferEndData_= remaining;
+        bufferStartData_= 0;
+    }
+    
+    /** Get length of packet from data in buffer -- implicit assumption here
+    about position of data*/
+    short getPacketLen() {
+        short pktLen= buffer.getShort(bufferStartData_+5);
+        //System.err.println("READ PACKET LENGTH "+pktLen);
+        return pktLen;
+    }
+    
+    /** Read more data from channel to buffer if possible */
+    void readMoreData() throws IOException {
+        buffer.position(bufferEndData_);
+     
+        try {
+            int count= channel.read(buffer);
+            if (count == -1)
+                return;
+            bufferEndData_+= count;
+            //System.err.println("READ "+count+" bytes");
+           // for (int i= 0; i < count; i++) {
+          //      byte b= buffer.get(bufferStartData_+i);
+         //       System.err.println ("Byte "+i+ " as char "+(char)b);
+         //   }
+        } catch (IOException ioe) {
+             //System.err.println("Connection over TCP read error "+ioe.getMessage());
+             // TODO:: THIS ERROR DOES OCCUR SOMETIMES
+             return;
+        }
+    }
+    
+   
     /**
      * Close the connection.
      */

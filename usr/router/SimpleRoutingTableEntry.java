@@ -72,6 +72,11 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         return inter_;
     }
     
+    /** Setter function for network interface */
+    public void setNetIF(NetIF i) {
+      inter_= i;
+    }
+    
     int getCost() {
         return cost_;
     }

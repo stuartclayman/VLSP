@@ -26,16 +26,16 @@ public class TestEventEngine implements EventEngine {
         SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null);
         s.addEvent(e);
 
-        int mr= 25;
+        int mr= 50;
         for (int i= 0; i < mr; i++) {
             SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER, 
-                                      2,
+                                      250*i,
                                       null);
             s.addEvent(e2);
         }
         for (int i= 0; i < mr-1; i++) {
             SimEvent e2= new SimEvent(SimEvent.EVENT_START_LINK, 
-                                      3,
+                                      250*(i+mr),
                                       new Pair<Integer,Integer>(i+1,i+2));
             s.addEvent(e2);
         }

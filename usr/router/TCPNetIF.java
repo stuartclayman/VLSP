@@ -228,10 +228,19 @@ public class TCPNetIF implements NetIF , Runnable {
     }
 
     /**
-     * Send a Datagram.
+     * Send a Datagram -- sets source to this interface
      */
     public boolean sendDatagram(Datagram dg) {
+        
         return connection.sendDatagram(dg);
+    }
+    
+    /**
+     * Forward a Datagram.
+     */
+    public boolean forwardDatagram(Datagram dg) {
+        
+        return connection.forwardDatagram(dg);
     }
 
     public boolean equals(NetIF b) 

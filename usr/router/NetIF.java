@@ -92,9 +92,15 @@ public interface NetIF {
     public Map<String, Number> getStats();
 
     /**
-     * Send a Datagram.
+     * Send a Datagram originating at this host (sets src address)
      */
     public boolean sendDatagram(Datagram dg);
+
+    /**
+     * forward a datagram (does not set src address)
+     */
+    public boolean forwardDatagram(Datagram dg);
+
 
     /**
      * Read a Datagram.
