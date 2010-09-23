@@ -32,6 +32,11 @@ public interface Datagram {
     public int getTTL();
 
     /**
+     * Set the TTL
+     */
+    public void setTTL(int ttl);
+
+    /**
      * Get the protocol
      */
     public byte getProtocol();
@@ -80,6 +85,9 @@ public interface Datagram {
      * Set the dst port 
      */
     public Datagram setDstPort(int port);
+  
+    /** Reduce TTL and return true if packet still valid */
+    public boolean TTLReduce();
 
     /**
      * Get header

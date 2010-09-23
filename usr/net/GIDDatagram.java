@@ -102,7 +102,14 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      * Get the TTL
      */
     public int getTTL() {
-        return fullDatagram.get(8);
+        return (int)fullDatagram.get(8);
+    }
+    
+    /**
+     * Set the TTL
+     */
+    public void setTTL(int ttl) {
+        fullDatagram.put(8,(byte)ttl);
     }
 
     /**
@@ -235,6 +242,16 @@ public class GIDDatagram implements Datagram, DatagramPatch {
 
         return this;
     }
+    
+     /** Reduce TTL and return true if packet still valid */
+    public boolean TTLReduce() {
+        int ttl= getTTL();
+        ttl--;
+        setTTL(ttl);
+        if (ttl <= 0)
+            return false;
+        return true;
+    } 
 
     /**
      * Get header

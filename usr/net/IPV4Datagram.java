@@ -111,6 +111,13 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         return fullDatagram.get(8);
     }
 
+   /**
+     * Set the TTL
+     */
+    public void setTTL(int ttl) {
+        fullDatagram.put(8,(byte)ttl);
+    }
+
     /**
      * Get the protocol
      */
@@ -136,7 +143,8 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         byte[] address = new byte[4];
         fullDatagram.position(10);
         fullDatagram.get(address, 0, 4);
-
+        if (emptyAddress(address))
+            return null;
         try {
             return new IPV4Address(address);
         } catch (UnknownHostException uhe) {
@@ -170,7 +178,8 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         byte[] address = new byte[4];
         fullDatagram.position(14);
         fullDatagram.get(address, 0, 4);
-
+        if (emptyAddress(address))
+            return null;
         try {
             return new IPV4Address(address);
         } catch (UnknownHostException uhe) {
@@ -178,6 +187,15 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         }
     }
 
+
+    boolean emptyAddress(byte []address) 
+    {
+       for (int i= 0; i < 4; i++) {
+          if (address[i] != GIDAddress.EMPTY[i])
+            return false;
+       }
+       return true;
+    }
     /**
      * Set the dst address
      */
@@ -230,6 +248,17 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         return this;
     }
+    
+     /** Reduce TTL and return true if packet still valid */
+    public boolean TTLReduce() {
+        int ttl= getTTL();
+        ttl--;
+        setTTL(ttl);
+        if (ttl <= 0)
+            return false;
+        return true;
+    } 
+
 
     /**
      * Get header
