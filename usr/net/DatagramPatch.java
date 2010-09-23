@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 /**
  * A Datagram.
  */
-interface DatagramPatch {
+public interface DatagramPatch {
     /**
      * To ByteBuffer.
      */

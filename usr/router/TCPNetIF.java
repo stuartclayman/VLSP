@@ -510,9 +510,14 @@ public class TCPNetIF implements NetIF , Runnable {
     protected boolean controlClose() {
         // System.out.println("TCPNetIF: -> controlClose");
         ByteBuffer buffer = ByteBuffer.allocate(1);
-        buffer.put("C".getBytes());
+        String c= "C";
+        buffer.put(c.getBytes());
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
-
+         ByteBuffer b= ((DatagramPatch)datagram).toByteBuffer();
+     //   System.err.println("WRITE as bytes "+ b.asCharBuffer());
+       // for (int i= 0; i < datagram.getTotalLength(); i++) {
+        //      System.err.println("At pos"+i+" char is "+ (char)b.get());
+        // }
         return connection.sendDatagram(datagram);
  
     }

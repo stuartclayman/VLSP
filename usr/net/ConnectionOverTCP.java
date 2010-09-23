@@ -97,9 +97,11 @@ public class ConnectionOverTCP implements Connection {
     
     public boolean forwardDatagram(Datagram dg) {
       //  System.err.println("SENDING DATAGRAM LENGTH "+dg.getTotalLength());
-        ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
+      //  ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
      //   System.err.println("WRITE as bytes "+ b.asCharBuffer());
-
+       // for (int i= 0; i < dg.getTotalLength(); i++) {
+        //      System.err.println("At pos"+i+" char is "+ (char)b.get());
+       // }
         try {
             int count = getChannel().write(((DatagramPatch)dg).toByteBuffer());
 
@@ -184,9 +186,9 @@ public class ConnectionOverTCP implements Connection {
           //  bufferStartData_+packetLen);
           buffer.position(bufferStartData_);
           buffer.get(latestDGData);
-         // for (int i= 0; i < packetLen; i++) {
-          //    System.err.println("At pos"+i+" char is "+ (char) latestDGData[i]);
-         // }
+          //for (int i= 0; i < packetLen; i++) {
+           //   System.err.println("At pos"+i+" char is "+ (char) latestDGData[i]);
+          //}
           
           bufferStartData_+= packetLen;
           ByteBuffer newBB = ByteBuffer.wrap(latestDGData);

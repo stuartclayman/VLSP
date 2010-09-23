@@ -29,7 +29,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
     GIDDatagram(ByteBuffer payload) {
         payload.rewind();
         int payloadSize = payload.limit();
-
+        //System.err.println("PAYLOAD SIZE "+payloadSize);
         fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
         fillDatagram(payload);
@@ -145,6 +145,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
 
         // put src addr
         if (addr == null) {
+            fullDatagram.position(10);
             fullDatagram.put(GIDAddress.EMPTY, 0, 4);
         } else {
             fullDatagram.position(10);
@@ -314,7 +315,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
     void fillDatagram(ByteBuffer payload) {
         // put USRD literal - 4 bytes
         fullDatagram.put("USRD".getBytes(), 0, 4);
-
+        //System.err.println("USRD set");
         // put header len
         fullDatagram.put(4, (byte)HEADER_SIZE);
 
