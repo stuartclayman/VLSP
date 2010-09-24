@@ -524,13 +524,10 @@ public class TCPNetIF implements NetIF , Runnable {
 
 
     /** Send routing table -- require one in response if necessary */
-    public boolean sendRoutingTable(String table, boolean requireResponse) {
+    public boolean sendRoutingTable(String table) {
         String toSend;
-        if (requireResponse) {
-            toSend="R"+table;
-        } else {
-            toSend="T"+table;
-        }
+        toSend="T"+table;
+
         ByteBuffer buffer = ByteBuffer.allocate(toSend.length());
         buffer.put(toSend.getBytes());
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);

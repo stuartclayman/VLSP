@@ -136,8 +136,8 @@ public interface NetIF {
     /** Remote close received */
     public void remoteClose();
     
-    /** Routing table sent -- if r true response required*/
-    public boolean sendRoutingTable(String s, boolean r);
+    /** Routing table sent */
+    public boolean sendRoutingTable(String s);
     
     
 }

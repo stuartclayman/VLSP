@@ -105,6 +105,25 @@ public class ReadXMLUtils {
         return ((Node)textFNList.item(0)).getNodeValue().trim();
     }
     
+    /** Remove from the dom an element which is definitely present and
+    singular */
+    public static void removeNode(Node node, String tag, String parent)
+        throws SAXException
+    {
+    
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            throw new SAXException("Expecting node element with tag "+tag);
+        }
+        Element el = (Element)node;
+        NodeList hNameList = el.getElementsByTagName(tag);
+        if (hNameList.getLength() !=1) {
+            throw new SAXException(parent+" element requires exactly one tag "+
+              tag);
+        }
+        Node n = hNameList.item(0);
+        node.removeChild(n);
+    }
+    
      static public ProbDistribution parseProbDist(NodeList n, String tagname) 
       throws SAXException, ProbException, XMLNoTagException{
         if (n.getLength() == 0) 

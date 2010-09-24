@@ -34,8 +34,8 @@ public class Router {
      */
     public Router(int port) {
         controller = new RouterController(this, port);
-        fabric = new SimpleRouterFabric(this);
-        options_= new RouterOptions(this);
+        options_= new RouterOptions(this);    
+        fabric = new SimpleRouterFabric(this, options_);
     }
 
     /**
@@ -47,8 +47,9 @@ public class Router {
      */
     public Router(int port, String name) {
         controller = new RouterController(this, port);
-        fabric = new SimpleRouterFabric(this);
+       
         options_= new RouterOptions(this);
+        fabric = new SimpleRouterFabric(this, options_);
         setName(name);
         try {
           int gid= Integer.parseInt(name);
@@ -67,8 +68,9 @@ public class Router {
      */
     public Router(int mPort, int r2rPort) {
         controller = new RouterController(this, mPort, r2rPort);
-        fabric = new SimpleRouterFabric(this);
+        
         options_= new RouterOptions(this);
+        fabric = new SimpleRouterFabric(this, options_);
     }
 
     /**
@@ -79,10 +81,11 @@ public class Router {
      * @param r2rPort the port for Router to Router connections
      * @param name the name of the router
      */
-    public Router(int mPort, int r2rPort, String name) {
+    public Router(int mPort, int r2rPort, String name ) {
         controller = new RouterController(this, mPort, r2rPort);
-        fabric = new SimpleRouterFabric(this);
+        
         options_= new RouterOptions(this);
+        fabric = new SimpleRouterFabric(this, options_);
         setName(name);
         try {
           int gid= Integer.parseInt(name);
@@ -91,6 +94,8 @@ public class Router {
         
         }
     }
+    
+ 
 
     public GIDAddress getAddress() {
         return new GIDAddress(controller.getGlobalID());

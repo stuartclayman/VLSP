@@ -73,7 +73,6 @@ public class SimpleRoutingTable implements RoutingTable {
         int weight= inter.getWeight();
         SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(newif, 0, null);
         boolean changed= mergeEntry(e, null); // Add local entry
-        inter.sendRoutingTable(toString(),false);
         return changed;
     }
     

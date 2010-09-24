@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import usr.net.*;
 import usr.protocol.Protocol;
 import java.nio.ByteBuffer;
+import java.lang.*;
+import java.util.*;
 
 /**
  * A RouterFabric within UserSpaceRouting.
@@ -12,6 +14,7 @@ import java.nio.ByteBuffer;
 public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable {
     // The Router this is fabric for
     Router router;
+    RouterOptions options_;
 
  
 
@@ -27,20 +30,28 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     // are we running
     boolean running = false;
 
-    // how many millis to wait between port checks
-    int checkTime = 60000;
 
+    long nextUpdateTime_= 0;
+    NetIF nextUpdateIF_= null;
+
+    HashMap <NetIF, Long> lastTableUpdateTime_;
+    HashMap <NetIF, Long> nextTableUpdateTime_;
+    
     /**
      * Construct a SimpleRouterFabric.
      */
-    public SimpleRouterFabric(Router router) {
+    public SimpleRouterFabric(Router router, RouterOptions opt) {
         this.router = router;
+        options_= opt;
         table_= new SimpleRoutingTable();
         int limit = 32;
         ports = new ArrayList<RouterPort>(limit);
+        
         for (int p=0; p < limit; p++) {
             setupPort(p);
         }
+        lastTableUpdateTime_= new HashMap <NetIF, Long>();
+        nextTableUpdateTime_= new HashMap <NetIF, Long>();
     }
 
     /**
@@ -88,31 +99,105 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * NetIFs plugged into the ports are alive.
      */
     public void run() {
-
-        while (running) {
-            try {
-                // sleep a bit
-                Thread.sleep(checkTime);
-
-                // visit each port
-                int limit = ports.size();
-                for (int p = 0;  p < limit; p++) {
-                    RouterPort port = ports.get(p);
-
-                    // check if port is plugged in
-                    if (port.equals(RouterPort.EMPTY)) {
-                        continue;
-                    } else {
-                        // get some port info
-                    }
-                }
-                
-            } catch (InterruptedException ie) {
-                //System.err.println(leadin() + "SimpleRouterFabric: interrupt " + ie);
+       long now=  System.currentTimeMillis();
+       nextUpdateTime_= now+options_.getMaxCheckTime();
+       while (running) {
+            calcNextTableSendTime();
+            now= System.currentTimeMillis();
+            //System.err.println("TIME: "+now);
+            if (nextUpdateTime_ <= now) {
+                //System.err.println("Sending table");
+                sendNextTable();
+                continue;
             }
+            if (Thread.interrupted()) {
+                continue;
+            }
+            //System.err.println("Waiting Until: "+nextEventTime);
+            waitUntil(nextUpdateTime_);
         }
     }
 
+
+     /**
+     * Wait until a specified absolute time is milliseconds.
+     */
+    public synchronized void waitUntil(long time){
+        long now = System.currentTimeMillis();
+
+        if (time <= now)
+            return;
+        try {
+            long timeout = time - now;
+            wait(timeout);
+        } catch(InterruptedException e){
+            //System.err.println("Interrupt");
+
+        }
+    }
+    
+    /** Calculate when the next table send event is */
+    public synchronized void calcNextTableSendTime() {
+        long now= System.currentTimeMillis();
+        
+        nextUpdateIF_= null;
+        for (NetIF n: listNetIF()) {
+            
+            Long next= nextTableUpdateTime_.get(n);
+            if (next == null) {
+                System.err.println(leadin()+"NetIF not in nextTableTime");
+                continue;
+            }
+            //System.err.println("Considering update from "+n+" at time "+next);
+            if (next < nextUpdateTime_) {
+                //System.err.println("Next update interface is now "+n);
+                nextUpdateTime_= next;
+                nextUpdateIF_= n;
+            }
+        }
+        //System.err.println("Next event at "+nextUpdateTime_+" from "+nextUpdateIF_);
+
+    }
+    
+    /** Now send a routing table */
+    public synchronized void sendNextTable() {
+        NetIF n= nextUpdateIF_;
+        long now= System.currentTimeMillis();
+        if (n == null) {
+            //System.err.println("No table to send");
+            nextUpdateTime_= now+options_.getMaxCheckTime();
+            calcNextTableSendTime();
+            return;
+        }
+        //System.err.println("Sending table for "+n);
+        n.sendRoutingTable(table_.toString());
+        
+        lastTableUpdateTime_.put(n,now);
+        nextTableUpdateTime_.put(n,now+options_.getMaxNetIFUpdateTime());
+        nextUpdateIF_= null;
+    }
+      
+    /** NetIF wants to send a routing Request */
+    
+    public synchronized void queueRoutingRequest(NetIF netIF) {
+        long now= System.currentTimeMillis();
+        Long last= lastTableUpdateTime_.get(netIF);
+        Long curr= nextTableUpdateTime_.get(netIF);
+        if (last == null || curr == null) {
+            System.err.println(leadin()+"NetIF not in nextTableTime");
+            return;
+        }
+        Long next= last + options_.getMinNetIFUpdateTime();
+        
+        if (next >= curr) // Already updating at this time or earlier 
+            return;
+        lastTableUpdateTime_.put(netIF,next);
+        if (next <= now) {
+            myThread.interrupt();
+        }
+        
+    }  
+      
     /**
      * Add a Network Interface to this Router.
      */
@@ -128,16 +213,19 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         
         // tell the NetIF, this is its listener
         netIF.setNetIFListener(this);
-        
+        Long next= System.currentTimeMillis();
+        lastTableUpdateTime_.put(netIF,new Long(0));
+        nextTableUpdateTime_.put(netIF,next);
         // add this to the RoutingTable
         if (table_.addNetIF(netIF)) {
-            sendToOtherInterfaces(netIF, false);
+            sendToOtherInterfaces(netIF);
         }
+        myThread.interrupt();
         return rp;
     }
     
     /** Send routing table to all other interfaces apart from inter*/
-    synchronized void sendToOtherInterfaces(NetIF inter, boolean reqResponse) 
+    synchronized void sendToOtherInterfaces(NetIF inter) 
       
     {
         List <NetIF> l= listNetIF();
@@ -146,7 +234,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         for (NetIF i: listNetIF()) {
             if (! i.equals(inter)) {
                 //System.out.println(leadin()+"Sending routes to other interface "+i);
-                i.sendRoutingTable(table_.toString(),reqResponse);
+                queueRoutingRequest(i);
             }
         }
     }
@@ -163,8 +251,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             
             closePort(port);
             resetPort(port.getPortNo());
+            // Remove table update times
+            lastTableUpdateTime_.remove(netIF);
+            nextTableUpdateTime_.remove(netIF);
+            myThread.interrupt();
             if (table_.removeNetIF(netIF)) {
-                sendToOtherInterfaces(null,false);
+                sendToOtherInterfaces(null);
             }
             return true;
         } else {
@@ -365,17 +457,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             receiveRoutingTable(data,netIF);
             return true;
         }
-        if (controlChar == 'R') {
-            receiveRoutingTable(data,netIF);
-            boolean sent = netIF.sendRoutingTable(table_.toString(),false);
-            
-            if (sent) {
-                System.out.println(leadin() + "Send routing table SUCCESS");
-            } else {
-                System.out.println(leadin() + "Send routing table FAILED");
-            }
-            return true;
-        }
+        
         if (controlChar == 'X') {
             System.out.println(leadin()+ "Received TTL expired from "+dg.getSrcAddress()
                 +":"+dg.getSrcPort());
@@ -424,7 +506,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
         //System.out.println(leadin()+ " merging routing table received on "+netIF);
         if (table_.mergeTables(t,netIF)) {
-            sendToOtherInterfaces(netIF,false);
+            sendToOtherInterfaces(netIF);
         }
     }
 

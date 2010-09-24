@@ -83,6 +83,17 @@ class ControlOptions {
             processEventEngine(eng);
             NodeList ro= doc.getElementsByTagName("RouterOptions");
             processRouterOptions(ro);
+            // Check all tags are processed
+            // Check for other unparsed tags
+            Element el= doc.getDocumentElement();
+            NodeList rest= el.getChildNodes();
+            for (int i= 0; i < rest.getLength(); i++) { 
+                Node n= rest.item(i);
+                if (n.getNodeType() == Node.ELEMENT_NODE) {
+                     throw new SAXException("Final tidy unrecognised tag "+n.getNodeName());
+                }
+             
+            }
 
       } catch (java.io.FileNotFoundException e) {
           System.err.println("Cannot find file "+fName);
@@ -119,6 +130,7 @@ class ControlOptions {
         Node gcn= gc.item(0);
         try {
            globalControlPort_= ReadXMLUtils.parseSingleInt(gcn, "Port","GlobalController",true);
+           ReadXMLUtils.removeNode(gcn,"Port","GlobalController");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
@@ -126,6 +138,7 @@ class ControlOptions {
         }
         try {
            startLocalControllers_= ReadXMLUtils.parseSingleBool(gcn, "StartLocalControllers", "GlobalController",true);
+           ReadXMLUtils.removeNode(gcn,"StartLocalControllers","GlobalController");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {  
@@ -134,6 +147,7 @@ class ControlOptions {
             String s= ReadXMLUtils.parseSingleString(gcn, "RemoteLoginUser","GlobalController",true);
             if (s != "")
                 remoteLoginUser_= s;
+            ReadXMLUtils.removeNode(gcn,"Port","GlobalController");
         } catch (SAXException e) {
                 throw e;
         } catch (XMLNoTagException e) {
@@ -142,6 +156,7 @@ class ControlOptions {
             String s= ReadXMLUtils.parseSingleString(gcn, "RemoteStartController","GlobalController",true);
             if (s != "") 
                remoteStartController_= s;
+            ReadXMLUtils.removeNode(gcn,"RemoteStartController","GlobalController");
         } catch (SAXException e) {
              throw e;
         } catch (XMLNoTagException e) {
@@ -149,6 +164,7 @@ class ControlOptions {
         try {
             int l= ReadXMLUtils.parseSingleInt(gcn, "LowPort","GlobalController",true);
             lowPort_= l;
+            ReadXMLUtils.removeNode(gcn,"LowPort","GlobalController");
         } catch (SAXException e) {
              throw e;
         } catch (XMLNoTagException e) {
@@ -156,10 +172,21 @@ class ControlOptions {
         try {
             int h= ReadXMLUtils.parseSingleInt(gcn, "HighPort","GlobalController",true);
             highPort_= h;
+            ReadXMLUtils.removeNode(gcn,"HighPort","GlobalController");
         } catch (SAXException e) {
              throw e;
         } catch (XMLNoTagException e) {
         }
+        
+        NodeList nl= gcn.getChildNodes();
+        for (int i= 0; i < nl.getLength(); i++) {         
+            Node n= nl.item(i); 
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                throw new SAXException("Global Controller XML unrecognised tag "+n.getNodeName());
+            }
+                
+        } 
+        gcn.getParentNode().removeChild(gcn);
         
     }
     /**
@@ -175,6 +202,8 @@ class ControlOptions {
             try {
                 hostName= ReadXMLUtils.parseSingleString(lc, "Name", "LocalController",false);
                 port= ReadXMLUtils.parseSingleInt(lc, "Port","LocalController",false);
+                ReadXMLUtils.removeNode(lc,"Name","LocalController");
+                ReadXMLUtils.removeNode(lc,"Port","LocalController");
                 lh= new LocalControllerInfo(hostName, port);
                 lh.setHighPort(highPort_);
                 lh.setLowPort(lowPort_);
@@ -187,6 +216,7 @@ class ControlOptions {
             }
             try {
                 int mr= ReadXMLUtils.parseSingleInt(lc, "MaxRouters","LocalController",true);
+                ReadXMLUtils.removeNode(lc,"MaxRouters","LocalController");
                 lh.setMaxRouters(mr);
             } catch (SAXException e) {
                 throw e;
@@ -194,6 +224,7 @@ class ControlOptions {
             }
             try {
                 String s= ReadXMLUtils.parseSingleString(lc, "RemoteLoginUser","LocalController",true);
+                ReadXMLUtils.removeNode(lc,"RemoteLoginUser","LocalController");
                 lh.setRemoteLoginUser(s);
             } catch (SAXException e) {
                 throw e;
@@ -201,27 +232,43 @@ class ControlOptions {
             }
             try {
                 String s= ReadXMLUtils.parseSingleString(lc, "RemoteStartController","LocalController",true);
+                ReadXMLUtils.removeNode(lc,"RemoteStartController","LocalController");
                 lh.setRemoteStartController(s);
             } catch (SAXException e) {
                 throw e;
             } catch (XMLNoTagException e) {
             }
             try {
-                int l= ReadXMLUtils.parseSingleInt(lc, "LowPort","GlobalController",true);
+                int l= ReadXMLUtils.parseSingleInt(lc, "LowPort","LocalController",true);
+                ReadXMLUtils.removeNode(lc,"LowPort","LocalController");
                 lh.setLowPort(l);
             } catch (SAXException e) {
                throw e;
             } catch (XMLNoTagException e) {
             }
             try {
-                int h= ReadXMLUtils.parseSingleInt(lc, "HighPort","GlobalController",true);
+                int h= ReadXMLUtils.parseSingleInt(lc, "HighPort","LocalController",true);
+                ReadXMLUtils.removeNode(lc,"HighPort","LocalController");
                 lh.setHighPort(h);
             } catch (SAXException e) {
                  throw e;
             } catch (XMLNoTagException e) {
             }
+             NodeList nl= lc.getChildNodes();
+             for (int j= 0; j < nl.getLength();j++) {         
+                  Node n= nl.item(j); 
+                  if (n.getNodeType() == Node.ELEMENT_NODE) {
+                     throw new SAXException("Local Controller unrecognised tag "+n.getNodeName());
+                 
+                   }
+                
+             } 
+        
         }
-
+        for (int i= lcs.getLength()-1; i >= 0; i--) {
+            Node n= lcs.item(i);
+            n.getParentNode().removeChild(n);
+        }
     }
 
 
@@ -240,12 +287,26 @@ class ControlOptions {
       
       try {
           engine= ReadXMLUtils.parseSingleString(n,"Name","EventEngine",false);
+          ReadXMLUtils.removeNode(n,"Name","EventEngine");
           endtime= ReadXMLUtils.parseSingleInt(n,"EndTime","EventEngine",false);
+          ReadXMLUtils.removeNode(n,"EndTime","EventEngine");
           parms= ReadXMLUtils.parseSingleString(n,"Parameters","EventEngine",true);
+          ReadXMLUtils.removeNode(n,"Parameters","EventEngine");
       } catch (SAXException e) {
           throw e;
       } catch (XMLNoTagException e) {
       }
+      
+      NodeList nl= n.getChildNodes();
+        for (int i= 0; i < nl.getLength(); i++) {         
+            Node n0= nl.item(i); 
+            if (n0.getNodeType() == Node.ELEMENT_NODE) {
+                throw new SAXException("Event Engine unrecognised XML tag "+n0.getNodeName());
+            }
+            
+                
+        } 
+        n.getParentNode().removeChild(n);
       if (engine.equals("Empty")) {
           engine_= new EmptyEventEngine(endtime,parms);
           return;
@@ -263,6 +324,7 @@ class ControlOptions {
           return;
       }
       throw new SAXException("Could not find engine type "+engine);
+      
     
     }
     
@@ -291,6 +353,17 @@ class ControlOptions {
         routerOptionsString_= stringBuilder.toString();
         //System.err.println("User Options String "+routerOptionsString_);
         routerOptions_.setOptionsFromString(routerOptionsString_);
+        
+        Node n0=n.item(0);
+        NodeList nl= n0.getChildNodes();
+        for (int i= 0; i < nl.getLength(); i++) {         
+            Node n1= nl.item(i); 
+            if (n1.getNodeType() == Node.ELEMENT_NODE) {
+                throw new SAXException("Unrecognised tag "+n1.getNodeName());
+            }
+                
+        } 
+        n0.getParentNode().removeChild(n0);
     }
 
     

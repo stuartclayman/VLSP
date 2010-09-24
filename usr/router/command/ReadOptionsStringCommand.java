@@ -31,9 +31,13 @@ public class ReadOptionsStringCommand extends RouterCommand {
         String rest = req.substring(MCRP.READ_OPTIONS_STRING.CMD.length()).trim();
        // System.err.println("RECEIVED STRING");
        // System.err.println(rest);
-        controller.readOptionsString(rest);
-        success("Translated Options String");
-        return true;
+       
+        if (controller.readOptionsString(rest)) {
+            success("Translated Options String");
+            return true;
+        }
+        error ("Cannot translate XML Options String");
+        return false;
     }
 
 }
