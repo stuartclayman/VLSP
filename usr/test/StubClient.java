@@ -24,6 +24,7 @@ public class StubClient {
             //connection.connect();
 
             netIF = new TCPNetIF(src);
+            netIF.setAddress(new GIDAddress(1));
             netIF.connect();
             
 
@@ -49,8 +50,7 @@ public class StubClient {
             String line = "line " + i;
             ByteBuffer buffer = ByteBuffer.allocate(line.length());
             buffer.put(line.getBytes());
-            //System.err.println("LINE is "+line.length()+ "BYTES IS "+line.getBytes().length);
-            //// ORIG datagram = new IPV4Datagram(buffer); 
+
             datagram = DatagramFactory.newDatagram(Protocol.DATA, buffer);
 
 

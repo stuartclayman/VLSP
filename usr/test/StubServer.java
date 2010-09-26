@@ -3,6 +3,7 @@ package usr.test;
 import usr.net.*;
 import usr.router.NetIF;
 import usr.router.TCPNetIF;
+import usr.protocol.Protocol;
 import usr.logging.*;
 import java.io.*;
 import java.net.*;
@@ -111,6 +112,11 @@ public class StubServer {
         long t0 = System.currentTimeMillis();
 
         while ((datagram = netIF.readDatagram()) != null) {
+            // check if Protocol.CONTROL
+            if (datagram.getProtocol() == Protocol.CONTROL) {
+                break;
+            }
+
             logger.log(normal, count + ". ");
             logger.log(normal,
                              "HL: " + datagram.getHeaderLength() +
