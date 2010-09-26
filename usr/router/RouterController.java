@@ -145,6 +145,14 @@ public class RouterController implements ComponentController, Runnable {
         }
     }
 
+    /**
+     * Get the router address.
+     * This is a special featrue for GID.
+     */
+    public GIDAddress getAddress() {
+        return new GIDAddress(getGlobalID());
+    }
+
 
     /** The address for the router can be set only if it has
     not been set before and the router has no connections*/
@@ -312,8 +320,7 @@ public class RouterController implements ComponentController, Runnable {
     synchronized void registerTemporaryNetIF(NetIF netIF) {
         int id = netIF.getID();
 
-        System.out.println(leadin() + "addNetIF " + id + " for " + netIF);
-        //System.err.println(leadin() + "addNetIF " + id + " for " + netIF);
+        System.out.println(leadin() + "temporary addNetIF " + id + " for " + netIF);
         tempNetIFMap.put(id, netIF);
 
     }

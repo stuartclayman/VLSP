@@ -21,7 +21,8 @@ public class GIDDatagram implements Datagram, DatagramPatch {
     // Dst port
     int dstPort = 0;
 
-
+    // defualt ttl
+    public static int ttl = 64;
 
     /**
      * Construct a GIDDatagram given a payload.
@@ -214,7 +215,13 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      * Get src port.
      */
     public int getSrcPort() {
-        return (int)fullDatagram.getShort(20);
+        int p = (int)fullDatagram.getShort(20);
+        // convert signed to unsigned
+        if (p < 0) {
+            return p + 65536;
+        } else {
+            return p;
+        }
     }
 
     /**
@@ -230,7 +237,13 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      * Get dst port.
      */
     public int getDstPort() {
-        return (int)fullDatagram.getShort(22);
+        int p = (int)fullDatagram.getShort(22);
+        // convert signed to unsigned
+        if (p < 0) {
+            return p + 65536;
+        } else {
+            return p;
+        }
     }
 
     /**
@@ -344,7 +357,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         fullDatagram.put(7, (byte)flags);
 
         // put ttl
-        int ttl = 0;
+        // start with default
         fullDatagram.put(8, (byte)ttl);
 
         // protocol

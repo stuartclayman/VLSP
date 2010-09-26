@@ -68,11 +68,15 @@ public class SimpleRoutingTable implements RoutingTable {
     /** A new network interface arrives -- add to
     routing table if necessary return true if change was made */
     public  synchronized boolean addNetIF(NetIF inter) {
-        //System.err.println("ADD LOCAL NET IF "+inter.getAddress());
+        System.err.println("SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
+        System.err.println("SimpleRoutingTable: addNetIF: table before = " + this);
+
         Address newif= inter.getAddress();
         int weight= inter.getWeight();
         SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(newif, 0, null);
         boolean changed= mergeEntry(e, null); // Add local entry
+
+        System.err.println("SimpleRoutingTable: addNetIF: table after = " + this);
         return changed;
     }
     
@@ -83,8 +87,10 @@ public class SimpleRoutingTable implements RoutingTable {
        // System.err.println("MERGING TABLES");
         boolean changed= false;
         Collection <SimpleRoutingTableEntry> es= table2.getEntries();
-        if (es == null)
+        if (es == null) {
             return false;
+        }
+
         ArrayList <String> toRemove= new ArrayList <String>();
         // Check if this table is telling us to remove entries
         if (inter != null) {

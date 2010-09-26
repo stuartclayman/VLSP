@@ -243,11 +243,14 @@ public class TCPNetIF implements NetIF , Runnable {
         return connection.forwardDatagram(dg);
     }
 
-    public boolean equals(NetIF b) 
-    { 
-        if (b == null)
+    public boolean equals(Object obj) { 
+        if (obj instanceof NetIF) {
+            NetIF b = (NetIF)obj;
+            return getName().equals(b.getName());
+        } else {            
             return false;
-        return getName().equals(b.getName());
+        }
+
     }
 
     /**
@@ -363,7 +366,13 @@ public class TCPNetIF implements NetIF , Runnable {
      * To String
      */
     public String toString() {
-        return "TCPNetIF: " + getName() + " @ " + connection.toString();
+        Address address = getAddress();
+        Address remoteAddress = getRemoteRouterAddress();
+
+        return getName() + " W(" + getWeight() + ") = " +
+            (address == null ? "No_Address" : "@(" + address + ")") +
+            " => " + getRemoteRouterName() + " " +
+            (remoteAddress == null ? "No_Remote_Address" : "@(" + remoteAddress + ")");
     }
 
     /*

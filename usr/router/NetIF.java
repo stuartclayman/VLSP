@@ -113,8 +113,6 @@ public interface NetIF {
      */
     public void close();
 
-    public boolean equals(NetIF n);
-
     /**
      * Is closed.
      */

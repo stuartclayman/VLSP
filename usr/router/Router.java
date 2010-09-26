@@ -26,6 +26,9 @@ public class Router {
     // The Router controller
     RouterController controller;
 
+    // ApplicationSocket Multiplexor
+    AppSocketMux appSocketMux;
+
     /**
      * Construct a Router listening on a specified port for the
      * management console and on port+1 for the Router to Router 
@@ -36,6 +39,7 @@ public class Router {
         controller = new RouterController(this, port);
         options_= new RouterOptions(this);    
         fabric = new SimpleRouterFabric(this, options_);
+        RouterDirectory.register(this);
     }
 
     /**
@@ -47,13 +51,15 @@ public class Router {
      */
     public Router(int port, String name) {
         controller = new RouterController(this, port);
-       
         options_= new RouterOptions(this);
         fabric = new SimpleRouterFabric(this, options_);
+        RouterDirectory.register(this);
+
+
         setName(name);
         try {
           int gid= Integer.parseInt(name);
-          controller.setGlobalID(gid);
+          setGlobalID(gid);
         } catch (Exception e) {
         
         }
@@ -67,10 +73,10 @@ public class Router {
      * @param r2rPort the port for Router to Router connections
      */
     public Router(int mPort, int r2rPort) {
-        controller = new RouterController(this, mPort, r2rPort);
-        
+        controller = new RouterController(this, mPort, r2rPort);        
         options_= new RouterOptions(this);
         fabric = new SimpleRouterFabric(this, options_);
+        RouterDirectory.register(this);
     }
 
     /**
@@ -83,13 +89,14 @@ public class Router {
      */
     public Router(int mPort, int r2rPort, String name ) {
         controller = new RouterController(this, mPort, r2rPort);
-        
         options_= new RouterOptions(this);
         fabric = new SimpleRouterFabric(this, options_);
+        RouterDirectory.register(this);
+
         setName(name);
         try {
           int gid= Integer.parseInt(name);
-          controller.setGlobalID(gid);
+          setGlobalID(gid);
         } catch (Exception e) {
         
         }
@@ -97,8 +104,12 @@ public class Router {
     
  
 
+    /**
+     * Get the router address.
+     * This is a special featrue for GID.
+     */
     public GIDAddress getAddress() {
-        return new GIDAddress(controller.getGlobalID());
+        return controller.getAddress();
     }
 
     /**
@@ -110,6 +121,9 @@ public class Router {
         boolean fabricStart = fabric.start();
         boolean controllerStart = controller.start();
 
+        appSocketMux = new AppSocketMux(controller);
+        appSocketMux.connect();
+
         return controllerStart && fabricStart;
     }
         
@@ -118,6 +132,8 @@ public class Router {
      */
     public boolean stop() {
         System.out.println(leadin() + "stop");
+
+        appSocketMux.stop();
 
         controller.stop();
         fabric.stop();
@@ -141,6 +157,13 @@ public class Router {
     }
 
     /**
+     * Get the AppSockMux this talks to.
+     */
+    AppSocketMux getAppSocketMux() {
+        return appSocketMux;
+    }
+
+    /**
      * Get the name of this Router.
      */
     public String getName() {
@@ -155,6 +178,20 @@ public class Router {
      */
     public boolean setName(String name) {
         return controller.setName(name);
+    }
+
+    /**
+     * Get the global ID of this Router.
+     */
+    public int getGlobalID() {
+        return controller.getGlobalID();
+    }
+
+    /**
+     * Set the globalID of this Router.
+     */
+    public boolean setGlobalID(int id) {
+        return controller.setGlobalID(id);
     }
 
     /** 
@@ -220,47 +257,6 @@ public class Router {
         return getName() + " " + R;
     }
 
-    public static void main(String[] args) {
-        Router router = null;
-
-        if (args.length == 1) {
-            int mPort = 0;
-            Scanner sc = new Scanner(args[0]);
-            mPort = sc.nextInt();
-            router = new Router(mPort, "Router-" + mPort + "-" + (mPort+1));
-        } else if (args.length == 2) {
-            int mPort = 0;
-            int r2rPort = 0;
-            Scanner sc = new Scanner(args[0]);
-            mPort = sc.nextInt();
-            sc = new Scanner(args[1]);
-            r2rPort = sc.nextInt();
-            router = new Router(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
-        } else if (args.length == 3) {
-            int mPort = 0;
-            int r2rPort = 0;
-            Scanner sc = new Scanner(args[0]);
-            mPort = sc.nextInt();
-            sc = new Scanner(args[1]);
-            r2rPort = sc.nextInt();
-            String name = args[2];
-
-            router = new Router(mPort, r2rPort, name);
-        } 
-        
-        else {
-            help();
-        }
-
-        // start
-        if (router.start()) {
-        } else {
-            router.stop();
-        }
-
-    }
-
-
      public void pingNeighbours() 
     {
        
@@ -318,6 +314,47 @@ public class Router {
             return false;
         }    
     }
+
+    public static void main(String[] args) {
+        Router router = null;
+
+        if (args.length == 1) {
+            int mPort = 0;
+            Scanner sc = new Scanner(args[0]);
+            mPort = sc.nextInt();
+            router = new Router(mPort, "Router-" + mPort + "-" + (mPort+1));
+        } else if (args.length == 2) {
+            int mPort = 0;
+            int r2rPort = 0;
+            Scanner sc = new Scanner(args[0]);
+            mPort = sc.nextInt();
+            sc = new Scanner(args[1]);
+            r2rPort = sc.nextInt();
+            router = new Router(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
+        } else if (args.length == 3) {
+            int mPort = 0;
+            int r2rPort = 0;
+            Scanner sc = new Scanner(args[0]);
+            mPort = sc.nextInt();
+            sc = new Scanner(args[1]);
+            r2rPort = sc.nextInt();
+            String name = args[2];
+
+            router = new Router(mPort, r2rPort, name);
+        } 
+        
+        else {
+            help();
+        }
+
+        // start
+        if (router.start()) {
+        } else {
+            router.stop();
+        }
+
+    }
+
 
     private static void help() {
         System.err.println("Test1 [mgt_port [r2r_port]]");

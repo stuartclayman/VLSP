@@ -32,6 +32,10 @@ public class ConnectionOverTCP implements Connection {
     int bufferEndData_= 0;
     int bufferStartData_= 0;
 
+    // counts
+    int inCounter = 0;
+    int outCounter = 0;
+
     /**
      * Construct a ConnectionOverTCP given a TCPEndPointSrc
      */
@@ -108,6 +112,7 @@ public class ConnectionOverTCP implements Connection {
             if (count == -1) {
                 return false;
             } else {
+                outCounter++;
                 // System.err.println("ConnectionOverTCP: write " + count);
 
                 return true;
@@ -122,9 +127,11 @@ public class ConnectionOverTCP implements Connection {
      * Read a Datagram.
      */
     public Datagram readDatagram() {
-        return readDatagramAndWait();
-    }
+        Datagram dg =  readDatagramAndWait();
+        inCounter++;
 
+        return dg;
+    }
 
     /**
      * Read a Datagram.
@@ -227,7 +234,7 @@ public class ConnectionOverTCP implements Connection {
     
     void shuffleBuffer() 
     {
-        //System.err.println("Shuffling the buffer");
+        //System.err.println("Shuffling the buffer " + inCounter);
         int remaining= bufferEndData_-bufferStartData_;
         if (remaining == 0) {
             bufferStartData_= 0;
@@ -235,11 +242,24 @@ public class ConnectionOverTCP implements Connection {
             buffer.position(0);
             return;
         }
+
+        // two versions of shuffling data
+
+        /*
+        // this does a two copy shuffle
         byte [] tmp= new byte[remaining];
         buffer.position(bufferStartData_);
         buffer.get(tmp);
         buffer.position(0);
         buffer.put(tmp);
+        */
+
+        // this is a single copy shuffle
+        ByteBuffer newBuf = ByteBuffer.allocate(bufferSize_);
+        buffer.position(bufferStartData_);
+        newBuf.put(buffer);
+        buffer = newBuf;
+        
         bufferEndData_= remaining;
         bufferStartData_= 0;
     }
