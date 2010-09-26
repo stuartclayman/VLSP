@@ -117,6 +117,8 @@ public class AppSocketMux implements NetIFListener {
      * Add an AppSocket.
      */
     void addAppSocket(AppSocket s) {
+        s.localAddress = netIF.getAddress();
+
         int port = s.getLocalPort();
 
         System.err.println(leadin() + "addAppSocket " + port + "  -> " + s);
@@ -182,9 +184,9 @@ public class AppSocketMux implements NetIFListener {
     public boolean datagramArrived(NetIF netIF) {
         Datagram datagram= netIF.readDatagram();
 
-        datagramCount++;
-
         if (datagram.getProtocol() == Protocol.CONTROL) {
+            datagramCount++;
+
             byte[] payload = datagram.getPayload();
             byte controlChar= payload[0];
 
@@ -197,6 +199,8 @@ public class AppSocketMux implements NetIFListener {
         } else {
 
             System.err.println(leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+
+            datagramCount++;
 
             // check the port of the socket and send it on
             int dstPort = datagram.getDstPort();

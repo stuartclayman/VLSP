@@ -250,7 +250,7 @@ public class AppSocket {
      * toString.
      */
     public String toString() {
-        return  "Socket[" + (isBound ? "bound" : (isConnected ? "connected" : "")) + " addr=" + localAddress + " port=" + remotePort + " localport=" + localPort + "]";
+        return  "Socket[" + (isBound ? "bound " : "") + (isConnected ? "connected " : "") + "addr=@(" + localAddress + ") port=" + remotePort + " localport=" + localPort + "]";
 
     }
 }
