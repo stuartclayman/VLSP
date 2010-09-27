@@ -223,7 +223,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         Long next= System.currentTimeMillis();
         lastTableUpdateTime_.put(netIF,new Long(0));
         nextTableUpdateTime_.put(netIF,next);
-
+      //  System.err.println("REQUEST NEW ROUTING TABLE UPDATE NOW");
+        queueRoutingRequest(netIF);
         GIDAddress address = (GIDAddress)netIF.getAddress();
         if (address.getGlobalID() == 0) {
             // dont put this in RoutingTable
