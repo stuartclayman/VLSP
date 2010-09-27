@@ -58,6 +58,10 @@ public class SimpleRoutingTable implements RoutingTable {
     or null if not known */
     public NetIF getInterface(Address addr) 
     {
+    
+        if (addr == null) {
+            return null;
+        }
         String a= addr.toString();
         SimpleRoutingTableEntry e= table_.get(a);
         if (e == null) 

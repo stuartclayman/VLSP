@@ -284,6 +284,13 @@ public class MCRP implements Protocol {
         public final static int ERROR= 431;
     }
     
+    /** Echo -- ping response */
+    public final static class RUN {
+        public final static String CMD = "RUN";
+        public final static int CODE= 282;
+        public final static int ERROR= 432;
+    }
+    
     /*
      * Spare - 290 - 299
      */

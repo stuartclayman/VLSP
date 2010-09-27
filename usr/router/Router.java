@@ -8,6 +8,9 @@ import java.util.Scanner;
 import java.nio.ByteBuffer;
 import java.io.*;
 import usr.net.GIDAddress;
+import usr.applications.*;
+import java.util.*;
+
 /**
  * A Router within UserSpaceRouting.
  */
@@ -28,6 +31,8 @@ public class Router {
 
     // ApplicationSocket Multiplexor
     AppSocketMux appSocketMux;
+    
+    ArrayList <Application> appList= null;
 
     /**
      * Construct a Router listening on a specified port for the
@@ -36,10 +41,7 @@ public class Router {
      * @param port the port for the management console
      */
     public Router(int port) {
-        controller = new RouterController(this, port);
-        options_= new RouterOptions(this);    
-        fabric = new SimpleRouterFabric(this, options_);
-        RouterDirectory.register(this);
+        initRouter(port, port+1);
     }
 
     /**
@@ -50,10 +52,7 @@ public class Router {
      * @param name the name of the router
      */
     public Router(int port, String name) {
-        controller = new RouterController(this, port);
-        options_= new RouterOptions(this);
-        fabric = new SimpleRouterFabric(this, options_);
-        RouterDirectory.register(this);
+        initRouter(port, port+1);
 
 
         setName(name);
@@ -73,10 +72,7 @@ public class Router {
      * @param r2rPort the port for Router to Router connections
      */
     public Router(int mPort, int r2rPort) {
-        controller = new RouterController(this, mPort, r2rPort);        
-        options_= new RouterOptions(this);
-        fabric = new SimpleRouterFabric(this, options_);
-        RouterDirectory.register(this);
+        initRouter(mPort, r2rPort);
     }
 
     /**
@@ -88,10 +84,7 @@ public class Router {
      * @param name the name of the router
      */
     public Router(int mPort, int r2rPort, String name ) {
-        controller = new RouterController(this, mPort, r2rPort);
-        options_= new RouterOptions(this);
-        fabric = new SimpleRouterFabric(this, options_);
-        RouterDirectory.register(this);
+        initRouter(mPort, r2rPort);
 
         setName(name);
         try {
@@ -103,7 +96,17 @@ public class Router {
     }
     
  
+    /** Common initialisation section for all constructors */
+    void initRouter(int port1, int port2) 
+    
+    {
+        controller = new RouterController(this, port1, port2);
+        options_= new RouterOptions(this);
+        fabric = new SimpleRouterFabric(this, options_);
+        RouterDirectory.register(this);
+        appList= new ArrayList<Application>();
 
+    }
     /**
      * Get the router address.
      * This is a special featrue for GID.
@@ -137,10 +140,17 @@ public class Router {
 
         controller.stop();
         fabric.stop();
+        stopApplications();
 
         return true;
     }
         
+    /** Stop running applications if any */
+    void stopApplications () {
+        for (Application a: appList) {
+            a.stop();
+        }
+    }
 
     /**
      * Get the controller.
@@ -313,6 +323,39 @@ public class Router {
             System.err.println(e.getMessage());
             return false;
         }    
+    }
+
+    /** Try to run a command (implementing class Application on the given
+    router */
+    public synchronized boolean runCommand(String command, String args)
+    {
+        Application app= null;
+        if (command.equals("PING")) {
+            try {
+                app= new PingApplication(this, args);
+            } catch (Exception e) {
+                System.err.println(leadin()+e.getMessage());
+                return false;
+            }
+        }
+        if (app == null) {
+            return false;
+        }
+        Thread thread = new Thread(app);
+        return app.start(); 
+        
+    }
+    
+    /** Application stops running */
+    public synchronized void commandExit(Application app)
+    {
+        for (Application a: appList) {
+            if (app.equals(a)) {
+                appList.remove(a);
+                return;
+            }
+        }
+        System.err.println(leadin()+"Exiting application appears to to be on app list");
     }
 
     public static void main(String[] args) {

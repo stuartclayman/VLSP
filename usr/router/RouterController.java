@@ -352,6 +352,17 @@ public class RouterController implements ComponentController, Runnable {
         return rp;
     }
 
+    /** run a particular command on a router*/
+    
+    public boolean runCommand(String commandstr) {
+        String [] split= commandstr.split(" ");
+        if (split.length == 0) 
+            return false;
+        String command= split[0].trim();
+        String args= commandstr.substring(command.length()).trim();
+        return router.runCommand(command, args);
+    }
+
     /** ping neighbours of router */
     
     public void pingNeighbours() 

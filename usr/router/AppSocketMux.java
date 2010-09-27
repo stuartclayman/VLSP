@@ -193,12 +193,11 @@ public class AppSocketMux implements NetIFListener {
             if (controlChar == 'C') {
                 System.err.println(leadin() + "Got Close");
                 stop();
+                return true;
             }
-
-            return true;
-        } else {
-
-            System.err.println(leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+        }
+        
+        System.err.println(leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
             datagramCount++;
 
@@ -218,7 +217,7 @@ public class AppSocketMux implements NetIFListener {
                 System.err.println(leadin() + "Cant deliver to port " + dstPort);
                 return false;
             }
-        }
+        
     }
     
     /**
