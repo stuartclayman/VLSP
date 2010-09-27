@@ -225,7 +225,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         // tell the NetIF, this is its listener
         netIF.setNetIFListener(this);
         if (localPort) {
-            if (localPort != null) {
+            if (localNetIF != null) {
                 System.err.println(leadin() + "Attempt to create second local multiplex port");
             }
             localNetIF= netIF;
