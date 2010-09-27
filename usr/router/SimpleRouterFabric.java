@@ -209,33 +209,36 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Add a Network Interface to this Router.
      */
     public synchronized RouterPort addNetIF(NetIF netIF) {
-        int nextFree = findNextFreePort();
+        GIDAddress address = (GIDAddress)netIF.getAddress();
+        boolean localPort= (address.getGlobalID() == 0);
+        RouterPort rp= null;
+        if (!localPort) {
+            int nextFree = findNextFreePort();
 
-        RouterPort rp = new RouterPort(nextFree, netIF);
+            rp = new RouterPort(nextFree, netIF);
 
-        ports.set(nextFree, rp);
+            ports.set(nextFree, rp);
 
-        System.out.println(leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
-
+            System.out.println(leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
+        }
         
         // tell the NetIF, this is its listener
         netIF.setNetIFListener(this);
+        if (localPort) {
+        
+            localNetIF= netIF;
+            return null;
+        }
         Long next= System.currentTimeMillis();
         lastTableUpdateTime_.put(netIF,new Long(0));
         nextTableUpdateTime_.put(netIF,next);
-      //  System.err.println("REQUEST NEW ROUTING TABLE UPDATE NOW");
+        System.err.println("REQUEST NEW ROUTING TABLE UPDATE NOW");
         queueRoutingRequest(netIF);
-        GIDAddress address = (GIDAddress)netIF.getAddress();
-        if (address.getGlobalID() == 0) {
-            // dont put this in RoutingTable
-            // or send out RoutingTable
-            // but set it as the localNetIF
-            localNetIF = netIF;
-        } else {
-            // add this to the RoutingTable
-            if (table_.addNetIF(netIF)) {
-                sendToOtherInterfaces(netIF);
-            }
+        
+        // add this to the RoutingTable
+        if (table_.addNetIF(netIF)) {
+            sendToOtherInterfaces(netIF);
+            
         }
 
         myThread.interrupt();
@@ -248,6 +251,13 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public synchronized boolean removeNetIF(NetIF netIF) {
         // find port associated with netIF
+        
+        GIDAddress address = (GIDAddress)netIF.getAddress();
+        boolean localPort= (address.getGlobalID() == 0);
+        if (localPort) {
+            localNetIF= null;
+            return true;
+        }
         RouterPort port = findNetIF(netIF);
 
         if (port != null) {
