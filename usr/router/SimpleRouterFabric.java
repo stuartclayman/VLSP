@@ -87,7 +87,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         // stop my own thread
         running = false;
-        myThread.interrupt();
+        notifyAll();
 
 
         // wait for myself
@@ -200,7 +200,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             return;
         lastTableUpdateTime_.put(netIF,next);
         if (next <= now) {
-            notify();
+            notifyAll();
         }
         
     }  
@@ -243,7 +243,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             
         }
 
-        myThread.interrupt();
+        notifyAll();
 
         return rp;
     }
@@ -271,7 +271,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             // Remove table update times
             lastTableUpdateTime_.remove(netIF);
             nextTableUpdateTime_.remove(netIF);
-            myThread.interrupt();
+            notifyAll();
             if (table_.removeNetIF(netIF)) {
                 sendToOtherInterfaces(null);
             }
