@@ -9,21 +9,9 @@
      <LowPort>11001</LowPort>
      <HighPort>12000</HighPort>
   </LocalController>
-  <LocalController>
-     <Name>localhost</Name>
-     <Port>10001</Port>
-     <LowPort>12001</LowPort>
-     <HighPort>13000</HighPort>
-  </LocalController>
-  <LocalController>
-     <Name>localhost</Name>
-     <Port>10002</Port>
-     <LowPort>13001</LowPort>
-     <HighPort>14000</HighPort>
-  </LocalController>
   <EventEngine>
      <Name>Test</Name>
-     <EndTime>1000</EndTime>
+     <EndTime>2</EndTime>
   </EventEngine>
   <RouterOptions>
       routeroptions.xml

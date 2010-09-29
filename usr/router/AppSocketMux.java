@@ -60,7 +60,7 @@ public class AppSocketMux implements NetIFListener {
             netIF.setAddress(new GIDAddress(0));
             netIF.connect();
             
-            System.err.println(leadin() + "Connected to: " + "localhost:" + controller.getConnectionPort());
+            System.out.println(leadin() + "Connected to: " + "localhost:" + controller.getConnectionPort());
 
             try {
                 Thread.sleep(100);
@@ -73,7 +73,7 @@ public class AppSocketMux implements NetIFListener {
             // using the passed in port number
             // and create the reference address
             InetSocketAddress refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());
-            System.err.println(leadin() + "refAddr " + refAddr + " # " + refAddr.hashCode());
+            System.out.println(leadin() + "refAddr " + refAddr + " # " + refAddr.hashCode());
 
             // find the controller side NetIF
             NetIF tempNetIF = controller.getTemporaryNetIFByID(refAddr.hashCode());

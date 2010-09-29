@@ -532,7 +532,7 @@ public class TCPNetIF implements NetIF , Runnable {
     }
 
 
-    /** Send routing table -- require one in response if necessary */
+    /** Send routing table */
     public boolean sendRoutingTable(String table) {
         String toSend;
         toSend="T"+table;

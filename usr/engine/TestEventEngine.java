@@ -25,8 +25,21 @@ public class TestEventEngine implements EventEngine {
         // simulation end
         SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null);
         s.addEvent(e);
-
-        int mr= 50;
+        SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER, 
+                                      250,null);
+        
+        s.addEvent(e2);                              
+        e2= new SimEvent(SimEvent.EVENT_START_ROUTER, 
+                                      250,
+                                      null);
+        s.addEvent(e2);
+        e2= new SimEvent(SimEvent.EVENT_START_LINK, 250, new Pair<Integer,Integer>(1,2));
+        s.addEvent(e2);
+        e2= new SimEvent(SimEvent.EVENT_END_LINK, 300, new Pair<Integer,Integer>(1,2));
+        s.addEvent(e2);
+        e2= new SimEvent(SimEvent.EVENT_END_ROUTER, 301,2);
+        s.addEvent(e2);
+       /* int mr= 3;
         for (int i= 0; i < mr; i++) {
             SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER, 
                                       250*i,
@@ -39,6 +52,18 @@ public class TestEventEngine implements EventEngine {
                                       new Pair<Integer,Integer>(i+1,i+2));
             s.addEvent(e2);
         }
+        SimEvent e3= new SimEvent (SimEvent.EVENT_START_LINK,250*(2*mr+1),
+            new Pair<Integer,Integer>(1,mr));
+        s.addEvent(e3);
+        e3= new SimEvent (SimEvent.EVENT_END_LINK,250*(2*mr+1)+1,
+            new Pair<Integer,Integer>(1,mr));
+        s.addEvent(e3);
+        e3= new SimEvent (SimEvent.EVENT_START_LINK,250*(2*mr+1)+2,
+            new Pair<Integer,Integer>(1,mr));
+        s.addEvent(e3);
+        e3= new SimEvent (SimEvent.EVENT_END_LINK,timeToEnd_ -1,
+            new Pair<Integer,Integer>(1,mr));
+        s.addEvent(e3);*/
     }
     
     /** Add or remove events following a simulation event */

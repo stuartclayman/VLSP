@@ -277,6 +277,7 @@ public class ConnectionOverTCP implements Connection {
         buffer.position(bufferEndData_);
      
         try {
+            
             int count= channel.read(buffer);
             if (count == -1)
                 return;
