@@ -184,6 +184,8 @@ public class GlobalController implements ComponentController {
     private void bailOut() {
         System.err.println(leadin() + "Bailing out of simulation!");
         shutDown();
+        System.err.println(leadin() + "Exit after bailout");
+        System.out.println(leadin() + "Bailing out of simulation!");
         System.exit(-1);
     }
     
@@ -840,10 +842,7 @@ public class GlobalController implements ComponentController {
        
     }
 
-    protected void finalize() {
-        bailOut();
-   
-    }
+ 
 
     /** Accessor function for ControlOptions structure options_ */
     public ControlOptions getOptions() {

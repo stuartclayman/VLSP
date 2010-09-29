@@ -35,7 +35,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     SimpleRoutingTable table_= null;
 
     // routing table info
-    long nextUpdateTime_= 0;
+
     NetIF nextUpdateIF_= null;
 
     HashMap <NetIF, Long> lastTableUpdateTime_;
@@ -68,9 +68,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         System.out.println(leadin() + "start");
 
         // start my own thread
-        myThread = new Thread(this);
         running = true;
-       // System.err.println("Running set to true");
+        myThread = new Thread(this);
+        
+        //System.err.println("Running set to true");
         myThread.start();
 
         return true;
@@ -88,17 +89,17 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         closePorts();
 
         // stop my own thread
-       // System.err.println("Run set to false");
+        //System.err.println("Run set to false");
         running = false;
         notifyAll();
 
 
         // wait for myself
-    //    try {
+       // try {
      //       myThread.join();
-    //    } catch (InterruptedException ie) {
-            // System.err.println("SimpleRouterFabric: stop - InterruptedException for myThread join on " + myThread);
-     //   }
+     //  } catch (InterruptedException ie) {
+     //       System.err.println("SimpleRouterFabric: stop - InterruptedException for myThread join on " + myThread);
+     // }
 
         return true;
     }
@@ -108,29 +109,29 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * It occasionally checks to see if the
      * NetIFs plugged into the ports are alive.
      */
-    public void run() {
+    public synchronized void run() {
        long now=  System.currentTimeMillis();
-       nextUpdateTime_= now+options_.getMaxCheckTime();
        while (running) {
-           // System.err.println("Running");
-            calcNextTableSendTime();
-           // System.err.println("Got time");
+            //System.err.println("Running");
+            long nextUpdateTime= calcNextTableSendTime();
+            //System.err.println("Got time");
             now= System.currentTimeMillis();
             //System.err.println("TIME: "+now);
-            if (nextUpdateTime_ <= now) {
-                //System.err.println("Sending table");
+            if (nextUpdateTime <= now) {
+               // System.err.println("Sending table");
                 sendNextTable();
                 continue;
             }
             
-            //System.err.println("Waiting Until: "+nextEventTime);
-          //  System.err.println("Waiting");
+            //System.err.println("Waiting Until: "+nextUpdateTime);
+            //System.err.println("Time now "+ now);
             if (running)
-                waitUntil(nextUpdateTime_);
+                waitUntil(nextUpdateTime);
                 
-          //  System.err.println("Running is "+running);
+            //System.err.println("Running is "+running);
         }
         //System.err.println("Exit here");
+        //System.err.flush();
     }
 
 
@@ -152,9 +153,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
     
     /** Calculate when the next table send event is */
-    public synchronized void calcNextTableSendTime() {
+    public synchronized long calcNextTableSendTime() {
         long now= System.currentTimeMillis();
-        
+        long nextUpdateTime= now+options_.getMaxCheckTime();
         nextUpdateIF_= null;
         for (NetIF n: listNetIF()) {
             
@@ -164,14 +165,14 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
                 continue;
             }
             //System.err.println("Considering update from "+n+" at time "+next);
-            if (next < nextUpdateTime_) {
+            if (next < nextUpdateTime) {
                 //System.err.println("Next update interface is now "+n);
-                nextUpdateTime_= next;
+                nextUpdateTime= next;
                 nextUpdateIF_= n;
             }
         }
-        //System.err.println("Next event at "+nextUpdateTime_+" from "+nextUpdateIF_);
-
+        //System.err.println("Next event at "+nextUpdateTime+" from "+nextUpdateIF_);
+        return nextUpdateTime;
     }
     
     /** Now send a routing table */
@@ -180,8 +181,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         long now= System.currentTimeMillis();
         if (n == null) {
             //System.err.println("No table to send");
-            nextUpdateTime_= now+options_.getMaxCheckTime();
-            calcNextTableSendTime();
+            
             return;
         }
         //System.err.println("Sending table for "+n);
@@ -189,7 +189,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         
         lastTableUpdateTime_.put(n,now);
         nextTableUpdateTime_.put(n,now+options_.getMaxNetIFUpdateTime());
-        nextUpdateIF_= null;
+        //System.err.println("Next table update time"+nextUpdateTime_);
+
     }
       
     /** NetIF wants to send a routing Request */
@@ -206,7 +207,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         
         if (next >= curr) // Already updating at this time or earlier 
             return;
-        lastTableUpdateTime_.put(netIF,next);
+        nextTableUpdateTime_.put(netIF,next);
         if (next <= now) {
             notifyAll();
         }
@@ -261,19 +262,21 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public synchronized boolean removeNetIF(NetIF netIF) {
         // find port associated with netIF
-        
+        //System.err.println("REMOVE NETIF");
         GIDAddress address = (GIDAddress)netIF.getAddress();
         boolean localPort= (address.getGlobalID() == 0);
         if (localPort) {
-            localNetIF= null;
+            closeLocalNetIF();
+            //System.err.println("Removed local");
             return true;
         }
         RouterPort port = findNetIF(netIF);
 
         if (port != null) {
             // disconnect netIF from port
-            
+            //System.err.println("CLOSE PORT");
             closePort(port);
+            //System.err.println("RESET PORT");
             resetPort(port.getPortNo());
 
             // Remove table update times
@@ -281,11 +284,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             nextTableUpdateTime_.remove(netIF);
             notifyAll();
             if (table_.removeNetIF(netIF)) {
-                sendToOtherInterfaces(null);
+                sendToOtherInterfaces(netIF);
             }
-
+            //System.err.println("REMOVED");
             return true;
         } else {
+            //System.err.println("NOT CONNECTED TO PORT");
             // didn't find netIF in any RouterPort
             return false;
         }
@@ -305,7 +309,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
                 if (address.getGlobalID() == 0) {
                     // dont queue RoutingTable for 0
                 } else if (! i.equals(inter)) {
-                    //System.out.println(leadin()+"Queuing routes to other interface "+i);
+                    System.out.println(leadin()+"Queuing routes to other interface "+i);
                     queueRoutingRequest(i);
 
                 } else {
@@ -333,17 +337,31 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Close ports.
      */
     public synchronized void closePorts() {
-        if (localNetIF != null) {
-            localNetIF.close();
-        }
-        for (int i= ports.size()-1; i >= 0; i--) {
+        //System.err.println("Local NetIF close");
+        closeLocalNetIF();
+        
+        //System.err.println("Closing ports");
+        for (int i= 0; i < ports.size(); i++) {
+           // System.err.println("Closing port "+i);
             RouterPort port= ports.get(i);
+            if (port == null)
+                continue;
             closePort(port);
             int pno= port.getPortNo();
             if (pno >= 0)
                 resetPort(port.getPortNo());
         }
         
+    }
+
+    synchronized void closeLocalNetIF() 
+    {
+    if (localNetIF != null) {
+        //System.err.println("TRYING TO CLOSE LOCALNETIF");
+        localNetIF.close();
+        //System.err.println("IT'S SHUT");
+    }
+    localNetIF= null;
     }
 
     /**
@@ -353,16 +371,18 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         if (port.equals(RouterPort.EMPTY)) {
             // nothing to do
         } else {
+            //System.err.println("CLOSTING PORT");
             System.out.println(leadin() + "closing port " + port);
             
             NetIF netIF = port.getNetIF();
-
+            //System.err.println("CLOSTING NETIF");
             if (!netIF.isClosed()) {
                 netIF.close();
                 System.out.println(leadin() + "closed port " + port);
             } else {
                 System.out.println(leadin() + "ALREADY closed port " + port);
             }
+            //System.err.println("DONE");
         }
     }
 
@@ -600,6 +620,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         //System.out.println(leadin()+ " merged routing table received on "+netIF);
         if (merged) {
+            //System.out.println("Send to other interfaces");
             sendToOtherInterfaces(netIF);
         }
     }

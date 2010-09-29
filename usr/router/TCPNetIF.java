@@ -256,7 +256,7 @@ public class TCPNetIF implements NetIF , Runnable {
     /**
      * Read a Datagram.
      */
-    public Datagram readDatagram() {
+    public synchronized Datagram readDatagram() {
         // Get a Datagram from queue while queue has something in it
         // Only grab data if we are running or if there is residual 
         // stuff in the queue
@@ -316,7 +316,9 @@ public class TCPNetIF implements NetIF , Runnable {
      * Close a NetIF
      */
     public synchronized void close() {
+        //System.err.println(leadin()+"Close entered");
         if (closed) {
+            //System.err.println(leadin()+"Aleard closed");
             return;
         }
 
@@ -324,16 +326,17 @@ public class TCPNetIF implements NetIF , Runnable {
         if (!remoteClose) {
             // if the close is initiated locally
             // send a control message to the other end
+            //System.err.println(leadin()+"Sending control");
             controlClose();
         }
-
+        //System.err.println(leadin()+"Calling stop");
         stop();
-
-        try {
-            readThread.join();
-        } catch (InterruptedException ie) {
+        //System.err.println(leadin()+"joining readthread");
+        //try {
+       //     readThread.join();
+       // } catch (InterruptedException ie) {
             // System.err.println("TCPNetIF: close - InterruptedException for readThread join on " + connection);
-        }
+       // }
         connection.close();
 
         closed = true;
@@ -566,6 +569,10 @@ public class TCPNetIF implements NetIF , Runnable {
             // so we will close when the queue size gets to 0 
             // in readDatagram.
         }
+    }
+    
+    String leadin() {
+      return "NETIF "+name+":";
     }
 
 

@@ -37,6 +37,7 @@ public class EndLink extends ChannelResponder implements Runnable {
 
         // check command
         String[] parts = value.split(" ");
+        //System.err.println("END LINK ENTRY");
         if (parts.length != 2) {
             System.err.println(leadin() + "INVALID END_LINK command: " + request);
             respond(MCRP.END_LINK.ERROR + " END_LINK wrong no of args");
@@ -51,7 +52,7 @@ public class EndLink extends ChannelResponder implements Runnable {
         } 
         controller.removeNetIF(netif);
         respond(MCRP.END_LINK.CODE + " END_LINK to " + rId);
-        
+        //System.err.println("END LINK EXIT");
     }
 
     /**

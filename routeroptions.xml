@@ -1,7 +1,7 @@
 <RouterOptions>
     <RoutingParameters>
         <MaxCheckTime>60000</MaxCheckTime>
-        <MinNetIFUpdateTime>1000</MinNetIFUpdateTime>
+        <MinNetIFUpdateTime>5000</MinNetIFUpdateTime>
         <MaxNetIFUpdateTime>30000</MaxNetIFUpdateTime>
     </RoutingParameters>
     
