@@ -70,6 +70,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         // start my own thread
         myThread = new Thread(this);
         running = true;
+       // System.err.println("Running set to true");
         myThread.start();
 
         return true;
@@ -79,23 +80,25 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /**
      * Stop the RouterController.
      */
-    public boolean stop() {
+    public synchronized boolean stop() {
         System.out.println(leadin() + "stop");
 
+        //System.err.println("Closing ports");
         // close fabric ports
         closePorts();
 
         // stop my own thread
+       // System.err.println("Run set to false");
         running = false;
         notifyAll();
 
 
         // wait for myself
-        try {
-            myThread.join();
-        } catch (InterruptedException ie) {
+    //    try {
+     //       myThread.join();
+    //    } catch (InterruptedException ie) {
             // System.err.println("SimpleRouterFabric: stop - InterruptedException for myThread join on " + myThread);
-        }
+     //   }
 
         return true;
     }
@@ -109,7 +112,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
        long now=  System.currentTimeMillis();
        nextUpdateTime_= now+options_.getMaxCheckTime();
        while (running) {
+           // System.err.println("Running");
             calcNextTableSendTime();
+           // System.err.println("Got time");
             now= System.currentTimeMillis();
             //System.err.println("TIME: "+now);
             if (nextUpdateTime_ <= now) {
@@ -117,12 +122,15 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
                 sendNextTable();
                 continue;
             }
-            if (Thread.interrupted()) {
-                continue;
-            }
+            
             //System.err.println("Waiting Until: "+nextEventTime);
-            waitUntil(nextUpdateTime_);
+          //  System.err.println("Waiting");
+            if (running)
+                waitUntil(nextUpdateTime_);
+                
+          //  System.err.println("Running is "+running);
         }
+        //System.err.println("Exit here");
     }
 
 
@@ -328,14 +336,14 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         if (localNetIF != null) {
             localNetIF.close();
         }
-        for (RouterPort port : ports) {
-            if (port.equals(RouterPort.EMPTY)) {
-                continue;
-            } else {
-                closePort(port);
+        for (int i= ports.size()-1; i >= 0; i--) {
+            RouterPort port= ports.get(i);
+            closePort(port);
+            int pno= port.getPortNo();
+            if (pno >= 0)
                 resetPort(port.getPortNo());
-            }
         }
+        
     }
 
     /**
