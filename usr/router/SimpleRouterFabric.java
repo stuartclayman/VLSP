@@ -200,7 +200,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             return;
         lastTableUpdateTime_.put(netIF,next);
         if (next <= now) {
-            myThread.interrupt();
+            notify();
         }
         
     }  
