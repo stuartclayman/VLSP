@@ -87,13 +87,21 @@ public class RouterApp1C {
                 //System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
 
-
             try { 
-                Thread.sleep(20);
+                Thread.sleep(0);
             } catch (InterruptedException ie) {
             }
 
         }
+
+        System.out.println("ending....");
+
+        try { 
+            Thread.sleep(2000);
+        } catch (InterruptedException ie) {
+        }
+
+        end();
     }
 
     void end() {
@@ -115,7 +123,6 @@ public class RouterApp1C {
 
         app1c.writeALot(count);
 
-        app1c.end();
     }
 
 

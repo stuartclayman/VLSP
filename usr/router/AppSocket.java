@@ -211,7 +211,7 @@ public class AppSocket {
             dg.setDstPort(remotePort);
         }
 
-        return appSockMux.sendDatagram(dg);
+        return appSockMux.socketSendDatagram(dg);
     }
 
     /**

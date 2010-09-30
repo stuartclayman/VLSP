@@ -1,13 +1,12 @@
 package usr.router;
 
-import usr.net.TCPEndPointSrc;
-import usr.net.GIDAddress;
-import usr.net.Datagram;
+import usr.net.*;
 import usr.protocol.Protocol;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.io.IOException;
@@ -17,12 +16,9 @@ import java.io.IOException;
  * layer function in order that applications can send data to each other
  * and have an address and a port.
  */
-public class AppSocketMux implements NetIFListener, Runnable {
+public class AppSocketMux implements NetIF, Runnable {
     // the RouterController
     RouterController controller;
-
-    // The NetIF to the Router fabric
-    NetIF netIF;
 
     // the count of the no of Datagrams
     int datagramCount = 0;
@@ -33,6 +29,9 @@ public class AppSocketMux implements NetIFListener, Runnable {
     // Incoming queue
     LinkedBlockingQueue<Datagram> incomingQueue;
 
+    // Outgoing queue
+    LinkedBlockingQueue<Datagram> outgoingQueue;
+
     // The list of all AppSockets
     HashMap<Integer, AppSocket>socketMap;
 
@@ -42,6 +41,30 @@ public class AppSocketMux implements NetIFListener, Runnable {
     // My Thread
     Thread myThread;
     boolean running = false;
+    
+    /*
+     * NetIF stuff
+     */
+
+    // My name
+    String name;
+    // My address
+    Address address;
+
+    // Remote name
+    String remoteName;
+    // Remote address
+    Address remoteAddress;
+
+    // weight
+    int weight;
+    // ID
+    int id;
+
+    // NetIFListener
+    NetIFListener listener;
+
+    boolean isClosed = false;
 
     /**
      * Construct an AppSocketMux.
@@ -49,6 +72,7 @@ public class AppSocketMux implements NetIFListener, Runnable {
     AppSocketMux(RouterController controller) {
         this.controller = controller;
         incomingQueue = new LinkedBlockingQueue<Datagram>();
+        outgoingQueue = new LinkedBlockingQueue<Datagram>();
         socketMap = new HashMap<Integer, AppSocket>();
         socketQueue = new HashMap<Integer, LinkedBlockingQueue<Datagram>>();
 
@@ -58,16 +82,21 @@ public class AppSocketMux implements NetIFListener, Runnable {
      * Start me up.
      */
     public boolean start() {
-        System.out.println(leadin() + "start");
+        try {
+            System.out.println(leadin() + "start");
 
-        // start my own thread
-        myThread = new Thread(this);
-        running = true;
-        myThread.start();
+            // start my own thread
+            myThread = new Thread(this);
+            running = true;
+            myThread.start();
 
-        boolean connected = connect();
+            boolean connected = connect();
 
-        return connected;
+            return connected;
+        } catch (Exception e) {
+            running = false;
+            return false;
+        }
     }
     
     /**
@@ -82,7 +111,7 @@ public class AppSocketMux implements NetIFListener, Runnable {
             s.close();
         }
 
-        netIF.close();
+        close();
 
         // stop my own thread
         running = false;
@@ -110,7 +139,7 @@ public class AppSocketMux implements NetIFListener, Runnable {
             try {
                 datagram = incomingQueue.take();
             } catch (InterruptedException ie) {
-                System.out.println(leadin() + "INTERRUPTED");
+                //System.err.println(leadin() + "run INTERRUPTED");
                 continue;
             }
 
@@ -121,12 +150,12 @@ public class AppSocketMux implements NetIFListener, Runnable {
                 byte controlChar= payload[0];
 
                 if (controlChar == 'C') {
-                    System.err.println(leadin() + "Got Close");
-                    stop();
+                    //System.err.println(leadin() + "Got Close");
+                    remoteClose();
                 }
             }
         
-            System.err.println(leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+            //System.err.println(leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
             datagramCount++;
 
@@ -141,7 +170,7 @@ public class AppSocketMux implements NetIFListener, Runnable {
 
                 LinkedBlockingQueue<Datagram> queue = getQueueForPort(dstPort);
                 queue.add(datagram);
-                System.err.println(leadin() + "Queue for " + socket + " is size: " + queue.size());
+                //System.err.println(leadin() + "Queue for " + socket + " is size: " + queue.size());
             } else {
                 System.err.println(leadin() + "Cant deliver to port " + dstPort);
             }
@@ -180,65 +209,244 @@ public class AppSocketMux implements NetIFListener, Runnable {
     /**
      * Connect to my local Router.
      */
-    private boolean connect() {
-        try {
-            // initialise socket
-            //  Can't use InetAddress.getLocalHost() - might need to fix this
-            TCPEndPointSrc src = new TCPEndPointSrc("localhost", controller.getConnectionPort());
-        
-            netIF = new TCPNetIF(src);
-            netIF.setAddress(new GIDAddress(0));
-            netIF.setName("localnet");
-            netIF.connect();
-            
-            System.out.println(leadin() + "Connected to: " + "localhost:" + controller.getConnectionPort());
+    public boolean connect() throws IOException {
+        setID(0);
+        setName("localnet");
+        setAddress(new GIDAddress(0));
+        setRemoteRouterName(controller.getName());
+        setRemoteRouterAddress(new GIDAddress(0));
+        setWeight(0);
 
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ie) {
-            }
+        // now plug it in to the Router Fabric
+        controller.registerTemporaryNetIF(this);
+        controller.plugTemporaryNetIFIntoPort(this);
 
-            // now we need to plug the other end into a port
-            Socket socket = src.getSocket();
-            // first create an address from the same host, but
-            // using the passed in port number
-            // and create the reference address
-            InetSocketAddress refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());
-            System.out.println(leadin() + "refAddr " + refAddr + " # " + refAddr.hashCode());
-
-            // find the controller side NetIF
-            NetIF tempNetIF = controller.getTemporaryNetIFByID(refAddr.hashCode());
-            tempNetIF.setName("localnet");
-            tempNetIF.setAddress(new GIDAddress(0));
-            tempNetIF.setRemoteRouterName(controller.getName());
-            tempNetIF.setRemoteRouterAddress(new GIDAddress(0));
-
-            // now plug it in to the Router Fabric
-            controller.plugTemporaryNetIFIntoPort(tempNetIF);
-
-            // tell the NetIF, this is the listener
-            netIF.setNetIFListener(this);
-
-            return true;
-
-        } catch (UnknownHostException uhe) {
-            return false;
-        } catch (IOException ioe) {
-            return false;
-        }
-
+        return true;
     }
+
+    /**
+     * Get the name of this NetIF.
+     */
+    public String getName() {
+        return name;
+    }
+
+
+    /**
+     * Set the name of this NetIF.
+     */
+    public NetIF setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * Get the ID of this NetIF.
+     */
+    public int getID() {
+        return id;
+    }
+
+    /**
+     * Set the ID of this NetIF.
+     */
+    public NetIF setID(int id) {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Get the weight of this NetIF.
+     */
+    public int getWeight() {
+        return weight;
+    }
+
+    /**
+     * Set the weight of this NetIF.
+     */
+    public NetIF setWeight(int w) {
+        weight = w;
+        return this;
+    }
+
+    /**
+     * Get the Address for this connection.
+     */
+    public Address getAddress() {
+        return address;
+    }
+
+    /**
+     * Set the Address for this connection.
+     */
+    public NetIF setAddress(Address addr) {
+        address = addr;
+        return this;
+    }
+
+    /**
+     * Get the name of the remote router this NetIF is connected to.
+     */
+    public String getRemoteRouterName() {
+        return remoteName;
+    }
+
+
+    /**
+     * Set the name of the remote router this NetIF is connected to.
+     */
+    public NetIF setRemoteRouterName(String name) {
+        remoteName = name;
+        return this;
+    }
+
+    /**
+     * Get the Address  of the remote router this NetIF is connected to
+     */
+    public Address getRemoteRouterAddress() {
+        return remoteAddress;
+    }
+
+    /**
+     * Set the Address  of the remote router this NetIF is connected to.
+     */
+    public NetIF setRemoteRouterAddress(Address addr) {
+        remoteAddress = addr;
+        return this;
+    }
+
+    /**
+     * Get the interface stats.
+     * A map of values like:
+     * "in_bytes" -> in_bytes
+     * "in_packets" -> in_packets
+     * "in_errors" -> in_errors
+     * "in_dropped" -> in_dropped
+     * "out_bytes" -> out_bytes
+     * "out_packets" -> out_packets
+     * "out_errors" -> out_errors
+     * "out_dropped" -> out_dropped
+     */
+    public Map<String, Number> getStats() {
+        return null;
+    }
+
+    /**
+     * Send a Datagram coming from the RouterFabric
+     * and passes it to an AppSocket.
+     */
+    public  boolean sendDatagram(Datagram dg) {
+        //System.err.println(leadin() + "datagramArrived: ");
+
+        incomingQueue.add(dg);
+
+        //System.err.println(leadin() + "Incoming queue size: " + incomingQueue.size());
+
+        return true;
+    }
+
+    /**
+     * forward a datagram (does not set src address)
+     */
+    public boolean forwardDatagram(Datagram dg) {
+        return sendDatagram(dg);
+    }
+
+
+
+    /**
+     * Reads a Datagram sent from an AppSocket
+     * into the RouterFabric.
+     */
+    public Datagram readDatagram() {
+        try {
+            Datagram datagram = outgoingQueue.take();
+
+            return datagram;
+        } catch (InterruptedException ie) {
+            // InterruptedException, return null
+            System.err.println(leadin() + "readDatagram INTERRUPTED");
+            return null;
+        }
+    }
+
+
+    /**
+     * Sends a Datagram from an AppSocket towards to RouterFabric.
+     */
+    public boolean socketSendDatagram(Datagram datagram) {
+        // patch up the source address in the Datagram
+        GIDAddress srcAddr = controller.getAddress();
+        datagram.setSrcAddress(srcAddr);
+
+        outgoingQueue.add(datagram);
+
+        //System.err.println(leadin() + "Outgoing queue size: " + outgoingQueue.size());
+
+        // tell fabric we have a Datagram
+        listener.datagramArrived(this);
+
+        return true;
+    }
+
+
+
+    /**
+     * Close a NetIF
+     */
+    public void close() {
+        isClosed = true;
+    }
+
+    /**
+     * Is closed.
+     */
+    public boolean isClosed() {
+        return isClosed;
+    }
+
+    /**
+     * Get the Listener of a NetIF.
+     */
+    public NetIFListener getNetIFListener() {
+        return listener;
+    }
+
+    /**
+     * Set the Listener of NetIF.
+     */
+    public NetIF setNetIFListener(NetIFListener l) {
+        listener = l;
+        return this;
+    }
+    
+    /** Setter function for remoteclose*/
+    public void setRemoteClose(boolean rc)  {
+    }
+
+    /** Remote close received */
+    public void remoteClose() {
+        close();
+    }
+    
+    /** Routing table sent */
+    public boolean sendRoutingTable(String s) {
+        throw new UnsupportedOperationException("AppSocketMux has no sendRoutingTable capability");
+    }
+    
+    
 
 
     /**
      * Add an AppSocket.
      */
     synchronized void addAppSocket(AppSocket s) {
-        s.localAddress = netIF.getAddress();
+        s.localAddress = getAddress();
 
         int port = s.getLocalPort();
 
-        System.err.println(leadin() + "addAppSocket " + port + "  -> " + s);
+        // System.err.println(leadin() + "addAppSocket " + port + "  -> " + s);
 
 
         // register the socket
@@ -254,7 +462,7 @@ public class AppSocketMux implements NetIFListener, Runnable {
     synchronized void removeAppSocket(AppSocket s) {
         int port = s.getLocalPort();
 
-        System.err.println(leadin() + "removeAppSocket " + port + "  -> " + s);
+        // System.err.println(leadin() + "removeAppSocket " + port + "  -> " + s);
 
         // unregister the socket
         socketMap.remove(port);
@@ -296,43 +504,10 @@ public class AppSocketMux implements NetIFListener, Runnable {
     }
 
     /**
-     * A NetIF has a datagram.
-     */
-    public boolean datagramArrived(NetIF netIF) {
-        System.err.println(leadin() + "datagramArrived: ");
-
-        Datagram datagram = netIF.readDatagram();
-
-        incomingQueue.add(datagram);
-
-        System.err.println(leadin() + "Incoming queue size: " + incomingQueue.size());
-
-        return true;
-    }
-    
-    /**
-     * Send a datagram to the router fabric.
-     */
-    public  boolean sendDatagram(Datagram dg) {
-        // patch up the source address in the Datagram
-        GIDAddress srcAddr = controller.getAddress();
-        dg.setSrcAddress(srcAddr);
-
-        return netIF.forwardDatagram(dg);
-    }
-
-    /**
      * Get the queue for a specified port.
      */
     LinkedBlockingQueue<Datagram> getQueueForPort(int port) {
         return socketQueue.get(port);
-    }
-
-    /**
-     * A NetIF is closing.
-     */
-    public boolean netIFClosing(NetIF netIF) {
-        return true;
     }
 
     /**

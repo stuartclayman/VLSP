@@ -460,7 +460,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     
     /** Datagram which has arrived is ours */
     void  receiveOurDatagram(Datagram datagram, NetIF netIF) {
-        System.out.println(leadin() + " receiveOurDatagram ");
+        //System.out.println(leadin() + " receiveOurDatagram ");
          
         if (datagram.getProtocol() == Protocol.CONTROL) {
             processControlDatagram(datagram, netIF);
