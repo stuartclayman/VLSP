@@ -33,13 +33,13 @@ public class NullAPController implements APController {
     /** Router regular AP update action */
     public void routerUpdate(Router r) 
     {
-        
+        //System.err.println ("Controller called");
     }
     
     /** Controller regular AP update action */
     public void controllerUpdate(GlobalController g)
     {
-    
+       // System.err.println ("Controller called");
     }
     
     /** Add new access point with gid G*/

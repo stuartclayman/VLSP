@@ -124,6 +124,23 @@ public class ReadXMLUtils {
         node.removeChild(n);
     }
     
+    /** Remove from the dom an element which may be present and multiple */
+    public static void removeNodes(Node node, String tag, String parent)
+        throws SAXException
+    {
+    
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            throw new SAXException("Expecting node element with tag "+tag);
+        }
+        Element el = (Element)node;
+        NodeList hNameList = el.getElementsByTagName(tag);
+        
+        while (hNameList.getLength() != 0) {
+            Node n = hNameList.item(0);
+            node.removeChild(n);
+        }
+    }
+    
      static public ProbDistribution parseProbDist(NodeList n, String tagname) 
       throws SAXException, ProbException, XMLNoTagException{
         if (n.getLength() == 0) 

@@ -58,6 +58,8 @@ public class RouterController implements ComponentController, Runnable {
     // the no of connections
     int connectionCount;
 
+    RouterOptions options_= null;
+
     // Map of NetIFs that are in the process of being finalized
     // and are temporarily held here in the RouterController.
     HashMap<Integer, NetIF> tempNetIFMap;

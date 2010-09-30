@@ -10,6 +10,9 @@ public class ConstructAPController
     {
         APController a= null;
         String name= o.getAPControllerName();
+        if (name == null) {
+            name= "";
+        }
         if (name.equals("Random")) {
             a = new RandomAPController(o);
             return a;

@@ -34,6 +34,7 @@ public class RouterOptions {
     int controllerConsiderTime_= 10000;   // Time controller reconsiders
     int maxAPHops_= 5;   // Maximum number of hops an AP can be away
     int maxAPWeight_= 0;  // Maximum link weight an AP can be aways
+    String []APParms_= {}; // Parameters for AP Options
     
     /** Constructor for router Options */
     
@@ -44,7 +45,6 @@ public class RouterOptions {
    
     /** init function sets up defaults and basic information */
     void init () {
-        
     }
     
     public void setOptionsFromFile(String fName) throws java.io.FileNotFoundException,
@@ -236,6 +236,15 @@ public class RouterOptions {
         } catch (XMLNoTagException e) {
            
         }
+        try {
+            APParms_= ReadXMLUtils.parseArrayString(n,"Parameter","APManager");
+            ReadXMLUtils.removeNodes(n,"Parameter","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } 
+       // for (int i= 0; i < APParms_.length; i++) {
+       //     System.err.println("READ "+APParms_[i]);
+        //}
         NodeList nl= n.getChildNodes();
         for (int i= 0; i < nl.getLength(); i++) {         
             Node n0= nl.item(i); 
@@ -244,6 +253,7 @@ public class RouterOptions {
             }
                 
         } 
+        
         n.getParentNode().removeChild(n);
     }
     
@@ -306,7 +316,11 @@ public class RouterOptions {
         return maxAPWeight_;
     }
     
-
+    /** Accessor function for AP parameters */
+    public String[] getAPParms() 
+    {
+        return APParms_;
+    }
     /**
      * Create the String to print out before a message
      */
