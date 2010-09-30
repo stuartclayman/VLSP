@@ -332,11 +332,12 @@ public class TCPNetIF implements NetIF , Runnable {
         //System.err.println(leadin()+"Calling stop");
         stop();
         //System.err.println(leadin()+"joining readthread");
-        //try {
-       //     readThread.join();
-       // } catch (InterruptedException ie) {
+      //  try {
+     //         if (readThread.isAlive())
+      //        readThread.join();
+      //  } catch (InterruptedException ie) {
             // System.err.println("TCPNetIF: close - InterruptedException for readThread join on " + connection);
-       // }
+        //}
         connection.close();
 
         closed = true;

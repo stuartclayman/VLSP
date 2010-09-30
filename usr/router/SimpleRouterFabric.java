@@ -95,7 +95,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
 
         // wait for myself
-       // try {
+       //try {
+        //      if (myThread.isAlive()) 
      //       myThread.join();
      //  } catch (InterruptedException ie) {
      //       System.err.println("SimpleRouterFabric: stop - InterruptedException for myThread join on " + myThread);
