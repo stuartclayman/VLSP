@@ -22,7 +22,7 @@ public class ShutDownCommand extends GlobalCommand {
      */
     public boolean evaluate(String req) {
         controller.shutDownCommand();
-        success("Shut Down Received For Global Controller");
+        success("Shut Down Sent to Local Controller -- will be processed next in queue");
         return true;
     }
 
