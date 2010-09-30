@@ -87,11 +87,6 @@ public class RouterApp1C {
                 //System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
 
-            try { 
-                Thread.sleep(0);
-            } catch (InterruptedException ie) {
-            }
-
         }
 
         System.out.println("ending....");
@@ -109,6 +104,7 @@ public class RouterApp1C {
     }
 
     public static void main(String[] args) {
+        String host = "localhost";
         int count = 10;
 
         if (args.length == 1) {
@@ -116,10 +112,17 @@ public class RouterApp1C {
             Scanner scanner = new Scanner(args[0]);
 
             count = scanner.nextInt();
+        } else if (args.length == 2) {
+            host = args[0];
+
+            // get no of writes
+            Scanner scanner = new Scanner(args[1]);
+
+            count = scanner.nextInt();
         }
 
 
-        RouterApp1C app1c = new RouterApp1C("localhost", 18191);
+        RouterApp1C app1c = new RouterApp1C(host, 18191);
 
         app1c.writeALot(count);
 

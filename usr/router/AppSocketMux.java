@@ -396,7 +396,9 @@ public class AppSocketMux implements NetIF, Runnable {
      * Close a NetIF
      */
     public void close() {
-        isClosed = true;
+        if (!isClosed()) {
+            isClosed = true;
+        }
     }
 
     /**
