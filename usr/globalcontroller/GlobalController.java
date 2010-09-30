@@ -9,6 +9,7 @@ import java.net.*;
 import usr.common.*;
 import java.util.concurrent.*;
 import usr.interactor.*;
+import usr.APcontroller.*;
 import usr.router.RouterOptions;
 
 /**
@@ -46,6 +47,7 @@ public class GlobalController implements ComponentController {
     
     private String myName = "GlobalController";
 
+    private APController APController_= null;
     
     /**
      * Main entry point.
@@ -79,6 +81,8 @@ public class GlobalController implements ComponentController {
       routerList_= new ArrayList<Integer>();
       options_= new ControlOptions(xmlFile_);
       routerOptions_= options_.getRouterOptions();
+      APController_= ConstructAPController.constructAPController
+        (routerOptions_);
       myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
       if (!options_.isSimulation()) {
           initEmulation();

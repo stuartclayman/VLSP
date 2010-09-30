@@ -217,7 +217,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             
             return;
         }
-        System.err.println(leadin() + "Sending table for "+n);
+        System.out.println(leadin() + "Sending table for "+n);
         n.sendRoutingTable(table_.toString());
         
         lastTableUpdateTime_.put(n,now);

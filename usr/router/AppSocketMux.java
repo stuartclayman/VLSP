@@ -110,7 +110,7 @@ public class AppSocketMux implements NetIFListener, Runnable {
             try {
                 datagram = incomingQueue.take();
             } catch (InterruptedException ie) {
-                System.err.println(leadin() + "INTERRUPTED");
+                System.out.println(leadin() + "INTERRUPTED");
                 continue;
             }
 

@@ -598,7 +598,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * A remote close was received.
      */
     public void remoteClose() {
-        System.err.println("TCPNetIF: got remote close. incomingQueue size = " + incomingQueue.size()); 
+        System.out.println("TCPNetIF: got remote close. incomingQueue size = " + incomingQueue.size()); 
 
         // we check the queue to see if it has any data.
         if (incomingQueue.size() == 0) {
