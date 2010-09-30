@@ -38,6 +38,7 @@ public class GlobalControllerManagementConsole extends AbstractManagementConsole
         register(new UnknownCommand());
         register(new LocalOKCommand());
         register(new QuitCommand());
+        register(new ShutDownCommand());
     }
     
 }

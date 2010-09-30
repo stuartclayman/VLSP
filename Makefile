@@ -30,10 +30,14 @@ JC = javac
 .java.class:
 	$(JC) $(JFLAGS) $*.java 
 CLASSES = \
-  usr/test/RouterTest1.java \
+   usr/test/RouterTest1.java \
   usr/test/StubServer.java \
   usr/test/StubClient.java \
   usr/test/VariateTest.java \
+  usr/test/RouterApp2.java \
+  usr/test/RouterApp1C.java \
+  usr/test/RouterApp1S.java \
+  usr/test/RouterApp2DS.java \
   usr/router/RoutingTableEntry.java \
   usr/router/Router.java \
   usr/router/command/QuitCommand.java \
@@ -49,14 +53,19 @@ CLASSES = \
   usr/router/command/ReadOptionsFileCommand.java \
   usr/router/command/EndLinkCommand.java \
   usr/router/command/ReadOptionsStringCommand.java \
+  usr/router/command/ListRoutingTableCommand.java \
   usr/router/command/RouterCommand.java \
   usr/router/command/ShutDownCommand.java \
   usr/router/command/GetPortRemoteRouterCommand.java \
   usr/router/command/SetWeightCommand.java \
   usr/router/command/GetPortNameCommand.java \
   usr/router/command/GetWeightCommand.java \
-  usr/router/command/ListRoutingTableCommand.java \
+  usr/router/command/EchoCommand.java \
   usr/router/command/PingNeighboursCommand.java \
+  usr/router/command/GetGlobalIDCommand.java \
+  usr/router/command/SetGlobalIDCommand.java \
+  usr/router/command/PingCommand.java \
+  usr/router/command/RunCommand.java \
   usr/router/SimpleRouterFabric.java \
   usr/router/RouterFabric.java \
   usr/router/CreateConnection.java \
@@ -72,6 +81,9 @@ CLASSES = \
   usr/router/RoutingTable.java \
   usr/router/RouterOptions.java \
   usr/router/NetIFListener.java \
+  usr/router/RouterDirectory.java \
+  usr/router/AppSocketMux.java \
+  usr/router/AppSocket.java \
   usr/net/Datagram.java \
   usr/net/TCPEndPointSrc.java \
   usr/net/DatagramPatch.java \
@@ -88,6 +100,9 @@ CLASSES = \
   usr/net/ConnectionOverUDP.java \
   usr/net/TCPEndPoint.java \
   usr/net/UDPEndPoint.java \
+  usr/net/GIDDatagram.java \
+  usr/net/GIDAddress.java \
+  usr/net/DatagramSocket.java \
   usr/interactor/MCRPException.java \
   usr/interactor/MCRPResponse.java \
   usr/interactor/MCRPEvent.java \
@@ -147,13 +162,19 @@ CLASSES = \
   usr/engine/TestEventEngine.java \
   usr/engine/ScriptEngine.java \
   usr/engine/ProbabilisticEventEngine.java \
-  usr/management/APManager.java \
+  usr/APcontroller/APController.java \
+  usr/APcontroller/RandomAPController.java \
+  usr/APcontroller/NullAPController.java \
+  usr/APcontroller/ConstructAPController.java \
   usr/output/OutputType.java \
   usr/logging/Logger.java \
   usr/logging/LogInput.java \
   usr/logging/LogOutput.java \
   usr/logging/LoggingOutputStream.java \
-  usr/logging/Logging.java
+  usr/logging/Logging.java \
+  usr/applications/PingApplication.java \
+  usr/applications/Application.java \
+  usr/management/APManager.java 
 #
 # the default make target entry
 #

@@ -291,6 +291,13 @@ public class MCRP implements Protocol {
         public final static int ERROR= 432;
     }
     
+    /** Global Controller Shutdown*/
+    public final static class GC_SHUT_DOWN{
+        public final static String CMD = "SHUT_DOWN";
+        public final static int CODE= 283;
+        public final static int ERROR= 433;
+    }
+    
     /*
      * Spare - 290 - 299
      */

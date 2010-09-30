@@ -46,7 +46,7 @@ class ControlOptions {
       remoteLoginCommand_ = "/usr/bin/ssh";
       remoteLoginFlags_ = "-n";
       remoteStartController_ = 
-        "java -cp $(HOME)/code/userspacerouter usr.localcontroller.LocalController";
+        "java -cp code/userspacerouter usr.localcontroller.LocalController";
       routerOptions_= new RouterOptions(null);
     }
     
@@ -56,6 +56,13 @@ class ControlOptions {
       localControllers_.add(host);
     }
 
+
+    /** Accessor function for router Options */
+    
+    public RouterOptions getRouterOptions() 
+    {
+        return routerOptions_;
+    }
 
     /** Read control options from XML file 
     */

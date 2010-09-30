@@ -18,10 +18,22 @@ import usr.common.*;
 public class RouterOptions {
    
     Router router_;
+        
+    // Parameters set in RoutingParameters Tag
         // how many millis to wait between checks of routing table
     int maxCheckTime_ = 60000;    // Interface wakes up this often anyway
     int minNetIFUpdateTime_= 1000;  // Shortest interval between routing updates down given NetIF
     int maxNetIFUpdateTime_= 30000;  // Longest interval between routing updates down given NetIF
+    
+    // Parameters set in APManager Tag
+    
+    String APManagerName_= null;    // Name of  APManager
+    int maxAPs_= 0;   // max APs
+    int minAPs_= 0;   // min APs
+    int routerConsiderTime_= 10000;   // Time router reconsiders
+    int controllerConsiderTime_= 10000;   // Time controller reconsiders
+    int maxAPHops_= 5;   // Maximum number of hops an AP can be away
+    int maxAPWeight_= 0;  // Maximum link weight an AP can be aways
     
     /** Constructor for router Options */
     
@@ -83,7 +95,10 @@ public class RouterOptions {
         if (rps != null) {
             processRoutingParameters(rps);
         }
-        
+        NodeList apm= doc.getElementsByTagName("APManager");
+        if (apm != null) {
+            processAPM(apm);
+        }
         // Check for other unparsed tags
         Element el= doc.getDocumentElement();
         NodeList rest= el.getChildNodes();
@@ -147,6 +162,91 @@ public class RouterOptions {
         rp.getParentNode().removeChild(rp);
     }
     
+    /** Process the part of the XML related to Access Point management */
+    void processAPM(NodeList apm) throws SAXException
+    {
+        
+        if (apm.getLength() > 1) {
+            throw new SAXException ("Only one APManager tag allowed.");
+        }
+        if (apm.getLength() == 0) 
+            return;
+        Node n= apm.item(0);
+
+        try {
+            APManagerName_= ReadXMLUtils.parseSingleString
+              (n, "Name","APManager",true);
+            ReadXMLUtils.removeNode(n,"Name","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+            maxAPs_= ReadXMLUtils.parseSingleInt
+              (n, "MaxAPs","APManager",true);
+            ReadXMLUtils.removeNode(n,"MaxAPs","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+            minAPs_= ReadXMLUtils.parseSingleInt
+              (n, "MinAPs","APManager",true);
+            ReadXMLUtils.removeNode(n,"MinAPs","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+            routerConsiderTime_= ReadXMLUtils.parseSingleInt
+              (n, "RouterConsiderTime","APManager",true);
+            ReadXMLUtils.removeNode(n,"RouterConsiderTime","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+            controllerConsiderTime_= ReadXMLUtils.parseSingleInt
+              (n, "ControllerConsiderTime","APManager",true);
+            ReadXMLUtils.removeNode(n,"ControllerConsiderTime","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+            maxAPHops_= ReadXMLUtils.parseSingleInt
+              (n, "MaxAPHops","APManager",true);
+            ReadXMLUtils.removeNode(n,"MaxAPHops","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+            maxAPWeight_= ReadXMLUtils.parseSingleInt
+              (n, "MaxAPWeight","APManager",true);
+            ReadXMLUtils.removeNode(n,"MaxAPWeight","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        NodeList nl= n.getChildNodes();
+        for (int i= 0; i < nl.getLength(); i++) {         
+            Node n0= nl.item(i); 
+            if (n0.getNodeType() == Node.ELEMENT_NODE) {
+                throw new SAXException("Unrecognised tag in APManager"+n0.getNodeName());
+            }
+                
+        } 
+        n.getParentNode().removeChild(n);
+    }
+    
     /** Return the longest time between router fabric wake ups */
     public int getMaxCheckTime() {
         return maxCheckTime_;
@@ -163,7 +263,50 @@ public class RouterOptions {
     public int getMaxNetIFUpdateTime() {
          return maxNetIFUpdateTime_;
     }
+    
+    /** Accessor function for name of AP controller */
+    public String getAPControllerName()
+    { 
+        return APManagerName_;
+    }
   
+    /** Accessor function for max no of APs */
+    public int getMaxAPs()
+    { 
+        return maxAPs_;
+    }
+    
+     /** Accessor function for min no of APs */
+    public int getMinAPs()
+    { 
+        return minAPs_;
+    }
+  
+      /** Accessor function for router Consider time */
+    public int getRouterConsiderTime()
+    { 
+        return routerConsiderTime_;
+    }
+    
+     /** Accessor function for global controller consider time*/
+    public int getControllerConsiderTime()
+    { 
+        return controllerConsiderTime_;
+    }
+    
+    /** Accessor function for maximum number of hops to AP*/
+    public int getMaxAPHops()
+    { 
+        return maxAPHops_;
+    }
+    
+    /** Accessor function for maximum weight to AP*/
+    public int getMaxAPWeight()
+    { 
+        return maxAPWeight_;
+    }
+    
+
     /**
      * Create the String to print out before a message
      */

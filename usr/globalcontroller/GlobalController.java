@@ -9,6 +9,7 @@ import java.net.*;
 import usr.common.*;
 import java.util.concurrent.*;
 import usr.interactor.*;
+import usr.router.RouterOptions;
 
 /**
  * The GlobalController is in overall control of the software.  It
@@ -38,6 +39,7 @@ public class GlobalController implements ComponentController {
     private EventScheduler scheduler_= null;
     private boolean simulationRunning_= true;
     private int maxRouterId_=0;
+    private RouterOptions routerOptions_= null;
 
     private Thread ProcessOutputThread_;
     private int noControllers_= 0;
@@ -76,6 +78,7 @@ public class GlobalController implements ComponentController {
       inLinks_= new HashMap<Integer, ArrayList<Integer>> ();
       routerList_= new ArrayList<Integer>();
       options_= new ControlOptions(xmlFile_);
+      routerOptions_= options_.getRouterOptions();
       myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
       if (!options_.isSimulation()) {
           initEmulation();
@@ -576,7 +579,15 @@ public class GlobalController implements ComponentController {
         }
     }
     
-    
+    /** Shutdown called from console -- add shut down command to list to
+    happen now */
+    public synchronized void shutDownCommand() {
+        System.out.println(leadin()+"Shut down called from console");
+        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION,0,null);
+        scheduler_.addEvent(e);
+        notifyAll();
+    }  
+      
     private void shutDown() {
         System.out.println (leadin() + "SHUTDOWN CALLED!");
         if (!options_.isSimulation()) {
