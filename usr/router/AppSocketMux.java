@@ -17,7 +17,7 @@ import java.io.IOException;
  * layer function in order that applications can send data to each other
  * and have an address and a port.
  */
-public class AppSocketMux implements NetIFListener {
+public class AppSocketMux implements NetIFListener, Runnable {
     // the RouterController
     RouterController controller;
 
@@ -30,27 +30,157 @@ public class AppSocketMux implements NetIFListener {
     // the next free port
     int freePort = 32768;
 
+    // Incoming queue
+    LinkedBlockingQueue<Datagram> incomingQueue;
+
     // The list of all AppSockets
     HashMap<Integer, AppSocket>socketMap;
 
     // The queues of Datagrams for all AppSockets
     HashMap<Integer, LinkedBlockingQueue<Datagram>>socketQueue;
 
+    // My Thread
+    Thread myThread;
+    boolean running = false;
+
     /**
      * Construct an AppSocketMux.
      */
     AppSocketMux(RouterController controller) {
         this.controller = controller;
+        incomingQueue = new LinkedBlockingQueue<Datagram>();
         socketMap = new HashMap<Integer, AppSocket>();
         socketQueue = new HashMap<Integer, LinkedBlockingQueue<Datagram>>();
 
     }
 
+    /**
+     * Start me up.
+     */
+    public boolean start() {
+        System.out.println(leadin() + "start");
+
+        // start my own thread
+        myThread = new Thread(this);
+        running = true;
+        myThread.start();
+
+        boolean connected = connect();
+
+        return connected;
+    }
+    
+    /**
+     * Close all sockets.
+     */
+    public boolean stop() {
+        System.out.println(leadin() + "stop");
+
+        HashSet<AppSocket> sockets = new HashSet<AppSocket>(socketMap.values());
+
+        for (AppSocket s : sockets) {
+            s.close();
+        }
+
+        netIF.close();
+
+        // stop my own thread
+        running = false;
+        myThread.interrupt();
+
+        waitFor();
+
+        /*
+        // wait for myself
+        try {
+            myThread.join();
+        } catch (InterruptedException ie) {
+            // System.err.println(leadin() + "stop - InterruptedException for myThread join on " + myThread);
+        }
+        */
+
+        return true;
+    }
+
+    public void run() {
+        while (running) {
+            
+            Datagram datagram;
+
+            try {
+                datagram = incomingQueue.take();
+            } catch (InterruptedException ie) {
+                System.err.println(leadin() + "INTERRUPTED");
+                continue;
+            }
+
+            if (datagram.getProtocol() == Protocol.CONTROL) {
+                datagramCount++;
+
+                byte[] payload = datagram.getPayload();
+                byte controlChar= payload[0];
+
+                if (controlChar == 'C') {
+                    System.err.println(leadin() + "Got Close");
+                    stop();
+                }
+            }
+        
+            System.err.println(leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+
+            datagramCount++;
+
+            // check the port of the socket and send it on
+            int dstPort = datagram.getDstPort();
+
+            // find the socket to deliver to
+            AppSocket socket = socketMap.get(dstPort);
+
+            if (socket != null) {
+                //System.err.println(leadin() + "About to queue for " + socket);
+
+                LinkedBlockingQueue<Datagram> queue = getQueueForPort(dstPort);
+                queue.add(datagram);
+                System.err.println(leadin() + "Queue for " + socket + " is size: " + queue.size());
+            } else {
+                System.err.println(leadin() + "Cant deliver to port " + dstPort);
+            }
+        }
+
+        theEnd();
+    }
+
+    /**
+     * Wait for this thread.
+     */
+    private synchronized void waitFor() {
+        // System.out.println(leadin() + "waitFor");
+        try {
+            wait();
+        } catch (InterruptedException ie) {
+        }
+    }
+    
+    /**
+     * Notify this thread.
+     */
+    private synchronized void theEnd() {
+        // System.out.println(leadin() + "theEnd");
+        notify();
+    }
+
+
+    private synchronized void pause() {
+        try {
+            wait();
+        } catch (InterruptedException ie) {
+        }
+    }
 
     /**
      * Connect to my local Router.
      */
-    boolean connect() {
+    private boolean connect() {
         try {
             // initialise socket
             //  Can't use InetAddress.getLocalHost() - might need to fix this
@@ -58,6 +188,7 @@ public class AppSocketMux implements NetIFListener {
         
             netIF = new TCPNetIF(src);
             netIF.setAddress(new GIDAddress(0));
+            netIF.setName("localnet");
             netIF.connect();
             
             System.out.println(leadin() + "Connected to: " + "localhost:" + controller.getConnectionPort());
@@ -98,25 +229,11 @@ public class AppSocketMux implements NetIFListener {
 
     }
 
-    /**
-     * Close all sockets.
-     */
-    public boolean stop() {
-        HashSet<AppSocket> sockets = new HashSet<AppSocket>(socketMap.values());
-
-        for (AppSocket s : sockets) {
-            s.close();
-        }
-
-        netIF.close();
-
-        return true;
-    }
 
     /**
      * Add an AppSocket.
      */
-    void addAppSocket(AppSocket s) {
+    synchronized void addAppSocket(AppSocket s) {
         s.localAddress = netIF.getAddress();
 
         int port = s.getLocalPort();
@@ -134,7 +251,7 @@ public class AppSocketMux implements NetIFListener {
     /**
      * Remove an AppSocket.
      */
-    void removeAppSocket(AppSocket s) {
+    synchronized void removeAppSocket(AppSocket s) {
         int port = s.getLocalPort();
 
         System.err.println(leadin() + "removeAppSocket " + port + "  -> " + s);
@@ -151,7 +268,7 @@ public class AppSocketMux implements NetIFListener {
     /**
      * Is a specified port number available
      */
-    boolean isPortAvailable(int port) {
+    synchronized boolean isPortAvailable(int port) {
         // visit each socket and get its port
         for (AppSocket s : socketMap.values()) {
             if (port == s.getLocalPort()) {
@@ -168,7 +285,7 @@ public class AppSocketMux implements NetIFListener {
     /**
      * Find the next free port number.
      */
-    int findNextFreePort() {
+    synchronized int findNextFreePort() {
         // check if the next one is actually not free
         while (! isPortAvailable(freePort)) {
             freePort++;
@@ -182,48 +299,21 @@ public class AppSocketMux implements NetIFListener {
      * A NetIF has a datagram.
      */
     public boolean datagramArrived(NetIF netIF) {
-        Datagram datagram= netIF.readDatagram();
+        System.err.println(leadin() + "datagramArrived: ");
 
-        if (datagram.getProtocol() == Protocol.CONTROL) {
-            datagramCount++;
+        Datagram datagram = netIF.readDatagram();
 
-            byte[] payload = datagram.getPayload();
-            byte controlChar= payload[0];
+        incomingQueue.add(datagram);
 
-            if (controlChar == 'C') {
-                System.err.println(leadin() + "Got Close");
-                stop();
-                return true;
-            }
-        }
-        
-        System.err.println(leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+        System.err.println(leadin() + "Incoming queue size: " + incomingQueue.size());
 
-            datagramCount++;
-
-            // check the port of the socket and send it on
-            int dstPort = datagram.getDstPort();
-
-            // find the socket to deliver to
-            AppSocket socket = socketMap.get(dstPort);
-
-            if (socket != null) {
-                // System.err.println(leadin() + "About to queue for " + socket);
-                LinkedBlockingQueue<Datagram> queue = getQueueForPort(dstPort);
-                queue.add(datagram);
-
-                return true;
-            } else {
-                System.err.println(leadin() + "Cant deliver to port " + dstPort);
-                return false;
-            }
-        
+        return true;
     }
     
     /**
      * Send a datagram to the router fabric.
      */
-    public boolean sendDatagram(Datagram dg) {
+    public  boolean sendDatagram(Datagram dg) {
         // patch up the source address in the Datagram
         GIDAddress srcAddr = controller.getAddress();
         dg.setSrcAddress(srcAddr);

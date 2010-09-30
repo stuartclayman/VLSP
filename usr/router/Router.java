@@ -125,7 +125,7 @@ public class Router {
         boolean controllerStart = controller.start();
 
         appSocketMux = new AppSocketMux(controller);
-        appSocketMux.connect();
+        appSocketMux.start();
 
         return controllerStart && fabricStart;
     }

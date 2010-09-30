@@ -58,12 +58,21 @@ public class TCPNetIF implements NetIF , Runnable {
     Thread takeThread = null;
     boolean waitingForQueue = false;
 
+    // Write Thread
+    Thread writeThread = null;
 
     // Is the thread running
     boolean running = false;
 
     // a Queue of incoming Datagrams
-    BlockingQueue<Datagram> queue;
+    BlockingQueue<Datagram> incomingQueue;
+
+    // a Queue of outgoing Datagram
+    BlockingQueue<Datagram> outgoingQueue;
+
+    // counts
+    int incomingCount = 0;
+    int forwardCount = 0;
 
     // queue high limit
     int QUEUE_PAUSE_LIMIT = 120;
@@ -78,7 +87,8 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     public TCPNetIF(TCPEndPointSrc src) throws IOException {
         connection = new ConnectionOverTCP(src);
-        queue = new LinkedBlockingQueue<Datagram>();    
+        incomingQueue = new LinkedBlockingQueue<Datagram>();    
+        outgoingQueue = new LinkedBlockingQueue<Datagram>();
     }
 
     /**
@@ -86,7 +96,8 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     public TCPNetIF(TCPEndPointDst dst) throws IOException {
         connection = new ConnectionOverTCP(dst);
-        queue = new LinkedBlockingQueue<Datagram>();    
+        incomingQueue = new LinkedBlockingQueue<Datagram>();    
+        outgoingQueue = new LinkedBlockingQueue<Datagram>();
     }
 
     /**
@@ -221,7 +232,7 @@ public class TCPNetIF implements NetIF , Runnable {
         listener = l;
 
         // there is already something
-        if (queue.size() > 0) {
+        if (incomingQueue.size() > 0) {
             listener.datagramArrived(this);
         }
         return this;
@@ -231,7 +242,8 @@ public class TCPNetIF implements NetIF , Runnable {
      * Send a Datagram -- sets source to this interface
      */
     public boolean sendDatagram(Datagram dg) {
-        
+         // set the source address and port on the Datagram
+        dg.setSrcAddress(connection.getAddress());
         return connection.sendDatagram(dg);
     }
     
@@ -239,18 +251,15 @@ public class TCPNetIF implements NetIF , Runnable {
      * Forward a Datagram.
      */
     public boolean forwardDatagram(Datagram dg) {
+        System.err.println("TCPNetIF: " + getName() + " " + forwardCount + " forwardDatagram() ");
+
+        //outgoingQueue.add(dg);
+        //System.err.println("TCPNetIF: " + getName() + " " + forwardCount + " outgoingQueue size = " + outgoingQueue.size());
+        forwardCount++;
         
-        return connection.forwardDatagram(dg);
-    }
+        connection.sendDatagram(dg);
 
-    public boolean equals(Object obj) { 
-        if (obj instanceof NetIF) {
-            NetIF b = (NetIF)obj;
-            return getName().equals(b.getName());
-        } else {            
-            return false;
-        }
-
+        return true;
     }
 
     /**
@@ -261,7 +270,7 @@ public class TCPNetIF implements NetIF , Runnable {
         // Only grab data if we are running or if there is residual 
         // stuff in the queue
 
-        // which thread is doing the queue take()
+        // which thread is doing the incomingQueue take()
         takeThread = Thread.currentThread();
 
 
@@ -269,9 +278,9 @@ public class TCPNetIF implements NetIF , Runnable {
                         // this usually happens after 1 go, but
                         // it is possible to get an interrupt
 
-            if ((running && queue.size() >= 0) || (!running && queue.size() > 0)) {
+            if ((running && incomingQueue.size() >= 0) || (!running && incomingQueue.size() > 0)) {
                 // return a Datagram
-                if (remoteClose && queue.size() == 0) {
+                if (remoteClose && incomingQueue.size() == 0) {
                     // we need to close 
                     // so tell the Fabric
                     if (listener != null) {
@@ -285,13 +294,13 @@ public class TCPNetIF implements NetIF , Runnable {
                         // if the reader is paused and
                         // the queue is empty 
                         // start reading again
-                        if (queue.size() == QUEUE_TOO_LOW) {
+                        if (incomingQueue.size() == QUEUE_TOO_LOW) {
                             informReadAgain();
                         }
 
                         waitingForQueue = true;
 
-                        Datagram datagram = queue.take();
+                        Datagram datagram = incomingQueue.take();
 
                         waitingForQueue = false;
 
@@ -305,7 +314,7 @@ public class TCPNetIF implements NetIF , Runnable {
                     }
                 }
             } else {
-                // System.err.println("TCPNetIF: readDatagram() return null. running = " + running + " queue.size() == " + queue.size());
+                // System.err.println("TCPNetIF: readDatagram() return null. running = " + running + " incomingQueue.size() == " + incomingQueue.size());
                 return null;
             }
         }
@@ -316,7 +325,8 @@ public class TCPNetIF implements NetIF , Runnable {
      * Close a NetIF
      */
     public synchronized void close() {
-        //System.err.println(leadin()+"Close entered");
+        System.out.println("TCPNetIF: " + getName() + " -> Close");
+
         if (closed) {
             //System.err.println(leadin()+"Aleard closed");
             return;
@@ -326,18 +336,24 @@ public class TCPNetIF implements NetIF , Runnable {
         if (!remoteClose) {
             // if the close is initiated locally
             // send a control message to the other end
-            //System.err.println(leadin()+"Sending control");
+            System.out.println("TCPNetIF: -> Close controlClose");
+
             controlClose();
         }
         //System.err.println(leadin()+"Calling stop");
+        System.out.println("TCPNetIF: " + getName() + " -> Close stop");
+
         stop();
+
         //System.err.println(leadin()+"joining readthread");
       //  try {
      //         if (readThread.isAlive())
       //        readThread.join();
+            // //writeThread.join();
       //  } catch (InterruptedException ie) {
             // System.err.println("TCPNetIF: close - InterruptedException for readThread join on " + connection);
         //}
+
         connection.close();
 
         closed = true;
@@ -406,7 +422,7 @@ public class TCPNetIF implements NetIF , Runnable {
 	while (running) {
             // if the queue has reached its limit
             // dont read any more until we get an interrupt
-            if (queue.size() >= QUEUE_PAUSE_LIMIT) {
+            if (incomingQueue.size() >= QUEUE_PAUSE_LIMIT) {
                 holdOn(); // this sets paused
             }
 
@@ -422,16 +438,17 @@ public class TCPNetIF implements NetIF , Runnable {
                 // EOF
                 running = false;
             } else {
-                //System.err.println("TCPNetIF: got a Datagram");
+                System.err.println("TCPNetIF: " + getName() + " " + incomingCount + " got a Datagram");
+                incomingCount++;
 
-                queue.add(datagram);
+                incomingQueue.add(datagram);
 
                     // inform the listener
                 if (listener != null) {
-                    //System.err.println("TCPNetIF: informed listener");
                     listener.datagramArrived(this);
+                    System.err.println("TCPNetIF: " + getName() + " informed listener");
                 } else {
-                    //System.err.println("TCPNetIF: NO listener");
+                    System.err.println("TCPNetIF: " + getName() + " NO listener");
                 }
             }
         }
@@ -442,13 +459,28 @@ public class TCPNetIF implements NetIF , Runnable {
     }
 
     /**
-     * Notify main thread.
+     * Wait for this thread.
      */
-    private void theEnd() {
+    private synchronized void waitFor() {
+        System.out.println(leadin() + "waitFor");
+        try {
+            wait();
+        } catch (InterruptedException ie) {
+        }
+    }
+    
+    /**
+     * Notify this thread.
+     */
+    private synchronized void theEnd() {
+        System.out.println(leadin() + "theEnd");
+        notify();
+
         if (waitingForQueue) {
-            // System.err.println("TCPNetIF:  theEnd interrupt " + takeThread);
+            System.out.println("TCPNetIF:  theEnd interrupt " + takeThread);
             takeThread.interrupt();
         }
+
     }
 
     /**
@@ -456,12 +488,12 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     private synchronized void holdOn() {
         // the queue is actually too empty to wait()
-        if (queue.size() < QUEUE_TOO_LOW) {
-            //System.err.println("TCPNetIF: bail out of wait() at queue size: " + queue.size());
+        if (incomingQueue.size() < QUEUE_TOO_LOW) {
+            //System.err.println("TCPNetIF: bail out of wait() at queue size: " + incomingQueue.size());
             return;
         }
 
-        // System.err.println("run() about to wait() at queue size: " + queue.size());
+        // System.err.println("run() about to wait() at incomingQueue size: " + incomingQueue.size());
 
         // now wait
         try {
@@ -469,11 +501,11 @@ public class TCPNetIF implements NetIF , Runnable {
             wait();
         } catch (InterruptedException ie) {
             paused = false;
-            // System.err.println("run() with Exception out of wait() at queue size: " + queue.size());
+            // System.err.println("run() with Exception out of wait() at incomingQueue size: " + incomingQueue.size());
         }
         paused = false;
 
-        // System.err.println("run() out of wait() at queue size: " + queue.size());
+        // System.err.println("run() out of wait() at incomingQueue size: " + incomingQueue.size());
 
     }
 
@@ -483,7 +515,7 @@ public class TCPNetIF implements NetIF , Runnable {
     private synchronized void informReadAgain() {
         // This causes the wait() in run() to be woken up
         // and then real reading will start again
-        // System.err.println("TCPNetIF:  informReadAgain " + readThread + " queue size: " + queue.size());
+        // System.err.println("TCPNetIF:  informReadAgain " + readThread + " incomingQueue size: " + incomingQueue.size());
         notify();
     }
     
@@ -495,6 +527,9 @@ public class TCPNetIF implements NetIF , Runnable {
             readThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
             running = true;
             readThread.start();
+
+            //writeThread = new TCPNetIF.WriteThread((Connection)connection, outgoingQueue);
+            //writeThread.start();
         }
     }
 
@@ -506,10 +541,25 @@ public class TCPNetIF implements NetIF , Runnable {
             try {
                 running = false;
                 readThread.interrupt();
+                //writeThread.interrupt();
+
+
             } catch (Exception e) {
                 // System.err.println("TCPNetIF: Exception in stop() " + e);
             }
+
+            
         }
+    }
+
+    public boolean equals(Object obj) { 
+        if (obj instanceof NetIF) {
+            NetIF b = (NetIF)obj;
+            return getName().equals(b.getName());
+        } else {            
+            return false;
+        }
+
     }
 
 
@@ -554,10 +604,10 @@ public class TCPNetIF implements NetIF , Runnable {
      * A remote close was received.
      */
     public void remoteClose() {
-        // System.err.println("TCPNetIF: got remote close"); 
+        System.err.println("TCPNetIF: got remote close. incomingQueue size = " + incomingQueue.size()); 
 
         // we check the queue to see if it has any data.
-        if (queue.size() == 0) {
+        if (incomingQueue.size() == 0) {
             // there is nothing in the queue
             // so close immediately
             // by telling the Fabric
@@ -573,8 +623,56 @@ public class TCPNetIF implements NetIF , Runnable {
     }
     
     String leadin() {
-      return "NETIF "+name+":";
+      return "TCPNetIF "+name+":";
     }
 
+    /**
+     * A write thread class
+     */
+    public class WriteThread extends Thread {
+        // The connection
+        Connection connection;
 
+        // The queue
+        BlockingQueue<Datagram> queue;
+
+        // is running
+        boolean running = false;
+
+        /**
+         * Construct a WriteThread given a queue to read from
+         * and a Connection to send to.
+         */
+        public WriteThread(Connection c, BlockingQueue<Datagram> q) {
+            connection = c;
+            queue = q;
+        }
+
+        public void run() {
+            System.out.println("WriteThread: run");
+
+            running = true;
+
+            while (running) {
+                Datagram datagram;
+                try {
+                    System.out.println("WriteThread: queue size = " + queue.size());
+
+                    datagram = outgoingQueue.take();
+
+                    connection.sendDatagram(datagram);
+
+                } catch (InterruptedException ie) {
+                    running = false;
+                    System.out.println("WriteThread: interrupted");
+                    break;
+                }
+
+            }
+
+        }
+
+
+            
+    }
 }

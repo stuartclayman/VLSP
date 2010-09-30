@@ -91,16 +91,20 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         // stop my own thread
         //System.err.println("Run set to false");
         running = false;
+
+        // notify all waiting threads
         notifyAll();
 
 
-        // wait for myself
        //try {
         //      if (myThread.isAlive()) 
      //       myThread.join();
      //  } catch (InterruptedException ie) {
      //       System.err.println("SimpleRouterFabric: stop - InterruptedException for myThread join on " + myThread);
      // }
+
+        // wait for myself
+        waitFor();
 
         return true;
     }
@@ -111,41 +115,69 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * NetIFs plugged into the ports are alive.
      */
     public synchronized void run() {
-       long now=  System.currentTimeMillis();
-       while (running) {
+        long now=  System.currentTimeMillis();
+        while (running) {
             //System.err.println("Running");
-            long nextUpdateTime= calcNextTableSendTime();
+            long nextUpdateTime = calcNextTableSendTime();
             //System.err.println("Got time");
-            now= System.currentTimeMillis();
-            //System.err.println("TIME: "+now);
+            now = System.currentTimeMillis();
+            //System.err.println(leadin() + "run TIME: "+now + " nextUpdateTime: " + nextUpdateTime_ + " diff: " + (nextUpdateTime_ - now));
+
             if (nextUpdateTime <= now) {
-               // System.err.println("Sending table");
+                //System.err.println(leadin() + "Sending table");
+
                 sendNextTable();
                 continue;
             }
             
-            //System.err.println("Waiting Until: "+nextUpdateTime);
+            //System.err.println(leadin() + "Waiting Until: "+ nextUpdateTime);
+            //System.err.println(leadin() + "run Waiting For: "+ ((float)(nextUpdateTime_-now))/1000);
             //System.err.println("Time now "+ now);
+
             if (running)
                 waitUntil(nextUpdateTime);
                 
             //System.err.println("Running is "+running);
+
         }
+
+        theEnd();
+
         //System.err.println("Exit here");
         //System.err.flush();
+    }
+
+
+    /**
+     * Wait for this thread.
+     */
+    private synchronized void waitFor() {
+        System.out.println(leadin() + "waitFor");
+        try {
+            wait();
+        } catch (InterruptedException ie) {
+        }
+    }
+    
+    /**
+     * Notify this thread.
+     */
+    private synchronized void theEnd() {
+        System.out.println(leadin() + "theEnd");
+        notify();
     }
 
 
      /**
      * Wait until a specified absolute time is milliseconds.
      */
-    public synchronized void waitUntil(long time){
+    synchronized void waitUntil(long time){
         long now = System.currentTimeMillis();
 
         if (time <= now)
             return;
         try {
-            long timeout = time - now;
+            long timeout = time - now + 1;
             wait(timeout);
         } catch(InterruptedException e){
             //System.err.println("Interrupt");
@@ -154,7 +186,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
     
     /** Calculate when the next table send event is */
-    public synchronized long calcNextTableSendTime() {
+    synchronized long calcNextTableSendTime() {
         long now= System.currentTimeMillis();
         long nextUpdateTime= now+options_.getMaxCheckTime();
         nextUpdateIF_= null;
@@ -177,7 +209,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
     
     /** Now send a routing table */
-    public synchronized void sendNextTable() {
+    synchronized void sendNextTable() {
         NetIF n= nextUpdateIF_;
         long now= System.currentTimeMillis();
         if (n == null) {
@@ -185,7 +217,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             
             return;
         }
-        //System.err.println("Sending table for "+n);
+        System.err.println(leadin() + "Sending table for "+n);
         n.sendRoutingTable(table_.toString());
         
         lastTableUpdateTime_.put(n,now);
@@ -195,8 +227,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
       
     /** NetIF wants to send a routing Request */
-    
-    public synchronized void queueRoutingRequest(NetIF netIF) {
+    synchronized void queueRoutingRequest(NetIF netIF) {
         long now= System.currentTimeMillis();
         Long last= lastTableUpdateTime_.get(netIF);
         Long curr= nextTableUpdateTime_.get(netIF);
@@ -428,7 +459,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
     
     /** Datagram which has arrived is ours */
-    synchronized void  receiveOurDatagram(Datagram datagram, NetIF netIF) {
+    void  receiveOurDatagram(Datagram datagram, NetIF netIF) {
+        System.out.println(leadin() + " receiveOurDatagram ");
          
         if (datagram.getProtocol() == Protocol.CONTROL) {
             processControlDatagram(datagram, netIF);
@@ -525,6 +557,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             localNetIF.forwardDatagram(datagram);
             return;
         }
+
         System.err.println(leadin() + datagramCount + " FABRIC GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
 

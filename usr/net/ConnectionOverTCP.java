@@ -5,7 +5,6 @@ import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.nio.ByteBuffer;
 import java.io.IOException;
-import java.util.Queue;
 import java.util.LinkedList;
 
 /**
@@ -90,16 +89,8 @@ public class ConnectionOverTCP implements Connection {
     }
 
 
-    /**
-     * Send a Datagram.
-     */
     public boolean sendDatagram(Datagram dg) {
-        // set the source address and port on the Datagram
-        dg.setSrcAddress(localAddress);
-        return forwardDatagram(dg);
-    }
-    
-    public boolean forwardDatagram(Datagram dg) {
+        System.err.println("ConnectionOverTCP: " + outCounter + " sendDatagram() ");
       //  System.err.println("SENDING DATAGRAM LENGTH "+dg.getTotalLength());
       //  ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
      //   System.err.println("WRITE as bytes "+ b.asCharBuffer());
@@ -112,8 +103,8 @@ public class ConnectionOverTCP implements Connection {
             if (count == -1) {
                 return false;
             } else {
+                System.err.println("ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
                 outCounter++;
-                // System.err.println("ConnectionOverTCP: write " + count);
 
                 return true;
             }
@@ -128,7 +119,13 @@ public class ConnectionOverTCP implements Connection {
      */
     public Datagram readDatagram() {
         Datagram dg =  readDatagramAndWait();
-        inCounter++;
+
+        if (dg == null) {
+            System.err.println("ConnectionOverTCP: " + endPoint + " " + inCounter + " read NULL");
+        } else {
+            System.err.println("ConnectionOverTCP: " + endPoint + " " + inCounter + " read " + dg.getTotalLength());
+            inCounter++;
+        }
 
         return dg;
     }
@@ -277,12 +274,12 @@ public class ConnectionOverTCP implements Connection {
         buffer.position(bufferEndData_);
      
         try {
-            
-            int count= channel.read(buffer);
+            int count= getChannel().read(buffer);
+
             if (count == -1)
                 return;
             bufferEndData_+= count;
-            //System.err.println("READ "+count+" bytes");
+            System.err.println("ConnectionOverTCP: READ "+count+" bytes");
            // for (int i= 0; i < count; i++) {
           //      byte b= buffer.get(bufferStartData_+i);
          //       System.err.println ("Byte "+i+ " as char "+(char)b);
