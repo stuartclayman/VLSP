@@ -90,7 +90,7 @@ public class ConnectionOverTCP implements Connection {
 
 
     public boolean sendDatagram(Datagram dg) {
-        System.err.println("ConnectionOverTCP: " + outCounter + " sendDatagram() ");
+        //System.err.println("ConnectionOverTCP: " + outCounter + " sendDatagram() ");
       //  System.err.println("SENDING DATAGRAM LENGTH "+dg.getTotalLength());
       //  ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
      //   System.err.println("WRITE as bytes "+ b.asCharBuffer());
@@ -103,7 +103,7 @@ public class ConnectionOverTCP implements Connection {
             if (count == -1) {
                 return false;
             } else {
-                System.err.println("ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
+                //System.err.println("ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
                 outCounter++;
 
                 return true;
@@ -121,9 +121,9 @@ public class ConnectionOverTCP implements Connection {
         Datagram dg =  readDatagramAndWait();
 
         if (dg == null) {
-            System.err.println("ConnectionOverTCP: " + endPoint + " " + inCounter + " read NULL");
+            //System.err.println("ConnectionOverTCP: " + endPoint + " " + inCounter + " read NULL");
         } else {
-            System.err.println("ConnectionOverTCP: " + endPoint + " " + inCounter + " read " + dg.getTotalLength());
+            //System.err.println("ConnectionOverTCP: " + endPoint + " " + inCounter + " read " + dg.getTotalLength());
             inCounter++;
         }
 
@@ -279,7 +279,7 @@ public class ConnectionOverTCP implements Connection {
             if (count == -1)
                 return;
             bufferEndData_+= count;
-            System.err.println("ConnectionOverTCP: READ "+count+" bytes");
+            //System.err.println("ConnectionOverTCP: READ "+count+" bytes");
            // for (int i= 0; i < count; i++) {
           //      byte b= buffer.get(bufferStartData_+i);
          //       System.err.println ("Byte "+i+ " as char "+(char)b);
