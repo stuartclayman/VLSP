@@ -19,6 +19,15 @@ public class SocketAddress {
     }
 
     /**
+     * Construct a SocketAddress from a port only.
+     * Often used in receivers.
+     */
+    public SocketAddress(int port) {
+        this.address = null;
+        this.port = port;
+    }
+
+    /**
      * Get the Address
      */
     public Address getAddress() {
