@@ -31,7 +31,10 @@ public class Router {
 
     // ApplicationSocket Multiplexor
     AppSocketMux appSocketMux;
-    
+
+    // Is the router active
+    boolean isActive = false;
+
     ArrayList <Application> appList= null;
 
 
@@ -120,31 +123,51 @@ public class Router {
      * Start the router
      */
     public boolean start() {
-        System.out.println(leadin() + "start");
+        if (!isActive) {
+            System.out.println(leadin() + "start");
 
-        boolean fabricStart = fabric.start();
-        boolean controllerStart = controller.start();
+            boolean fabricStart = fabric.start();
+            boolean controllerStart = controller.start();
 
-        appSocketMux = new AppSocketMux(controller);
-        appSocketMux.start();
+            appSocketMux = new AppSocketMux(controller);
+            appSocketMux.start();
       
-        return controllerStart && fabricStart;
+            isActive = true;
+
+            return controllerStart && fabricStart;
+        } else {
+            return false;
+        }
     }
         
     /**
      * Stop the router
      */
     public boolean stop() {
-        System.out.println(leadin() + "stop");
-        appSocketMux.stop();
+        if (isActive) {
+            System.out.println(leadin() + "stop");
+            appSocketMux.stop();
 
-        controller.stop();
-        fabric.stop();
-        stopApplications();      
+            controller.stop();
+            fabric.stop();
 
-        return true;
+            stopApplications();
+
+            isActive = false;
+
+            return true;
+        } else {
+            return false;
+        }
     }
-        
+
+    /**
+     * Is the router active
+     */
+    public boolean isActive() {
+        return isActive;
+    }
+
     /** Stop running applications if any */
     void stopApplications () {
         for (Application a: appList) {
@@ -404,5 +427,21 @@ public class Router {
         System.exit(1);
     }
 
+    static {
+        Runtime.getRuntime().addShutdownHook(new TidyUp());
+    }
 
+}
+
+class TidyUp extends Thread {
+    public TidyUp() {
+    }
+
+    public void run() {
+        Router router = RouterDirectory.getRouter();
+
+        if (router.isActive()) {
+            router.stop();
+        }
+    }
 }

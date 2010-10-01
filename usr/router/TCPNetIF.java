@@ -5,6 +5,7 @@ import usr.protocol.Protocol;
 import java.io.*;
 import java.net.*;
 import java.util.Map;
+import java.util.HashMap;
 import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -72,7 +73,14 @@ public class TCPNetIF implements NetIF , Runnable {
 
     // counts
     int incomingCount = 0;
+    int incomingBytes = 0;
+    int incomingErrors = 0;
+    int incomingDropped = 0;
     int forwardCount = 0;
+    int forwardBytes = 0;
+    int forwardErrors = 0;
+    int forwardDropped = 0;
+
 
     // queue high limit
     int QUEUE_PAUSE_LIMIT = 120;
@@ -244,6 +252,11 @@ public class TCPNetIF implements NetIF , Runnable {
     public boolean sendDatagram(Datagram dg) {
          // set the source address and port on the Datagram
         dg.setSrcAddress(connection.getAddress());
+
+        // stats
+        forwardCount++;
+        forwardBytes += dg.getTotalLength();
+        
         return connection.sendDatagram(dg);
     }
     
@@ -255,7 +268,10 @@ public class TCPNetIF implements NetIF , Runnable {
 
         //outgoingQueue.add(dg);
         //System.err.println("TCPNetIF: " + getName() + " " + forwardCount + " outgoingQueue size = " + outgoingQueue.size());
+
+        // stats
         forwardCount++;
+        forwardBytes += dg.getTotalLength();
         
         connection.sendDatagram(dg);
 
@@ -281,6 +297,7 @@ public class TCPNetIF implements NetIF , Runnable {
                         // it is possible to get an interrupt
 
             if ((running && incomingQueue.size() >= 0) || (!running && incomingQueue.size() > 0)) {
+                
                 // return a Datagram
                 if (remoteClose && incomingQueue.size() == 0) {
                     // we need to close 
@@ -373,7 +390,20 @@ public class TCPNetIF implements NetIF , Runnable {
      * "out_dropped" -> out_dropped
      */
     public Map<String, Number> getStats() {
-        return null;
+        Map<String, Number> stats = new HashMap<String, Number>();
+
+        stats.put("in_bytes", incomingBytes);
+        stats.put("in_packets", incomingCount);
+        stats.put("in_errors", 0);
+        stats.put("in_dropped", 0);
+        stats.put("out_bytes", forwardBytes);
+        stats.put("out_packets", forwardCount);
+        stats.put("out_errors", 0);
+        stats.put("out_dropped", 0);
+        stats.put("incomingQueue", incomingQueue.size());
+        stats.put("outgoingQueue", 0);
+
+        return stats;
     }
 
     /**
@@ -433,7 +463,10 @@ public class TCPNetIF implements NetIF , Runnable {
                 running = false;
             } else {
                 // System.err.println("TCPNetIF: " + getName() + " " + incomingCount + " got a Datagram");
+
+                // stats
                 incomingCount++;
+                incomingBytes += datagram.getTotalLength();
 
                 incomingQueue.add(datagram);
 
@@ -557,10 +590,6 @@ public class TCPNetIF implements NetIF , Runnable {
     }
 
 
-    public void setRemoteClose(boolean rc) {
-        remoteClose= rc;
-    }   
-
     /**
      * Consturct and send a control message.
      */
@@ -598,7 +627,9 @@ public class TCPNetIF implements NetIF , Runnable {
      * A remote close was received.
      */
     public void remoteClose() {
-        System.out.println("TCPNetIF: got remote close. incomingQueue size = " + incomingQueue.size()); 
+        System.out.println("TCPNetIF: got remote close. stats = " + getStats()); //incomingQueue size = " + incomingQueue.size() 
+
+        remoteClose = true;
 
         // we check the queue to see if it has any data.
         if (incomingQueue.size() == 0) {

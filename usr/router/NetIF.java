@@ -128,9 +128,6 @@ public interface NetIF {
      */
     public NetIF setNetIFListener(NetIFListener l);
     
-    /** Setter function for remoteclose*/
-    public void setRemoteClose(boolean rc);
-
     /** Remote close received */
     public void remoteClose();
     

@@ -66,6 +66,16 @@ public class AppSocketMux implements NetIF, Runnable {
 
     boolean isClosed = false;
 
+    // counts
+    int incomingCount = 0;
+    int incomingBytes = 0;
+    int incomingErrors = 0;
+    int incomingDropped = 0;
+    int forwardCount = 0;
+    int forwardBytes = 0;
+    int forwardErrors = 0;
+    int forwardDropped = 0;
+
     /**
      * Construct an AppSocketMux.
      */
@@ -119,14 +129,6 @@ public class AppSocketMux implements NetIF, Runnable {
 
         waitFor();
 
-        /*
-        // wait for myself
-        try {
-            myThread.join();
-        } catch (InterruptedException ie) {
-            // System.err.println(leadin() + "stop - InterruptedException for myThread join on " + myThread);
-        }
-        */
 
         return true;
     }
@@ -329,7 +331,24 @@ public class AppSocketMux implements NetIF, Runnable {
      * "out_dropped" -> out_dropped
      */
     public Map<String, Number> getStats() {
-        return null;
+        Map<String, Number> stats = new HashMap<String, Number>();
+
+        stats.put("in_bytes", incomingBytes);
+        stats.put("in_packets", incomingCount);
+        stats.put("in_errors", 0);
+        stats.put("in_dropped", 0);
+        stats.put("out_bytes", forwardBytes);
+        stats.put("out_packets", forwardCount);
+        stats.put("out_errors", 0);
+        stats.put("out_dropped", 0);
+        stats.put("incomingQueue", incomingQueue.size());
+
+        // now add queues for sockets
+        for (int port : socketQueue.keySet()) {
+            stats.put("outQueuePort_" + port, socketQueue.get(port).size());
+        }
+
+        return stats;
     }
 
     /**
@@ -338,6 +357,10 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     public  boolean sendDatagram(Datagram dg) {
         //System.err.println(leadin() + "datagramArrived: ");
+
+        // stats
+        incomingCount++;
+        incomingBytes += dg.getTotalLength();
 
         incomingQueue.add(dg);
 
@@ -362,6 +385,10 @@ public class AppSocketMux implements NetIF, Runnable {
     public Datagram readDatagram() {
         try {
             Datagram datagram = outgoingQueue.take();
+
+            // stats
+            forwardCount++;
+            forwardBytes += datagram.getTotalLength();
 
             return datagram;
         } catch (InterruptedException ie) {
@@ -423,10 +450,6 @@ public class AppSocketMux implements NetIF, Runnable {
         return this;
     }
     
-    /** Setter function for remoteclose*/
-    public void setRemoteClose(boolean rc)  {
-    }
-
     /** Remote close received */
     public void remoteClose() {
         close();

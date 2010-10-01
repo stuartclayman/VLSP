@@ -591,7 +591,6 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         String data= new String(payload,1,payload.length-1);
 
         if (controlChar == 'C') {
-            netIF.setRemoteClose(true);
             netIF.remoteClose();
             return true;
         }
@@ -665,7 +664,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * A NetIF is closing.
      */
     public synchronized boolean netIFClosing(NetIF netIF) {
-        System.out.println(leadin() + "Remote close from " + netIF);
+        System.out.println(leadin() + "Remote close from " + netIF + " stats = " + netIF.getStats());
+        System.out.println(leadin() + "localNetIF  stats = " + localNetIF.getStats());
 
         if (!netIF.isClosed()) {
 

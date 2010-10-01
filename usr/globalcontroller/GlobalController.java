@@ -49,6 +49,8 @@ public class GlobalController implements ComponentController {
 
     private APController APController_= null;
     
+    private boolean isActive = false;
+
     /**
      * Main entry point.
      */
@@ -62,6 +64,7 @@ public class GlobalController implements ComponentController {
       GlobalController gControl = new GlobalController();
       gControl.xmlFile_= args[0];
       gControl.init();
+
       gControl.simulate();
       System.out.println(gControl.leadin() + "Simulation complete");
       System.out.flush();
@@ -84,10 +87,15 @@ public class GlobalController implements ComponentController {
       APController_= ConstructAPController.constructAPController
         (routerOptions_);
       myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
+
       if (!options_.isSimulation()) {
           initEmulation();
       }
+
       initSchedule();
+
+      isActive = true;
+
     }
     
     /**
@@ -592,35 +600,39 @@ public class GlobalController implements ComponentController {
         notifyAll();
     }  
       
-    private void shutDown() {
-        System.out.println (leadin() + "SHUTDOWN CALLED!");
-        if (!options_.isSimulation()) {
+    void shutDown() {
+        if (isActive) {
+            System.out.println (leadin() + "SHUTDOWN CALLED!");
+            if (!options_.isSimulation()) {
 
-            ThreadTools.findAllThreads("GC pre killAllControllers:");
+                //ThreadTools.findAllThreads("GC pre killAllControllers:");
 
-            killAllControllers();
+                killAllControllers();
 
-            ThreadTools.findAllThreads("GC post killAllControllers:");
+                //ThreadTools.findAllThreads("GC post killAllControllers:");
 
-            while (checkMessages()) {};
+                while (checkMessages()) {};
 
-            System.out.println(leadin()+ "Pausing.");
+                System.out.println(leadin()+ "Pausing.");
 
-            try {
-               Thread.sleep(10);
-            } catch (Exception e) {
-                System.err.println(leadin()+ e.getMessage());
-                System.exit(-1);
+                try {
+                    Thread.sleep(10);
+                } catch (Exception e) {
+                    System.err.println(leadin()+ e.getMessage());
+                    System.exit(-1);
+                }
+
+                //ThreadTools.findAllThreads("GC post checkMessages:");
+
+                System.out.println(leadin()+"Stopping console");
+                console_.stop();
+
+                //ThreadTools.findAllThreads("GC post stop console:");
             }
+            System.out.println(leadin() + "All stopped, shut down now!");
 
-            ThreadTools.findAllThreads("GC post checkMessages:");
-
-            System.out.println(leadin()+"Stopping console");
-            console_.stop();
-            ThreadTools.findAllThreads("GC post stop console:");
+            isActive = false;
         }
-        System.out.println(leadin() + "All stopped, shut down now!");
-
     }
     
     private void initSchedule() {
@@ -669,6 +681,7 @@ public class GlobalController implements ComponentController {
     public ManagementConsole getManagementConsole() {
         return console_;
     }
+
 
     /**
      * An alive message has been received from the host specified
@@ -880,9 +893,5 @@ public class GlobalController implements ComponentController {
         return getName() + " " + GC;
     }
 
-
-
-   
 }
-
 
