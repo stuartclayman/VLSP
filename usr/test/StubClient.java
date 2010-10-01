@@ -19,9 +19,6 @@ public class StubClient {
         try {
 	    // initialise socket
             TCPEndPointSrc src = new TCPEndPointSrc(host, port);
-            //connection = new ConnectionOverTCP(src);
-            //connection.setAddress(new IPV4Address("localhost"));
-            //connection.connect();
 
             netIF = new TCPNetIF(src);
             netIF.setAddress(new GIDAddress(1));
@@ -51,10 +48,11 @@ public class StubClient {
             ByteBuffer buffer = ByteBuffer.allocate(line.length());
             buffer.put(line.getBytes());
 
-            datagram = DatagramFactory.newDatagram(Protocol.DATA, buffer);
+            datagram = DatagramFactory.newDatagram(buffer);
 
 
             datagram.setDstAddress(new GIDAddress(47));
+            datagram.setDstPort(3333);
 
             if (netIF.sendDatagram(datagram) == false) {
                 return;

@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.net.Address;
+import usr.net.SocketAddress;
 import usr.net.Datagram;
 import java.net.SocketException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -133,6 +134,17 @@ public class AppSocket {
         }
     }
 
+    /**
+     * Connects the socket to a remote address for this socket. When
+     * a socket is connected to a remote address, packets may only be sent to
+     * or received from that address. By default a datagram socket is not
+     * connected.
+     */
+    public void connect(SocketAddress sockaddr)  {
+        connect(sockaddr.getAddress(), sockaddr.getPort());
+    }
+
+
 
     /** 
      * Returns the remote port for this socket. 
@@ -228,6 +240,22 @@ public class AppSocket {
         } catch (InterruptedException ie) {
             //System.err.println("AppSocket: queue take interrupted");
             return null;
+        }
+    }
+
+    /**
+     * Disconnects the socket.
+     * This does nothing if the socket is not connected.
+     */
+    public void disconnect() {
+        if (isConnected) {
+
+            remoteAddress = null;
+            remotePort = 0;
+
+            isConnected = false;
+
+            System.err.println("AppSocket: disconnect");
         }
     }
 

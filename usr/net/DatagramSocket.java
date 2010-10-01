@@ -52,6 +52,16 @@ public class DatagramSocket {
      * or received from that address. By default a datagram socket is not
      * connected.
      */
+    public void connect(SocketAddress sockaddr)  {
+        socketImpl.connect(sockaddr);
+    }
+
+    /**
+     * Connects the socket to a remote address for this socket. When
+     * a socket is connected to a remote address, packets may only be sent to
+     * or received from that address. By default a datagram socket is not
+     * connected.
+     */
     public void connect(Address address, int port)  {
         socketImpl.connect(address, port);
     }
@@ -128,6 +138,14 @@ public class DatagramSocket {
      */
     public void close() {
         socketImpl.close();
+    }
+
+    /**
+     * Disconnects the socket.
+     * This does nothing if the socket is not connected.
+     */
+    public void disconnect() {
+        socketImpl.disconnect();
     }
 
     /**

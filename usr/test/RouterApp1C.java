@@ -4,7 +4,6 @@ import usr.router.Router;
 import usr.router.AppSocket;
 import usr.net.*;
 import usr.interactor.RouterInteractor;
-import usr.protocol.Protocol;
 import java.util.Scanner;
 import java.nio.ByteBuffer;
 
@@ -77,7 +76,7 @@ public class RouterApp1C {
             ByteBuffer buffer = ByteBuffer.allocate(line.length());
             buffer.put(line.getBytes());
 
-            datagram = DatagramFactory.newDatagram(Protocol.DATA, buffer);
+            datagram = DatagramFactory.newDatagram(buffer);
 
 
             if (socket.send(datagram) == false) {

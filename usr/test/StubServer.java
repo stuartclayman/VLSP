@@ -62,8 +62,6 @@ public class StubServer {
 
             TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
 
-            //connection = new ConnectionOverTCP(dst);
-            //connection.connect();
             netIF = new TCPNetIF(dst);
             netIF.connect();
             logger.log(error, "StubServer: Listening on port: " + listenPort + "\n");

@@ -25,6 +25,20 @@ public class DatagramFactory {
 
 
     /**
+     * Return an empty Datagram.
+     */
+    static Datagram newDatagram() {
+        return newDatagram(Protocol.DATA, null);
+    }
+
+    /**
+     * Return a Datagram.
+     */
+    public static Datagram newDatagram(ByteBuffer payload) {
+        return newDatagram(Protocol.DATA, payload);
+    }
+
+    /**
      * Return the relevant Datagram.
      */
     public static Datagram newDatagram(int protocol, ByteBuffer payload) {

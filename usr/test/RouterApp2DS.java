@@ -72,7 +72,7 @@ public class RouterApp2DS {
             ByteBuffer buffer = ByteBuffer.allocate(line.length());
             buffer.put(line.getBytes());
 
-            datagram = DatagramFactory.newDatagram(Protocol.DATA, buffer);
+            datagram = DatagramFactory.newDatagram(buffer);
 
 
             if (sendSocket.send(datagram) == false) {
@@ -81,13 +81,6 @@ public class RouterApp2DS {
 
                 //System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
-
-
-            try { 
-                Thread.sleep(20);
-            } catch (InterruptedException ie) {
-            }
-
         }
     }
 

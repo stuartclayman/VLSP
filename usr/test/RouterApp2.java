@@ -63,17 +63,12 @@ public class RouterApp2 {
     void writeALot(int count) {
         Datagram datagram = null;
 
-        try { 
-            Thread.sleep(1000);
-        } catch (InterruptedException ie) {
-        }
-
         for (int i = 0; i < count; i++) {
             String line = "line " + i;
             ByteBuffer buffer = ByteBuffer.allocate(line.length());
             buffer.put(line.getBytes());
 
-            datagram = DatagramFactory.newDatagram(Protocol.DATA, buffer);
+            datagram = DatagramFactory.newDatagram(buffer);
 
 
             if (sendSocket.send(datagram) == false) {
@@ -82,13 +77,6 @@ public class RouterApp2 {
 
                 //System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
-
-
-            try { 
-                Thread.sleep(20);
-            } catch (InterruptedException ie) {
-            }
-
         }
     }
 

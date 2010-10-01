@@ -37,7 +37,6 @@ public class Router {
 
     ArrayList <Application> appList= null;
 
-
     /**
      * Construct a Router listening on a specified port for the
      * management console and on port+1 for the Router to Router 
@@ -146,6 +145,7 @@ public class Router {
     public boolean stop() {
         if (isActive) {
             System.out.println(leadin() + "stop");
+
             appSocketMux.stop();
 
             controller.stop();
