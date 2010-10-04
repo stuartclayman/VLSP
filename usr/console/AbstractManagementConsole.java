@@ -160,18 +160,21 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Stop the listener.
      */
     public boolean stop() {
+        boolean cleardown;
         try {
             running = false;
 
             // call Cleardown
-            boolean cleardown = clearDown();
+            cleardown= clearDown();
 
             // FSM
             fsm = FSMState.STOP;
 
             // interrupt any waits
             myThread.interrupt();
-
+        } catch (Exception e) {
+            return false;
+        }
 
             /* join too dangerous
             // wait for the thread to end
@@ -184,14 +187,12 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             */
 
             // wait for the thread to end
-            waitFor();
+        waitFor();
 
 
-            return cleardown;
+        return cleardown;
 
-        } catch (Exception e) {
-            return false;
-        }
+        
     }
 
     /**
