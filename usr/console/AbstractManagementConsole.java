@@ -166,14 +166,15 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
             // call Cleardown
             cleardown= clearDown();
-
+            System.out.println(leadin()+" exits cleardown");
             // FSM
             fsm = FSMState.STOP;
 
             // interrupt any waits
+            
             myThread.interrupt();
         } catch (Exception e) {
-            return false;
+            System.out.println(leadin()+" failure in stop method");
         }
 
             /* join too dangerous
