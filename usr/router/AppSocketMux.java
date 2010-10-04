@@ -186,7 +186,7 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     private synchronized void waitFor() {
         // System.out.println(leadin() + "waitFor");
-        theEnd= true;
+        setTheEnd();
         try {
             wait();
         } catch (InterruptedException ie) {
