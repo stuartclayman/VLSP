@@ -209,8 +209,9 @@ public class AppSocketMux implements NetIF, Runnable {
             
             }
         }
+        
         synchronized(this) {
-            notifyAll();
+            notify();
         }
     }
 
