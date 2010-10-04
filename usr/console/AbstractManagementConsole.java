@@ -202,10 +202,10 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             try {
                 // FSM
                 fsm = FSMState.SELECTING;
-
+                System.out.println(leadin()+"Enter select");
                 // select() on all channels
                 int num = selector.select();
-
+                System.out.println(leadin()+"Exit select");
                 // did select() return with no values ?
                 if (num == 0) {
                     // go again
