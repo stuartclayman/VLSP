@@ -216,6 +216,8 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                     Set<SelectionKey> keys = selector.selectedKeys();
 
                     for (SelectionKey key : keys) {
+                        System.out.println(leadin()+"Processing keys");
+                        
                         if ((key.readyOps() & SelectionKey.OP_ACCEPT) == SelectionKey.OP_ACCEPT) {
                             // do we have an accept
 
@@ -224,7 +226,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
                             // Accept the incoming connection.
                             Socket local = serverSocket.accept();
-
+                            
                             System.out.println(leadin() + "Did accept on: " + serverSocket);
                             // Deal with incoming connection
                             newConnection(local);
