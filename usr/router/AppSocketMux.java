@@ -199,7 +199,8 @@ public class AppSocketMux implements NetIF, Runnable {
     private synchronized void theEnd() {
       
         while (!theEnd) {
-            try (Thread.sleep(100)) {
+            try {
+                Thread.sleep(100);
             } catch (Exception e) {
             
             }
