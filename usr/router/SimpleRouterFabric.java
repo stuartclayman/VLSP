@@ -16,6 +16,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     Router router;
     RouterOptions options_;
 
+    boolean theEnd=false;
+
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
 
@@ -153,6 +155,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     private synchronized void waitFor() {
         System.out.println(leadin() + "waitFor");
+        theEnd= true;
         try {
             wait();
         } catch (InterruptedException ie) {
@@ -163,8 +166,16 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Notify this thread.
      */
     private synchronized void theEnd() {
+        
+        while (!theEnd) {
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+            
+            }
+        }
         System.out.println(leadin() + "theEnd");
-        notify();
+        notifyAll();
     }
 
 

@@ -18,7 +18,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
     // the port this router is listening on
     int port;
-    
+    boolean theEnd= false;
     // A Server socket
     ServerSocketChannel channel = null;
     ServerSocket serverSocket = null;
@@ -270,6 +270,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      */
     private synchronized void waitFor() {
         // System.out.println(leadin() + "waitFor");
+        theEnd= true;
         try {
             wait();
         } catch (InterruptedException ie) {
@@ -281,6 +282,13 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      */
     private synchronized void theEnd() {
         // System.out.println(leadin() + "theEnd");
+        while (!theEnd) {
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+            
+            }
+        }
         notifyAll();
     }
 

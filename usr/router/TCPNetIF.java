@@ -23,6 +23,7 @@ public class TCPNetIF implements NetIF , Runnable {
     // The connection
     ConnectionOverTCP connection;
 
+    boolean theEnd= false;
     // The name of this 
     String name;
 
@@ -490,6 +491,7 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     private synchronized void waitFor() {
         // System.out.println(leadin() + "waitFor");
+        theEnd= true;
         try {
             wait();
         } catch (InterruptedException ie) {
@@ -501,7 +503,14 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     private synchronized void theEnd() {
         // System.out.println(leadin() + "theEnd");
-        notify();
+         while (!theEnd) {
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+            
+            }
+        }
+        notifyAll();
 
         if (waitingForQueue) {
             // System.out.println("TCPNetIF:  theEnd interrupt " + takeThread);
