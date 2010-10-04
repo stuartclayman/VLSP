@@ -177,11 +177,7 @@ public class AppSocketMux implements NetIF, Runnable {
                 System.err.println(leadin() + "Cant deliver to port " + dstPort);
             }
         }
-        try {
-            Thread.sleep(1000);
-        } catch (Exception e) {
-        
-        }
+     
         theEnd();
     }
 
@@ -201,7 +197,7 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     private synchronized void theEnd() {
         // System.out.println(leadin() + "theEnd");
-        notifyAll();
+        notify();
     }
 
 
