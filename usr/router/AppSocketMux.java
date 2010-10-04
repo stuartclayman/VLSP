@@ -141,7 +141,7 @@ public class AppSocketMux implements NetIF, Runnable {
             try {
                 datagram = incomingQueue.take();
             } catch (InterruptedException ie) {
-                System.err.println(leadin() + "run INTERRUPTED");
+                //System.err.println(leadin() + "run INTERRUPTED");
                 continue;
             }
 
@@ -197,8 +197,8 @@ public class AppSocketMux implements NetIF, Runnable {
      * Notify this thread.
      */
     private synchronized void theEnd() {
-      
-        while (!theEnd) {
+        System.out.println(leadin() + "theEnd");
+        while (!ended()) {
             try {
                 System.out.println(leadin()+"In a loop");
                 Thread.sleep(100);
@@ -206,9 +206,17 @@ public class AppSocketMux implements NetIF, Runnable {
             
             }
         }
-        System.out.println(leadin() + "theEnd");
         notifyAll();
     }
+
+    synchronized void setTheEnd() {
+        theEnd= true;
+    }
+
+    synchronized boolean ended() {
+      return theEnd;  
+    }
+
 
 
     private synchronized void pause() {
