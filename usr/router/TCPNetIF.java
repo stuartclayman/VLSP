@@ -321,22 +321,22 @@ public class TCPNetIF implements NetIF , Runnable {
                         }
 
                         waitingForQueue = true;
-
+                        System.out.println(leadin()+"Entered take");
                         Datagram datagram = incomingQueue.take();
-
+                        System.out.println(leadin()+"Exit take");
                         waitingForQueue = false;
 
                         return datagram;
 
                     } catch (InterruptedException ie) {
-                        //System.err.println("TCPNetIF: readDatagram() interrupt");
+                        System.out.println("TCPNetIF: readDatagram() interrupt");
                         waitingForQueue = false;
                         //return null;
                         continue;
                     }
                 }
             } else {
-                //System.err.println("TCPNetIF: readDatagram() return null. running = " + running + " incomingQueue.size() == " + incomingQueue.size());
+                System.out.println("TCPNetIF: readDatagram() return null. running = " + running + " incomingQueue.size() == " + incomingQueue.size());
                 return null;
             }
         }
@@ -350,7 +350,7 @@ public class TCPNetIF implements NetIF , Runnable {
         //System.out.println("TCPNetIF: " + getName() + " -> Close");
 
         if (closed) {
-            //System.err.println(leadin()+"Aleard closed");
+            System.out.println(leadin()+"Already closed");
             return;
         }
 
@@ -358,11 +358,11 @@ public class TCPNetIF implements NetIF , Runnable {
         if (!remoteClose) {
             // if the close is initiated locally
             // send a control message to the other end
-            //System.out.println("TCPNetIF: -> Close controlClose");
+            System.out.println("TCPNetIF: -> Close controlClose");
 
             controlClose();
         }
-        //System.out.println("TCPNetIF: " + getName() + " -> Close stop");
+        System.out.println("TCPNetIF: " + getName() + " -> Close stop");
 
         stop();
 
@@ -600,6 +600,7 @@ public class TCPNetIF implements NetIF , Runnable {
 
             
         }
+        waitFor();
     }
 
     public boolean equals(Object obj) { 
@@ -617,7 +618,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * Consturct and send a control message.
      */
     protected boolean controlClose() {
-        // System.out.println("TCPNetIF: -> controlClose");
+        System.out.println(leadin()+"TCPNetIF: -> controlClose");
         ByteBuffer buffer = ByteBuffer.allocate(1);
         String c= "C";
         buffer.put(c.getBytes());
