@@ -126,10 +126,10 @@ public class AppSocketMux implements NetIF, Runnable {
         // stop my own thread
         running = false;
         myThread.interrupt();
-
+        System.out.println(leadin() + "reached WaitFor");
         waitFor();
 
-
+        System.out.println(leadin() + "reached end of stop");
         return true;
     }
 
@@ -196,7 +196,7 @@ public class AppSocketMux implements NetIF, Runnable {
      * Notify this thread.
      */
     private synchronized void theEnd() {
-        // System.out.println(leadin() + "theEnd");
+        System.out.println(leadin() + "theEnd");
         notifyAll();
     }
 
