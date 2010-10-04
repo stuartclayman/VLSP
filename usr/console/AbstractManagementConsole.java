@@ -269,7 +269,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Wait for this thread.
      */
     private synchronized void waitFor() {
-        // System.out.println(leadin() + "waitFor");
+        System.out.println(leadin() + "waitFor");
         theEnd= true;
         try {
             wait();
@@ -281,9 +281,10 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Notify this thread.
      */
     private synchronized void theEnd() {
-        // System.out.println(leadin() + "theEnd");
+        System.out.println(leadin() + "theEnd");
         while (!theEnd) {
             try {
+                System.out.println(leadin()+"In a loop");
                 Thread.sleep(100);
             } catch (Exception e) {
             

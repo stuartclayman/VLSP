@@ -200,6 +200,7 @@ public class AppSocketMux implements NetIF, Runnable {
       
         while (!theEnd) {
             try {
+                System.out.println(leadin()+"In a loop");
                 Thread.sleep(100);
             } catch (Exception e) {
             
