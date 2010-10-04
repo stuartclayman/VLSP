@@ -270,21 +270,24 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     }
 
     /**
-     * Wait for this thread.
+     * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
-    private synchronized void waitFor() {
+    private void waitFor() {
         System.out.println(leadin() + "waitFor");
-        setTheEnd();
+        
         try {
-            wait();
+            synchronized(this) {
+              setTheEnd();
+              wait();
+            }
         } catch (InterruptedException ie) {
         }
     }
     
     /**
-     * Notify this thread.
+     * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
-    private synchronized void theEnd() {
+    private void theEnd() {
         System.out.println(leadin() + "theEnd");
         while (!ended()) {
             try {
@@ -294,7 +297,9 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             
             }
         }
-        notifyAll();
+        synchronized(this) {
+            notify();
+        }
     }
 
     synchronized void setTheEnd() {

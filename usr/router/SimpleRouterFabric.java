@@ -151,31 +151,44 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
 
     /**
-     * Wait for this thread.
+     * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
-    private synchronized void waitFor() {
+    private void waitFor() {
         System.out.println(leadin() + "waitFor");
-        theEnd= true;
+        
         try {
-            wait();
+            synchronized(this) {
+              setTheEnd();
+              wait();
+            }
         } catch (InterruptedException ie) {
         }
     }
     
     /**
-     * Notify this thread.
+     * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
-    private synchronized void theEnd() {
-        
-        while (!theEnd) {
+    private void theEnd() {
+        System.out.println(leadin() + "theEnd");
+        while (!ended()) {
             try {
+                System.out.println(leadin()+"In a loop");
                 Thread.sleep(100);
             } catch (Exception e) {
             
             }
         }
-        System.out.println(leadin() + "theEnd");
-        notifyAll();
+        synchronized(this) {
+            notify();
+        }
+    }
+
+    synchronized void setTheEnd() {
+        theEnd= true;
+    }
+
+    synchronized boolean ended() {
+      return theEnd;  
     }
 
 

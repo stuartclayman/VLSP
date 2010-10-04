@@ -182,25 +182,28 @@ public class AppSocketMux implements NetIF, Runnable {
     }
 
     /**
-     * Wait for this thread.
+     * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
-    private synchronized void waitFor() {
+    private void waitFor() {
         System.out.println(leadin() + "setting the end");
-        setTheEnd();
+        
         System.out.println(leadin()+"The End Set");
         
           try {
             System.out.println(leadin()+"waiting");
-            wait();
+            synchronized(this) {
+              setTheEnd();
+              wait();
+            }
           } catch (InterruptedException ie) {
           }
        
     }
     
     /**
-     * Notify this thread.
+     * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
-    private synchronized void theEnd() {
+    private void theEnd() {
         System.out.println(leadin() + "theEnd");
         while (!ended()) {
             try {
@@ -214,7 +217,9 @@ public class AppSocketMux implements NetIF, Runnable {
         
         
         System.out.println(leadin()+"notifying");
-        notifyAll();
+        synchronized(this) {
+            notify();
+        }
         
     }
 

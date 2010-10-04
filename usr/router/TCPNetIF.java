@@ -486,38 +486,52 @@ public class TCPNetIF implements NetIF , Runnable {
 
     }
 
-    /**
-     * Wait for this thread.
+     /**
+     * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
-    private synchronized void waitFor() {
-        // System.out.println(leadin() + "waitFor");
-        theEnd= true;
+    private void waitFor() {
+        System.out.println(leadin() + "waitFor");
+        
         try {
-            wait();
+            synchronized(this) {
+              setTheEnd();
+              wait();
+            }
         } catch (InterruptedException ie) {
         }
     }
     
     /**
-     * Notify this thread.
+     * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
-    private synchronized void theEnd() {
-        // System.out.println(leadin() + "theEnd");
-         while (!theEnd) {
+    private void theEnd() {
+        System.out.println(leadin() + "theEnd");
+        while (!ended()) {
             try {
+                System.out.println(leadin()+"In a loop");
                 Thread.sleep(100);
             } catch (Exception e) {
             
             }
         }
-        notifyAll();
-
+        synchronized(this) {
+            notify();
+        }
         if (waitingForQueue) {
             // System.out.println("TCPNetIF:  theEnd interrupt " + takeThread);
             takeThread.interrupt();
         }
-
     }
+
+    synchronized void setTheEnd() {
+        theEnd= true;
+    }
+
+    synchronized boolean ended() {
+      return theEnd;  
+    }
+
+
 
     /**
      * Wait a bit.
