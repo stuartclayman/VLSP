@@ -30,7 +30,7 @@ JC = javac
 .java.class:
 	$(JC) $(JFLAGS) $*.java 
 CLASSES = \
-   usr/test/RouterTest1.java \
+  usr/test/RouterTest1.java \
   usr/test/StubServer.java \
   usr/test/StubClient.java \
   usr/test/VariateTest.java \
@@ -75,6 +75,7 @@ CLASSES = \
   usr/router/RouterPort.java \
   usr/router/TCPNetIF.java \
   usr/router/EndLink.java \
+  usr/router/ShutDown.java \
   usr/router/RouterManagementConsole.java \
   usr/router/SimpleRoutingTableEntry.java \
   usr/router/SimpleRoutingTable.java \
@@ -103,6 +104,7 @@ CLASSES = \
   usr/net/GIDDatagram.java \
   usr/net/GIDAddress.java \
   usr/net/DatagramSocket.java \
+  usr/net/SocketAddress.java \
   usr/interactor/MCRPException.java \
   usr/interactor/MCRPResponse.java \
   usr/interactor/MCRPEvent.java \
@@ -139,6 +141,7 @@ CLASSES = \
   usr/globalcontroller/command/QuitCommand.java \
   usr/globalcontroller/command/LocalOKCommand.java \
   usr/globalcontroller/command/UnknownCommand.java \
+  usr/globalcontroller/command/ShutDownCommand.java \
   usr/globalcontroller/EventScheduler.java \
   usr/globalcontroller/GlobalController.java \
   usr/globalcontroller/GlobalControllerManagementConsole.java \
@@ -151,8 +154,8 @@ CLASSES = \
   usr/localcontroller/command/ShutDownCommand.java \
   usr/localcontroller/command/UnknownCommand.java \
   usr/localcontroller/command/ConnectRoutersCommand.java \
-  usr/localcontroller/command/EndRouterCommand.java \
   usr/localcontroller/command/EndLinkCommand.java \
+  usr/localcontroller/command/EndRouterCommand.java \
   usr/localcontroller/command/RouterConfigCommand.java \
   usr/localcontroller/LocalControllerInfo.java \
   usr/localcontroller/LocalController.java \
