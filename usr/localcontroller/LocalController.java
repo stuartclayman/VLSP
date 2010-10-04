@@ -69,7 +69,12 @@ public class LocalController implements ComponentController {
     
     /** Constructor for local controller starting on port */
     public LocalController (int port) {
-        hostInfo_= new LocalControllerInfo(port);
+        try {
+            hostInfo_= new LocalControllerInfo(port);
+        } catch (Exception e) {
+            System.err.println("Cannot find host info for controller");
+            shutDown();
+        }
         routers_= new ArrayList<BasicRouterInfo>();
         routerList_= new ArrayList<Router>();
         childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
@@ -312,9 +317,13 @@ public class LocalController implements ComponentController {
         System.out.println(leadin() + 
           "Got terminate request for router "+r1);
         RouterInteractor ri= findRouterInteractor(r1.getPort());
-        if (ri == null)
+        if (ri == null) {
+            System.err.println(leadin()+"Cannot find router interactor");
             return false;
+        }    
+        
         try {
+            System.out.println(leadin()+"Sending terminate request via interactor");
             ri.shutDown();
         } 
         catch (Exception e) {
@@ -331,6 +340,7 @@ public class LocalController implements ComponentController {
         }
         if (i == routers_.size()) {
             System.err.println(leadin()+"Router not registered with localcontroller");
+            return false;
         }
         BasicRouterInfo br= routers_.get(i);
         routerMap_.remove(br.getId());

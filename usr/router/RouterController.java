@@ -278,7 +278,7 @@ public class RouterController implements ComponentController, Runnable {
                 Request nextRequest = queue.take();
                 String value = nextRequest.value;
 
-                System.out.println(leadin() + "nextRequest = " + nextRequest);
+                System.out.println(leadin() + " Controller processing nextRequest = " + nextRequest);
                 
                 // now process the next request
                 if (value.startsWith("CREATE_CONNECTION")) {
@@ -293,7 +293,10 @@ public class RouterController implements ComponentController, Runnable {
                     pool.execute(new EndLink(this,nextRequest));
                    
                     
-                }  
+                }  else if (value.startsWith("SHUT_DOWN")) {
+                    System.out.println("Found SHUT DOWN");
+                    pool.execute(new ShutDown(this, nextRequest));
+                }
                 
                 else {
                     System.err.println(leadin() + "Unknown request " + nextRequest);

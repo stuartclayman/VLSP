@@ -12,17 +12,17 @@ public class LocalControllerInfo extends LocalHostInfo {
     private String remoteLoginUser_ = null;
     private String remoteStartController_ = null;
     
-    public LocalControllerInfo(String hostName, int port) 
+    public LocalControllerInfo(String hostName, int port) throws java.net.UnknownHostException
     {
        super(hostName,port);
     }
     
-    public LocalControllerInfo(java.net.InetAddress ip, int port) 
+    public LocalControllerInfo(java.net.InetAddress ip, int port)  throws java.net.UnknownHostException
     {
        super(ip,port);
     }
     
-    public LocalControllerInfo(int port) 
+    public LocalControllerInfo(int port)  throws java.net.UnknownHostException
     {
        super(port);
     }

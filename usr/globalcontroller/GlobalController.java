@@ -86,7 +86,12 @@ public class GlobalController implements ComponentController {
       routerOptions_= options_.getRouterOptions();
       APController_= ConstructAPController.constructAPController
         (routerOptions_);
-      myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
+      try {
+          myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
+      } catch (Exception e) {
+          System.err.println(leadin()+e.getMessage());
+          bailOut();
+      }
 
       if (!options_.isSimulation()) {
           initEmulation();

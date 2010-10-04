@@ -28,7 +28,11 @@ public class EndRouterCommand extends LocalCommand {
         }
         LocalHostInfo lhi= null;
         try {
-            lhi = new LocalHostInfo(args[1]);     
+            lhi = new LocalHostInfo(args[1]);   
+            if (lhi == null) {
+                error ("LOCAL HUST INFO IN WRONG FORMAT");
+                return false;
+            } 
         } catch (Exception e) {
             error("Cannot convert "+args[1]+" to host info");
             return false;

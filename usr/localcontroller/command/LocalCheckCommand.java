@@ -31,8 +31,13 @@ public class LocalCheckCommand extends LocalCommand {
         
         String hostName= args[1];
         int port= Integer.parseInt(args[2]);
-        LocalHostInfo gc= new LocalHostInfo(hostName, port);
-        
+        LocalHostInfo gc= null;
+        try {
+            gc = new LocalHostInfo(hostName, port);
+        } catch (Exception e) {
+            error("Cannot find host info for LOCAL_CHECK_COMMAND "+e.getMessage());
+            return false;
+        }
         managementConsole.contactFromGlobal(gc);
 
         return true;

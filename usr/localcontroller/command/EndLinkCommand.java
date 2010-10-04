@@ -28,8 +28,13 @@ public class EndLinkCommand extends LocalCommand {
         }
         LocalHostInfo r1;
         int r2;
-        r1= new LocalHostInfo(args[1]);
-        r2= Integer.parseInt(args[2]);
+        try {
+            r1= new LocalHostInfo(args[1]);
+            r2= Integer.parseInt(args[2]);
+        } catch (Exception e) {
+            error ("CANNOT PARSE HOST INFO FOR END_LINK"+e.getMessage());
+            return false;
+        }  
         if (managementConsole.endLink(r1,r2)) {
             success("LINK ENDED FROM"+r1+" to Id "+r2);
             return true;

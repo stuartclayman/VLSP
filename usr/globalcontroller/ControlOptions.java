@@ -215,11 +215,14 @@ class ControlOptions {
                 lh.setHighPort(highPort_);
                 lh.setLowPort(lowPort_);
                 localControllers_.add(lh);
-            } catch (SAXException e) {
+            } catch (java.net.UnknownHostException e) {
+                throw new SAXException ("Unable to recognise hostname in XML"+e.getMessage());
+                 
+            }catch (SAXException e) {
                 throw e;
             } catch (XMLNoTagException e) {
                 System.err.println("Unexpected exception in processLocalControllers");
-                System.exit(-1);
+                throw new SAXException();
             }
             try {
                 int mr= ReadXMLUtils.parseSingleInt(lc, "MaxRouters","LocalController",true);

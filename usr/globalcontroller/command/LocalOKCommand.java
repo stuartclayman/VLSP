@@ -28,7 +28,13 @@ public class LocalOKCommand extends GlobalCommand {
         }
         String hostName= args[1];
         int port= Integer.parseInt(args[2]);
-        LocalHostInfo lh= new LocalHostInfo(hostName, port);
+        LocalHostInfo lh= null;
+        try {
+            lh = new LocalHostInfo(hostName, port);
+        } catch (Exception e) {
+            error ("Cannot parse host from LocalOKCommand");
+            return false;
+        }
         success("Local OK received from "+args[1]+":"+args[2]);
         controller.aliveMessage(lh);
         return true;

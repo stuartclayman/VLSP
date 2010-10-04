@@ -4,7 +4,7 @@ import usr.protocol.MCRP;
 import usr.router.RouterManagementConsole;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-
+import usr.console.Request;
 /**
  * The SHUT_DOWN command.
  */
@@ -20,8 +20,12 @@ public class ShutDownCommand extends RouterCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        controller.shutDown();
-        success("SHUTDOWN");
+       // it is an asynchronous command
+        // and will be processed a bit later
+        SocketChannel sc = getChannel();
+        System.out.println("Shutdown command asynchronous");
+        managementConsole.addRequest(new Request(sc, req));
+        System.out.println(leadin() + "Requests = " + managementConsole.queue());
         return true;
     }
 

@@ -665,7 +665,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public synchronized boolean netIFClosing(NetIF netIF) {
         System.out.println(leadin() + "Remote close from " + netIF + " stats = " + netIF.getStats());
-        System.out.println(leadin() + "localNetIF  stats = " + localNetIF.getStats());
+        if (localNetIF != null) 
+            System.out.println(leadin() + "localNetIF  stats = " + localNetIF.getStats());
 
         if (!netIF.isClosed()) {
 

@@ -25,10 +25,15 @@ public class ConnectRoutersCommand extends LocalCommand {
             error("Expected three arguments for Connect Routers Command");
             return false;
         }
-        LocalHostInfo r1,r2;
-        r1= new LocalHostInfo(args[1]);
-        r2= new LocalHostInfo(args[2]);
+        LocalHostInfo r1= null,r2= null;
+        try {
+            r1= new LocalHostInfo(args[1]);
+            r2= new LocalHostInfo(args[2]);
 
+        } catch (Exception e) {
+            error ("CANNOT DECODE HOST INFO FOR CONNECT ROUTER COMMAND"+e.getMessage());
+            return false;
+        }
         String connectionName = managementConsole.connectRouters(r1,r2);
         if (connectionName != null) {
             success(connectionName); // WAS success("ROUTERS CONNECTED "+r1+" "+r2);
