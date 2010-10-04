@@ -19,7 +19,7 @@ import java.io.IOException;
 public class AppSocketMux implements NetIF, Runnable {
     // the RouterController
     RouterController controller;
-
+    boolean theEnd= false;
     // the count of the no of Datagrams
     int datagramCount = 0;
 
@@ -186,6 +186,7 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     private synchronized void waitFor() {
         // System.out.println(leadin() + "waitFor");
+        theEnd= true;
         try {
             wait();
         } catch (InterruptedException ie) {
@@ -197,7 +198,12 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     private synchronized void theEnd() {
       
-      
+        while (!theEnd) {
+            try (Thread.sleep(100)) {
+            } catch (Exception e) {
+            
+            }
+        }
         System.out.println(leadin() + "theEnd");
         notifyAll();
     }
