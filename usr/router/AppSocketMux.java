@@ -197,7 +197,7 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     private synchronized void theEnd() {
         // System.out.println(leadin() + "theEnd");
-        notify();
+        notifyAll();
     }
 
 

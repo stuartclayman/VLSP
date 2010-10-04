@@ -217,7 +217,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             
             return;
         }
-        System.out.println(leadin() + "Sending table for "+n);
+        System.out.println(leadin() + now+" sending table for "+n);
         n.sendRoutingTable(table_.toString());
         
         lastTableUpdateTime_.put(n,now);
@@ -341,7 +341,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
                 if (address.getGlobalID() == 0) {
                     // dont queue RoutingTable for 0
                 } else if (! i.equals(inter)) {
-                    System.out.println(leadin()+"Queuing routes to other interface "+i);
+                    //System.out.println(leadin()+"Queuing routes to other interface "+i);
                     queueRoutingRequest(i);
 
                 } else {
