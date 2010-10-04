@@ -11,7 +11,7 @@
   </LocalController>
   <EventEngine>
      <Name>Test</Name>
-     <EndTime>2000</EndTime>
+     <EndTime>2</EndTime>
   </EventEngine>
   <RouterOptions>
       routeroptions.xml
