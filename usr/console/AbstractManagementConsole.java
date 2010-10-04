@@ -270,7 +270,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      */
     private synchronized void waitFor() {
         System.out.println(leadin() + "waitFor");
-        theEnd= true;
+        setTheEnd();
         try {
             wait();
         } catch (InterruptedException ie) {
@@ -282,7 +282,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      */
     private synchronized void theEnd() {
         System.out.println(leadin() + "theEnd");
-        while (!theEnd) {
+        while (!ended()) {
             try {
                 System.out.println(leadin()+"In a loop");
                 Thread.sleep(100);
@@ -293,8 +293,15 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         notifyAll();
     }
 
+    synchronized void setTheEnd() {
+        theEnd= true;
+    }
 
+    synchronized boolean ended() {
+      return theEnd;  
+    }
 
+  
 
     /**
      * Set up.
