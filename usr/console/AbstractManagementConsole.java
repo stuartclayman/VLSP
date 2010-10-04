@@ -160,7 +160,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Stop the listener.
      */
     public boolean stop() {
-        boolean cleardown;
+        boolean cleardown= true;
         try {
             running = false;
 
