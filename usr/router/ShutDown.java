@@ -34,10 +34,10 @@ public class ShutDown extends ChannelResponder implements Runnable {
         // process the request
         System.out.println(leadin()+"Sending response code for shut down"+MCRP.SHUT_DOWN.CODE);
         
-        respond(MCRP.SHUT_DOWN.CODE + " SHUTTING DOWN ROUTER");
+        
       
         controller.shutDown();
-     
+        respond(MCRP.SHUT_DOWN.CODE + " SHUTTING DOWN ROUTER");
     }
 
     /**
