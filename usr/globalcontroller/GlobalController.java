@@ -460,7 +460,14 @@ public class GlobalController implements ComponentController {
     /** Event to link two routers */
     private void startLink(int router1Id, int router2Id) {
         //System.err.println("Start link "+router1Id+" "+router2Id);
-
+        if (routerIdMap_.get(router1Id) == null) {
+            System.err.println ("Router "+router1Id+" does not exist when trying to link to "+ router2Id);
+            return;
+        }
+        if (routerIdMap_.get(router2Id) == null) {
+            System.err.println ("Router "+router2Id+" does not exist when trying to link to "+ router1Id);
+            return;
+        }
         // check if this link already exists
         ArrayList<Integer> outForRouter1 = outLinks_.get(router1Id);
 

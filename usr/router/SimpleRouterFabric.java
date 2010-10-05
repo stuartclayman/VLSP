@@ -7,6 +7,8 @@ import usr.protocol.Protocol;
 import java.nio.ByteBuffer;
 import java.lang.*;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * A RouterFabric within UserSpaceRouting.
@@ -20,7 +22,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
-
+   
+    LinkedBlockingQueue<Datagram> datagramQueue_;
+    LinkedBlockingQueue<NetIF> netIFQueue_;
+    
     // The localNetIF
     NetIF localNetIF = null;
 
@@ -61,6 +66,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         lastTableUpdateTime_= new HashMap <NetIF, Long>();
         nextTableUpdateTime_= new HashMap <NetIF, Long>();
+        datagramQueue_= new LinkedBlockingQueue<Datagram>();
+        netIFQueue_= new LinkedBlockingQueue<NetIF>();
     }
 
     /**
@@ -118,13 +125,18 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public synchronized void run() {
         long now=  System.currentTimeMillis();
-        while (running) {
+        while (running || datagramQueue_.size() > 0) {
+            if (datagramQueue_.size() > 0) {
+                //System.err.println("Got datagram to process");
+                processDatagram();
+                continue;
+            } 
             //System.err.println("Running");
             long nextUpdateTime = calcNextTableSendTime();
             //System.err.println("Got time");
             now = System.currentTimeMillis();
             //System.err.println(leadin() + "run TIME: "+now + " nextUpdateTime: " + nextUpdateTime_ + " diff: " + (nextUpdateTime_ - now));
-
+            
             if (nextUpdateTime <= now) {
                 //System.err.println(leadin() + "Sending table");
 
@@ -154,7 +166,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void waitFor() {
-        System.out.println(leadin() + "waitFor");
+        //System.out.println(leadin() + "waitFor");
         
         try {
             synchronized(this) {
@@ -169,10 +181,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void theEnd() {
-        System.out.println(leadin() + "theEnd");
+        //System.out.println(leadin() + "theEnd");
         while (!ended()) {
             try {
-                System.out.println(leadin()+"In a loop");
+                //System.out.println(leadin()+"In a loop");
                 Thread.sleep(100);
             } catch (Exception e) {
             
@@ -204,7 +216,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             long timeout = time - now + 1;
             wait(timeout);
         } catch(InterruptedException e){
-            //System.err.println("Interrupt");
+            System.err.println("Wait interrupted");
 
         }
     }
@@ -241,7 +253,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             
             return;
         }
-        System.out.println(leadin() + now+" sending table for "+n);
+        //System.out.println(leadin() + now+" sending table for "+n);
         n.sendRoutingTable(table_.toString());
         
         lastTableUpdateTime_.put(n,now);
@@ -452,9 +464,24 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         if (datagram == null)
             return false;
+        ///System.err.println("Queueing datagram");
+        datagramQueue_.add(datagram);
+        netIFQueue_.add(netIF);
+        notifyAll();
+        return true;
+    }
+   
+   
+    public synchronized boolean processDatagram() {
         
+        if (datagramQueue_.size() == 0)
+            return false;
+        Datagram datagram=  datagramQueue_.poll();
+        NetIF netIF= netIFQueue_.poll(); 
+        if (datagram == null) {
+            return false;
+        }
         //System.err.println(leadin() + datagramCount + " GOT DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
-
         if (ourAddress(datagram.getDstAddress())) {
             //System.err.println("OUR DATAGRAM");
             receiveOurDatagram(datagram,netIF);
