@@ -171,6 +171,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         try {
             synchronized(this) {
               setTheEnd();
+              notify(); //Attempt to wake "the end" process
               wait();
             }
         } catch (InterruptedException ie) {
@@ -185,9 +186,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         while (!ended()) {
             try {
                 //System.out.println(leadin()+"In a loop");
-                Thread.sleep(100);
+                wait(100);
             } catch (Exception e) {
-            
+                System.err.println("The end interrupted");
             }
         }
         synchronized(this) {
@@ -457,8 +458,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /**
      * A NetIF has a datagram.
      */
-    public synchronized boolean datagramArrived(NetIF netIF) {
-        Datagram datagram= netIF.readDatagram();
+    public synchronized boolean datagramArrived(NetIF netIF, Datagram datagram) {
+        
 
         datagramCount++;
 

@@ -241,9 +241,9 @@ public class TCPNetIF implements NetIF , Runnable {
         listener = l;
 
         // there is already something
-        if (incomingQueue.size() > 0) {
-            listener.datagramArrived(this);
-        }
+       // if (incomingQueue.size() > 0) {
+       //     listener.datagramArrived(this);
+       // }
         return this;
     }
 
@@ -469,11 +469,11 @@ public class TCPNetIF implements NetIF , Runnable {
                 incomingCount++;
                 incomingBytes += datagram.getTotalLength();
 
-                incomingQueue.add(datagram);
+               // incomingQueue.add(datagram);
 
                     // inform the listener
                 if (listener != null) {
-                    listener.datagramArrived(this);
+                    listener.datagramArrived(this, datagram);
                     // System.err.println("TCPNetIF: " + getName() + " informed listener");
                 } else {
                     // System.err.println("TCPNetIF: " + getName() + " NO listener");

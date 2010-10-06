@@ -439,12 +439,12 @@ public class AppSocketMux implements NetIF, Runnable {
         GIDAddress srcAddr = controller.getAddress();
         datagram.setSrcAddress(srcAddr);
 
-        outgoingQueue.add(datagram);
+        //outgoingQueue.add(datagram);
 
         //System.err.println(leadin() + "Outgoing queue size: " + outgoingQueue.size());
 
         // tell fabric we have a Datagram
-        listener.datagramArrived(this);
+        listener.datagramArrived(this,datagram);
 
         return true;
     }

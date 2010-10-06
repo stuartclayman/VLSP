@@ -1,4 +1,5 @@
 package usr.router;
+import usr.net.Datagram;
 
 /**
  * A Listener of NetIFs.
@@ -7,7 +8,7 @@ public interface NetIFListener {
     /**
      * A NetIF has a datagram.
      */
-    public boolean datagramArrived(NetIF netIF);
+    public boolean datagramArrived(NetIF netIF, Datagram datagram);
 
     /**
      * A NetIF is closing.
