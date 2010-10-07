@@ -17,7 +17,7 @@ import java.nio.channels.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class StubServer implements NetIFListener {
+public class StubServer2 implements NetIFListener {
     final static int PORT_NUMBER = 4433;
 
     static BitSet normal;
