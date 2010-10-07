@@ -2,6 +2,7 @@ package usr.test;
 
 import usr.net.*;
 import usr.router.NetIF;
+import usr.router.NetIFListener;
 import usr.router.TCPNetIF;
 import usr.protocol.Protocol;
 import usr.logging.*;
@@ -14,7 +15,7 @@ import java.util.TimerTask;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 
-public class StubServer {
+public class StubServer implements NetIFListener {
     final static int PORT_NUMBER = 4433;
 
     static BitSet normal;
@@ -33,7 +34,12 @@ public class StubServer {
     int lastTimeCount = 0;
     // no per second
     int diffs = 0;
+    // start time
+    long t0 = 0;
 
+    // Timer stuff
+    Timer timer;
+    TimerTask timerTask;
 
     public StubServer(int listenPort) throws IOException {
         normal = new BitSet();
@@ -42,7 +48,7 @@ public class StubServer {
         error.set(2);
 
         // allocate a new logger
-        logger = new Logger();
+        logger = Logger.getLogger("log");
         // tell it to output to stdout
         // and tell it what to pick up
         // it will actually output things where the log has bit 1 set
@@ -63,22 +69,16 @@ public class StubServer {
             TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
 
             netIF = new TCPNetIF(dst);
+            netIF.setNetIFListener(this);
             netIF.connect();
             logger.log(error, "StubServer: Listening on port: " + listenPort + "\n");
         } catch (IOException ioe) {
             logger.log(error, "StubServer: Cannot listen on port: " + listenPort + "\n");
             throw ioe;
         }
-    }
 
-    /**
-     * Read stuff
-     */
-    void readALot() throws IOException {
-        Datagram datagram;
-
-        Timer timer = new Timer();
-        TimerTask task = new TimerTask() { 
+        // set up timer to count throughput
+        timerTask = new TimerTask() { 
                 boolean running = true;
 
                 public void run() {
@@ -104,36 +104,50 @@ public class StubServer {
                     return 0;
                 }
             };
+    }
 
-        timer.schedule(task, 1000, 1000);
-
-        long t0 = System.currentTimeMillis();
-
-        while ((datagram = netIF.readDatagram()) != null) {
-            // check if Protocol.CONTROL
-            if (datagram.getProtocol() == Protocol.CONTROL) {
-                break;
-            }
-
-            logger.log(normal, count + ". ");
-            logger.log(normal,
-                             "HL: " + datagram.getHeaderLength() +
-                             " TL: " + datagram.getTotalLength() +
-                             " From: " + datagram.getSrcAddress() +
-                             " To: " + datagram.getDstAddress() +
-                             ". ");
-            byte[] payload = datagram.getPayload();
-
-            if (payload == null) {
-                logger.log(normal, "No payload");
-            } else {
-                logger.log(normal, new String(payload));
-            }
-            logger.log(normal, "\n");
-
-            count++;
+    /**
+     * A NetIF has a datagram.
+     */
+    public boolean datagramArrived(NetIF netIF, Datagram datagram) {
+        // if there is no timer, start one
+        if (timer == null) {
+            timer = new Timer();
+            timer.schedule(timerTask, 1000, 1000);
+            t0 = System.currentTimeMillis();
         }
 
+        // check if Protocol.CONTROL
+        if (datagram.getProtocol() == Protocol.CONTROL) {
+            this.netIFClosing(netIF);
+            return false;
+        }
+
+        logger.log(normal, count + ". ");
+        logger.log(normal,
+                   "HL: " + datagram.getHeaderLength() +
+                   " TL: " + datagram.getTotalLength() +
+                   " From: " + datagram.getSrcAddress() +
+                   " To: " + datagram.getDstAddress() +
+                   ". ");
+        byte[] payload = datagram.getPayload();
+
+        if (payload == null) {
+            logger.log(normal, "No payload");
+        } else {
+            logger.log(normal, new String(payload));
+        }
+        logger.log(normal, "\n");
+
+        count++;
+
+        return true;
+    }
+
+    /**
+     * A NetIF is closing.
+     */
+    public boolean netIFClosing(NetIF netIF) {
         long t1 = System.currentTimeMillis();
 
         long elapsed = t1 - t0;
@@ -143,14 +157,19 @@ public class StubServer {
         NumberFormat millisFormat = new DecimalFormat("000"); 
         logger.log(error, "elapsed[" + count + "] = " + secs + ":" + millisFormat.format(millis) + "\n");
 
+        netIF.close();
+
         timer.cancel();
 
-        netIF.close();
+        timer = null;
+
+        return true;
     }
+
+
+
 
     public static void main(String[] args) throws IOException {
         StubServer server = new StubServer(PORT_NUMBER);
-
-        server.readALot();
     }
 }
