@@ -40,7 +40,7 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * The size of the RoutingTable.
      */
-    public int size() {
+    public synchronized int size() {
         return table_.size();
     }
 
@@ -56,7 +56,7 @@ public class SimpleRoutingTable implements RoutingTable {
     
     /** Return the interface on which to send a packet to a given address
     or null if not known */
-    public NetIF getInterface(Address addr) 
+    public synchronized NetIF getInterface(Address addr) 
     {
     
         if (addr == null) {
@@ -77,11 +77,13 @@ public class SimpleRoutingTable implements RoutingTable {
 
         Address newif= inter.getAddress();
         int weight= inter.getWeight();
-        SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(newif, 0, null);
-        boolean changed= mergeEntry(e, null); // Add local entry
-
+        SimpleRoutingTableEntry e1= new SimpleRoutingTableEntry(newif, 0, null);
+        boolean changed1= mergeEntry(e1, null); // Add local entry
+        SimpleRoutingTableEntry e2= new SimpleRoutingTableEntry(inter.getRemoteRouterAddress(), 
+            inter.getWeight(), inter);
+        boolean changed2= mergeEntry(e2, inter); // Add entry for remote end
         //System.err.println("SimpleRoutingTable: addNetIF: table after = " + this);
-        return changed;
+        return changed1 || changed2;
     }
     
     /**
@@ -137,7 +139,7 @@ public class SimpleRoutingTable implements RoutingTable {
     }
     
     /** Get an entry from the table */
-    SimpleRoutingTableEntry getEntry(String a) {
+    synchronized SimpleRoutingTableEntry getEntry(String a) {
         return table_.get(a);
     } 
     

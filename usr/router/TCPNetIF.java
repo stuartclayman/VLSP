@@ -57,7 +57,7 @@ public class TCPNetIF implements NetIF , Runnable {
     boolean reading = false;
 
     // Thread doing queue.take()
-    Thread takeThread = null;
+    //Thread takeThread = null;
     boolean waitingForQueue = false;
 
     // Write Thread
@@ -67,7 +67,7 @@ public class TCPNetIF implements NetIF , Runnable {
     boolean running = false;
 
     // a Queue of incoming Datagrams
-    BlockingQueue<Datagram> incomingQueue;
+//    BlockingQueue<Datagram> incomingQueue;
 
     // a Queue of outgoing Datagram
     BlockingQueue<Datagram> outgoingQueue;
@@ -96,7 +96,7 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     public TCPNetIF(TCPEndPointSrc src) throws IOException {
         connection = new ConnectionOverTCP(src);
-        incomingQueue = new LinkedBlockingQueue<Datagram>();    
+      //  incomingQueue = new LinkedBlockingQueue<Datagram>();    
         outgoingQueue = new LinkedBlockingQueue<Datagram>();
     }
 
@@ -105,7 +105,7 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     public TCPNetIF(TCPEndPointDst dst) throws IOException {
         connection = new ConnectionOverTCP(dst);
-        incomingQueue = new LinkedBlockingQueue<Datagram>();    
+      //  incomingQueue = new LinkedBlockingQueue<Datagram>();    
         outgoingQueue = new LinkedBlockingQueue<Datagram>();
     }
 
@@ -267,7 +267,7 @@ public class TCPNetIF implements NetIF , Runnable {
     public boolean forwardDatagram(Datagram dg) {
         //System.err.println("TCPNetIF: " + getName() + " " + forwardCount + " forwardDatagram() ");
 
-        //outgoingQueue.add(dg);
+        outgoingQueue.add(dg);
         //System.err.println("TCPNetIF: " + getName() + " " + forwardCount + " outgoingQueue size = " + outgoingQueue.size());
 
         // stats
@@ -277,69 +277,6 @@ public class TCPNetIF implements NetIF , Runnable {
         connection.sendDatagram(dg);
 
         return true;
-    }
-
-    /**
-     * Read a Datagram.
-     */
-    public Datagram readDatagram() {
-        // WARNING: DO NOT make this synchronized !!
-        //
-        // Get a Datagram from queue while queue has something in it
-        // Only grab data if we are running or if there is residual 
-        // stuff in the queue
-
-        // which thread is doing the incomingQueue take()
-        takeThread = Thread.currentThread();
-
-
-        while (true) {  // loop until we get a Datagram or null
-                        // this usually happens after 1 go, but
-                        // it is possible to get an interrupt
-
-            if ((running && incomingQueue.size() >= 0) || (!running && incomingQueue.size() > 0)) {
-                
-                // return a Datagram
-                if (remoteClose && incomingQueue.size() == 0) {
-                    // we need to close 
-                    // so tell the Fabric
-                    if (listener != null) {
-                        listener.netIFClosing(this);
-                    }
-
-                    return null;
-                } else {
-
-                    try {
-                        // if the reader is paused and
-                        // the queue is empty 
-                        // start reading again
-                        if (incomingQueue.size() == QUEUE_TOO_LOW) {
-                            informReadAgain();
-
-                            //System.err.println("TCPNetIF: out of informReadAgain");
-                        }
-
-                        waitingForQueue = true;
-
-                        Datagram datagram = incomingQueue.take();
-
-                        waitingForQueue = false;
-
-                        return datagram;
-
-                    } catch (InterruptedException ie) {
-                        //System.err.println("TCPNetIF: readDatagram() interrupt");
-                        waitingForQueue = false;
-                        //return null;
-                        continue;
-                    }
-                }
-            } else {
-                //System.err.println("TCPNetIF: readDatagram() return null. running = " + running + " incomingQueue.size() == " + incomingQueue.size());
-                return null;
-            }
-        }
     }
 
     
@@ -401,7 +338,7 @@ public class TCPNetIF implements NetIF , Runnable {
         stats.put("out_packets", forwardCount);
         stats.put("out_errors", 0);
         stats.put("out_dropped", 0);
-        stats.put("incomingQueue", incomingQueue.size());
+        //stats.put("incomingQueue", incomingQueue.size());
         stats.put("outgoingQueue", 0);
 
         return stats;
@@ -447,9 +384,9 @@ public class TCPNetIF implements NetIF , Runnable {
 	while (running) {
             // if the queue has reached its limit
             // dont read any more until we get an interrupt
-            if (incomingQueue.size() >= QUEUE_PAUSE_LIMIT) {
-                holdOn(); // this sets paused
-            }
+           // if (incomingQueue.size() >= QUEUE_PAUSE_LIMIT) {
+            //    holdOn(); // this sets paused
+           // }
 
             // now go and read
             reading = true;
@@ -492,11 +429,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void theEnd() {
-       
-        if (waitingForQueue) {
-            // System.out.println("TCPNetIF:  theEnd interrupt " + takeThread);
-            takeThread.interrupt();
-        }
+
     }
 
  
@@ -508,10 +441,10 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     private synchronized void holdOn() {
         // the queue is actually too empty to wait()
-        if (incomingQueue.size() < QUEUE_TOO_LOW) {
+      //  if (incomingQueue.size() < QUEUE_TOO_LOW) {
             // System.err.println("TCPNetIF: bail out of wait() at queue size: " + incomingQueue.size());
-            return;
-        }
+       //     return;
+      //  }
 
         // System.err.println("run() about to wait() at incomingQueue size: " + incomingQueue.size());
 
@@ -620,24 +553,16 @@ public class TCPNetIF implements NetIF , Runnable {
      * A remote close was received.
      */
     public void remoteClose() {
-        System.out.println("TCPNetIF: got remote close. stats = " + getStats()); //incomingQueue size = " + incomingQueue.size() 
+        System.out.println("TCPNetIF: got remote close. stats = " + getStats()); 
 
         remoteClose = true;
 
         // we check the queue to see if it has any data.
-        if (incomingQueue.size() == 0) {
-            // there is nothing in the queue
-            // so close immediately
-            // by telling the Fabric
-            if (listener != null) {
+        if (listener != null) {
                 listener.netIFClosing(this);
-            }
-
-        } else {
-            // remoteClose is true
-            // so we will close when the queue size gets to 0 
-            // in readDatagram.
         }
+
+        
     }
     
     String leadin() {

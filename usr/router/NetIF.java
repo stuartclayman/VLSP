@@ -105,7 +105,7 @@ public interface NetIF {
     /**
      * Read a Datagram.
      */
-    public Datagram readDatagram();
+    //public Datagram readDatagram();
 
 
     /**
