@@ -24,12 +24,45 @@ import java.io.PrintStream;
  * if they have the same bit set in their BitSet.
  */
 public class Logger implements Logging {
-    /**
+    /*
+     * The name of the logger
+     */
+    String name;
+
+    /*
      * A map of output object to its BitSet.
      */
     Map <Object,BitSet>outputs = null;
 
-    public Logger() {
+    /*
+     * A static map of Logger objects
+     */
+    static Map<String, Logger> loggerMap = new HashMap<String, Logger>();
+
+    /**
+     * A static method that returns a Logger by name.
+     * If the Logger with that name already exists it is returned,
+     * otherwise it is created first.
+     */
+    public static Logger getLogger(String name) {
+        Logger logger = loggerMap.get(name);
+
+        if (logger == null) {
+            // we don't know this Logger
+            // so create it
+            logger = new Logger(name);
+            // and put it in the map
+            loggerMap.put(name, logger);
+        }
+
+        return logger;        
+    }
+
+    /**
+     * Construct a Logger object.
+     */
+    public Logger(String name) {
+        this.name = name;
         outputs = new HashMap<Object,BitSet>();
     }
 
