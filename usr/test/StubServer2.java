@@ -39,14 +39,14 @@ public class StubServer2 implements NetIFListener {
     LinkedBlockingQueue<Datagram> datagramQueue_;
 
 
-    public StubServer(int listenPort) throws IOException {
+    public StubServer2(int listenPort) throws IOException {
         normal = new BitSet();
         normal.set(1);
         error = new BitSet();
         error.set(2);
 
         // allocate a new logger
-        logger = new Logger();
+        logger = new Logger("StubServer2Logging");
         // tell it to output to stdout
         // and tell it what to pick up
         // it will actually output things where the log has bit 1 set
@@ -184,7 +184,7 @@ public class StubServer2 implements NetIFListener {
     }
 
     public static void main(String[] args) throws IOException {
-        StubServer server = new StubServer(PORT_NUMBER);
+        StubServer2 server = new StubServer2(PORT_NUMBER);
 
         server.readALot();
     }
