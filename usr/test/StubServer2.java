@@ -46,7 +46,7 @@ public class StubServer2 implements NetIFListener {
         error.set(2);
 
         // allocate a new logger
-        logger = new Logger("StubServer2Logging");
+        logger = new Logger("log");
         // tell it to output to stdout
         // and tell it what to pick up
         // it will actually output things where the log has bit 1 set

@@ -133,11 +133,10 @@ public class StubServer implements NetIFListener {
         byte[] payload = datagram.getPayload();
 
         if (payload == null) {
-            logger.log(normal, "No payload");
+            logger.logln(normal, "No payload");
         } else {
-            logger.log(normal, new String(payload));
+            logger.logln(normal, new String(payload));
         }
-        logger.log(normal, "\n");
 
         count++;
 
