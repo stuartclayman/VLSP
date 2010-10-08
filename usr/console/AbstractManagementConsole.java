@@ -166,7 +166,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
             // call Cleardown
             cleardown= clearDown();
-            System.out.println(leadin()+" exits cleardown");
+            //System.out.println(leadin()+" exits cleardown");
             // FSM
             fsm = FSMState.STOP;
 
@@ -204,10 +204,10 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             try {
                 // FSM
                 fsm = FSMState.SELECTING;
-                System.out.println(leadin()+"Enter select");
+
                 // select() on all channels
                 int num = selector.select();
-                System.out.println(leadin()+"Exit select");
+
                 // did select() return with no values ?
                 if (num == 0) {
                     // go again
@@ -218,7 +218,6 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                     Set<SelectionKey> keys = selector.selectedKeys();
 
                     for (SelectionKey key : keys) {
-                        System.out.println(leadin()+"Processing keys");
                         
                         if ((key.readyOps() & SelectionKey.OP_ACCEPT) == SelectionKey.OP_ACCEPT) {
                             // do we have an accept
@@ -229,7 +228,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                             // Accept the incoming connection.
                             Socket local = serverSocket.accept();
                             
-                            System.out.println(leadin() + "Did accept on: " + serverSocket);
+                            //System.out.println(leadin() + "Did accept on: " + serverSocket);
                             // Deal with incoming connection
                             newConnection(local);
 
@@ -273,7 +272,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void waitFor() {
-        System.out.println(leadin() + "waitFor");
+        // System.out.println(leadin() + "waitFor");
         
         try {
             synchronized(this) {
@@ -288,7 +287,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void theEnd() {
-        System.out.println(leadin() + "theEnd");
+        //System.out.println(leadin() + "theEnd");
         while (!ended()) {
             try {
                 System.out.println(leadin()+"In a loop");
@@ -350,7 +349,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Cleardown
      */
     protected boolean clearDown() {
-        System.out.println(leadin() + "Cleardown");
+        // System.out.println(leadin() + "Cleardown");
 
         try {
             // close main socket
@@ -377,7 +376,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             // Make sure channel for new connection is nonblocking
             sc = s.getChannel();
             sc.configureBlocking( false );
-            System.out.println(leadin() + "Registering " + sc);
+            // System.out.println(leadin() + "Registering " + sc);
             // Register it with the Selector, for reading.
             SelectionKey key = sc.register( selector, SelectionKey.OP_READ );
 
@@ -401,7 +400,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * End a connection
      */
     public void endConnection(SocketChannel c) {
-        System.out.println(leadin() + "endConnection: " + c.socket());
+        // System.out.println(leadin() + "endConnection: " + c.socket());
 
         unregisterChannel(c);
 
