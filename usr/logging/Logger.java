@@ -70,14 +70,22 @@ public class Logger implements Logging {
      * Log a message using a Strng.
      */
     public void log(BitSet mask, String msg) {
-	doLog(mask, msg);
+	doLog(mask, msg, false);
+    }
+
+    /**
+     * Log a message using a Strng.
+     * Add a trailing newline.
+     */
+    public void logln(BitSet mask, String msg) {
+	doLog(mask, msg, true);
     }
 
     /**
      * Log using a LogInput object.
      */
     public void log(BitSet mask, LogInput obj) {
-        doLog(mask, obj);
+        doLog(mask, obj, false);
     }
 
     /**
@@ -202,13 +210,11 @@ public class Logger implements Logging {
 	}
     }
 
-
-
     /**
      * Visit each output object and determine if it will
      * accept a log message, and if so log it.
      */
-    private void doLog(BitSet mask, Object message) {
+    private void doLog(BitSet mask, Object message, boolean trailingNL) {
 	if (outputs == null) {
 	    return;
         }
@@ -228,7 +234,7 @@ public class Logger implements Logging {
 	    // if the result has more than 0 bits set then
 	    // the current output will accept the current message
 	    if (! (acceptMask.cardinality() == 0)) { // empty
-		dispatch(message, anOutput);
+		dispatch(message, anOutput, trailingNL);
            }
         }
     }
@@ -238,19 +244,43 @@ public class Logger implements Logging {
      * @param message the message, either a String or a LogInput
      * @param anOutput the output object, 
      */
-    private void dispatch(Object message, Object anOutput) {
+    private void dispatch(Object message, Object anOutput, boolean trailingNL) {
 	// if output is a LogOutput pass on the message
         // as it knows how to deal with it
 	if (anOutput instanceof LogOutput) {
 	    if (message instanceof LogInput) {
 		((LogOutput)anOutput).process((LogInput)message);
 	    } else {
-		((LogOutput)anOutput).process((String)message);
+                if (trailingNL) {
+                    String msg = (String)message;
+                    ((LogOutput)anOutput).process(msg + "\n");
+                } else {
+                    ((LogOutput)anOutput).process(((String)message));
+                }
 	    }
+
 	} else if (anOutput instanceof PrintWriter) {
-	    ((PrintWriter)anOutput).print(message.toString());
+	    if (message instanceof LogInput) {
+		((PrintWriter)anOutput).print(((LogInput)message).logView());
+	    } else {
+                if (trailingNL) {
+                    ((PrintWriter)anOutput).println((String)message);
+                } else {
+                    ((PrintWriter)anOutput).print((String)message);
+                }
+	    }
+
 	} else if (anOutput instanceof PrintStream) {
-	    ((PrintStream)anOutput).print(message.toString());
+	    if (message instanceof LogInput) {
+		((PrintStream)anOutput).print(((LogInput)message).logView());
+	    } else {
+                if (trailingNL) {
+                    ((PrintStream)anOutput).println((String)message);
+                } else {
+                    ((PrintStream)anOutput).print((String)message);
+                }
+	    }
+
 	} else {
 	    ;
 	}
