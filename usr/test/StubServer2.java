@@ -9,7 +9,6 @@ import usr.router.NetIFListener;
 import java.io.*;
 import java.net.*;
 import java.text.*;
-import java.util.BitSet;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.nio.ByteBuffer;
@@ -20,8 +19,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class StubServer2 implements NetIFListener {
     final static int PORT_NUMBER = 4433;
 
-    static BitSet normal;
-    static BitSet error;
+    static BitMask normal;
+    static BitMask error;
     boolean running = true;
     TCPNetIF netIF;
     ConnectionOverTCP connection;
@@ -40,9 +39,9 @@ public class StubServer2 implements NetIFListener {
 
 
     public StubServer2(int listenPort) throws IOException {
-        normal = new BitSet();
+        normal = new BitMask();
         normal.set(1);
-        error = new BitSet();
+        error = new BitMask();
         error.set(2);
 
         // allocate a new logger

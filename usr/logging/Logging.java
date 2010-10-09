@@ -4,7 +4,6 @@ package usr.logging;
 
 import java.io.PrintWriter;
 import java.io.PrintStream;
-import java.util.BitSet;
 
 /**
  * An interface for objects that want to be a logger.
@@ -13,12 +12,18 @@ public interface Logging {
     /**
      * Log a message using a Strng.
      */
-    public void log(BitSet mask, String msg);
+    public void log(BitMask mask, String msg);
+
+    /**
+     * Log a message using a Strng.
+     * Add a trailing newline.
+     */
+    public void logln(BitMask mask, String msg);
 
     /**
      * Log using a LogInput object.
      */
-    public void log(BitSet mask, LogInput obj);
+    public void log(BitMask mask, LogInput obj);
 
     /**
      * Add output to a printwriter

@@ -2,7 +2,6 @@
 
 package usr.logging;
 
-import java.util.BitSet;
 import java.io.*;
 
 /**
@@ -24,20 +23,20 @@ public class LoggingOutputStream extends OutputStream {
     /**
      * The mask for messages from this OutputStream.
      */ 
-    BitSet mask = null;
+    BitMask mask = null;
 
     /**
      * Create a LoggingOutputStream using a specified logger.
      */
     public LoggingOutputStream(Logger logger) {
-	this(logger, new BitSet());
+	this(logger, new BitMask());
     }
 	
     /**
      * Create a LoggingOutputStream using a specified logger
-     * and BitSet mask.
+     * and BitMask mask.
      */
-    public LoggingOutputStream(Logger logger, BitSet m) {
+    public LoggingOutputStream(Logger logger, BitMask m) {
         buffer = new ByteArrayOutputStream();
         theLogger = logger;
 	mask = m;
@@ -74,14 +73,14 @@ public class LoggingOutputStream extends OutputStream {
     /**
      * Set the mask for this LoggingOutputStream.
      */
-    public void setMask(BitSet m) {
+    public void setMask(BitMask m) {
 	mask = m;
     }
 
     /**
      * Get the mask for this LoggingOutputStream.
      */
-    public BitSet getMask() {
+    public BitMask getMask() {
 	return mask;
     }
 

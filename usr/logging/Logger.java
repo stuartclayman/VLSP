@@ -5,7 +5,6 @@ package usr.logging;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.io.PrintWriter;
@@ -15,13 +14,13 @@ import java.io.PrintStream;
 /**
  * An object that will be a logger.
  * It keeps a set of output objects which actually do the logging,
- * and for each one there is a bitset/mask which determines which
+ * and for each one there is a bitmask which determines which
  * log message will be accepted by which output.
  * <p>
  * This allows us to set up a set of outputs and then configure them
  * at run-time to accept certain log statements.
  * It also allows the same log element to go to multiple log outputs
- * if they have the same bit set in their BitSet.
+ * if they have the same bit set in their BitMask.
  */
 public class Logger implements Logging {
     /*
@@ -30,9 +29,9 @@ public class Logger implements Logging {
     String name;
 
     /*
-     * A map of output object to its BitSet.
+     * A map of output object to its BitMask.
      */
-    Map <Object,BitSet>outputs = null;
+    Map <Object,BitMask>outputs = null;
 
     /*
      * A static map of Logger objects
@@ -63,13 +62,13 @@ public class Logger implements Logging {
      */
     public Logger(String name) {
         this.name = name;
-        outputs = new HashMap<Object,BitSet>();
+        outputs = new HashMap<Object,BitMask>();
     }
 
     /**
      * Log a message using a Strng.
      */
-    public void log(BitSet mask, String msg) {
+    public void log(BitMask mask, String msg) {
 	doLog(mask, msg, false);
     }
 
@@ -77,22 +76,44 @@ public class Logger implements Logging {
      * Log a message using a Strng.
      * Add a trailing newline.
      */
-    public void logln(BitSet mask, String msg) {
+    public void logln(BitMask mask, String msg) {
 	doLog(mask, msg, true);
     }
 
     /**
      * Log using a LogInput object.
      */
-    public void log(BitSet mask, LogInput obj) {
+    public void log(BitMask mask, LogInput obj) {
         doLog(mask, obj, false);
+    }
+
+    /**
+     * Log a message using a Strng.
+     */
+    public void log(int mask, String msg) {
+	doLog(new BitMask(mask), msg, false);
+    }
+
+    /**
+     * Log a message using a Strng.
+     * Add a trailing newline.
+     */
+    public void logln(int mask, String msg) {
+	doLog(new BitMask(mask), msg, true);
+    }
+
+    /**
+     * Log using a LogInput object.
+     */
+    public void log(int mask, LogInput obj) {
+        doLog(new BitMask(mask), obj, false);
     }
 
     /**
      * Add output to a printwriter
      */
     public Logger addOutput(PrintWriter w) {
-	addOutputLog(w, new BitSet());
+	addOutputLog(w, new BitMask());
 	return this;
     }
 
@@ -100,7 +121,7 @@ public class Logger implements Logging {
      * Add output to a printstream.
      */
     public Logger addOutput(PrintStream s){
-	addOutputLog(s, new BitSet());
+	addOutputLog(s, new BitMask());
 	return this;
     }
 
@@ -109,14 +130,14 @@ public class Logger implements Logging {
      * Add output to an LogOutput object.
      */
     public Logger addOutput(LogOutput eo) {
-	addOutputLog(eo, new BitSet());
+	addOutputLog(eo, new BitMask());
 	return this;
     }
 
     /**
      * Add output to a printwriter
      */
-    public Logger addOutput(PrintWriter w, BitSet mask) {
+    public Logger addOutput(PrintWriter w, BitMask mask) {
 	addOutputLog(w, mask);
 	return this;
     }
@@ -124,7 +145,7 @@ public class Logger implements Logging {
     /**
      * Add output to a printstream.
      */
-    public Logger addOutput(PrintStream s, BitSet mask){
+    public Logger addOutput(PrintStream s, BitMask mask){
 	addOutputLog(s, mask);
 	return this;
     }
@@ -133,7 +154,7 @@ public class Logger implements Logging {
     /**
      * Add output to an LogOutput object.
      */
-    public Logger addOutput(LogOutput eo, BitSet mask) {
+    public Logger addOutput(LogOutput eo, BitMask mask) {
 	addOutputLog(eo, mask);
 	return this;
     }
@@ -166,18 +187,18 @@ public class Logger implements Logging {
     /**
      * Get a mask for a an output object.
      */
-    public BitSet getMaskForOutput(Object output) {
+    public BitMask getMaskForOutput(Object output) {
 	if (outputs == null) {
 	    return null;
 	} else {
-	    return (BitSet)outputs.get(output);
+	    return (BitMask)outputs.get(output);
 	}
     }
 
     /**
      * Set a mask for a an output object.
      */
-    public Logger setMaskForOutput(Object output, BitSet mask) {
+    public Logger setMaskForOutput(Object output, BitMask mask) {
 	if (outputs == null) {
 	    return this;
 	} else {
@@ -191,9 +212,9 @@ public class Logger implements Logging {
     /**
      * Add an output to the outputs map.
      */
-    private void addOutputLog(Object output, BitSet mask) {
+    private void addOutputLog(Object output, BitMask mask) {
 	if (outputs == null) {
-	    outputs = new HashMap<Object,BitSet>();
+	    outputs = new HashMap<Object,BitMask>();
 	}
 
 	outputs.put(output, mask);
@@ -214,7 +235,7 @@ public class Logger implements Logging {
      * Visit each output object and determine if it will
      * accept a log message, and if so log it.
      */
-    private void doLog(BitSet mask, Object message, boolean trailingNL) {
+    private void doLog(BitMask mask, Object message, boolean trailingNL) {
 	if (outputs == null) {
 	    return;
         }
@@ -224,16 +245,15 @@ public class Logger implements Logging {
 	while (outputI.hasNext()) {
 	    Object anOutput = outputI.next();
 
-	    // we need to clone becasue ops on BitSets are in-place
-	    // and destructive :-(
-	    BitSet aMask = (BitSet)outputs.get(anOutput);
-	    BitSet acceptMask = (BitSet)aMask.clone();
+            // get mask for output
+	    BitMask aMask = (BitMask)outputs.get(anOutput);
 
-	    acceptMask.and(mask);
+            // check if we need to send to it
+	    BitMask acceptMask = aMask.and(mask);
 
 	    // if the result has more than 0 bits set then
 	    // the current output will accept the current message
-	    if (! (acceptMask.cardinality() == 0)) { // empty
+	    if (! (acceptMask.isClear())) { // empty
 		dispatch(message, anOutput, trailingNL);
            }
         }

@@ -1,6 +1,7 @@
 package usr.test;
 
 import usr.net.*;
+import usr.logging.*;
 import usr.router.NetIF;
 import usr.router.TCPNetIF;
 import usr.protocol.Protocol;
@@ -14,9 +15,13 @@ public class StubClient {
     final static int PORT_NUMBER = 4433;
     ConnectionOverTCP connection;
     NetIF netIF;
+    Logger logger;
 
     public StubClient(String host, int port) {
         try {
+            logger = Logger.getLogger("log");
+            logger.addOutput(System.err, new BitMask(USR.ERROR));
+
 	    // initialise socket
             TCPEndPointSrc src = new TCPEndPointSrc(host, port);
 
@@ -24,15 +29,14 @@ public class StubClient {
             netIF.setAddress(new GIDAddress(1));
             netIF.connect();
             
-
-            System.err.println("StubClient: Connected to: " + host);
+            Logger.getLogger("log").logln(USR.ERROR, "StubClient: Connected to: " + host);
 
 
         } catch (UnknownHostException uhe) {
-            System.err.println("StubClient: Unknown host " + host);
+            Logger.getLogger("log").logln(USR.ERROR, "StubClient: Unknown host " + host);
             System.exit(1);
         } catch (IOException ioexc) {
-            System.err.println("StubClient: Cannot connect to " + host + "on port " + port);
+            Logger.getLogger("log").logln(USR.ERROR, "StubClient: Cannot connect to " + host + "on port " + port);
             System.exit(1);
         }
     }
@@ -58,7 +62,7 @@ public class StubClient {
                 return;
             } else {
 
-                //System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
+                //Logger.getLogger("log").logln(USR.ERROR, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
         }
 
