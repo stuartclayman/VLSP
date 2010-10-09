@@ -4,6 +4,7 @@
  */
 package usr.globalcontroller;
 
+import usr.logging.*;
 import usr.localcontroller.LocalControllerInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -103,17 +104,17 @@ class ControlOptions {
             }
 
       } catch (java.io.FileNotFoundException e) {
-          System.err.println("Cannot find file "+fName);
+          Logger.getLogger("log").logln(USR.ERROR, "Cannot find file "+fName);
           System.exit(-1);
       }catch (SAXParseException err) {
           System.err.println ("** Parsing error" + ", line " 
              + err.getLineNumber () + ", uri " + err.getSystemId ());
-          System.err.println(" " + err.getMessage ());
+          Logger.getLogger("log").logln(USR.ERROR, " " + err.getMessage ());
           System.exit(-1);
 
       }catch (SAXException e) {
-          System.err.println("Exception in SAX XML parser.");
-          System.err.println(e.getMessage());
+          Logger.getLogger("log").logln(USR.ERROR, "Exception in SAX XML parser.");
+          Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
           System.exit(-1);
           
       }catch (Throwable t) {
@@ -221,7 +222,7 @@ class ControlOptions {
             }catch (SAXException e) {
                 throw e;
             } catch (XMLNoTagException e) {
-                System.err.println("Unexpected exception in processLocalControllers");
+                Logger.getLogger("log").logln(USR.ERROR, "Unexpected exception in processLocalControllers");
                 throw new SAXException();
             }
             try {
@@ -350,7 +351,7 @@ class ControlOptions {
         Element hElement = (Element)n.item(0);
         NodeList textFNList = hElement.getChildNodes();
         String fName= ((Node)textFNList.item(0)).getNodeValue().trim();
-        //System.err.println("Read router file "+fName);    
+        //Logger.getLogger("log").logln(USR.ERROR, "Read router file "+fName);    
         BufferedReader reader = new BufferedReader( new FileReader (fName));
         String line  = null;
         StringBuilder stringBuilder = new StringBuilder();
@@ -361,7 +362,7 @@ class ControlOptions {
            stringBuilder.append( ls );
         }
         routerOptionsString_= stringBuilder.toString();
-        //System.err.println("User Options String "+routerOptionsString_);
+        //Logger.getLogger("log").logln(USR.ERROR, "User Options String "+routerOptionsString_);
         routerOptions_.setOptionsFromString(routerOptionsString_);
         
         Node n0=n.item(0);

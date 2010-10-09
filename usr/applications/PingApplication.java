@@ -1,6 +1,7 @@
 package usr.applications;
 import usr.router.*;
 import usr.net.*;
+import usr.logging.*;
 import java.nio.ByteBuffer;
 import usr.protocol.*;
 
@@ -40,7 +41,7 @@ public class PingApplication implements Application {
             GIDAddress dst= new GIDAddress(gid_); 
             // and we want to connect to port 0 (router fabric)
             socket_.connect(dst, 0);
-            System.err.println("Socket has source port "+socket_.getLocalPort());
+            Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket_.getLocalPort());
             ByteBuffer buffer = ByteBuffer.allocate(1);
             buffer.put("P".getBytes());
             Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
@@ -48,8 +49,8 @@ public class PingApplication implements Application {
                 throw new java.net.SocketException("socket_ returned false");
             }
         } catch (Exception e) {
-                System.err.println(leadin()+"Cannot open socket to write");
-                System.err.println(leadin()+e.getMessage());  
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"Cannot open socket to write");
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());  
                 return;
         }
         long now= System.currentTimeMillis();
@@ -59,10 +60,10 @@ public class PingApplication implements Application {
             dg = socket_.receive();
             if (dg == null) {
                 
-                System.out.println("Ping waiting");
+                Logger.getLogger("log").logln(USR.STDOUT, "Ping waiting");
                 continue;
             } 
-            System.out.println("Ping received in time: "+ (System.currentTimeMillis()- now) + " milliseconds ");
+            Logger.getLogger("log").logln(USR.STDOUT, "Ping received in time: "+ (System.currentTimeMillis()- now) + " milliseconds ");
                
             stop();
             return;
@@ -101,7 +102,7 @@ public class PingApplication implements Application {
     /** Implement ungraceful shut down */
     public void exit(int code)
     {
-        System.err.println(leadin()+" exiting with error "+code);
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+" exiting with error "+code);
         System.exit(code);
     }
     

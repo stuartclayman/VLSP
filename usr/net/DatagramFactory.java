@@ -1,6 +1,7 @@
 package usr.net;
 
 import usr.protocol.Protocol;
+import usr.logging.*;
 import java.util.ArrayList;
 import java.nio.ByteBuffer;
 import java.lang.reflect.Constructor;
@@ -112,7 +113,7 @@ class DatagramFactoryInfo {
             cons1 = (Constructor<? extends Datagram>)xc.getDeclaredConstructor(ByteBuffer.class);
 
         } catch (Exception e) {
-            System.err.println("DatagramFactoryInfo: Exception: " + e);
+            Logger.getLogger("log").logln(USR.ERROR, "DatagramFactoryInfo: Exception: " + e);
             throw new Error("DatagramFactory: config error in DatagramFactory.  Cannot configure class data for: " + className);
         }
     }

@@ -1,6 +1,7 @@
 package usr.localcontroller;
 
 import usr.console.*;
+import usr.logging.*;
 import java.net.*;
 import usr.localcontroller.command.*;
 import java.nio.channels.SocketChannel;

@@ -1,5 +1,7 @@
 package usr.globalcontroller;
 
+import usr.logging.*;
+
 public class SimEvent {
     private int eventType_;
     private Object eventData_;

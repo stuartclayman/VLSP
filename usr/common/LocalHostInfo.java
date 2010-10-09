@@ -1,6 +1,7 @@
 /**
   * LocalHostInfo contains basic info about one host in the system
   * It deals with finding out IP addresses, ports and so on
+import usr.logging.*;
 */
 
 package usr.common;
@@ -23,7 +24,7 @@ public class LocalHostInfo  {
       ipAddress_= java.net.InetAddress.getLocalHost();
       
       hostName_= ipAddress_.getHostName();
-//      System.out.println(hostName_+" "+ipAddress_.getHostAddress());
+//      Logger.getLogger("log").logln(USR.STDOUT, hostName_+" "+ipAddress_.getHostAddress());
     }
     
     
@@ -50,13 +51,13 @@ public class LocalHostInfo  {
       port_= port;
       ipAddress_= ip;
       hostName_= ipAddress_.getHostName();
-//      System.out.println(hostName_+" "+ipAddress_.getHostAddress());
+//      Logger.getLogger("log").logln(USR.STDOUT, hostName_+" "+ipAddress_.getHostAddress());
     }
     
     public LocalHostInfo (String hostName, int port) throws java.net.UnknownHostException {
       
       init(hostName,port);
-//      System.out.println(hostName_+" "+ipAddress_.getHostAddress());
+//      Logger.getLogger("log").logln(USR.STDOUT, hostName_+" "+ipAddress_.getHostAddress());
     }
     
     public void init(String hostName, int port) throws java.net.UnknownHostException {

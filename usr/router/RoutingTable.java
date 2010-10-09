@@ -1,6 +1,7 @@
 package usr.router;
 
 import java.util.*;
+import usr.logging.*;
 import usr.net.*;
 
 public interface RoutingTable {

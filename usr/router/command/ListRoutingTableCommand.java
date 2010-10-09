@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import usr.router.RoutingTable;
 import usr.router.RoutingTableEntry;
@@ -36,7 +37,7 @@ public class ListRoutingTableCommand extends RouterCommand {
         boolean result = success("END " + table.size());
 
         if (!result) {
-            System.err.println(leadin() + "LIST_ROUTING_TABLE response failed");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "LIST_ROUTING_TABLE response failed");
         }
 
         return result;

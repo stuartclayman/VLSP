@@ -1,6 +1,7 @@
 package usr.net;
 
 /**
+import usr.logging.*;
  * A Socket Address has an address and a port.
  */
 public class SocketAddress {

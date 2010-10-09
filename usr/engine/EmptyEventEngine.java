@@ -4,6 +4,7 @@
 package usr.engine;
 
 import usr.globalcontroller.*;
+import usr.logging.*;
 
 public class EmptyEventEngine implements EventEngine {
     long timeToEnd_;

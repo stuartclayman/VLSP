@@ -1,6 +1,7 @@
 package usr.protocol;
 
 /**
+import usr.logging.*;
  * Request strings and response codes for the MCRP protocol.
  */
 public class MCRP implements Protocol {

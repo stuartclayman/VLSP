@@ -1,6 +1,7 @@
 package usr.common;
 
 import usr.localcontroller.LocalControllerInfo;
+import usr.logging.*;
 
 /**
 Class provides simple information that the global and local

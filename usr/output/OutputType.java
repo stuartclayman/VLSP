@@ -1,6 +1,7 @@
 package usr.output;
 
 import usr.globalcontroller.*;
+import usr.logging.*;
 
 /** This class produces output from the simulation */
 

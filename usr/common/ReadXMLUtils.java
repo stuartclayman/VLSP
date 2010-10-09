@@ -1,6 +1,7 @@
 package usr.common;
 
 
+import usr.logging.*;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -166,7 +167,7 @@ public class ReadXMLUtils {
         try {
            d.checkParts();
         } catch (ProbException e) {
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             System.exit(-1);
         }
         return d;

@@ -1,6 +1,7 @@
 package usr.net;
 
 import usr.protocol.Protocol;
+import usr.logging.*;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.nio.ByteBuffer;
@@ -90,12 +91,12 @@ public class ConnectionOverTCP implements Connection {
 
 
     public boolean sendDatagram(Datagram dg) {
-        //System.err.println("ConnectionOverTCP: " + outCounter + " sendDatagram() ");
-      //  System.err.println("SENDING DATAGRAM LENGTH "+dg.getTotalLength());
+        //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + outCounter + " sendDatagram() ");
+      //  Logger.getLogger("log").logln(USR.ERROR, "SENDING DATAGRAM LENGTH "+dg.getTotalLength());
       //  ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
-     //   System.err.println("WRITE as bytes "+ b.asCharBuffer());
+     //   Logger.getLogger("log").logln(USR.ERROR, "WRITE as bytes "+ b.asCharBuffer());
        // for (int i= 0; i < dg.getTotalLength(); i++) {
-        //      System.err.println("At pos"+i+" char is "+ (char)b.get());
+        //      Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+" char is "+ (char)b.get());
        // }
         try {
             int count = getChannel().write(((DatagramPatch)dg).toByteBuffer());
@@ -103,7 +104,7 @@ public class ConnectionOverTCP implements Connection {
             if (count == -1) {
                 return false;
             } else {
-                //System.err.println("ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
+                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
                 outCounter++;
 
                 return true;
@@ -121,9 +122,9 @@ public class ConnectionOverTCP implements Connection {
         Datagram dg =  readDatagramAndWait();
 
         if (dg == null) {
-            //System.err.println("ConnectionOverTCP: " + endPoint + " " + inCounter + " read NULL");
+            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + inCounter + " read NULL");
         } else {
-            //System.err.println("ConnectionOverTCP: " + endPoint + " " + inCounter + " read " + dg.getTotalLength());
+            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + inCounter + " read " + dg.getTotalLength());
             inCounter++;
         }
 
@@ -160,7 +161,7 @@ public class ConnectionOverTCP implements Connection {
           //, make it longer and read more data
          
           if (packetLen * PACKETS_BEFORE_SHUFFLE > bufferSize_) {
-             // System.err.println("Increasing buffer size");
+             // Logger.getLogger("log").logln(USR.ERROR, "Increasing buffer size");
               bufferSize_= packetLen * PACKETS_BEFORE_SHUFFLE;
               ByteBuffer bigB= ByteBuffer.allocate(bufferSize_);
               int bufferRead= bufferEndData_- bufferStartData_;
@@ -186,12 +187,12 @@ public class ConnectionOverTCP implements Connection {
           
           byte[] latestDGData = new byte[packetLen];
           
-          //System.out.println("READING PACKET FROM "+bufferStartData_+ " to "+
+          //Logger.getLogger("log").logln(USR.STDOUT, "READING PACKET FROM "+bufferStartData_+ " to "+
           //  bufferStartData_+packetLen);
           buffer.position(bufferStartData_);
           buffer.get(latestDGData);
           //for (int i= 0; i < packetLen; i++) {
-           //   System.err.println("At pos"+i+" char is "+ (char) latestDGData[i]);
+           //   Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+" char is "+ (char) latestDGData[i]);
           //}
           
           bufferStartData_+= packetLen;
@@ -206,7 +207,7 @@ public class ConnectionOverTCP implements Connection {
           return dg;
           
         } catch (IOException ioe) {
-             //System.err.println("Connection over TCP read error "+ioe.getMessage());
+             //Logger.getLogger("log").logln(USR.ERROR, "Connection over TCP read error "+ioe.getMessage());
              // TODO:  THIS ERROR DOES OCCUR SOMETIMES -- DO NOT KNOW WHY
              return null;
         }
@@ -221,18 +222,18 @@ public class ConnectionOverTCP implements Connection {
           latestDGData[2] != checkbytes[2] ||
           latestDGData[3] != checkbytes[3])
               {
-              System.err.println("Read incorrect datagram "+latestDGData);
-              System.err.println("Buffer size "+bufferSize_+" start pos "+bufferStartData_ +
+              Logger.getLogger("log").logln(USR.ERROR, "Read incorrect datagram "+latestDGData);
+              Logger.getLogger("log").logln(USR.ERROR, "Buffer size "+bufferSize_+" start pos "+bufferStartData_ +
                 " end Pos "+bufferEndData_);
               ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
-              System.err.println("READ as bytes "+ b.asCharBuffer());
+              Logger.getLogger("log").logln(USR.ERROR, "READ as bytes "+ b.asCharBuffer());
               System.exit(-1);
           }
     }
     
     void shuffleBuffer() 
     {
-        //System.err.println("Shuffling the buffer " + inCounter);
+        //Logger.getLogger("log").logln(USR.ERROR, "Shuffling the buffer " + inCounter);
         int remaining= bufferEndData_-bufferStartData_;
         if (remaining == 0) {
             bufferStartData_= 0;
@@ -266,7 +267,7 @@ public class ConnectionOverTCP implements Connection {
     about position of data*/
     short getPacketLen() {
         short pktLen= buffer.getShort(bufferStartData_+5);
-        //System.err.println("READ PACKET LENGTH "+pktLen);
+        //Logger.getLogger("log").logln(USR.ERROR, "READ PACKET LENGTH "+pktLen);
         return pktLen;
     }
     
@@ -280,13 +281,13 @@ public class ConnectionOverTCP implements Connection {
             if (count == -1)
                 return;
             bufferEndData_+= count;
-            //System.err.println("ConnectionOverTCP: READ "+count+" bytes");
+            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: READ "+count+" bytes");
            // for (int i= 0; i < count; i++) {
           //      byte b= buffer.get(bufferStartData_+i);
          //       System.err.println ("Byte "+i+ " as char "+(char)b);
          //   }
         } catch (IOException ioe) {
-             //System.err.println("Connection over TCP read error "+ioe.getMessage());
+             //Logger.getLogger("log").logln(USR.ERROR, "Connection over TCP read error "+ioe.getMessage());
              // TODO:: THIS ERROR DOES OCCUR SOMETIMES
              return;
         }

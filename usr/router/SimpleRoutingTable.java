@@ -1,6 +1,7 @@
 package usr.router;
 
 import java.util.*;
+import usr.logging.*;
 import usr.net.*;
 
 /** Class holds a routing table deals with getting updated routing
@@ -72,8 +73,8 @@ public class SimpleRoutingTable implements RoutingTable {
     /** A new network interface arrives -- add to
     routing table if necessary return true if change was made */
     public  synchronized boolean addNetIF(NetIF inter) {
-        //System.err.println("SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
-        //System.err.println("SimpleRoutingTable: addNetIF: table before = " + this);
+        //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
+        //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table before = " + this);
 
         Address newif= inter.getAddress();
         int weight= inter.getWeight();
@@ -82,7 +83,7 @@ public class SimpleRoutingTable implements RoutingTable {
         SimpleRoutingTableEntry e2= new SimpleRoutingTableEntry(inter.getRemoteRouterAddress(), 
             inter.getWeight(), inter);
         boolean changed2= mergeEntry(e2, inter); // Add entry for remote end
-        //System.err.println("SimpleRoutingTable: addNetIF: table after = " + this);
+        //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table after = " + this);
         return changed1 || changed2;
     }
     
@@ -90,7 +91,7 @@ public class SimpleRoutingTable implements RoutingTable {
      * Merge a RoutingTable into this one.
      */
     public synchronized boolean mergeTables(SimpleRoutingTable table2, NetIF inter) {
-       // System.err.println("MERGING TABLES");
+       // Logger.getLogger("log").logln(USR.ERROR, "MERGING TABLES");
         boolean changed= false;
         Collection <SimpleRoutingTableEntry> es= table2.getEntries();
         if (es == null) {
@@ -119,7 +120,7 @@ public class SimpleRoutingTable implements RoutingTable {
                     int receivedCost= e2.getCost()+inter.getWeight();
                     if (receivedCost > e.getCost()) {
                         e.setCost(receivedCost);
-                        //System.err.println("COST CHANGE");
+                        //Logger.getLogger("log").logln(USR.ERROR, "COST CHANGE");
                         changed= true;
                     }
                 }
@@ -160,13 +161,13 @@ public class SimpleRoutingTable implements RoutingTable {
             weight= 0;
         else
             weight= inter.getWeight();
-      //  System.err.println("Weight = "+weight);
+      //  Logger.getLogger("log").logln(USR.ERROR, "Weight = "+weight);
         SimpleRoutingTableEntry oldEntry= table_.get(addr.toString());
         // CASE 1 -- NO ENTRY EXISTED
         if (oldEntry == null) {
             SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(addr,newEntry.getCost() +
                weight, inter);
-           // System.err.println("NEW ENTRY");
+           // Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY");
             table_.put(addr.toString(),e);    
             return true;
         }
@@ -199,10 +200,10 @@ public class SimpleRoutingTable implements RoutingTable {
     routing table has changed*/
     public synchronized  boolean removeNetIF(NetIF netif) {
         boolean changed= false;
-        //System.err.println("REMOVE NET IF CALLED");
+        //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NET IF CALLED");
         ArrayList <String> toRemove= new ArrayList <String>();
         for (SimpleRoutingTableEntry e: getEntries()) {
-            //System.err.println("TRYING TO REMOVE "+e.getAddress());
+            //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO REMOVE "+e.getAddress());
             if (netif.equals(e.getNetIF())) {
                 String addr= e.getAddress().toString();
                 toRemove.add(addr);// Flag removal and do it later
@@ -226,7 +227,7 @@ public class SimpleRoutingTable implements RoutingTable {
             table.append("\n");
         }
         String s= table.toString();
-        //System.err.println("STRING IS "+s);
+        //Logger.getLogger("log").logln(USR.ERROR, "STRING IS "+s);
         return s;
     }
 }

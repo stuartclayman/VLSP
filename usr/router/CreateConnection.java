@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.interactor.RouterInteractor;
 import usr.interactor.MCRPException;
 import usr.console.*;
@@ -39,7 +40,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         // check command
         String[] parts = value.split(" ");
         if (parts.length != 3) {
-            System.err.println(leadin() + "INVALID createConnection command: " + request);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection command: " + request);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION wrong no of args");
             return;
         }
@@ -47,7 +48,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         // check ip addr spec
         String[] ipParts = parts[1].split(":");
         if (ipParts.length != 2) {
-            System.err.println(leadin() + "INVALID createConnection ip address: " + request);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection ip address: " + request);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid address " + parts[1]);
             return;
         }
@@ -90,11 +91,11 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             interactor = new RouterInteractor(InetAddress.getByName(host), portNumber);
 
         } catch (UnknownHostException uhe) {
-            System.err.println(leadin() + "Unknown host: " + host);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
             return;
         } catch (IOException ioexc) {
-            System.err.println(leadin() + "Cannot connect to " + host + " on port " + portNumber + " -> " + ioexc);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot connect to " + host + " on port " + portNumber + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
             return;
         }
@@ -108,11 +109,11 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         try {
             routerResponse = interactor.getConnectionPort();
         } catch (IOException ioexc) {
-            System.err.println(leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
             return;
         } catch (MCRPException mcrpe) {
-            System.err.println(leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + mcrpe);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + mcrpe);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
             return;
         }
@@ -124,7 +125,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         // now get connection port
         int connectionPort = scanner.nextInt();
 
-        System.out.println(leadin() + "createConnection: connectionPort at " + host + " is " + connectionPort);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "createConnection: connectionPort at " + host + " is " + connectionPort);
 
 
         /*
@@ -146,7 +147,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             // get socket so we can determine the Inet Address
             socket = src.getSocket();
 
-            System.out.println(leadin() + "connection socket: " + socket);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "connection socket: " + socket);
 
             refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
 
@@ -160,15 +161,15 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             // set its Address
             netIF.setAddress(new GIDAddress(controller.getGlobalID()));
 
-            System.out.println(leadin() + "netif = " + netIF);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
 
 
         } catch (UnknownHostException uhe) {
-            System.err.println(leadin() + "Unknown host: " + host);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
             return;
         } catch (IOException ioexc) {
-            System.err.println(leadin() + "Cannot connect to " + host + " on port " + connectionPort + " -> " + ioexc);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot connect to " + host + " on port " + connectionPort + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + connectionPort);
             return;
         }
@@ -192,11 +193,11 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             remoteRouterID = interactor.getGlobalID();
 
         } catch (IOException ioexc) {
-            System.err.println(leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
             return;
         } catch (MCRPException mcrpe) {
-            System.err.println(leadin() + "Cannot GET_NAME from " + host + " -> " + mcrpe);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + mcrpe);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
             return;
         }
@@ -224,7 +225,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ie) {
-                    System.err.println("CC: SLEEP");
+                    Logger.getLogger("log").logln(USR.ERROR, "CC: SLEEP");
                 }
                 // send INCOMING_CONNECTION command
 
@@ -235,7 +236,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                     interactionOK = true;
                     break;
                 } catch (Exception e) {
-                    System.err.println(leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " + attempts);
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " + attempts);
                 }
 
             }
@@ -249,7 +250,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             }
 
         } catch (Exception exc) {
-            System.err.println(leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
             return;
         }
@@ -260,14 +261,14 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         try { 
             interactor.quit();
         } catch (Exception e) {
-            System.err.println(leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot quit with host: " + host);
             return;
         }
 
         // close connection to management connection of remote router
 
-        System.out.println(leadin() + "closed = " + host);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed = " + host);
 
         // now plug the temporary netIF into Router
         RouterPort port = controller.plugTemporaryNetIFIntoPort(netIF);

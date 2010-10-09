@@ -1,6 +1,5 @@
 // MCRPException.java
 
-
 package usr.interactor;
 
 /**

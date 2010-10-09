@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import usr.router.NetIF;
 import usr.net.GIDAddress;
@@ -83,7 +84,7 @@ public class IncomingConnectionCommand extends RouterCommand {
             // create an address from the same host, but
             // using the passed in port number
             InetSocketAddress refAddr = new InetSocketAddress(sc.socket().getInetAddress(), port);
-            //System.err.println("ManagementConsole => " + refAddr + " # " + refAddr.hashCode());
+            //Logger.getLogger("log").logln(USR.ERROR, "ManagementConsole => " + refAddr + " # " + refAddr.hashCode());
 
             /*
              * Lookup netif and set its name
@@ -91,7 +92,7 @@ public class IncomingConnectionCommand extends RouterCommand {
             NetIF netIF = controller.getTemporaryNetIFByID(refAddr.hashCode());
 
             if (netIF != null) {
-                System.out.println(leadin() + "Found temporary NetIF with id " + refAddr.hashCode());
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Found temporary NetIF with id " + refAddr.hashCode());
 
                 // set its name
                 netIF.setName(connectionID);
@@ -115,7 +116,7 @@ public class IncomingConnectionCommand extends RouterCommand {
         }
 
         if (!result) {
-            System.err.println(leadin() + getName() + " failed");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " failed");
         }
 
         return result;

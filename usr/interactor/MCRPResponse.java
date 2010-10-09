@@ -1,9 +1,8 @@
 // MCRPResponse.java
 
-
 package usr.interactor;
 
-
+import usr.logging.*;
 import java.util.ArrayList;
 import java.util.List;
 

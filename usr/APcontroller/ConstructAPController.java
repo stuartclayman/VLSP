@@ -1,6 +1,7 @@
 package usr.APcontroller;
 
 
+import usr.logging.*;
 import usr.router.RouterOptions;
 
 /** Wrapper to construct appropriate AP controller object */
@@ -22,7 +23,7 @@ public class ConstructAPController
             return a;  
         }
         
-        System.err.println("Unknown Access Point controller name "+name+
+        Logger.getLogger("log").logln(USR.ERROR, "Unknown Access Point controller name "+name+
           " using null controller");
         a= new NullAPController(o);
         return a;

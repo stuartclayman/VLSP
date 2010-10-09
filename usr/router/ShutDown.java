@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.interactor.RouterInteractor;
 import usr.interactor.MCRPException;
 import usr.console.*;
@@ -32,7 +33,7 @@ public class ShutDown extends ChannelResponder implements Runnable {
 
     public void run() {
         // process the request
-        System.out.println(leadin()+"Sending response code for shut down"+MCRP.SHUT_DOWN.CODE);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Sending response code for shut down"+MCRP.SHUT_DOWN.CODE);
         
         
       

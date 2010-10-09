@@ -1,6 +1,7 @@
 package usr.net;
 
 import java.nio.ByteBuffer;
+import usr.logging.*;
 import java.net.UnknownHostException;
 
 /**
@@ -30,7 +31,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
     GIDDatagram(ByteBuffer payload) {
         payload.rewind();
         int payloadSize = payload.limit();
-        //System.err.println("PAYLOAD SIZE "+payloadSize);
+        //Logger.getLogger("log").logln(USR.ERROR, "PAYLOAD SIZE "+payloadSize);
         fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
         fillDatagram(payload);
@@ -288,7 +289,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         int headerLen = getHeaderLength();
         int totalLen = getTotalLength();
 
-        // System.err.println("GIDDatagram getPayload: headerLen = " + headerLen + " totalLen = " + totalLen);
+        // Logger.getLogger("log").logln(USR.ERROR, "GIDDatagram getPayload: headerLen = " + headerLen + " totalLen = " + totalLen);
 
         fullDatagram.position(headerLen);
 
@@ -298,7 +299,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
 
         //ByteBuffer payload =  ByteBuffer.wrap(payloadBytes);
 
-        // System.err.println("GIDDatagram getPayload: payload = " + payload.position() + " < " + payload.limit() + " < " + payload.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "GIDDatagram getPayload: payload = " + payload.position() + " < " + payload.limit() + " < " + payload.capacity());
 
         return payloadBytes;
         
@@ -334,7 +335,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
     public boolean fromByteBuffer(ByteBuffer b) {
         fullDatagram = b;
         
-        // System.err.println("GIDDatagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "GIDDatagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
         return true;
     }
@@ -345,7 +346,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
     void fillDatagram(ByteBuffer payload) {
         // put USRD literal - 4 bytes
         fullDatagram.put("USRD".getBytes(), 0, 4);
-        //System.err.println("USRD set");
+        //Logger.getLogger("log").logln(USR.ERROR, "USRD set");
         // put header len
         fullDatagram.put(4, (byte)HEADER_SIZE);
 
@@ -393,7 +394,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
          */
         fullDatagram.position(24);
         payload.rewind();
-        // System.err.println("payload size = " + payload.limit());
+        // Logger.getLogger("log").logln(USR.ERROR, "payload size = " + payload.limit());
 
         fullDatagram.put(payload);
 
@@ -403,7 +404,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
 
         fullDatagram.rewind();
 
-        // System.err.println("GIDAddress fillDatagram: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "GIDAddress fillDatagram: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
     }
 

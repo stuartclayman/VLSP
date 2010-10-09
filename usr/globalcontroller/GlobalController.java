@@ -1,6 +1,7 @@
 package usr.globalcontroller;
 
 import usr.localcontroller.LocalControllerInfo;
+import usr.logging.*;
 import usr.console.*;
 import java.lang.*;
 import java.util.*;
@@ -57,7 +58,7 @@ public class GlobalController implements ComponentController {
     public static void main(String[] args) {
        
       if (args.length != 1) {
-            System.err.println("Command line must specify "+
+            Logger.getLogger("log").logln(USR.ERROR, "Command line must specify "+
               "XML file to read and nothing else.");
             System.exit(-1);
       } 
@@ -66,7 +67,7 @@ public class GlobalController implements ComponentController {
       gControl.init();
 
       gControl.simulate();
-      System.out.println(gControl.leadin() + "Simulation complete");
+      Logger.getLogger("log").logln(USR.STDOUT, gControl.leadin() + "Simulation complete");
       System.out.flush();
     }
 
@@ -89,7 +90,7 @@ public class GlobalController implements ComponentController {
       try {
           myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
       } catch (Exception e) {
-          System.err.println(leadin()+e.getMessage());
+          Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
           bailOut();
       }
 
@@ -100,6 +101,19 @@ public class GlobalController implements ComponentController {
       initSchedule();
 
       isActive = true;
+
+      // allocate a new logger
+      Logger logger = Logger.getLogger("log");
+      // tell it to output to stdout
+      // and tell it what to pick up
+      // it will actually output things where the log has bit 
+      // USR.STDOUT set
+      logger.addOutput(System.out, new BitMask(USR.STDOUT));
+      // tell it to output to stderr
+      // and tell it what to pick up
+      // it will actually output things where the log has bit
+      // USR.ERROR set
+      logger.addOutput(System.err, new BitMask(USR.ERROR));
 
     }
     
@@ -121,10 +135,10 @@ public class GlobalController implements ComponentController {
           }
           if (options_.startLocalControllers()) {
             
-              System.out.println(leadin() + "Starting Local Controllers");
+              Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting Local Controllers");
               startLocalControllers();
           }        
-          System.out.println(leadin() + "Checking existence of local Controllers");
+          Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Checking existence of local Controllers");
           checkAllControllers();
     }
     
@@ -144,7 +158,7 @@ public class GlobalController implements ComponentController {
         while (simulationRunning_) {
             SimEvent e= scheduler_.getFirstEvent();
             if (e == null) {
-                System.err.println(leadin() + "Out of events to execute");
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Out of events to execute");
                 break;
             }
             simulationTime= e.getTime();
@@ -159,7 +173,7 @@ public class GlobalController implements ComponentController {
         while (simulationRunning_) {
             SimEvent e= scheduler_.getFirstEvent();
             if (e == null) {
-                System.err.println(leadin() + "Out of events to execute!");
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Out of events to execute!");
                 break;
             }
             while(simulationRunning_) {
@@ -168,7 +182,7 @@ public class GlobalController implements ComponentController {
                 
                 if (simulationTime - (simulationStartTime + eventTime) > 
                      options_.getMaxLag()) {
-                    System.err.println(leadin() +
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() +
                       "Simulation lagging too much, slow down events");
                     bailOut();
                 }
@@ -179,7 +193,7 @@ public class GlobalController implements ComponentController {
                 
                 
                 if (checkMessages()) {
-                    // System.out.println(leadin() + "Check msg true");
+                    // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Check msg true");
                     continue;
                 }
                 waitUntil(simulationStartTime + eventTime);
@@ -194,7 +208,7 @@ public class GlobalController implements ComponentController {
         if (queue.size() == 0)
            return false;
         Request req= queue.remove();
-        System.err.println(leadin() + "TODO -- need to deal with event here!");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "TODO -- need to deal with event here!");
         return true;
     }
     
@@ -202,10 +216,10 @@ public class GlobalController implements ComponentController {
 
      /** bail out of simulation relatively gracefully */
     private void bailOut() {
-        System.err.println(leadin() + "Bailing out of simulation!");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Bailing out of simulation!");
         shutDown();
-        System.err.println(leadin() + "Exit after bailout");
-        System.out.println(leadin() + "Bailing out of simulation!");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exit after bailout");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Bailing out of simulation!");
         System.exit(-1);
     }
     
@@ -213,7 +227,7 @@ public class GlobalController implements ComponentController {
         Object extraParms= null;
         long eventBegin = System.currentTimeMillis();
         options_.preceedEvent(e,scheduler_,this);
-        System.out.println("SIMULATION: " + "<" + lastEventLength + "> " +
+        Logger.getLogger("log").logln(USR.STDOUT, "SIMULATION: " + "<" + lastEventLength + "> " +
                            e.getTime() + " @ " + 
                            eventBegin +  " => " +  e);
  
@@ -248,7 +262,7 @@ public class GlobalController implements ComponentController {
                 endLink(router1, router2);
             }
             else {
-                System.err.println(leadin() + "Unexected event type "
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unexected event type "
                   +type+" shutting down!");
                 shutDown();
                 return;
@@ -257,7 +271,7 @@ public class GlobalController implements ComponentController {
             lastEventLength = eventEnd - eventBegin;
 
         } catch (ClassCastException ex) {
-            System.err.println(leadin() + "Event "+type+" had wrong object");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event "+type+" had wrong object");
             shutDown();
             return;
         }
@@ -269,13 +283,13 @@ public class GlobalController implements ComponentController {
     private void startSimulation() {
         
         lastEventLength = 0;
-        System.out.println(leadin() + "Start of simulation event at: " +  
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Start of simulation event at: " +  
             System.currentTimeMillis());    
     }
     
     /** Event for end Simulation */
     private void endSimulation() {
-        System.out.println(leadin() + "End of simulation event at " + 
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of simulation event at " + 
           System.currentTimeMillis());
         simulationRunning_= false;
         shutDown();
@@ -295,7 +309,7 @@ public class GlobalController implements ComponentController {
         registerRouter(rId);
         
         if (options_.isSimulation()) {
-            System.err.println(leadin() + "TODO write simulated router code");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "TODO write simulated router code");
         } else {
             startVirtualRouter(maxRouterId_);
         }
@@ -312,7 +326,7 @@ public class GlobalController implements ComponentController {
         for (int i= 1; i < noControllers_; i++) {
             lc= options_.getController(i);
             thisUsage= lc.getUsage();
-            // System.out.println(i+" Usage "+thisUsage);
+            // Logger.getLogger("log").logln(USR.STDOUT, i+" Usage "+thisUsage);
             if (thisUsage == 0.0) {
                leastUsed= lc;
                break;
@@ -328,7 +342,7 @@ public class GlobalController implements ComponentController {
             int port= pp.findPort(2);
             leastUsed.addRouter();  // Increment count
             
-            System.out.println(leadin() + "Creating router " + id + " on " + leastUsed);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Creating router " + id + " on " + leastUsed);
 
             // create the new router and get it's name
             String routerName = lci.newRouter(id, port);
@@ -339,15 +353,15 @@ public class GlobalController implements ComponentController {
             // keep a handle on this router
             routerIdMap_.put(id,br);
 
-            System.out.println(leadin() + "Created router " + routerName);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerName);
 
         } catch (IOException e) {
-            System.err.println(leadin() +"Could not start new router on " + leastUsed);
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() +"Could not start new router on " + leastUsed);
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             bailOut();
         } catch (MCRPException e) {
-            System.err.println(leadin() + "Could not start new router on " + leastUsed);
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not start new router on " + leastUsed);
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             bailOut();
         }
         
@@ -362,11 +376,11 @@ public class GlobalController implements ComponentController {
             Object [] out2= outBound.toArray();
             for (Object i: out2) {
                 unregisterLink(rId,(Integer)i);
-                //System.err.println("Unregister link "+rId+" "+i);
+                //Logger.getLogger("log").logln(USR.ERROR, "Unregister link "+rId+" "+i);
             }
         }
         int index= routerList_.indexOf(rId);
-        //System.err.println("Router found at index "+index);
+        //Logger.getLogger("log").logln(USR.ERROR, "Router found at index "+index);
         routerList_.remove(index);
     }
     
@@ -383,7 +397,7 @@ public class GlobalController implements ComponentController {
         try {
             lci.endRouter(br.getHost(),br.getManagementPort());
         } catch (Exception e) {
-            System.err.println(leadin()+ "Cannot shut down router "+
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down router "+
               br.getHost()+":"+br.getManagementPort());
             bailOut();
         }
@@ -410,7 +424,7 @@ public class GlobalController implements ComponentController {
         ArrayList <Integer> out;
         ArrayList <Integer> in;
         ArrayList <Integer> newArray;
-        //System.err.println(leadin()+" Adding link from "+router1Id+" "+router2Id);
+        //Logger.getLogger("log").logln(USR.ERROR, leadin()+" Adding link from "+router1Id+" "+router2Id);
         // Set outlinks from router1 Id
         out= outLinks_.get(router1Id);
         if (out == null) {
@@ -419,9 +433,9 @@ public class GlobalController implements ComponentController {
             outLinks_.put(router1Id,newArray);
         } else {
             out.add((Integer)router2Id);
-            //System.err.println("Links now ");
+            //Logger.getLogger("log").logln(USR.ERROR, "Links now ");
             //for (Integer i: out) {
-            //    System.err.println(router1Id+" "+i);
+            //    Logger.getLogger("log").logln(USR.ERROR, router1Id+" "+i);
             //}
             //outLinks_.put(router1Id,out);
         }
@@ -459,7 +473,7 @@ public class GlobalController implements ComponentController {
     
     /** Event to link two routers */
     private void startLink(int router1Id, int router2Id) {
-        //System.err.println("Start link "+router1Id+" "+router2Id);
+        //Logger.getLogger("log").logln(USR.ERROR, "Start link "+router1Id+" "+router2Id);
         if (routerIdMap_.get(router1Id) == null) {
             System.err.println ("Router "+router1Id+" does not exist when trying to link to "+ router2Id);
             return;
@@ -473,7 +487,7 @@ public class GlobalController implements ComponentController {
 
         if (outForRouter1 != null && outForRouter1.contains(router2Id)) {
             // we already have this link
-            System.err.println(leadin() + "Link already exists: "+router1Id + " -> " + router2Id);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Link already exists: "+router1Id + " -> " + router2Id);
         } else {
             if (options_.isSimulation()) {
                 startSimulationLink(router1Id, router2Id);       
@@ -497,26 +511,26 @@ public class GlobalController implements ComponentController {
         LocalControllerInteractor lci;
         br1= routerIdMap_.get(router1Id);
         br2= routerIdMap_.get(router2Id);
-        //System.out.println("Got router Ids"+br1.getHost()+br2.getHost());
+        //Logger.getLogger("log").logln(USR.STDOUT, "Got router Ids"+br1.getHost()+br2.getHost());
         
         lc= br1.getLocalControllerInfo();
-        //System.out.println("Got LC");
+        //Logger.getLogger("log").logln(USR.STDOUT, "Got LC");
         lci= interactorMap_.get(lc);
-        //System.out.println("Got LCI");
-        System.out.println(leadin() + "Global controller linking routers "+
+        //Logger.getLogger("log").logln(USR.STDOUT, "Got LCI");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Global controller linking routers "+
             br1 + " and "+ br2);
         try {
             String connectionName = lci.connectRouters(br1.getHost(), br1.getManagementPort(),
                br2.getHost(), br2.getManagementPort());
-            System.out.println(leadin() + br1 + " -> " + br2 + " = " + connectionName);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + br1 + " -> " + br2 + " = " + connectionName);
         } catch (IOException e) {
-            System.err.println(leadin() + "Cannot link routers");
-            System.err.println(leadin() + e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot link routers");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             bailOut();
         }
         catch (MCRPException e) {
-            System.err.println(leadin() + "Cannot link routers");
-            System.err.println(leadin() + e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot link routers");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             bailOut();
         }
 
@@ -548,7 +562,7 @@ public class GlobalController implements ComponentController {
         ArrayList <Integer> out;
         ArrayList <Integer> in;
         int arrayPos;
-        //System.out.println(leadin()+"Adding link from "+router1Id+" "+router2Id);
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Adding link from "+router1Id+" "+router2Id);
         // remove r2 from outlinks of r1
         out= outLinks_.get(router1Id);
         arrayPos= out.indexOf(router2Id);
@@ -586,7 +600,7 @@ public class GlobalController implements ComponentController {
         try {
             lci.endLink(br1.getHost(),br1.getManagementPort(),rId2);
         } catch (Exception e) {
-            System.err.println(leadin()+ "Cannot shut down link "+
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down link "+
               br1.getHost()+":"+br1.getManagementPort()+" " +
               br2.getHost()+":"+br2.getManagementPort());
             bailOut();
@@ -606,7 +620,7 @@ public class GlobalController implements ComponentController {
     /** Shutdown called from console -- add shut down command to list to
     happen now */
     public synchronized void shutDownCommand() {
-        System.out.println(leadin()+"Shut down called from console");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Shut down called from console");
         SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION,0,null);
         scheduler_.addEvent(e);
         notifyAll();
@@ -625,23 +639,23 @@ public class GlobalController implements ComponentController {
 
                 while (checkMessages()) {};
 
-                System.out.println(leadin()+ "Pausing.");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Pausing.");
 
                 try {
                     Thread.sleep(10);
                 } catch (Exception e) {
-                    System.err.println(leadin()+ e.getMessage());
+                    Logger.getLogger("log").logln(USR.ERROR, leadin()+ e.getMessage());
                     System.exit(-1);
                 }
 
                 //ThreadTools.findAllThreads("GC post checkMessages:");
 
-                System.out.println(leadin()+"Stopping console");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Stopping console");
                 console_.stop();
 
                 //ThreadTools.findAllThreads("GC post stop console:");
             }
-            System.out.println(leadin() + "All stopped, shut down now!");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All stopped, shut down now!");
 
             isActive = false;
         }
@@ -663,11 +677,11 @@ public class GlobalController implements ComponentController {
             LocalControllerInfo lh= (LocalControllerInfo)i.next();
             String []cmd= options_.localControllerStartCommand(lh);
             try {
-                System.out.println(leadin() + "Starting process " + Arrays.asList(cmd));
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting process " + Arrays.asList(cmd));
                 child = new ProcessBuilder(cmd).start();
             } catch (java.io.IOException e) {
-                System.err.println(leadin() + "Unable to execute remote command "+ Arrays.asList(cmd));
-               System.err.println(e.getMessage());
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute remote command "+ Arrays.asList(cmd));
+               Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
                System.exit(-1);
             }
 
@@ -680,7 +694,7 @@ public class GlobalController implements ComponentController {
                             // ensure controllers start up
             }
             catch (java.lang.InterruptedException e) {
-                System.err.println(leadin() + "initVirtualRouters Got interrupt!");
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "initVirtualRouters Got interrupt!");
                 System.exit(-1);    
             }
 
@@ -702,7 +716,7 @@ public class GlobalController implements ComponentController {
     public void aliveMessage(LocalHostInfo lh)
     {   
         aliveCount+= 1;
-        System.out.println(leadin() + "Received alive count from "+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Received alive count from "+
           lh.getName()+":"+lh.getPort());
     }
     
@@ -717,7 +731,7 @@ public class GlobalController implements ComponentController {
         try {
             long timeout = time - now;
 
-            System.out.println("SIMULATION: " +  "<" + lastEventLength + "> " +
+            Logger.getLogger("log").logln(USR.STDOUT, "SIMULATION: " +  "<" + lastEventLength + "> " +
                                (now - simulationStartTime) + " @ " + 
                                now +  " waiting " + timeout);
             wait(timeout);
@@ -771,7 +785,7 @@ public class GlobalController implements ComponentController {
                     // we have not seen this LocalController before
                     // try and connect
                     try {
-                        System.out.println(leadin() + "Trying to make connection to "+
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Trying to make connection to "+
                            lh.getName()+" "+lh.getPort());
                         inter= new LocalControllerInteractor(lh);
                         
@@ -791,7 +805,7 @@ public class GlobalController implements ComponentController {
             // check if the no of controllers == the no of interactors
             // if so, we dont have to do all lopps
             if (noControllers_ == localControllers_.size()) {
-                System.out.println(leadin() + "All LocalControllers connected after " + (tries+1) + " tries");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All LocalControllers connected after " + (tries+1) + " tries");
                 isOK = true;
                 break;
             }
@@ -801,7 +815,7 @@ public class GlobalController implements ComponentController {
         if (!isOK) {
             // couldnt reach all LocalControllers
             // We can keep a list of failures if we need to.
-            System.err.println(leadin() + "Can't talk to all LocalControllers");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Can't talk to all LocalControllers");
             bailOut();
         }
 
@@ -810,7 +824,7 @@ public class GlobalController implements ComponentController {
         for (int i= 0; i < options_.getControllerWaitTime(); i++) {
             while (checkMessages()) {};
             if (aliveCount == noControllers_) {
-                System.out.println(leadin() + "All controllers responded with alive message.");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All controllers responded with alive message.");
                 return;
             }
             try {
@@ -820,7 +834,7 @@ public class GlobalController implements ComponentController {
             }
             
         }
-        System.err.println(leadin() + "Only "+aliveCount+" from "+noControllers_+
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Only "+aliveCount+" from "+noControllers_+
                            " local Controllers responded.");
         bailOut();
     }
@@ -831,7 +845,7 @@ public class GlobalController implements ComponentController {
     private void killAllControllers() {
       if (localControllers_ == null) 
           return;
-      System.out.println(leadin() + "Stopping all controllers");
+      Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping all controllers");
       LocalControllerInteractor inter;
       for (int i= 0; i < localControllers_.size(); i++) {
           inter= localControllers_.get(i);
@@ -849,9 +863,9 @@ public class GlobalController implements ComponentController {
               System.err.println (e.getMessage());          
           }
       }
-      System.out.println(leadin() + "Stop messages sent to all controllers");
+      Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stop messages sent to all controllers");
 
-        System.out.println(leadin() + "Stopping process wrappers");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping process wrappers");
         Collection <ProcessWrapper> pws= (Collection<ProcessWrapper>)childProcessWrappers_.values();
         for (ProcessWrapper pw: pws) { 
             pw.stop();

@@ -1,6 +1,7 @@
 // MCRPEvent.java
 
 package usr.interactor;
+import usr.logging.*;
 
 import java.util.EventObject;
 

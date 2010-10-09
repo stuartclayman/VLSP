@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
@@ -25,7 +26,7 @@ public class GetConnectionPortCommand extends RouterCommand {
         boolean result = success(""+port);
 
         if (!result) {
-            System.err.println(leadin() + "GET_CONNECTION_PORT failed");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "GET_CONNECTION_PORT failed");
         }
 
         return result;

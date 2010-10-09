@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.net.Datagram;
+import usr.logging.*;
 import usr.net.DatagramFactory;
 import usr.protocol.Protocol;
 import java.util.List;
@@ -109,6 +110,17 @@ public class Router {
         RouterDirectory.register(this);
         appList= new ArrayList<Application>();
 
+        // allocate a new logger
+        Logger logger = Logger.getLogger("log");
+        // tell it to output to stdout
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 1 set
+        logger.addOutput(System.out, new BitMask(USR.STDOUT));
+        // tell it to output to stderr
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 2 set
+        logger.addOutput(System.err, new BitMask(USR.ERROR));
+
     }
     /**
      * Get the router address.
@@ -123,7 +135,7 @@ public class Router {
      */
     public boolean start() {
         if (!isActive) {
-            System.out.println(leadin() + "start");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
             boolean fabricStart = fabric.start();
             boolean controllerStart = controller.start();
@@ -144,7 +156,7 @@ public class Router {
      */
     public boolean stop() {
         if (isActive) {
-            System.out.println(leadin() + "stop");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
             appSocketMux.stop();
 
@@ -295,17 +307,17 @@ public class Router {
        
         byte []b= new byte[1];
         b[0]='P';
-        //System.err.println("Pinging");
+        //Logger.getLogger("log").logln(USR.ERROR, "Pinging");
         Datagram dg= DatagramFactory.newDatagram(Protocol.CONTROL, 
             ByteBuffer.wrap(b));
         List<NetIF> nif= listNetIF();
         if (nif == null)
             return;
-        //System.err.println("COLLECTION IS  "+nif);
+        //Logger.getLogger("log").logln(USR.ERROR, "COLLECTION IS  "+nif);
         for (NetIF n : nif) {
             
             if (n.sendDatagram(dg) == true) {
-                System.err.println("Ping sent");
+                Logger.getLogger("log").logln(USR.ERROR, "Ping sent");
             }
         }
     }
@@ -320,12 +332,12 @@ public class Router {
     public boolean readOptionsString(String str) 
     {
         try { 
-            //System.err.println("TRYING TO PARSE STRING "+str);
+            //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO PARSE STRING "+str);
             options_.setOptionsFromString(str);
             return true;
         } catch (Exception e) {
-            System.err.println("Cannot parse options string");
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot parse options string");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             return false;
         }
     }
@@ -342,8 +354,8 @@ public class Router {
             options_.setOptionsFromFile(fName);
             return true;
         } catch (Exception e) {
-            System.err.println("Cannot parse options file");
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot parse options file");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             return false;
         }    
     }
@@ -357,7 +369,7 @@ public class Router {
             try {
                 app= new PingApplication(this, args);
             } catch (Exception e) {
-                System.err.println(leadin()+e.getMessage());
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
                 return false;
             }
         }
@@ -378,7 +390,7 @@ public class Router {
                 return;
             }
         }
-        System.err.println(leadin()+"Exiting application appears to to be on app list");
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+"Exiting application appears to to be on app list");
     }
 
     public static void main(String[] args) {
@@ -423,7 +435,7 @@ public class Router {
 
 
     private static void help() {
-        System.err.println("Test1 [mgt_port [r2r_port]]");
+        Logger.getLogger("log").logln(USR.ERROR, "Test1 [mgt_port [r2r_port]]");
         System.exit(1);
     }
 

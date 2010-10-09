@@ -1,6 +1,7 @@
 package usr.localcontroller.command;
 
 import usr.localcontroller.*;
+import usr.logging.*;
 import usr.console.*;
 
 /**

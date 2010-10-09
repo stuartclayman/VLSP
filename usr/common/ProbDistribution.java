@@ -1,6 +1,7 @@
 package usr.common;
 
 import java.util.*;
+import usr.logging.*;
 
 public class ProbDistribution 
 {
@@ -43,8 +44,8 @@ public class ProbDistribution
           }
           return finalel.getVariate();
         } catch (ProbException e) {
-          System.err.println("Error in getVariate");
-          System.err.println(e.getMessage());
+          Logger.getLogger("log").logln(USR.ERROR, "Error in getVariate");
+          Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
           System.exit(-1);
         }
         return 0.0;

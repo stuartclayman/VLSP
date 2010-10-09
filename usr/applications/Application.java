@@ -1,6 +1,7 @@
 package usr.applications;
 
 /**
+import usr.logging.*;
  * A package for user applications
  */
 public interface Application extends Runnable {

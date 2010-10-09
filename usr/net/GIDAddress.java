@@ -1,6 +1,7 @@
 package usr.net;
 
 import java.nio.ByteBuffer;
+import usr.logging.*;
 import java.net.InetAddress;
 
 /**
@@ -19,7 +20,7 @@ public class GIDAddress implements Address {
      */
     public GIDAddress(int addr) {
         globalAddress = addr;
-        //System.out.println("SET GLOBAL ADDRESS "+addr);
+        //Logger.getLogger("log").logln(USR.STDOUT, "SET GLOBAL ADDRESS "+addr);
 
          // convert int to byte[] 
         ByteBuffer buf = ByteBuffer.wrap(bytes);

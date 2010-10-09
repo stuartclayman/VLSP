@@ -1,6 +1,7 @@
 package usr.net;
 
 import java.nio.ByteBuffer;
+import usr.logging.*;
 import java.net.UnknownHostException;
 
 /**
@@ -282,7 +283,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         int headerLen = getHeaderLength();
         int totalLen = getTotalLength();
 
-        // System.err.println("IPV4Datagram getPayload: headerLen = " + headerLen + " totalLen = " + totalLen);
+        // Logger.getLogger("log").logln(USR.ERROR, "IPV4Datagram getPayload: headerLen = " + headerLen + " totalLen = " + totalLen);
 
         fullDatagram.position(headerLen);
 
@@ -292,7 +293,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         //ByteBuffer payload =  ByteBuffer.wrap(payloadBytes);
 
-        // System.err.println("IPV4Datagram getPayload: payload = " + payload.position() + " < " + payload.limit() + " < " + payload.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "IPV4Datagram getPayload: payload = " + payload.position() + " < " + payload.limit() + " < " + payload.capacity());
 
         return payloadBytes;
         
@@ -328,7 +329,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     public boolean fromByteBuffer(ByteBuffer b) {
         fullDatagram = b;
 
-        // System.err.println("IPV4Datagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "IPV4Datagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
         return true;
     }
@@ -393,7 +394,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
          */
         fullDatagram.position(24);
         payload.rewind();
-        // System.err.println("payload size = " + payload.limit());
+        // Logger.getLogger("log").logln(USR.ERROR, "payload size = " + payload.limit());
 
         fullDatagram.put(payload);
 
@@ -403,7 +404,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         fullDatagram.rewind();
 
-        // System.err.println("IPV4Address fillDatagram: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "IPV4Address fillDatagram: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
     }
 

@@ -1,6 +1,7 @@
 // ProcessWrapper.java
 
 package usr.common;
+import usr.logging.*;
 
 import java.io.*;
 
@@ -68,9 +69,9 @@ public class ProcessWrapper {
         // could check if label is 'stderr' or 'stdout'
         // and do different things
         if (label.equals("stderr")) {
-           System.err.println(label + " " + getName() + " " + line);
+           Logger.getLogger("log").logln(USR.ERROR, label + " " + getName() + " " + line);
         } else {
-            System.out.println(label + " " + getName() + " " + line);
+            Logger.getLogger("log").logln(USR.STDOUT, label + " " + getName() + " " + line);
         }
     }
 

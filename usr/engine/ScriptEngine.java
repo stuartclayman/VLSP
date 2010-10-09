@@ -1,10 +1,10 @@
 /** Interface for Script Engine reads an event Script and 
 executes events at given times
 */
-
 package usr.engine;
 
 import usr.globalcontroller.*;
+import usr.logging.*;
 import usr.common.Pair;
 import java.util.*;
 import java.io.*;
@@ -66,7 +66,7 @@ public class ScriptEngine implements EventEngine {
               }
           }
           catch (Exception e) {
-              System.err.println("Cannot parse event list "+fname);
+              Logger.getLogger("log").logln(USR.ERROR, "Cannot parse event list "+fname);
               System.exit(-1);
           }
           finally{
@@ -116,8 +116,8 @@ public class ScriptEngine implements EventEngine {
             throw new Exception("Unrecognised event in script line "+s);
              
         } catch (Exception ex) {
-            System.err.println("Cannot read simulation script line "+s);
-            System.err.println(ex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot read simulation script line "+s);
+            Logger.getLogger("log").logln(USR.ERROR, ex.getMessage());
             System.exit(-1);
         }
         return null;

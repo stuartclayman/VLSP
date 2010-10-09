@@ -5,6 +5,7 @@ package usr.engine;
 
 import usr.globalcontroller.*;
 import usr.common.Pair;
+import usr.logging.*;
 
 public class TestEventEngine implements EventEngine {
     int timeToEnd_;

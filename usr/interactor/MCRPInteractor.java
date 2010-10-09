@@ -2,6 +2,7 @@
 
 package usr.interactor;
 
+import usr.logging.*;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -140,7 +141,7 @@ public abstract class MCRPInteractor {
 	lastResponse = response;
 
 	if (debug) {
-	    System.out.println("MCRPInteractor: response code = " + lastResponse.getCode());
+	    Logger.getLogger("log").logln(USR.STDOUT, "MCRPInteractor: response code = " + lastResponse.getCode());
 	}
 
 	fsm = FSMState.FSM_READY;
@@ -191,7 +192,7 @@ public abstract class MCRPInteractor {
 	    throw new IllegalArgumentException("MCRPInteractor: unknown event code from server: " + code);
 	}
 
-	//System.err.println("Event = " + event);
+	//Logger.getLogger("log").logln(USR.ERROR, "Event = " + event);
 
 	// pass the event to the listeners, if there are any
 	if (getMCRPEventListenerCount() > 0) {
@@ -211,7 +212,7 @@ public abstract class MCRPInteractor {
 	fsm = FSMState.FSM_END;
 
 	if (debug) {
-	    System.err.println("Got EOF");
+	    Logger.getLogger("log").logln(USR.ERROR, "Got EOF");
 	}
 
 	// shut the socket and cleanup.
@@ -280,7 +281,7 @@ public abstract class MCRPInteractor {
 		try {
 		    wait();
 		} catch (InterruptedException ie) {
-		    //System.err.println("Got InterruptedException " + ie);
+		    //Logger.getLogger("log").logln(USR.ERROR, "Got InterruptedException " + ie);
 		}
 	    }
 

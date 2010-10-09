@@ -1,6 +1,7 @@
 // MCRPEventListener.java
 
 package usr.interactor;
+import usr.logging.*;
 
 import java.util.EventListener;
 

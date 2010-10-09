@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import usr.router.RouterPort;
 import usr.router.NetIF;
@@ -50,7 +51,7 @@ public class ListConnectionsCommand extends RouterCommand {
         boolean result = success("END " + count);
 
         if (!result) {
-            System.err.println(leadin() + "LIST_CONNECTIONS response failed");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "LIST_CONNECTIONS response failed");
         }
 
         return result;

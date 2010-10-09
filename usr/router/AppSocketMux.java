@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.net.*;
+import usr.logging.*;
 import usr.protocol.Protocol;
 import java.net.*;
 import java.util.ArrayList;
@@ -93,7 +94,7 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     public boolean start() {
         try {
-            System.out.println(leadin() + "start");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
             // start my own thread
             myThread = new Thread(this);
@@ -113,7 +114,7 @@ public class AppSocketMux implements NetIF, Runnable {
      * Close all sockets.
      */
     public boolean stop() {
-        System.out.println(leadin() + "stop");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
         HashSet<AppSocket> sockets = new HashSet<AppSocket>(socketMap.values());
 
@@ -126,10 +127,10 @@ public class AppSocketMux implements NetIF, Runnable {
         // stop my own thread
         running = false;
         myThread.interrupt();
-        // System.out.println(leadin() + "reached WaitFor");
+        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached WaitFor");
         waitFor();
 
-        // System.out.println(leadin() + "reached end of stop");
+        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached end of stop");
         return true;
     }
 
@@ -141,7 +142,7 @@ public class AppSocketMux implements NetIF, Runnable {
             try {
                 datagram = incomingQueue.take();
             } catch (InterruptedException ie) {
-                //System.err.println(leadin() + "run INTERRUPTED");
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run INTERRUPTED");
                 continue;
             }
 
@@ -152,12 +153,12 @@ public class AppSocketMux implements NetIF, Runnable {
                 byte controlChar= payload[0];
 
                 if (controlChar == 'C') {
-                    //System.err.println(leadin() + "Got Close");
+                    //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Got Close");
                     remoteClose();
                 }
             }
         
-            //System.err.println(leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
             datagramCount++;
 
@@ -168,13 +169,13 @@ public class AppSocketMux implements NetIF, Runnable {
             AppSocket socket = socketMap.get(dstPort);
 
             if (socket != null) {
-                //System.err.println(leadin() + "About to queue for " + socket);
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "About to queue for " + socket);
 
                 LinkedBlockingQueue<Datagram> queue = getQueueForPort(dstPort);
                 queue.add(datagram);
-                //System.err.println(leadin() + "Queue for " + socket + " is size: " + queue.size());
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Queue for " + socket + " is size: " + queue.size());
             } else {
-                System.err.println(leadin() + "Cant deliver to port " + dstPort);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cant deliver to port " + dstPort);
             }
         }
      
@@ -186,7 +187,7 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     private void waitFor() {
           try {
-              //System.out.println(leadin()+"waiting");
+              //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"waiting");
             synchronized(this) {
               setTheEnd();
               wait();
@@ -200,10 +201,10 @@ public class AppSocketMux implements NetIF, Runnable {
      * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void theEnd() {
-        //System.out.println(leadin() + "theEnd");
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "theEnd");
         while (!ended()) {
             try {
-                System.out.println(leadin()+"In a loop");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
                 Thread.sleep(100);
             } catch (Exception e) {
             
@@ -212,7 +213,7 @@ public class AppSocketMux implements NetIF, Runnable {
         
         
         
-        //System.out.println(leadin()+"notifying");
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"notifying");
         synchronized(this) {
             notify();
         }
@@ -384,7 +385,7 @@ public class AppSocketMux implements NetIF, Runnable {
      * and passes it to an AppSocket.
      */
     public  boolean sendDatagram(Datagram dg) {
-        //System.err.println(leadin() + "datagramArrived: ");
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "datagramArrived: ");
 
         // stats
         incomingCount++;
@@ -392,7 +393,7 @@ public class AppSocketMux implements NetIF, Runnable {
 
         incomingQueue.add(dg);
 
-        //System.err.println(leadin() + "Incoming queue size: " + incomingQueue.size());
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Incoming queue size: " + incomingQueue.size());
 
         return true;
     }
@@ -421,7 +422,7 @@ public class AppSocketMux implements NetIF, Runnable {
             return datagram;
         } catch (InterruptedException ie) {
             // InterruptedException, return null
-            System.err.println(leadin() + "readDatagram INTERRUPTED");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "readDatagram INTERRUPTED");
             return null;
         }
     }
@@ -437,7 +438,7 @@ public class AppSocketMux implements NetIF, Runnable {
 
         //outgoingQueue.add(datagram);
 
-        //System.err.println(leadin() + "Outgoing queue size: " + outgoingQueue.size());
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Outgoing queue size: " + outgoingQueue.size());
 
         // tell fabric we have a Datagram
         listener.datagramArrived(this,datagram);
@@ -499,7 +500,7 @@ public class AppSocketMux implements NetIF, Runnable {
 
         int port = s.getLocalPort();
 
-        // System.err.println(leadin() + "addAppSocket " + port + "  -> " + s);
+        // Logger.getLogger("log").logln(USR.ERROR, leadin() + "addAppSocket " + port + "  -> " + s);
 
 
         // register the socket
@@ -515,7 +516,7 @@ public class AppSocketMux implements NetIF, Runnable {
     synchronized void removeAppSocket(AppSocket s) {
         int port = s.getLocalPort();
 
-        // System.err.println(leadin() + "removeAppSocket " + port + "  -> " + s);
+        // Logger.getLogger("log").logln(USR.ERROR, leadin() + "removeAppSocket " + port + "  -> " + s);
 
         // unregister the socket
         socketMap.remove(port);

@@ -5,6 +5,7 @@ package usr.engine;
 
 import usr.globalcontroller.*;
 import usr.common.*;
+import usr.logging.*;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -83,7 +84,7 @@ public class ProbabilisticEventEngine implements EventEngine {
         }
         //  Schedule new node
         time= (long)(nodeCreateDist_.getVariate()*1000);
-        //System.err.println("Time to next router "+time);
+        //Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
         e1= new SimEvent(SimEvent.EVENT_START_ROUTER, now+time, null);
         s.addEvent(e1);
         // Schedule links
@@ -96,15 +97,15 @@ public class ProbabilisticEventEngine implements EventEngine {
               nodes.remove(nodes.indexOf(l));
           }
         }
-        //System.err.println("Trying to pick "+noLinks+" links");
+        //Logger.getLogger("log").logln(USR.ERROR, "Trying to pick "+noLinks+" links");
         for (int i= 0; i < noLinks; i++) {
             if (nodes.size() <= 0) {
                 break;
             }
-            //System.err.println("Choice set "+nodes);
+            //Logger.getLogger("log").logln(USR.ERROR, "Choice set "+nodes);
             int index= (int)Math.floor( Math.random()*nodes.size());
             int newLink= nodes.get(index);
-            //System.err.println("Picked "+newLink);
+            //Logger.getLogger("log").logln(USR.ERROR, "Picked "+newLink);
             nodes.remove(index);
             e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
                 new Pair<Integer,Integer>(newLink,routerId));
@@ -143,17 +144,17 @@ public class ProbabilisticEventEngine implements EventEngine {
         
           
     } catch (java.io.FileNotFoundException e) {
-          System.err.println("Cannot find file "+fName);
+          Logger.getLogger("log").logln(USR.ERROR, "Cannot find file "+fName);
           System.exit(-1);
       }catch (SAXParseException err) {
           System.err.println ("** Parsing error" + ", line " 
              + err.getLineNumber () + ", uri " + err.getSystemId ());
-          System.err.println(" " + err.getMessage ());
+          Logger.getLogger("log").logln(USR.ERROR, " " + err.getMessage ());
           System.exit(-1);
 
       }catch (SAXException e) {
-          System.err.println("Exception in SAX XML parser.");
-          System.err.println(e.getMessage());
+          Logger.getLogger("log").logln(USR.ERROR, "Exception in SAX XML parser.");
+          Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
           System.exit(-1);
           
       }catch (Throwable t) {

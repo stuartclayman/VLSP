@@ -1,6 +1,7 @@
 package usr.console;
 
 import java.nio.channels.SocketChannel;
+import usr.logging.*;
 
 /**
  * A request to a Component.

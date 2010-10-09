@@ -1,6 +1,7 @@
 package usr.common;
 
 
+import usr.logging.*;
 public class ProbElement
 {
 
@@ -44,7 +45,7 @@ public class ProbElement
         }
         distType_= type;
         weight_= weight;
-        //System.out.println("Weight "+weight+" type "+type);
+        //Logger.getLogger("log").logln(USR.STDOUT, "Weight "+weight+" type "+type);
         if (parms.length > 0) {
            parm1_= parms[0];
         }

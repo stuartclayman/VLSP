@@ -1,5 +1,7 @@
 package usr.common;
 
+import usr.logging.*;
+
 public class ThreadTools {
     // can turn on printing with:
     // ThreadTools.on = true
@@ -35,7 +37,7 @@ public class ThreadTools {
                 System.err.print("  ");
             }
             if (on) {
-                System.err.println(leadin + " " + thread);
+                Logger.getLogger("log").logln(USR.ERROR, leadin + " " + thread);
             }
         }
 

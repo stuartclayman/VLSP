@@ -1,6 +1,7 @@
 // LoggingOutputStream.java
 
 package usr.logging;
+import usr.logging.*;
 
 import java.io.*;
 

@@ -1,6 +1,7 @@
 package usr.localcontroller;
 
 import java.lang.*;
+import usr.logging.*;
 import java.util.*;
 import java.io.IOException;
 import java.net.*;
@@ -47,7 +48,7 @@ public class LocalController implements ComponentController {
         LocalController self_;
         
         if (args.length != 1) {
-            System.err.println("Command line must specify "+
+            Logger.getLogger("log").logln(USR.ERROR, "Command line must specify "+
               "port number to listen on and nothing else.");
             System.exit(-1);
         }
@@ -59,7 +60,7 @@ public class LocalController implements ComponentController {
             throw new NumberFormatException ("Port number must be > 0");
         }
         catch (NumberFormatException e) {
-          System.err.println("Unable to understand port number."+
+          Logger.getLogger("log").logln(USR.ERROR, "Unable to understand port number."+
             e.getMessage());
           System.exit(-1);
         }
@@ -72,7 +73,7 @@ public class LocalController implements ComponentController {
         try {
             hostInfo_= new LocalControllerInfo(port);
         } catch (Exception e) {
-            System.err.println("Cannot find host info for controller");
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot find host info for controller");
             shutDown();
         }
         routers_= new ArrayList<BasicRouterInfo>();
@@ -83,17 +84,36 @@ public class LocalController implements ComponentController {
         console_= new LocalControllerManagementConsole(this, port);
         Properties prop = System.getProperties();
         classPath_= prop.getProperty("java.class.path",null);
+
+        init();
+
         console_.start();
     }
     
+    private void init() {
+        // allocate a new logger
+        Logger logger = Logger.getLogger("log");
+        // tell it to output to stdout
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 
+        // USR.STDOUT set
+        logger.addOutput(System.out, new BitMask(USR.STDOUT));
+        // tell it to output to stderr
+        // and tell it what to pick up
+        // it will actually output things where the log has bit
+        // USR.ERROR set
+        logger.addOutput(System.err, new BitMask(USR.ERROR));
+
+    }
+
     /** Received shut Down data gram from global */
     public void shutDown() {
 
-        System.out.println("Local controller got shutdown message from global controller.");
+        Logger.getLogger("log").logln(USR.STDOUT, "Local controller got shutdown message from global controller.");
 
         ThreadTools.findAllThreads("LC top of shutDown:");
 
-        System.out.println("Stopping all running routers"); 
+        Logger.getLogger("log").logln(USR.STDOUT, "Stopping all running routers"); 
         for (int i= 0; i < routers_.size(); i++) {
 
             RouterInteractor interactor = routerInteractors_.get(i);
@@ -113,32 +133,32 @@ public class LocalController implements ComponentController {
 
         }
 
-        System.out.println(leadin() + "Stopping process wrappers");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping process wrappers");
         Collection <ProcessWrapper> pws= (Collection<ProcessWrapper>)childProcessWrappers_.values();
         for (ProcessWrapper pw: pws) { 
             pw.stop();
         }
 
-        System.out.println(leadin() + "Stopping global controller interactor");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping global controller interactor");
         try {        
           gcInteractor_.quit();
         } catch (Exception e) {
             
-            System.err.println(leadin() + "Cannot exit from global interactor");
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot exit from global interactor");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             System.exit(-1);
         }
 
 
-        System.out.println(leadin() + "Stopping console");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
         console_.stop();
 
-        System.out.println(leadin()+ "Pausing.");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Pausing.");
 
         try {
             Thread.sleep(10);
         } catch (Exception e) {
-            System.err.println(leadin()+ e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+ e.getMessage());
             System.exit(-1);
         }
 
@@ -160,22 +180,22 @@ public class LocalController implements ComponentController {
      */
     public void aliveMessage(LocalHostInfo gc) {
         globalController_= gc;
-        System.out.println("Got alive message from global controller.");
+        Logger.getLogger("log").logln(USR.STDOUT, "Got alive message from global controller.");
         try {
-            System.out.println("Sending to "+gc.getName()+":"+gc.getPort());
+            Logger.getLogger("log").logln(USR.STDOUT, "Sending to "+gc.getName()+":"+gc.getPort());
             gcInteractor_= new GlobalControllerInteractor(gc);
             gcInteractor_.respondToGlobalController(hostInfo_);
         } catch (java.net.UnknownHostException e) {
-            System.err.println("Cannot contact global controller");
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             System.exit(-1);
         } catch (java.io.IOException e) {
-            System.err.println("Cannot contact global controller");
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             System.exit(-1);
         }catch (usr.interactor.MCRPException e) {
-            System.err.println("Cannot contact global controller");
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             System.exit(-1);
         }
        
@@ -204,15 +224,15 @@ public class LocalController implements ComponentController {
         cmd[6] = routerName;
 
         try {
-            System.out.println(leadin() + "Starting Router on ports "+port1+" "+port2);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting Router on ports "+port1+" "+port2);
 
             child = new ProcessBuilder(cmd).start();
             pw = new ProcessWrapper(child, routerName);
             childProcessWrappers_.put(routerName, pw);
 
         } catch (java.io.IOException e) {
-            System.err.println(leadin() + "Unable to execute command "+ Arrays.asList(cmd));
-            System.err.println(e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute command "+ Arrays.asList(cmd));
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             //System.exit(-1);
             return null;
         }
@@ -252,7 +272,7 @@ public class LocalController implements ComponentController {
 
         if (! isOK) {
             // we didnt connect
-            System.err.println(leadin() + "Unable to connect to Router on port " + port1);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to connect to Router on port " + port1);
             // stop process
             pw.stop();
             return null;
@@ -299,14 +319,14 @@ public class LocalController implements ComponentController {
                // Create a connection
                String connectionName = ri.createConnection(address,1);
 
-               System.out.println(leadin() + "Connection from Router: " + r1 + " to Router: " + r2 + " is " + connectionName);
+               Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Connection from Router: " + r1 + " to Router: " + r2 + " is " + connectionName);
 
 
                return connectionName;
            }
            catch (Exception e) {
-               System.err.println("Cannot connect routers");
-               System.err.println(e.getMessage());
+               Logger.getLogger("log").logln(USR.ERROR, "Cannot connect routers");
+               Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
                return null;
            }
        }       
@@ -314,21 +334,21 @@ public class LocalController implements ComponentController {
 
     /** Local controller receives request to end a router */
     public boolean endRouter(LocalHostInfo r1) {
-        System.out.println(leadin() + 
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
           "Got terminate request for router "+r1);
         RouterInteractor ri= findRouterInteractor(r1.getPort());
         if (ri == null) {
-            System.err.println(leadin()+"Cannot find router interactor");
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Cannot find router interactor");
             return false;
         }    
         
         try {
-            System.out.println(leadin()+"Sending terminate request via interactor");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Sending terminate request via interactor");
             ri.shutDown();
         } 
         catch (Exception e) {
-            System.err.println(leadin()+"Error shutting down router");
-            System.err.println(leadin()+e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error shutting down router");
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
             return false;
         }
         int index= routerInteractors_.indexOf(ri);
@@ -339,7 +359,7 @@ public class LocalController implements ComponentController {
                 break;
         }
         if (i == routers_.size()) {
-            System.err.println(leadin()+"Router not registered with localcontroller");
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Router not registered with localcontroller");
             return false;
         }
         BasicRouterInfo br= routers_.get(i);
@@ -350,7 +370,7 @@ public class LocalController implements ComponentController {
     
     /** Local controller receives request to end a router */
     public boolean endLink(LocalHostInfo r1, int r2) {
-        System.out.println(leadin() + 
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
           "Got terminate request for link from"+r1+" to Id "+r2);
         RouterInteractor ri= findRouterInteractor(r1.getPort());
         if (ri == null)
@@ -359,8 +379,8 @@ public class LocalController implements ComponentController {
             ri.endLink("Router-"+r2);
         } 
         catch (Exception e) {
-            System.err.println(leadin()+"Error shutting down router");
-            System.err.println(leadin()+e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error shutting down router");
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
             return false;
         }
         return true;    
@@ -392,7 +412,7 @@ public class LocalController implements ComponentController {
           if (port == r.getPort())
               return r;
         }
-        System.err.println(leadin()+"Unable to find router interactor listening on port"+port);
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+"Unable to find router interactor listening on port"+port);
         return null;
     }
 

@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import usr.router.RouterPort;
 import usr.router.NetIF;
@@ -68,7 +69,7 @@ public class SetWeightCommand extends RouterCommand {
         }
 
         if (!result) {
-            System.err.println(leadin() + getName() + " failed");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " failed");
         }
 
         return result;

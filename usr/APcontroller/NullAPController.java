@@ -1,6 +1,7 @@
 package usr.APcontroller;
 
 import java.util.*;
+import usr.logging.*;
 import usr.router.Router;
 import usr.globalcontroller.GlobalController;
 import usr.router.RouterOptions;
@@ -46,7 +47,7 @@ public class NullAPController implements APController {
     public void addAccessPoint(int gid)
     {
         if (APGIDs_.indexOf(gid) != -1) {
-            System.err.println("AP controller found access point present when adding");
+            Logger.getLogger("log").logln(USR.ERROR, "AP controller found access point present when adding");
             return;
         }
         APGIDs_.add(gid);
@@ -57,7 +58,7 @@ public class NullAPController implements APController {
     {
         int index;
        if ((index= APGIDs_.indexOf(gid)) == -1) {
-            System.err.println("AP controller could not find access point when removing");
+            Logger.getLogger("log").logln(USR.ERROR, "AP controller could not find access point when removing");
             return;
         }
         APGIDs_.remove(index);

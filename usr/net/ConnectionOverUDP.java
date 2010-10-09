@@ -1,6 +1,7 @@
 package usr.net;
 
 import java.net.DatagramSocket;
+import usr.logging.*;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.io.IOException;
@@ -105,7 +106,7 @@ public class ConnectionOverUDP implements Connection {
                 throw new Error("ConnectionOverUDP: cannot send from an EndPoitn destination");
             }
 
-            //System.err.println("ConnectionOverUDP sendDatagram: packet = " + packet);
+            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP sendDatagram: packet = " + packet);
             
             // send it
             socket.send(packet);
@@ -137,7 +138,7 @@ public class ConnectionOverUDP implements Connection {
                 buffer.clear();
                 buffer.limit(count);                    
 
-                // System.err.println("ConnectionOverUDP readDatagram: buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
+                // Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP readDatagram: buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
 
                 totalLen = (short)count;
 

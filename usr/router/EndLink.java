@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.interactor.RouterInteractor;
 import usr.interactor.MCRPException;
 import usr.console.*;
@@ -37,9 +38,9 @@ public class EndLink extends ChannelResponder implements Runnable {
 
         // check command
         String[] parts = value.split(" ");
-        //System.err.println("END LINK ENTRY");
+        //Logger.getLogger("log").logln(USR.ERROR, "END LINK ENTRY");
         if (parts.length != 2) {
-            System.err.println(leadin() + "INVALID END_LINK command: " + request);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID END_LINK command: " + request);
             respond(MCRP.END_LINK.ERROR + " END_LINK wrong no of args");
             return;
         }
@@ -52,7 +53,7 @@ public class EndLink extends ChannelResponder implements Runnable {
         } 
         controller.removeNetIF(netif);
         respond(MCRP.END_LINK.CODE + " END_LINK to " + rId);
-        //System.err.println("END LINK EXIT");
+        //Logger.getLogger("log").logln(USR.ERROR, "END LINK EXIT");
     }
 
     /**

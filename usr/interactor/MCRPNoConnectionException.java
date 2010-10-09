@@ -1,6 +1,5 @@
 // MCRPNoConnectionException.java
 
-
 package usr.interactor;
 
 /**

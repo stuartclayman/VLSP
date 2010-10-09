@@ -2,6 +2,8 @@
   it keeps a time ordered list of events and returns the first
 */
 package usr.globalcontroller;
+
+import usr.logging.*;
 import java.util.*;
 
 public class EventScheduler {

@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.console.*;
+import usr.logging.*;
 import java.util.Scanner;
 import java.util.Queue;
 import java.util.HashMap;
@@ -83,7 +84,7 @@ public class RouterController implements ComponentController, Runnable {
 
         name = "Router-" + mPort + "-" + r2rPort;
         globalID = name.hashCode();
-        //System.out.println(leadin()+" GID set initially "+globalID);
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" GID set initially "+globalID);
         
 
         this.managementConsolePort = mPort;
@@ -198,7 +199,7 @@ public class RouterController implements ComponentController, Runnable {
      * Start me up.
      */
     public boolean start() {
-        System.out.println(leadin() + "start");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
         // start my own thread
         myThread = new Thread(this);
@@ -218,7 +219,7 @@ public class RouterController implements ComponentController, Runnable {
      * Stop the RouterController.
      */
     public boolean stop() {
-        System.out.println(leadin() + "stop");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
         // stop the management console listener
         boolean stoppedL = management.stop();
@@ -234,7 +235,7 @@ public class RouterController implements ComponentController, Runnable {
         try {
             myThread.join();
         } catch (InterruptedException ie) {
-            // System.err.println("RouterController: stop - InterruptedException for myThread join on " + myThread);
+            // Logger.getLogger("log").logln(USR.ERROR, "RouterController: stop - InterruptedException for myThread join on " + myThread);
         }
 
 
@@ -247,7 +248,7 @@ public class RouterController implements ComponentController, Runnable {
     public void shutDown() {
         // We have to stop the ManagementConsole and the RouterConnections
         // The we have to wait for this thread to terminate
-        System.out.println(leadin() + "Shutdown");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Shutdown");
 
         // stop other ManagementConsole and RouterConnections
         router.stop();
@@ -278,7 +279,7 @@ public class RouterController implements ComponentController, Runnable {
                 Request nextRequest = queue.take();
                 String value = nextRequest.value;
 
-                System.out.println(leadin() + " Controller processing nextRequest = " + nextRequest);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + " Controller processing nextRequest = " + nextRequest);
                 
                 // now process the next request
                 if (value.startsWith("CREATE_CONNECTION")) {
@@ -294,17 +295,17 @@ public class RouterController implements ComponentController, Runnable {
                    
                     
                 }  else if (value.startsWith("SHUT_DOWN")) {
-                    System.out.println("Found SHUT DOWN");
+                    Logger.getLogger("log").logln(USR.STDOUT, "Found SHUT DOWN");
                     pool.execute(new ShutDown(this, nextRequest));
                 }
                 
                 else {
-                    System.err.println(leadin() + "Unknown request " + nextRequest);
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown request " + nextRequest);
                 }
                     
 
             } catch (InterruptedException ie) {
-                //System.err.println(leadin() + "BlockingQueue: interrupt " + ie);
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "BlockingQueue: interrupt " + ie);
             }
         }
 
@@ -325,7 +326,7 @@ public class RouterController implements ComponentController, Runnable {
     synchronized void registerTemporaryNetIF(NetIF netIF) {
         int id = netIF.getID();
 
-        System.out.println(leadin() + "temporary addNetIF " + id + " for " + netIF);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "temporary addNetIF " + id + " for " + netIF);
         tempNetIFMap.put(id, netIF);
 
     }
@@ -334,7 +335,7 @@ public class RouterController implements ComponentController, Runnable {
      * Find a NetIF by an id.
      */
     public synchronized NetIF getTemporaryNetIFByID(int id) {
-        //System.err.println(leadin() + "getNetIF " + id);
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "getNetIF " + id);
         return tempNetIFMap.get(id);
     }
 
@@ -350,7 +351,7 @@ public class RouterController implements ComponentController, Runnable {
      */
     public synchronized RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
         RouterPort rp = router.plugInNetIF(netIF);
-        //System.err.println(leadin() + "plugInNetIF "  + netIF);
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
 
         tempNetIFMap.remove(netIF.getID());
 
@@ -410,7 +411,7 @@ public class RouterController implements ComponentController, Runnable {
     public NetIF findNetIF(String rName) {
         NetIF net= router.findNetIF(rName);
         if (net == null) {
-            System.err.println(leadin()+" cannot find connection to "+ rName); 
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+" cannot find connection to "+ rName); 
         }
         return net;
     }

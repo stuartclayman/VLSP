@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.net.Address;
+import usr.logging.*;
 import usr.net.SocketAddress;
 import usr.net.Datagram;
 import java.net.SocketException;
@@ -105,7 +106,7 @@ public class AppSocket {
             localPort = port;
             isBound = true;
 
-            System.err.println("AppSocket: bound to port " + localPort);
+            Logger.getLogger("log").logln(USR.ERROR, "AppSocket: bound to port " + localPort);
 
             // register with AppSocketMux
             appSockMux.addAppSocket(this);
@@ -128,7 +129,7 @@ public class AppSocket {
 
             isConnected = true;
 
-            System.err.println("AppSocket: connect to @(" + address + "):" +  port);
+            Logger.getLogger("log").logln(USR.ERROR, "AppSocket: connect to @(" + address + "):" +  port);
         } else {
             throw new Error("Cannot connect while already connected");
         }
@@ -238,7 +239,7 @@ public class AppSocket {
             takeThread = Thread.currentThread();
             return queue.take();
         } catch (InterruptedException ie) {
-            //System.err.println("AppSocket: queue take interrupted");
+            //Logger.getLogger("log").logln(USR.ERROR, "AppSocket: queue take interrupted");
             return null;
         }
     }
@@ -255,7 +256,7 @@ public class AppSocket {
 
             isConnected = false;
 
-            System.err.println("AppSocket: disconnect");
+            Logger.getLogger("log").logln(USR.ERROR, "AppSocket: disconnect");
         }
     }
 

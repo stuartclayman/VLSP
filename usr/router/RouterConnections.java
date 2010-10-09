@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.net.*;
+import usr.logging.*;
 import java.util.Scanner;
 import java.net.*;
 import java.nio.channels.*;
@@ -47,9 +48,9 @@ public class RouterConnections implements Runnable {
             serverSocket = channel.socket();
             serverSocket.bind(new InetSocketAddress(port));
 
-            System.out.println(leadin() + "Listening on port: " + port);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Listening on port: " + port);
 
-            System.out.println(leadin() + "Ready to accept on " + serverSocket);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Ready to accept on " + serverSocket);
 
 
             myThread = new Thread(this, "RouterConnections" + hashCode());
@@ -59,7 +60,7 @@ public class RouterConnections implements Runnable {
             return true;
         }
 	catch (IOException ioe) {
-            System.err.println(leadin() + "Cannot listen on port: " + port);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot listen on port: " + port);
             return false;
         }
 
@@ -93,25 +94,25 @@ public class RouterConnections implements Runnable {
 
                 Socket local = dst.getSocket();
 
-                System.out.println(leadin() + "Did accept on: " + serverSocket);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Did accept on: " + serverSocket);
 
-                System.out.println(leadin() + "newConnection: " + dst.getSocket());
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "newConnection: " + dst.getSocket());
 
                 InetSocketAddress refAddr = new InetSocketAddress(local.getInetAddress(), local.getPort());
 
-                System.out.println("RouterConnections  => " + refAddr + " # " + refAddr.hashCode());
+                Logger.getLogger("log").logln(USR.STDOUT, "RouterConnections  => " + refAddr + " # " + refAddr.hashCode());
 
 
                 netIF.setID(refAddr.hashCode());
 
-                System.out.println(leadin() + "netif = " + netIF);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
 
                 controller.registerTemporaryNetIF(netIF);
 
             } catch (IOException ioe) {
                 // only print if running, not when stopping
                 if (running) {
-                    System.err.println(leadin() + "accept failed");
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "accept failed");
                 }
             }
 

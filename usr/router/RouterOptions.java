@@ -1,6 +1,7 @@
 /** This class contains the options used for a router
  */
 package usr.router;
+import usr.logging.*;
 
 import java.io.*;
 import usr.engine.*;
@@ -60,14 +61,14 @@ public class RouterOptions {
             doc.getDocumentElement ().normalize ();
             
             parseXML(doc);
-            //System.err.println("Read options from string");
+            //Logger.getLogger("log").logln(USR.ERROR, "Read options from string");
     }
     
     public void setOptionsFromString(String XMLString) throws java.io.FileNotFoundException,
         SAXParseException, SAXException, javax.xml.parsers.ParserConfigurationException,
         java.io.IOException
     {
-           //System.err.println("Options string "+XMLString);
+           //Logger.getLogger("log").logln(USR.ERROR, "Options string "+XMLString);
            
           DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -243,7 +244,7 @@ public class RouterOptions {
             throw e;
         } 
        // for (int i= 0; i < APParms_.length; i++) {
-       //     System.err.println("READ "+APParms_[i]);
+       //     Logger.getLogger("log").logln(USR.ERROR, "READ "+APParms_[i]);
         //}
         NodeList nl= n.getChildNodes();
         for (int i= 0; i < nl.getLength(); i++) {         

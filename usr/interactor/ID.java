@@ -1,6 +1,7 @@
 // ID.java
 
 package usr.interactor;
+import usr.logging.*;
 
 /**
  * An ID returned in a response.

@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.console.Request;
 import usr.router.RouterManagementConsole;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class EndLinkCommand extends RouterCommand {
         SocketChannel sc = getChannel();
 
         managementConsole.addRequest(new Request(sc, req));
-        System.out.println(leadin() + "Requests = " + managementConsole.queue());
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Requests = " + managementConsole.queue());
         return true;
 
     }

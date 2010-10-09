@@ -1,6 +1,7 @@
 // USR.java
 
 package usr.logging;
+import usr.logging.*;
 
 /**
  * This holds some constants for use with logging.

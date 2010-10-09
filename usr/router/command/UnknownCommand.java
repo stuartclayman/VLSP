@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
@@ -23,7 +24,7 @@ public class UnknownCommand extends RouterCommand {
         boolean result = error("UNKNOWN " + req);
 
         if (!result) {
-            System.err.println(leadin() + "UNKNOWN failed");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "UNKNOWN failed");
         }
 
         return result;

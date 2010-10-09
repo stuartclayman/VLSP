@@ -1,6 +1,7 @@
 package usr.console;
 
 import usr.router.RouterManagementConsole;
+import usr.logging.*;
 import usr.router.RouterController;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -81,7 +82,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append(" ");
         sb.append(s);
         String resp = sb.toString();
-        System.out.println(leadin() + "<<< RESPONSE: " + resp);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "<<< RESPONSE: " + resp);
 
         return respond(resp);
     }
@@ -96,7 +97,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append(" ");
         sb.append(s);
         String resp = sb.toString();
-        System.out.println(leadin() + "<<< RESPONSE: " + resp);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "<<< RESPONSE: " + resp);
 
         return respond(resp);
     }
@@ -111,7 +112,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append("-");
         sb.append(s);
         String resp = sb.toString();
-        System.out.println(leadin() + "<<< ITEM: " + resp);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "<<< ITEM: " + resp);
 
         return respond(resp);
     }

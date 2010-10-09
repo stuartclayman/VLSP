@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import usr.router.RouterPort;
 import usr.router.NetIF;
@@ -29,8 +30,8 @@ public class ReadOptionsStringCommand extends RouterCommand {
         boolean result = true;
 
         String rest = req.substring(MCRP.READ_OPTIONS_STRING.CMD.length()).trim();
-       // System.err.println("RECEIVED STRING");
-       // System.err.println(rest);
+       // Logger.getLogger("log").logln(USR.ERROR, "RECEIVED STRING");
+       // Logger.getLogger("log").logln(USR.ERROR, rest);
        
         if (controller.readOptionsString(rest)) {
             success("Translated Options String");

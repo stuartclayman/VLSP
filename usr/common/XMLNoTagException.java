@@ -1,5 +1,4 @@
-// MCRPNoConnectionException.java
-
+// XMLNoTagException.java
 
 package usr.common;
 

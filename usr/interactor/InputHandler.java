@@ -1,6 +1,7 @@
 // InputHandler.java
 
 package usr.interactor;
+import usr.logging.*;
 
 import java.io.Reader;
 import java.io.BufferedReader;
@@ -119,7 +120,7 @@ public class InputHandler implements Runnable {
 
 		finalReply = true;
 
-		//System.err.println("SocketInputHandler: response add " + line);
+		//Logger.getLogger("log").logln(USR.ERROR, "SocketInputHandler: response add " + line);
 
 		break;
 

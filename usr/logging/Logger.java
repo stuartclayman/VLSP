@@ -1,6 +1,7 @@
 // Logger.java
 
 package usr.logging;
+import usr.logging.*;
 
 import java.util.Collection;
 import java.util.Map;

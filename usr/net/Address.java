@@ -1,6 +1,7 @@
 package usr.net;
 
 import java.net.InetAddress;
+import usr.logging.*;
 
 public interface Address {
     /**

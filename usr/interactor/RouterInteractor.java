@@ -1,6 +1,7 @@
 package usr.interactor;
 
 import usr.protocol.MCRP;
+import usr.logging.*;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -219,7 +220,7 @@ public class RouterInteractor extends MCRPInteractor {
 	// get no of connections
 	int connectionReplies = response.getReplies() - 1;
 
-	// System.err.println("listConnections: " + connectionReplies + " replies");
+	// Logger.getLogger("log").logln(USR.ERROR, "listConnections: " + connectionReplies + " replies");
 
 	// create a list for the names
 	List<String> connectionNames = new ArrayList<String>();

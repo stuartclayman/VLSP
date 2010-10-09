@@ -1,6 +1,7 @@
 // BitMask.java
 
 package usr.logging;
+import usr.logging.*;
 
 /**
  * A BitMask object holds a bit mask.  It has methods to

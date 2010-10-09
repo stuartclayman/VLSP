@@ -1,6 +1,7 @@
 package usr.localcontroller;
 
 import usr.common.LocalHostInfo;
+import usr.logging.*;
 
 /**
   * LocalHostInfo contains basic info about one host in the system

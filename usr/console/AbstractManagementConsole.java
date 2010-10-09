@@ -1,6 +1,7 @@
 package usr.console;
 
 import usr.net.Address;
+import usr.logging.*;
 import usr.net.IPV4Address;
 import java.util.*;
 import java.util.concurrent.*;
@@ -121,7 +122,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         Command unknown = commandMap.get("__UNKNOWN__");
 
         if (unknown == null) {
-            System.err.println(leadin() + "the UnknownCommand has not been registered");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "the UnknownCommand has not been registered");
             return false;
         }
 
@@ -135,7 +136,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
 
 
-            System.out.println(leadin() + "Listening on port: " + port);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Listening on port: " + port);
 
             boolean ready = setUp();
 
@@ -150,7 +151,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             return ready;
         }
 	catch (IOException ioe) {
-            System.err.println(leadin() + "Cannot listen on port: " + port);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot listen on port: " + port);
             return false;
         }
 
@@ -166,7 +167,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
             // call Cleardown
             cleardown= clearDown();
-            //System.out.println(leadin()+" exits cleardown");
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" exits cleardown");
             // FSM
             fsm = FSMState.STOP;
 
@@ -174,7 +175,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             
             myThread.interrupt();
         } catch (Exception e) {
-            System.out.println(leadin()+" failure in stop method");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" failure in stop method");
         }
 
             /* join too dangerous
@@ -183,7 +184,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             try {
                 myThread.join();
             } catch (InterruptedException ie) {
-                // System.err.println("RouterController: stop - InterruptedException for myThread join on " + myThread);
+                // Logger.getLogger("log").logln(USR.ERROR, "RouterController: stop - InterruptedException for myThread join on " + myThread);
             }
             */
 
@@ -228,7 +229,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                             // Accept the incoming connection.
                             Socket local = serverSocket.accept();
                             
-                            //System.out.println(leadin() + "Did accept on: " + serverSocket);
+                            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Did accept on: " + serverSocket);
                             // Deal with incoming connection
                             newConnection(local);
 
@@ -244,7 +245,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                             // and process some input from it
                             processInput( sc );
                         } else {
-                            System.err.println(leadin() + "Unexpected behaviour on " + key);
+                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unexpected behaviour on " + key);
                         }
 
                     }
@@ -260,11 +261,11 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             }
         }
 
-        // System.out.println(leadin() + " End of thread " +  Thread.currentThread());
+        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + " End of thread " +  Thread.currentThread());
         // notify we have reached the end of this thread
         theEnd();
         
-        System.out.println(leadin() + "end");       
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "end");       
 
     }
 
@@ -272,7 +273,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void waitFor() {
-        // System.out.println(leadin() + "waitFor");
+        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "waitFor");
         
         try {
             synchronized(this) {
@@ -287,10 +288,10 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void theEnd() {
-        //System.out.println(leadin() + "theEnd");
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "theEnd");
         while (!ended()) {
             try {
-                System.out.println(leadin()+"In a loop");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
                 Thread.sleep(100);
             } catch (Exception e) {
             
@@ -323,24 +324,24 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
             // check channel
             if (ssc == null) {
-                System.err.println(leadin() + "no channel for " + serverSocket);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "no channel for " + serverSocket);
                 return false;
             } else {
                 // set channel to be non-blocking
                 // already done earlier
                 // ssc.configureBlocking(false);
 
-                // System.err.println(leadin() + "Registering " + ssc);
+                // Logger.getLogger("log").logln(USR.ERROR, leadin() + "Registering " + ssc);
 
                 // register this channel with the selector
                 SelectionKey key = ssc.register( selector, SelectionKey.OP_ACCEPT );
 
-                System.out.println(leadin() + "Ready to accept on " + serverSocket);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Ready to accept on " + serverSocket);
                 return true;
             }
         } catch (IOException ioe) {
             // cant process socket, so
-                System.err.println(leadin() + "IOException on channel for " + serverSocket);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "IOException on channel for " + serverSocket);
                 return false;            
         }
     }
@@ -349,16 +350,16 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Cleardown
      */
     protected boolean clearDown() {
-        // System.out.println(leadin() + "Cleardown");
+        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Cleardown");
 
         try {
             // close main socket
             serverSocket.close();
-            System.out.println(leadin() + "Stopped listening on port: " + port);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopped listening on port: " + port);
 
             return true;
         } catch (Exception e) {
-            System.err.println(leadin() + "Cannot close socket on port: " + port);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot close socket on port: " + port);
             return false;
         }
     }
@@ -369,25 +370,25 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Start reading from a new connection.
      */
     protected void newConnection(Socket s) {
-        System.out.println(leadin() + "newConnection: " + s);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "newConnection: " + s);
 
         SocketChannel sc;
         try {
             // Make sure channel for new connection is nonblocking
             sc = s.getChannel();
             sc.configureBlocking( false );
-            // System.out.println(leadin() + "Registering " + sc);
+            // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Registering " + sc);
             // Register it with the Selector, for reading.
             SelectionKey key = sc.register( selector, SelectionKey.OP_READ );
 
-            //System.err.println("selector keys = " + selector.keys());
+            //Logger.getLogger("log").logln(USR.ERROR, "selector keys = " + selector.keys());
 
             channelKeys.put(sc, key);
 
-            //System.err.println("channelKeys = " + channelKeys);
+            //Logger.getLogger("log").logln(USR.ERROR, "channelKeys = " + channelKeys);
 
         } catch (IOException ioe) {
-            System.err.println(leadin() + "Error on socket " + s);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error on socket " + s);
             try {
                 s.close();
             } catch (Exception e) {
@@ -400,7 +401,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * End a connection
      */
     public void endConnection(SocketChannel c) {
-        // System.out.println(leadin() + "endConnection: " + c.socket());
+        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "endConnection: " + c.socket());
 
         unregisterChannel(c);
 
@@ -408,7 +409,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         try {
             c.close();
         } catch (IOException ioe) {
-            System.err.println(leadin() + "CANNOT close : " + c.socket());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "CANNOT close : " + c.socket());
         }
     }
 
@@ -422,7 +423,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         // Remove it from the Selector
         key.cancel();
 
-        //System.err.println(leadin() + "Selector keys = " + selector.keys());
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Selector keys = " + selector.keys());
 
         channelKeys.remove(c);
     }
@@ -480,7 +481,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Returns false if there is a problem responding down the channel
      */
     protected boolean handleInput(String value, SocketChannel sc) {
-        System.out.println(leadin() + ">>> " + value);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ">>> " + value);
 
         if (value == null && value.length() == 0) {
             // empty - do nothing

@@ -1,6 +1,7 @@
 // MCRPNotReadyException.java
 
 package usr.interactor;
+import usr.logging.*;
 
 /**
  * An MCRPNotReadyException is thrown if the

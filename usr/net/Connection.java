@@ -1,6 +1,7 @@
 package usr.net;
 
 import java.io.IOException;
+import usr.logging.*;
 
 /**
  * A Connection between 2 routers.

@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.net.*;
+import usr.logging.*;
 import usr.protocol.Protocol;
 import java.io.*;
 import java.net.*;
@@ -265,10 +266,10 @@ public class TCPNetIF implements NetIF , Runnable {
      * Forward a Datagram.
      */
     public boolean forwardDatagram(Datagram dg) {
-        //System.err.println("TCPNetIF: " + getName() + " " + forwardCount + " forwardDatagram() ");
+        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + forwardCount + " forwardDatagram() ");
 
         outgoingQueue.add(dg);
-        //System.err.println("TCPNetIF: " + getName() + " " + forwardCount + " outgoingQueue size = " + outgoingQueue.size());
+        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + forwardCount + " outgoingQueue size = " + outgoingQueue.size());
 
         // stats
         forwardCount++;
@@ -284,10 +285,10 @@ public class TCPNetIF implements NetIF , Runnable {
      * Close a NetIF
      */
     public synchronized void close() {
-        //System.out.println("TCPNetIF: " + getName() + " -> Close");
+        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: " + getName() + " -> Close");
 
         if (closed) {
-            //System.err.println(leadin()+"Aleard closed");
+            //Logger.getLogger("log").logln(USR.ERROR, leadin()+"Aleard closed");
             return;
         }
 
@@ -295,11 +296,11 @@ public class TCPNetIF implements NetIF , Runnable {
         if (!remoteClose) {
             // if the close is initiated locally
             // send a control message to the other end
-            //System.out.println("TCPNetIF: -> Close controlClose");
+            //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: -> Close controlClose");
 
             controlClose();
         }
-        //System.out.println("TCPNetIF: " + getName() + " -> Close stop");
+        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: " + getName() + " -> Close stop");
 
         stop();
 
@@ -378,7 +379,7 @@ public class TCPNetIF implements NetIF , Runnable {
         // 2. implement state machine so NetIf can see the state of a Connection
         // 3. PAUSE a connection so it is connected but no traffic flows over it
 
-        // System.err.println("TCPNetIF: " + readThread + " top of run()");
+        // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + readThread + " top of run()");
 
 	// sit in a loop and grab input
 	while (running) {
@@ -400,7 +401,7 @@ public class TCPNetIF implements NetIF , Runnable {
                 // EOF
                 running = false;
             } else {
-                // System.err.println("TCPNetIF: " + getName() + " " + incomingCount + " got a Datagram");
+                // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + incomingCount + " got a Datagram");
 
                 // stats
                 incomingCount++;
@@ -411,9 +412,9 @@ public class TCPNetIF implements NetIF , Runnable {
                     // inform the listener
                 if (listener != null) {
                     listener.datagramArrived(this, datagram);
-                    // System.err.println("TCPNetIF: " + getName() + " informed listener");
+                    // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " informed listener");
                 } else {
-                    // System.err.println("TCPNetIF: " + getName() + " NO listener");
+                    // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " NO listener");
                 }
             }
         }
@@ -442,11 +443,11 @@ public class TCPNetIF implements NetIF , Runnable {
     private synchronized void holdOn() {
         // the queue is actually too empty to wait()
       //  if (incomingQueue.size() < QUEUE_TOO_LOW) {
-            // System.err.println("TCPNetIF: bail out of wait() at queue size: " + incomingQueue.size());
+            // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: bail out of wait() at queue size: " + incomingQueue.size());
        //     return;
       //  }
 
-        // System.err.println("run() about to wait() at incomingQueue size: " + incomingQueue.size());
+        // Logger.getLogger("log").logln(USR.ERROR, "run() about to wait() at incomingQueue size: " + incomingQueue.size());
 
         // now wait
         try {
@@ -454,11 +455,11 @@ public class TCPNetIF implements NetIF , Runnable {
             wait();
         } catch (InterruptedException ie) {
             paused = false;
-            // System.err.println("run() with Exception out of wait() at incomingQueue size: " + incomingQueue.size());
+            // Logger.getLogger("log").logln(USR.ERROR, "run() with Exception out of wait() at incomingQueue size: " + incomingQueue.size());
         }
         paused = false;
 
-        // System.err.println("run() out of wait() at incomingQueue size: " + incomingQueue.size());
+        // Logger.getLogger("log").logln(USR.ERROR, "run() out of wait() at incomingQueue size: " + incomingQueue.size());
 
     }
 
@@ -468,7 +469,7 @@ public class TCPNetIF implements NetIF , Runnable {
     private synchronized void informReadAgain() {
         // This causes the wait() in run() to be woken up
         // and then real reading will start again
-        // System.err.println("TCPNetIF:  informReadAgain " + readThread + " incomingQueue size: " + incomingQueue.size());
+        // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF:  informReadAgain " + readThread + " incomingQueue size: " + incomingQueue.size());
         notifyAll();
     }
     
@@ -498,7 +499,7 @@ public class TCPNetIF implements NetIF , Runnable {
 
 
             } catch (Exception e) {
-                // System.err.println("TCPNetIF: Exception in stop() " + e);
+                // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: Exception in stop() " + e);
             }
 
             
@@ -520,15 +521,15 @@ public class TCPNetIF implements NetIF , Runnable {
      * Consturct and send a control message.
      */
     protected boolean controlClose() {
-        // System.out.println("TCPNetIF: -> controlClose");
+        // Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: -> controlClose");
         ByteBuffer buffer = ByteBuffer.allocate(1);
         String c= "C";
         buffer.put(c.getBytes());
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
          ByteBuffer b= ((DatagramPatch)datagram).toByteBuffer();
-     //   System.err.println("WRITE as bytes "+ b.asCharBuffer());
+     //   Logger.getLogger("log").logln(USR.ERROR, "WRITE as bytes "+ b.asCharBuffer());
        // for (int i= 0; i < datagram.getTotalLength(); i++) {
-        //      System.err.println("At pos"+i+" char is "+ (char)b.get());
+        //      Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+" char is "+ (char)b.get());
         // }
         return connection.sendDatagram(datagram);
  
@@ -543,8 +544,8 @@ public class TCPNetIF implements NetIF , Runnable {
         ByteBuffer buffer = ByteBuffer.allocate(toSend.length());
         buffer.put(toSend.getBytes());
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
-        //System.err.println("SENDING ROUTING TABLE");
-        //System.err.println(table);
+        //Logger.getLogger("log").logln(USR.ERROR, "SENDING ROUTING TABLE");
+        //Logger.getLogger("log").logln(USR.ERROR, table);
         return connection.sendDatagram(datagram);
         
     }
@@ -553,7 +554,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * A remote close was received.
      */
     public void remoteClose() {
-        System.out.println("TCPNetIF: got remote close. stats = " + getStats()); 
+        Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: got remote close. stats = " + getStats()); 
 
         remoteClose = true;
 
@@ -592,14 +593,14 @@ public class TCPNetIF implements NetIF , Runnable {
         }
 
         public void run() {
-            System.out.println("WriteThread: run");
+            Logger.getLogger("log").logln(USR.STDOUT, "WriteThread: run");
 
             running = true;
 
             while (running) {
                 Datagram datagram;
                 try {
-                    // System.out.println("WriteThread: queue size = " + queue.size());
+                    // Logger.getLogger("log").logln(USR.STDOUT, "WriteThread: queue size = " + queue.size());
 
                     datagram = outgoingQueue.take();
 
@@ -607,7 +608,7 @@ public class TCPNetIF implements NetIF , Runnable {
 
                 } catch (InterruptedException ie) {
                     running = false;
-                    // System.out.println("WriteThread: interrupted");
+                    // Logger.getLogger("log").logln(USR.STDOUT, "WriteThread: interrupted");
                     break;
                 }
 

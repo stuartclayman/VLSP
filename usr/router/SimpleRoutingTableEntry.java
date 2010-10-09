@@ -1,6 +1,7 @@
 package usr.router;
 
 import usr.net.*;
+import usr.logging.*;
 
 /**
  * An entry in a routing table.
@@ -29,7 +30,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
             int gid= Integer.parseInt(args[0]);
             address_= new GIDAddress(gid); 
             cost_= Integer.parseInt(args[1]);
-            //System.err.println("READ GID "+gid+" cost "+cost_);
+            //Logger.getLogger("log").logln(USR.ERROR, "READ GID "+gid+" cost "+cost_);
             if (args.length == 2) {
                inter_= null; 
             } else {
@@ -57,7 +58,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
             address_= new GIDAddress(gid); 
             cost_= Integer.parseInt(args[1]);
             inter_= inter;
-           // System.err.println("READ GID "+gid+" cost "+cost_);
+           // Logger.getLogger("log").logln(USR.ERROR, "READ GID "+gid+" cost "+cost_);
         } catch (Exception e) {
             throw new Exception  ("Cannot parse routing table entry "+
              "from incorrect string" + tableEntry);
@@ -95,7 +96,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
           entry= address_.toString() + " " + cost_ + " " + 
             inter_.getRemoteRouterName();
         }
-        //System.err.println("ENTRY: "+entry);
+        //Logger.getLogger("log").logln(USR.ERROR, "ENTRY: "+entry);
         return entry;
     }
 
