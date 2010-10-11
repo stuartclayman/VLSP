@@ -95,10 +95,13 @@ class ControlOptions {
             NodeList ro= doc.getElementsByTagName("RouterOptions");
             processRouterOptions(ro);
             NodeList o= doc.getElementsByTagName("Output");
+
             for (int i= o.getLength()-1; i>= 0; i--) {
                 Node oNode= o.item(i);
                 outputs_.add(processOutput(oNode));
+                oNode.getParentNode().removeChild(oNode);
             }
+
             
             // Check all tags are processed
             // Check for other unparsed tags
@@ -127,10 +130,11 @@ class ControlOptions {
           System.exit(-1);
           
       }catch (Throwable t) {
+          
+          Logger.getLogger("log").logln(USR.ERROR, "Caught unknown exception.");
           t.printStackTrace ();
           System.exit(-1);
       }
-      
      
     }
     
@@ -402,7 +406,7 @@ class ControlOptions {
           ReadXMLUtils.removeNode(n,"Type","Output");
           ot.setType(type);
           int time= ReadXMLUtils.parseSingleInt(n,"Time","Output",true);
-          ReadXMLUtils.removeNode(n,"Parameters","EventEngine");
+          ReadXMLUtils.removeNode(n,"Time","Output");
           ot.setTime(time);
       } catch (NumberFormatException e) {
           throw new SAXException ("Cannot parse integer in Output Tag "+e.getMessage());

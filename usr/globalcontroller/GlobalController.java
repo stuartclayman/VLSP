@@ -79,6 +79,18 @@ public class GlobalController implements ComponentController {
     }
 
     private void init() {
+        // allocate a new logger
+      Logger logger = Logger.getLogger("log");
+      // tell it to output to stdout
+      // and tell it what to pick up
+      // it will actually output things where the log has bit 
+      // USR.STDOUT set
+      logger.addOutput(System.out, new BitMask(USR.STDOUT));
+      // tell it to output to stderr
+      // and tell it what to pick up
+      // it will actually output things where the log has bit
+      // USR.ERROR set
+      logger.addOutput(System.err, new BitMask(USR.ERROR));
       linkWeights_ = new HashMap<Pair<Integer,Integer>,Integer> ();
       outLinks_= new HashMap <Integer, ArrayList<Integer>> ();
       inLinks_= new HashMap<Integer, ArrayList<Integer>> ();
@@ -102,18 +114,7 @@ public class GlobalController implements ComponentController {
 
       isActive = true;
 
-      // allocate a new logger
-      Logger logger = Logger.getLogger("log");
-      // tell it to output to stdout
-      // and tell it what to pick up
-      // it will actually output things where the log has bit 
-      // USR.STDOUT set
-      logger.addOutput(System.out, new BitMask(USR.STDOUT));
-      // tell it to output to stderr
-      // and tell it what to pick up
-      // it will actually output things where the log has bit
-      // USR.ERROR set
-      logger.addOutput(System.err, new BitMask(USR.ERROR));
+      
 
     }
     
