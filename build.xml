@@ -17,7 +17,7 @@
   <target name="build" depends="init">
     <echo message="------ Compiling application"/>
     <mkdir dir="${classes}"/>
-    <javac srcdir="${sources}" classpath="${external.jars}" target="1.5" >
+    <javac srcdir="${sources}" classpath="${external.jars}" target="1.5" includeantruntime="false">
 	   <!-- destdir="${classes}" -->
     <include name="usr/**" />
     </javac>
