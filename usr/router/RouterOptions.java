@@ -37,6 +37,8 @@ public class RouterOptions {
     int maxAPWeight_= 0;  // Maximum link weight an AP can be aways
     String []APParms_= {}; // Parameters for AP Options
     
+    
+    
     /** Constructor for router Options */
     
     public RouterOptions (Router router) {

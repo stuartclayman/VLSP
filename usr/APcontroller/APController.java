@@ -26,4 +26,17 @@ public interface APController {
     
     /** Remove access point with gid G*/
     public void removeAccessPoint(int gid);
+    
+    /** Underlying network adds node */
+    public void addNode(int gid);
+    
+    /** Underlying network adds link */
+    public void addLink(int gid1, int gid2);
+    
+    /** Underlying network removes node */
+    public void removeNode(int gid);
+    
+    /** Underlying network removes link */
+    public void removeLink(int gid1,int gid2);
+    
 }

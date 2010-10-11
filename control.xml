@@ -29,4 +29,15 @@
   <RouterOptions>
       routeroptions.xml
   </RouterOptions>
+      <Output>
+        <File>out.net</File>
+        <When>End</When>
+        <Type>Network</Type>
+    </Output>
+    <Output>
+        <File>summary.out</File>
+        <When>Interval</File>
+        <Time>10000</Time>
+        <Type>Summary</Type>
+    </Output>
 </SimOptions>

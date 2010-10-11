@@ -12,6 +12,7 @@ import java.io.*;
 import usr.engine.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
+import usr.output.OutputType;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -39,11 +40,13 @@ class ControlOptions {
     private RouterOptions routerOptions_= null;
     EventEngine engine_;   // Engine used to create new events for sim
 
+    private ArrayList <OutputType> outputs_= null;
 
     /** init function sets up basic information */
     public void init () {
       
       localControllers_= new ArrayList<LocalControllerInfo>();
+      outputs_= new ArrayList <OutputType>();
       remoteLoginCommand_ = "/usr/bin/ssh";
       remoteLoginFlags_ = "-n";
       remoteStartController_ = 
@@ -91,6 +94,12 @@ class ControlOptions {
             processEventEngine(eng);
             NodeList ro= doc.getElementsByTagName("RouterOptions");
             processRouterOptions(ro);
+            NodeList o= doc.getElementsByTagName("Output");
+            for (int i= o.getLength()-1; i>= 0; i--) {
+                Node oNode= o.item(i);
+                outputs_.add(processOutput(oNode));
+            }
+            
             // Check all tags are processed
             // Check for other unparsed tags
             Element el= doc.getDocumentElement();
@@ -377,6 +386,34 @@ class ControlOptions {
         n0.getParentNode().removeChild(n0);
     }
 
+    /** Process tags related to a particular type of output */
+    private OutputType processOutput(Node n) throws SAXException
+    {
+        OutputType ot= new OutputType();
+        
+        try {
+          String fName= ReadXMLUtils.parseSingleString(n,"File","Output",false);
+          ReadXMLUtils.removeNode(n,"File","Output");
+          ot.setFileName(fName);
+          String when= ReadXMLUtils.parseSingleString(n,"When","Output",false);
+          ReadXMLUtils.removeNode(n,"When","Output");
+          ot.setTimeType(when);
+          String type= ReadXMLUtils.parseSingleString(n,"Type","Output",false);
+          ReadXMLUtils.removeNode(n,"Type","Output");
+          ot.setType(type);
+          int time= ReadXMLUtils.parseSingleInt(n,"Time","Output",true);
+          ReadXMLUtils.removeNode(n,"Parameters","EventEngine");
+          ot.setTime(time);
+      } catch (NumberFormatException e) {
+          throw new SAXException ("Cannot parse integer in Output Tag "+e.getMessage());
+      } catch (java.lang.IllegalArgumentException e) {
+          throw new SAXException ("Cannot parse tag "+e.getMessage());
+      }  catch (SAXException e) {
+          throw e;
+      } catch (XMLNoTagException e) {
+      }
+        return ot;
+    }
     
     /** Return string to launch local controller on remote
     machine given machine name 

@@ -17,4 +17,7 @@ public class USR {
 
     // general error
     public static int ERROR = 1 << 1;
+    
+    // default output file
+    public static int DEFAULT_FILE = 1 << 2;
 }

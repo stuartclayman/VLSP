@@ -63,4 +63,24 @@ public class NullAPController implements APController {
         }
         APGIDs_.remove(index);
     }
+    
+        /** Underlying network adds node */
+    public void addNode(int gid)
+    {
+    }
+    
+    /** Underlying network adds link */
+    public void addLink(int gid1, int gid2)
+    {
+    }
+    
+    /** Underlying network removes node */
+    public void removeNode(int gid)
+    {
+    }
+    
+    /** Underlying network removes link */
+    public void removeLink(int gid1,int gid2)
+    {
+    }
 }
