@@ -34,7 +34,10 @@ public class RouterOptions {
     int routerConsiderTime_= 10000;   // Time router reconsiders
     int controllerConsiderTime_= 10000;   // Time controller reconsiders
     int maxAPHops_= 5;   // Maximum number of hops an AP can be away
-    int maxAPWeight_= 0;  // Maximum link weight an AP can be aways
+    int maxAPWeight_= 0;  // Maximum link weight an AP can be away
+
+    double minPropAP_= 0.0;     // Minimum proportion of AP
+    double maxPropAP_= 1.0;     // Maximum proportion of AP
     String []APParms_= {}; // Parameters for AP Options
     
     
@@ -239,6 +242,31 @@ public class RouterOptions {
         } catch (XMLNoTagException e) {
            
         }
+        
+    
+
+        
+        try {
+            minPropAP_= ReadXMLUtils.parseSingleDouble
+              (n, "MinPropAP","APManager",true);
+            ReadXMLUtils.removeNode(n,"MinPropAP","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        
+        try {
+            maxPropAP_= ReadXMLUtils.parseSingleDouble
+              (n, "MaxPropAP","APManager",true);
+            ReadXMLUtils.removeNode(n,"MaxPropAP","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        
+        
         try {
             APParms_= ReadXMLUtils.parseArrayString(n,"Parameter","APManager");
             ReadXMLUtils.removeNodes(n,"Parameter","APManager");
@@ -324,6 +352,18 @@ public class RouterOptions {
     {
         return APParms_;
     }
+
+    
+    /** Accessor function for minimum proportion of access points */
+    public double getMinPropAP() {
+        return minPropAP_;
+    }
+    
+    /** Accessor function for maximum proportion of access points */
+    public double getMaxPropAP() {
+        return maxPropAP_;
+    }
+    
     /**
      * Create the String to print out before a message
      */

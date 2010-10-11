@@ -1,8 +1,7 @@
 package usr.APcontroller;
 
 import java.util.*;
-import usr.logging.*;
-import usr.router.Router;
+import usr.router.RouterController;
 import usr.globalcontroller.GlobalController;
 
 /** Interface for aggregation point controller types */
@@ -16,7 +15,7 @@ public interface APController {
     public List<Integer> getAPlist();  
     
     /** Router regular AP update action */
-    public void routerUpdate(Router r);
+    public void routerUpdate(RouterController r);
     
     /** Controller regular AP update action */
     public void controllerUpdate(GlobalController g);
@@ -27,16 +26,10 @@ public interface APController {
     /** Remove access point with gid G*/
     public void removeAccessPoint(int gid);
     
-    /** Underlying network adds node */
-    public void addNode(int gid);
-    
-    /** Underlying network adds link */
-    public void addLink(int gid1, int gid2);
-    
-    /** Underlying network removes node */
+    /** Remove node and hence possibly AP*/
     public void removeNode(int gid);
     
-    /** Underlying network removes link */
-    public void removeLink(int gid1,int gid2);
+    /** Return APInfo appropriate for this controller */
+    public APInfo newAPInfo();
     
 }

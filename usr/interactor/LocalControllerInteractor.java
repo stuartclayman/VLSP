@@ -142,4 +142,27 @@ public class LocalControllerInteractor extends MCRPInteractor
 	return this;
     }
 
+   /** Send a message to a local controller intended for a router to 
+      set its aggregation point */
+    public MCRPInteractor setAP(int GID, int APGID) throws IOException, MCRPException {
+        String toSend;
+        toSend = MCRP.SET_AP.CMD + 
+            " " + GID + " " + APGID;
+       
+	      interact(toSend);
+	      expect(MCRP.SET_AP.CODE);
+	      return this;
+    }
+    
+    /** Send a message to a local controller informing it about a routers
+    status as an aggregation point */
+    public MCRPInteractor reportAP(int GID, int AP) throws IOException, MCRPException {
+        String toSend = MCRP.REPORT_AP.CMD + 
+            " " + GID + " " +AP;
+       
+	      interact(toSend);
+	      expect(MCRP.REPORT_AP.CODE);
+	      return this;
+    }
+
 }

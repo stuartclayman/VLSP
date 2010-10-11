@@ -15,6 +15,7 @@ import java.nio.charset.Charset;
 import java.nio.channels.SocketChannel;
 import usr.protocol.*;
 import usr.net.*;
+import usr.APcontroller.*;
 
 /**
  * The Router Controller provides the management and control
@@ -59,6 +60,11 @@ public class RouterController implements ComponentController, Runnable {
     // the no of connections
     int connectionCount;
 
+    // Information about the APcontroller
+    APController APController_= null;
+    APInfo APInfo_= null; 
+    int AP_= 0; // The aggregation point for this node
+
     RouterOptions options_= null;
 
     // Map of NetIFs that are in the process of being finalized
@@ -70,8 +76,8 @@ public class RouterController implements ComponentController, Runnable {
      * The ManagementConsole listens on 'port' and
      * The Router to Router connections listens on port + 1.
      */
-    public RouterController(Router router, int port) {
-        this(router, port, port + 1);
+    public RouterController(Router router,  RouterOptions o, int port) {
+        this(router, o, port, port + 1);
     }
 
     /**
@@ -79,7 +85,10 @@ public class RouterController implements ComponentController, Runnable {
      * The ManagementConsole listens on 'mPort' and
      * The Router to Router connections listens on 'r2rPort'.
      */
-    public RouterController(Router router, int mPort, int r2rPort) {
+    public RouterController(Router router, RouterOptions o,
+      int mPort, int r2rPort) {
+      
+        options_= o;
         this.router = router;
 
         name = "Router-" + mPort + "-" + r2rPort;
@@ -101,6 +110,12 @@ public class RouterController implements ComponentController, Runnable {
 
         // a map of NetIFs
         tempNetIFMap = new HashMap<Integer, NetIF>();
+
+        // Set up info for AP management
+        //System.out.println("Construct AP Controller");
+        APController_= ConstructAPController.constructAPController
+            (options_);
+        APInfo_= APController_.newAPInfo();
 
     }
 
@@ -271,12 +286,20 @@ public class RouterController implements ComponentController, Runnable {
 
         // create an Executor pool of size 3
         ExecutorService pool = Executors.newFixedThreadPool(3);
-
+        long now= System.currentTimeMillis();
+        long next= now + options_.getRouterConsiderTime();
         while (running) {
             try {
+                now= System.currentTimeMillis();
+                if (now >= next) {
+                    next+= options_.getRouterConsiderTime();
+                    APController_.routerUpdate(this);
+                }
                 // we check the RouterListener queue for commands
                 // TODO: maybe replace take() with poll(30, SECONDS)
-                Request nextRequest = queue.take();
+                Request nextRequest = queue.poll(next-now,TimeUnit.MILLISECONDS);
+                if (nextRequest == null)
+                    continue;
                 String value = nextRequest.value;
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + " Controller processing nextRequest = " + nextRequest);
@@ -428,6 +451,33 @@ public class RouterController implements ComponentController, Runnable {
     {
         return router.readOptionsFile(fName);
     }
+
+    /** Set the aggregation point for this router */
+    public boolean setAP(int GID, int AP) 
+    
+    { 
+        if (GID != router.getGlobalID())
+            return false;
+        System.out.println(leadin()+" now has aggregation point "+AP);
+        if (GID == AP && AP_ != AP) {
+            startAP();
+        } else if (AP_ == GID && AP_ != AP) {
+            stopAP();
+        }
+        AP_= AP;
+        return true;
+    }
+     
+    /** This node starts as an AP */
+    public void startAP() {
+        System.out.println(leadin()+" has become an AP");
+    }
+    
+    /** This node stops as an AP*/
+    public void stopAP() {
+        System.out.println(leadin()+" has stopped being an AP");
+    }
+    
 
     /**
      * Create the String to print out before a message

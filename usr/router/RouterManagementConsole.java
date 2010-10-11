@@ -62,6 +62,7 @@ public class RouterManagementConsole extends AbstractManagementConsole implement
         register(new PingCommand());
         register(new RunCommand());
         register(new EchoCommand());
+        register(new SetAPCommand());
     }
     
 }

@@ -23,7 +23,7 @@ import usr.common.*;
 import usr.router.RouterOptions;
 
 
-class ControlOptions {
+public class ControlOptions {
     private ArrayList<LocalControllerInfo> localControllers_;
     private int globalControlPort_ = 8888;  // Port global controller listens on
     private String remoteLoginCommand_= null;  // Command used to login to start local controller
@@ -502,6 +502,9 @@ class ControlOptions {
     public void initialEvents(EventScheduler s, GlobalController g)
     {
         engine_.initialEvents(s,g);
+        SimEvent e= new SimEvent(SimEvent.EVENT_AP_CONTROLLER, 
+            routerOptions_.getControllerConsiderTime(),null);
+        s.addEvent(e);
     }
     
     /** Add or remove events following a simulation event */

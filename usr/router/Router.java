@@ -36,6 +36,8 @@ public class Router {
     // Is the router active
     boolean isActive = false;
 
+
+
     ArrayList <Application> appList= null;
 
     /**
@@ -104,22 +106,13 @@ public class Router {
     void initRouter(int port1, int port2) 
     
     {
-        controller = new RouterController(this, port1, port2);
+        
         options_= new RouterOptions(this);
+        controller = new RouterController(this, options_, port1, port2);
         fabric = new SimpleRouterFabric(this, options_);
         RouterDirectory.register(this);
         appList= new ArrayList<Application>();
 
-        // allocate a new logger
-        Logger logger = Logger.getLogger("log");
-        // tell it to output to stdout
-        // and tell it what to pick up
-        // it will actually output things where the log has bit 1 set
-        logger.addOutput(System.out, new BitMask(USR.STDOUT));
-        // tell it to output to stderr
-        // and tell it what to pick up
-        // it will actually output things where the log has bit 2 set
-        logger.addOutput(System.err, new BitMask(USR.ERROR));
 
     }
     /**

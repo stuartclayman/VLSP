@@ -66,5 +66,17 @@ public class GlobalControllerInteractor extends MCRPInteractor
 	    expect(MCRP.QUIT.CODE);
 	    return this;
     }
+    
+      /** Send a message to a local controller informing it about a routers
+    status as an aggregation point */
+    public MCRPInteractor reportAP(int GID, int AP) throws IOException, MCRPException {
+        String toSend = MCRP.REPORT_AP.CMD + 
+            " " + GID + " " +AP;
+       
+	      interact(toSend);
+	      expect(MCRP.REPORT_AP.CODE);
+	      return this;
+    }
+
 
 }

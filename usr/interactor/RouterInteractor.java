@@ -270,6 +270,18 @@ public class RouterInteractor extends MCRPInteractor {
 
     }
     
+    /** Send a message to a local controller intended for a router to 
+      set its status as an aggregation point */
+    public MCRPInteractor setAP(int GID, int APGID) throws IOException, MCRPException {
+        String toSend;
+        toSend = MCRP.SET_AP.CMD + 
+            " " + GID + " " + APGID;
+       
+	      interact(toSend);
+	      expect(MCRP.SET_AP.CODE);
+	      return this;
+    }
+    
     /**
      * Shutdown the Router we are interacting with.
      */

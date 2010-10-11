@@ -12,6 +12,7 @@ import java.util.concurrent.*;
 import usr.interactor.*;
 import usr.APcontroller.*;
 import usr.router.RouterOptions;
+import usr.output.OutputType;
 
 /**
  * The GlobalController is in overall control of the software.  It
@@ -262,6 +263,11 @@ public class GlobalController implements ComponentController {
                 router2= (Integer)pair.getSecond();
                 endLink(router1, router2);
             }
+            else if (type == SimEvent.EVENT_AP_CONTROLLER) {
+                queryAPController(e.getTime());
+            } else if (type == SimEvent.EVENT_OUTPUT) {
+                produceOutput(e.getTime(),(OutputType)(e.getData()));
+            } 
             else {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unexected event type "
                   +type+" shutting down!");
@@ -383,6 +389,7 @@ public class GlobalController implements ComponentController {
         int index= routerList_.indexOf(rId);
         //Logger.getLogger("log").logln(USR.ERROR, "Router found at index "+index);
         routerList_.remove(index);
+        APController_.removeNode(rId);
     }
     
     /** remove a router in simulation*/
@@ -662,6 +669,28 @@ public class GlobalController implements ComponentController {
         }
     }
     
+    /** Scheduled query of Aggregation point controller*/
+    private void queryAPController(long time) {
+        // Schedule next consider time
+        SimEvent e= new SimEvent(SimEvent.EVENT_AP_CONTROLLER,
+            time+routerOptions_.getControllerConsiderTime(), null);
+        scheduler_.addEvent(e);
+        APController_.controllerUpdate(this);
+        
+    }
+    
+    /** Produce some periodic output */
+    private void produceOutput(long time, OutputType o) {
+        // Schedule next output time
+        if (o.getTimeType() == OutputType.AT_INTERVAL) {
+            SimEvent e= new SimEvent(SimEvent.EVENT_OUTPUT,
+                time+o.getTime(),o);
+            scheduler_.addEvent(e);
+        }
+        
+        
+    }
+    
     private void initSchedule() {
         scheduler_= new EventScheduler();
         options_.initialEvents(scheduler_,this);
@@ -890,6 +919,49 @@ public class GlobalController implements ComponentController {
         return w;
     }
 
+    /** Node becomes a GID */
+    public void nodeAPStart(int gid)
+    {
+        System.out.println(leadin()+"Node "+gid+" becomes AP");
+        setAP(gid,gid);
+    }
+
+     /** Node ceases to be a GID */
+    public void nodeAPStop(int gid)
+    {
+         System.out.println(leadin()+"Node "+gid+" steps down as AP");
+    }
+
+
+    public void setAP(int gid, int AP) 
+    {
+        BasicRouterInfo br= routerIdMap_.get(gid);
+        if (br == null) {
+            System.err.println(leadin()+" unable to find router "+gid+
+            " in router map");
+            return;
+        }
+        LocalControllerInteractor lci= interactorMap_.get
+            (br.getLocalControllerInfo()); 
+        if (lci == null) {
+            System.err.println(leadin()+" unable to find router "+gid+
+            " in interactor map");
+            return;
+        }
+        try {
+            lci.setAP(gid,AP);
+        } catch (Exception e) {
+            System.err.println (leadin()+" unable to set AP for router "+gid);
+        }
+    }
+    
+    /** Router GID reports a connection to access point AP */
+    public boolean reportAP(int gid, int AP) 
+    {
+        System.err.println(leadin()+"TODO write reportAP");
+        return true;
+    }
+
     /** Return a list of node ids */
     public List<Integer> getNodeList() {
         Set<Integer> n=  routerIdMap_.keySet();
@@ -903,6 +975,17 @@ public class GlobalController implements ComponentController {
     public ControlOptions getOptions() {
         return options_;
     }
+
+    /** Accessor function for routerList */
+    public ArrayList<Integer> getRouterList() {
+        return routerList_;
+    }
+    
+    /** Number of routers in simulation */
+    public int getNoRouters() {
+        return routerList_.size();
+    }
+    
 
     /**
      * Get the name of this GlobalController.

@@ -1,10 +1,11 @@
 package usr.APcontroller;
 
 import java.util.*;
-import usr.logging.*;
-import usr.router.Router;
+import usr.router.RouterController;
 import usr.globalcontroller.GlobalController;
 import usr.router.RouterOptions;
+import usr.globalcontroller.ControlOptions;
+import usr.logging.*;
 
 /** Implements Random AP Controller */
 
@@ -32,7 +33,7 @@ public class NullAPController implements APController {
     
         
     /** Router regular AP update action */
-    public void routerUpdate(Router r) 
+    public void routerUpdate(RouterController r) 
     {
         //System.err.println ("Controller called");
     }
@@ -42,8 +43,38 @@ public class NullAPController implements APController {
     {
        // System.err.println ("Controller called");
     }
+  
+    /** Return a list of potential access points */
+    public ArrayList<Integer> nonAPNodes(GlobalController g)
+    {
+        ArrayList <Integer> nonAP= new ArrayList<Integer>();
+        for (Integer i: g.getRouterList()) {
+            if (APGIDs_.indexOf(i) == -1) {
+                nonAP.add(i);
+            }
+        }
+        return nonAP;
+    }
     
-    /** Add new access point with gid G*/
+    /** Node elected to be AP, add it to data structures and if
+    not simulating then inform it */
+    public void electNode(int gid, GlobalController g) {
+        if (!g.getOptions().isSimulation()) {
+            g.nodeAPStart(gid);
+        }
+        addAccessPoint(gid);
+    }
+    
+     /** Node stopped from being AP, remove it from data structures
+     and if not simulating then inform it */
+     public void unElectNode(int gid, GlobalController g) {
+        if (!g.getOptions().isSimulation()) {
+            g.nodeAPStop (gid);
+        }
+        removeAccessPoint(gid);
+    }
+    
+    /** Add new access point with ID gid*/
     public void addAccessPoint(int gid)
     {
         if (APGIDs_.indexOf(gid) != -1) {
@@ -53,34 +84,55 @@ public class NullAPController implements APController {
         APGIDs_.add(gid);
     }
     
-    /** Remove access point with gid G*/
+    /** Remove access point with ID gid */
     public void removeAccessPoint(int gid)
     {
         int index;
-       if ((index= APGIDs_.indexOf(gid)) == -1) {
+        if ((index= APGIDs_.indexOf(gid)) == -1) { 
             Logger.getLogger("log").logln(USR.ERROR, "AP controller could not find access point when removing");
             return;
         }
         APGIDs_.remove(index);
     }
     
-        /** Underlying network adds node */
-    public void addNode(int gid)
-    {
-    }
     
-    /** Underlying network adds link */
-    public void addLink(int gid1, int gid2)
-    {
-    }
-    
-    /** Underlying network removes node */
+    /** Node has been removed from network and hence can no longer be AP */
     public void removeNode(int gid)
     {
+        int index= APGIDs_.indexOf(gid);
+        if (index == -1) {
+            return;
+        }
+        APGIDs_.remove(index);
+    }
+        
+    /** Return true if we have minimum number of APs or more */
+    boolean gotMinAPs(GlobalController g) {
+       int noAPs= getNoAPs();
+       int noRouters= g.getNoRouters();
+       if (noAPs >= options_.getMinAPs() && 
+          (double)noAPs/noRouters >= options_.getMinPropAP())
+            return true;
+       return false;
+        
+    }    
+    
+    /** Return true if we have max number of APs or more */
+    boolean overMaxAPs(GlobalController g) {
+       int noAPs= getNoAPs();
+       int noRouters= g.getNoRouters();
+       if (noAPs > options_.getMaxAPs() || 
+          (double)noAPs/noRouters > options_.getMaxPropAP())
+            return true;
+       return false;
+        
+    }   
+        
+    /** 
+    /** Create new APInfo */
+    
+    public APInfo newAPInfo() {
+        return new NullAPInfo();
     }
     
-    /** Underlying network removes link */
-    public void removeLink(int gid1,int gid2)
-    {
-    }
 }

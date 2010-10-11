@@ -398,7 +398,41 @@ public class LocalController implements ComponentController {
     {
         routerConfigString_= str;
     } 
+    
+    /** Set the Aggregation point for a given router */
+    public boolean setAP(int GID, int AP) 
+    {
+        BasicRouterInfo br= routerMap_.get(GID);
+        if (br == null) {
+            System.err.println(leadin()+" cannot find information for router "+GID+
+            " to set AP");
+            return false;
+        }
+        int port= br.getManagementPort();
+        RouterInteractor ri= findRouterInteractor(port);
+        if (ri == null)
+            return false;
+        try {
+            ri.setAP(GID,AP);
+        } catch (Exception e) {
+            System.err.println(leadin()+"cannot set aggregation point for router "+GID);
+            return false;
+        }
+        return true;    
+    }
 
+
+    /** Report the Aggregation point for a given router */
+    public boolean reportAP(int GID, int AP) 
+    {   
+        try {
+            gcInteractor_.reportAP(GID,AP);
+        } catch (Exception e) {
+            System.err.println(leadin()+"cannot set aggregation point for router "+GID);
+            return false;
+        }
+        return true;    
+    }
     /**
      * Get the ManagementConsole this ComponentController interacts with.
      */
@@ -412,7 +446,7 @@ public class LocalController implements ComponentController {
           if (port == r.getPort())
               return r;
         }
-        Logger.getLogger("log").logln(USR.ERROR, leadin()+"Unable to find router interactor listening on port"+port);
+        System.err.println(leadin()+"Unable to find router interactor listening on port "+port);
         return null;
     }
 

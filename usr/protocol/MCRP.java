@@ -292,6 +292,20 @@ public class MCRP implements Protocol {
         public final static int ERROR= 432;
     }
     
+    /** Set AP status */
+    public final static class SET_AP {
+        public final static String CMD = "SET_AP";
+        public final static int CODE=283;
+        public final static int ERROR= 433;
+    }
+    
+    /** Report AP status */
+    public final static class REPORT_AP {
+        public final static String CMD = "REPORT_AP";
+        public final static int CODE=284;
+        public final static int ERROR= 434;
+    }
+    
     /** Global Controller Shutdown*/
     public final static class GC_SHUT_DOWN{
         public final static String CMD = "SHUT_DOWN";
