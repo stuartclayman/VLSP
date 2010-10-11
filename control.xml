@@ -36,7 +36,7 @@
     </Output>
     <Output>
         <File>summary.out</File>
-        <When>Interval</File>
+        <When>Interval</When>
         <Time>10000</Time>
         <Type>Summary</Type>
     </Output>
