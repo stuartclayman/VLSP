@@ -13,6 +13,7 @@ import usr.interactor.*;
 import usr.APcontroller.*;
 import usr.router.RouterOptions;
 import usr.output.OutputType;
+import java.nio.channels.FileChannel;
 
 /**
  * The GlobalController is in overall control of the software.  It
@@ -59,7 +60,7 @@ public class GlobalController implements ComponentController {
     public static void main(String[] args) {
        
       if (args.length != 1) {
-            Logger.getLogger("log").logln(USR.ERROR, "Command line must specify "+
+            System.err.println("Command line must specify "+
               "XML file to read and nothing else.");
             System.exit(-1);
       } 
@@ -74,11 +75,12 @@ public class GlobalController implements ComponentController {
 
     /**
      * Construct a GlobalController -- this constructor contains things
-     which apply whether we are simulation or 
+     which apply whether we are simulation or emulation
      */
     public GlobalController () {
     }
-
+    
+    /** Basic intialisation for the global controller */
     private void init() {
         // allocate a new logger
       Logger logger = Logger.getLogger("log");
@@ -86,7 +88,7 @@ public class GlobalController implements ComponentController {
       // and tell it what to pick up
       // it will actually output things where the log has bit 
       // USR.STDOUT set
-      logger.addOutput(System.out, new BitMask(USR.STDOUT));
+      
       // tell it to output to stderr
       // and tell it what to pick up
       // it will actually output things where the log has bit
@@ -98,6 +100,21 @@ public class GlobalController implements ComponentController {
       routerList_= new ArrayList<Integer>();
       options_= new ControlOptions(xmlFile_);
       routerOptions_= options_.getRouterOptions();
+      String fileName= routerOptions_.getOutputFile();
+      if (!fileName.equals("")) { // 
+         File output= new File(fileName);
+         try {
+          FileOutputStream fos = new FileOutputStream(output);
+          PrintWriter pw = new PrintWriter(fos,true);
+          logger.addOutput(pw, new BitMask(USR.STDOUT));
+        } catch (Exception e) {
+          System.err.println("Cannot output to file");
+            System.exit(-1);
+        }
+      }
+      
+     
+      
       APController_= ConstructAPController.constructAPController
         (routerOptions_);
       try {
@@ -636,7 +653,7 @@ public class GlobalController implements ComponentController {
       
     void shutDown() {
         if (isActive) {
-            System.out.println (leadin() + "SHUTDOWN CALLED!");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "SHUTDOWN CALLED!");
             if (!options_.isSimulation()) {
 
                 //ThreadTools.findAllThreads("GC pre killAllControllers:");
@@ -922,14 +939,14 @@ public class GlobalController implements ComponentController {
     /** Node becomes a GID */
     public void nodeAPStart(int gid)
     {
-        System.out.println(leadin()+"Node "+gid+" becomes AP");
+        Logger.getLogger("log").logln(USR.STDOUT,leadin()+"Node "+gid+" becomes AP");
         setAP(gid,gid);
     }
 
      /** Node ceases to be a GID */
     public void nodeAPStop(int gid)
     {
-         System.out.println(leadin()+"Node "+gid+" steps down as AP");
+         Logger.getLogger("log").logln(USR.STDOUT,leadin()+"Node "+gid+" steps down as AP");
     }
 
 
@@ -937,28 +954,28 @@ public class GlobalController implements ComponentController {
     {
         BasicRouterInfo br= routerIdMap_.get(gid);
         if (br == null) {
-            System.err.println(leadin()+" unable to find router "+gid+
+            Logger.getLogger("log").logln(USR.ERROR,leadin()+" unable to find router "+gid+
             " in router map");
             return;
         }
         LocalControllerInteractor lci= interactorMap_.get
             (br.getLocalControllerInfo()); 
         if (lci == null) {
-            System.err.println(leadin()+" unable to find router "+gid+
+            Logger.getLogger("log").logln(USR.ERROR,leadin()+" unable to find router "+gid+
             " in interactor map");
             return;
         }
         try {
             lci.setAP(gid,AP);
         } catch (Exception e) {
-            System.err.println (leadin()+" unable to set AP for router "+gid);
+            Logger.getLogger("log").logln(USR.ERROR,leadin()+" unable to set AP for router "+gid);
         }
     }
     
     /** Router GID reports a connection to access point AP */
     public boolean reportAP(int gid, int AP) 
     {
-        System.err.println(leadin()+"TODO write reportAP");
+        Logger.getLogger("log").logln(USR.ERROR,leadin()+"TODO write reportAP");
         return true;
     }
 

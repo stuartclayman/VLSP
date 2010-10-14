@@ -39,7 +39,8 @@ public class RouterOptions {
     double minPropAP_= 0.0;     // Minimum proportion of AP
     double maxPropAP_= 1.0;     // Maximum proportion of AP
     String []APParms_= {}; // Parameters for AP Options
-    
+    String outputFileName_= ""; // output file name
+    boolean outputFileAddName_= false; // Add suffix to output file
     
     
     /** Constructor for router Options */
@@ -362,6 +363,11 @@ public class RouterOptions {
     /** Accessor function for maximum proportion of access points */
     public double getMaxPropAP() {
         return maxPropAP_;
+    }
+    
+    /** Accessor function for output file name */
+    public String getOutputFile() {
+        return outputFileName_;
     }
     
     /**
