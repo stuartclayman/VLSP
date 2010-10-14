@@ -37,6 +37,15 @@ public class IPV4Address implements Address {
     }
 
     /**
+     * Create an IPV4Address from an int
+     */
+    public IPV4Address(int addr) {
+         // convert int to byte[] 
+        ByteBuffer buf = ByteBuffer.wrap(bytes);
+        buf.putInt(addr);
+    }
+
+    /**
      * Get IPV4Address as a byte[]
      */
     public byte[] asByteArray() {

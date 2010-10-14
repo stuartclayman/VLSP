@@ -2,6 +2,8 @@ package usr.interactor;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
+import usr.net.Address;
+import usr.net.GIDAddress;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -71,14 +73,18 @@ public class RouterInteractor extends MCRPInteractor {
     }
 
     /**
-     * Get the global ID of the router.
+     * Get the global address of the router.
      */
-    public int getGlobalID() throws IOException, MCRPException {
-	MCRPResponse response = interact(MCRP.GET_GLOBAL_ID.CMD);
-	expect(MCRP.GET_GLOBAL_ID.CODE);
+    public Address getRouterAddress() throws IOException, MCRPException {
+	MCRPResponse response = interact(MCRP.GET_ROUTER_ADDRESS.CMD);
+	expect(MCRP.GET_ROUTER_ADDRESS.CODE);
 
         String value = response.get(0)[1];
 
+        Address addr = new GIDAddress(value);
+
+        return addr;
+        /*
         Scanner scanner = new Scanner(value);
 
         if (scanner.hasNextInt()) {
@@ -88,18 +94,19 @@ public class RouterInteractor extends MCRPInteractor {
         } else {
             return -1;
         }
-
+        */
     }
 
 
     /**
-     * Set the global ID of the router.
-     * @param id the ID of the router
+     * Set the global address of the router.
+     * @param addr the address of the router
      */
-    public MCRPInteractor setGlobalID(int id) throws IOException, MCRPException {
-        String toSend = MCRP.SET_GLOBAL_ID.CMD + " " + id;
+    public MCRPInteractor setRouterAddress(Address addr) throws IOException, MCRPException {
+        int id = addr.asInteger();
+        String toSend = MCRP.SET_ROUTER_ADDRESS.CMD + " " + id;
 	interact(toSend);
-	expect(MCRP.SET_GLOBAL_ID.CODE);
+	expect(MCRP.SET_ROUTER_ADDRESS.CODE);
 	return this;
     }
 
@@ -196,12 +203,12 @@ public class RouterInteractor extends MCRPInteractor {
      * on the router-to-router port.
      * @param connectionID the name for the incoming connection
      * @param name the name of the router making the connection
-     * @param id the id/address of the router making the connection
+     * @param addr the address of the router making the connection
      * @param weight the weight of the connection
      * @param port the port number
      */
-    public MCRPInteractor incomingConnection(String connectionID, String name, int id, int weight, int port) throws IOException, MCRPException {
-        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + id + " " + weight  + " " + port ; 
+    public MCRPInteractor incomingConnection(String connectionID, String name, Address addr, int weight, int port) throws IOException, MCRPException {
+        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + addr.asInteger() + " " + weight  + " " + port ; 
 	interact(toSend);
 	expect(MCRP.INCOMING_CONNECTION.CODE);
 	return this;

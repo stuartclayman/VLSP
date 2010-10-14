@@ -35,7 +35,7 @@ public class RouterApp1C {
             }
 
             // set up id
-            router.setGlobalID(1);
+            router.setAddress(new GIDAddress(1));
 
             // connnect to the other router
             // first we tal kto my own ManagementConsole

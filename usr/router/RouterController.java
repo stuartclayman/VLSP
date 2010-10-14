@@ -150,7 +150,7 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * Get the global ID of this RouterController.
      */
-    public int getGlobalID() {
+    int getGlobalID() {
         return myAddress.asInteger();
     }
 
@@ -160,7 +160,7 @@ public class RouterController implements ComponentController, Runnable {
      * communicate with other elements.
      * @return false if the ID cannot be set
      */
-    public boolean setGlobalID(int id) {
+    boolean setGlobalID(int id) {
         return setAddress(new GIDAddress(id));
     }
 
@@ -530,7 +530,7 @@ public class RouterController implements ComponentController, Runnable {
     public boolean setAP(int GID, int AP) 
     
     { 
-        if (GID != router.getGlobalID())
+        if (GID != getGlobalID())
             return false;
         System.out.println(leadin()+" now has aggregation point "+AP);
         if (GID == AP && AP_ != AP) {

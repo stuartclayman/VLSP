@@ -4,6 +4,7 @@ import usr.router.Router;
 import usr.logging.*;
 import usr.router.AppSocket;
 import usr.net.GIDAddress;
+import usr.net.IPV4Address;
 import usr.net.Datagram;
 import usr.net.GIDDatagram;
 import java.util.Scanner;
@@ -34,7 +35,7 @@ public class RouterApp1S {
             }
 
             // set ID
-            router.setGlobalID(2);
+            router.setAddress(new GIDAddress(2));
         
             // now set up an AppSocket to receive
             socket = new AppSocket(router, 3000);

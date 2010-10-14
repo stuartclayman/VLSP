@@ -39,7 +39,7 @@ public class RouterApp2 {
             }
 
             // set up id
-            router.setGlobalID(1);
+            router.setAddress(new GIDAddress(1));
 
             // now set up an AppSocket to receive
             recvSocket = new AppSocket(router, 5555);

@@ -42,8 +42,8 @@ public class RouterManagementConsole extends AbstractManagementConsole implement
         register(new ShutDownCommand());
         register(new GetNameCommand());
         register(new SetNameCommand());
-        register(new GetGlobalIDCommand());
-        register(new SetGlobalIDCommand());
+        register(new GetRouterAddressCommand());
+        register(new SetRouterAddressCommand());
         register(new GetConnectionPortCommand());
         register(new ListConnectionsCommand());
         register(new IncomingConnectionCommand());

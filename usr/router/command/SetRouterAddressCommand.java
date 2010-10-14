@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.net.GIDAddress;
 import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import java.io.IOException;
@@ -8,23 +9,23 @@ import java.nio.channels.SocketChannel;
 import java.util.Scanner;
 
 /**
- * The SET_GLOBAL_ID command.
- * SET_GLOBAL_ID id
- * SET_GLOBAL_ID 47
+ * The SET_ROUTER_ADDRESS command.
+ * SET_ROUTER_ADDRESS address
+ * SET_ROUTER_ADDRESS 47
  */
-public class SetGlobalIDCommand extends RouterCommand {
+public class SetRouterAddressCommand extends RouterCommand {
     /**
-     * Construct a SetGlobalIDCommand
+     * Construct a SetRouterAddressCommand
      */
-    public SetGlobalIDCommand() {
-        super(MCRP.SET_GLOBAL_ID.CMD, MCRP.SET_GLOBAL_ID.CODE, MCRP.ERROR.CODE);
+    public SetRouterAddressCommand() {
+        super(MCRP.SET_ROUTER_ADDRESS.CMD, MCRP.SET_ROUTER_ADDRESS.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        String idStr = req.substring(MCRP.SET_GLOBAL_ID.CMD.length()).trim();
+        String idStr = req.substring(MCRP.SET_ROUTER_ADDRESS.CMD.length()).trim();
 
         Scanner scanner = new Scanner(idStr);
 
@@ -32,15 +33,15 @@ public class SetGlobalIDCommand extends RouterCommand {
 
         if (scanner.hasNextInt()) {
             int id = scanner.nextInt();
-            boolean idSet = controller.setGlobalID(id);
+            boolean idSet = controller.setAddress(new GIDAddress(id));
 
             if (idSet) {
                 result = success("" + id);
             } else {
-                result = error("Cannot set Global ID after communication");
+                result = error("Cannot set Global Address after communication");
             }
         } else {
-            result = error("Cannot set Global ID with value " + idStr);
+            result = error("Cannot set Global Address with value " + idStr);
         }
 
         if (!result) {

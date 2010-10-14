@@ -38,7 +38,7 @@ public class RouterApp2DS {
             }
 
             // set up id
-            router.setGlobalID(1);
+            router.setAddress(new GIDAddress(1));
 
             // now set up an DatagramSocket to receive
             recvSocket = new DatagramSocket(5555);

@@ -228,14 +228,14 @@ public class Router {
     /**
      * Get the global ID of this Router.
      */
-    public int getGlobalID() {
+    int getGlobalID() {
         return controller.getGlobalID();
     }
 
     /**
      * Set the globalID of this Router.
      */
-    public boolean setGlobalID(int id) {
+    boolean setGlobalID(int id) {
         return controller.setGlobalID(id);
     }
 

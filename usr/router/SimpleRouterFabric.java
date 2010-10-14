@@ -441,11 +441,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         if (port.equals(RouterPort.EMPTY)) {
             // nothing to do
         } else {
-            //Logger.getLogger("log").logln(USR.ERROR, "CLOSTING PORT");
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closing port " + port);
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closing port " + port);
             
             NetIF netIF = port.getNetIF();
-            //Logger.getLogger("log").logln(USR.ERROR, "CLOSTING NETIF");
+
             if (!netIF.isClosed()) {
                 netIF.close();
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed port " + port);

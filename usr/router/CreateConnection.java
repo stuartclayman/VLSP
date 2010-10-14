@@ -159,7 +159,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             // set its ID
             netIF.setID(refAddr.hashCode());
             // set its Address
-            netIF.setAddress(new GIDAddress(controller.getGlobalID()));
+            netIF.setAddress(controller.getAddress());
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
 
@@ -183,14 +183,14 @@ public class CreateConnection extends ChannelResponder implements Runnable {
          */
 
         String remoteRouterName;
-        int remoteRouterID;
+        Address remoteRouterAddress;
 
         try {
         // now get router name
 
             remoteRouterName = interactor.getName();
 
-            remoteRouterID = interactor.getGlobalID();
+            remoteRouterAddress = interactor.getRouterAddress();
 
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
@@ -204,7 +204,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         // set the remoteRouterName
         netIF.setRemoteRouterName(remoteRouterName);
-        netIF.setRemoteRouterAddress(new GIDAddress(remoteRouterID));
+        netIF.setRemoteRouterAddress(remoteRouterAddress);
 
         /*
          * Save the netIF temporarily
@@ -230,7 +230,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                 // send INCOMING_CONNECTION command
 
                 try {
-                    interactor.incomingConnection(latestConnectionId, controller.getName(), controller.getGlobalID(), weight, socket.getLocalPort());
+                    interactor.incomingConnection(latestConnectionId, controller.getName(), controller.getAddress(), weight, socket.getLocalPort());
 
                     // connection setup ok
                     interactionOK = true;

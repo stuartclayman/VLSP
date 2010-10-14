@@ -82,18 +82,18 @@ public class MCRP implements Protocol {
     }
 
     /**
-     * Get the global ID of the router.
+     * Get the global Address of the router.
      */
-    public final static class GET_GLOBAL_ID {
-        public final static String CMD =  "GET_GLOBAL_ID";
+    public final static class GET_ROUTER_ADDRESS {
+        public final static String CMD =  "GET_ROUTER_ADDRESS";
         public final static int CODE = 226;
     }
 
     /**
-     * Set the global ID of the router.
+     * Set the global Address of the router.
      */
-    public final static class SET_GLOBAL_ID {
-        public final static String CMD =  "SET_GLOBAL_ID";
+    public final static class SET_ROUTER_ADDRESS {
+        public final static String CMD =  "SET_ROUTER_ADDRESS";
         public final static int CODE = 227;
     }
 
