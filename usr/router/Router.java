@@ -105,9 +105,14 @@ public class Router {
     /** Common initialisation section for all constructors */
     void initRouter(int port1, int port2) 
     
-    {
+    { 
+        
+        Logger logger = Logger.getLogger("log");
+        logger.addOutput(System.err, new BitMask(USR.ERROR));
+        logger.addOutput(System.out, new BitMask(USR.STDOUT));
         
         options_= new RouterOptions(this);
+ 
         controller = new RouterController(this, options_, port1, port2);
         fabric = new SimpleRouterFabric(this, options_);
         RouterDirectory.register(this);
@@ -286,14 +291,7 @@ public class Router {
         fabric.closePort(port);
     }
 
-    /**
-     * Create the String to print out before a message
-     */
-    String leadin() {
-        final String R = "R: ";
-
-        return getName() + " " + R;
-    }
+    
 
      public void pingNeighbours() 
     {
@@ -324,15 +322,49 @@ public class Router {
         /** Read a string containing router options */
     public boolean readOptionsString(String str) 
     {
+        Logger logger= Logger.getLogger("log");
         try { 
             //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO PARSE STRING "+str);
             options_.setOptionsFromString(str);
-            return true;
+            
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, "Cannot parse options string");
-            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+            logger.logln(USR.ERROR, "Cannot parse options string");
+            logger.logln(USR.ERROR, e.getMessage());
             return false;
         }
+                String fileName= options_.getOutputFile(); 
+             if (!fileName.equals("")) { 
+         if (options_.getOutputFileAddName()) {
+            fileName+= "_"+leadinFname();
+         }
+         File output= new File(fileName);
+         try {
+          FileOutputStream fos = new FileOutputStream(output);
+          PrintWriter pw = new PrintWriter(fos,true);
+          logger.removeOutput(System.out);
+          logger.addOutput(pw, new BitMask(USR.STDOUT));
+        } catch (Exception e) {
+          System.err.println("Cannot output to file");
+            System.exit(-1);
+        }
+      }
+      String errorName= options_.getErrorFile();
+      if (!errorName.equals("")) { 
+         if (options_.getOutputFileAddName()) {
+            errorName+= "_"+leadinFname();
+         }
+         File output= new File(fileName);
+         try {
+          FileOutputStream fos = new FileOutputStream(output);
+          PrintWriter pw = new PrintWriter(fos,true);
+          logger.removeOutput(System.err);
+          logger.addOutput(pw, new BitMask(USR.ERROR));
+        } catch (Exception e) {
+          System.err.println("Cannot output to file");
+            System.exit(-1);
+        }
+      }
+        return true;
     }
     
     public List<NetIF> listNetIF() {
@@ -343,14 +375,49 @@ public class Router {
     
     public boolean readOptionsFile(String fName)
     {
+        Logger logger= Logger.getLogger("log");
         try { 
             options_.setOptionsFromFile(fName);
-            return true;
+            
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, "Cannot parse options file");
-            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+            logger.logln(USR.ERROR, "Cannot parse options file");
+            logger.logln(USR.ERROR, e.getMessage());
+            
             return false;
-        }    
+        }   
+        String fileName= options_.getOutputFile(); 
+             if (!fileName.equals("")) { 
+         if (options_.getOutputFileAddName()) {
+            fileName+= "_"+leadinFname();
+         }
+         File output= new File(fileName);
+         try {
+          FileOutputStream fos = new FileOutputStream(output);
+          PrintWriter pw = new PrintWriter(fos,true);
+          logger.removeOutput(System.out);
+          logger.addOutput(pw, new BitMask(USR.STDOUT));
+        } catch (Exception e) {
+          System.err.println("Cannot output to file");
+            System.exit(-1);
+        }
+      }
+      String errorName= options_.getErrorFile();
+      if (!errorName.equals("")) { 
+         if (options_.getOutputFileAddName()) {
+            errorName+= "_"+leadinFname();
+         }
+         File output= new File(fileName);
+         try {
+          FileOutputStream fos = new FileOutputStream(output);
+          PrintWriter pw = new PrintWriter(fos,true);
+          logger.removeOutput(System.err);
+          logger.addOutput(pw, new BitMask(USR.ERROR));
+        } catch (Exception e) {
+          System.err.println("Cannot output to file");
+            System.exit(-1);
+        }
+      }
+      return true;
     }
 
     /** Try to run a command (implementing class Application on the given
@@ -435,6 +502,19 @@ public class Router {
     static {
         Runtime.getRuntime().addShutdownHook(new TidyUp());
     }
+    
+    String leadinFname() {
+        return "R_"+getName();
+    }
+
+    /**
+     * Create the String to print out before a message
+     */
+    String leadin() {
+        final String R = "R: ";
+
+        return getName() + " " + R;
+    }
 
 }
 
@@ -450,3 +530,4 @@ class TidyUp extends Thread {
         }
     }
 }
+

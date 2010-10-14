@@ -33,7 +33,6 @@ public class RouterOptions {
     int minAPs_= 0;   // min APs
     int routerConsiderTime_= 10000;   // Time router reconsiders
     int controllerConsiderTime_= 10000;   // Time controller reconsiders
-    int maxAPHops_= 5;   // Maximum number of hops an AP can be away
     int maxAPWeight_= 0;  // Maximum link weight an AP can be away
 
     double minPropAP_= 0.0;     // Minimum proportion of AP
@@ -41,14 +40,20 @@ public class RouterOptions {
     String []APParms_= {}; // Parameters for AP Options
     String outputFileName_= ""; // output file name
     boolean outputFileAddName_= false; // Add suffix to output file
-    
+    String errorFileName_= ""; // output file name for error stream
+    boolean errorFileAddName_= false; // Add suffix to output file    
     
     /** Constructor for router Options */
     
     public RouterOptions (Router router) {
         router_= router;
         init();
-    }   
+    }
+    
+    public RouterOptions () {
+        router_= null;
+        init();
+    }    
    
     /** init function sets up defaults and basic information */
     void init () {
@@ -98,6 +103,11 @@ public class RouterOptions {
             throw new SAXException("Base tag should be RouterOptions");
         }
         
+        NodeList out= doc.getElementsByTagName("Output");
+        if (out != null) {
+            processOutputParameters(out);
+        }
+        
         NodeList rps= doc.getElementsByTagName("RoutingParameters");
         if (rps != null) {
             processRoutingParameters(rps);
@@ -117,6 +127,57 @@ public class RouterOptions {
              
         }
    
+    }
+    
+        /** Process the part of the XML related to routing parameters */
+    void processOutputParameters(NodeList out) throws SAXException
+    {
+        
+        if (out.getLength() > 1) {
+            throw new SAXException ("Only one RoutingParameters tag allowed.");
+        }
+        if (out.getLength() == 0) 
+            return;
+        Node o= out.item(0);
+        
+      
+        try {
+           outputFileName_= ReadXMLUtils.parseSingleString(o,    
+                "FileName","Output",true);
+           ReadXMLUtils.removeNode(o,"FileName","Output");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+           outputFileAddName_= ReadXMLUtils.parseSingleBool(o,    
+                "ExtendedName","Output",true);
+           ReadXMLUtils.removeNode(o,"ExtendedName","Output");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+           errorFileName_= ReadXMLUtils.parseSingleString(o,    
+                "ErrorFileName","Output",true);
+           ReadXMLUtils.removeNode(o,"ErrorFileName","Output");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+           errorFileAddName_= ReadXMLUtils.parseSingleBool(o,    
+                "ErrorExtendedName","Output",true);
+           ReadXMLUtils.removeNode(o,"ErrorExtendedName","Output");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        o.getParentNode().removeChild(o);
     }
     
     /** Process the part of the XML related to routing parameters */
@@ -225,15 +286,7 @@ public class RouterOptions {
         } catch (XMLNoTagException e) {
            
         }
-        try {
-            maxAPHops_= ReadXMLUtils.parseSingleInt
-              (n, "MaxAPHops","APManager",true);
-            ReadXMLUtils.removeNode(n,"MaxAPHops","APManager");
-        } catch (SAXException e) {
-            throw e;
-        } catch (XMLNoTagException e) {
-           
-        }
+        
         try {
             maxAPWeight_= ReadXMLUtils.parseSingleInt
               (n, "MaxAPWeight","APManager",true);
@@ -336,12 +389,6 @@ public class RouterOptions {
         return controllerConsiderTime_;
     }
     
-    /** Accessor function for maximum number of hops to AP*/
-    public int getMaxAPHops()
-    { 
-        return maxAPHops_;
-    }
-    
     /** Accessor function for maximum weight to AP*/
     public int getMaxAPWeight()
     { 
@@ -368,6 +415,21 @@ public class RouterOptions {
     /** Accessor function for output file name */
     public String getOutputFile() {
         return outputFileName_;
+    }
+    
+    /** Accessor function for output file name addition flag*/
+    public boolean getOutputFileAddName() {
+        return outputFileAddName_;
+    }
+    
+    /** Accessor function for output file name */
+    public String getErrorFile() {
+        return errorFileName_;
+    }
+    
+    /** Accessor function for output file name addition flag*/
+    public boolean getErrorFileAddName() {
+        return errorFileAddName_;
     }
     
     /**

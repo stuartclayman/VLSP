@@ -94,19 +94,44 @@ public class GlobalController implements ComponentController {
       // it will actually output things where the log has bit
       // USR.ERROR set
       logger.addOutput(System.err, new BitMask(USR.ERROR));
+      logger.addOutput(System.out, new BitMask(USR.STDOUT));
+      //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Hello");
       linkWeights_ = new HashMap<Pair<Integer,Integer>,Integer> ();
       outLinks_= new HashMap <Integer, ArrayList<Integer>> ();
       inLinks_= new HashMap<Integer, ArrayList<Integer>> ();
       routerList_= new ArrayList<Integer>();
       options_= new ControlOptions(xmlFile_);
       routerOptions_= options_.getRouterOptions();
+      
+      // Redirect ouptut for error and normal output if requested in
+      // router options file
       String fileName= routerOptions_.getOutputFile();
-      if (!fileName.equals("")) { // 
+      if (!fileName.equals("")) { 
+         if (routerOptions_.getOutputFileAddName()) {
+            fileName+= "_"+leadinFname();
+         }
          File output= new File(fileName);
          try {
           FileOutputStream fos = new FileOutputStream(output);
           PrintWriter pw = new PrintWriter(fos,true);
+          logger.removeOutput(System.out);
           logger.addOutput(pw, new BitMask(USR.STDOUT));
+        } catch (Exception e) {
+          System.err.println("Cannot output to file");
+            System.exit(-1);
+        }
+      }
+      String errorName= routerOptions_.getErrorFile();
+      if (!errorName.equals("")) { 
+         if (routerOptions_.getOutputFileAddName()) {
+            errorName+= "_"+leadinFname();
+         }
+         File output= new File(fileName);
+         try {
+          FileOutputStream fos = new FileOutputStream(output);
+          PrintWriter pw = new PrintWriter(fos,true);
+          logger.removeOutput(System.err);
+          logger.addOutput(pw, new BitMask(USR.ERROR));
         } catch (Exception e) {
           System.err.println("Cannot output to file");
             System.exit(-1);
@@ -1008,7 +1033,14 @@ public class GlobalController implements ComponentController {
      * Get the name of this GlobalController.
      */
     public String getName() {
+        if (myHostInfo_ == null) {
+            return myName;
+        }
         return myName + ":" + myHostInfo_.getPort();
+    }
+
+    String leadinFname() {
+        return "GC";
     }
 
     /**

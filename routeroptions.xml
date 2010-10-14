@@ -1,4 +1,8 @@
 <RouterOptions>
+    <Output>
+        <FileName>output</FileName>
+        <ExtendedName>true</ExtendedName>
+    </Output>
     <RoutingParameters>
         <MaxCheckTime>60000</MaxCheckTime>
         <MinNetIFUpdateTime>5000</MinNetIFUpdateTime>
@@ -10,8 +14,7 @@
         <MinAPs>1</MinAPs>
         <RouterConsiderTime>10000</RouterConsiderTime>
         <ControllerConsiderTime>10000</ControllerConsiderTime>
-        <MaxAPHops>5</MaxAPHops>
-        <MaxAPWeight>0</MaxAPWeight>
+        <MaxAPWeight>5</MaxAPWeight>
         <MaxPropAP>0.5</MaxPropAP>
         <MinPropAP>0.01</MinPropAP>
     </APManager>

@@ -1,9 +1,9 @@
 package usr.localcontroller;
 
 import java.lang.*;
+import java.io.*;
 import usr.logging.*;
 import java.util.*;
-import java.io.IOException;
 import java.net.*;
 import usr.console.*;
 import usr.router.*;
@@ -36,6 +36,7 @@ public class LocalController implements ComponentController {
     private String routerConfig_= "";  // String contains config for routers
     private String classPath_= null;
 
+    private RouterOptions routerOptions_= null;
     private String myName = "LocalController";
     
     private String routerConfigString_= "";
@@ -91,6 +92,7 @@ public class LocalController implements ComponentController {
     }
     
     private void init() {
+        routerOptions_= new RouterOptions();
         // allocate a new logger
         Logger logger = Logger.getLogger("log");
         // tell it to output to stdout
@@ -120,11 +122,12 @@ public class LocalController implements ComponentController {
             try {
                 interactor.shutDown();
             } catch (java.io.IOException e) {
-                System.err.println (leadin() + "Cannot send shut down to Router");
-                System.err.println (e.getMessage()); 
+                Logger.getLogger("log").logln(USR.ERROR,leadin() + "Cannot send shut down to Router");
+                Logger.getLogger("log").logln(USR.ERROR,e.getMessage()); 
             } catch (usr.interactor.MCRPException e) {
-                System.err.println (leadin() + "Cannot send shut down to Router");
-                System.err.println (e.getMessage());          
+                Logger.getLogger("log").logln(USR.ERROR,
+                  leadin() + "Cannot send shut down to Router");
+                Logger.getLogger("log").logln(USR.ERROR,e.getMessage());          
             }
 
             ThreadTools.findAllThreads("LC after router shutDown:");
@@ -306,7 +309,7 @@ public class LocalController implements ComponentController {
      * @return the name of the connection, on success, or null, on failure.
      */
     public String connectRouters(LocalHostInfo r1, LocalHostInfo r2) {
-       System.out.println (leadin() + "Got connect request for routers");
+       Logger.getLogger("log").logln(USR.STDOUT,leadin() + "Got connect request for routers");
 
        RouterInteractor ri= findRouterInteractor(r1.getPort());
 
@@ -395,8 +398,33 @@ public class LocalController implements ComponentController {
     
     /** Set string which configures routers */
     public void setRouterOptions(String str) 
-    {
-        routerConfigString_= str;
+    { 
+      Logger logger = Logger.getLogger("log");
+      routerConfigString_= str;
+      try {
+          routerOptions_.setOptionsFromString(str);
+      } catch (Exception e) {
+          Logger.getLogger("log").logln(USR.ERROR,leadin()+"Cannot read options string");
+          return;
+      }
+      
+      String fileName= routerOptions_.getOutputFile();
+      if (!fileName.equals("")) { 
+         if (routerOptions_.getOutputFileAddName()) {
+            fileName+= "_"+leadinFname();
+         }
+         File output= new File(fileName);
+         try {
+          FileOutputStream fos = new FileOutputStream(output);
+          PrintWriter pw = new PrintWriter(fos,true);
+          logger.removeOutput(System.out);
+          logger.addOutput(pw, new BitMask(USR.STDOUT));
+        } catch (Exception e) {
+          System.err.println("Cannot output to file");
+            System.exit(-1);
+        }
+      }
+        
     } 
     
     /** Set the Aggregation point for a given router */
@@ -404,7 +432,8 @@ public class LocalController implements ComponentController {
     {
         BasicRouterInfo br= routerMap_.get(GID);
         if (br == null) {
-            System.err.println(leadin()+" cannot find information for router "+GID+
+            Logger.getLogger("log").logln(USR.ERROR,
+              leadin()+" cannot find information for router "+GID+
             " to set AP");
             return false;
         }
@@ -415,7 +444,8 @@ public class LocalController implements ComponentController {
         try {
             ri.setAP(GID,AP);
         } catch (Exception e) {
-            System.err.println(leadin()+"cannot set aggregation point for router "+GID);
+            Logger.getLogger("log").logln(USR.ERROR,
+              leadin()+"cannot set aggregation point for router "+GID);
             return false;
         }
         return true;    
@@ -428,7 +458,8 @@ public class LocalController implements ComponentController {
         try {
             gcInteractor_.reportAP(GID,AP);
         } catch (Exception e) {
-            System.err.println(leadin()+"cannot set aggregation point for router "+GID);
+            Logger.getLogger("log").logln(USR.ERROR,
+              leadin()+"cannot set aggregation point for router "+GID);
             return false;
         }
         return true;    
@@ -446,8 +477,16 @@ public class LocalController implements ComponentController {
           if (port == r.getPort())
               return r;
         }
-        System.err.println(leadin()+"Unable to find router interactor listening on port "+port);
+        Logger.getLogger("log").logln(USR.ERROR,
+          leadin()+"Unable to find router interactor listening on port "+port);
         return null;
+    }
+
+    /**
+     * Create the String to append to file names
+     */
+    String leadinFname() {
+        return "LC_"+ myName + "_" + hostInfo_.getPort();
     }
 
     /**
