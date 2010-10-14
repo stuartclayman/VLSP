@@ -486,7 +486,7 @@ public class LocalController implements ComponentController {
      * Create the String to append to file names
      */
     String leadinFname() {
-        return "LC_"+ myName + "_" + hostInfo_.getPort();
+        return "LC_"+ hostInfo_.getName() + "_" + hostInfo_.getPort();
     }
 
     /**
