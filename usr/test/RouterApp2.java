@@ -1,6 +1,7 @@
 package usr.test;
 
 import usr.router.Router;
+import usr.logging.*;
 import usr.router.AppSocket;
 import usr.net.*;
 import usr.interactor.RouterInteractor;
@@ -50,7 +51,7 @@ public class RouterApp2 {
             sendSocket.connect(new GIDAddress(1), 5555);
 
         } catch (Exception e) {
-            System.err.println("RouterApp2 exception: " + e);
+            Logger.getLogger("log").logln(USR.ERROR, "RouterApp2 exception: " + e);
             e.printStackTrace();
         }
             
@@ -75,7 +76,7 @@ public class RouterApp2 {
                 return;
             } else {
 
-                //System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
+                //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
         }
     }

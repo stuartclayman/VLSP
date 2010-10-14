@@ -1,6 +1,7 @@
 package usr.test;
 
 import usr.net.*;
+import usr.logging.*;
 import usr.router.NetIF;
 import usr.router.TCPNetIF;
 import usr.protocol.Protocol;
@@ -107,7 +108,7 @@ public class StubServer2 implements NetIFListener {
                 public void run() {
                     if (running) {
                         diffs = count - lastTimeCount;
-                        System.err.println("Task count: " + count + " diff: "  + diffs);
+                        Logger.getLogger("log").logln(USR.ERROR, "Task count: " + count + " diff: "  + diffs);
                         lastTimeCount = count;
                     }
                 }
@@ -145,7 +146,7 @@ public class StubServer2 implements NetIFListener {
                 continue;
             }
             if (datagram.getProtocol() == Protocol.CONTROL) {
-                System.out.println("Got control packet");
+                Logger.getLogger("log").logln(USR.STDOUT, "Got control packet");
                 break;
             }
 

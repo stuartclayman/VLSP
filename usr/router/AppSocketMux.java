@@ -433,7 +433,7 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     public boolean socketSendDatagram(Datagram datagram) {
         // patch up the source address in the Datagram
-        GIDAddress srcAddr = controller.getAddress();
+        Address srcAddr = controller.getAddress();
         datagram.setSrcAddress(srcAddr);
 
         //outgoingQueue.add(datagram);

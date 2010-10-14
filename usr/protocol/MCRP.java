@@ -98,6 +98,30 @@ public class MCRP implements Protocol {
     }
 
     /**
+     * APP_START starts an app
+     */
+    public final static class APP_START {
+        public final static String CMD = "APP_START";
+        public final static int CODE= 228;
+    }
+    
+    /**
+     * APP_STOP starts an app
+     */
+    public final static class APP_STOP {
+        public final static String CMD = "APP_STOP";
+        public final static int CODE= 229;
+    }
+    
+    /**
+     * APP_LIST lists apps
+     */
+    public final static class APP_LIST {
+        public final static String CMD = "APP_LIST";
+        public final static int CODE= 230;
+    }
+    
+    /**
      * Create a new router-to-router data connection to another router.
      */
     public final static class CREATE_CONNECTION {
@@ -262,8 +286,8 @@ public class MCRP implements Protocol {
         public final static int CODE= 278;
         public final static int ERROR= 428;
     }
+
     /**  Ping all neighbours */
-    
     public final static class PING_NEIGHBOURS {
         public final static String CMD = "PING_NEIGHBOURS";
         public final static int CODE= 279;
@@ -271,7 +295,6 @@ public class MCRP implements Protocol {
     }
     
     /**  Ping all neighbours */
-    
     public final static class PING {
         public final static String CMD = "PING";
         public final static int CODE= 280;
@@ -305,14 +328,7 @@ public class MCRP implements Protocol {
         public final static int CODE=284;
         public final static int ERROR= 434;
     }
-    
-    /** Global Controller Shutdown*/
-    public final static class GC_SHUT_DOWN{
-        public final static String CMD = "SHUT_DOWN";
-        public final static int CODE= 283;
-        public final static int ERROR= 433;
-    }
-    
+        
     /*
      * Spare - 290 - 299
      */

@@ -99,7 +99,7 @@ public class IncomingConnectionCommand extends RouterCommand {
                 // set its weight
                 netIF.setWeight(weight);
                 // set its Address
-                netIF.setAddress(new GIDAddress(controller.getGlobalID()));
+                netIF.setAddress(controller.getAddress()); // WAS new GIDAddress(controller.getGlobalID()));
                 // set remote router
                 netIF.setRemoteRouterName(remoteRouterName);
                 netIF.setRemoteRouterAddress(new GIDAddress(remoteID));

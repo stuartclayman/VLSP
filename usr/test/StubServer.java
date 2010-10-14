@@ -1,6 +1,7 @@
 package usr.test;
 
 import usr.net.*;
+import usr.logging.*;
 import usr.router.NetIF;
 import usr.router.NetIFListener;
 import usr.router.TCPNetIF;
@@ -81,7 +82,7 @@ public class StubServer implements NetIFListener {
                 public void run() {
                     if (running) {
                         diffs = count - lastTimeCount;
-                        System.err.println("Task count: " + count + " diff: "  + diffs);
+                        Logger.getLogger("log").logln(USR.ERROR, "Task count: " + count + " diff: "  + diffs);
                         lastTimeCount = count;
                     }
                 }

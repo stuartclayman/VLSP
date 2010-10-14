@@ -1,47 +1,73 @@
 package usr.applications;
-import usr.router.*;
+
 import usr.net.*;
 import usr.logging.*;
 import java.nio.ByteBuffer;
-import usr.protocol.*;
+import usr.protocol.Protocol;
 
 /**
  * An application for Ping 
  */
-public class PingApplication implements Application {
+public class Ping implements Application {
     int gid_= 0;
-    Router router_= null;
     boolean running_= false;
-    AppSocket socket_= null;
-    Thread myThread_;
+    DatagramSocket socket_= null;
+
    
     
-    public PingApplication(Router r, String args) throws NumberFormatException{
-        router_= r;
-        String [] argv= args.split(" ");
+    /**
+     * Do a ping
+     */
+    public Ping() {
+    }
+
+    /**
+     * Initialisation for ping.
+     */
+    public ApplicationResponse init(String[] argv) throws NumberFormatException{
+
         if (argv.length != 1) {
-             throw new NumberFormatException(leadin()+"PING COMMAND REQUIRES ROUTER GID AS ARGUMENT");
+            return new ApplicationResponse(false, leadin()+"PING COMMAND REQUIRES ROUTER ADDRESS AS ARGUMENT");
         }
         try {
             gid_= Integer.parseInt(argv[0]);
+            return new ApplicationResponse(true, "");
         }
         catch (Exception e) {
-            throw new NumberFormatException(leadin()+"PING COMMAND REQUIRES ROUTER GID");
+            return new ApplicationResponse(false, leadin()+"PING COMMAND REQUIRES ROUTER ADDRESS");
         }
     }
     
+    /** Start application with argument  */
+    public ApplicationResponse start() {
+        running_ = true;
+        return new ApplicationResponse(true, "");
+    }
+    
+    /** Implement graceful shut down */
+    public ApplicationResponse stop() {
+        running_= false;
+        if (socket_ != null)
+            socket_.close();
+
+        Logger.getLogger("log").logln(USR.ERROR, "Ping stop");
+
+        return new ApplicationResponse(true, "");
+    }
+    
+
     /** Run the ping application */
-    public synchronized void run()  {
+    public void run()  {
        
-        AppSocket socket_= null;
-        
         try {
-            socket_ = new AppSocket(router_);
+            socket_ = new DatagramSocket();
             
             GIDAddress dst= new GIDAddress(gid_); 
             // and we want to connect to port 0 (router fabric)
             socket_.connect(dst, 0);
-            Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket_.getLocalPort());
+
+            // Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket_.getLocalPort());
+
             ByteBuffer buffer = ByteBuffer.allocate(1);
             buffer.put("P".getBytes());
             Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
@@ -65,48 +91,12 @@ public class PingApplication implements Application {
             } 
             Logger.getLogger("log").logln(USR.STDOUT, "Ping received in time: "+ (System.currentTimeMillis()- now) + " milliseconds ");
                
-            stop();
             return;
             
         }
         
         
     }
-    
-    /** Exit the application */
-    void cleanUp() 
-    {
-        router_.commandExit(this);
-    }
-    
-    
-    
-    /** Start application with argument  */
-    public boolean start() {
-        myThread_ = new Thread(this);
-        running_ = true;
-        myThread_.start();
-        return true;
-    }
-    
-    /** Implement graceful shut down */
-    public synchronized boolean stop() {
-        running_= false;
-        if (socket_ != null)
-            socket_.close();
-        myThread_.interrupt();
-        cleanUp();
-        return true;
-    }
-    
-    /** Implement ungraceful shut down */
-    public void exit(int code)
-    {
-        Logger.getLogger("log").logln(USR.ERROR, leadin()+" exiting with error "+code);
-        System.exit(code);
-    }
-    
-
 
     String leadin() {
         String li= "PA: ";

@@ -146,12 +146,8 @@ public class BitMask implements Cloneable {
      * Hash Code.
      */
     public int hashCode() {
-        // borrowed from BitSet
-        long h = 1234;
-        for (int i = 32; --i >= 0; ) {
-            h ^=  (isSet(i) ? 1 : 0)  * (i + 1);
-        }
-        return (int)((h >> 32) ^ h);
+        // actual is unique enough
+        return actual;
     }
 
 

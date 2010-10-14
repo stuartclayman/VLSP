@@ -1,6 +1,7 @@
 package usr.test;
 
 import usr.router.Router;
+import usr.logging.*;
 import usr.router.AppSocket;
 import usr.net.*;
 import usr.interactor.RouterInteractor;
@@ -53,7 +54,7 @@ public class RouterApp1C {
             socket.connect(new GIDAddress(2), 3000);
 
         } catch (Exception e) {
-            System.err.println("RouterApp1C exception: " + e);
+            Logger.getLogger("log").logln(USR.ERROR, "RouterApp1C exception: " + e);
             e.printStackTrace();
         }
             
@@ -83,12 +84,12 @@ public class RouterApp1C {
                 return;
             } else {
 
-                //System.out.println("Sent: " + datagram + " with " + new String(datagram.getPayload()));
+                //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
 
         }
 
-        System.out.println("ending....");
+        Logger.getLogger("log").logln(USR.STDOUT, "ending....");
 
         try { 
             Thread.sleep(2000);

@@ -192,7 +192,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     boolean emptyAddress(byte []address) 
     {
        for (int i= 0; i < 4; i++) {
-          if (address[i] != GIDAddress.EMPTY[i])
+          if (address[i] != IPV4Address.EMPTY[i])
             return false;
        }
        return true;

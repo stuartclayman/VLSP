@@ -1,6 +1,7 @@
 package usr.test;
 
 import usr.common.*;
+import usr.logging.*;
 
 
 import org.w3c.dom.Document;

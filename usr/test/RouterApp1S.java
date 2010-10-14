@@ -1,6 +1,7 @@
 package usr.test;
 
 import usr.router.Router;
+import usr.logging.*;
 import usr.router.AppSocket;
 import usr.net.GIDAddress;
 import usr.net.Datagram;
@@ -39,7 +40,7 @@ public class RouterApp1S {
             socket = new AppSocket(router, 3000);
 
         } catch (Exception e) {
-            System.err.println("RouterApp1S exception: " + e);
+            Logger.getLogger("log").logln(USR.ERROR, "RouterApp1S exception: " + e);
             e.printStackTrace();
         }
             

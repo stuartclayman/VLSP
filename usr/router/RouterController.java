@@ -2,11 +2,16 @@ package usr.router;
 
 import usr.console.*;
 import usr.logging.*;
+import usr.applications.ApplicationHandle;
+import usr.applications.ApplicationResponse;
+import usr.applications.ApplicationManager;
+import usr.applications.Ping;
 import java.util.Scanner;
 import java.util.Queue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.net.*;
 import java.io.*;
@@ -54,8 +59,8 @@ public class RouterController implements ComponentController, Runnable {
     // My name
     String name;
 
-    // My Global ID
-    int globalID= 0;
+    // My Address - a special feature where the router has its own address
+    Address myAddress;
 
     // the no of connections
     int connectionCount;
@@ -92,8 +97,9 @@ public class RouterController implements ComponentController, Runnable {
         this.router = router;
 
         name = "Router-" + mPort + "-" + r2rPort;
-        globalID = name.hashCode();
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" GID set initially "+globalID);
+        myAddress = new GIDAddress(name.hashCode());
+
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Address set initially "+globalID);
         
 
         this.managementConsolePort = mPort;
@@ -145,7 +151,7 @@ public class RouterController implements ComponentController, Runnable {
      * Get the global ID of this RouterController.
      */
     public int getGlobalID() {
-        return globalID;
+        return myAddress.asInteger();
     }
 
     /**
@@ -155,20 +161,28 @@ public class RouterController implements ComponentController, Runnable {
      * @return false if the ID cannot be set
      */
     public boolean setGlobalID(int id) {
-        if (connectionCount == 0) {
-            this.globalID = id;
-            return true;
-        } else {
-            return false;
-        }
+        return setAddress(new GIDAddress(id));
     }
 
     /**
      * Get the router address.
-     * This is a special featrue for GID.
+     * This is a special featrue for where the router has its own address.
      */
-    public GIDAddress getAddress() {
-        return new GIDAddress(getGlobalID());
+    public Address getAddress() {
+        return myAddress;
+    }
+
+    /**
+     * Set the router address.
+     * This is a special feature where the router itself has its own address.
+     */
+    public boolean setAddress(Address addr) {
+        if (connectionCount == 0) {
+            myAddress = addr;
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
@@ -241,6 +255,8 @@ public class RouterController implements ComponentController, Runnable {
 
         // stop the router to router connections
         boolean stoppedC = connections.stop();
+
+        stopApplications();
 
         // stop my own thread
         running = false;
@@ -381,19 +397,77 @@ public class RouterController implements ComponentController, Runnable {
         return rp;
     }
 
+    /**
+     * Start an App.
+     * It takes a class name and some args.
+     * It returns app_name ~= /Router-1/App/class.blah.Blah/1
+     */    
+    public ApplicationResponse appStart(String commandstr) {
+        String[] split= commandstr.split(" ");
+
+        if (split.length == 0)  {
+            return new ApplicationResponse(false, "appStart needs application class name");
+        } else {
+            String className = split[0].trim();
+
+            String rest = commandstr.substring(className.length()).trim();
+            String[] args= rest.split(" ");
+
+            return ApplicationManager.startApp(className, args);
+        }
+    }
+
+    /**
+     * Stop an App.
+     * It takes an app name
+     */    
+    public ApplicationResponse appStop(String commandstr) {
+        String [] split= commandstr.split(" ");
+        if (split.length == 0) {
+            return new ApplicationResponse(false, "appStop needs application name");
+        } else {
+            String appName = split[0].trim();
+
+            return ApplicationManager.stopApp(appName);
+        }
+    }
+
+    /**
+     * List all App.
+     * It takes an app name
+     */    
+    public Collection<ApplicationHandle> appList() {
+        return ApplicationManager.listApps();
+    }
+
+    /** Stop running applications if any */
+    void stopApplications () {
+        ApplicationManager.stopAll();
+    }
+
+
     /** run a particular command on a router*/
-    
-    public boolean runCommand(String commandstr) {
+    public ApplicationResponse runCommand(String commandstr) {
         String [] split= commandstr.split(" ");
         if (split.length == 0) 
-            return false;
+            return new ApplicationResponse(false, "No command specified");
+
         String command= split[0].trim();
-        String args= commandstr.substring(command.length()).trim();
-        return router.runCommand(command, args);
+        String rest = commandstr.substring(command.length()).trim();
+
+        ApplicationResponse response;
+
+        if (command.equals("PING")) {
+            response = appStart("usr.applications.Ping " + rest);
+        } else {
+            return new ApplicationResponse(false, "Unknown command " + command);
+        }
+
+        return response;
+        
     }
 
     /** ping neighbours of router */
-    
     public void pingNeighbours() 
     {
         router.pingNeighbours();

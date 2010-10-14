@@ -15,6 +15,11 @@ public interface Address {
     public byte[] asByteArray();
 
     /**
+     * Get Address as an Integer
+     */
+    public int asInteger();
+
+    /**
      * Get IPV4Address as an InetAddress
      * @throws UnsupportedOperationException if the actual kind of address
      * cannot be specified as an InetAddress

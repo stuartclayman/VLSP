@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
+import usr.applications.ApplicationResponse;
 import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import java.io.IOException;
@@ -24,15 +25,19 @@ public class RunCommand extends RouterCommand {
     
         String rest = req.substring(MCRP.RUN.CMD.length()).trim();
         if (rest == "") {
-            error("Must supply command name");
+            error("RUN Must supply command name and args");
             return false;
         }
-        if (controller.runCommand(rest)) {
-            success("Command started");
+
+        ApplicationResponse response = controller.runCommand(rest);
+
+        if (response.isSuccess()) {
+            success(response.getMessage());
             return true;
+        } else {
+            error(response.getMessage() + " for " + rest);
+            return false;
         }
-        error("Cannot run command "+rest);
-        return false;
     }
 
 }

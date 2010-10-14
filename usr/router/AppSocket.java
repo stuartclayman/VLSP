@@ -106,7 +106,7 @@ public class AppSocket {
             localPort = port;
             isBound = true;
 
-            Logger.getLogger("log").logln(USR.ERROR, "AppSocket: bound to port " + localPort);
+            // Logger.getLogger("log").logln(USR.ERROR, "AppSocket: bound to port " + localPort);
 
             // register with AppSocketMux
             appSockMux.addAppSocket(this);
@@ -129,7 +129,7 @@ public class AppSocket {
 
             isConnected = true;
 
-            Logger.getLogger("log").logln(USR.ERROR, "AppSocket: connect to @(" + address + "):" +  port);
+            // Logger.getLogger("log").logln(USR.ERROR, "AppSocket: connect to @(" + address + "):" +  port);
         } else {
             throw new Error("Cannot connect while already connected");
         }
@@ -256,7 +256,7 @@ public class AppSocket {
 
             isConnected = false;
 
-            Logger.getLogger("log").logln(USR.ERROR, "AppSocket: disconnect");
+            //Logger.getLogger("log").logln(USR.ERROR, "AppSocket: disconnect");
         }
     }
 

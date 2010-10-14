@@ -1,15 +1,14 @@
 package usr.router;
 
-import usr.net.Datagram;
 import usr.logging.*;
+import usr.net.Datagram;
+import usr.net.Address;
 import usr.net.DatagramFactory;
 import usr.protocol.Protocol;
 import java.util.List;
 import java.util.Scanner;
 import java.nio.ByteBuffer;
 import java.io.*;
-import usr.net.GIDAddress;
-import usr.applications.*;
 import java.util.*;
 
 /**
@@ -35,10 +34,6 @@ public class Router {
 
     // Is the router active
     boolean isActive = false;
-
-
-
-    ArrayList <Application> appList= null;
 
     /**
      * Construct a Router listening on a specified port for the
@@ -107,25 +102,25 @@ public class Router {
     
     { 
         
+        // allocate a new logger
         Logger logger = Logger.getLogger("log");
-        logger.addOutput(System.err, new BitMask(USR.ERROR));
+        // tell it to output to stdout
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 
+        // USR.STDOUT set
         logger.addOutput(System.out, new BitMask(USR.STDOUT));
+        // tell it to output to stderr
+        // and tell it what to pick up
+        // it will actually output things where the log has bit
+        // USR.ERROR set
+        logger.addOutput(System.err, new BitMask(USR.ERROR));
         
         options_= new RouterOptions(this);
  
         controller = new RouterController(this, options_, port1, port2);
         fabric = new SimpleRouterFabric(this, options_);
         RouterDirectory.register(this);
-        appList= new ArrayList<Application>();
 
-
-    }
-    /**
-     * Get the router address.
-     * This is a special featrue for GID.
-     */
-    public GIDAddress getAddress() {
-        return controller.getAddress();
     }
 
     /**
@@ -161,8 +156,6 @@ public class Router {
             controller.stop();
             fabric.stop();
 
-            stopApplications();
-
             isActive = false;
 
             return true;
@@ -176,13 +169,6 @@ public class Router {
      */
     public boolean isActive() {
         return isActive;
-    }
-
-    /** Stop running applications if any */
-    void stopApplications () {
-        for (Application a: appList) {
-            a.stop();
-        }
     }
 
     /**
@@ -221,6 +207,22 @@ public class Router {
      */
     public boolean setName(String name) {
         return controller.setName(name);
+    }
+
+    /**
+     * Get the router address.
+     * This is a special feature where the router itself has its own address.
+     */
+    public Address getAddress() {
+        return controller.getAddress();
+    }
+
+    /**
+     * Set the router address.
+     * This is a special feature where the router itself has its own address.
+     */
+    public boolean setAddress(Address addr) {
+        return controller.setAddress(addr);
     }
 
     /**
@@ -332,38 +334,40 @@ public class Router {
             logger.logln(USR.ERROR, e.getMessage());
             return false;
         }
-                String fileName= options_.getOutputFile(); 
-             if (!fileName.equals("")) { 
-         if (options_.getOutputFileAddName()) {
-            fileName+= "_"+leadinFname();
-         }
-         File output= new File(fileName);
-         try {
-          FileOutputStream fos = new FileOutputStream(output);
-          PrintWriter pw = new PrintWriter(fos,true);
-          logger.removeOutput(System.out);
-          logger.addOutput(pw, new BitMask(USR.STDOUT));
-        } catch (Exception e) {
-          System.err.println("Cannot output to file");
-            System.exit(-1);
+
+        String fileName= options_.getOutputFile(); 
+        if (!fileName.equals("")) { 
+            if (options_.getOutputFileAddName()) {
+                fileName+= "_"+leadinFname();
+            }
+            File output= new File(fileName);
+            try {
+                FileOutputStream fos = new FileOutputStream(output);
+                PrintWriter pw = new PrintWriter(fos,true);
+                logger.removeOutput(System.out);
+                logger.addOutput(pw, new BitMask(USR.STDOUT));
+            } catch (Exception e) {
+                System.err.println("Cannot output to file");
+                System.exit(-1);
+            }
         }
-      }
-      String errorName= options_.getErrorFile();
-      if (!errorName.equals("")) { 
-         if (options_.getOutputFileAddName()) {
-            errorName+= "_"+leadinFname();
-         }
-         File output= new File(fileName);
-         try {
-          FileOutputStream fos = new FileOutputStream(output);
-          PrintWriter pw = new PrintWriter(fos,true);
-          logger.removeOutput(System.err);
-          logger.addOutput(pw, new BitMask(USR.ERROR));
-        } catch (Exception e) {
-          System.err.println("Cannot output to file");
-            System.exit(-1);
+
+        String errorName= options_.getErrorFile();
+        if (!errorName.equals("")) { 
+            if (options_.getOutputFileAddName()) {
+                errorName+= "_"+leadinFname();
+            }
+            File output= new File(fileName);
+            try {
+                FileOutputStream fos = new FileOutputStream(output);
+                PrintWriter pw = new PrintWriter(fos,true);
+                logger.removeOutput(System.err);
+                logger.addOutput(pw, new BitMask(USR.ERROR));
+            } catch (Exception e) {
+                System.err.println("Cannot output to file");
+                System.exit(-1);
+            }
         }
-      }
         return true;
     }
     
@@ -418,39 +422,6 @@ public class Router {
         }
       }
       return true;
-    }
-
-    /** Try to run a command (implementing class Application on the given
-    router */
-    public synchronized boolean runCommand(String command, String args)
-    {
-        Application app= null;
-        if (command.equals("PING")) {
-            try {
-                app= new PingApplication(this, args);
-            } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
-                return false;
-            }
-        }
-        if (app == null) {
-            return false;
-        }
-        Thread thread = new Thread(app);
-        return app.start(); 
-        
-    }
-    
-    /** Application stops running */
-    public synchronized void commandExit(Application app)
-    {
-        for (Application a: appList) {
-            if (app.equals(a)) {
-                appList.remove(a);
-                return;
-            }
-        }
-        Logger.getLogger("log").logln(USR.ERROR, leadin()+"Exiting application appears to to be on app list");
     }
 
     public static void main(String[] args) {

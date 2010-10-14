@@ -6,6 +6,12 @@ import usr.router.Router;
 import usr.router.RouterDirectory;
 import java.net.SocketException;
 
+/**
+ * A DatagramSocket looks similar to a Java DatagramSocket.
+ * It is intended to be a replacement for the Java version
+ * in order that apps can use USR for networking without <em>too</em>
+ * effort in rewrites.
+ */
 public class DatagramSocket {
     AppSocket socketImpl;
 

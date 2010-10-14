@@ -2,7 +2,9 @@ package usr.net;
 
 import java.nio.ByteBuffer;
 import usr.logging.*;
+import java.util.Scanner;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * An GID Address
@@ -14,6 +16,20 @@ public class GIDAddress implements Address {
     // an EMPTY address
     public final static byte[] EMPTY = { 0, 0, 0, 0};
 
+    /**
+     * Create a GIDAddress from a String
+     */
+    public GIDAddress(String gidStr)  throws UnknownHostException {
+        Scanner scanner = new Scanner(gidStr);
+
+        if (scanner.hasNextInt()) {
+            int gid = scanner.nextInt();
+
+            globalAddress = gid;
+        } else {
+            throw new UnknownHostException("Not a GID: " + gidStr);
+        }
+    }
 
     /**
      * Create a GIDAddress from an int
@@ -50,6 +66,14 @@ public class GIDAddress implements Address {
         return bytes;
     }
 
+    /** 
+     * Get GIDAddress as an Integer.
+     */
+    public int asInteger() {
+        return globalAddress;
+    }
+
+
     /**
      * Get the size in bytes of an instantiation of an GIDAddress.
      */
@@ -76,10 +100,6 @@ public class GIDAddress implements Address {
         }
     }
 
-    /** Get the GID */
-    public int getGlobalID() {
-        return globalAddress;
-    }
     /**
      * To String
      */

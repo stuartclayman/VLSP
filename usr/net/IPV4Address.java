@@ -3,6 +3,7 @@ package usr.net;
 import java.net.InetAddress;
 import usr.logging.*;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 
 /**
  * An IPV4 Address
@@ -65,6 +66,15 @@ public class IPV4Address implements Address {
      */
     public InetAddress asInetAddress() {
         return addr;
+    }
+
+    /** 
+     * Get IPV4Address as an Integer.
+     */
+    public int asInteger() {
+        // convert byte[] to int
+        ByteBuffer buf = ByteBuffer.wrap(bytes);
+        return buf.getInt();
     }
 
     /**

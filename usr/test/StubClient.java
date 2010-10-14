@@ -2,6 +2,7 @@ package usr.test;
 
 import usr.net.*;
 import usr.logging.*;
+import usr.logging.*;
 import usr.router.NetIF;
 import usr.router.TCPNetIF;
 import usr.protocol.Protocol;

@@ -1,6 +1,7 @@
 package usr.test;
 
 import usr.router.Router;
+import usr.logging.*;
 import java.util.Scanner;
 
 /**
@@ -39,7 +40,7 @@ public class RouterTest1 {
     }
 
     private static void help() {
-        System.err.println("Test1 [mgt_port [r2r_port]]");
+        Logger.getLogger("log").logln(USR.ERROR, "Test1 [mgt_port [r2r_port]]");
         System.exit(1);
     }
 }

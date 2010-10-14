@@ -233,6 +233,69 @@ public class RouterInteractor extends MCRPInteractor {
 	return connectionNames;
     }
 
+    /**
+     * Start an app.
+     * APP_START classname args
+     */
+    public String appStart(String className, String[] args)  throws IOException, MCRPException {
+        StringBuilder builder = new StringBuilder();
+        builder.append(MCRP.APP_START.CMD);
+        builder.append(" ");
+        builder.append(className);
+
+        for (String arg : args) {
+            builder.append(" ");
+            builder.append(arg);
+        }
+
+        String toSend = builder.toString();
+
+        MCRPResponse response = interact(toSend);
+	expect(MCRP.APP_START.CODE);
+
+        return response.get(0)[1];
+    }
+
+    /**
+     * Stop an app
+     * APP_STOP app_name
+     */
+    public String appStop(String appName)  throws IOException, MCRPException {
+        MCRPResponse response = interact(MCRP.APP_STOP.CMD);
+	expect(MCRP.APP_STOP.CODE);
+
+	return response.get(0)[1];
+    }
+
+
+    /**
+     * List all app
+     * APP_LIST
+     */
+    public List<String> appList()  throws IOException, MCRPException {
+        MCRPResponse response = interact(MCRP.APP_LIST.CMD);
+	expect(MCRP.APP_LIST.CODE);
+
+        // now we convert the replies in the response
+	// into a list of apps
+
+	// get no of apps
+	int appReplies = response.getReplies() - 1;
+
+	// Logger.getLogger("log").logln(USR.ERROR, "appList: " + appReplies + " replies");
+
+	// create a list for the names
+	List<String> appNames = new ArrayList<String>();
+
+	for (int r=0; r < appReplies; r++) {
+	    // pick out the r-th app
+	    appNames.add(response.get(r)[1]);
+	}
+
+	return appNames;
+
+    }
+
 
     /**
      * Create a new router-to-router data connection to another router.

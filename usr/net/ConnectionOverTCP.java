@@ -134,7 +134,7 @@ public class ConnectionOverTCP implements Connection {
     /**
      * Read a Datagram.
      * This actually reads from the network connection.
-     * The datagram read is a GID type datagram or at least
+     * The datagram read is a datagram or at least
      * assumes length as a short in bits 5-8
      */
     Datagram readDatagramAndWait() {

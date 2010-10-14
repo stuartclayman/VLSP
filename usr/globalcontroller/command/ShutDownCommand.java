@@ -7,14 +7,14 @@ import java.nio.channels.SocketChannel;
 import usr.common.LocalHostInfo;
 
 /**
- * A LocalOKCommand.
+ * A ShutDownCommand
  */
 public class ShutDownCommand extends GlobalCommand {
     /**
-     * Construct a LocalOKCommand.
+     * Construct a ShutDownCommand
      */
     public ShutDownCommand() {
-        super(MCRP.GC_SHUT_DOWN.CMD, MCRP.GC_SHUT_DOWN.CODE, 
+        super(MCRP.SHUT_DOWN.CMD, MCRP.SHUT_DOWN.CODE, 
           MCRP.ERROR.CODE);
     }
 

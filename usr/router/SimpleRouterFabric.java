@@ -288,8 +288,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Add a Network Interface to this Router.
      */
     public synchronized RouterPort addNetIF(NetIF netIF) {
-        GIDAddress address = (GIDAddress)netIF.getAddress();
-        boolean localPort= (address.getGlobalID() == 0);
+        Address address = netIF.getAddress();
+        boolean localPort= (address.asInteger() == 0);
         RouterPort rp= null;
         if (!localPort) {
             int nextFree = findNextFreePort();
@@ -333,8 +333,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     public synchronized boolean removeNetIF(NetIF netIF) {
         // find port associated with netIF
         //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NETIF");
-        GIDAddress address = (GIDAddress)netIF.getAddress();
-        boolean localPort= (address.getGlobalID() == 0);
+        Address address = netIF.getAddress();
+        boolean localPort= (address.asInteger() == 0);
         if (localPort) {
             closeLocalNetIF();
             //Logger.getLogger("log").logln(USR.ERROR, "Removed local");
@@ -375,8 +375,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             return;
         } else {
             for (NetIF i: l) {
-                GIDAddress address = (GIDAddress)i.getAddress();
-                if (address.getGlobalID() == 0) {
+                Address address = i.getAddress();
+                if (address.asInteger() == 0) {
                     // dont queue RoutingTable for 0
                 } else if (! i.equals(inter)) {
                     //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Queuing routes to other interface "+i);
@@ -678,12 +678,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     synchronized boolean pingResponse(Datagram dg)
     {
        
-        GIDAddress dst= (GIDAddress)dg.getSrcAddress();
+        Address dst= dg.getSrcAddress();
         int port= dg.getSrcPort();
         int dstPort= dg.getSrcPort();
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Responding to ping with echo to "+dst+
          ":"+dstPort);
-        int id= dst.getGlobalID();
+        int id= dst.asInteger();
         return echo(id,port);
     }
 
