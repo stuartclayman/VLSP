@@ -125,6 +125,9 @@ public class ScriptEngine implements EventEngine {
                 Pair <Integer,Integer> link= new Pair<Integer,Integer>(r1,r2);
                 return new SimEvent(SimEvent.EVENT_END_LINK,time,link);
             }
+            if (type.equals("END_SIMULATION")) {
+                return new SimEvent(SimEvent.EVENT_END_SIMULATION, time, null);
+            }
             throw new Exception("Unrecognised event in script line "+s);
              
         } catch (Exception ex) {
