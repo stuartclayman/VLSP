@@ -255,7 +255,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             
             return;
         }
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table for "+n);
+
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table " + table_ + " for "+n);
+
         n.sendRoutingTable(table_.toString());
         
         lastTableUpdateTime_.put(n,now);
@@ -534,8 +536,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             if (ourAddress(addr)) {
                 receiveOurDatagram(datagram, null);
                 return;
+            } else {
+                noRoute(datagram);
             }
-            noRoute(datagram);
+
         } else {
             //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " sending datagram to "+addr);
             inter.sendDatagram(datagram);

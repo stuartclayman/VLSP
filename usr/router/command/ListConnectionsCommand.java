@@ -38,9 +38,9 @@ public class ListConnectionsCommand extends RouterCommand {
                 String portString = "port" + rp.getPortNo() + " " + 
                     netIF.getName() + " W(" + netIF.getWeight() + ") = " +
                     controller.getName() + " " + 
-                    (address == null ? "No_Address" : "@(" + address + ")") +
+                    (address == null ? "No_Address" : address) +
                     " => " + netIF.getRemoteRouterName() + " " +
-                    (remoteAddress == null ? "No_Remote_Address" : "@(" + remoteAddress + ")");
+                    (remoteAddress == null ? "No_Remote_Address" : remoteAddress);
 
 
                 list(portString);

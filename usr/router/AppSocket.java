@@ -129,7 +129,7 @@ public class AppSocket {
 
             isConnected = true;
 
-            // Logger.getLogger("log").logln(USR.ERROR, "AppSocket: connect to @(" + address + "):" +  port);
+            // Logger.getLogger("log").logln(USR.ERROR, "AppSocket: connect to " + address + ":" +  port);
         } else {
             throw new Error("Cannot connect while already connected");
         }
@@ -279,7 +279,7 @@ public class AppSocket {
      * toString.
      */
     public String toString() {
-        return  "Socket[" + (isBound ? "bound " : "") + (isConnected ? "connected " : "") + "addr=@(" + localAddress + ") port=" + remotePort + " localport=" + localPort + "]";
+        return  "Socket[" + (isBound ? "bound " : "") + (isConnected ? "connected " : "") + "addr=" + localAddress + " port=" + remotePort + " localport=" + localPort + "]";
 
     }
 }

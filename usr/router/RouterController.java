@@ -66,9 +66,9 @@ public class RouterController implements ComponentController, Runnable {
     int connectionCount;
 
     // Information about the APcontroller
-    APController APController_= null;
-    APInfo APInfo_= null; 
-    int AP_= 0; // The aggregation point for this node
+    APController apController_= null;
+    APInfo apInfo_= null; 
+    int ap_= 0; // The aggregation point for this node
 
     RouterOptions options_= null;
 
@@ -119,9 +119,9 @@ public class RouterController implements ComponentController, Runnable {
 
         // Set up info for AP management
         //System.out.println("Construct AP Controller");
-        APController_= ConstructAPController.constructAPController
+        apController_= ConstructAPController.constructAPController
             (options_);
-        APInfo_= APController_.newAPInfo();
+        apInfo_= apController_.newAPInfo();
 
     }
 
@@ -309,7 +309,7 @@ public class RouterController implements ComponentController, Runnable {
                 now= System.currentTimeMillis();
                 if (now >= next) {
                     next+= options_.getRouterConsiderTime();
-                    APController_.routerUpdate(this);
+                    apController_.routerUpdate(this);
                 }
                 // we check the RouterListener queue for commands
                 // TODO: maybe replace take() with poll(30, SECONDS)
@@ -527,18 +527,18 @@ public class RouterController implements ComponentController, Runnable {
     }
 
     /** Set the aggregation point for this router */
-    public boolean setAP(int GID, int AP) 
+    public boolean setAP(int gid, int ap) 
     
     { 
-        if (GID != getGlobalID())
+        if (gid != getGlobalID())
             return false;
-        System.out.println(leadin()+" now has aggregation point "+AP);
-        if (GID == AP && AP_ != AP) {
+        System.out.println(leadin()+" now has aggregation point "+ap);
+        if (gid == ap && ap_ != ap) {
             startAP();
-        } else if (AP_ == GID && AP_ != AP) {
+        } else if (ap_ == gid && ap_ != ap) {
             stopAP();
         }
-        AP_= AP;
+        ap_= ap;
         return true;
     }
      

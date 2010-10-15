@@ -353,9 +353,9 @@ public class TCPNetIF implements NetIF , Runnable {
         Address remoteAddress = getRemoteRouterAddress();
 
         return getName() + " W(" + getWeight() + ") = " +
-            (address == null ? "No_Address" : "@(" + address + ")") +
+            (address == null ? "No_Address" : "" + address) +
             " => " + getRemoteRouterName() + " " +
-            (remoteAddress == null ? "No_Remote_Address" : "@(" + remoteAddress + ")");
+            (remoteAddress == null ? "No_Remote_Address" : "" + remoteAddress);
     }
 
     /*

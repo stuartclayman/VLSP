@@ -148,7 +148,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      * Set the src address
      */
     public Datagram setSrcAddress(Address addr) {
-        if (addr != null && ! (addr instanceof GIDAddress)) {
+        if (addr != null && ! (addr instanceof Size4)) {
             throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in GIDDatagram");
         }
 
@@ -192,7 +192,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      * Set the dst address
      */
     public Datagram setDstAddress(Address addr) {
-        if (addr != null && ! (addr instanceof GIDAddress)) {
+        if (addr != null && ! (addr instanceof Size4)) {
             throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in GIDDatagram");
         }
 

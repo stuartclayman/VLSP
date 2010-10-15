@@ -30,7 +30,7 @@ public class SimpleRoutingTable implements RoutingTable {
             try {
                 e= new SimpleRoutingTableEntry(s, netif);
                 Address a= e.getAddress();
-                table_.put(a.toString(), e);
+                table_.put(addressAsString(a), e);
             } catch (Exception ex) {
                 throw ex;
             }
@@ -63,7 +63,7 @@ public class SimpleRoutingTable implements RoutingTable {
         if (addr == null) {
             return null;
         }
-        String a= addr.toString();
+        String a= addressAsString(addr);
         SimpleRoutingTableEntry e= table_.get(a);
         if (e == null) 
             return null;
@@ -107,7 +107,7 @@ public class SimpleRoutingTable implements RoutingTable {
                 // we need updating
                 if (inter.equals(e.getNetIF())) {
                     Address a= e.getAddress();
-                    String addrStr= a.toString();
+                    String addrStr= addressAsString(a);
                     SimpleRoutingTableEntry e2= table2.getEntry(addrStr);
                     // If interface can no longer reach address remove it
                     if (e2 == null) {
@@ -162,13 +162,13 @@ public class SimpleRoutingTable implements RoutingTable {
         else
             weight= inter.getWeight();
       //  Logger.getLogger("log").logln(USR.ERROR, "Weight = "+weight);
-        SimpleRoutingTableEntry oldEntry= table_.get(addr.toString());
+        SimpleRoutingTableEntry oldEntry= table_.get(addressAsString(addr));
         // CASE 1 -- NO ENTRY EXISTED
         if (oldEntry == null) {
             SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(addr,newEntry.getCost() +
                weight, inter);
            // Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY");
-            table_.put(addr.toString(),e);    
+            table_.put(addressAsString(addr),e);    
             return true;
         }
         // CASE 2 -- ENTRY EXISTED BUT WAS MORE EXPENSIVE
@@ -205,7 +205,7 @@ public class SimpleRoutingTable implements RoutingTable {
         for (SimpleRoutingTableEntry e: getEntries()) {
             //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO REMOVE "+e.getAddress());
             if (netif.equals(e.getNetIF())) {
-                String addr= e.getAddress().toString();
+                String addr= addressAsString(e.getAddress());
                 toRemove.add(addr);// Flag removal and do it later
                 changed= true;
             }
@@ -215,6 +215,14 @@ public class SimpleRoutingTable implements RoutingTable {
             table_.remove(a);
         }
         return changed;
+    }
+
+    /**
+     * Get an Address as String representation of an Integer
+     */
+    String addressAsString(Address addr) {
+        int id = addr.asInteger();
+        return Integer.toString(id);
     }
     
     /**
@@ -227,7 +235,7 @@ public class SimpleRoutingTable implements RoutingTable {
             table.append("\n");
         }
         String s= table.toString();
-        //Logger.getLogger("log").logln(USR.ERROR, "STRING IS "+s);
+        //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable is:\n"+s);
         return s;
     }
 }

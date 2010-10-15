@@ -9,12 +9,8 @@ import java.net.UnknownHostException;
 /**
  * An GID Address
  */
-public class GIDAddress implements Address {
+public class GIDAddress extends Size4 implements Address {
     int globalAddress;
-    byte[] bytes = new byte[4];
-
-    // an EMPTY address
-    public final static byte[] EMPTY = { 0, 0, 0, 0};
 
     /**
      * Create a GIDAddress from a String
@@ -83,18 +79,22 @@ public class GIDAddress implements Address {
 
     /**
      * Get GIDAddress as an InetAddress
-     * @throws UnsupportedOperationException always
      */
     public InetAddress asInetAddress() {
-        throw new UnsupportedOperationException("GIDAddress: does not support InetAddress");
+        try {
+            return InetAddress.getByAddress(bytes);
+        } catch (UnknownHostException uhe) {
+            return null;
+        }
     }
 
     /**
      * Equals
      */
-    public boolean equals(Object addr) {
-        if (addr instanceof Address) {
-            return addr.toString().equals(toString());
+    public boolean equals(Object obj) {
+        if (obj instanceof Address) {
+            Address addr = (Address)obj;
+            return addr.asInteger() == this.asInteger();
         } else {
             return false;
         }
@@ -104,7 +104,7 @@ public class GIDAddress implements Address {
      * To String
      */
     public String toString() {
-        return ""+globalAddress;
+        return "@("+globalAddress + ")";
     }
 
 }

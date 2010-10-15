@@ -8,13 +8,8 @@ import java.nio.ByteBuffer;
 /**
  * An IPV4 Address
  */
-public class IPV4Address implements Address {
-    byte[] bytes = new byte[4];
+public class IPV4Address extends Size4 implements Address {
     InetAddress addr;
-
-    // an EMPTY address
-    public final static byte[] EMPTY = { 0, 0, 0, 0};
-
 
     /**
      * Create a IPV4Address from a hostname
@@ -60,17 +55,6 @@ public class IPV4Address implements Address {
     }
     
     /**
-     * Equals
-     */
-    public boolean equals(Object addr) {
-        if (addr instanceof Address) {
-            return addr.toString().equals(toString());
-        } else {
-            return false;
-        }
-   }
-
-    /**
      * Get IPV4Address as an InetAddress
      */
     public InetAddress asInetAddress() {
@@ -85,6 +69,18 @@ public class IPV4Address implements Address {
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         return buf.getInt();
     }
+
+    /**
+     * Equals
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof Address) {
+            Address addr = (Address)obj;
+            return addr.asInteger() == this.asInteger();
+        } else {
+            return false;
+        }
+   }
 
     /**
      * To String

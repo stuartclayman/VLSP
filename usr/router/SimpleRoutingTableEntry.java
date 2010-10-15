@@ -30,7 +30,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
             int gid= Integer.parseInt(args[0]);
             address_= new GIDAddress(gid); 
             cost_= Integer.parseInt(args[1]);
-            //Logger.getLogger("log").logln(USR.ERROR, "READ GID "+gid+" cost "+cost_);
+            //Logger.getLogger("log").logln(USR.ERROR, "READ address "+gid+" cost "+cost_);
             if (args.length == 2) {
                inter_= null; 
             } else {
@@ -58,7 +58,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
             address_= new GIDAddress(gid); 
             cost_= Integer.parseInt(args[1]);
             inter_= inter;
-           // Logger.getLogger("log").logln(USR.ERROR, "READ GID "+gid+" cost "+cost_);
+           // Logger.getLogger("log").logln(USR.ERROR, "READ address "+gid+" cost "+cost_);
         } catch (Exception e) {
             throw new Exception  ("Cannot parse routing table entry "+
              "from incorrect string" + tableEntry);
@@ -86,14 +86,21 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         cost_= cost;
     }
     
-    
+    /**
+     * Get an Address as String representation of an Integer
+     */
+    String addressAsString(Address addr) {
+        int id = addr.asInteger();
+        return Integer.toString(id);
+    }
+        
      
     public String toString() {
         String entry;
         if (inter_ == null) {
-          entry= address_.toString() + " " + cost_;
+            entry= addressAsString(address_) + " " + cost_;
         } else {
-          entry= address_.toString() + " " + cost_ + " " + 
+            entry= addressAsString(address_) + " " + cost_ + " " + 
             inter_.getRemoteRouterName();
         }
         //Logger.getLogger("log").logln(USR.ERROR, "ENTRY: "+entry);
