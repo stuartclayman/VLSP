@@ -35,7 +35,7 @@ public class RouterApp1S {
             }
 
             // set ID
-            router.setAddress(new GIDAddress(2));
+            router.setAddress(new IPV4Address("192.168.7.2")); // WAS new GIDAddress(2));
         
             // now set up an AppSocket to receive
             socket = new AppSocket(router, 3000);

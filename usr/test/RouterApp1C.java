@@ -35,7 +35,7 @@ public class RouterApp1C {
             }
 
             // set up id
-            router.setAddress(new GIDAddress(1));
+            router.setAddress(new IPV4Address("192.168.7.1"));  // WAS new GIDAddress(1)); 
 
             // connnect to the other router
             // first we tal kto my own ManagementConsole
@@ -50,8 +50,8 @@ public class RouterApp1C {
             // now set up an AppSocket to send
             socket = new AppSocket(router);
 
-            // and we want to connect to GID 2 : port 3000
-            socket.connect(new GIDAddress(2), 3000);
+            // and we want to connect to address 2 : port 3000
+            socket.connect(new IPV4Address("192.168.7.2") /* new GIDAddress(2) */ , 3000);
 
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "RouterApp1C exception: " + e);

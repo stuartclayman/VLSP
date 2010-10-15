@@ -46,7 +46,7 @@ public class RouterApp2DS {
             // now set up an DatagramSocket to send
             sendSocket = new DatagramSocket();
 
-            // and we want to connect to GID 1 : port 5555
+            // and we want to connect to address 1 : port 5555
             sendSocket.connect(new GIDAddress(1), 5555);
 
         } catch (Exception e) {

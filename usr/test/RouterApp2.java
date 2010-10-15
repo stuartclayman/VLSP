@@ -47,7 +47,7 @@ public class RouterApp2 {
             // now set up an AppSocket to send
             sendSocket = new AppSocket(router);
 
-            // and we want to connect to GID 1 : port 5555
+            // and we want to connect to address 1 : port 5555
             sendSocket.connect(new GIDAddress(1), 5555);
 
         } catch (Exception e) {
