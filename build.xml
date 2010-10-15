@@ -6,7 +6,7 @@
     <echo message=""/>
     <property name="sources" value="${basedir}"/>
     <property name="classes" value="${basedir}/classes"/>
-    <property name="external.jars" value="" />
+    <property name="external.jars" value="./libs/monitoring-0.6.7.jar" />
     <property name="api" value="${basedir}/docs"/>    
     <property name="year" value="2010"/>
     <property name="jars" value="${basedir}"/>
@@ -20,6 +20,7 @@
     <javac srcdir="${sources}" classpath="${external.jars}" target="1.5" includeantruntime="false">
 	   <!-- destdir="${classes}" -->
     <include name="usr/**" />
+    <include name="plugins_usr/**" />
     </javac>
 
   </target>
@@ -71,17 +72,18 @@
     <echo message="------ Building Jar file"/>
     <jar jarfile="${jars}/user-space-routing-${release}.jar" basedir="${basedir}" includes="eu/**" excludes="**/*.java" />
       <!-- basedir="${classes}" -->
-    <jar jarfile="${jars}/user-space-routing-src-${release}.jar" basedir="${basedir}" includes="usr/**" excludes="**/*.class" />
+    <jar jarfile="${jars}/user-space-routing-src-${release}.jar"
+    basedir="${basedir}" includes="usr/**, plugins_usr/**" excludes="**/*.class" />
   </target>
 
   <!-- JavaDoc -->
   <target name="javadoc" depends="build">
      <echo message="------ Running JavaDoc"/>
-     <javadoc packagenames="usr.*"
+     <javadoc packagenames="usr.*, plugins_usr.*"
               sourcepath="${sources}"
               destdir="${api}"
 	      classpath="${external.jars}"
-	      excludepackagenames="usr.test"
+	      excludepackagenames="usr.test, plugins_usr.monitoring.test"
               bottom="User Space Routing ${release}"
               author="false">
       <classpath>
