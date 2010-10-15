@@ -77,14 +77,26 @@ public class ScriptEngine implements EventEngine {
 
     private SimEvent parseEventLine(String s)
     {
-        String []args= s.split(" ");
+
+        // first we remove the comments
+        String noComments = s.replaceFirst("//.*", "").trim();
+
+        // now process
+        String []args= noComments.split(" ");
         if (args.length < 2)
             return null;
         try {
             int time= Integer.parseInt(args[0]);
             String type= args[1].trim();
             if (type.equals("START_ROUTER")) {
-               return new SimEvent(SimEvent.EVENT_START_ROUTER, time,null);
+                if (args.length == 2) {
+                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time,null);
+                } else if (args.length == 3) {
+                    Integer r= Integer.parseInt(args[2].trim());
+                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time, r);
+                } else {
+                    throw new Exception("START_ROUTER requires router id or no arg "+ s + " => " + noComments + " args.length = " + args.length);
+                }
             }
             if (type.equals("START_LINK")) {
                if (args.length < 4) {
