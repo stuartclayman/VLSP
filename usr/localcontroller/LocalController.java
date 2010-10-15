@@ -416,10 +416,26 @@ public class LocalController implements ComponentController {
          }
          File output= new File(fileName);
          try {
-          FileOutputStream fos = new FileOutputStream(output);
+          FileOutputStream fos = new FileOutputStream(output,true);
           PrintWriter pw = new PrintWriter(fos,true);
           logger.removeOutput(System.out);
           logger.addOutput(pw, new BitMask(USR.STDOUT));
+        } catch (Exception e) {
+          System.err.println("Cannot output to file");
+            System.exit(-1);
+        }
+      }
+      String errorName= routerOptions_.getErrorFile();
+      if (!errorName.equals("")) { 
+         if (routerOptions_.getOutputFileAddName()) {
+            errorName+= "_"+leadinFname();
+         }
+         File output= new File(fileName);
+         try {
+          FileOutputStream fos = new FileOutputStream(output,true);
+          PrintWriter pw = new PrintWriter(fos,true);
+          logger.removeOutput(System.err);
+          logger.addOutput(pw, new BitMask(USR.ERROR));
         } catch (Exception e) {
           System.err.println("Cannot output to file");
             System.exit(-1);

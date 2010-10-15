@@ -70,6 +70,11 @@ public class OutputType {
         throw new java.lang.IllegalArgumentException("Cannot parse Time Type "+tt);
     }
     
+    /** Clear output file at start of run */
+    public boolean clearOutputFile() {
+        return clear_;
+    }
+    
     /** Accessor for time parameter */
     public int getTime() {
         return outputTime_;

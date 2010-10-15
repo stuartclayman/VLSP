@@ -396,7 +396,7 @@ public class Router {
          }
          File output= new File(fileName);
          try {
-          FileOutputStream fos = new FileOutputStream(output);
+          FileOutputStream fos = new FileOutputStream(output,true);
           PrintWriter pw = new PrintWriter(fos,true);
           logger.removeOutput(System.out);
           logger.addOutput(pw, new BitMask(USR.STDOUT));
@@ -412,7 +412,7 @@ public class Router {
          }
          File output= new File(fileName);
          try {
-          FileOutputStream fos = new FileOutputStream(output);
+          FileOutputStream fos = new FileOutputStream(output,true);
           PrintWriter pw = new PrintWriter(fos,true);
           logger.removeOutput(System.err);
           logger.addOutput(pw, new BitMask(USR.ERROR));

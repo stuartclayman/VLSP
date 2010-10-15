@@ -112,7 +112,7 @@ public class GlobalController implements ComponentController {
          }
          File output= new File(fileName);
          try {
-          FileOutputStream fos = new FileOutputStream(output);
+          FileOutputStream fos = new FileOutputStream(output,true);
           PrintWriter pw = new PrintWriter(fos,true);
           logger.removeOutput(System.out);
           logger.addOutput(pw, new BitMask(USR.STDOUT));
@@ -128,7 +128,7 @@ public class GlobalController implements ComponentController {
          }
          File output= new File(fileName);
          try {
-          FileOutputStream fos = new FileOutputStream(output);
+          FileOutputStream fos = new FileOutputStream(output,true);
           PrintWriter pw = new PrintWriter(fos,true);
           logger.removeOutput(System.err);
           logger.addOutput(pw, new BitMask(USR.ERROR));
@@ -139,7 +139,7 @@ public class GlobalController implements ComponentController {
       }
       
      
-      
+      // Set up AP controller 
       APController_= ConstructAPController.constructAPController
         (routerOptions_);
       try {
@@ -148,12 +148,23 @@ public class GlobalController implements ComponentController {
           Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
           bailOut();
       }
-
+      
+      // Set up simulations options
       if (!options_.isSimulation()) {
           initEmulation();
       }
 
+
+      //Initialise events for schedules
       initSchedule();
+      
+      //Initialise output
+      for (OutputType o: options_.getOutputs()) {
+          if (o.clearOutputFile()) {
+              File f= new File(o.getFileName());
+              f.delete();
+          }
+      }
 
       isActive = true;
 
@@ -723,6 +734,8 @@ public class GlobalController implements ComponentController {
     
     /** Produce some periodic output */
     private void produceOutput(long time, OutputType o) {
+    
+        
         // Schedule next output time
         if (o.getTimeType() == OutputType.AT_INTERVAL) {
             SimEvent e= new SimEvent(SimEvent.EVENT_OUTPUT,

@@ -493,10 +493,15 @@ public class ControlOptions {
       return globalControlPort_;
     }  
     
+    /** Accessor function -- number of times to try to start local controller*/
     public int getControllerWaitTime() {
         return controllerWaitTime_;
     } 
    
+    /** Accessor function for outputs requested from simulation*/
+    ArrayList <OutputType> getOutputs() {
+        return outputs_;
+    }
     
     /** Initialise event list */
     public void initialEvents(EventScheduler s, GlobalController g)
@@ -505,6 +510,13 @@ public class ControlOptions {
         SimEvent e= new SimEvent(SimEvent.EVENT_AP_CONTROLLER, 
             routerOptions_.getControllerConsiderTime(),null);
         s.addEvent(e);
+        for (OutputType o: outputs_) {
+            if (o.getType() == OutputType.AT_TIME || o.getType() == 
+              OutputType.AT_INTERVAL) {
+                e= new SimEvent(SimEvent.EVENT_OUTPUT,o.getTime(), o);
+                s.addEvent(e); 
+            }
+        }
     }
     
     /** Add or remove events following a simulation event */
