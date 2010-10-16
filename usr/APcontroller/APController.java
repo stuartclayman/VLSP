@@ -26,7 +26,8 @@ public interface APController {
     /** Controller regular AP update action */
     public void controllerUpdate(GlobalController g);
     
-    
+    /** Calculate AP traffic estimate */
+    public int APTrafficEstimate(GlobalController g);
     
     /** Add new access point with gid G*/
     public void addAccessPoint(int gid);

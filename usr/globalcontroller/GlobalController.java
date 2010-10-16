@@ -825,6 +825,8 @@ public class GlobalController implements ComponentController {
         }
         s.print(getNoRouters()+" "+linkWeights_.size()+" "+
             APController_.getNoAPs());
+        APController_.controllerUpdate(this);
+        s.print(" "+APController_.APTrafficEstimate(this));
         s.println();    
     }
     

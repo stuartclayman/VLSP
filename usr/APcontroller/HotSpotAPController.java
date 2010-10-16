@@ -25,6 +25,7 @@ public class HotSpotAPController extends NullAPController {
     /** Controller regular AP update action */
     public void controllerUpdate(GlobalController g)
     {
+        super.controllerUpdate(g);
         if (gotMinAPs(g)) {
             if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
                 removeAP(g);

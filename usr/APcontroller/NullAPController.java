@@ -123,6 +123,20 @@ public class NullAPController implements APController {
         return nonAP;
     }
     
+    /** Return an estimate of traffic for all nodes and APs*/
+    public int APTrafficEstimate(GlobalController g) 
+    {
+        int traffic= 0;
+        for (int i: g.getRouterList()) {
+            Integer cost= APCosts_.get(i);
+            if (cost == null) {
+                traffic+= options_.getMaxAPWeight();
+            } else {
+                traffic+= cost;
+            }
+        }
+        return traffic;
+    }
     
    
     
