@@ -21,7 +21,7 @@ public class OutputType {
     private int outputType_ = 0;  // What output is required
     private int outputTimeType_ = 0;  // Repeated or at time?
     private int outputTime_= 0;   // Time parameter
-    
+    private boolean firstOutput_= true;
     
     public OutputType() {
     }
@@ -33,6 +33,7 @@ public class OutputType {
     
     /** Set type from string*/
     public void setType(String t) throws java.lang.IllegalArgumentException {
+    
         if (t.equals("Network")) {
             outputType_= OUTPUT_NETWORK;
             return;
@@ -96,6 +97,16 @@ public class OutputType {
     {
         fileName_= name;
     } 
+    
+    /** Is this the first time output produced by this type*/
+    public boolean isFirst() {
+        return firstOutput_;
+    }
+    
+    /** Set whether this is first time output produced by this type*/
+    public void setFirst(boolean f) {
+        firstOutput_= f;
+    }
     
     
 

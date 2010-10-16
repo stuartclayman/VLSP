@@ -18,6 +18,10 @@ public class ConstructAPController
             a = new RandomAPController(o);
             return a;
         }  
+        if (name.equals("HotSpot")) {
+            a = new HotSpotAPController(o);
+            return a;
+        }  
         if (name.equals("") || name.equals("Null")) {
             a = new NullAPController(o);
             return a;  

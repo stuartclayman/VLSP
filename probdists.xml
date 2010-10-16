@@ -10,21 +10,28 @@
             <ProbElement>
                  <Type>Exponential</Type>
                  <Weight>0.1</Weight>
-                 <Parameter>50</Parameter>
+                 <Parameter>120</Parameter>
+            </ProbElement>
+            <ProbElement>
+                 <Type>Weibull</Type>
+                 <Weight>0.9</Weight>
+                 <Parameter>1200.0</Parameter>
+                 <Parameter>1.5</Parameter>
             </ProbElement>
             <ProbElement>
                  <Type>Weibull</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>500.0</Parameter>
-                 <Parameter>1.5</Parameter>
+                 <Parameter>10000.0</Parameter>
+                 <Parameter>2.0</Parameter>
             </ProbElement>
       </NodeDeathDist>
       <LinkCreateDist>
             
             <ProbElement>
-                 <Type>PoissonMinOne</Type>
+                 <Type>PoissonMin</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>5</Parameter>
+                 <Parameter>1.5</Parameter>
+                 <Parameter>1.0</Parameter>
             </ProbElement>
       </LinkCreateDist>
 </ProbabilisticEngine>

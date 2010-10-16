@@ -89,7 +89,7 @@ public class ProbabilisticEventEngine implements EventEngine {
         s.addEvent(e1);
         // Schedule links
         int noLinks= linkCreateDist_.getIntVariate();
-        List <Integer>nodes= g.getNodeList();
+        ArrayList <Integer>nodes= new ArrayList<Integer>(g.getRouterList());
         nodes.remove(nodes.indexOf(routerId));
         List <Integer>outlinks= (List<Integer>)g.getOutLinks(routerId);
         if (outlinks != null) {

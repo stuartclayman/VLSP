@@ -12,7 +12,8 @@ public class ProbElement
     static final int UNIFORM_DIST= 4;
     static final int PARETO_DIST= 5;
     static final int POISSON_DIST= 6;  // Poisson Distribution
-    static final int POISSON_MIN_ONE_DIST= 7;  // Poisson Distribution
+    static final int POISSON_MIN_DIST= 7; // Poisson with min value parm  
+    static final int POISSON_PLUS_DIST= 8;  // Poisson with second value parm added
     double weight_;
     double parm1_= 0.0;
     double parm2_= 0.0;
@@ -37,9 +38,13 @@ public class ProbElement
            type= PARETO_DIST;
         } else if (typeStr.equals("Poisson")) {
            type= POISSON_DIST;
-        } else if (typeStr.equals("PoissonMinOne")) {
-           type= POISSON_MIN_ONE_DIST;
+        } else if (typeStr.equals("PoissonMin")) {
+           type= POISSON_MIN_DIST;
+        } else if (typeStr.equals("PoissonPlus")) {
+           type= POISSON_PLUS_DIST;
         }
+        
+          
         if (type == 0) {
            throw new ProbException("Unknown distribution type");
         }
@@ -77,8 +82,12 @@ public class ProbElement
         if (distType_ == POISSON_DIST) {
             return poissonVariate(parm1_);
         }
-        if (distType_ == POISSON_MIN_ONE_DIST) {
-            return Math.max(1.0,poissonVariate(parm1_));
+        if (distType_ == POISSON_MIN_DIST) {
+            return Math.max(parm1_,poissonVariate(parm1_));
+        }
+        if (distType_ == POISSON_PLUS_DIST) {
+            double ans= parm2_+poissonVariate(parm1_);
+            return ans;
         }
         throw new ProbException("Unknown distribution type");
         

@@ -32,6 +32,8 @@ public class ControlOptions {
     private String remoteLoginUser_= null;     // User on remote machines to login with.
     private boolean startLocalControllers_= true;   // If true Global Controller starts local controllers
     private boolean isSimulation_= false;    //  If true simulation in software not emulation in hardware
+    private boolean allowIsolatedNodes_= true;   // If true, check for isolated nodes
+    private boolean connectedNetwork_= false;  // If true, keep network connected
     private int controllerWaitTime_= 6;    
     private int lowPort_= 10000;   // Default lowest port to be used on local controller 
     private int highPort_= 20000;  // Default highest port to be used on local controller
@@ -152,6 +154,30 @@ public class ControlOptions {
         try {
            globalControlPort_= ReadXMLUtils.parseSingleInt(gcn, "Port","GlobalController",true);
            ReadXMLUtils.removeNode(gcn,"Port","GlobalController");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+         try {
+           isSimulation_= ReadXMLUtils.parseSingleBool(gcn, "Simulation","GlobalController",true);
+           ReadXMLUtils.removeNode(gcn,"Simulation","GlobalController");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+           allowIsolatedNodes_= ReadXMLUtils.parseSingleBool(gcn, "AllowIsolatedNodes","GlobalController",true);
+           ReadXMLUtils.removeNode(gcn,"AllowIsolatedNodes","GlobalController");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
+           connectedNetwork_= ReadXMLUtils.parseSingleBool(gcn, "ConnectedNetwork","GlobalController",true);
+           ReadXMLUtils.removeNode(gcn,"ConnectedNetwork","GlobalController");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
@@ -487,6 +513,16 @@ public class ControlOptions {
         return isSimulation_;
     }
     
+    /** Do we allow isolated nodes in simulation */
+    public boolean allowIsolatedNodes() {
+        return allowIsolatedNodes_;
+    }
+    
+    /** Do we force the network to be connected */
+    public boolean connectedNetwork() {
+        return connectedNetwork_;
+    }
+    
     /** Return port number for global controller 
     */
     public int getGlobalPort() {
@@ -511,7 +547,7 @@ public class ControlOptions {
             routerOptions_.getControllerConsiderTime(),null);
         s.addEvent(e);
         for (OutputType o: outputs_) {
-            if (o.getType() == OutputType.AT_TIME || o.getType() == 
+            if (o.getTimeType() == OutputType.AT_TIME || o.getTimeType() == 
               OutputType.AT_INTERVAL) {
                 e= new SimEvent(SimEvent.EVENT_OUTPUT,o.getTime(), o);
                 s.addEvent(e); 

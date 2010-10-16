@@ -167,8 +167,7 @@ public class ReadXMLUtils {
         try {
            d.checkParts();
         } catch (ProbException e) {
-            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-            System.exit(-1);
+            throw new SAXException(e.getMessage());
         }
         return d;
     }
