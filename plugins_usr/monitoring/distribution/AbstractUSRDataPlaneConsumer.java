@@ -75,14 +75,18 @@ public abstract class AbstractUSRDataPlaneConsumer implements DataPlane, Measure
      * Dicconnect from a delivery mechansim.
      */
     public boolean disconnect() {
-	try {
-	    udpReceiver.end();
-	    udpReceiver = null;
-	    return true;
-	} catch (IOException ieo) {
-	    udpReceiver = null;
-	    return false;
-	}
+        if (udpReceiver != null) {
+            try {
+                udpReceiver.end();
+                udpReceiver = null;
+                return true;
+            } catch (IOException ieo) {
+                udpReceiver = null;
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**

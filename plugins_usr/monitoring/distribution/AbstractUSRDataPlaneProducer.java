@@ -66,27 +66,23 @@ public abstract class AbstractUSRDataPlaneProducer implements DataPlane, DataSou
 
     }
 
-//     public boolean connect() {
-// 	return producer.connect();
-//     }
-
     /**
      * Disconnect from a delivery mechansim.
      */
     public boolean disconnect() {
-	try {
-	    udpTransmitter.end();
-	    udpTransmitter = null;
-	    return true;
-	} catch (IOException ieo) {
-	    udpTransmitter = null;
-	    return false;
-	}
+        if (udpTransmitter != null) {
+            try {
+                udpTransmitter.end();
+                udpTransmitter = null;
+                return true;
+            } catch (IOException ieo) {
+                udpTransmitter = null;
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
-
-//     public boolean disconnect() {
-// 	return producer.disconnect();
-//     }
 
     /**
      * Announce that the plane is up and running
