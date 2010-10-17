@@ -1097,8 +1097,47 @@ public class GlobalController implements ComponentController {
     }
 
   
+    /** Check network for isolated nodes and connect them if possible */
+    public void checkIsolated(long time)
+    {
+        for (int i: getRouterList()) {
+            checkIsolated(time,i);
+        }
+    }
+    
+    /** Check if given node is isolated and connect it if possible */
+    public void checkIsolated(long time, int gid)
+    {
+        ArrayList links= outLinks_.get(gid);
+        int nRouters= routerList_.size();
+        if (nRouters == 1) // One node is allowed to be isolated
+            return;
+        if (links != null && links.size() > 0) {
+            return;
+        }
+        // Node is isolated.
+        while (true) {
+            int i= (int)Math.floor( Math.random()*nRouters);
+            int dest= routerList_.get(i);
+            if (dest != gid) {
+                startLink(time,gid,dest);   
+                break;
+            }
+        }
+    }
 
- 
+    /** Make sure network is connected*/
+    public void connectNetwork(long time) 
+    {
+    
+    }
+    
+    /** Make sure network is connected from r1 to r2*/
+    public void connectNetwork(long time,int r1, int r2) 
+    {
+    
+    }
+    
 
     /** Accessor function for ControlOptions structure options_ */
     public ControlOptions getOptions() {

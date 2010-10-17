@@ -26,12 +26,19 @@ public class RandomAPController extends NullAPController {
         super.controllerUpdate(g);
         if (gotMinAPs(g)) {
             if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
-                
-                int nAPs= getNoAPs();
-                int i= (int)Math.floor( Math.random()*nAPs);
-                int rno= getAPList().get(i);
-                Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too many APs remove "+rno);
-                removeAccessPoint(rno);
+                ArrayList <Integer> APs= new ArrayList<Integer>(getAPList());
+                while (APs.size() > 0) {
+                   int nAPs= APs.size();
+                    int i= (int)Math.floor( Math.random()*nAPs);
+                    int rno= APs.get(i);
+                    if (removable(rno,g)) {
+                        Logger.getLogger("log").logln(USR.STDOUT,
+                            leadin()+" too many APs remove "+rno);
+                        removeAccessPoint(rno);
+                        return;
+                    }
+                    APs.remove(i);
+                }
                 
             }
             return;

@@ -566,6 +566,29 @@ public class ControlOptions {
       Object o)
     {
         engine_.followEvent(e,s,g,o);
+        long time= e.getTime();
+        if (connectedNetwork_) {
+            if (e.getType() == SimEvent.EVENT_END_ROUTER) {
+                g.connectNetwork(time);
+            } else if (e.getType() == SimEvent.EVENT_END_LINK) {
+                int router1= 0, router2= 0;
+                Pair<?,?> pair= (Pair<?,?>)e.getData();
+                router1= (Integer)pair.getFirst();
+                router2= (Integer)pair.getSecond();
+                g.connectNetwork(time,router1, router2);
+            }
+        } else if (!allowIsolatedNodes_) {
+            if (e.getType() == SimEvent.EVENT_END_ROUTER) {
+                g.checkIsolated(time);
+            } else if (e.getType() == SimEvent.EVENT_END_LINK) {
+                int router1= 0, router2= 0;
+                Pair<?,?> pair= (Pair<?,?>)e.getData();
+                router1= (Integer)pair.getFirst();
+                router2= (Integer)pair.getSecond();
+                g.checkIsolated(time,router1);
+                g.checkIsolated(time,router2);
+            }
+        }
     }
     
     public String getRouterOptionsString() {

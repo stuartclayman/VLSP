@@ -50,12 +50,16 @@ public class HotSpotAPController extends NullAPController {
         int removeNode= 0;
         for (int e: elect) {
             int score= getHotSpotScore(e,g);
-            if (score < bottomScore || bottomScore == -1) {
+            if (score < bottomScore || bottomScore == -1 && removable(e,g)) {
                 bottomScore= score;
                 removeNode= e;
             }
         }
+        // No node can be removed
+        if (removeNode == 0)
+            return;
         removeAccessPoint(removeNode);
+        Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too many APs remove "+removeNode);
     }
     
     
@@ -77,7 +81,9 @@ public class HotSpotAPController extends NullAPController {
                 electNode= e;
             }
         }
+        
         addAccessPoint(electNode);
+        Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too few APs add "+electNode);
     }
  
     /** Hot spot score is # nodes within 1 cubed + # nodes within 2 squared

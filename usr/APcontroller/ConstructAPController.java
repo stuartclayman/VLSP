@@ -22,6 +22,10 @@ public class ConstructAPController
             a = new HotSpotAPController(o);
             return a;
         }  
+        if (name.equals("Pressure")) {
+            a = new PressureAPController(o);
+            return a;
+        }  
         if (name.equals("") || name.equals("Null")) {
             a = new NullAPController(o);
             return a;  

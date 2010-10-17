@@ -23,7 +23,7 @@
   </LocalController>
   <EventEngine>
      <Name>Probabilistic</Name>
-     <EndTime>100</EndTime>
+     <EndTime>3600</EndTime>
      <Parameters>probdists.xml</Parameters>
   </EventEngine>
   <RouterOptions>

@@ -63,6 +63,17 @@ public class NullAPController implements APController {
         return AP;
     }
     
+     /** Return APCost for given gid (or max dist if none) */
+    public int getAPCost(int gid)
+    {
+        Integer APCost= APCosts_.get(gid);
+        if (APCost == null) {
+            //System.err.println("NO AP");
+            return options_.getMaxAPWeight();
+        }
+        return APCost;
+    }
+    
     /** Set AP for given gid */
     public void setAP(int gid, int ap, int cost, GlobalController g)
     {
@@ -149,15 +160,8 @@ public class NullAPController implements APController {
             return;
         }
         APGIDs_.add(gid);
-        Integer a= APs_.get(gid);
-        Integer c= APCosts_.get(gid);
-        if (a == null) {
-            APs_.put(gid,(Integer)gid);
-            APCosts_.put(gid,(Integer)0);
-        } else {
-            a= gid;
-            c= 0;
-        }
+        APs_.put(gid,(Integer)gid);
+        APCosts_.put(gid,(Integer)0);
     }
     
     
@@ -206,7 +210,7 @@ public class NullAPController implements APController {
            
             // Have we found AP?
             if (APGIDs_.indexOf(smallNode) != -1) {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"for "+gid+" new AP is "+smallNode+" "+" cost "+smallCost);
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"for "+gid+" new AP is "+smallNode+" "+" cost "+smallCost);
                 return new Pair<Integer,Integer>(smallNode, smallCost);
             }
             // Remove from toVisit and add to Visited
@@ -239,7 +243,7 @@ public class NullAPController implements APController {
     
     /** Add node to network */
     public void addNode(long time, int gid)
-    {
+    { 
         changedNet_= true;
     }
     
@@ -256,8 +260,27 @@ public class NullAPController implements APController {
         removeAccessPoint(gid);
     }
         
-    
-    
+    /** Can AP be removed giving a new AP */
+    boolean removable(int gid, GlobalController g)
+    {
+        ArrayList <Integer> toVisit = new ArrayList<Integer> ();
+        ArrayList <Integer> visited = new ArrayList<Integer> ();
+        toVisit.add(gid);
+        while (toVisit.size() > 0) {
+            int newNode= toVisit.get(0);
+            toVisit.remove(0);
+            // If this node is an AP we win
+            if (newNode != gid && isAP(newNode))
+                return true;
+            visited.add(newNode);
+            for (int l: g.getOutLinks(newNode)) {
+                if (toVisit.indexOf(l) == -1 && visited.indexOf(l) == -1) {
+                    toVisit.add(l);
+                }
+            }
+        }
+        return false;
+    }
    
     
     /** Add link to network */

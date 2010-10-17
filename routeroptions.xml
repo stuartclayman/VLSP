@@ -5,13 +5,12 @@
         <MaxNetIFUpdateTime>30000</MaxNetIFUpdateTime>
     </RoutingParameters>
     <APManager>
-        <Name>Random</Name>
+        <Name>HotSpot</Name>
         <MaxAPs>100</MaxAPs>
         <MinAPs>1</MinAPs>
         <RouterConsiderTime>10000</RouterConsiderTime>
         <ControllerConsiderTime>10000</ControllerConsiderTime>
         <MaxAPWeight>5</MaxAPWeight>
-        <MaxPropAP>0.5</MaxPropAP>
         <MinPropAP>0.1</MinPropAP>
     </APManager>
 </RouterOptions>

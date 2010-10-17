@@ -3,19 +3,19 @@
             <ProbElement>
                  <Type>Exponential</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>10</Parameter>
+                 <Parameter>10.0</Parameter>
             </ProbElement>
       </NodeBirthDist>
       <NodeDeathDist>
             <ProbElement>
                  <Type>Exponential</Type>
                  <Weight>0.1</Weight>
-                 <Parameter>120</Parameter>
+                 <Parameter>200</Parameter>
             </ProbElement>
             <ProbElement>
                  <Type>Weibull</Type>
                  <Weight>0.9</Weight>
-                 <Parameter>1200.0</Parameter>
+                 <Parameter>1000.0</Parameter>
                  <Parameter>1.5</Parameter>
             </ProbElement>
             <ProbElement>
@@ -28,7 +28,7 @@
       <LinkCreateDist>
             
             <ProbElement>
-                 <Type>PoissonMin</Type>
+                 <Type>PoissonPlus</Type>
                  <Weight>1.0</Weight>
                  <Parameter>1.5</Parameter>
                  <Parameter>1.0</Parameter>
