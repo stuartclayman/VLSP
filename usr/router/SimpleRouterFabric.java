@@ -230,7 +230,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Wait until a specified absolute time is milliseconds.
      */
     synchronized void waitUntil(long time){
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
         long now = System.currentTimeMillis();
 
         if (time <= now)
@@ -826,6 +826,28 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         return null;
     }
     
+    /** Find the netIF which connects to a given end host 
+     * or a connection name
+      @return null if none exists*/
+    
+    public synchronized NetIF findNetIF(String name) {
+        int limit = ports.size();
+        for (int p = 0;  p < limit; p++) {
+            RouterPort port = ports.get(p);
+
+            if (port.equals(RouterPort.EMPTY)) {
+                continue;
+            } else if (port.getNetIF().getRemoteRouterName().equals(name)) {
+                return port.getNetIF();
+            } else if (port.getNetIF().getName().equals(name)) {
+                return port.getNetIF();
+            } else {
+                ;
+            }
+        }
+        return null;
+    }
+    
      /** 
      * Get a list of all connected Network Interfaces
      */
@@ -842,25 +864,6 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
 
         return list;
-    }
-    
-    /** Find the netIF which connects to a given end host 
-      @return null if none exists*/
-    
-    public synchronized NetIF findNetIF(String endHostName) {
-        int limit = ports.size();
-        for (int p = 0;  p < limit; p++) {
-            RouterPort port = ports.get(p);
-
-            if (port.equals(RouterPort.EMPTY)) {
-                continue;
-            } else if (port.getNetIF().getRemoteRouterName().equals(endHostName)) {
-                return port.getNetIF();
-            } else {
-                ;
-            }
-        }
-        return null;
     }
     
     /**

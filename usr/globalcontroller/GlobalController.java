@@ -319,8 +319,27 @@ public class GlobalController implements ComponentController {
             }
             else if (type == SimEvent.EVENT_AP_CONTROLLER) {
                 queryAPController(time);
-            } else if (type == SimEvent.EVENT_OUTPUT) {
+            }
+            else if (type == SimEvent.EVENT_OUTPUT) {
                 produceOutput(time,(OutputType)(e.getData()));
+            } 
+            else if (type == SimEvent.EVENT_ON_ROUTER) {
+                String[] eventArgs = (String[])e.getData();
+                Scanner sc = new Scanner(eventArgs[0]);
+
+                int routerID = sc.nextInt();
+                String className = eventArgs[1];
+
+                // eliminate router_id and className
+                String[] cmdArgs = new String[eventArgs.length-2];
+
+                for (int a=2; a < eventArgs.length; a++) {
+                    cmdArgs[a-2] = eventArgs[a];
+                }
+                
+                // call onRouter with correct args
+                onRouter(routerID, className, cmdArgs);
+
             } 
             else {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unexected event type "
@@ -706,6 +725,29 @@ public class GlobalController implements ComponentController {
         }
     }
     
+    /**
+     * Run something on a Router.
+     */
+    public String onRouter(int routerID, String className, String[] args) {
+        BasicRouterInfo br = routerIdMap_.get(routerID);
+
+        LocalControllerInteractor lci= interactorMap_.get(br.getLocalControllerInfo());
+
+        if (lci == null) {
+            return null;
+        } else {
+            try {
+                String appName = lci.onRouter(routerID, className, args);
+                return appName;
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"");
+                return null;
+            }
+
+        }
+
+    }
+
     /** Shutdown called from console -- add shut down command to list to
     happen now */
     public synchronized void shutDownCommand() {

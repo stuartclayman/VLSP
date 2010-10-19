@@ -119,6 +119,33 @@ public class LocalControllerInteractor extends MCRPInteractor
     }
 
     /**
+     * Ask the LocalController to start a command on a router.
+     */
+    public String onRouter(int routerId, String className, String[] args) throws IOException, MCRPException  {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(MCRP.ON_ROUTER.CMD);
+        builder.append(" ");
+        builder.append(routerId);
+        builder.append(" ");
+        builder.append(className);
+
+        for (String arg : args) {
+            builder.append(" ");
+            builder.append(arg);
+        }
+
+        String toSend = builder.toString();
+
+        MCRPResponse response = interact(toSend);
+        expect(MCRP.ON_ROUTER.CODE);
+
+        // return the app name
+        return response.get(0)[1];
+    }
+
+
+    /**
      * Check with a local controller.
      */
     public MCRPInteractor checkLocalController(String host, int port) throws IOException, MCRPException {

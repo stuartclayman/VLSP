@@ -113,7 +113,7 @@ public class Send implements Application {
             } else {
 
                 //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
-                Logger.getLogger("log").log(USR.STDOUT, i + " ");
+                //Logger.getLogger("log").log(USR.STDOUT, i + " ");
             }
         }
 

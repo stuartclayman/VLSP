@@ -34,6 +34,17 @@ public class MCRP implements Protocol {
         public final static int ERROR = 401;
     }
 
+    /**
+     * MCRP request for a Router
+     * ON_ROUTER router_id className args
+     * e.g. ON_ROUTER 1 usr.applications.Ping 2
+     */
+    public final static class ON_ROUTER {
+        public final static String CMD =  "ON_ROUTER";
+        public final static int CODE = 202;
+        public final static int ERROR = 401;
+    }
+
     /*
      * Router Commands - 220 - 249
      */

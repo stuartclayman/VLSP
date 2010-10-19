@@ -15,6 +15,7 @@ public class SimEvent {
     public static final int EVENT_END_LINK= 6;
     public static final int EVENT_AP_CONTROLLER= 7;
     public static final int EVENT_OUTPUT= 8;
+    public static final int EVENT_ON_ROUTER = 9;
     
     
     /** Create event -- note that time is time since start of 
@@ -68,10 +69,18 @@ public class SimEvent {
         case EVENT_OUTPUT: 
             builder.append("EVENT_OUTPUT");
             break;
+        case EVENT_ON_ROUTER: 
+            builder.append("EVENT_ON_ROUTER");
+            break;
         }   
         if (eventData_ != null) {
             builder.append(" ");
-            builder.append(eventData_);
+            if (eventType_ == EVENT_ON_ROUTER) {
+                String[] cmdArgs = (String[])eventData_;
+                builder.append(java.util.Arrays.asList(cmdArgs));
+            } else {
+                builder.append(eventData_);
+            }
         }
 
         return builder.toString();

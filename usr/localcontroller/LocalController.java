@@ -109,6 +109,13 @@ public class LocalController implements ComponentController {
 
     }
 
+    /**
+     * Get the name of this LocalController.
+     */
+    public String getName() {
+        return myName + ":" + hostInfo_.getPort();
+    }
+    
     /** Received shut Down data gram from global */
     public void shutDown() {
 
@@ -390,13 +397,6 @@ public class LocalController implements ComponentController {
         return true;    
     }
 
-    /**
-     * Get the name of this LocalController.
-     */
-    public String getName() {
-        return myName + ":" + hostInfo_.getPort();
-    }
-    
     /** Set string which configures routers */
     public void setRouterOptions(String str) 
     { 
@@ -468,6 +468,29 @@ public class LocalController implements ComponentController {
         return true;    
     }
 
+    /**
+     * Run something on a Router.
+     */
+    public String onRouter(int routerID, String className, String[] args) {
+        BasicRouterInfo br = routerMap_.get(routerID);
+
+        int port = br.getManagementPort();
+        RouterInteractor ri = findRouterInteractor(port);
+
+        if (ri == null) {
+            return null;
+        } else {
+            try {
+                String appName = ri.appStart(className, args);
+                return appName;
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"");
+                return null;
+            }
+
+        }
+
+    }
 
     /** Report the Aggregation point for a given router */
     public boolean reportAP(int GID, int AP) 
