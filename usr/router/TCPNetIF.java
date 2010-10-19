@@ -71,7 +71,7 @@ public class TCPNetIF implements NetIF , Runnable {
 //    BlockingQueue<Datagram> incomingQueue;
 
     // a Queue of outgoing Datagram
-    BlockingQueue<Datagram> outgoingQueue;
+    //BlockingQueue<Datagram> outgoingQueue;
 
     // counts
     int incomingCount = 0;
@@ -98,7 +98,7 @@ public class TCPNetIF implements NetIF , Runnable {
     public TCPNetIF(TCPEndPointSrc src) throws IOException {
         connection = new ConnectionOverTCP(src);
       //  incomingQueue = new LinkedBlockingQueue<Datagram>();    
-        outgoingQueue = new LinkedBlockingQueue<Datagram>();
+        //outgoingQueue = new LinkedBlockingQueue<Datagram>();
     }
 
     /**
@@ -107,7 +107,7 @@ public class TCPNetIF implements NetIF , Runnable {
     public TCPNetIF(TCPEndPointDst dst) throws IOException {
         connection = new ConnectionOverTCP(dst);
       //  incomingQueue = new LinkedBlockingQueue<Datagram>();    
-        outgoingQueue = new LinkedBlockingQueue<Datagram>();
+        //outgoingQueue = new LinkedBlockingQueue<Datagram>();
     }
 
     /**
@@ -266,9 +266,9 @@ public class TCPNetIF implements NetIF , Runnable {
      * Forward a Datagram.
      */
     public boolean forwardDatagram(Datagram dg) {
-        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + forwardCount + " forwardDatagram() ");
+        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " Forw(" + forwardCount + ")");
 
-        outgoingQueue.add(dg);
+        //outgoingQueue.add(dg);
         //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + forwardCount + " outgoingQueue size = " + outgoingQueue.size());
 
         // stats
@@ -340,7 +340,7 @@ public class TCPNetIF implements NetIF , Runnable {
         stats.put("out_errors", 0);
         stats.put("out_dropped", 0);
         //stats.put("incomingQueue", incomingQueue.size());
-        stats.put("outgoingQueue", 0);
+        //stats.put("outgoingQueue", 0);
 
         return stats;
     }
@@ -411,8 +411,11 @@ public class TCPNetIF implements NetIF , Runnable {
 
                     // inform the listener
                 if (listener != null) {
+                    //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " Recv(" + incomingCount + ")");
+
                     listener.datagramArrived(this, datagram);
-                    // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " informed listener");
+
+                    //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " Inf(" + incomingCount + ")");
                 } else {
                     // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " NO listener");
                 }
@@ -554,7 +557,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * A remote close was received.
      */
     public void remoteClose() {
-        Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: got remote close. stats = " + getStats()); 
+        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: got remote close. stats = " + getStats()); 
 
         remoteClose = true;
 
@@ -593,6 +596,7 @@ public class TCPNetIF implements NetIF , Runnable {
         }
 
         public void run() {
+            /*
             Logger.getLogger("log").logln(USR.STDOUT, "WriteThread: run");
 
             running = true;
@@ -613,7 +617,7 @@ public class TCPNetIF implements NetIF , Runnable {
                 }
 
             }
-
+            */
         }
 
 

@@ -51,7 +51,7 @@ public class RouterApp1C {
             socket = new AppSocket(router);
 
             // and we want to connect to address 2 : port 3000
-            socket.connect(new IPV4Address("192.168.7.2") /* new GIDAddress(2) */ , 3000);
+            socket.connect(  new IPV4Address("192.168.7.2") /* new GIDAddress(2)  */ , 3000);
 
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "RouterApp1C exception: " + e);
@@ -68,7 +68,7 @@ public class RouterApp1C {
         Datagram datagram = null;
 
         try { 
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException ie) {
         }
 
@@ -92,7 +92,7 @@ public class RouterApp1C {
         Logger.getLogger("log").logln(USR.STDOUT, "ending....");
 
         try { 
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException ie) {
         }
 

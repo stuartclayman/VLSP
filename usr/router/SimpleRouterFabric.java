@@ -24,8 +24,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
    
-    LinkedBlockingQueue<Datagram> datagramQueue_;
-    LinkedBlockingQueue<NetIF> netIFQueue_;
+    LinkedBlockingQueue<DatagramHandle> datagramQueue_;
+    //LinkedBlockingQueue<NetIF> netIFQueue_;
     
     // The localNetIF
     NetIF localNetIF = null;
@@ -35,6 +35,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
     // are we running
     boolean running = false;
+
+    // are we waiting
+    boolean waiting = false;
 
     // the count of the no of Datagrams
     int datagramCount = 0;
@@ -48,6 +51,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
     HashMap <NetIF, Long> lastTableUpdateTime_;
     HashMap <NetIF, Long> nextTableUpdateTime_;
+
+    long nextUpdateTime;
     
     /**
      * Construct a SimpleRouterFabric.
@@ -67,8 +72,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         lastTableUpdateTime_= new HashMap <NetIF, Long>();
         nextTableUpdateTime_= new HashMap <NetIF, Long>();
-        datagramQueue_= new LinkedBlockingQueue<Datagram>();
-        netIFQueue_= new LinkedBlockingQueue<NetIF>();
+        datagramQueue_= new LinkedBlockingQueue<DatagramHandle>();
+        //netIFQueue_= new LinkedBlockingQueue<NetIF>();
     }
 
     /**
@@ -124,18 +129,32 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * It occasionally checks to see if the
      * NetIFs plugged into the ports are alive.
      */
-    public synchronized void run() {
+    public void run() {
         long now=  System.currentTimeMillis();
-        while (running || datagramQueue_.size() > 0) {
-            if (datagramQueue_.size() > 0) {
-                //Logger.getLogger("log").logln(USR.ERROR, "Got datagram to process");
-                processDatagram();
-                continue;
-            } 
+        while (true) {
+            synchronized (this) {
+                if (running || datagramQueue_.size() > 0) {
+                    if (datagramQueue_.size() > 0) {
+                        //Logger.getLogger("log").logln(USR.ERROR, "Got datagram to process");
+                        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "queue size " + datagramQueue_.size());
+                        processDatagram();
+                        continue;
+                    }
+                } else {
+                    // not running and nothing left in queue
+                    break;
+                }
+            }
+
             //Logger.getLogger("log").logln(USR.ERROR, "Running");
-            long nextUpdateTime = calcNextTableSendTime();
-            //Logger.getLogger("log").logln(USR.ERROR, "Got time");
+
             now = System.currentTimeMillis();
+
+            // dont need to do this every time, but how
+            nextUpdateTime = calcNextTableSendTime();
+
+            //Logger.getLogger("log").logln(USR.ERROR, "Got time");
+
             //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run TIME: "+now + " nextUpdateTime: " + nextUpdateTime_ + " diff: " + (nextUpdateTime_ - now));
             
             if (nextUpdateTime <= now) {
@@ -149,8 +168,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run Waiting For: "+ ((float)(nextUpdateTime_-now))/1000);
             //Logger.getLogger("log").logln(USR.ERROR, "Time now "+ now);
 
-            if (running)
+            if (running) {
                 waitUntil(nextUpdateTime);
+            }
                 
             //Logger.getLogger("log").logln(USR.ERROR, "Running is "+running);
 
@@ -210,16 +230,21 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Wait until a specified absolute time is milliseconds.
      */
     synchronized void waitUntil(long time){
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
         long now = System.currentTimeMillis();
 
         if (time <= now)
             return;
         try {
             long timeout = time - now + 1;
-            wait(timeout);
-        } catch(InterruptedException e){
-            Logger.getLogger("log").logln(USR.ERROR, "Wait interrupted");
+            waiting = true;
 
+            wait(timeout);
+
+            waiting = false;
+        } catch(InterruptedException e){
+            //Logger.getLogger("log").logln(USR.ERROR, "Wait interrupted");
+            waiting = false;
         }
     }
     
@@ -426,14 +451,16 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         
     }
 
-    synchronized void closeLocalNetIF() 
-    {
-    if (localNetIF != null) {
-        //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO CLOSE LOCALNETIF");
-        localNetIF.close();
-        //Logger.getLogger("log").logln(USR.ERROR, "IT'S SHUT");
-    }
-    localNetIF= null;
+    synchronized void closeLocalNetIF() {
+        if (localNetIF != null) {
+            //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO CLOSE LOCALNETIF");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + localNetIF + " stats = " + localNetIF.getStats());
+
+            localNetIF.close();
+            //Logger.getLogger("log").logln(USR.ERROR, "IT'S SHUT");
+        }
+
+        localNetIF= null;
     }
 
     /**
@@ -448,8 +475,11 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             NetIF netIF = port.getNetIF();
 
             if (!netIF.isClosed()) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + netIF + " stats = " + netIF.getStats());
+
                 netIF.close();
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed port " + port);
+
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed port " + port);
             } else {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "ALREADY closed port " + port);
             }
@@ -467,10 +497,18 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         if (datagram == null)
             return false;
-        ///Logger.getLogger("log").logln(USR.ERROR, "Queueing datagram");
-        datagramQueue_.add(datagram);
-        netIFQueue_.add(netIF);
-        notifyAll();
+
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "D(" + datagramCount + ")");
+
+        datagramQueue_.add(new DatagramHandle(datagram, netIF));
+        //netIFQueue_.add(netIF);
+
+        if (waiting) {
+            myThread.interrupt();
+        } 
+
+        //notify();
+
         return true;
     }
    
@@ -479,8 +517,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         
         if (datagramQueue_.size() == 0)
             return false;
-        Datagram datagram=  datagramQueue_.poll();
-        NetIF netIF= netIFQueue_.poll(); 
+        DatagramHandle datagramHandle =  datagramQueue_.poll();
+        //NetIF netIF= netIFQueue_.poll(); 
+
+        Datagram datagram = datagramHandle.datagram;
+        NetIF netIF = datagramHandle.netIF;
+
         if (datagram == null) {
             return false;
         }
@@ -720,7 +762,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * A NetIF is closing.
      */
     public synchronized boolean netIFClosing(NetIF netIF) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Remote close from " + netIF + " stats = " + netIF.getStats());
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Remote close from " + netIF);
+
         if (localNetIF != null) 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "localNetIF  stats = " + localNetIF.getStats());
 
@@ -885,5 +928,18 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         return controller.getName() + " " + RF;
     }
 
+    /**
+     * Tuple class for the queue.
+     * It holds a Datagram and the NetIF it came from.
+     */
+    class DatagramHandle {
+        public final Datagram datagram;
+        public final NetIF netIF;
+
+        DatagramHandle(Datagram dg, NetIF n) {
+            datagram = dg;
+            netIF = n;
+        }
+    }
 
 }

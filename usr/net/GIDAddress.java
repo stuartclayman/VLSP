@@ -5,11 +5,12 @@ import usr.logging.*;
 import java.util.Scanner;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.io.Serializable;
 
 /**
  * An GID Address
  */
-public class GIDAddress extends Size4 implements Address {
+public class GIDAddress extends Size4 implements Address, Serializable {
     int globalAddress;
 
     /**
@@ -22,6 +23,12 @@ public class GIDAddress extends Size4 implements Address {
             int gid = scanner.nextInt();
 
             globalAddress = gid;
+
+            // convert int to byte[] 
+            ByteBuffer buf = ByteBuffer.wrap(bytes);
+            buf.putInt(gid);
+
+
         } else {
             throw new UnknownHostException("Not a GID: " + gidStr);
         }
@@ -34,9 +41,10 @@ public class GIDAddress extends Size4 implements Address {
         globalAddress = addr;
         //Logger.getLogger("log").logln(USR.STDOUT, "SET GLOBAL ADDRESS "+addr);
 
-         // convert int to byte[] 
+        // convert int to byte[] 
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         buf.putInt(addr);
+
     }
 
     /**
@@ -106,6 +114,15 @@ public class GIDAddress extends Size4 implements Address {
     public String toString() {
         return "@("+globalAddress + ")";
     }
+
+    /**
+     * Convert.
+     */
+    static String numericToTextFormat(byte[] src)
+    {
+        return (src[0] & 0xff) + "." + (src[1] & 0xff) + "." + (src[2] & 0xff) + "." + (src[3] & 0xff);
+    }
+
 
 }
 

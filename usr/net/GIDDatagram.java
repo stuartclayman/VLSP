@@ -179,15 +179,6 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         return new GIDAddress(address);
     }
 
-    boolean emptyAddress(byte []address) 
-    {
-       for (int i= 0; i < 4; i++) {
-          if (address[i] != GIDAddress.EMPTY[i])
-            return false;
-       }
-       return true;
-    }
-
     /**
      * Set the dst address
      */
@@ -200,16 +191,25 @@ public class GIDDatagram implements Datagram, DatagramPatch {
 
         // put dst addr
         // to be filled in later
-        fullDatagram.position(14);
-        if (dstAddr == null) {
+        if (addr == null) {
+            fullDatagram.position(14);
             fullDatagram.put(GIDAddress.EMPTY, 0, 4);
         } else {
+            fullDatagram.position(14);
             fullDatagram.put(dstAddr.asByteArray(), 0, 4);
         }
 
         return this;
     }
 
+    boolean emptyAddress(byte []address) 
+    {
+       for (int i= 0; i < 4; i++) {
+          if (address[i] != GIDAddress.EMPTY[i])
+            return false;
+       }
+       return true;
+    }
     
 
     /**

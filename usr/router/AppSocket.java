@@ -94,10 +94,11 @@ public class AppSocket {
      */
     public void bind(int port) throws SocketException {
         if (isBound | isConnected) {
-            throw new SocketException("Cannot bind a socket already " + 
-                                      (isBound ? "bound" : (isConnected ? "connected" : "setup")));
+            //throw new SocketException("Cannot bind a socket already " + 
+            //                          (isBound ? "bound" : (isConnected ? "connected" : "setup")));
+            appSockMux.removeAppSocket(this);
         }
-
+        
 
         // check with the AppSocketMux if a socket can listen
         // on the specified port
@@ -129,7 +130,7 @@ public class AppSocket {
 
             isConnected = true;
 
-            // Logger.getLogger("log").logln(USR.ERROR, "AppSocket: connect to " + address + ":" +  port);
+            //Logger.getLogger("log").logln(USR.ERROR, "AppSocket: connect to " + remoteAddress + ":" +  remotePort);
         } else {
             throw new Error("Cannot connect while already connected");
         }

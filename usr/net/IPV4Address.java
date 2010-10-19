@@ -4,11 +4,12 @@ import java.net.InetAddress;
 import usr.logging.*;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.io.Serializable;
 
 /**
  * An IPV4 Address
  */
-public class IPV4Address extends Size4 implements Address {
+public class IPV4Address extends Size4 implements Address, Serializable {
     InetAddress addr;
 
     /**
