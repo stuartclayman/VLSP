@@ -5,6 +5,7 @@ import usr.logging.*;
 
 import java.io.PrintWriter;
 import java.io.PrintStream;
+import java.nio.channels.ByteChannel;
 
 /**
  * An interface for objects that want to be a logger.
@@ -35,6 +36,11 @@ public interface Logging {
      * Add output to a printstream.
      */
     public Logger addOutput(PrintStream s);
+
+    /**
+     * Add output to a ByteChannel.
+     */
+    public Logger addOutput(ByteChannel ch);
 
     /**
      * Add output to an LogOutput object.

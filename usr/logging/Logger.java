@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.io.PrintWriter;
 import java.io.PrintStream;
+import java.io.IOException;
+import java.nio.channels.ByteChannel;
+import java.nio.ByteBuffer;
 
 
 /**
@@ -126,6 +129,14 @@ public class Logger implements Logging {
 	return this;
     }
 
+    /**
+     * Add output to a ByteChannel.
+     */
+    public Logger addOutput(ByteChannel ch) {
+        addOutputLog(ch, new BitMask());
+        return this;
+    }
+
 
     /**
      * Add output to an LogOutput object.
@@ -149,6 +160,14 @@ public class Logger implements Logging {
     public Logger addOutput(PrintStream s, BitMask mask){
 	addOutputLog(s, mask);
 	return this;
+    }
+
+    /**
+     * Add output to a ByteChannel.
+     */
+    public Logger addOutput(ByteChannel ch, BitMask mask) {
+        addOutputLog(ch, mask);
+        return this;
     }
 
 
@@ -302,6 +321,25 @@ public class Logger implements Logging {
                 }
 	    }
 
+	} else if (anOutput instanceof ByteChannel) {
+            try {
+                if (message instanceof LogInput) {
+                    String msg = ((LogInput)message).logView();
+                    ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
+                    ((ByteChannel)anOutput).write(buffer);
+                } else {
+                    if (trailingNL) {
+                        String msg = ((String)message) + "\n";
+                        ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
+                        ((ByteChannel)anOutput).write(buffer);
+                    } else {
+                        String msg = (String)message;
+                        ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
+                        ((ByteChannel)anOutput).write(buffer);
+                    }
+                }
+            } catch (IOException ioe) {
+            }
 	} else {
 	    ;
 	}
