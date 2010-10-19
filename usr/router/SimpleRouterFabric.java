@@ -498,7 +498,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         if (datagram == null)
             return false;
 
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "D(" + datagramCount + ")");
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "D(" + datagramCount + ")");
 
         datagramQueue_.add(new DatagramHandle(datagram, netIF));
         //netIFQueue_.add(netIF);
