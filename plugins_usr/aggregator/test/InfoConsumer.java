@@ -161,7 +161,7 @@ public class InfoConsumer implements Reporter {
     /**
      * Main entry point.
      * Args are:
-     * -i input  address (default: @(2)/2299)
+     * -i input  address (default: @(0)/2299)
      * -l log path, (default: /tmp/)
      * -n name (default: "info-consumer")
      */
@@ -171,10 +171,10 @@ public class InfoConsumer implements Reporter {
             int port = 18191;
             int r2r = 18192;
 
-            Router router = new Router(port, r2r, "Router-2");
+            Router router = new Router(port, r2r, "Router-3");
 
             // set ID
-            router.setAddress(new GIDAddress(2));
+            router.setAddress(new GIDAddress(3));
 
             // start
             if (router.start()) {

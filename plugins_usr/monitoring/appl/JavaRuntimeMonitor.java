@@ -104,7 +104,12 @@ public class JavaRuntimeMonitor implements Application {
 
     }
 
+    /**
+     * Run
+     */
     public void run() {
+        // A DataSource already runs in itws own thread
+        // so this one can wait and do nothing.
         try {
             synchronized (this) {
                 wait();

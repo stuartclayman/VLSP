@@ -3,10 +3,12 @@
 // Email: sclayman@ee.ucl.ac.uk
 // Date: Oct 2010
 
-package plugins_usr.aggregator.test;
+package plugins_usr.aggregator.appl;
 
+import usr.applications.*;
 import usr.router.Router;
 import usr.net.*;
+import usr.logging.*;
 import usr.interactor.RouterInteractor;
 import plugins_usr.monitoring.distribution.USRDataPlaneProducerWithNames;
 import eu.reservoir.monitoring.core.*;
@@ -31,15 +33,15 @@ import com.timeindexing.data.SerializableItem;
  * or simulated response times.
  *
  * Has args:
- * output mulitcast addr
+ * output addr
  * probe - cpu, memory, response time
  * filter - none, 5% change
  * logpath - the path to log into
  */
-public class InfoSource {
+public class InfoSource implements Application {
     // The address for output
-    Address addr = new GIDAddress(2);
-    SocketAddress outputDataAddress = new SocketAddress(addr, 2299);
+    Address addr;
+    SocketAddress outputDataAddress;
 
     // The DataSource
     InfoDataSource dataSource;
@@ -96,16 +98,16 @@ public class InfoSource {
 
 		float percent = n.floatValue() / oldValue.floatValue();
 
-		System.out.println("ProbeFilter: " + n + "/" + oldValue + " = " +
+		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
 				   percent);
 
 		// test for 2% tolerance -  0.98 -> 1.02
 		if (0.98 < percent && percent < 1.02) {
 		    // values too similar
-		    System.out.println("ProbeFilter: filtered " + n);
+		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
 		    return false;
 		} else {
-		    System.out.println("ProbeFilter: reported " + n);
+		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
 		    return true;
 		}
 	    }
@@ -127,16 +129,16 @@ public class InfoSource {
 
 		float percent = n.floatValue() / oldValue.floatValue();
 
-		System.out.println("ProbeFilter: " + n + "/" + oldValue + " = " +
+		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
 				   percent);
 
 		// test for 5% tolerance -  0.95 -> 1.05
 		if (0.95 < percent && percent < 1.05) {
 		    // values too similar
-		    System.out.println("ProbeFilter: filtered " + n);
+		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
 		    return false;
 		} else {
-		    System.out.println("ProbeFilter: reported " + n);
+		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
 		    return true;
 		}
 	    }
@@ -158,16 +160,16 @@ public class InfoSource {
 
 		float percent = n.floatValue() / oldValue.floatValue();
 
-		System.out.println("ProbeFilter: " + n + "/" + oldValue + " = " +
+		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
 				   percent);
 
 		// test for 10% tolerance -  0.90 -> 1.10
 		if (0.90 < percent && percent < 1.10) {
 		    // values too similar
-		    System.out.println("ProbeFilter: filtered " + n);
+		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
 		    return false;
 		} else {
-		    System.out.println("ProbeFilter: reported " + n);
+		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
 		    return true;
 		}
 	    }
@@ -184,7 +186,130 @@ public class InfoSource {
     public InfoSource() {
     }
 
-    public void start() {
+
+    /**
+     * init
+     * Args are:
+     * -o output address
+     * -p probe, [cpu, memory, rt]  (NO default)
+     * -f filter, [always, 2%, 5%, 10%]  (default: always)
+     * -l log path, (default: /tmp/)
+     * -t sleep timeout (default: 30)
+     * -n name (default: "info-source")
+     */
+    public ApplicationResponse init(String[] args) {
+	// process args
+	int argc = args.length;
+
+	for (int arg=0; arg < argc; arg++) {
+	    String thisArg = args[arg];
+
+	    // check if its a flag
+	    if (thisArg.charAt(0) == '-') {
+// get option
+		char option = thisArg.charAt(1);
+
+		// gwet next arg
+		String argValue = args[++arg];
+
+		switch (option) {
+
+		case 'o': {
+		    String[] parts = argValue.split("/");
+		    Scanner sc = new Scanner(parts[0]);
+		    int addr = sc.nextInt();
+                    sc = new Scanner(parts[1]);
+		    int port = sc.nextInt();
+                    Address gidAddr = new GIDAddress(addr);
+		    SocketAddress newOutputAddr = new SocketAddress(gidAddr, port);
+		    setOutputAddress(newOutputAddr);
+		    break;
+		}
+
+		case 'p': {
+		    if (argValue.equals("cpu")) {
+			setProbe(ProbeSpecifier.CPU);
+		    } else if (argValue.equals("memory")) {
+			setProbe(ProbeSpecifier.Memory);
+		    } else if (argValue.equals("rt")) {
+			setProbe(ProbeSpecifier.ResponseTime);
+		    } else {
+			Logger.getLogger("log").logln(USR.ERROR, "InfoSource: unknown probe " + argValue);
+		    }
+		    break;
+		}
+
+
+		case 'f': {
+		    if (argValue.equals("always")) {
+			setFilter(FilterSpecifer.Always);
+		    } else if (argValue.equals("2%")) {
+			setFilter(FilterSpecifer.Percent2);
+		    } else if (argValue.equals("5%")) {
+			setFilter(FilterSpecifer.Percent5);
+		    } else if (argValue.equals("10%")) {
+			setFilter(FilterSpecifer.Percent10);
+		    } else {
+			Logger.getLogger("log").logln(USR.ERROR, "InfoSource: unknown filter " + argValue);
+		    }
+		    break;
+		}
+
+		case 'l': {
+		    // assume a file name
+		    File potentialPath = new File(argValue);
+		    // check if directory part exists
+		    if (potentialPath.isDirectory() && potentialPath.canWrite()) {
+			setCollectionPath(argValue);
+		    } else {
+			Logger.getLogger("log").logln(USR.ERROR, "InfoSource: cannot write file in directory " + argValue);
+			System.exit(1);
+		    }
+		    break;
+		}
+
+		case 't': {
+		    Scanner sc = new Scanner(argValue);
+		    int t = sc.nextInt();
+		    setSleepTime(t);
+		    break;
+		}
+
+
+		case 'n': {
+		    setName(argValue);
+		    break;
+		}
+
+
+		default:
+		    Logger.getLogger("log").logln(USR.ERROR, "InfoSource: unknown option " + option);
+		    break;
+		}
+		
+	    }
+	}
+
+        // check actual probe
+        if (probe == null) {
+            return new ApplicationResponse(false, "No Probe has been set");
+        }
+
+        // check outputDataAddress
+        if (outputDataAddress == null) {
+	    return new ApplicationResponse(false, "No Output Address has been set");
+        }
+
+
+        return new ApplicationResponse(true, "");
+    }
+
+    /**
+     * Start
+     */
+    public ApplicationResponse start() {
+        File dataIndexPath = null;
+
 	try {
 	    // create a TimeIndexFactory
 	    TimeIndexFactory factory = new TimeIndexFactory();
@@ -194,48 +319,80 @@ public class InfoSource {
 
 	    // create forwardIndex
 	    realName = name+"-log";
-	    File dataIndexPath = new File(collectorPath, realName);
+            dataIndexPath = new File(collectorPath, realName);
 	    indexProperties.setProperty("indexpath",  dataIndexPath.getPath());
 	    indexProperties.setProperty("name", realName);
 
 	    dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
 	} catch (TimeIndexException tie) {
 	    tie.printStackTrace();
-	    throw new RuntimeException("Cannot create TimeIndex ");
+	    return new ApplicationResponse(false, "Cannot create TimeIndex " + dataIndexPath) ;
 	}
 
-	// check actual probe
-	if (probe == null) {
-	    throw new Error("No Probe has been set");
-	}
+        try {
+            Logger.getLogger("log").logln(USR.ERROR, "InfoSource connect to " + outputDataAddress);
 
-	System.err.println("InfoSource connect to " + outputDataAddress);
+            DataPlane outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
 
-        DataPlane outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
+            dataSource = new InfoDataSource(dataIndex);
+            dataSource.setName(name);
 
-	dataSource = new InfoDataSource(dataIndex);
-	dataSource.setName(name);
+            // set up DataPlane
+            dataSource.setDataPlane(outputDataPlane);
 
-	// set up DataPlane
-        dataSource.setDataPlane(outputDataPlane);
+            // and connect
+            dataSource.connect();
 
-        // and connect
-        dataSource.connect();
+            // set up probe
+            probe.setDataRate(new EveryNSeconds(sleepTime));
 
-	// set up probe
-	probe.setDataRate(new EveryNSeconds(sleepTime));
+            if (actualFilter != null) {
+                // turn on filter
+                probe.setProbeFilter(actualFilter);
+                probe.turnOnFiltering();
+            }
 
-	if (actualFilter != null) {
-	    // turn on filter
-	    probe.setProbeFilter(actualFilter);
-	    probe.turnOnFiltering();
-	}
-
-
-	// turn on probe
-	dataSource.addProbe(probe);
-	dataSource.turnOnProbe(probe);
+            // turn on probe
+            dataSource.addProbe(probe);
+            dataSource.turnOnProbe(probe);
+            return new ApplicationResponse(true, "");
+        } catch (Exception e) {
+            return new ApplicationResponse(false, e.getMessage());
+        }
     }
+
+
+    /**
+     * Stop
+     */
+    public ApplicationResponse stop() {
+	dataSource.deactivateProbe(probe);
+	dataSource.removeProbe(probe);
+
+        dataSource.disconnect();
+
+        synchronized (this) {
+            notifyAll();
+        }
+
+        return new ApplicationResponse(true, "");
+
+    }
+
+    /**
+     * Run
+     */
+    public void run() {
+        // A DataSource already runs in itws own thread
+        // so this one can wait and do nothing.
+        try {
+            synchronized (this) {
+                wait();
+            }
+        } catch (InterruptedException ie) {
+        }
+    }
+
 
     /**
      * Get the address for output traffic.
@@ -368,155 +525,6 @@ public class InfoSource {
 
 
     /**
-     * Main entry point.
-     * Args are:
-     * -o output address (default: @(2)/2299)
-     * -p probe, [cpu, memory, responsetime]  (NO default)
-     * -f filter, [always, 2%, 5%, 10%]  (default: always)
-     * -l log path, (default: /tmp/)
-     * -t sleep timeout (default: 30)
-     * -n name (default: "info-source")
-     */
-    public static void main(String[] args) {
-        // the host that has the Router at addr
-        String remHost = "localhost";
-        int remPort = 19191;
-
-        // Set up Router
-        // And connect to Router @(2)
-        try {
-            int port = 18181;
-            int r2r = 18182;
-
-            Router router = new Router(port, r2r, "Router-1");
-
-            // start
-            if (router.start()) {
-            } else {
-                throw new Exception("Router failed to start");
-            }
-
-            // set up id
-            router.setAddress(new GIDAddress(1));
-
-            // connnect to the other router
-            // first we tal kto my own ManagementConsole
-            RouterInteractor selfInteractor = new RouterInteractor("localhost", port);
-
-            // then set up Router-to-Router data connection
-            selfInteractor.createConnection(remHost + ":" + remPort, 20);
-
-            // and stop talking to the ManagementConsole
-            selfInteractor.quit();
-
-
-        } catch (Exception e) {
-            System.err.println("Cannot interact with router at " + remHost + ":" + remPort);
-            System.exit(1);
-        }
-            
-
-	// allocate an InfoSource
-	InfoSource infoSource = new InfoSource();
-
-	// process args
-	int argc = args.length;
-
-	for (int arg=0; arg < argc; arg++) {
-	    String thisArg = args[arg];
-
-	    // check if its a flag
-	    if (thisArg.charAt(0) == '-') {
-		// get option
-		char option = thisArg.charAt(1);
-
-		// gwet next arg
-		String argValue = args[++arg];
-
-		switch (option) {
-
-		case 'o': {
-		    String[] parts = argValue.split("/");
-		    Scanner sc = new Scanner(parts[0]);
-		    int addr = sc.nextInt();
-                    sc = new Scanner(parts[1]);
-		    int port = sc.nextInt();
-                    Address gidAddr = new GIDAddress(addr);
-		    SocketAddress newOutputAddr = new SocketAddress(gidAddr, port);
-		    infoSource.setOutputAddress(newOutputAddr);
-		    break;
-		}
-
-		case 'p': {
-		    if (argValue.equals("cpu")) {
-			infoSource.setProbe(ProbeSpecifier.CPU);
-		    } else if (argValue.equals("memory")) {
-			infoSource.setProbe(ProbeSpecifier.Memory);
-		    } else if (argValue.equals("rt")) {
-			infoSource.setProbe(ProbeSpecifier.ResponseTime);
-		    } else {
-			System.err.println("InfoSource: unknown probe " + argValue);
-		    }
-		    break;
-		}
-
-
-		case 'f': {
-		    if (argValue.equals("always")) {
-			infoSource.setFilter(FilterSpecifer.Always);
-		    } else if (argValue.equals("2%")) {
-			infoSource.setFilter(FilterSpecifer.Percent2);
-		    } else if (argValue.equals("5%")) {
-			infoSource.setFilter(FilterSpecifer.Percent5);
-		    } else if (argValue.equals("10%")) {
-			infoSource.setFilter(FilterSpecifer.Percent10);
-		    } else {
-			System.err.println("InfoSource: unknown filter " + argValue);
-		    }
-		    break;
-		}
-
-		case 'l': {
-		    // assume a file name
-		    File potentialPath = new File(argValue);
-		    // check if directory part exists
-		    if (potentialPath.isDirectory() && potentialPath.canWrite()) {
-			infoSource.setCollectionPath(argValue);
-		    } else {
-			System.err.println("InfoSource: cannot write file in directory " + argValue);
-			System.exit(1);
-		    }
-		    break;
-		}
-
-		case 't': {
-		    Scanner sc = new Scanner(argValue);
-		    int t = sc.nextInt();
-		    infoSource.setSleepTime(t);
-		    break;
-		}
-
-
-		case 'n': {
-		    infoSource.setName(argValue);
-		    break;
-		}
-
-
-		default:
-		    System.err.println("InfoSource: unknown option " + option);
-		    break;
-		}
-		
-	    }
-	}
-
-	// start the info source
-	infoSource.start();
-
-    }
-
-    /**
      * Simple Data Source
      */
     class InfoDataSource extends AbstractDataSource {
@@ -553,7 +561,7 @@ public class InfoSource {
 		dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
                 return result;
 	    } catch (TimeIndexException tie) {
-		System.err.println("Can't add data to time index log " + dataIndex.getName());
+		Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName());
                 return result;
 	    }
 	}
