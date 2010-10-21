@@ -115,8 +115,8 @@ public class AggPoint implements Application {
 		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 		    
 		    // create a list of ProbeValue
-		    ArrayList pvList = new ArrayList();
-		    pvList.add(pv0);
+		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+		    pvList.add((ProbeValue)pv0);
 
 		    // Construct the Measurement
 		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-average", pvList);
@@ -146,8 +146,8 @@ public class AggPoint implements Application {
 		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 		    
 		    // create a list of ProbeValue
-		    ArrayList pvList = new ArrayList();
-		    pvList.add(pv0);
+		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+		    pvList.add((ProbeValue)pv0);
 
 		    // Construct the Measurement
 		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-variance", pvList);
@@ -177,8 +177,8 @@ public class AggPoint implements Application {
 		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 		    
 		    // create a list of ProbeValue
-		    ArrayList pvList = new ArrayList();
-		    pvList.add(pv0);
+		    ArrayList <ProbeValue>pvList = new ArrayList <ProbeValue>();
+		    pvList.add((ProbeValue)pv0);
 
 		    // Construct the Measurement
 		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-sd", pvList);
@@ -207,8 +207,8 @@ public class AggPoint implements Application {
 		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 		    
 		    // create a list of ProbeValue
-		    ArrayList pvList = new ArrayList();
-		    pvList.add(pv0);
+		    ArrayList <ProbeValue>pvList = new ArrayList<ProbeValue>();
+		    pvList.add((ProbeValue)pv0);
 
 		    // Construct the Measurement
 		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-length", pvList);
@@ -236,8 +236,8 @@ public class AggPoint implements Application {
 		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 		    
 		    // create a list of ProbeValue
-		    ArrayList pvList = new ArrayList();
-		    pvList.add(pv0);
+		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+		    pvList.add((ProbeValue)pv0);
 
 		    // Construct the Measurement
 		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-sum", pvList);
@@ -267,8 +267,8 @@ public class AggPoint implements Application {
 		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 		    
 		    // create a list of ProbeValue
-		    ArrayList pvList = new ArrayList();
-		    pvList.add(pv0);
+		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue> ();
+		    pvList.add((ProbeValue)pv0);
 
 		    // Construct the Measurement
 		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-min", pvList);
@@ -298,8 +298,8 @@ public class AggPoint implements Application {
 		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 		    
 		    // create a list of ProbeValue
-		    ArrayList pvList = new ArrayList();
-		    pvList.add(pv0);
+		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue> ();
+		    pvList.add((ProbeValue)pv0);
 
 		    // Construct the Measurement
 		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-max", pvList);
@@ -865,9 +865,9 @@ public class AggPoint implements Application {
      * Convert a Collection<ChooserResult> to  Collection<Number>
      */
     private Collection<Number> convert(Collection<ChooserResult> coll) {
-	ArrayList list = new ArrayList();
+	ArrayList <Number>list = new ArrayList<Number>();
 	for (ChooserResult cr : coll) {
-	    list.add(((NumberCR)cr).number);
+	    list.add((Number)((NumberCR)cr).number);
 	}
 
 	return list;
