@@ -1171,14 +1171,70 @@ public class GlobalController implements ComponentController {
     /** Make sure network is connected*/
     public void connectNetwork(long time) 
     {
-    
+        if (routerList_.size() <=1)
+            return;
+        ArrayList <Integer> visited = new ArrayList <Integer>();
+        ArrayList <Integer> unVisited = new ArrayList <Integer> (routerList_);
+        ArrayList <Integer> toVisit = new ArrayList <Integer> ();
+        toVisit.add(routerList_.get(0));
+        while (toVisit.size() != 0) {
+            int node= toVisit.get(0);
+            toVisit.remove(0);
+            visited.add(node);
+            int index= unVisited.indexOf(node);
+            unVisited.remove(index);
+            for (int l: getOutLinks(node)) {
+                if (toVisit.indexOf(l) == -1 && unVisited.indexOf(l) != -1) {
+                    toVisit.add(l);
+                }
+            }
+        }
+        if (visited.size() == routerList_.size()) {
+            return;
+        }
+        int i1= (int)Math.floor(Math.random()*visited.size());
+        int i2= (int)Math.floor(Math.random()*unVisited.size());
+        int l1= visited.get(i1);
+        int l2= unVisited.get(i2);
+        startLink(time,l1,l2);
+        connectNetwork(time);
     }
     
     /** Make sure network is connected from r1 to r2*/
     public void connectNetwork(long time,int r1, int r2) 
     {
-    
+        if (routerList_.size() <=1)
+            return;
+        ArrayList <Integer> visited = new ArrayList <Integer>();
+        ArrayList <Integer> unVisited = new ArrayList <Integer> (routerList_);
+        ArrayList <Integer> toVisit = new ArrayList <Integer> ();
+        toVisit.add(routerList_.get(0));
+        while (toVisit.size() != 0) {
+            int node= toVisit.get(0);
+            toVisit.remove(0);
+            visited.add(node);
+            int index= unVisited.indexOf(node);
+            unVisited.remove(index);
+            for (int l: getOutLinks(node)) {
+                if (l == r2) 
+                    return;
+                if (toVisit.indexOf(l) == -1 && unVisited.indexOf(l) != -1) {
+                    toVisit.add(l);
+                }
+            }
+        }
+        if (visited.size() == routerList_.size()) {
+            return;
+        }
+        int i1= (int)Math.floor(Math.random()*visited.size());
+        int i2= (int)Math.floor(Math.random()*unVisited.size());
+        int l1= visited.get(i1);
+        int l2= unVisited.get(i2);
+        startLink(time,l1,l2);
+        connectNetwork(time,r1,r2);
+        
     }
+    
     
 
     /** Accessor function for ControlOptions structure options_ */
