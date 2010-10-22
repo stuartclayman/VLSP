@@ -1,0 +1,10 @@
+<LifeEstimateTest> 
+ <TestDist>
+    <ProbElement>
+                 <Type>LogNormal</Type>
+                 <Weight>1.0</Weight>
+                 <Parameter>3.0</Parameter>
+                 <Parameter>2.0</Parameter>
+      </ProbElement>
+  </TestDist>
+</LifeEstimateTest>

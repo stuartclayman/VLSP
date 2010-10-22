@@ -2,6 +2,7 @@ package usr.common;
 
 
 import usr.logging.*;
+
 public class ProbElement
 {
 
@@ -14,17 +15,22 @@ public class ProbElement
     static final int POISSON_DIST= 6;  // Poisson Distribution
     static final int POISSON_MIN_DIST= 7; // Poisson with min value parm  
     static final int POISSON_PLUS_DIST= 8;  // Poisson with second value parm added
+    static final int LOG_NORMAL_DIST= 9;  // Lognormal variate
+    static final int NORMAL_DIST= 9;  // Normal variate
     double weight_;
     double parm1_= 0.0;
     double parm2_= 0.0;
     double parm3_= 0.0;
     
+    
     public ProbElement(String typeStr, double []parms) throws ProbException
     {
+    
         this(typeStr, 1.0, parms);
     }
     public ProbElement(String typeStr, double weight, double []parms) 
         throws ProbException {
+       
         int type= 0;
         if (typeStr.equals("Exponential")) {
            type= EXPO_DIST;
@@ -42,6 +48,10 @@ public class ProbElement
            type= POISSON_MIN_DIST;
         } else if (typeStr.equals("PoissonPlus")) {
            type= POISSON_PLUS_DIST;
+        } else if (typeStr.equals("LogNormal")) {
+           type= LOG_NORMAL_DIST;
+        } else if (typeStr.equals("Normal")) {
+           type= NORMAL_DIST;
         }
         
           
@@ -88,6 +98,12 @@ public class ProbElement
         if (distType_ == POISSON_PLUS_DIST) {
             double ans= parm2_+poissonVariate(parm1_);
             return ans;
+        }
+        if (distType_ == LOG_NORMAL_DIST) {
+            return logNormalVariate(parm1_,parm2_);
+        }
+        if (distType_ == NORMAL_DIST) {
+            return normalVariate(parm1_,parm2_);
         }
         throw new ProbException("Unknown distribution type");
         
@@ -182,4 +198,30 @@ public class ProbElement
 
     }
     
+    /** Generate a log Normal variate */
+    public static double logNormalVariate(double mu, double sd)
+    {
+        double normal = normalVariate(0,1.0);
+        double lognormal =  Math.exp(mu+sd*normal);
+        //System.out.println("Normal "+normal + " lognormal "+lognormal);
+        return lognormal;
+    }
+    
+    /** Standard java to generate normal Variate -- actually
+    generates two one of which is binned */
+    
+    public static double normalVariate(double mean, double sd)
+    {
+            double v1, v2, s;
+            do { 
+                    v1 = 2 * Math.random() - 1;   // between -1.0 and 1.0
+                    v2 = 2 * Math.random() - 1;   // between -1.0 and 1.0
+                    s = v1 * v1 + v2 * v2;
+            } while (s >= 1 || s == 0);
+            double multiplier = Math.sqrt(-2 * Math.log(s)/s);
+          
+            double g= v1 * multiplier;
+
+        return g*sd + mean;
+    }
 }

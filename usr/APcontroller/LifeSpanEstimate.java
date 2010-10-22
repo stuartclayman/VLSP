@@ -19,12 +19,34 @@ public class LifeSpanEstimate {
     static final int MIN_DEATHS= 5;
     static final int MIN_LIVE= 5;
     
-    LifeSpanEstimate(RouterOptions o) 
+    public LifeSpanEstimate(RouterOptions o) 
     {
         options_= o;
         deaths_= new ArrayList <Integer>();
         births_= new HashMap <Integer,Long>();
     }    
+    
+    
+    
+     public LifeSpanEstimate() 
+    {
+        options_= null;
+        deaths_= new ArrayList <Integer>();
+        births_= new HashMap <Integer,Long>();
+    }    
+
+    /** Plot a graph of the Kaplan--Meier Estimator */
+    public void plotKMGraph(long time) {
+        updateKMEstimate(time);
+        if (KMTime_ == null) {
+            Logger.getLogger("log").logln(USR.STDOUT, 
+                "Insuffient data for KM estimate");
+            return;
+        }
+        for (int i= 0; i < KMTime_.size();i++) {
+            Logger.getLogger("log").logln(USR.STDOUT, KMTime_.get(i)+" "+ KMProb_.get(i));
+        }
+    }
 
     /** A node is born at a given time -- register this */
     public void newNode(long time, int gid) 
@@ -37,9 +59,9 @@ public class LifeSpanEstimate {
     {
         int lifeTime= (int)(time - births_.get(gid) );
         births_.remove(gid);
-        for (int i= 0; i < births_.size();i++) { // Keep list of deaths ordered
+        for (int i= 0; i < deaths_.size();i++) { // Keep list of deaths ordered
             if (deaths_.get(i) >= lifeTime) {
-                deaths_.add(lifeTime,i);
+                deaths_.add(i,lifeTime);
                 return;
             }
         }
@@ -101,12 +123,14 @@ public class LifeSpanEstimate {
         KMProb_.add(1.0);
         int ni= deaths_.size() + births_.size();
         
+        ArrayList <Long> life= new ArrayList<Long> (births_.values());
+        Collections.sort(life);
         int deathCount= 0;
         int lifeCount= 0;
         int di= 0;
         
         int nextDeathTime= deaths_.get(0);
-        int nextLifeTime= (int)(time - births_.get(0));
+        int nextLifeTime= (int)(time - life.get(0));
         
         while (true) {
             if (nextDeathTime == -1) {
@@ -138,7 +162,7 @@ public class LifeSpanEstimate {
             if (lifeCount >= births_.size()) {
                 nextLifeTime= -1;
             } else {
-                nextLifeTime= (int) (time - births_.get(lifeCount));
+                nextLifeTime= (int) (time - life.get(lifeCount));
             }
        }
    }    
@@ -150,7 +174,7 @@ public class LifeSpanEstimate {
       
       public static double inverf(double y) 
       {
-          final int MAX_ERFITR= 20;
+          final int MAX_ERFITR= 200;
           double x= Math.sqrt(Math.PI)*y/2.0;
           double []cn= new double[MAX_ERFITR];
           cn[0]= 1.0;
@@ -158,7 +182,7 @@ public class LifeSpanEstimate {
           for (int k= 1; k<MAX_ERFITR; k++) {
               cn[k]= 0.0;
               for (int m= 0; m <k; m++) {
-                  cn[k]+= cn[m]*cn[k-1-m]/((m+1)*(m+2));
+                  cn[k]+= cn[m]*cn[k-1-m]/((m+1)*(2*m+1));
               }
               inverf+= cn[k]/(2*k+1)*(Math.pow(x,(2*k+1)));
           }
