@@ -16,7 +16,7 @@ public class ProbElement
     static final int POISSON_MIN_DIST= 7; // Poisson with min value parm  
     static final int POISSON_PLUS_DIST= 8;  // Poisson with second value parm added
     static final int LOG_NORMAL_DIST= 9;  // Lognormal variate
-    static final int NORMAL_DIST= 9;  // Normal variate
+    static final int NORMAL_DIST= 10;  // Normal variate
     double weight_;
     double parm1_= 0.0;
     double parm2_= 0.0;

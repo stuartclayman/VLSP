@@ -82,26 +82,35 @@ public class LifeEstimateTest {
         //System.out.println("Inverse ="+ e.inverfc(y));
         noTests= Integer.parseInt(args[1]);
         int []lifeSpans= new int[noTests];
-        int max= 0;
+        int tot= 0;
         for (i= 0; i < noTests; i++) {
             lifeSpans[i]= (int)dist.getIntVariate();
             //System.out.println("Life is "+lifeSpans[i]);
-            if (lifeSpans[i] > max) 
-                max= lifeSpans[i];
+            tot+= lifeSpans[i];
         }
-        int endTime= (int)(max/2);
+        System.out.println(tot/noTests);
+        int endTime= (int)(tot*10/(noTests)); // Run for 10x mean lifespan
         int lifeStep= endTime/noTests;
         int time= 0;
+        int alive= 0;
+        int outlast= 0;
         for (i= 0; i < noTests; i++) {
             e.newNode(time,i);
+            if (lifeSpans[i] > endTime)
+                outlast+= 1;
             if (time + lifeSpans[i] < endTime) {
                 e.nodeDeath(time + lifeSpans[i],i);
                // System.out.println("Death at time "+time+" life span "+lifeSpans[i]+ 
                 //  " end Time "+endTime);
+            } else {
+                alive+= 1;
             }
             time+= lifeStep;
         }
+        System.out.println("Alive at end "+alive+" outlasting "+outlast);
+        e.sortDeaths();
         e.plotKMGraph(time);
+        e.fitTail();
         
     }
 

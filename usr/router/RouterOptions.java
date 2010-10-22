@@ -34,6 +34,7 @@ public class RouterOptions {
     int routerConsiderTime_= 10000;   // Time router reconsiders
     int controllerConsiderTime_= 10000;   // Time controller reconsiders
     int maxAPWeight_= 0;  // Maximum link weight an AP can be away
+    int trafficStatTime_= 10000;  // Time to send traffic statss
 
     double minPropAP_= 0.0;     // Minimum proportion of AP
     double maxPropAP_= 1.0;     // Maximum proportion of AP
@@ -190,7 +191,15 @@ public class RouterOptions {
         if (rps.getLength() == 0) 
             return;
         Node rp= rps.item(0);
-        
+        try {
+           int n= ReadXMLUtils.parseSingleInt(rp, "TrafficStatTime","RoutingParameters",true);
+           trafficStatTime_= n;
+           ReadXMLUtils.removeNode(rp,"TrafficStatTime","RoutingParameters");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
       
         try {
            int n= ReadXMLUtils.parseSingleInt(rp, "MaxCheckTime","RoutingParameters",true);
@@ -340,6 +349,11 @@ public class RouterOptions {
         } 
         
         n.getParentNode().removeChild(n);
+    }
+    
+    /** Return the time between sending traffic statistics */
+    public int getTrafficStatTime() {
+        return trafficStatTime_;
     }
     
     /** Return the longest time between router fabric wake ups */
