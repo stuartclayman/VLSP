@@ -23,8 +23,8 @@
   </LocalController>
   <EventEngine>
      <Name>Script</Name>
-     <EndTime>10</EndTime>
-     <Parameters>TestScript</Parameters>
+     <EndTime>86400</EndTime>
+     <Parameters>AppScript4</Parameters>
   </EventEngine>
   <RouterOptions>
     routeroptions.xml
