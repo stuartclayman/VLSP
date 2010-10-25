@@ -156,7 +156,7 @@ public class ApplicationManager {
     synchronized void shutdown() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "shutdown ");
 
-        Collection<ApplicationHandle> apps = appMap.values();
+        Collection<ApplicationHandle> apps = new java.util.LinkedList<ApplicationHandle>(appMap.values());
 
         for (ApplicationHandle appH : apps) {
             terminate(appH.getName());
