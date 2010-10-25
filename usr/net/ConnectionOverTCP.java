@@ -90,7 +90,7 @@ public class ConnectionOverTCP implements Connection {
     }
 
 
-    public boolean sendDatagram(Datagram dg) {
+    public boolean sendDatagram(Datagram dg) throws IOException {
         //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: send(" + outCounter + ")");
       //  Logger.getLogger("log").logln(USR.ERROR, "SENDING DATAGRAM LENGTH "+dg.getTotalLength());
       //  ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
@@ -98,7 +98,6 @@ public class ConnectionOverTCP implements Connection {
        // for (int i= 0; i < dg.getTotalLength(); i++) {
         //      Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+" char is "+ (char)b.get());
        // }
-        try {
             int count = getChannel().write(((DatagramPatch)dg).toByteBuffer());
             outCounter++;
 
@@ -110,17 +109,13 @@ public class ConnectionOverTCP implements Connection {
 
                 return true;
             }
-        } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + outCounter + " IOException " + ioe);
-            return false;
-        }
     }
 
 
     /**
      * Read a Datagram.
      */
-    public Datagram readDatagram() {
+    public Datagram readDatagram() throws IOException {
         Datagram dg =  readDatagramAndWait();
 
         if (dg == null) {
@@ -139,11 +134,10 @@ public class ConnectionOverTCP implements Connection {
      * The datagram read is a datagram or at least
      * assumes length as a short in bits 5-8
      */
-    Datagram readDatagramAndWait() {
+    Datagram readDatagramAndWait() throws IOException {
         // Read a datagram at pos bufferStartData_ -- it may be partly read into buffer
         // and it may have other datagrams following it in buffer
 
-        try {
           // Do we have enough space left in buffer to read at least
           // packet length
           if (bufferSize_ - bufferStartData_ < 8) {
@@ -209,12 +203,6 @@ public class ConnectionOverTCP implements Connection {
           
           checkDatagram(latestDGData,dg);
           return dg;
-          
-        } catch (IOException ioe) {
-            //Logger.getLogger("log").logln(USR.ERROR, "Connection over TCP readDatagramAndWait error "+ioe.getMessage());
-             // TODO:  THIS ERROR DOES OCCUR SOMETIMES -- DO NOT KNOW WHY
-             return null;
-        }
               
      
     } 
@@ -310,6 +298,8 @@ public class ConnectionOverTCP implements Connection {
      * Close the connection.
      */
     public void close() {
+        //Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close()");
+
         Socket socket = getSocket();
 
         try {

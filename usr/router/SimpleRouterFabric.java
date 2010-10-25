@@ -519,10 +519,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         //netIFQueue_.add(netIF);
 
         if (waiting) {
-            myThread.interrupt();
+            //myThread.interrupt();
+            notifyAll();
         } 
-
-        //notify();
 
         return true;
     }

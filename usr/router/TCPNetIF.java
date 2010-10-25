@@ -249,11 +249,21 @@ public class TCPNetIF implements NetIF , Runnable {
          // set the source address and port on the Datagram
         dg.setSrcAddress(connection.getAddress());
 
-        // stats
-        netStats.increment(NetStats.Stat.OutPackets);
-        netStats.add(NetStats.Stat.OutBytes, dg.getTotalLength());
+        try {
+            boolean sent =  connection.sendDatagram(dg);
 
-        return connection.sendDatagram(dg);
+            // stats
+            netStats.increment(NetStats.Stat.OutPackets);
+            netStats.add(NetStats.Stat.OutBytes, dg.getTotalLength());
+
+            return sent;
+
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: send error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
+            ioe.printStackTrace();
+            return false;
+        }
+
     }
     
     /**
@@ -263,15 +273,20 @@ public class TCPNetIF implements NetIF , Runnable {
         //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " Forw(" + forwardCount + ")");
 
         //outgoingQueue.add(dg);
-        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + forwardCount + " outgoingQueue size = " + outgoingQueue.size());
 
-        // stats
-        netStats.increment(NetStats.Stat.OutPackets);
-        netStats.add(NetStats.Stat.OutBytes, dg.getTotalLength());
+        try {
+            boolean sent =  connection.sendDatagram(dg);
+
+            // stats
+            netStats.increment(NetStats.Stat.OutPackets);
+            netStats.add(NetStats.Stat.OutBytes, dg.getTotalLength());
         
-        connection.sendDatagram(dg);
-
-        return true;
+            return sent;
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: forwardDatagram error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
+            ioe.printStackTrace();
+            return false;
+        }
     }
 
     
@@ -363,11 +378,19 @@ public class TCPNetIF implements NetIF , Runnable {
            // }
 
             // now go and read
-            reading = true;
+            Datagram datagram = null;
 
-            Datagram datagram = connection.readDatagram();
+            try {
+                reading = true;
 
-            reading = false;
+                datagram = connection.readDatagram();
+
+                reading = false;
+            } catch (IOException ioe) {
+                Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF readDatagram error " + connection + " " + netStats.getValue(NetStats.Stat.InPackets) + " IOException " + ioe);
+                // TODO:  THIS ERROR DOES OCCUR SOMETIMES -- DO NOT KNOW WHY
+            }
+
 
             // check the return value
             if (datagram == null) {
@@ -504,12 +527,21 @@ public class TCPNetIF implements NetIF , Runnable {
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
          ByteBuffer b= ((DatagramPatch)datagram).toByteBuffer();
 
-        // stats
-        netStats.increment(NetStats.Stat.OutPackets);
-        netStats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
 
+        try {
+            boolean sent = connection.sendDatagram(datagram);
 
-        return connection.sendDatagram(datagram);
+            // stats
+            netStats.increment(NetStats.Stat.OutPackets);
+            netStats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
+
+            return sent;
+
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: controlClose error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
+            ioe.printStackTrace();
+            return false;
+        }
  
     }
    

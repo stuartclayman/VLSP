@@ -17,12 +17,12 @@ public interface Connection {
     /**
      * Send a Datagram over the Connection.
      */
-    public boolean sendDatagram(Datagram dg);
+    public boolean sendDatagram(Datagram dg) throws IOException;
 
     /**
      * Read a Datagram from a Connection.
      */
-    public Datagram readDatagram();
+    public Datagram readDatagram() throws IOException;
 
     /**
      * Get the EndPoint of this Connection.

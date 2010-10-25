@@ -260,21 +260,20 @@ public class CreateConnection extends ChannelResponder implements Runnable {
          */
         try { 
             interactor.quit();
+
+            // close connection to management connection of remote router
+
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed = " + host);
+
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot quit with host: " + host);
             return;
         }
 
-        // close connection to management connection of remote router
-
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed = " + host);
-
         // now plug the temporary netIF into Router
         RouterPort port = controller.plugTemporaryNetIFIntoPort(netIF);
 
-
-        // everything is successful
         respond(MCRP.CREATE_CONNECTION.CODE + " " + latestConnectionId); // + " port" + port.getPortNo());
     }
 
