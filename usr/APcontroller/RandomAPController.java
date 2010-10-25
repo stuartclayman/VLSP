@@ -53,8 +53,7 @@ public class RandomAPController extends NullAPController {
         // Choose a random node to become an AP manager
         int index= (int)Math.floor( Math.random()*nNodes);
         int elected= elect.get(index);
-        addAccessPoint(elected);
-        setAP(elected,elected,0,g);
+        addAccessPoint(elected, g);
         
     }
     

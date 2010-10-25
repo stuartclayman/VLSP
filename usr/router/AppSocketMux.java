@@ -509,7 +509,7 @@ public class AppSocketMux implements NetIF, Runnable {
 
         int port = s.getLocalPort();
 
-        // Logger.getLogger("log").logln(USR.ERROR, leadin() + "addAppSocket " + port + "  -> " + s);
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "addAppSocket " + port + "  -> " + s);
 
 
         // register the socket
@@ -528,7 +528,7 @@ public class AppSocketMux implements NetIF, Runnable {
     synchronized void removeAppSocket(AppSocket s) {
         int port = s.getLocalPort();
 
-        // Logger.getLogger("log").logln(USR.ERROR, leadin() + "removeAppSocket " + port + "  -> " + s);
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "removeAppSocket " + port + "  -> " + s);
 
         // unregister the socket
         socketMap.remove(port);

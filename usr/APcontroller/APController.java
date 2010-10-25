@@ -30,7 +30,7 @@ public interface APController {
     public int APTrafficEstimate(GlobalController g);
     
     /** Add new access point with gid G*/
-    public void addAccessPoint(int gid);
+    public void addAccessPoint(int gid, GlobalController g);
     
     /** Remove access point with gid G*/
     public void removeAccessPoint(int gid);

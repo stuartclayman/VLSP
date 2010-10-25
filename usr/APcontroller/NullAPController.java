@@ -36,7 +36,7 @@ public class NullAPController implements APController {
     
     /** Return list of access points */
     public ArrayList<Integer> getAPList() {
-        System.out.println("List is now "+APGIDs_);
+        //System.out.println("List is now "+APGIDs_);
         return APGIDs_;
     }
     
@@ -78,6 +78,7 @@ public class NullAPController implements APController {
     public void setAP(int gid, int ap, int cost, GlobalController g)
     {
         Integer thisAP= APs_.get(gid);
+        //System.out.println("SETAP CALLED");
         if (thisAP == null) {
             APs_.put(gid,ap);
             APCosts_.put(gid,cost);
@@ -85,9 +86,11 @@ public class NullAPController implements APController {
         } else {
             
             APCosts_.put(gid,cost);
+            //System.out.println("Got here "+thisAP+" "+ap);
             if (thisAP != ap) {
                 thisAP= ap;
                 APs_.put(gid,ap);
+                //System.out.println("Calling g");
                 g.setAP(gid,ap);
             }
         }
@@ -112,8 +115,7 @@ public class NullAPController implements APController {
           int myAP= getAP(i);
           Pair <Integer,Integer> closest= findClosestAP(i,g);
           if (closest == null) {
-              addAccessPoint(i);
-              setAP(i,i,0,g);
+              addAccessPoint(i,g);
           } else {
               setAP(i,closest.getFirst(),closest.getSecond(),g);
           }
@@ -152,7 +154,7 @@ public class NullAPController implements APController {
    
     
     /** Add new access point with ID gid*/
-    public void addAccessPoint(int gid)
+    public void addAccessPoint(int gid, GlobalController g)
     {
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Node "+gid+" becomes AP");
         if (APGIDs_.indexOf(gid) != -1) {
@@ -160,8 +162,7 @@ public class NullAPController implements APController {
             return;
         }
         APGIDs_.add(gid);
-        APs_.put(gid,(Integer)gid);
-        APCosts_.put(gid,(Integer)0);
+        setAP(gid,gid,0,g);
     }
     
     

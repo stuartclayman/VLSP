@@ -82,7 +82,7 @@ public class HotSpotAPController extends NullAPController {
             }
         }
         
-        addAccessPoint(electNode);
+        addAccessPoint(electNode,g);
         Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too few APs add "+electNode);
     }
  

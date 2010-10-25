@@ -1136,6 +1136,7 @@ public class GlobalController implements ComponentController {
 
     public void setAP(int gid, int AP) 
     {
+         //System.out.println("setAP called");
          Logger.getLogger("log").logln(USR.STDOUT,leadin()+" router "+gid+
             " now has access point "+AP);
         if (options_.isSimulation())
