@@ -12,12 +12,13 @@ public int size();
 /** Get all entries from the routing table*/
 public Collection<? extends RoutingTableEntry> getEntries();
 
-public boolean addNetIF(NetIF inter);
+public boolean addNetIF(NetIF inter, RouterOptions o);
 
 /** Add an address which is associated with this router */
 public boolean removeNetIF(NetIF inter);
 
 public String toString();
 
+public byte[] toBytes();
 
 }

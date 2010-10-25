@@ -282,19 +282,16 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table " + table_ + " for "+n);
+        byte[]table= table_.toBytes();
 
-        // WAS n.sendRoutingTable(table_.toString());
-
-        // construct a routing table
-        String toSend="T"+table_.toString();
-
-        // create a datagram
-        ByteBuffer buffer = ByteBuffer.allocate(toSend.length());
-        buffer.put(toSend.getBytes());
-        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
-
-        // send the datagram
-        n.sendDatagram(datagram);
+        byte []toSend= new byte[table.length+1];
+        
+        toSend[0]= (byte)'T';
+        System.arraycopy(table, 0, toSend,1,table.length);
+        ByteBuffer buffer = ByteBuffer.allocate(table.length+1);
+        buffer.put(toSend);
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
+        n.sendDatagram(datagram);  
         
         lastTableUpdateTime_.put(n,now);
         nextTableUpdateTime_.put(n,now+options_.getMaxNetIFUpdateTime());
@@ -355,7 +352,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         queueRoutingRequest(netIF);
         
         // add this to the RoutingTable
-        if (table_.addNetIF(netIF)) {
+        if (table_.addNetIF(netIF, options_)) {
             sendToOtherInterfaces(netIF);
             
         }
@@ -711,7 +708,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             return true;
         }
         if (controlChar == 'T') {
-            receiveRoutingTable(data,netIF);
+            receiveRoutingTable(data.getBytes(),netIF);
             return true;
         }
         
@@ -751,21 +748,20 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
 
     /** Routing table received via netIF */
-    synchronized void receiveRoutingTable(String tab, NetIF netIF)
+    synchronized void receiveRoutingTable(byte []bytes, NetIF netIF)
     {   
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Received routing table from " + netIF);
 
         SimpleRoutingTable t;
         try {
-            t= new SimpleRoutingTable(tab,netIF);
+            t= new SimpleRoutingTable(bytes,netIF);
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+"Received unreadable routing table");
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+tab);
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             return;
         }
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " merging routing table received on "+netIF);
-        boolean merged = table_.mergeTables(t,netIF);
+        boolean merged = table_.mergeTables(t,netIF, options_);
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " merged routing table received on "+netIF);
         if (merged) {

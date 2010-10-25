@@ -22,12 +22,12 @@ This engine uses probability distribtions to add events into the
 event library
 */
 public class ProbabilisticEventEngine implements EventEngine {
-    int timeToEnd_;
-    ProbDistribution nodeCreateDist_= null;
-    ProbDistribution nodeDeathDist_= null;
-    ProbDistribution linkCreateDist_= null;
-    ProbDistribution linkDeathDist_= null;
-    
+    int timeToEnd_;   // Time to end of simulation (ms)
+    ProbDistribution nodeCreateDist_= null;   //  Distribution for creating nodes
+    ProbDistribution nodeDeathDist_= null;    // Distribution of node lifetimes
+    ProbDistribution linkCreateDist_= null;   // Distribution for number of links created
+    ProbDistribution linkDeathDist_= null;    // Distribution for link lifetimes
+    private boolean preferentialAttachment_= false; // If true links are chosen using P.A.     
 
     /** Contructor from Parameter string */
     public ProbabilisticEventEngine(int time, String parms) 
@@ -102,21 +102,40 @@ public class ProbabilisticEventEngine implements EventEngine {
             if (nodes.size() <= 0) {
                 break;
             }
-            //Logger.getLogger("log").logln(USR.ERROR, "Choice set "+nodes);
-            int index= (int)Math.floor( Math.random()*nodes.size());
-            int newLink= nodes.get(index);
-            //Logger.getLogger("log").logln(USR.ERROR, "Picked "+newLink);
-            nodes.remove(index);
-            e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
+            if (preferentialAttachment_) {  // Choose a node using pref. attach.
+                int totLinks= 0;
+                for (int l : nodes) {
+                    totLinks+= g.getOutLinks(l).size();
+                }
+                int index= (int)Math.floor(Math.random()*totLinks);
+                for (int j= 0; j < nodes.size(); j++) {
+                    int l= nodes.get(j);
+                    index-= g.getOutLinks(l).size();
+                    if (index < 0 || j == nodes.size() - 1) {
+                        nodes.remove(j);
+                        e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
+                              new Pair<Integer,Integer>(l, routerId));
+                        s.addEvent(e1);
+                        break;
+                    }
+                }
+            } else { //Logger.getLogger("log").logln(USR.ERROR, "Choice set "+nodes);
+                int index= (int)Math.floor( Math.random()*nodes.size());
+                int newLink= nodes.get(index);
+                //Logger.getLogger("log").logln(USR.ERROR, "Picked "+newLink);
+                nodes.remove(index);
+                e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
                 new Pair<Integer,Integer>(newLink,routerId));
-            s.addEvent(e1);
+                s.addEvent(e1);
+            }
         }
     }
     
     /** Parse the XML to get probability distribution information*/
     private void parseXMLFile(String fName) 
     {
-        try { DocumentBuilderFactory docBuilderFactory = 
+        try { 
+        DocumentBuilderFactory docBuilderFactory = 
           DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         Document doc = docBuilder.parse (new File(fName));
@@ -140,8 +159,25 @@ public class ProbabilisticEventEngine implements EventEngine {
         NodeList ndd= doc.getElementsByTagName("NodeDeathDist");
         nodeDeathDist_= ReadXMLUtils.parseProbDist(ndd,"NodeDeathDist");
         NodeList ldd= doc.getElementsByTagName("LinkDeathDist");
+      
         linkDeathDist_= ReadXMLUtils.parseProbDist(ldd,"LinkDeathDist");
-        
+        try {
+            
+           NodeList misc= doc.getElementsByTagName("Parameters");
+           if (misc.getLength() > 1) {
+              throw new SAXException ("Only one GlobalController tag allowed.");
+            }
+            if (misc.getLength() == 1) { 
+               Node miscnode= misc.item(0);
+                preferentialAttachment_= ReadXMLUtils.parseSingleBool(miscnode,
+                    "PreferentialAttachment","Parameters",true);
+                ReadXMLUtils.removeNode( miscnode,"PreferentialAttachment","Parameters");
+            }
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
           
     } catch (java.io.FileNotFoundException e) {
           Logger.getLogger("log").logln(USR.ERROR, "Cannot find file "+fName);

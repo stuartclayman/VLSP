@@ -2,6 +2,7 @@ package usr.router;
 
 import usr.net.*;
 import usr.logging.*;
+import java.nio.ByteBuffer;
 
 /**
  * An entry in a routing table.
@@ -17,53 +18,21 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         inter_= inter;
     }
     
-    SimpleRoutingTableEntry(String tableEntry, RouterFabric fabric) 
+    SimpleRoutingTableEntry(byte []tableEntry, NetIF inter)  
       throws Exception
-{
-        String []args= tableEntry.split(" ");
-        if (args.length != 2 && args.length != 3) {
+    {
+        if (tableEntry.length < 8) {
             throw new Exception
-             ("Attempt to construct routing table entry "+
-             "from incorrect string" + tableEntry);
+             ("Byte array received to construct routing table too short");
         }
-        try {
-            int gid= Integer.parseInt(args[0]);
-            address_= new GIDAddress(gid); 
-            cost_= Integer.parseInt(args[1]);
-            //Logger.getLogger("log").logln(USR.ERROR, "READ address "+gid+" cost "+cost_);
-            if (args.length == 2) {
-               inter_= null; 
-            } else {
-               inter_= fabric.findNetIF(args[2]);
-            }
-        } catch (Exception e) {
-            throw new Exception
-             ("Cannot parse routing table entry "+
-             "from incorrect string" + tableEntry);
-        }
+        ByteBuffer bytes= ByteBuffer.wrap(tableEntry);
+        address_= new GIDAddress(bytes.getInt(0));
+        cost_ = bytes.getInt(4);
+			  inter_= inter;
+			  //System.err.println("NEW ENTRY CREATED "+toString());
     }
-    
-     SimpleRoutingTableEntry(String tableEntry, NetIF inter) throws 
-        Exception
-{
-        String []args= tableEntry.split(" ");
-        if (args.length != 3 && args.length != 2) {
-            throw new Exception
-             ("Attempt to construct routing table entry "+
-             "from incorrect string" + tableEntry);
-        }
-        
-        try {
-            int gid= Integer.parseInt(args[0]);
-            address_= new GIDAddress(gid); 
-            cost_= Integer.parseInt(args[1]);
-            inter_= inter;
-           // Logger.getLogger("log").logln(USR.ERROR, "READ address "+gid+" cost "+cost_);
-        } catch (Exception e) {
-            throw new Exception  ("Cannot parse routing table entry "+
-             "from incorrect string" + tableEntry);
-        }
-    }
+
+
     
     public Address getAddress() {
         return address_;
@@ -95,7 +64,15 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         return Integer.toString(id);
     }
         
-     
+    public byte [] toBytes() {
+        byte []bytes= new byte[8];
+        ByteBuffer b= ByteBuffer.wrap(bytes);
+        b.putInt(0,address_.asInteger());
+        b.putInt(4,cost_);
+        return bytes;
+    }        
+        
+    /** Entry represented as string */ 
     public String toString() {
         String entry;
         if (inter_ == null) {

@@ -26,6 +26,8 @@ public class RouterOptions {
     int minNetIFUpdateTime_= 1000;  // Shortest interval between routing updates down given NetIF
     int maxNetIFUpdateTime_= 30000;  // Longest interval between routing updates down given NetIF
     
+    
+    int maxDist_= 20; // If a router is at a distance more than this it is assumed unroutable
     // Parameters set in APManager Tag
     
     String APManagerName_= null;    // Name of  APManager
@@ -135,7 +137,7 @@ public class RouterOptions {
     {
         
         if (out.getLength() > 1) {
-            throw new SAXException ("Only one RoutingParameters tag allowed.");
+            throw new SAXException ("Only one Output tag allowed.");
         }
         if (out.getLength() == 0) 
             return;
@@ -178,6 +180,7 @@ public class RouterOptions {
         } catch (XMLNoTagException e) {
            
         }
+        
         o.getParentNode().removeChild(o);
     }
     
@@ -223,6 +226,15 @@ public class RouterOptions {
            int n= ReadXMLUtils.parseSingleInt(rp, "MaxNetIFUpdateTime","RoutingParameters",true);
            maxNetIFUpdateTime_= n;
           ReadXMLUtils.removeNode(rp,"MaxNetIFUpdateTime","RoutingParameters");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        } 
+         try {
+           int n= ReadXMLUtils.parseSingleInt(rp, "MaxDist","RoutingParameters",true);
+           maxDist_= n;
+          ReadXMLUtils.removeNode(rp,"MaxDist","RoutingParameters");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
@@ -407,6 +419,12 @@ public class RouterOptions {
     public int getMaxAPWeight()
     { 
         return maxAPWeight_;
+    }
+    
+     /** Accessor function for maximum dist in network*/
+    public int getMaxDist()
+    { 
+        return maxDist_;
     }
     
     /** Accessor function for AP parameters */

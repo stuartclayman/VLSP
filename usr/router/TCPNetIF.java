@@ -515,15 +515,15 @@ public class TCPNetIF implements NetIF , Runnable {
    
 
     /** Send routing table
-    public boolean sendRoutingTable(String table) {
-        String toSend;
-        toSend="T"+table;
-
-        ByteBuffer buffer = ByteBuffer.allocate(toSend.length());
-        buffer.put(toSend.getBytes());
+    public boolean sendRoutingTable(byte[] table) {
+        byte []toSend= new byte[table.length+1];
+        
+        toSend[0]= (byte)'T';
+        System.arraycopy(table, 0, toSend,1,table.length);
+        ByteBuffer buffer = ByteBuffer.allocate(table.length+1);
+        buffer.put(toSend);
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
-        //Logger.getLogger("log").logln(USR.ERROR, "SENDING ROUTING TABLE");
-        //Logger.getLogger("log").logln(USR.ERROR, table);
+
 
         // stats
         netStats.increment(NetStats.Stat.OutPackets);

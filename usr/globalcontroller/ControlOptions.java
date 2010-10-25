@@ -34,6 +34,7 @@ public class ControlOptions {
     private boolean isSimulation_= false;    //  If true simulation in software not emulation in hardware
     private boolean allowIsolatedNodes_= true;   // If true, check for isolated nodes
     private boolean connectedNetwork_= false;  // If true, keep network connected
+
     private int controllerWaitTime_= 6;    
     private int lowPort_= 10000;   // Default lowest port to be used on local controller 
     private int highPort_= 20000;  // Default highest port to be used on local controller
@@ -151,6 +152,7 @@ public class ControlOptions {
         if (gc.getLength() == 0) 
             return;
         Node gcn= gc.item(0);
+       
         try {
            globalControlPort_= ReadXMLUtils.parseSingleInt(gcn, "Port","GlobalController",true);
            ReadXMLUtils.removeNode(gcn,"Port","GlobalController");
@@ -482,6 +484,7 @@ public class ControlOptions {
         }
     }
 
+    
 
     /** Accessor function returns the number of controllers 
     */

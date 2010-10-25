@@ -494,7 +494,7 @@ public class AppSocketMux implements NetIF, Runnable {
     }
     
     /** Routing table sent */
-    public boolean sendRoutingTable(String s) {
+    public boolean sendRoutingTable(byte []b) {
         throw new UnsupportedOperationException("AppSocketMux has no sendRoutingTable capability");
     }
     

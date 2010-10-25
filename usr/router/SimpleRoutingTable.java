@@ -17,18 +17,20 @@ public class SimpleRoutingTable implements RoutingTable {
         
     }
 
-    
     /** Construct a new routing table with the assumption that
     everything on it comes down a given interface */
-    SimpleRoutingTable(String table, NetIF netif)
+    SimpleRoutingTable(byte []bytes, NetIF netif)
         throws Exception
     {
         table_= new HashMap<String,SimpleRoutingTableEntry>();
-        String []entries= table.split("\n");
         SimpleRoutingTableEntry e;
-        for (String s: entries) {
+        //System.err.println("Parsing complete Routing table");
+        byte []entry= new byte[8];
+        for (int i= 0; i< bytes.length;i+=8) {
+            //System.err.println("Parsing complete Routing table entry at "+i);
+            System.arraycopy(bytes,i,entry,0,8);
             try {
-                e= new SimpleRoutingTableEntry(s, netif);
+                e= new SimpleRoutingTableEntry(entry, netif);
                 Address a= e.getAddress();
                 table_.put(addressAsString(a), e);
             } catch (Exception ex) {
@@ -37,6 +39,8 @@ public class SimpleRoutingTable implements RoutingTable {
             
         }
     }
+    
+
 
     /**
      * The size of the RoutingTable.
@@ -72,17 +76,19 @@ public class SimpleRoutingTable implements RoutingTable {
     
     /** A new network interface arrives -- add to
     routing table if necessary return true if change was made */
-    public  synchronized boolean addNetIF(NetIF inter) {
+    public  synchronized boolean addNetIF(NetIF inter, RouterOptions options) {
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table before = " + this);
 
         Address newif= inter.getAddress();
         int weight= inter.getWeight();
+        //System.err.println("New entry to router "+newif.toString());
         SimpleRoutingTableEntry e1= new SimpleRoutingTableEntry(newif, 0, null);
-        boolean changed1= mergeEntry(e1, null); // Add local entry
+        boolean changed1= mergeEntry(e1, null, options); // Add local entry
+        //System.err.println("New entry from router "+inter.getRemoteRouterAddress());
         SimpleRoutingTableEntry e2= new SimpleRoutingTableEntry(inter.getRemoteRouterAddress(), 
-            inter.getWeight(), inter);
-        boolean changed2= mergeEntry(e2, inter); // Add entry for remote end
+            0, inter);
+        boolean changed2= mergeEntry(e2, inter,options); // Add entry for remote end
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table after = " + this);
         return changed1 || changed2;
     }
@@ -90,7 +96,7 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * Merge a RoutingTable into this one.
      */
-    public synchronized boolean mergeTables(SimpleRoutingTable table2, NetIF inter) {
+    public synchronized boolean mergeTables(SimpleRoutingTable table2, NetIF inter, RouterOptions options) {
        // Logger.getLogger("log").logln(USR.ERROR, "MERGING TABLES");
         boolean changed= false;
         Collection <SimpleRoutingTableEntry> es= table2.getEntries();
@@ -132,7 +138,7 @@ public class SimpleRoutingTable implements RoutingTable {
         }
         // Add new entries as appropriate
         for (SimpleRoutingTableEntry e: table2.getEntries()) {
-            if (mergeEntry(e, inter)) {
+            if (mergeEntry(e, inter,options)) {
                 changed= true;
             }
         }
@@ -148,7 +154,7 @@ public class SimpleRoutingTable implements RoutingTable {
      * Merge an entry in this RoutingTable returns true if there has been
      a change
      */
-     synchronized boolean  mergeEntry(SimpleRoutingTableEntry newEntry, NetIF inter) {
+     synchronized boolean  mergeEntry(SimpleRoutingTableEntry newEntry, NetIF inter, RouterOptions options) {
 
         if (newEntry == null) {
             //System.err.println ("NULL ENTRY");
@@ -165,13 +171,20 @@ public class SimpleRoutingTable implements RoutingTable {
         SimpleRoutingTableEntry oldEntry= table_.get(addressAsString(addr));
         // CASE 1 -- NO ENTRY EXISTED
         if (oldEntry == null) {
-            SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(addr,newEntry.getCost() +
-               weight, inter);
-           // Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY");
-            table_.put(addressAsString(addr),e);    
-            return true;
+            
+            int newCost= newEntry.getCost() + weight;
+            //Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY "+addr+" cost "+newCost);
+            if (newCost > options.getMaxDist()) {
+                //Logger.getLogger("log").logln(USR.ERROR, "TOO EXPENSIVE");
+                return false;
+            } else {
+                SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(addr,newCost, inter);
+                //Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY ADDED");
+                table_.put(addressAsString(addr),e);    
+                return true;
+            }
         }
-        // CASE 2 -- ENTRY EXISTED BUT WAS MORE EXPENSIVE
+        // CASE 2 -- ENTRY EXISTED BUT WAS MORE EXPENSIVE -- CHEAPER ROUTE FOUND
         int newCost= newEntry.getCost() + weight;
         if (oldEntry.getCost() > newCost) {
             //System.err.println ("CHEAPER ROUTE");
@@ -181,7 +194,11 @@ public class SimpleRoutingTable implements RoutingTable {
         }
         // CASE 3 -- ENTRY EXISTED WAS ON THIS INTERFACE 
         if (inter != null && inter.equals(oldEntry.getNetIF()) && newCost > oldEntry.getCost()) {
-            oldEntry.setCost(newCost);
+            if (newCost > options.getMaxDist()) {
+                table_.remove(addr);   // Too far, can no longer route
+            } else {
+                oldEntry.setCost(newCost);
+            }
             //System.err.println ("MORE EXPENSIVE ROUTE BUT SAME INTERFACE");
             return true;
         }
@@ -238,4 +255,23 @@ public class SimpleRoutingTable implements RoutingTable {
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable is:\n"+s);
         return s;
     }
+    
+     /**
+     * To string
+     */
+    public synchronized byte[] toBytes() {
+        // Each entry is encoded by 8 bytes
+        //System.err.println("Creating routing table to send");
+        Collection<SimpleRoutingTableEntry> rtes= getEntries();
+        byte [] bytes= new byte[rtes.size()*8];
+        int i= 0;
+        for (SimpleRoutingTableEntry e: rtes) {
+            //System.err.println("Entry "+e.toString());
+            byte []ebytes= e.toBytes();
+            System.arraycopy(ebytes,0,bytes,i,8);
+            i+= 8;
+        } 
+        return bytes;
+    }
+    
 }

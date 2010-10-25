@@ -69,6 +69,8 @@ public class RouterController implements ComponentController, Runnable {
     APController apController_= null;
     APInfo apInfo_= null; 
     int ap_= 0; // The aggregation point for this node
+    String apName_= null;
+    String monGenName_= null;
 
     RouterOptions options_= null;
 
@@ -312,7 +314,6 @@ public class RouterController implements ComponentController, Runnable {
                     apController_.routerUpdate(this);
                 }
                 // we check the RouterListener queue for commands
-                // TODO: maybe replace take() with poll(30, SECONDS)
                 Request nextRequest = queue.poll(next-now,TimeUnit.MILLISECONDS);
                 if (nextRequest == null)
                     continue;
@@ -540,9 +541,17 @@ public class RouterController implements ComponentController, Runnable {
     { 
         if (gid != getGlobalID())
             return false;
+        if (ap == ap_)    // No change to AP
+            return true;
+        if (monGenName_ != null) { // stop previous monitoring generator
+            appStop(monGenName_);
+        }
+        ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
+            "/3000 -p rt -t 1 -n info-source-"+gid);
+        monGenName_= resp.getMessage();
         System.out.println(leadin()+" now has aggregation point "+ap);
         if (gid == ap && ap_ != ap) {
-            startAP();
+            startAP(ap);
         } else if (ap_ == gid && ap_ != ap) {
             stopAP();
         }
@@ -551,13 +560,17 @@ public class RouterController implements ComponentController, Runnable {
     }
      
     /** This node starts as an AP */
-    public void startAP() {
+    public void startAP(int gid) {
         System.out.println(leadin()+" has become an AP");
+        ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.AggPoint -i 0/3000"+
+        " -t 5 -a average -n agg-point-"+gid); 
+        apName_= resp.getMessage();
     }
     
     /** This node stops as an AP*/
     public void stopAP() {
         System.out.println(leadin()+" has stopped being an AP");
+        appStop(apName_);
     }
     
 
