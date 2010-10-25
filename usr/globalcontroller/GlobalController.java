@@ -748,6 +748,35 @@ public class GlobalController implements ComponentController {
 
     }
 
+    /**
+     * Get the router stats
+     */
+    public List<String> getRouterStats()  {
+        try {
+            List<String> result = new ArrayList<String>();
+
+            // Get all LocalControllers
+            for (LocalControllerInteractor lci : localControllers_) {
+
+                List<String> routerStats = lci.getRouterStats();
+
+                result.addAll(routerStats);
+            }
+        
+            return result;
+
+        } catch (IOException e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() +"Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+            return null;
+        } catch (MCRPException e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+            return null;
+        }
+        
+    }
+
     /** Shutdown called from console -- add shut down command to list to
     happen now */
     public synchronized void shutDownCommand() {

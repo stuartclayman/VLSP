@@ -13,18 +13,18 @@ public class MCRPEvent extends EventObject {
     // The type of the event
     private MCRPEventType type;
 
-    // The ID of the speech-dispatcher client this event is associated with.
-    private ID clientID;
+    // The ID of the router client this event is associated with.
+    private ID routerID;
 
-    public enum MCRPEventType { BEGIN, END, CANCEL, PAUSE, RESUME, INDEX_MARK };
+    public enum MCRPEventType { LINK_DIED, LINK_RESTARTED };
 
     /**
      * Construct an MCRPEvent given a source object.
      */
-    public MCRPEvent(Object source, MCRPEventType type,  ID clientID) {
+    public MCRPEvent(Object source, MCRPEventType type,  ID routerID) {
 	super(source);
 	this.type = type;
-	this.clientID = clientID;
+	this.routerID = routerID;
     }
 
     /**
@@ -35,16 +35,16 @@ public class MCRPEvent extends EventObject {
     }
 
     /**
-     * Get the ID of the speech-dispatcher client this event is associated with.
+     * Get the ID of the router client this event is associated with.
      */
-    public ID getClientID() {
-	return clientID;
+    public ID getRouterID() {
+	return routerID;
     }
 
     /**
      * MCRPEvent to String.
      */
     public String toString() {
-	return "MCRPEvent " + type +  " from client " + clientID;
+	return "MCRPEvent " + type +  " from router: " + routerID;
     }
 }

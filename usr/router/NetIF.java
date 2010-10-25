@@ -90,7 +90,7 @@ public interface NetIF {
      * "out_errors" -> out_errors
      * "out_dropped" -> out_dropped
      */
-    public Map<String, Number> getStats();
+    public NetStats getStats();
 
     /**
      * Send a Datagram originating at this host (sets src address)
@@ -131,9 +131,5 @@ public interface NetIF {
     
     /** Remote close received */
     public void remoteClose();
-    
-    /** Routing table sent */
-    public boolean sendRoutingTable(String s);
-    
-    
+        
 }

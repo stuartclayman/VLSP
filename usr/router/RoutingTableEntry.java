@@ -5,9 +5,12 @@ import usr.logging.*;
 
 public interface RoutingTableEntry {
 
+    public NetIF getNetIF();
 
-public Address getAddress();
+    public Address getAddress();
 
-public String toString();
+    public int getCost();
+
+    public String toString();
 
 }

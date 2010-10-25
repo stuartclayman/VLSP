@@ -133,6 +133,22 @@ public class MCRP implements Protocol {
     }
     
     /**
+     * GET_NETIF_STATS gets stats for each NetIF
+     */
+    public final static class GET_NETIF_STATS {
+        public final static String CMD = "GET_NETIF_STATS";
+        public final static int CODE= 237;
+    }
+    
+    /**
+     * GET_SOCKET_STATS gets stats for the sockets in the AppSocketMux
+     */
+    public final static class GET_SOCKET_STATS {
+        public final static String CMD = "GET_SOCKET_STATS";
+        public final static int CODE= 238;
+    }
+    
+    /**
      * Create a new router-to-router data connection to another router.
      */
     public final static class CREATE_CONNECTION {
@@ -340,6 +356,14 @@ public class MCRP implements Protocol {
         public final static int ERROR= 434;
     }
         
+    /**
+     * GET_ROUTER_STATS gets stats for each Router
+     */
+    public final static class GET_ROUTER_STATS {
+        public final static String CMD = "GET_ROUTER_STATS";
+        public final static int CODE= 285;
+    }
+    
     /*
      * Spare - 290 - 299
      */

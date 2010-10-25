@@ -353,6 +353,64 @@ public class RouterInteractor extends MCRPInteractor {
     }
     
     /**
+     * Get the NetIF stats from a Router.
+     */
+    public List<String> getNetIFStats() throws IOException, MCRPException {
+        // 237-localnet  InBytes=0 InPackets=0 InErrors=0 InDropped=0 OutBytes=17890 OutPackets=500 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
+        // 237-/Router-15151-15152/Connection-1  InBytes=66 InPackets=1 InErrors=0 InDropped=0 OutBytes=17956 OutPackets=501 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
+        // 237 END 2
+
+	MCRPResponse response = interact(MCRP.GET_NETIF_STATS.CMD);
+	expect(MCRP.GET_NETIF_STATS.CODE);
+
+        // now we convert the replies in the response
+	// into a list of connections
+
+        // get no of netifs
+	int netifReplies = response.getReplies() - 1;
+
+	// create a list for the names
+	List<String> stats = new ArrayList<String>();
+
+	for (int n=0; n < netifReplies; n++) {
+	    // pick out the r-th connection
+	    stats.add(response.get(n)[1]);
+	}
+
+	return stats;
+    }
+
+
+    /**
+     * Get the socket stats from a Router.
+     */
+    public List<String> getSocketStats() throws IOException, MCRPException{
+        // 237-localnet  InBytes=0 InPackets=0 InErrors=0 InDropped=0 OutBytes=17890 OutPackets=500 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
+        // 237-/Router-15151-15152/Connection-1  InBytes=66 InPackets=1 InErrors=0 InDropped=0 OutBytes=17956 OutPackets=501 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
+        // 237 END 2
+
+	MCRPResponse response = interact(MCRP.GET_SOCKET_STATS.CMD);
+	expect(MCRP.GET_SOCKET_STATS.CODE);
+
+        // now we convert the replies in the response
+	// into a list of connections
+
+        // get no of sockets
+	int socketReplies = response.getReplies() - 1;
+
+	// create a list for the names
+	List<String> stats = new ArrayList<String>();
+
+	for (int s=0; s < socketReplies; s++) {
+	    // pick out the s-th connection
+	    stats.add(response.get(s)[1]);
+	}
+
+	return stats;
+    }
+
+
+    /**
      * Shutdown the Router we are interacting with.
      */
     public MCRPInteractor shutDown() throws IOException, MCRPException {

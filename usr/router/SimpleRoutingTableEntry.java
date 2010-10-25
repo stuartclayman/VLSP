@@ -78,9 +78,10 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
       inter_= i;
     }
     
-    int getCost() {
+    public int getCost() {
         return cost_;
     }
+
     void setCost(int cost) 
     {
         cost_= cost;

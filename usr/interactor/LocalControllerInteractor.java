@@ -192,4 +192,34 @@ public class LocalControllerInteractor extends MCRPInteractor
 	      return this;
     }
 
+    /**
+     * Get the stats from a Router.
+     */
+    public List<String> getRouterStats() throws IOException, MCRPException {
+        // 285-1 localnet  InBytes=0 InPackets=0 InErrors=0 InDropped=0 OutBytes=17890 OutPackets=500 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
+        // 285-1 /Router-15151-15152/Connection-1  InBytes=66 InPackets=1 InErrors=0 InDropped=0 OutBytes=17956 OutPackets=501 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
+        // 285 END 2
+
+	MCRPResponse response = interact(MCRP.GET_ROUTER_STATS.CMD);
+	expect(MCRP.GET_ROUTER_STATS.CODE);
+
+        // now we convert the replies in the response
+	// into a list of connections
+
+        // get no of netifs
+	int routerReplies = response.getReplies() - 1;
+
+	// create a list for the names
+	List<String> stats = new ArrayList<String>();
+
+	for (int r=0; r < routerReplies; r++) {
+	    // pick out the r-th connection
+	    stats.add(response.get(r)[1]);
+	}
+
+	return stats;
+    }
+
+
+
 }

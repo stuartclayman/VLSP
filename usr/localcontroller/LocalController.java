@@ -469,6 +469,60 @@ public class LocalController implements ComponentController {
     }
 
     /**
+     * Get router stats for all routers managed by this LocalController
+     */
+    public List<String> getRouterStats() {
+        Set<Integer> routerIDs = routerMap_.keySet();
+
+        List<String> result = new ArrayList<String>();
+        
+        // now add the stats for each router to the list
+        for (int routerID : routerIDs) {
+            List<String> routerStats = getRouterStats(routerID);
+
+            result.addAll(routerStats);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Get some router stats
+     */
+    public List<String> getRouterStats(int routerID) {
+        BasicRouterInfo br = routerMap_.get(routerID);
+
+        if (br == null) {
+            return null;
+        }
+        int port = br.getManagementPort();
+        RouterInteractor ri = findRouterInteractor(port);
+
+        if (ri == null) {
+            return null;
+        } else {
+            try {
+                // original data
+                List<String> list = ri.getNetIFStats();
+
+                // now add the router id to each element of the list
+                List<String> newList = new ArrayList<String>();
+
+                for (String stat : list) {
+                    newList.add(routerID + " " + stat);
+                }
+
+                return newList;
+
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"");
+                return null;
+            }
+
+        }
+    }
+
+    /**
      * Run something on a Router.
      */
     public String onRouter(int routerID, String className, String[] args) {

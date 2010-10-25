@@ -601,9 +601,10 @@ public class AggPoint implements Application {
         }
 
         // check outputDataAddress
-        if (outputDataAddress == null) {
-	    return new ApplicationResponse(false, "No Output Address has been set");
-        }
+        // don;t check - allow for no forwarding
+        //if (outputDataAddress == null) {
+        // return new ApplicationResponse(false, "No Output Address has been set");
+        //}
 
         return new ApplicationResponse(true, "");
    }
@@ -620,7 +621,11 @@ public class AggPoint implements Application {
         Logger.getLogger("log").logln(USR.ERROR, "AggPoint: output = " + outputDataAddress);
 
         // set up data plane
-        DataPlane outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
+        // might be null if there is no forwarding required
+        DataPlane outputDataPlane = null;
+        if (outputDataAddress != null) {
+            outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
+        }
 
 	// Allocate the AggregationPoint
 	aggPoint = new AggregationPoint(inputDataPlane,

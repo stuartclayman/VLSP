@@ -74,15 +74,7 @@ public class TCPNetIF implements NetIF , Runnable {
     //BlockingQueue<Datagram> outgoingQueue;
 
     // counts
-    int incomingCount = 0;
-    int incomingBytes = 0;
-    int incomingErrors = 0;
-    int incomingDropped = 0;
-    int forwardCount = 0;
-    int forwardBytes = 0;
-    int forwardErrors = 0;
-    int forwardDropped = 0;
-
+    NetStats netStats;
 
     // queue high limit
     int QUEUE_PAUSE_LIMIT = 120;
@@ -97,8 +89,9 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     public TCPNetIF(TCPEndPointSrc src) throws IOException {
         connection = new ConnectionOverTCP(src);
-      //  incomingQueue = new LinkedBlockingQueue<Datagram>();    
-        //outgoingQueue = new LinkedBlockingQueue<Datagram>();
+        netStats = new NetStats();
+        // incomingQueue = new LinkedBlockingQueue<Datagram>();    
+        // outgoingQueue = new LinkedBlockingQueue<Datagram>();
     }
 
     /**
@@ -106,8 +99,9 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     public TCPNetIF(TCPEndPointDst dst) throws IOException {
         connection = new ConnectionOverTCP(dst);
-      //  incomingQueue = new LinkedBlockingQueue<Datagram>();    
-        //outgoingQueue = new LinkedBlockingQueue<Datagram>();
+        netStats = new NetStats();
+        // incomingQueue = new LinkedBlockingQueue<Datagram>();    
+        // outgoingQueue = new LinkedBlockingQueue<Datagram>();
     }
 
     /**
@@ -256,9 +250,9 @@ public class TCPNetIF implements NetIF , Runnable {
         dg.setSrcAddress(connection.getAddress());
 
         // stats
-        forwardCount++;
-        forwardBytes += dg.getTotalLength();
-        
+        netStats.increment(NetStats.Stat.OutPackets);
+        netStats.add(NetStats.Stat.OutBytes, dg.getTotalLength());
+
         return connection.sendDatagram(dg);
     }
     
@@ -272,8 +266,8 @@ public class TCPNetIF implements NetIF , Runnable {
         //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + forwardCount + " outgoingQueue size = " + outgoingQueue.size());
 
         // stats
-        forwardCount++;
-        forwardBytes += dg.getTotalLength();
+        netStats.increment(NetStats.Stat.OutPackets);
+        netStats.add(NetStats.Stat.OutBytes, dg.getTotalLength());
         
         connection.sendDatagram(dg);
 
@@ -318,31 +312,10 @@ public class TCPNetIF implements NetIF , Runnable {
         
     /**
      * Get the interface stats.
-     * A map of values like:
-     * "in_bytes" -> in_bytes
-     * "in_packets" -> in_packets
-     * "in_errors" -> in_errors
-     * "in_dropped" -> in_dropped
-     * "out_bytes" -> out_bytes
-     * "out_packets" -> out_packets
-     * "out_errors" -> out_errors
-     * "out_dropped" -> out_dropped
+     * Returns a NetStats object.
      */
-    public Map<String, Number> getStats() {
-        Map<String, Number> stats = new HashMap<String, Number>();
-
-        stats.put("in_bytes", incomingBytes);
-        stats.put("in_packets", incomingCount);
-        stats.put("in_errors", 0);
-        stats.put("in_dropped", 0);
-        stats.put("out_bytes", forwardBytes);
-        stats.put("out_packets", forwardCount);
-        stats.put("out_errors", 0);
-        stats.put("out_dropped", 0);
-        //stats.put("incomingQueue", incomingQueue.size());
-        //stats.put("outgoingQueue", 0);
-
-        return stats;
+    public NetStats getStats() {
+        return netStats;
     }
 
     /**
@@ -404,8 +377,8 @@ public class TCPNetIF implements NetIF , Runnable {
                 // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + incomingCount + " got a Datagram");
 
                 // stats
-                incomingCount++;
-                incomingBytes += datagram.getTotalLength();
+                netStats.increment(NetStats.Stat.InPackets);
+                netStats.add(NetStats.Stat.InBytes, datagram.getTotalLength());
 
                // incomingQueue.add(datagram);
 
@@ -530,16 +503,18 @@ public class TCPNetIF implements NetIF , Runnable {
         buffer.put(c.getBytes());
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
          ByteBuffer b= ((DatagramPatch)datagram).toByteBuffer();
-     //   Logger.getLogger("log").logln(USR.ERROR, "WRITE as bytes "+ b.asCharBuffer());
-       // for (int i= 0; i < datagram.getTotalLength(); i++) {
-        //      Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+" char is "+ (char)b.get());
-        // }
+
+        // stats
+        netStats.increment(NetStats.Stat.OutPackets);
+        netStats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
+
+
         return connection.sendDatagram(datagram);
  
     }
+   
 
-
-    /** Send routing table */
+    /** Send routing table
     public boolean sendRoutingTable(String table) {
         String toSend;
         toSend="T"+table;
@@ -549,10 +524,16 @@ public class TCPNetIF implements NetIF , Runnable {
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
         //Logger.getLogger("log").logln(USR.ERROR, "SENDING ROUTING TABLE");
         //Logger.getLogger("log").logln(USR.ERROR, table);
+
+        // stats
+        netStats.increment(NetStats.Stat.OutPackets);
+        netStats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
+
         return connection.sendDatagram(datagram);
         
     }
-    
+    */
+
     /**
      * A remote close was received.
      */

@@ -67,15 +67,10 @@ public class AppSocketMux implements NetIF, Runnable {
 
     boolean isClosed = false;
 
-    // counts
-    int incomingCount = 0;
-    int incomingBytes = 0;
-    int incomingErrors = 0;
-    int incomingDropped = 0;
-    int forwardCount = 0;
-    int forwardBytes = 0;
-    int forwardErrors = 0;
-    int forwardDropped = 0;
+    // stats for interface
+    NetStats netStats;
+    // stats for each socket
+    HashMap<Integer, NetStats> socketStats;
 
     /**
      * Construct an AppSocketMux.
@@ -86,7 +81,8 @@ public class AppSocketMux implements NetIF, Runnable {
         outgoingQueue = new LinkedBlockingQueue<Datagram>();
         socketMap = new HashMap<Integer, AppSocket>();
         socketQueue = new HashMap<Integer, LinkedBlockingQueue<Datagram>>();
-
+        netStats = new NetStats();
+        socketStats = new HashMap<Integer, NetStats>();
     }
 
     /**
@@ -174,8 +170,17 @@ public class AppSocketMux implements NetIF, Runnable {
                 LinkedBlockingQueue<Datagram> queue = getQueueForPort(dstPort);
                 queue.add(datagram);
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Queue for " + socket + " is size: " + queue.size());
+
+                // now do stats
+                NetStats stats = socketStats.get(dstPort);
+                stats.increment(NetStats.Stat.InPackets);
+                stats.add(NetStats.Stat.InBytes, datagram.getTotalLength());
+
+
             } else {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cant deliver to port " + dstPort);
+                // so count dropped
+                netStats.increment(NetStats.Stat.InDropped);
             }
         }
      
@@ -349,35 +354,24 @@ public class AppSocketMux implements NetIF, Runnable {
 
     /**
      * Get the interface stats.
-     * A map of values like:
-     * "in_bytes" -> in_bytes
-     * "in_packets" -> in_packets
-     * "in_errors" -> in_errors
-     * "in_dropped" -> in_dropped
-     * "out_bytes" -> out_bytes
-     * "out_packets" -> out_packets
-     * "out_errors" -> out_errors
-     * "out_dropped" -> out_dropped
+     * Returns a NetStats object.
      */
-    public Map<String, Number> getStats() {
-        Map<String, Number> stats = new HashMap<String, Number>();
+    public NetStats getStats() {
+        return netStats;
+    }
 
-        stats.put("in_bytes", incomingBytes);
-        stats.put("in_packets", incomingCount);
-        stats.put("in_errors", 0);
-        stats.put("in_dropped", 0);
-        stats.put("out_bytes", forwardBytes);
-        stats.put("out_packets", forwardCount);
-        stats.put("out_errors", 0);
-        stats.put("out_dropped", 0);
-        stats.put("incomingQueue", incomingQueue.size());
-
+    /**
+     * Get the socket stats.
+     * Returns a NetStats object for each socket, by port number
+     */
+    public Map<Integer, NetStats> getSocketStats() {
         // now add queues for sockets
-        for (int port : socketQueue.keySet()) {
-            stats.put("outQueuePort_" + port, socketQueue.get(port).size());
+        for (int port : socketStats.keySet()) {
+            NetStats stats = socketStats.get(port);
+            stats.setValue(NetStats.Stat.OutQueue, socketQueue.get(port).size());
         }
 
-        return stats;
+        return socketStats;
     }
 
     /**
@@ -388,8 +382,8 @@ public class AppSocketMux implements NetIF, Runnable {
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "datagramArrived: ");
 
         // stats
-        incomingCount++;
-        incomingBytes += dg.getTotalLength();
+        netStats.increment(NetStats.Stat.InPackets);
+        netStats.add(NetStats.Stat.InBytes, dg.getTotalLength());
 
         incomingQueue.add(dg);
 
@@ -412,12 +406,11 @@ public class AppSocketMux implements NetIF, Runnable {
      * into the RouterFabric.
      */
     public Datagram readDatagram() {
+        /* WAS
         try {
             Datagram datagram = outgoingQueue.take();
 
             // stats
-            forwardCount++;
-            forwardBytes += datagram.getTotalLength();
 
             return datagram;
         } catch (InterruptedException ie) {
@@ -425,6 +418,8 @@ public class AppSocketMux implements NetIF, Runnable {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "readDatagram INTERRUPTED");
             return null;
         }
+        */
+        return null;
     }
 
 
@@ -435,6 +430,20 @@ public class AppSocketMux implements NetIF, Runnable {
         // patch up the source address in the Datagram
         Address srcAddr = controller.getAddress();
         datagram.setSrcAddress(srcAddr);
+
+        // stats
+        netStats.increment(NetStats.Stat.OutPackets);
+        netStats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
+
+        // do per socket stats
+        int srcPort = datagram.getSrcPort();
+        NetStats stats = socketStats.get(srcPort);
+
+        if (stats != null) {
+            stats.increment(NetStats.Stat.OutPackets);
+            stats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
+        }
+
 
         //outgoingQueue.add(datagram);
 
@@ -508,6 +517,9 @@ public class AppSocketMux implements NetIF, Runnable {
 
         // set up the incoming queue
         socketQueue.put(port, new LinkedBlockingQueue<Datagram>());
+
+        // set up the stats
+        socketStats.put(port, new NetStats());
     }
 
     /**
@@ -523,6 +535,10 @@ public class AppSocketMux implements NetIF, Runnable {
 
         // remove the queue
         socketQueue.remove(port);
+
+
+        // remove stats 
+        socketStats.remove(port);
 
         // TODO: free up port number for reuse
     }

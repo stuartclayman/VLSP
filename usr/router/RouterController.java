@@ -486,14 +486,17 @@ public class RouterController implements ComponentController, Runnable {
     }
     
     /**
+     * Get the local NetIF that has the sockets.
+     */
+    public NetIF getLocalNetIF() {
+        return router.getLocalNetIF();
+    }
+
+    /**
      * Get port N.
      */
     public RouterPort getPort(int p) {
         return router.getPort(p);
-    }
-
-    public void removeNetIF(NetIF n) {
-       router.removeNetIF(n);
     }
 
     /**
@@ -513,6 +516,11 @@ public class RouterController implements ComponentController, Runnable {
         return net;
     }
     
+    /** Remove a NetIF */
+    public void removeNetIF(NetIF n) {
+       router.removeNetIF(n);
+    }
+
     /** Read a string containing router options */
     public boolean readOptionsString(String str) 
     {

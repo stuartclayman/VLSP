@@ -41,6 +41,7 @@ public class LocalControllerManagementConsole extends AbstractManagementConsole 
         register(new SetAPCommand());
         register(new ReportAPCommand());
         register(new OnRouterCommand());
+        register(new GetRouterStatsCommand());
     }
         
     public boolean endRouter(LocalHostInfo r) {

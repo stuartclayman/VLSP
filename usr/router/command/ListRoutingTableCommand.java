@@ -31,7 +31,12 @@ public class ListRoutingTableCommand extends RouterCommand {
 
         Collection<? extends RoutingTableEntry> c= table.getEntries();
         for (RoutingTableEntry e : c) {
-            list(e.toString());
+            if (e.getNetIF() == null) {
+                // its the local NetIF
+                list(e.toString()  + " localnet");
+            } else {
+                list(e.toString());
+            }
         }
 
         boolean result = success("END " + table.size());

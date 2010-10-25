@@ -273,6 +273,13 @@ public class Router {
     }
 
     /**
+     * Get the local NetIF that has the sockets.
+     */
+    public NetIF getLocalNetIF() {
+        return fabric.getLocalNetIF();
+    }
+
+    /**
      * Get port N.
      */
     public RouterPort getPort(int p) {

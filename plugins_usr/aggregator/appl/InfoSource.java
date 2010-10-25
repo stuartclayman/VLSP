@@ -324,6 +324,8 @@ public class InfoSource implements Application {
 	    indexProperties.setProperty("name", realName);
 
 	    dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
+            dataIndex.setAutoCommit(true);
+
 	} catch (TimeIndexException tie) {
 	    tie.printStackTrace();
 	    return new ApplicationResponse(false, "Cannot create TimeIndex " + dataIndexPath) ;

@@ -283,7 +283,18 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table " + table_ + " for "+n);
 
-        n.sendRoutingTable(table_.toString());
+        // WAS n.sendRoutingTable(table_.toString());
+
+        // construct a routing table
+        String toSend="T"+table_.toString();
+
+        // create a datagram
+        ByteBuffer buffer = ByteBuffer.allocate(toSend.length());
+        buffer.put(toSend.getBytes());
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+
+        // send the datagram
+        n.sendDatagram(datagram);
         
         lastTableUpdateTime_.put(n,now);
         nextTableUpdateTime_.put(n,now+options_.getMaxNetIFUpdateTime());
@@ -414,6 +425,13 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
                 }
             }
         }
+    }
+
+    /**
+     * Get the local NetIF that has the sockets.
+     */
+    public NetIF getLocalNetIF() {
+        return localNetIF;
     }
 
     /**

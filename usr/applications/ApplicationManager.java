@@ -94,6 +94,10 @@ public class ApplicationManager {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "ClassNotFoundException " + cnfe); 
             return new ApplicationResponse(false, "ClassNotFoundException " + cnfe); 
 
+        } catch (NoClassDefFoundError ncdfe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoClassDefFoundError " + ncdfe); 
+            return new ApplicationResponse(false, "NoClassDefFoundError " + ncdfe); 
+
         } catch (NoSuchMethodException nsme) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoSuchMethodException " + nsme); 
             return new ApplicationResponse(false,  "NoSuchMethodException " + nsme); 

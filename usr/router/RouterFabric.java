@@ -19,6 +19,11 @@ public interface RouterFabric {
     public boolean removeNetIF(NetIF netIF);
 
     /**
+     * Get the local NetIF that has the sockets.
+     */
+    public NetIF getLocalNetIF();
+
+    /**
      * Get port N.
      */
     public RouterPort getPort(int p);

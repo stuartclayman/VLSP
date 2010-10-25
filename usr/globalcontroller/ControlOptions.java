@@ -37,7 +37,7 @@ public class ControlOptions {
     private int controllerWaitTime_= 6;    
     private int lowPort_= 10000;   // Default lowest port to be used on local controller 
     private int highPort_= 20000;  // Default highest port to be used on local controller
-    private int maxLag_= 10000;  // Maximum lag tolerable in simulation in millisec
+    private int maxLag_= 1000000;  // Maximum lag tolerable in simulation in millisec
     private String routerOptionsString_= ""; //
     private RouterOptions routerOptions_= null;
     EventEngine engine_;   // Engine used to create new events for sim
