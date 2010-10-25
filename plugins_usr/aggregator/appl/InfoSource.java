@@ -332,7 +332,7 @@ public class InfoSource implements Application {
 	}
 
         try {
-            Logger.getLogger("log").logln(USR.ERROR, "InfoSource connect to " + outputDataAddress);
+            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource connect to " + outputDataAddress);
 
             DataPlane outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
 

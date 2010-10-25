@@ -613,12 +613,12 @@ public class AggPoint implements Application {
      * Start the aggpoint
      */
     public ApplicationResponse start() {
-        Logger.getLogger("log").logln(USR.ERROR, "AggPoint: input = " + inputDataAddress);
+        Logger.getLogger("log").logln(USR.STDOUT, "AggPoint: input = " + inputDataAddress);
 
         // set up data plane
         DataPlane inputDataPlane = new USRDataPlaneConsumerWithNames(inputDataAddress);
 
-        Logger.getLogger("log").logln(USR.ERROR, "AggPoint: output = " + outputDataAddress);
+        Logger.getLogger("log").logln(USR.STDOUT, "AggPoint: output = " + outputDataAddress);
 
         // set up data plane
         // might be null if there is no forwarding required
