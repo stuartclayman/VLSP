@@ -108,6 +108,46 @@ public class OutputType {
         firstOutput_= f;
     }
     
-    
+    /**
+     * To String
+     */
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        switch (outputTimeType_) {
+        case OUTPUT_NETWORK:
+            builder.append("OUTPUT_NETWORK");
+            break;
+        case OUTPUT_SUMMARY:
+            builder.append("OUTPUT_SUMMARY");
+            break;
+        default:
+            break;
+        }
+
+        builder.append(" ");
+
+        switch (outputTimeType_) {
+        case AT_START:
+            builder.append("AT_START");
+            break;
+        case AT_END:
+            builder.append("AT_END");
+            break;
+        case AT_INTERVAL:
+            builder.append("AT_INTERVAL");
+            break;
+        case AT_TIME:
+            builder.append("AT_TIME");
+            break;
+        default:
+            break;
+        }
+
+        builder.append(" ");
+        builder.append(outputTime_);
+
+        return builder.toString();
+    }
 
 }

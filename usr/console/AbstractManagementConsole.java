@@ -481,7 +481,10 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Returns false if there is a problem responding down the channel
      */
     protected boolean handleInput(String value, SocketChannel sc) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ">>> " + value);
+        int amount = value.length() > 131 ? 131 : value.length();
+        String printable = value.substring(0, amount).replaceAll("\n", " ");
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ">>> " + printable);
 
         if (value == null && value.length() == 0) {
             // empty - do nothing
