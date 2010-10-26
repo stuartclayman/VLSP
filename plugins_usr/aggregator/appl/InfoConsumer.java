@@ -49,6 +49,7 @@ public class InfoConsumer implements Reporter, Application {
      * The Time Index that holds the sent data
      */
     IndexView dataIndex;
+    File dataIndexPath = null;
 
 
     /**
@@ -135,8 +136,6 @@ public class InfoConsumer implements Reporter, Application {
      * Start the InfoConsumer.
      */
     public ApplicationResponse start() {
-        File dataIndexPath = null;
-
 	try {
 	    // create a TimeIndexFactory
 	    TimeIndexFactory factory = new TimeIndexFactory();
@@ -182,6 +181,14 @@ public class InfoConsumer implements Reporter, Application {
      */
     public ApplicationResponse stop() {
         dataDomain.disconnect();
+
+        try {
+            dataIndex.close();
+	} catch (TimeIndexException tie) {
+	    tie.printStackTrace();
+	    return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
+	}
+
 
         synchronized (this) {
             notifyAll();

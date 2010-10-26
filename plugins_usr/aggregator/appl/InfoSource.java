@@ -62,6 +62,8 @@ public class InfoSource implements Application {
      * The Time Index that holds the sent data
      */
     IndexView dataIndex;
+    File dataIndexPath = null;
+
 
     /*
      * Filters
@@ -308,8 +310,6 @@ public class InfoSource implements Application {
      * Start
      */
     public ApplicationResponse start() {
-        File dataIndexPath = null;
-
 	try {
 	    // create a TimeIndexFactory
 	    TimeIndexFactory factory = new TimeIndexFactory();
@@ -372,6 +372,14 @@ public class InfoSource implements Application {
 	dataSource.removeProbe(probe);
 
         dataSource.disconnect();
+
+        try {
+            dataIndex.close();
+	} catch (TimeIndexException tie) {
+	    tie.printStackTrace();
+	    return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
+	}
+
 
         synchronized (this) {
             notifyAll();
