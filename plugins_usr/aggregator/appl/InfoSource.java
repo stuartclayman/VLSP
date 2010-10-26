@@ -37,6 +37,7 @@ import com.timeindexing.data.SerializableItem;
  * probe - cpu, memory, response time
  * filter - none, 5% change
  * logpath - the path to log into
+ * initial delay - seconds
  */
 public class InfoSource implements Application {
     // The address for output
@@ -57,6 +58,9 @@ public class InfoSource implements Application {
 
     // sleep time for Probes
     int sleepTime = 30;
+
+    // initial delay
+    int initialDelay = 0;
 
     /*
      * The Time Index that holds the sent data
@@ -197,6 +201,7 @@ public class InfoSource implements Application {
      * -f filter, [always, 2%, 5%, 10%]  (default: always)
      * -l log path, (default: /tmp/)
      * -t sleep timeout (default: 30)
+     * -d initial delay (default: 0)
      * -n name (default: "info-source")
      */
     public ApplicationResponse init(String[] args) {
@@ -278,6 +283,14 @@ public class InfoSource implements Application {
 		}
 
 
+		case 'd': {
+		    Scanner scd = new Scanner(argValue);
+		    int t = scd.nextInt();
+		    setInitialDelay(t);
+		    break;
+		}
+
+
 		case 'n': {
 		    setName(argValue);
 		    break;
@@ -355,8 +368,7 @@ public class InfoSource implements Application {
             }
 
             // turn on probe
-            dataSource.addProbe(probe);
-            dataSource.turnOnProbe(probe);
+            dataSource.addProbe(probe);  // this does registerProbe and activateProbe
             return new ApplicationResponse(true, "");
         } catch (Exception e) {
             return new ApplicationResponse(false, e.getMessage());
@@ -368,7 +380,6 @@ public class InfoSource implements Application {
      * Stop
      */
     public ApplicationResponse stop() {
-	dataSource.deactivateProbe(probe);
 	dataSource.removeProbe(probe);
 
         dataSource.disconnect();
@@ -393,6 +404,15 @@ public class InfoSource implements Application {
      * Run
      */
     public void run() {
+        try {
+            //Logger.getLogger("log").logln(USR.STDOUT, "SLEEP  " + getInitialDelay() + " seconds");
+            Thread.sleep(getInitialDelay() * 1000);
+        } catch (InterruptedException ie) {
+        }
+
+        //Logger.getLogger("log").logln(USR.STDOUT, "TURN ON Probe: " + probe.getName());
+        dataSource.turnOnProbe(probe);
+
         // A DataSource already runs in itws own thread
         // so this one can wait and do nothing.
         try {
@@ -401,6 +421,9 @@ public class InfoSource implements Application {
             }
         } catch (InterruptedException ie) {
         }
+
+        // Logger.getLogger("log").logln(USR.STDOUT, "TURN OFF Probe: " + probe.getName());
+	dataSource.turnOffProbe(probe);
     }
 
 
@@ -451,6 +474,24 @@ public class InfoSource implements Application {
 	sleepTime = slTime;
 
 	return oldSleepTime;
+    }
+
+
+    /**
+     * Get the initial delay
+     */
+    public int getInitialDelay() {
+	return initialDelay;
+    }
+
+    /**
+     * Set the initialDelay
+     */
+    public int setInitialDelay(int delay) {
+	int oldInitialDelay = initialDelay;
+	initialDelay = delay;
+
+	return oldInitialDelay;
     }
 
 

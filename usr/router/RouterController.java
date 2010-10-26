@@ -547,7 +547,7 @@ public class RouterController implements ComponentController, Runnable {
             appStop(monGenName_);
         }
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-            "/3000 -p rt -t 1 -n info-source-"+gid);
+            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid);
         monGenName_= resp.getMessage();
         System.out.println(leadin()+" now has aggregation point "+ap);
         if (gid == ap && ap_ != ap) {
