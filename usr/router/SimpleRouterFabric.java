@@ -697,9 +697,11 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             return true;
         }
         byte controlChar= payload[0];
-        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"TCPNetIF: " + datagramCount + " <- Control Datagram type "+
+
+        Logger.getLogger("log").logln(USR.EXTRA, leadin()+"TCPNetIF: " + datagramCount + " <- Control Datagram type "+
           (char)controlChar + " data "+ dg);
         //Logger.getLogger("log").logln(USR.ERROR, "RECEIVED DATAGRAM CONTROL TYPE "+(char)controlChar);
+
         String data= new String(payload,1,payload.length-1);
 
         if (controlChar == 'C') {

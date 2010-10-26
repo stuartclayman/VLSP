@@ -66,7 +66,7 @@ public class AggPoint implements Application {
 	    public Serializable extract(Measurement m) {
 		//Serializable object = (Serializable)m.getValues();
 		Serializable object = (Serializable)m;
-		Logger.getLogger("log").logln(USR.STDOUT, "Collected: " + object);
+		Logger.getLogger("log").logln(USR.APP_EXTRA, "Collected: " + object);
 		return object;
 	    }
 	};
@@ -106,7 +106,7 @@ public class AggPoint implements Application {
 		Collection<Number> list = convert(coll);
 		Aggregate aggregate = new Aggregate();		
 		Number number =  aggregate.average(list);
-		Logger.getLogger("log").logln(USR.STDOUT, "Aggregation: average = " + number);
+		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: average = " + number);
 
 		// now create a Measurement as the result
 
@@ -138,7 +138,7 @@ public class AggPoint implements Application {
 		Collection<Number> list = convert(coll);
 		Aggregate aggregate = new Aggregate();		
 		Number number =  aggregate.variance(list);
-		Logger.getLogger("log").logln(USR.STDOUT, "Aggregation: variance = " + number);
+		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: variance = " + number);
 		// now create a Measurement as the result
 
 		try {
@@ -168,7 +168,7 @@ public class AggPoint implements Application {
 		Collection<Number> list = convert(coll);
 		Aggregate aggregate = new Aggregate();		
 		Number number =  aggregate.sd(list);
-		Logger.getLogger("log").logln(USR.STDOUT, "Aggregation: sd = " + number);
+		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: sd = " + number);
 
 		// now create a Measurement as the result
 
@@ -198,7 +198,7 @@ public class AggPoint implements Application {
 		Collection<Number> list = convert(coll);
 		Aggregate aggregate = new Aggregate();		
 		Number number =  aggregate.length(list);
-		Logger.getLogger("log").logln(USR.STDOUT, "Aggregation: length = " + number);
+		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: length = " + number);
 
 		// now create a Measurement as the result
 
@@ -227,7 +227,7 @@ public class AggPoint implements Application {
 		Collection<Number> list = convert(coll);
 		Aggregate aggregate = new Aggregate();		
 		Number number =  aggregate.sum(list);
-		Logger.getLogger("log").logln(USR.STDOUT, "Aggregation: sum = " + number);
+		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: sum = " + number);
 
 		// now create a Measurement as the result
 
@@ -258,7 +258,7 @@ public class AggPoint implements Application {
 		Collection<Number> list = convert(coll);
 		Aggregate aggregate = new Aggregate();		
 		Number number =  aggregate.min(list);
-		Logger.getLogger("log").logln(USR.STDOUT, "Aggregation: min = " + number);
+		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: min = " + number);
 
 		// now create a Measurement as the result
 
@@ -289,7 +289,7 @@ public class AggPoint implements Application {
 		Collection<Number> list = convert(coll);
 		Aggregate aggregate = new Aggregate();		
 		Number number =  aggregate.max(list);
-		Logger.getLogger("log").logln(USR.STDOUT, "Aggregation: max = " + number);
+		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: max = " + number);
 
 		// now create a Measurement as the result
 
@@ -353,7 +353,7 @@ public class AggPoint implements Application {
 
 		double percent = mVal / oVal;
 
-		Logger.getLogger("log").logln(USR.STDOUT, "Filter: " + mVal + "/" + oVal + " = " +
+		Logger.getLogger("log").logln(USR.APP_EXTRA, "Filter: " + mVal + "/" + oVal + " = " +
 				   percent);
 
 

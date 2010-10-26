@@ -20,4 +20,15 @@ public class USR {
     
     // default output file
     public static int DEFAULT_FILE = 1 << 2;
+
+    // extra 
+    public static int EXTRA = 1 << 3;
+
+    // for Apps
+    public static int APP = 1 << 4;
+
+    // extra for Apps
+    public static int APP_EXTRA = 1 << 3;
+
+    
 }
