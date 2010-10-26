@@ -107,7 +107,7 @@ public class NullAPController implements APController {
     }
     
     /** Controller regular AP update action */
-    public void controllerUpdate(GlobalController g)
+    public void controllerUpdate(long time, GlobalController g)
     {
        //System.err.println ("Null Controller called");
        if (!changedNet_ && !changedAPs_) {
@@ -117,7 +117,7 @@ public class NullAPController implements APController {
           int myAP= getAP(i);
           Pair <Integer,Integer> closest= findClosestAP(i,g);
           if (closest == null) {
-              addAccessPoint(i,g);
+              addAccessPoint(time, i,g);
           } else {
               setAP(i,closest.getFirst(),closest.getSecond(),g);
           }
@@ -156,13 +156,14 @@ public class NullAPController implements APController {
    
     
     /** Add new access point with ID gid*/
-    public void addAccessPoint(int gid, GlobalController g)
+    public void addAccessPoint(long time, int gid, GlobalController g)
     {
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Node "+gid+" becomes AP");
         if (APGIDs_.indexOf(gid) != -1) {
             Logger.getLogger("log").logln(USR.ERROR, "AP controller found access point present when adding");
             return;
         }
+        lse_.newAP(time,gid);
         APGIDs_.add(gid);
         setAP(gid,gid,0,g);
     }
@@ -170,7 +171,7 @@ public class NullAPController implements APController {
     
     
     /** Remove access point with ID gid */
-    public void removeAccessPoint(int gid)
+    public void removeAccessPoint(long time, int gid)
     {
         int index;
         
@@ -179,6 +180,7 @@ public class NullAPController implements APController {
             return;
         }
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+" removing access point "+gid);
+        lse_.APDeath(time,gid);
         APGIDs_.remove(index);
         APs_.remove(gid);
         APCosts_.remove(gid);
@@ -262,7 +264,7 @@ public class NullAPController implements APController {
         if (index == -1) {
             return;
         }
-        removeAccessPoint(gid);
+        removeAccessPoint(time, gid);
     }
         
     /** Can AP be removed giving a new AP */
@@ -337,13 +339,13 @@ public class NullAPController implements APController {
      nodes which have died*/
     public double meanNodeLife()
     {
-        return 0.0;
+        return lse_.meanNodeLife();
     }
     
     /** Return the mean life of an AP -- this only includes APs which have
     died*/
     public double meanAPLife() {
-        return 0.0;
+        return lse_.meanAPLife();
     }    
     
     String leadin() {

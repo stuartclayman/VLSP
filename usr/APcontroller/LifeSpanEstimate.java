@@ -32,6 +32,8 @@ public class LifeSpanEstimate {
         options_= o;
         deaths_= new ArrayList <Integer>();
         births_= new HashMap <Integer,Long>();
+        APDeaths_= new ArrayList <Integer>();
+        APBirths_= new HashMap <Integer,Long>();
     }    
     
     public LifeSpanEstimate() 
@@ -39,6 +41,9 @@ public class LifeSpanEstimate {
         options_= null;
         deaths_= new ArrayList <Integer>();
         births_= new HashMap <Integer,Long>();
+        
+        APDeaths_= new ArrayList <Integer>();
+        APBirths_= new HashMap <Integer,Long>();
     }    
 
     
@@ -135,7 +140,32 @@ public class LifeSpanEstimate {
         }
         APDeaths_.add(lifeTime);
     }
+            /** Return the mean life of a node -- this only includes
+     nodes which have died*/
+    public double meanNodeLife()
+    { 
+        if (deaths_.size() == 0) {
+            return 0.0;
+        }
+        double totLife= 0;
+        for (int l :deaths_) {
+            totLife+= l;
+        }
+        return totLife/deaths_.size();
+    }
     
+    /** Return the mean life of an AP -- this only includes APs which have
+    died*/
+    public double meanAPLife() {
+        double totLife= 0;
+        if (APDeaths_.size() == 0) {
+            return 0.0;
+        }
+        for (int l : APDeaths_) {
+            totLife+= l;
+        }
+        return totLife/APDeaths_.size();
+    }  
     
 
     /** Get an estimate of remaining lifespan using KM estimator */
@@ -321,31 +351,6 @@ public class LifeSpanEstimate {
         return 1-erf(x);
     }
     
-        /** Return the mean life of a node -- this only includes
-     nodes which have died*/
-    public double meanNodeLife()
-    { 
-        if (deaths_.size() == 0) {
-            return 0.0;
-        }
-        double totLife= 0;
-        for (int l :deaths_) {
-            totLife+= l;
-        }
-        return totLife/deaths_.size();
-    }
-    
-    /** Return the mean life of an AP -- this only includes APs which have
-    died*/
-    public double meanAPLife() {
-        double totLife= 0;
-        if (APDeaths_.size() == 0) {
-            return 0.0;
-        }
-        for (int l : APDeaths_) {
-            totLife+= l;
-        }
-        return totLife/APDeaths_.size();
-    }  
+
 
 }

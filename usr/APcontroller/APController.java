@@ -24,16 +24,16 @@ public interface APController {
     public void routerUpdate(RouterController r);
     
     /** Controller regular AP update action */
-    public void controllerUpdate(GlobalController g);
+    public void controllerUpdate(long time, GlobalController g);
     
     /** Calculate AP traffic estimate */
     public int APTrafficEstimate(GlobalController g);
     
     /** Add new access point with gid G*/
-    public void addAccessPoint(int gid, GlobalController g);
+    public void addAccessPoint(long time, int gid, GlobalController g);
     
     /** Remove access point with gid G*/
-    public void removeAccessPoint(int gid);
+    public void removeAccessPoint(long time, int gid);
     
     /** Add node to network */
     public void addNode(long time, int gid);

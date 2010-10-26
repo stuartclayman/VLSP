@@ -827,7 +827,7 @@ public class GlobalController implements ComponentController {
         SimEvent e= new SimEvent(SimEvent.EVENT_AP_CONTROLLER,
             time+routerOptions_.getControllerConsiderTime(), null);
         scheduler_.addEvent(e);
-        APController_.controllerUpdate(this);
+        APController_.controllerUpdate(time, this);
         
     }
     
@@ -896,7 +896,7 @@ public class GlobalController implements ComponentController {
         }
         s.print(getNoRouters()+" "+linkWeights_.size()+" "+
             APController_.getNoAPs());
-        APController_.controllerUpdate(this);
+        APController_.controllerUpdate(time, this);
         s.print(" "+APController_.APTrafficEstimate(this));
         s.print(" "+APController_.meanNodeLife()+" "+APController_.meanAPLife());
         s.println();    

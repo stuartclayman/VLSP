@@ -23,23 +23,23 @@ public class HotSpotAPController extends NullAPController {
     }
     
     /** Controller regular AP update action */
-    public void controllerUpdate(GlobalController g)
+    public void controllerUpdate(long time, GlobalController g)
     {
-        super.controllerUpdate(g);
+        super.controllerUpdate(time, g);
         if (gotMinAPs(g)) {
             if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
-                removeAP(g);
+                removeAP(time, g);
                 
             }
             return;
         }
         
-        addAP(g);
+        addAP(time, g);
     }
     
     /** Remove AP using hotSpot */
     
-     void removeAP(GlobalController g) {
+     void removeAP(long time, GlobalController g) {
         ArrayList <Integer> elect= getAPList();
         // No nodes which can be made managers
         int nNodes= elect.size();
@@ -58,14 +58,14 @@ public class HotSpotAPController extends NullAPController {
         // No node can be removed
         if (removeNode == 0)
             return;
-        removeAccessPoint(removeNode);
+        removeAccessPoint(time, removeNode);
         Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too many APs remove "+removeNode);
     }
     
     
     
     /** Add new AP usig hotSpot*/
-    void addAP(GlobalController g) {
+    void addAP(long time, GlobalController g) {
         ArrayList <Integer> elect= nonAPNodes(g);
         // No nodes which can be made managers
         int nNodes= elect.size();
@@ -82,7 +82,7 @@ public class HotSpotAPController extends NullAPController {
             }
         }
         
-        addAccessPoint(electNode,g);
+        addAccessPoint(time, electNode,g);
         Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too few APs add "+electNode);
     }
  

@@ -15,15 +15,15 @@ public class RandomAPController extends NullAPController {
     } 
         
     /** Router regular AP update action */
-    public void routerUpdate(RouterController r) 
+    public void routerUpdate(long time, RouterController r) 
     {
         //System.err.println ("Controller called");
     }
     
     /** Controller regular AP update action */
-    public void controllerUpdate(GlobalController g)
+    public void controllerUpdate(long time, GlobalController g)
     {
-        super.controllerUpdate(g);
+        super.controllerUpdate(time, g);
         if (gotMinAPs(g)) {
             if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
                 ArrayList <Integer> APs= new ArrayList<Integer>(getAPList());
@@ -34,7 +34,7 @@ public class RandomAPController extends NullAPController {
                     if (removable(rno,g)) {
                         Logger.getLogger("log").logln(USR.STDOUT,
                             leadin()+" too many APs remove "+rno);
-                        removeAccessPoint(rno);
+                        removeAccessPoint(time, rno);
                         return;
                     }
                     APs.remove(i);
@@ -53,7 +53,7 @@ public class RandomAPController extends NullAPController {
         // Choose a random node to become an AP manager
         int index= (int)Math.floor( Math.random()*nNodes);
         int elected= elect.get(index);
-        addAccessPoint(elected, g);
+        addAccessPoint(time, elected, g);
         
     }
     

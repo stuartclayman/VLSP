@@ -26,8 +26,12 @@ public class ConstructAPController
             a = new PressureAPController(o);
             return a;
         }  
-        if (name.equals("") || name.equals("Null")) {
+        if (name.equals("Null")) {
             a = new NullAPController(o);
+            return a;  
+        }
+         if (name.equals("") || name.equals("None")) {
+            a = new NoAPController();
             return a;  
         }
         
