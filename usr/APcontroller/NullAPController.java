@@ -224,13 +224,16 @@ public class NullAPController implements APController {
             visited.add(smallNode);
             visitedCost.add(smallCost);
             // Now check outlinks 
+            List <Integer> outLinks= g.getOutLinks(smallNode);
+            List <Integer> costs= g.getLinkCosts(smallNode);
             //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"picked node"+smallNode+" outlinks "+g.getOutLinks(smallNode));
-            for (int l: g.getOutLinks(smallNode)) {
-                
+            for (int i= 0; i < outLinks.size(); i++) {
+                int l= outLinks.get(i);
+                int linkCost= costs.get(i);
                 //  Is outlink to already visited node
                 if (visited.indexOf(l) != -1) 
                     continue;
-                int newCost= smallCost+g.getLinkWeight(smallNode,l);
+                int newCost= smallCost+linkCost;
                 // Is outlink cheaper way to get to node we already have on to visit list
                 int index= toVisit.indexOf(l);
                 if (index != -1) {
@@ -311,6 +314,24 @@ public class NullAPController implements APController {
        return false;
         
     }    
+    
+    /** Number of routers to add to make minimum requirements */
+    int noToAdd(GlobalController g) {
+        int noAPs= getNoAPs();
+        int noRouters= g.getNoRouters();
+        int add1= (int)Math.ceil(options_.getMinPropAP()*noRouters)-noAPs;
+        int add2= options_.getMinAPs()-noAPs;
+        return Math.max(add1,add2);
+    }
+    
+    /** Number of routers to remove to make maximum requirements */
+    int noToRemove(GlobalController g) {
+        int noAPs= getNoAPs();
+        int noRouters= g.getNoRouters();
+        int remove1= noAPs - (int)Math.floor(options_.getMaxPropAP()*noRouters);
+        int remove2= noAPs - options_.getMaxAPs();
+        return Math.max(remove1,remove2);
+    }
     
     /** Return true if we have max number of APs or more */
     boolean overMaxAPs(GlobalController g) {

@@ -27,115 +27,141 @@ public class HotSpotAPController extends NullAPController {
     {
         super.controllerUpdate(time, g);
         if (gotMinAPs(g)) {
-            if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
-                removeAP(time, g);
+            if (overMaxAPs(g)) {   // Too many APs, remove one
+                int noToRemove= noToRemove(g);
+                if (noToRemove > 0)
+                    removeAP(time, g, noToRemove);
                 
             }
             return;
         }
-        
-        addAP(time, g);
+        int noToAdd= noToAdd(g);
+        addAP(time, g, noToAdd);
     }
     
-    /** Remove AP using hotSpot */
-    
-     void removeAP(long time, GlobalController g) {
-        ArrayList <Integer> elect= getAPList();
+    /** Remove no APs using hotSpot */ 
+     void removeAP(long time, GlobalController g, int no) {
+        ArrayList <Integer> elect= new ArrayList<Integer>(getAPList());
         // No nodes which can be made managers
         int nNodes= elect.size();
         if (nNodes == 0) {
             return;
         }
-        int bottomScore= -1;
-        int removeNode= 0;
+        int []scores= new int [g.getMaxRouterId()+1];
         for (int e: elect) {
-            int score= getHotSpotScore(e,g);
-            if (score < bottomScore || bottomScore == -1 && removable(e,g)) {
-                bottomScore= score;
-                removeNode= e;
-            }
+            scores[e]= getHotSpotScore(e,g);
         }
-        // No node can be removed
-        if (removeNode == 0)
-            return;
-        removeAccessPoint(time, removeNode);
-        Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too many APs remove "+removeNode);
+        for (int i= 0; i < no; i++) {
+            int bottomScore= -1;
+            int removeNode= 0;
+            for (int e: elect) {
+                int score= scores[e];
+                if (score < bottomScore || bottomScore == -1 && removable(e,g)) {
+                    bottomScore= score;
+                    removeNode= e;
+                }
+            }
+            // No node can be removed
+            if (removeNode == 0)
+                return;
+            removeAccessPoint(time, removeNode);
+            Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too many APs remove "+removeNode);
+            int index= elect.indexOf(removeNode);
+            elect.remove(index);
+            if(elect.size() == 0)
+                break;
+        }
     }
     
     
     
-    /** Add new AP usig hotSpot*/
-    void addAP(long time, GlobalController g) {
-        ArrayList <Integer> elect= nonAPNodes(g);
+    /** Add no new APs usig hotSpot*/
+    void addAP(long time, GlobalController g, int no) {
+        ArrayList <Integer> elect= new ArrayList<Integer>(nonAPNodes(g));
         // No nodes which can be made managers
         int nNodes= elect.size();
         if (nNodes == 0) {
             return;
         }
-        int topScore= -1;
-        int electNode= 0;
-        for (int e: elect) {
-            int score= getHotSpotScore(e,g);
-            if (score > topScore) {
-                topScore= score;
-                electNode= e;
-            }
-        }
         
-        addAccessPoint(time, electNode,g);
-        Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too few APs add "+electNode);
+        int []scores= new int [g.getMaxRouterId()+1];
+        for (int e: elect) {
+           scores[e]= getHotSpotScore(e,g);
+        }
+        for (int i= 0; i < no; i++) {
+            int topScore= -1;
+            int electNode= 0;
+            for (int e: elect) {
+              
+                int score= scores[e];
+                if (score > topScore) {
+                    topScore= score;
+                    electNode= e;
+                }
+            }
+            addAccessPoint(time, electNode,g);
+            Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too few APs add "+electNode);
+            int index= elect.indexOf(electNode);
+            elect.remove(index);
+            if(elect.size() == 0)
+                break;
+        }
     }
  
     /** Hot spot score is # nodes within 1 cubed + # nodes within 2 squared
       + # nodes within 3 */
     int getHotSpotScore(int gid, GlobalController g)
     { 
-        ArrayList <Integer> visited= new ArrayList <Integer> ();
-        ArrayList <Integer> visitedCost= new ArrayList <Integer> ();
-        ArrayList <Integer> toVisit= new ArrayList <Integer> ();
-        ArrayList <Integer> toVisitCost= new ArrayList <Integer> ();
-        toVisit.add(gid);
-        toVisitCost.add(0);
-        int singles= 0;
-        int doubles= 0;
-        int triples= 0;
-       // Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Start find loop");
-        while (toVisit.size() > 0) {
-            //The first node will always be the smallest cost one
-            int smallCost= toVisitCost.get(0);
-            int smallNode= toVisit.get(0);
-            if (smallCost == 1) {
-                singles++;
-            } else if (smallCost == 2) {
-                doubles++;
-            } else if (smallCost == 3) {
-                triples++;
-            }
-            // Remove from toVisit and add to Visited
-            toVisit.remove(0);
-            toVisitCost.remove(0);
-            visited.add(smallNode);
-            visitedCost.add(smallCost);
-            // Now check outlinks 
-            //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"picked node"+smallNode+" outlinks "+g.getOutLinks(smallNode));
-            for (int l: g.getOutLinks(smallNode)) {
-                
-                //  Is outlink to already visited node
-                if (visited.indexOf(l) != -1) 
-                    continue;
-                // Is outlink cheaper way to get to node we do not yet have
-                int index= toVisit.indexOf(l);
-                if (index != -1) {
-                    toVisitCost.set(index,Math.min(toVisitCost.get(index), smallCost+1));
-                    continue;
-                }
-                if (smallCost+1 < 4) {
-                    toVisit.add(l);
-                    toVisitCost.add(smallCost+1);
-                }
-            }
-            
+        List <Integer> rList= g.getRouterList();
+        int maxRouterId= g.getMaxRouterId();
+        int nRouters= rList.size();
+        if (nRouters <=1)
+            return 0;
+        int hotSpotMax= 3;
+        int []countArray= new int[hotSpotMax];
+        for (int i= 0; i < hotSpotMax; i++) {
+            countArray[i]= 0;
         }
-        return (singles*singles*singles+doubles*doubles+singles);
+        
+        
+        // Boolean arrays are larger than needed but this is fast
+        boolean []visited= new boolean[maxRouterId+1];
+        boolean []visiting= new boolean[maxRouterId+1];
+        int []visitCost= new int[maxRouterId+1];
+        for (int i= 0; i < maxRouterId+1; i++) {
+            visited[i]= true;
+            visiting[i]= false;
+        }
+        for (int i= 0; i < nRouters; i++) {
+            visited[rList.get(i)]= false;
+        }
+        int []toVisit= new int[nRouters];
+        int toVisitCtr= 1;
+        toVisit[0]= rList.get(0);
+        visitCost[toVisit[0]]= 0;
+        while (toVisitCtr > 0) {
+            toVisitCtr--;
+            int node= toVisit[toVisitCtr];
+            visited[node]= true;
+            if (visitCost[node] > 0) {
+                countArray[visitCost[node]-1]++;
+            }
+            if (visitCost[node] == hotSpotMax)  //  Only count nodes within number of hops
+                continue;
+            
+            for (int l: g.getOutLinks(node)) {
+                if (visited[l] == false && visiting[l] == false) {
+                    toVisit[toVisitCtr]= l;
+                    visiting[l]= true;
+                    visitCost[l]= visitCost[node]+1;
+                    toVisitCtr++;
+                }
+            }
+        }
+        int score= 0;
+        for (int i=0; i < hotSpotMax; i++) {
+            score+=Math.pow(countArray[i],(hotSpotMax-i));
+        }
+        return score;
     }   
 }

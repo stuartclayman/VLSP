@@ -26,23 +26,24 @@ public class RandomAPController extends NullAPController {
         super.controllerUpdate(time, g);
         if (gotMinAPs(g)) {
             if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
-                ArrayList <Integer> APs= new ArrayList<Integer>(getAPList());
-                while (APs.size() > 0) {
-                   int nAPs= APs.size();
-                    int i= (int)Math.floor( Math.random()*nAPs);
-                    int rno= APs.get(i);
-                    if (removable(rno,g)) {
-                        Logger.getLogger("log").logln(USR.STDOUT,
-                            leadin()+" too many APs remove "+rno);
-                        removeAccessPoint(time, rno);
-                        return;
-                    }
-                    APs.remove(i);
-                }
+                int no= noToRemove(g);
+                removeAP(time,g,no);
+
                 
             }
             return;
         }
+        int no= noToAdd(g);
+        if (no <= 0)
+            return;
+        addAP(time,g,no);
+        
+    }
+    
+    /** Add no aggregation points chosen at random */
+    void addAP(long time, GlobalController g, int no) 
+    {
+      for (int i= 0; i < no; i++) {
         ArrayList <Integer> elect= nonAPNodes(g);
         Logger.getLogger("log").logln(USR.STDOUT,leadin()+" adding random AP");
         // No nodes which can be made managers
@@ -54,9 +55,29 @@ public class RandomAPController extends NullAPController {
         int index= (int)Math.floor( Math.random()*nNodes);
         int elected= elect.get(index);
         addAccessPoint(time, elected, g);
-        
+      }
     }
     
+    
+    /** Remove no aggregation points chosen at random */
+    void removeAP(long time, GlobalController g, int no) 
+    {
+        for (int i= 0; i < no; i++) {
+            ArrayList <Integer> APs= new ArrayList<Integer>(getAPList());
+            while (APs.size() > 0) {
+                int nAPs= APs.size();
+                int j= (int)Math.floor( Math.random()*nAPs);
+                int rno= APs.get(j);
+                if (removable(rno,g)) {
+                    Logger.getLogger("log").logln(USR.STDOUT,
+                            leadin()+" too many APs remove "+rno);
+                    removeAccessPoint(time, rno);
+                    break;
+                }
+                APs.remove(j);
+            }
+        }
+    }
     String leadin() {
         return ("RandomAPController:");
     }
