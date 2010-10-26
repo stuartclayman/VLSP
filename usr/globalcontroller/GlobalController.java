@@ -891,13 +891,14 @@ public class GlobalController implements ComponentController {
         
         if (o.isFirst()) {
             
-             s.println("#No_nodes no_links no_aps tot_ap_dist");
+             s.println("#No_nodes no_links no_aps tot_ap_dist mean_life mean_AP_life");
              o.setFirst(false);
         }
         s.print(getNoRouters()+" "+linkWeights_.size()+" "+
             APController_.getNoAPs());
         APController_.controllerUpdate(this);
         s.print(" "+APController_.APTrafficEstimate(this));
+        s.print(" "+APController_.meanNodeLife()+" "+APController_.meanAPLife());
         s.println();    
     }
     

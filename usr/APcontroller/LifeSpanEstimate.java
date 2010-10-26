@@ -12,7 +12,7 @@ and deaths*/
 public class LifeSpanEstimate {
     ArrayList <Integer> deaths_;    // lifespan of nodes which are dead
     HashMap <Integer,Long> births_;    // birth time of nodes which are alive
-    ArrayList <Integer> APDeaths_;
+    ArrayList <Integer> APDeaths_;    // Same for Agg Points
     HashMap <Integer,Long> APBirths_;
     RouterOptions options_;     // Options for simulations
     ArrayList <Integer> KMTime_= null;
@@ -115,6 +115,28 @@ public class LifeSpanEstimate {
         }
         deaths_.add(lifeTime);
     }
+
+    /** A node is born at a given time -- register this */
+    public void newAP(long time, int gid) 
+    {
+        APBirths_.put(gid,time);
+    }
+    
+    /** A node dies -- register this */
+    public void APDeath(long time, int gid)
+    {
+        int lifeTime= (int)(time - APBirths_.get(gid) );
+        APBirths_.remove(gid);
+        for (int i= 0; i < APDeaths_.size();i++) { // Keep list of deaths ordered
+            if (APDeaths_.get(i) >= lifeTime) {
+                APDeaths_.add(i,lifeTime);
+                return;
+            }
+        }
+        APDeaths_.add(lifeTime);
+    }
+    
+    
 
     /** Get an estimate of remaining lifespan using KM estimator */
     
@@ -298,5 +320,32 @@ public class LifeSpanEstimate {
     {
         return 1-erf(x);
     }
+    
+        /** Return the mean life of a node -- this only includes
+     nodes which have died*/
+    public double meanNodeLife()
+    { 
+        if (deaths_.size() == 0) {
+            return 0.0;
+        }
+        double totLife= 0;
+        for (int l :deaths_) {
+            totLife+= l;
+        }
+        return totLife/deaths_.size();
+    }
+    
+    /** Return the mean life of an AP -- this only includes APs which have
+    died*/
+    public double meanAPLife() {
+        double totLife= 0;
+        if (APDeaths_.size() == 0) {
+            return 0.0;
+        }
+        for (int l : APDeaths_) {
+            totLife+= l;
+        }
+        return totLife/APDeaths_.size();
+    }  
 
 }

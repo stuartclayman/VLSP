@@ -20,11 +20,13 @@ public class NullAPController implements APController {
     boolean changedAPs_= false;
     HashMap<Integer,Integer> APs_= null;    // APs indexed by router
     HashMap<Integer,Integer> APCosts_= null;  // Costs to each AP
+    LifeSpanEstimate lse_= null;
     
     NullAPController (RouterOptions o) {
         APGIDs_= new ArrayList<Integer>();
         APs_= new HashMap<Integer,Integer>();
         APCosts_= new HashMap<Integer,Integer>();
+        lse_= new LifeSpanEstimate();
         options_= o;
     } 
     
@@ -245,6 +247,7 @@ public class NullAPController implements APController {
     /** Add node to network */
     public void addNode(long time, int gid)
     { 
+        lse_.newNode(time,gid);
         changedNet_= true;
     }
     
@@ -252,6 +255,7 @@ public class NullAPController implements APController {
         note that access points will  */
     public void removeNode(long time, int gid)
     {
+        lse_.nodeDeath(time,gid);
         changedNet_= true;
         
         int index= APGIDs_.indexOf(gid);
@@ -328,6 +332,19 @@ public class NullAPController implements APController {
        return false;
         
     } 
+    
+    /** Return the mean life of a node -- this only includes
+     nodes which have died*/
+    public double meanNodeLife()
+    {
+        return 0.0;
+    }
+    
+    /** Return the mean life of an AP -- this only includes APs which have
+    died*/
+    public double meanAPLife() {
+        return 0.0;
+    }    
     
     String leadin() {
         return ("NullAPController:");

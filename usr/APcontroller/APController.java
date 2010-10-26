@@ -47,6 +47,14 @@ public interface APController {
     /** Remove link from network */
     public void removeLink(long time, int gid1, int gid2);
     
+    /** Return the mean life of a node -- this only includes
+     nodes which have died*/
+    public double meanNodeLife();
+    
+    /** Return the mean life of an AP -- this only includes APs which have
+    died*/
+    public double meanAPLife();
+    
     /** Return APInfo appropriate for this controller */
     public APInfo newAPInfo();
     

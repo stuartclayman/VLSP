@@ -10,11 +10,9 @@ import usr.router.RouterOptions;
 
 public class PressureAPController extends NullAPController {
 
-    HashMap <Integer,Integer> pressures_= null;
-
+  
     PressureAPController (RouterOptions o) {
         super(o);
-        pressures_= new HashMap <Integer,Integer>();
         
     } 
         
