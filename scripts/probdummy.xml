@@ -1,0 +1,40 @@
+<ProbabilisticEngine>
+      <NodeBirthDist>
+            <ProbElement>
+                 <Type>Exponential</Type>
+                 <Weight>1.0</Weight>
+                 <Parameter>xxx</Parameter>
+            </ProbElement>
+      </NodeBirthDist>
+      <NodeDeathDist>
+            <ProbElement>
+                 <Type>Exponential</Type>
+                 <Weight>0.1</Weight>
+                 <Parameter>200</Parameter>
+            </ProbElement>
+            <ProbElement>
+                 <Type>Weibull</Type>
+                 <Weight>0.9</Weight>
+                 <Parameter>1000.0</Parameter>
+                 <Parameter>1.5</Parameter>
+            </ProbElement>
+            <ProbElement>
+                 <Type>Weibull</Type>
+                 <Weight>1.0</Weight>
+                 <Parameter>10000.0</Parameter>
+                 <Parameter>2.0</Parameter>
+            </ProbElement>
+      </NodeDeathDist>
+      <LinkCreateDist>
+            
+            <ProbElement>
+                 <Type>PoissonPlus</Type>
+                 <Weight>1.0</Weight>
+                 <Parameter>1.5</Parameter>
+                 <Parameter>1.0</Parameter>
+            </ProbElement>
+      </LinkCreateDist>
+      <Parameters>
+          <PreferentialAttachment>false</PreferentialAttachment>
+      </Parameters>
+</ProbabilisticEngine>

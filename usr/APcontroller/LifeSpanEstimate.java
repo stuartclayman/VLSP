@@ -151,7 +151,7 @@ public class LifeSpanEstimate {
         for (int l :deaths_) {
             totLife+= l;
         }
-        return totLife/deaths_.size();
+        return totLife/(1000.0*deaths_.size());
     }
     
     /** Return the mean life of an AP -- this only includes APs which have
@@ -164,7 +164,7 @@ public class LifeSpanEstimate {
         for (int l : APDeaths_) {
             totLife+= l;
         }
-        return totLife/APDeaths_.size();
+        return totLife/(1000.0*APDeaths_.size());
     }  
     
 
