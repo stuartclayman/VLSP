@@ -1173,7 +1173,7 @@ public class GlobalController implements ComponentController {
         int []toVisit= new int[nRouters];
         int toVisitCtr= 1;
         toVisit[0]= routerList_.get(0);
-        int noVisited= 1;
+        int noVisited= 0;
         while (noVisited < nRouters) {
             //System.err.println("NoVisited = "+noVisited+" / "+nRouters);
             if (toVisitCtr == 0) { // Not visited everything so make a new link
@@ -1230,35 +1230,75 @@ public class GlobalController implements ComponentController {
     /** Make sure network is connected from r1 to r2*/
     public void connectNetwork(long time,int r1, int r2) 
     {
-        if (routerList_.size() <=1)
+        int nRouters= routerList_.size();
+        if (nRouters <=1)
             return;
-        ArrayList <Integer> visited = new ArrayList <Integer>();
-        ArrayList <Integer> unVisited = new ArrayList <Integer> (routerList_);
-        ArrayList <Integer> toVisit = new ArrayList <Integer> ();
-        toVisit.add(routerList_.get(0));
-        while (toVisit.size() != 0) {
-            int node= toVisit.get(0);
-            toVisit.remove(0);
-            visited.add(node);
-            int index= unVisited.indexOf(node);
-            unVisited.remove(index);
+        // Boolean arrays are larger than needed but this is fast
+        boolean []visited= new boolean[maxRouterId_+1];
+        boolean []visiting= new boolean[maxRouterId_+1];
+        for (int i= 0; i < maxRouterId_+1; i++) {
+            visited[i]= true;
+            visiting[i]= false;
+        }
+        for (int i= 0; i < nRouters; i++) {
+            visited[routerList_.get(i)]= false;
+        }
+        int []toVisit= new int[nRouters];
+        int toVisitCtr= 1;
+        toVisit[0]= r1;
+        int noVisited= 1;
+        while (noVisited < nRouters) {
+            //System.err.println("NoVisited = "+noVisited+" / "+nRouters);
+            if (toVisitCtr == 0) { // Not visited everything so make a new link
+                // Choose i1 th visited and i2 th unvisited
+                int i1= (int)Math.floor(Math.random()*noVisited);
+                int i2= (int)Math.floor(Math.random()*(nRouters-noVisited));
+                int l1= -1;
+                int l2= -1;
+                //System.err.println("Pick "+i1+" from "+noVisited+" visited nodes");
+                //System.err.println("Pick "+i2+" from "+(nRouters-noVisited)+" unvisited nodes");
+                for (int i= 0; i < nRouters; i++) {
+                    int tmpNode= routerList_.get(i);
+                    if (visited[tmpNode] && i1 >= 0) {
+                        
+                        if (i1 == 0) {
+                            l1= tmpNode;
+                        }
+                        i1--;
+                    } else if (!visited[tmpNode] && i2 >= 0) {
+                        
+                        if (i2 == 0) {
+                            l2= tmpNode;
+                        }
+                        i2--;
+                    }
+                    if (i1 < 0 && i2 < 0)
+                        break;
+                }
+                if (l1 == -1 || l2 == -1) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection "+l1+" "+l2);
+                    bailOut();
+                }
+                // Make a new link to connect network
+                //System.err.println("Link "+l1+" is "+visited[l1]+" "+l2+" is "+visited[l2]);
+                startLink(time,l1,l2);
+                toVisitCtr++;
+                toVisit[0]= l2;
+            }
+            toVisitCtr--;
+            int node= toVisit[toVisitCtr];
+            visited[node]= true;
+            noVisited++;
             for (int l: getOutLinks(node)) {
-                if (l == r2) 
+                if (l==r2)    // We have a connection
                     return;
-                if (toVisit.indexOf(l) == -1 && unVisited.indexOf(l) != -1) {
-                    toVisit.add(l);
+                if (visited[l] == false && visiting[l] == false) {
+                    toVisit[toVisitCtr]= l;
+                    visiting[l]= true;
+                    toVisitCtr++;
                 }
             }
         }
-        if (visited.size() == routerList_.size()) {
-            return;
-        }
-        int i1= (int)Math.floor(Math.random()*visited.size());
-        int i2= (int)Math.floor(Math.random()*unVisited.size());
-        int l1= visited.get(i1);
-        int l2= unVisited.get(i2);
-        startLink(time,l1,l2);
-        connectNetwork(time,r1,r2);
         
     }
     

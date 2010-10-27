@@ -88,61 +88,77 @@ public class PressureAPController extends NullAPController {
  
     /** Pressure score for gid which is not AP */
     int getPressure(int gid, GlobalController g)
-    { 
-        int pressure= 0;
-        ArrayList <Integer> visited= new ArrayList <Integer> ();
-        ArrayList <Integer> visitedCost= new ArrayList <Integer> ();
-        ArrayList <Integer> toVisit= new ArrayList <Integer> ();
-        ArrayList <Integer> toVisitCost= new ArrayList <Integer> ();
-        toVisit.add(gid);
-        toVisitCost.add(0);
-       // Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Start find loop");
-        while (toVisit.size() > 0) {
-            //Visit closest node first
-            int smallest= 0;
-            int smallCost= toVisitCost.get(0);
-            int smallPos= 0;
-            for (int i= 1; i < toVisit.size(); i++) {
-                int newCost= toVisitCost.get(i);
-                if (newCost < smallCost) {
-                    smallCost= newCost;
-                    smallest= i;
-                }
-            }
-           
-            int smallNode= toVisit.get(smallest);
-            // Remove from toVisit and add to Visited
-            toVisit.remove(smallest);
-            toVisitCost.remove(smallest);
-            visited.add(smallNode);
-            visitedCost.add(smallCost);
-            int APcost= getAPCost(smallNode);
-            if (APcost <= smallCost) {   // An existing access point is as close
-                continue;   // or closer
-            }
-            pressure+= APcost-smallCost;
-            // Now check outlinks 
-            //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"picked node"+smallNode+" outlinks "+g.getOutLinks(smallNode));
-            for (int l: g.getOutLinks(smallNode)) {
-                
-                
-                //  Is outlink to already visited node
-                if (visited.indexOf(l) != -1) 
-                    continue;
-                int newCost= smallCost+g.getLinkWeight(smallNode,l);
-                // Is outlink cheaper way to get to node we already have on to visit list
-                int index= toVisit.indexOf(l);
-                if (index != -1) {
-                    toVisitCost.set(index,Math.min(toVisitCost.get(index),newCost));
-                } else if (options_.getMaxAPWeight() == 0 || newCost <= options_.getMaxAPWeight()) {
-                    toVisit.add(l); 
-                    toVisitCost.add(newCost);
-                }
-            }
-            
+    {         
+        List <Integer> rList= g.getRouterList();
+        int maxRouterId= g.getMaxRouterId();
+        int nRouters= rList.size();
+        if (nRouters <=1)
+            return 0;
+        
+        
+        
+        // Boolean arrays are larger than needed but this is fast
+        boolean []visited= new boolean[maxRouterId+1];
+        boolean []visiting= new boolean[maxRouterId+1];
+        
+        for (int i= 0; i < maxRouterId+1; i++) {
+            visited[i]= true;
+            visiting[i]= false;
         }
-        return pressure;
-    } 
+        for (int i= 0; i < nRouters; i++) {
+            visited[rList.get(i)]= false;
+        }
+        int []toVisit= new int[nRouters];   // numbers of nodes to visit
+        int []visitCost= new int[nRouters]; // costs to get there
+        int toVisitCtr= 1;
+        int score= 0;
+        toVisit[0]= gid;
+        visitCost[0]= 0;
+        while (toVisitCtr > 0) {
+            int smallNode= toVisit[0]; // Find cheapest node to visit next
+            int smallCost= visitCost[0];
+            int whichNode= 0;
+            for (int i= 1; i < toVisitCtr; i++) {
+                if (visitCost[i] < smallCost) {
+                    smallCost= visitCost[i];
+                    smallNode= toVisit[i];
+                    whichNode= i;
+                }
+            }
+            toVisitCtr--;
+            toVisit[whichNode]= toVisit[toVisitCtr]; // Rearrange to Visit over node just visited
+            visitCost[whichNode]= visitCost[toVisitCtr];
+            
+            visited[smallNode]= true;
+            
+            int apCost= getAPCost(smallNode);
+            if (apCost < smallCost) // Another access point is closer
+                continue;
+            score+= apCost- smallCost;
+             //  No point in looking further as further nodes won't use this AP
+            if (smallCost == options_.getMaxAPWeight()) 
+                continue;
+            List <Integer>out = g.getOutLinks(smallNode);
+            List <Integer>costs = g.getLinkCosts(smallNode);
+            
+            // Add nodes linked from this node
+            for (int i= 0; i < out.size();i++ ) {
+                int l= out.get(i);
+                int cost= costs.get(i);
+                if (visited[l] == false && visiting[l] == false && 
+                  smallCost+cost < options_.getMaxAPWeight()) {
+                    toVisit[toVisitCtr]= l;
+                    visiting[l]= true;
+                    visitCost[toVisitCtr]= smallCost+cost;
+                    toVisitCtr++;
+                }
+            }
+        }
+
+
+        return score;
+    }   
+    
     
         /** Pressure score for AP -- crude, simply number of nodes controlled*/
     int getAPPressure(int gid, GlobalController g)

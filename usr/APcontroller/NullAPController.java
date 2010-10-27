@@ -114,7 +114,6 @@ public class NullAPController implements APController {
           return;
        }
        for (int i: g.getRouterList()) {
-          int myAP= getAP(i);
           Pair <Integer,Integer> closest= findClosestAP(i,g);
           if (closest == null) {
               addAccessPoint(time, i,g);
@@ -192,6 +191,9 @@ public class NullAPController implements APController {
     public Pair<Integer,Integer> findClosestAP(int gid, GlobalController g)
     {
         // Array lists are of costs and gids
+        
+        
+        
         ArrayList <Integer> visited= new ArrayList <Integer> ();
         ArrayList <Integer> visitedCost= new ArrayList <Integer> ();
         ArrayList <Integer> toVisit= new ArrayList <Integer> ();

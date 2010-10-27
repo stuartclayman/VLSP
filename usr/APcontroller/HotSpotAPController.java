@@ -137,7 +137,7 @@ public class HotSpotAPController extends NullAPController {
         }
         int []toVisit= new int[nRouters];
         int toVisitCtr= 1;
-        toVisit[0]= rList.get(0);
+        toVisit[0]= gid;
         visitCost[toVisit[0]]= 0;
         while (toVisitCtr > 0) {
             toVisitCtr--;
