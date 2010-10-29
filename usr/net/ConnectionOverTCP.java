@@ -36,6 +36,9 @@ public class ConnectionOverTCP implements Connection {
     int inCounter = 0;
     int outCounter = 0;
 
+    // eof
+    boolean eof = false;
+
     /**
      * Construct a ConnectionOverTCP given a TCPEndPointSrc
      */
@@ -92,23 +95,20 @@ public class ConnectionOverTCP implements Connection {
 
     public boolean sendDatagram(Datagram dg) throws IOException {
         //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: send(" + outCounter + ")");
-      //  Logger.getLogger("log").logln(USR.ERROR, "SENDING DATAGRAM LENGTH "+dg.getTotalLength());
-      //  ByteBuffer b= ((DatagramPatch)dg).toByteBuffer();
-     //   Logger.getLogger("log").logln(USR.ERROR, "WRITE as bytes "+ b.asCharBuffer());
-       // for (int i= 0; i < dg.getTotalLength(); i++) {
-        //      Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+" char is "+ (char)b.get());
-       // }
-            int count = getChannel().write(((DatagramPatch)dg).toByteBuffer());
+
+        if (channel.isOpen()) {
+            int count = channel.write(((DatagramPatch)dg).toByteBuffer());
             outCounter++;
 
-            if (count == -1) {
-                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
-                return false;
-            } else {
-                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
+            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
 
-                return true;
-            }
+            return true;
+        } else {
+            Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " outCounter = " + outCounter + " ALREADY CLOSED ");
+
+            return false;
+        }
+
     }
 
 
@@ -151,7 +151,12 @@ public class ConnectionOverTCP implements Connection {
 
           // get at least enough data to read length or exit
           if (bufferEndData_ - bufferStartData_ < 8) {
-              return null;
+              if (eof) {
+                  return null;
+              } else {
+                  readMoreData();
+              }
+              // WAS return null;
           }
           short packetLen= getPacketLen();
           
@@ -179,7 +184,13 @@ public class ConnectionOverTCP implements Connection {
           }
           
           if (bufferEndData_ - bufferStartData_ < packetLen) {
-              return null;
+
+              if (eof) {
+                  return null;
+              } else {
+                  readMoreData();
+              }
+              // WAS return null;
           }
           // OK -- we got a full packet of data, let's make a datagram of it
           
@@ -215,11 +226,14 @@ public class ConnectionOverTCP implements Connection {
         //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: readMoreData: buffer position = " + bufferStartData_ + "/" + bufferEndData_ + "/" + buffer.limit() + "/" + buffer.capacity());
 
         try {
-            int count= getChannel().read(buffer);
+            int count= channel.read(buffer);
 
             if (count == -1) {
                 //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: readMoreData: READ "+count+" bytes");
+                // EOF
+                eof = true;
                 return;
+
             } else {
                 bufferEndData_+= count;
                 //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: readMoreData: READ "+count+" bytes");
@@ -298,11 +312,12 @@ public class ConnectionOverTCP implements Connection {
      * Close the connection.
      */
     public void close() {
-        //Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close()");
+        Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " + inCounter + " outCounter = " + outCounter);
 
         Socket socket = getSocket();
 
         try {
+            eof = true;
             socket.close();
         } catch (IOException ioe) {
             throw new Error("Socket: " + socket + " can't close");
