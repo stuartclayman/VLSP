@@ -26,9 +26,12 @@ public class SimpleRoutingTable implements RoutingTable {
         SimpleRoutingTableEntry e;
         //System.err.println("Parsing complete Routing table");
         byte []entry= new byte[8];
-        for (int i= 0; i< bytes.length;i+=8) {
+        if (bytes.length %8 != 0) {
+            Logger.getLogger("log").logln(USR.ERROR, "Received unusual routing table length "+ bytes.length);
+        }
+        for (int i= 0; i< bytes.length/8;i++) {
             //System.err.println("Parsing complete Routing table entry at "+i);
-            System.arraycopy(bytes,i,entry,0,8);
+            System.arraycopy(bytes,i*8,entry,0,8);
             try {
                 e= new SimpleRoutingTableEntry(entry, netif);
                 Address a= e.getAddress();
@@ -36,7 +39,7 @@ public class SimpleRoutingTable implements RoutingTable {
             } catch (Exception ex) {
                 throw ex;
             }
-            
+           // System.err.println("Got entry "+e);
         }
     }
     

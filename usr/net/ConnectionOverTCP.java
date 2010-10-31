@@ -151,10 +151,9 @@ public class ConnectionOverTCP implements Connection {
 
           // get at least enough data to read length or exit
           if (bufferEndData_ - bufferStartData_ < 8) {
-              if (eof) {
+              readMoreData();
+              if (bufferEndData_ - bufferStartData_ < 8) {
                   return null;
-              } else {
-                  readMoreData();
               }
               // WAS return null;
           }
@@ -185,12 +184,7 @@ public class ConnectionOverTCP implements Connection {
           
           if (bufferEndData_ - bufferStartData_ < packetLen) {
 
-              if (eof) {
-                  return null;
-              } else {
-                  readMoreData();
-              }
-              // WAS return null;
+              return null;
           }
           // OK -- we got a full packet of data, let's make a datagram of it
           
