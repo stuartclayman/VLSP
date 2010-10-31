@@ -6,7 +6,6 @@
     </RoutingParameters>
     <APManager>
         <Name>Pressure</Name>
-        <MaxAPs>100</MaxAPs>
         <MinAPs>1</MinAPs>
         <RouterConsiderTime>10000</RouterConsiderTime>
         <ControllerConsiderTime>10000</ControllerConsiderTime>

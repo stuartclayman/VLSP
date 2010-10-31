@@ -56,6 +56,13 @@ public class NoAPController implements APController {
         
  
     }
+  
+    /** No score for this function */
+    public int getScore(long tim, int gid, GlobalController g) 
+    {
+        return 0;
+    }
+  
         
     /** Router regular AP update action */
     public void routerUpdate(RouterController r) 

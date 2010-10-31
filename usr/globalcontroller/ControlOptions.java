@@ -433,6 +433,18 @@ public class ControlOptions {
           String type= ReadXMLUtils.parseSingleString(n,"Type","Output",false);
           ReadXMLUtils.removeNode(n,"Type","Output");
           ot.setType(type);
+          String parm= ReadXMLUtils.parseSingleString(n,"Parameter","Output",true);
+          ReadXMLUtils.removeNode(n,"Parameter","Output");
+          ot.setParameter(parm);
+      } catch (NumberFormatException e) {
+          throw new SAXException ("Cannot parse integer in Output Tag "+e.getMessage());
+      } catch (java.lang.IllegalArgumentException e) {
+          throw new SAXException ("Cannot parse tag "+e.getMessage());
+      }  catch (SAXException e) {
+          throw e;
+      } catch (XMLNoTagException e) {
+      }
+      try {
           int time= ReadXMLUtils.parseSingleInt(n,"Time","Output",true);
           ReadXMLUtils.removeNode(n,"Time","Output");
           ot.setTime(time);

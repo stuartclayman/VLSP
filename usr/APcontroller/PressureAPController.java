@@ -25,134 +25,158 @@ public class PressureAPController extends NullAPController {
     /** Controller regular AP update action */
     public void controllerUpdate(long time, GlobalController g)
     {
-        super.controllerUpdate(time, g);
+        super.controllerUpdate(time,g);
         if (gotMinAPs(g)) {
-            if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
-                removeAP(time, g);
+            if (overMaxAPs(g)) {   // Too many APs, remove one
+                int noToRemove= noToRemove(g);
+                if (noToRemove > 0)
+                    removeAP(time, g, noToRemove);
                 
             }
             return;
         }
-        
-        addAP(time, g);
+        int noToAdd= noToAdd(g);
+        //System.err.println("Adding "+noToAdd);
+        addAP(time, g, noToAdd);
     }
     
-    /** Remove AP using hotSpot */
+    /** Remove no APs using hotSpot */
     
-     void removeAP(long time, GlobalController g) {
-        ArrayList <Integer> elect= getAPList();
-        // No nodes which can be made managers
-        int nNodes= elect.size();
-        if (nNodes == 0) {
-            return;
-        }
-        int bottomScore= -1;
-        int removeNode= 0;
+     void removeAP(long time, GlobalController g, int no) {
+        ArrayList <Integer> elect= new ArrayList<Integer>(getAPList());
+        int score[]= new int[g.getMaxRouterId()+1];
         for (int e: elect) {
-            int score= getAPPressure(e,g);
-            if (score < bottomScore || bottomScore == -1 && removable(e,g)) {
-                bottomScore= score;
-                removeNode= e;
-            }
+            score[e]= getAPPressure(e,g);
         }
-        // No node can be removed
-        if (removeNode == 0)
-            return;
-        removeAccessPoint(time, removeNode);
-        Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too many APs remove "+removeNode);
+        for (int i= 0; i < no; i++) {
+        
+            int bottomScore= -1;
+            int removeNode= 0;
+            for (int e: elect) {
+            
+                if (score[e] < bottomScore || bottomScore == -1 && removable(e,g)) {
+                    bottomScore= score[e];
+                    removeNode= e;
+                }
+            }
+            // No node can be removed
+            if (removeNode == 0)
+                return;
+            removeAccessPoint(time, removeNode);
+            Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too many APs remove "+removeNode);
+            elect.remove(elect.indexOf(removeNode));
+        }
     }
     
     
     
     /** Add new AP usig hotSpot*/
-    void addAP(long time, GlobalController g) {
-        ArrayList <Integer> elect= nonAPNodes(g);
+    void addAP(long time, GlobalController g, int no) {
+       // System.err.println("At "+time+" adding "+no);
+        ArrayList <Integer> elect= new ArrayList<Integer>(nonAPNodes(g));
         // No nodes which can be made managers
-        int nNodes= elect.size();
-        if (nNodes == 0) {
-            return;
-        }
-        int topScore= -1;
-        int electNode= 0;
+        int score[]= new int[g.getMaxRouterId()+1];
         for (int e: elect) {
-            int score= getPressure(e,g);
-            if (score > topScore) {
-                topScore= score;
-                electNode= e;
-            }
+            score[e]= getPressure(e,g);
         }
+        for (int i= 0; i < no; i++) {
         
-        addAccessPoint(time, electNode,g);
-        Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too few APs add "+electNode);
+            int topScore= -1;
+            int addNode= 0;
+            for (int e: elect) {
+            
+                if (score[e] > topScore || topScore == -1) {
+                    topScore= score[e];
+                    addNode= e;
+                }
+            }
+            // No node can be removed
+            if (addNode == 0)
+                return;
+            addAccessPoint(time, addNode,g);
+            Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too few APs add "+addNode);
+            elect.remove(elect.indexOf(addNode));
+        }
+    }
+ 
+    /** No score for this function */
+    public int getScore(long time, int gid, GlobalController g) 
+    {
+        if (isAP(gid)) {
+            return getAPPressure(gid,g);
+        } else {
+            return getPressure(gid,g);
+        }
     }
  
     /** Pressure score for gid which is not AP */
     int getPressure(int gid, GlobalController g)
     {         
-        List <Integer> rList= g.getRouterList();
-        int maxRouterId= g.getMaxRouterId();
-        int nRouters= rList.size();
-        if (nRouters <=1)
-            return 0;
+        // Array lists are of costs and gids
         
-        
-        
-        // Boolean arrays are larger than needed but this is fast
-        boolean []visited= new boolean[maxRouterId+1];
-        boolean []visiting= new boolean[maxRouterId+1];
-        
-        for (int i= 0; i < maxRouterId+1; i++) {
-            visited[i]= true;
-            visiting[i]= false;
+        int []permCost= new int[g.getMaxRouterId()+1];
+        int []tempCost= new int[g.getMaxRouterId()+1];
+        ArrayList <Integer> routers= g.getRouterList();
+        for (int i: routers) {
+            permCost[i]= -1;
+            tempCost[i]= -1;
         }
-        for (int i= 0; i < nRouters; i++) {
-            visited[rList.get(i)]= false;
+        int maxCost= options_.getMaxAPWeight();
+        if (maxCost == 0) {
+            maxCost= g.getMaxRouterId();
         }
-        int []toVisit= new int[nRouters];   // numbers of nodes to visit
-        int []visitCost= new int[nRouters]; // costs to get there
-        int toVisitCtr= 1;
+        int []temporary= new int[routers.size()];  // Unordered list of 
+        // nodes on temporary list
+        temporary[0]= gid;
+        tempCost[gid]= 0;
+        int tempLen= 1;
         int score= 0;
-        toVisit[0]= gid;
-        visitCost[0]= 0;
-        while (toVisitCtr > 0) {
-            int smallNode= toVisit[0]; // Find cheapest node to visit next
-            int smallCost= visitCost[0];
-            int whichNode= 0;
-            for (int i= 1; i < toVisitCtr; i++) {
-                if (visitCost[i] < smallCost) {
-                    smallCost= visitCost[i];
-                    smallNode= toVisit[i];
-                    whichNode= i;
+        // Dijkstra time -- everyone loves Dijkstra
+        while (tempLen > 0) {
+            // Find cheapest temp node
+            int cheapest= 0;
+            int cheapCost= tempCost[temporary[0]];
+            for (int i= 1; i < tempLen; i++) {
+                if (tempCost[temporary[0]] < cheapCost) {
+                    cheapCost= tempCost[temporary[i]];
+                    cheapest= i;
                 }
             }
-            toVisitCtr--;
-            toVisit[whichNode]= toVisit[toVisitCtr]; // Rearrange to Visit over node just visited
-            visitCost[whichNode]= visitCost[toVisitCtr];
+            int cheapNode= temporary[cheapest];
             
-            visited[smallNode]= true;
-            
-            int apCost= getAPCost(smallNode);
-            if (apCost < smallCost) // Another access point is closer
+            permCost[cheapNode]= cheapCost;
+            score+=getAPCost(cheapNode)-cheapCost;
+            tempLen--;
+            temporary[cheapest]= temporary[tempLen];
+            if (cheapCost == maxCost)
                 continue;
-            score+= apCost- smallCost;
-             //  No point in looking further as further nodes won't use this AP
-            if (smallCost == options_.getMaxAPWeight()) 
-                continue;
-            List <Integer>out = g.getOutLinks(smallNode);
-            List <Integer>costs = g.getLinkCosts(smallNode);
-            
-            // Add nodes linked from this node
-            for (int i= 0; i < out.size();i++ ) {
-                int l= out.get(i);
-                int cost= costs.get(i);
-                if (visited[l] == false && visiting[l] == false && 
-                  smallCost+cost < options_.getMaxAPWeight()) {
-                    toVisit[toVisitCtr]= l;
-                    visiting[l]= true;
-                    visitCost[toVisitCtr]= smallCost+cost;
-                    toVisitCtr++;
+            int [] out= g.getOutLinks(cheapNode);
+            int [] outCost= g.getLinkCosts(cheapNode);
+            int link;
+            // Consider adding links from new node
+            for (int i= 0; i < out.length; i++) {
+                link= out[i];
+                if (permCost[link] >= 0) // Already visited
+                    continue;
+                int newCost= cheapCost+outCost[i];
+                
+                if (newCost > maxCost)  // Too pricey
+                    continue;
+                if (newCost >= getAPCost(link)) // Pricer than other AP
+                    continue;
+                if (tempCost[link] >= 0) { // Already visiting
+                    if (tempCost[link] > newCost) {
+                        tempCost[link]= newCost;
+                        // Found cheaper route
+                    } 
+                     continue;
                 }
+                // Add to temporary list
+                tempCost[link]= newCost;
+                temporary[tempLen]= link;
+                tempLen++;
             }
+            
         }
 
 

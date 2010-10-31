@@ -18,14 +18,16 @@ public class NullAPController implements APController {
     RouterOptions options_= null;
     boolean changedNet_= false;
     boolean changedAPs_= false;
-    HashMap<Integer,Integer> APs_= null;    // APs indexed by router
-    HashMap<Integer,Integer> APCosts_= null;  // Costs to each AP
+    ArrayList<Integer> APs_= null;    // APs indexed by router
+    ArrayList<Integer> APCosts_= null;  // Costs to each AP
     LifeSpanEstimate lse_= null;
     
     NullAPController (RouterOptions o) {
         APGIDs_= new ArrayList<Integer>();
-        APs_= new HashMap<Integer,Integer>();
-        APCosts_= new HashMap<Integer,Integer>();
+        APs_= new ArrayList<Integer>();
+        APCosts_= new ArrayList<Integer>();
+        APs_.add(0);    // Make arrays offset 1
+        APCosts_.add(0);
         lse_= new LifeSpanEstimate();
         options_= o;
     } 
@@ -82,16 +84,16 @@ public class NullAPController implements APController {
         Integer thisAP= APs_.get(gid);
         //System.out.println("SETAP CALLED");
         if (thisAP == null) {
-            APs_.put(gid,ap);
-            APCosts_.put(gid,cost);
+            APs_.set(gid,ap);
+            APCosts_.set(gid,cost);
             g.setAP(gid,ap);
         } else {
             
-            APCosts_.put(gid,cost);
+            APCosts_.set(gid,cost);
             //System.out.println("Got here "+thisAP+" "+ap);
             if (thisAP != ap) {
                 thisAP= ap;
-                APs_.put(gid,ap);
+                APs_.set(gid,ap);
                 //System.out.println("Calling g");
                 g.setAP(gid,ap);
             }
@@ -114,6 +116,7 @@ public class NullAPController implements APController {
           return;
        }
        for (int i: g.getRouterList()) {
+         // System.err.println("Find routers for "+i);
           Pair <Integer,Integer> closest= findClosestAP(i,g);
           if (closest == null) {
               addAccessPoint(time, i,g);
@@ -181,79 +184,90 @@ public class NullAPController implements APController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+" removing access point "+gid);
         lse_.APDeath(time,gid);
         APGIDs_.remove(index);
-        APs_.remove(gid);
-        APCosts_.remove(gid);
         changedAPs_= true;
         
     }
     
-    /** Return the gid and cost of the closest AP or null if there is no such AP*/
+   /** Return the gid and cost of the closest AP or null if there is no such AP*/
     public Pair<Integer,Integer> findClosestAP(int gid, GlobalController g)
     {
-        // Array lists are of costs and gids
+        // Dijkstra algorithm with temp and perm costs
         
-        
-        
-        ArrayList <Integer> visited= new ArrayList <Integer> ();
-        ArrayList <Integer> visitedCost= new ArrayList <Integer> ();
-        ArrayList <Integer> toVisit= new ArrayList <Integer> ();
-        ArrayList <Integer> toVisitCost= new ArrayList <Integer> ();
-        toVisit.add(gid);
-        toVisitCost.add(0);
-       // Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Start find loop");
-        while (toVisit.size() > 0) {
-            //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"toVisit"+toVisit);
-            int smallest= 0;
-            int smallCost= toVisitCost.get(0);
-            int smallPos= 0;
-            for (int i= 1; i < toVisit.size(); i++) {
-                int newCost= toVisitCost.get(i);
-                if (newCost < smallCost) {
-                    smallCost= newCost;
-                    smallest= i;
+        int []permCost= new int[g.getMaxRouterId()+1];
+        int []tempCost= new int[g.getMaxRouterId()+1];
+        ArrayList <Integer> routers= g.getRouterList();
+        for (int i: routers) {
+            permCost[i]= -1;
+            tempCost[i]= -1;
+        }
+        int maxCost= options_.getMaxAPWeight();
+        if (maxCost == 0) {
+            maxCost= g.getMaxRouterId();
+        }
+        int []temporary= new int[routers.size()];  // Unordered list of 
+        // nodes on temporary list
+        temporary[0]= gid;
+        tempCost[gid]= 0;
+        int tempLen= 1;
+        // Dijkstra time -- everyone loves Dijkstra
+        //System.err.println("Starting work "+gid);
+        while (tempLen > 0) {
+            // Find cheapest temp node
+            int cheapest= 0;
+            int cheapCost= tempCost[temporary[0]];
+            for (int i= 1; i < tempLen; i++) {
+                if (tempCost[temporary[i]] < cheapCost) {
+                    cheapCost= tempCost[temporary[i]];
+                    cheapest= i;
                 }
             }
-            int smallNode= toVisit.get(smallest);
-           
-            // Have we found AP?
-            if (APGIDs_.indexOf(smallNode) != -1) {
-                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"for "+gid+" new AP is "+smallNode+" "+" cost "+smallCost);
-                return new Pair<Integer,Integer>(smallNode, smallCost);
-            }
-            // Remove from toVisit and add to Visited
-            toVisit.remove(smallest);
-            toVisitCost.remove(smallest);
-            visited.add(smallNode);
-            visitedCost.add(smallCost);
-            // Now check outlinks 
-            List <Integer> outLinks= g.getOutLinks(smallNode);
-            List <Integer> costs= g.getLinkCosts(smallNode);
-            //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"picked node"+smallNode+" outlinks "+g.getOutLinks(smallNode));
-            for (int i= 0; i < outLinks.size(); i++) {
-                int l= outLinks.get(i);
-                int linkCost= costs.get(i);
-                //  Is outlink to already visited node
-                if (visited.indexOf(l) != -1) 
+            int cheapNode= temporary[cheapest];
+            //System.err.println("Considering node "+cheapNode+" cost "+cheapCost);
+            if (isAP(cheapNode)) {  // Found cheapest AP]
+                //System.err.println("Found "+cheapNode+" cost "+cheapCost);
+                return new Pair<Integer,Integer>(cheapNode, cheapCost);
+            } 
+            permCost[cheapNode]= cheapCost;
+            tempLen--;
+            temporary[cheapest]= temporary[tempLen];
+            if (cheapCost == maxCost)
+                continue;
+            int [] out= g.getOutLinks(cheapNode);
+            int [] outCost= g.getLinkCosts(cheapNode);
+            int link;
+            //System.err.println("Adding links from "+cheapNode+" cost "+cheapCost);
+            // Consider adding links from new node
+            for (int i= 0; i < out.length; i++) {
+                link= out[i];
+                if (permCost[link] >= 0) // Already visited
                     continue;
-                int newCost= smallCost+linkCost;
-                // Is outlink cheaper way to get to node we already have on to visit list
-                int index= toVisit.indexOf(l);
-                if (index != -1) {
-                    toVisitCost.set(index,Math.min(toVisitCost.get(index),newCost));
-                } else if (options_.getMaxAPWeight() == 0 || newCost <= options_.getMaxAPWeight()) {
-                    toVisit.add(l); 
-                    toVisitCost.add(newCost);
+                int newCost= cheapCost+outCost[i];
+                
+                if (newCost > maxCost)  // Too pricey
+                    continue;
+                if (tempCost[link] >= 0) { // Already visiting
+                    if (tempCost[link] > newCost) {
+                        tempCost[link]= newCost;
+                        // Found cheaper route
+                    } 
+                     continue;
                 }
+                //System.err.println("Add "+link+" at pos "+tempLen+" Link cost ="+newCost+ " out cost was "+outCost[i]);
+                // Add to temporary list
+                tempCost[link]= newCost;
+                temporary[tempLen]= link;
+                tempLen++;
             }
             
         }
         return null;
     }
     
-    
     /** Add node to network */
     public void addNode(long time, int gid)
     { 
+        APs_.add(0);
+        APCosts_.add(options_.getMaxAPWeight());
         lse_.newNode(time,gid);
         changedNet_= true;
     }
@@ -306,12 +320,16 @@ public class NullAPController implements APController {
     }
         
         
+    /** No score for this function */
+    public int getScore(long tim, int gid, GlobalController g) 
+    {
+        return 0;
+    }     
+        
+        
     /** Return true if we have minimum number of APs or more */
     boolean gotMinAPs(GlobalController g) {
-       int noAPs= getNoAPs();
-       int noRouters= g.getNoRouters();
-       if (noAPs >= options_.getMinAPs() && 
-          (double)noAPs/noRouters >= options_.getMinPropAP())
+       if (getNoAPs() >= getMinNoAPs(g))
             return true;
        return false;
         
@@ -319,41 +337,58 @@ public class NullAPController implements APController {
     
     /** Number of routers to add to make minimum requirements */
     int noToAdd(GlobalController g) {
-        int noAPs= getNoAPs();
-        int noRouters= g.getNoRouters();
-        int add1= (int)Math.ceil(options_.getMinPropAP()*noRouters)-noAPs;
-        int add2= options_.getMinAPs()-noAPs;
-        return Math.max(add1,add2);
+        return (getMinNoAPs(g) - getNoAPs());
     }
     
     /** Number of routers to remove to make maximum requirements */
     int noToRemove(GlobalController g) {
-        int noAPs= getNoAPs();
-        int noRouters= g.getNoRouters();
-        int remove1= noAPs - (int)Math.floor(options_.getMaxPropAP()*noRouters);
-        int remove2= noAPs - options_.getMaxAPs();
-        return Math.max(remove1,remove2);
+        return (getNoAPs()-getMaxNoAPs(g));
     }
     
     /** Return true if we have max number of APs or more */
     boolean overMaxAPs(GlobalController g) {
-       int noAPs= getNoAPs();
-       int noRouters= g.getNoRouters();
-       if (noAPs > options_.getMaxAPs() || 
-          (double)noAPs/noRouters > options_.getMaxPropAP())
-            return true;
+       if (getNoAPs() > getMaxNoAPs(g))
+          return true;  
        return false;
         
     }  
     
+    /** Return maximum no APs or tot no of routers if no max */
+    int getMaxNoAPs(GlobalController g) {
+        int noRouters= g.getNoRouters();
+        int m1= noRouters;
+        int m2= noRouters;
+        if (options_.getMaxPropAP() != 0) {
+            m1= (int)Math.floor(options_.getMaxPropAP()*noRouters);
+        }
+        if (options_.getMaxAPs() != 0) {
+            m2= options_.getMaxAPs();
+        }
+        return Math.min(m1,m2);
+        
+    }
+    
+    /** Return min no APs or 0 if no min */
+    int getMinNoAPs(GlobalController g) {
+        int noRouters= g.getNoRouters();
+
+        int m1= 0;
+        int m2= 0;
+        if (options_.getMinPropAP() != 0) {
+            m1= (int)Math.ceil(options_.getMinPropAP()*noRouters);
+        }
+        if (options_.getMinAPs() != 0) {
+            m2= options_.getMinAPs();
+        }
+        return Math.max(m1,m2);
+        
+    }
+    
     /** Return true if we can remove a single AP  -- do we still
     have minimum number if we remove AP*/
     boolean canRemoveAP(GlobalController g) {
-       int noAPs= getNoAPs()-1;
-       int noRouters= g.getNoRouters();
-       if (noAPs >= options_.getMinAPs() && 
-          (double)noAPs/noRouters >= options_.getMinPropAP())
-            return true;
+       if (getNoAPs()-1 >= getMinNoAPs(g))
+          return true;
        return false;
         
     } 

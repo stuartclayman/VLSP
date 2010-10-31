@@ -22,6 +22,7 @@ public class OutputType {
     private int outputTimeType_ = 0;  // Repeated or at time?
     private int outputTime_= 0;   // Time parameter
     private boolean firstOutput_= true;
+    String parameter_="";
     
     public OutputType() {
     }
@@ -98,6 +99,19 @@ public class OutputType {
         fileName_= name;
     } 
     
+    
+    /** Setter function for string parameter */
+    public void setParameter(String parm)
+    {
+        parameter_= parm;
+    }
+    /** Accessor function for string parameter*/
+    public String getParameter()
+    {
+        return parameter_;
+    }
+   
+    
     /** Is this the first time output produced by this type*/
     public boolean isFirst() {
         return firstOutput_;
@@ -146,7 +160,7 @@ public class OutputType {
 
         builder.append(" ");
         builder.append(outputTime_);
-
+        builder.append(" "+parameter_);
         return builder.toString();
     }
 

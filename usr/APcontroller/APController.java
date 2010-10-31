@@ -20,6 +20,9 @@ public interface APController {
     /** get AP for given GID */
     public int getAP(int gid);
     
+     /** get AP for given GID */
+    public int getAPCost(int gid);
+    
     /** Router regular AP update action */
     public void routerUpdate(RouterController r);
     
@@ -54,6 +57,9 @@ public interface APController {
     /** Return the mean life of an AP -- this only includes APs which have
     died*/
     public double meanAPLife();
+    
+    /** Return score at given time */
+    public int getScore(long time, int gid, GlobalController g);
     
     /** Return APInfo appropriate for this controller */
     public APInfo newAPInfo();

@@ -108,6 +108,13 @@ public class HotSpotAPController extends NullAPController {
         }
     }
  
+     /** Accessor for hot spot score */
+    public int getScore(long tim, int gid, GlobalController g) 
+    {
+        return getHotSpotScore(gid,g);
+    }     
+        
+ 
     /** Hot spot score is # nodes within 1 cubed + # nodes within 2 squared
       + # nodes within 3 */
     int getHotSpotScore(int gid, GlobalController g)
@@ -138,7 +145,7 @@ public class HotSpotAPController extends NullAPController {
         int []toVisit= new int[nRouters];
         int toVisitCtr= 1;
         toVisit[0]= gid;
-        visitCost[toVisit[0]]= 0;
+        visitCost[0]= 0;
         while (toVisitCtr > 0) {
             toVisitCtr--;
             int node= toVisit[toVisitCtr];

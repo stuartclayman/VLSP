@@ -31,8 +31,8 @@ public class GlobalController implements ComponentController {
     private GlobalControllerManagementConsole console_= null;
     private ArrayList <LocalControllerInteractor> localControllers_ = null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
-    private ArrayList <ArrayList<Integer>> outLinks_= null;
-    private ArrayList <ArrayList<Integer>> linkCosts_= null;
+    private ArrayList <int []> outLinks_= null;
+    private ArrayList <int []> linkCosts_= null;
     private ArrayList <Integer> routerList_= null;
     private ArrayList <String> childNames_= null;
     private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
@@ -103,8 +103,8 @@ public class GlobalController implements ComponentController {
       logger.addOutput(System.out, new BitMask(USR.STDOUT));
       //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Hello");
 
-      outLinks_= new ArrayList<ArrayList<Integer>> ();
-      linkCosts_= new ArrayList<ArrayList<Integer>> ();
+      outLinks_= new ArrayList<int []> ();
+      linkCosts_= new ArrayList<int []> ();
       routerList_= new ArrayList<Integer>();
       options_= new ControlOptions(xmlFile_);
       routerOptions_= options_.getRouterOptions();
@@ -401,8 +401,8 @@ public class GlobalController implements ComponentController {
     private void startRouter(long time) {
         maxRouterId_++;
         int rId= maxRouterId_;
-        outLinks_.add(new ArrayList<Integer>());
-        linkCosts_.add(new ArrayList<Integer>());
+        outLinks_.add(new int [0]);
+        linkCosts_.add(new int [0]);
         registerRouter(rId);
         APController_.addNode(time, rId);
         if (!options_.isSimulation()) {
@@ -466,9 +466,9 @@ public class GlobalController implements ComponentController {
         GlobalController*/
     private void unregisterRouter(int rId)
     {
-        ArrayList <Integer> out= new ArrayList<Integer>(getOutLinks(rId));
-        for (Integer i: out) {
-             unregisterLink(rId,i);
+        int[] out= getOutLinks(rId);
+        for (int i= out.length-1; i >= 0; i--) {
+             unregisterLink(rId,out[i]);
                 //Logger.getLogger("log").logln(USR.ERROR, "Unregister link "+rId+" "+i);
             
         }
@@ -514,16 +514,30 @@ public class GlobalController implements ComponentController {
     private void registerLink(int router1Id, int router2Id) 
     {
         noLinks_++;
-        List <Integer> out= getOutLinks(router1Id);
-        out.add(router2Id);
-        List <Integer> costs= getLinkCosts(router1Id);
-        costs.add((Integer)1);
-        // Set outlinks from router2 Id
+        
+        // Add links in both directions
+        int [] out= getOutLinks(router1Id);
+        int [] out2= new int [out.length +1];
+        int [] costs= getLinkCosts(router1Id);
+        int [] costs2= new int [out.length+1];
+        System.arraycopy(out,0,out2,0,out.length);
+        System.arraycopy(costs,0,costs2,0,out.length);
+        out2[out.length]= router2Id;
+        costs2[out.length]= 1; // Link cost 1 so far
+        setOutLinks(router1Id, out2);
+        setLinkCosts(router1Id, costs2);
+        
+        
         out= getOutLinks(router2Id);
-        out.add(router1Id);
+        out2= new int [out.length +1];
         costs= getLinkCosts(router2Id);
-        costs.add((Integer)1);
-
+        costs2= new int [out.length+1];
+        System.arraycopy(out,0,out2,0,out.length);
+        System.arraycopy(costs,0,costs2,0,out.length);
+        out2[out.length]= router1Id;
+        costs2[out.length]= 1; // Link cost 1 so far
+        setOutLinks(router2Id, out2);
+        setLinkCosts(router2Id, costs2);
     }
     
     /** Event to link two routers */
@@ -532,9 +546,16 @@ public class GlobalController implements ComponentController {
         
         
         // check if this link already exists
-        List<Integer> outForRouter1 = getOutLinks(router1Id);
-
-        if (outForRouter1 != null && outForRouter1.contains(router2Id)) {
+        int [] outForRouter1 = getOutLinks(router1Id);
+        
+        boolean gotIt= false;
+        for (int i: outForRouter1) {
+            if (i == router2Id) {
+                gotIt= true;
+                break;
+            }
+        }
+        if (gotIt) {
             // we already have this link
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Link already exists: "+router1Id + " -> " + router2Id);
         } else {
@@ -597,18 +618,36 @@ public class GlobalController implements ComponentController {
     }
     
     /* Return a list of outlinks from a router */
-    public List<Integer> getOutLinks(int routerId)
+    public int [] getOutLinks(int routerId)
     {
-        List<Integer> out= outLinks_.get(routerId-1);
-        return out;
+        return outLinks_.get(routerId-1);
     }
+    
+     /* Return a list of outlinks from a router */
+    public void setOutLinks(int routerId, int []out)
+    {
+        outLinks_.set(routerId-1,out);
+        //System.err.print(routerId+" contains ");
+        //for (int i:out) 
+        //    System.err.print(i+" ");
+        //System.err.println();
+    }
+    
     
     /* Return a list of link costs from a router -- must be used in
         parallel get getOutLinks to id link nos*/
-    public List<Integer> getLinkCosts(int routerId)
+    public int [] getLinkCosts(int routerId)
     {
-        List<Integer> costs= linkCosts_.get(routerId-1);
-        return costs;
+        return linkCosts_.get(routerId-1);
+
+    }
+    
+    /* Return a list of link costs from a router -- must be used in
+        parallel with setOutLinks to id link nos*/
+    public void setLinkCosts(int routerId, int []costs)
+    {
+        linkCosts_.set(routerId-1, costs);
+
     }
     
     /** Create pair of integers with first integer smallest */
@@ -627,23 +666,53 @@ public class GlobalController implements ComponentController {
     private void unregisterLink(int router1Id, int router2Id) 
     {
         Pair <Integer, Integer> rnos= makeRouterPair(router1Id,router2Id);
-        List <Integer> out;
-        List <Integer> costs;
-        int arrayPos;
+        int [] out;
+        int [] out2;
+        int [] costs;
+        int [] costs2;
+        int arrayPos= 0;
         noLinks_--;
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Adding link from "+router1Id+" "+router2Id);
         // remove r2 from outlinks of r1
         out= getOutLinks(router1Id);
         costs= getLinkCosts(router1Id);
-        arrayPos= out.indexOf(router2Id);
-        out.remove(arrayPos);
-        costs.remove(arrayPos);
+        for (int i= 0; i < out.length; i++) {
+            if (out[i] == router2Id) {
+                arrayPos= i;
+                break;
+            }
+        }
+        out2= new int[out.length -1];
+        costs2= new int [out.length -1];
+        System.arraycopy(out,0, out2,0, out.length-1);
+        System.arraycopy(costs,0, costs2,0, out.length-1);
+        //System.err.println("Old array "+out+" new "+out2+" remove "+router1Id+" "+router2Id+" pos "+arrayPos);
+      
+        if (arrayPos != out.length -1) {
+            out2[arrayPos]= out[out.length-1];
+            costs2[arrayPos]= costs[out.length-1];
+        }
+        setOutLinks(router1Id,out2);
+        setLinkCosts(router1Id,costs2);
         // remove r1 from outlinks of r2
         out= getOutLinks(router2Id);
         costs= getLinkCosts(router2Id);
-        arrayPos= out.indexOf(router1Id);
-        out.remove(arrayPos);
-        costs.remove(arrayPos);
+        for (int i= 0; i < out.length; i++) {
+            if (out[i] == router1Id) {
+                arrayPos= i;
+                break;
+            }
+        }
+        out2= new int[out.length -1];
+        costs2= new int [out.length -1];
+        System.arraycopy(out,0, out2,0, out.length-1);
+        System.arraycopy(costs,0, costs2,0, out.length-1);
+        if (arrayPos != out.length -1) {
+            out2[arrayPos]= out[out.length-1];
+            costs2[arrayPos]= costs[out.length-1];
+        }
+        setOutLinks(router2Id,out2);
+        setLinkCosts(router2Id,costs2);
 
     }
     
@@ -804,7 +873,7 @@ public class GlobalController implements ComponentController {
         }
         int type= o.getType();
         if (type == OutputType.OUTPUT_NETWORK) {
-            outputNetwork(p,o);
+            outputNetwork(time,p,o);
         } else if (type == OutputType.OUTPUT_SUMMARY) {
             outputSummary(p,o,time);
         }
@@ -818,16 +887,26 @@ public class GlobalController implements ComponentController {
     }
     
     /** Output a network */
-    private void outputNetwork(PrintStream s, OutputType o) {
+    private void outputNetwork(long time, PrintStream s, OutputType o) {
         //System.err.println("APS are "+APController_.getAPList());
-        
+        APController_.controllerUpdate(time,this);
+        boolean printAP= o.getParameter().equals("AP");
+        boolean printScore= o.getParameter().equals("Score");
         s.println("Graph G {");
         for (int r: getRouterList()) {
-            if (APController_.isAP(r)) {
-                s.println(r+" [shape=box];");
+            int ap= APController_.getAP(r);
+            if (ap == r) {
+                s.print(r+" [shape=box");
             } else {
-                s.println(r+" [shape=circle];");
+                s.print(r+" [shape=circle");
             }
+            if (printAP) {
+               s.print(",label=\""+ap+" ("+APController_.getAPCost(r)+")\"");
+            }
+            if (printAP) {
+               s.print(",label=\""+ap+" ("+APController_.getScore(time,r,this)+")\"");
+            }
+            s.println("];");
             //System.err.println(r+" controller is "+APController_.getAP(r));
             //System.err.println("Which is believed to be a controller "+
              //   APController_.isAP(APController_.getAP(r)));
@@ -1079,12 +1158,18 @@ public class GlobalController implements ComponentController {
     public int getLinkWeight(int l1, int l2) 
     /** Return the weight from link1 to link2 or 0 if no link*/
     {
-        List <Integer> out=  getOutLinks(l1);
-        int index= out.indexOf(l2);
+        int [] out=  getOutLinks(l1);
+        int index= -1;
+        for (int i= 0; i < out.length; i++) {
+            if (out[i] == l2) {
+                index= i;
+                break;
+            }
+        }
         if (index == -1)
             return 0;
-        List <Integer> costs= getLinkCosts(l1);
-        return costs.get(index);
+        int [] costs= getLinkCosts(l1);
+        return costs[index];
     }
 
     
@@ -1136,11 +1221,11 @@ public class GlobalController implements ComponentController {
     /** Check if given node is isolated and connect it if possible */
     public void checkIsolated(long time, int gid)
     {
-        List <Integer> links= getOutLinks(gid);
+        int [] links= getOutLinks(gid);
         int nRouters= routerList_.size();
         if (nRouters == 1) // One node is allowed to be isolated
             return;
-        if (links != null && links.size() > 0) {
+        if (links.length > 0) {
             return;
         }
         // Node is isolated.

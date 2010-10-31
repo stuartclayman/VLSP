@@ -91,11 +91,9 @@ public class ProbabilisticEventEngine implements EventEngine {
         int noLinks= linkCreateDist_.getIntVariate();
         ArrayList <Integer>nodes= new ArrayList<Integer>(g.getRouterList());
         nodes.remove(nodes.indexOf(routerId));
-        List <Integer>outlinks= (List<Integer>)g.getOutLinks(routerId);
-        if (outlinks != null) {
-          for (Integer l: outlinks) {
-              nodes.remove(nodes.indexOf(l));
-          }
+        int [] outlinks= g.getOutLinks(routerId);
+        for (Integer l: outlinks) {
+            nodes.remove(nodes.indexOf(l));
         }
         //Logger.getLogger("log").logln(USR.ERROR, "Trying to pick "+noLinks+" links");
         for (int i= 0; i < noLinks; i++) {
@@ -105,12 +103,12 @@ public class ProbabilisticEventEngine implements EventEngine {
             if (preferentialAttachment_) {  // Choose a node using pref. attach.
                 int totLinks= 0;
                 for (int l : nodes) {
-                    totLinks+= g.getOutLinks(l).size();
+                    totLinks+= g.getOutLinks(l).length;
                 }
                 int index= (int)Math.floor(Math.random()*totLinks);
                 for (int j= 0; j < nodes.size(); j++) {
                     int l= nodes.get(j);
-                    index-= g.getOutLinks(l).size();
+                    index-= g.getOutLinks(l).length;
                     if (index < 0 || j == nodes.size() - 1) {
                         nodes.remove(j);
                         e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
