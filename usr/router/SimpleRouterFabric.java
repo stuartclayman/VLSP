@@ -289,7 +289,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         byte[]table= table_.toBytes();
 
         byte []toSend= new byte[table.length+1];
-        
+        if (table.length % 8 != 0) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Routing table length not multiple of 8");
+        }
         toSend[0]= (byte)'T';
         System.arraycopy(table, 0, toSend,1,table.length);
         ByteBuffer buffer = ByteBuffer.allocate(table.length+1);
@@ -751,14 +753,17 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         //Logger.getLogger("log").logln(USR.ERROR, "RECEIVED DATAGRAM CONTROL TYPE "+(char)controlChar);
 
-        String data= new String(payload,1,payload.length-1);
+       
 
         if (controlChar == 'C') {
             netIF.remoteClose();
             return true;
         }
         if (controlChar == 'T') {
-            receiveRoutingTable(data.getBytes(),netIF);
+            if ((payload.length -1) % 8 != 0) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"Routing table length not multiple of 8");
+            }
+            receiveRoutingTable(payload,netIF);
             return true;
         }
         

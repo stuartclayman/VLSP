@@ -18,7 +18,7 @@ public class SimpleRoutingTable implements RoutingTable {
     }
 
     /** Construct a new routing table with the assumption that
-    everything on it comes down a given interface */
+    everything on it comes down a given interface -- note the first byte is T*/
     SimpleRoutingTable(byte []bytes, NetIF netif)
         throws Exception
     {
@@ -26,12 +26,12 @@ public class SimpleRoutingTable implements RoutingTable {
         SimpleRoutingTableEntry e;
         //System.err.println("Parsing complete Routing table");
         byte []entry= new byte[8];
-        if (bytes.length %8 != 0) {
+        if ((bytes.length -1) %8 != 0) {
             Logger.getLogger("log").logln(USR.ERROR, "Received unusual routing table length "+ bytes.length);
         }
-        for (int i= 0; i< bytes.length/8;i++) {
+        for (int i= 0; i< (bytes.length-1)/8;i++) {
             //System.err.println("Parsing complete Routing table entry at "+i);
-            System.arraycopy(bytes,i*8,entry,0,8);
+            System.arraycopy(bytes,(1+i*8),entry,0,8);
             try {
                 e= new SimpleRoutingTableEntry(entry, netif);
                 Address a= e.getAddress();

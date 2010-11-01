@@ -903,7 +903,7 @@ public class GlobalController implements ComponentController {
             if (printAP) {
                s.print(",label=\""+ap+" ("+APController_.getAPCost(r)+")\"");
             }
-            if (printAP) {
+            if (printScore) {
                s.print(",label=\""+ap+" ("+APController_.getScore(time,r,this)+")\"");
             }
             s.println("];");
