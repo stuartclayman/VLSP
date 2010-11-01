@@ -116,16 +116,27 @@ public class ConnectionOverTCP implements Connection {
      * Read a Datagram.
      */
     public Datagram readDatagram() throws IOException {
-        Datagram dg =  readDatagramAndWait();
+        Datagram dg;
 
-        if (dg == null) {
-            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + inCounter + " read NULL");
-        } else {
-            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + inCounter + " read " + dg.getTotalLength());
-            inCounter++;
+        while (true) {
+            dg = readDatagramAndWait();
+
+            if (eof) {
+                // hit eof, so really return null
+                return null;
+            } if (dg == null) {
+                // not enough data to really return a Datagram
+                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + inCounter + " read NULL");
+                //Logger.getLogger("log").log(USR.EXTRA, ("N"));
+                continue;
+            } else {
+                // a real Datagram
+                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + inCounter + " read " + dg.getTotalLength());
+                inCounter++;
+
+                return dg;
+            }
         }
-
-        return dg;
     }
 
     /**
@@ -186,6 +197,7 @@ public class ConnectionOverTCP implements Connection {
 
               return null;
           }
+
           // OK -- we got a full packet of data, let's make a datagram of it
           
           byte[] latestDGData = new byte[packetLen];
@@ -238,6 +250,7 @@ public class ConnectionOverTCP implements Connection {
             }
 
         } catch (IOException ioe) {
+            eof = true;
             //Logger.getLogger("log").logln(USR.ERROR, "Connection over TCP read error "+ioe.getMessage());
              // TODO:: THIS ERROR DOES OCCUR SOMETIMES
              return;

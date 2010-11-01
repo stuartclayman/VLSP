@@ -105,6 +105,13 @@ public class StubServer implements NetIFListener {
     }
 
     /**
+     * Can accept a Datagram
+     */
+    public boolean canAcceptDatagram(NetIF n) {
+        return true;
+    }
+
+    /**
      * A NetIF has a datagram.
      */
     public boolean datagramArrived(NetIF netIF, Datagram datagram) {

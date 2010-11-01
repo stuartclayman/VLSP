@@ -90,7 +90,7 @@ public class Send implements Application {
         if (socket != null) {
             socket.close();
 
-            Logger.getLogger("log").logln(USR.ERROR, "Send stop");
+            Logger.getLogger("log").logln(USR.STDOUT, "Send stop");
         }
 
         return new ApplicationResponse(true, "");

@@ -91,10 +91,7 @@ public class RouterApp1C {
 
         Logger.getLogger("log").logln(USR.STDOUT, "ending....");
 
-        try { 
-            Thread.sleep(5000);
-        } catch (InterruptedException ie) {
-        }
+        socket.close();
 
         end();
     }

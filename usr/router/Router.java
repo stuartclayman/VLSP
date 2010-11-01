@@ -151,9 +151,10 @@ public class Router {
         if (isActive) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
+            controller.stop();
+
             appSocketMux.stop();
 
-            controller.stop();
             fabric.stop();
 
             isActive = false;

@@ -25,7 +25,13 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     ArrayList<RouterPort> ports;
    
     LinkedBlockingQueue<DatagramHandle> datagramQueue_;
-    //LinkedBlockingQueue<NetIF> netIFQueue_;
+    int MAX_QUEUE_SIZE = 128;
+    int HIGH_MARK = MAX_QUEUE_SIZE * 4 / 5;
+    int LOW_MARK = MAX_QUEUE_SIZE * 1 / 5;
+    int biggestQueueSeen = 0;
+
+    boolean drainingQueue = false;
+
     
     // The localNetIF
     NetIF localNetIF = null;
@@ -39,8 +45,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     // are we waiting
     boolean waiting = false;
 
+    // The RoutingTableTransmitter
+    RoutingTableTransmitter routingTableTransmitter;
+
     // the count of the no of Datagrams
-    int datagramCount = 0;
+    int datagramInCount = 0;
+    int datagramOutCount = 0;
 
     // The RoutingTable
     SimpleRoutingTable table_= null;
@@ -52,8 +62,6 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     HashMap <NetIF, Long> lastTableUpdateTime_;
     HashMap <NetIF, Long> nextTableUpdateTime_;
 
-    long nextUpdateTime;
-    
     /**
      * Construct a SimpleRouterFabric.
      */
@@ -72,8 +80,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         lastTableUpdateTime_= new HashMap <NetIF, Long>();
         nextTableUpdateTime_= new HashMap <NetIF, Long>();
-        datagramQueue_= new LinkedBlockingQueue<DatagramHandle>();
-        //netIFQueue_= new LinkedBlockingQueue<NetIF>();
+        datagramQueue_= new LinkedBlockingQueue<DatagramHandle>(MAX_QUEUE_SIZE);
     }
 
     /**
@@ -84,10 +91,14 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         // start my own thread
         running = true;
-        myThread = new Thread(this);
+        myThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
         
         //Logger.getLogger("log").logln(USR.ERROR, "Running set to true");
         myThread.start();
+
+        // start RoutingTableTransmitter
+        routingTableTransmitter = new RoutingTableTransmitter(this);
+        routingTableTransmitter.start();
 
         return true;
     }
@@ -99,87 +110,73 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     public synchronized boolean stop() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
-        //Logger.getLogger("log").logln(USR.ERROR, "Closing ports");
-        // close fabric ports
-        closePorts();
-
         // stop my own thread
         //Logger.getLogger("log").logln(USR.ERROR, "Run set to false");
         running = false;
 
+        // stop RoutingTableTransmitter thread
+        routingTableTransmitter.terminate();
+
         // notify all waiting threads
         notifyAll();
 
-
-       //try {
-        //      if (myThread.isAlive()) 
-     //       myThread.join();
-     //  } catch (InterruptedException ie) {
-     //       Logger.getLogger("log").logln(USR.ERROR, "SimpleRouterFabric: stop - InterruptedException for myThread join on " + myThread);
-     // }
-
         // wait for myself
         waitFor();
+
+        //Logger.getLogger("log").logln(USR.ERROR, "Closing ports");
+        // close fabric ports
+        closePorts();
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "datagramInCount = " + datagramInCount + " datagramOutCount = " + datagramOutCount + " queue size = "+ datagramQueue_.size()+ " biggest queue size = " + biggestQueueSeen);
 
         return true;
     }
 
     /**
      * The main thread loop.
-     * It occasionally checks to see if the
-     * NetIFs plugged into the ports are alive.
      */
     public void run() {
-        long now=  System.currentTimeMillis();
+        /*
+         * It should occasionally check to see if the
+         * NetIFs plugged into the ports are alive.
+         */      
+
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Running");
+
         while (true) {
+
+            long now=  System.currentTimeMillis();
+
             synchronized (this) {
-                if (running || datagramQueue_.size() > 0) {
-                    if (datagramQueue_.size() > 0) {
+                int queueSize = datagramQueue_.size();
+                if (running ||  queueSize > 0) {
+                    if (queueSize > 0) {
                         //Logger.getLogger("log").logln(USR.ERROR, "Got datagram to process");
                         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "queue size " + datagramQueue_.size());
+                        //Logger.getLogger("log").log(USR.EXTRA,"P");
+
                         processDatagram();
+
+                        // check queue draining status
+                        if (queueSize <= LOW_MARK) {
+                            drainingQueue = false;
+                        }
+
                         continue;
+                    } else {
+                        // nothing in queue
+                        waitUntil(now + 100);
                     }
                 } else {
                     // not running and nothing left in queue
                     break;
                 }
             }
-
-            //Logger.getLogger("log").logln(USR.ERROR, "Running");
-
-            now = System.currentTimeMillis();
-
-            // dont need to do this every time, but how
-            nextUpdateTime = calcNextTableSendTime();
-
-            //Logger.getLogger("log").logln(USR.ERROR, "Got time");
-
-            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run TIME: "+now + " nextUpdateTime: " + nextUpdateTime_ + " diff: " + (nextUpdateTime_ - now));
-            
-            if (nextUpdateTime <= now) {
-                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Sending table");
-
-                sendNextTable();
-                continue;
-            }
-            
-            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Waiting Until: "+ nextUpdateTime);
-            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run Waiting For: "+ ((float)(nextUpdateTime_-now))/1000);
-            //Logger.getLogger("log").logln(USR.ERROR, "Time now "+ now);
-
-            if (running) {
-                waitUntil(nextUpdateTime);
-            }
-                
-            //Logger.getLogger("log").logln(USR.ERROR, "Running is "+running);
-
         }
 
         theEnd();
 
-        //Logger.getLogger("log").logln(USR.ERROR, "Exit here");
-        //System.err.flush();
+
     }
 
 
@@ -192,7 +189,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         try {
             synchronized(this) {
               setTheEnd();
-              notify(); //Attempt to wake "the end" process
+              notifyAll(); //Attempt to wake "the end" process
               wait();
             }
         } catch (InterruptedException ie) {
@@ -209,11 +206,11 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
                 //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
                 wait(100);
             } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR, "The end interrupted");
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "The end interrupted");
             }
         }
         synchronized(this) {
-            notify();
+            notifyAll();
         }
     }
 
@@ -226,10 +223,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
 
 
-     /**
+    /**
      * Wait until a specified absolute time is milliseconds.
      */
-    synchronized void waitUntil(long time){
+    void waitUntil(long time){
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
         long now = System.currentTimeMillis();
 
@@ -237,11 +234,16 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             return;
         try {
             long timeout = time - now + 1;
-            waiting = true;
 
-            wait(timeout);
+            synchronized (this) {
+                waiting = true;
 
-            waiting = false;
+                wait(timeout);
+
+                waiting = false;
+
+            }
+
         } catch(InterruptedException e){
             //Logger.getLogger("log").logln(USR.ERROR, "Wait interrupted");
             waiting = false;
@@ -273,15 +275,17 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     
     /** Now send a routing table */
     synchronized void sendNextTable() {
-        NetIF n= nextUpdateIF_;
+        //Logger.getLogger("log").log(USR.EXTRA, "T");
+        NetIF inter = nextUpdateIF_;
         long now= System.currentTimeMillis();
-        if (n == null) {
-            //Logger.getLogger("log").logln(USR.ERROR, "No table to send");
+        if (inter == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "No table to send");
             
             return;
         }
 
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table " + table_ + " for "+n);
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table " + table_ + " for "+ inter);
+
         byte[]table= table_.toBytes();
 
         byte []toSend= new byte[table.length+1];
@@ -290,11 +294,13 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         System.arraycopy(table, 0, toSend,1,table.length);
         ByteBuffer buffer = ByteBuffer.allocate(table.length+1);
         buffer.put(toSend);
-        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
-        n.sendDatagram(datagram);  
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+
+        datagramOutCount++;
+        inter.sendDatagram(datagram);  
         
-        lastTableUpdateTime_.put(n,now);
-        nextTableUpdateTime_.put(n,now+options_.getMaxNetIFUpdateTime());
+        lastTableUpdateTime_.put(inter,now);
+        nextTableUpdateTime_.put(inter,now+options_.getMaxNetIFUpdateTime());
         //Logger.getLogger("log").logln(USR.ERROR, "Next table update time"+nextUpdateTime_);
 
     }
@@ -314,7 +320,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             return;
         nextTableUpdateTime_.put(netIF,next);
         if (next <= now) {
-            notifyAll();
+            // WAS notifyAll();
+            routingTableTransmitter.informNewData();
         }
         
     }  
@@ -503,23 +510,55 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
 
     /**
+     * Can the NetIFListener accept a new datagram.
+     */
+    public synchronized boolean canAcceptDatagram(NetIF netIF) {
+        // if draining  the queue, don't accept
+        if (drainingQueue) {
+            return false;
+        } else {
+            // check if we hit the high water mark
+            if (datagramQueue_.size() > HIGH_MARK) {
+                drainingQueue = true;
+                //Logger.getLogger("log").log(USR.EXTRA, "-");
+                return false;
+            } else {
+                //Logger.getLogger("log").log(USR.EXTRA, "+");
+                return true;
+            }
+        }
+    }
+
+
+    /**
      * A NetIF has a datagram.
      */
     public synchronized boolean datagramArrived(NetIF netIF, Datagram datagram) {
-        
-
-        datagramCount++;
-
         if (datagram == null)
             return false;
 
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "D(" + datagramCount + ")");
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "D(" + datagramInCount + ")");
+
+        //Logger.getLogger("log").log(USR.EXTRA, "A");
+
+        datagramInCount++;
 
         datagramQueue_.add(new DatagramHandle(datagram, netIF));
-        //netIFQueue_.add(netIF);
+
+        /*
+        try {
+            datagramQueue_.put(new DatagramHandle(datagram, netIF));
+        } catch (InterruptedException ie) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "put interrupted on D(" + datagramInCount + ")");
+        }
+        */
+
+        if (datagramQueue_.size() > biggestQueueSeen) {
+            biggestQueueSeen = datagramQueue_.size();
+        }
+
 
         if (waiting) {
-            //myThread.interrupt();
             notifyAll();
         } 
 
@@ -529,18 +568,25 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
    
     public synchronized boolean processDatagram() {
         
-        if (datagramQueue_.size() == 0)
-            return false;
-        DatagramHandle datagramHandle =  datagramQueue_.poll();
-        //NetIF netIF= netIFQueue_.poll(); 
+        //if (datagramQueue_.size() == 0)
+        //    return false;
 
+        DatagramHandle datagramHandle = null;;
+        try {
+            datagramHandle =  datagramQueue_.take();
+        } catch (InterruptedException ie) {
+        }
+
+        //WAS DatagramHandle datagramHandle = datagramQueue_.poll(); 
+
+        // inspect
         Datagram datagram = datagramHandle.datagram;
         NetIF netIF = datagramHandle.netIF;
 
         if (datagram == null) {
             return false;
         }
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramCount + " GOT DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " GOT DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
         if (ourAddress(datagram.getDstAddress())) {
             //Logger.getLogger("log").logln(USR.ERROR, "OUR DATAGRAM");
             receiveOurDatagram(datagram,netIF);
@@ -598,6 +644,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         } else {
             //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " sending datagram to "+addr);
+            datagramOutCount++;
+
             inter.sendDatagram(datagram);
         }
     }
@@ -622,6 +670,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             
         } else {
             if (datagram.TTLReduce()) {
+                datagramOutCount++;
                 inter.forwardDatagram(datagram);
             } else {
                 sendTTLExpired(datagram);
@@ -662,7 +711,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Process a datagram.
      */
     synchronized  void  processDatagram(Datagram datagram, NetIF netIF) {
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramCount + " GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
         // forward datagram if there is a local NetIF
         if (localNetIF != null && datagram.getDstPort() != 0) {
@@ -670,7 +719,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             return;
         }
 
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramCount + " FABRIC GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " FABRIC GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
 
         return;
@@ -698,8 +747,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
         byte controlChar= payload[0];
 
-        Logger.getLogger("log").logln(USR.EXTRA, leadin()+"TCPNetIF: " + datagramCount + " <- Control Datagram type "+
-          (char)controlChar + " data "+ dg);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"TCPNetIF: " + datagramInCount + " <- Control Datagram type "+ (char)controlChar + " data "+ dg);
+
         //Logger.getLogger("log").logln(USR.ERROR, "RECEIVED DATAGRAM CONTROL TYPE "+(char)controlChar);
 
         String data= new String(payload,1,payload.length-1);
@@ -958,6 +1007,125 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             datagram = dg;
             netIF = n;
         }
+    }
+
+    /**
+     * A Thread that sends out the Routing Table
+     */
+    class RoutingTableTransmitter extends Thread {
+        // The Fabric
+        SimpleRouterFabric fabric;
+
+        // is running
+        boolean running = false;
+
+        /**
+         * Constructor
+         */
+        public RoutingTableTransmitter(SimpleRouterFabric srf) {
+            fabric = srf;
+
+            setName("RoutingTableTransmitter-" + fabric.hashCode());
+        }
+
+
+        /**
+         * The main thread loop.
+         * It occasionally checks to see if it needs to 
+         * send a routing table.
+         */
+        public void run() {
+            running = true;
+
+            long nextUpdateTime;
+
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "RoutingTableTransmitter Running");
+
+            while (running) {
+
+                long now=  System.currentTimeMillis();
+
+                // dont need to do this every time, but how
+                nextUpdateTime = fabric.calcNextTableSendTime();
+
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run TIME: "+now + " nextUpdateTime: " + nextUpdateTime + " diff: " + (nextUpdateTime - now));
+            
+                if (nextUpdateTime <= now) {
+                    //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Sending table");
+
+                    fabric.sendNextTable();
+                    continue;
+                }
+            
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Waiting Until: "+ nextUpdateTime);
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run Waiting For: "+ ((float)(nextUpdateTime-now))/1000);
+                //Logger.getLogger("log").logln(USR.ERROR, "Time now "+ now);
+
+                if (running) {
+                    waitUntil(nextUpdateTime);
+                }
+                
+                //Logger.getLogger("log").logln(USR.ERROR, "Running is "+running);
+            }
+
+
+            //theEnd();
+        }
+
+        /**
+         * Wait until a specified absolute time is milliseconds.
+         */
+        void waitUntil(long time){
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
+            long now = System.currentTimeMillis();
+
+            if (time <= now)
+                return;
+            try {
+                long timeout = time - now + 1;
+
+                synchronized (this) {
+                    wait(timeout);
+                }
+
+            } catch(InterruptedException e){
+                //Logger.getLogger("log").logln(USR.ERROR, "Wait interrupted");
+            }
+        }
+
+
+        /**
+         * Notify 
+         */
+        public void informNewData() {
+            synchronized(this) {
+                notifyAll();
+            }
+
+        }
+
+
+        /**
+         * Stop the RoutingTableTransmitter
+         */
+        public void terminate() {
+                try {
+                    running = false;
+                    
+                    this.interrupt();
+                } catch (Exception e) {
+                    //Logger.getLogger("log").logln(USR.ERROR, "RoutingTableTransmitter: Exception in terminate() " + e);
+                }
+        }
+
+        String leadin() {
+            final String RF = "RF.RTT ";
+
+            RouterController controller = fabric.router.getRouterController();
+
+            return controller.getName() + " " + RF;
+       }
+
     }
 
 }

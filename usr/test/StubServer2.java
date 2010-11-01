@@ -77,6 +77,10 @@ public class StubServer2 implements NetIFListener {
         }
     }
 
+    public boolean canAcceptDatagram(NetIF n) {
+        return true;
+    }
+
     public synchronized boolean datagramArrived(NetIF netIF, Datagram datagram) {
         datagramQueue_.add(datagram);
         notifyAll();

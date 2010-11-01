@@ -8,7 +8,6 @@ import java.net.*;
 import java.util.Map;
 import java.util.HashMap;
 import java.nio.ByteBuffer;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -21,6 +20,11 @@ import java.util.concurrent.LinkedBlockingQueue;
  * other end of stuff.
  */
 public class TCPNetIF implements NetIF , Runnable {
+    //TODO: 
+    // 1. implement more control packets
+    // 2. implement state machine so NetIf can see the state of a Connection
+    // 3. PAUSE a connection so it is connected but no traffic flows over it
+
     // The connection
     ConnectionOverTCP connection;
 
@@ -44,7 +48,10 @@ public class TCPNetIF implements NetIF , Runnable {
     Address remoteRouterAddress;
 
     // The Listener
-    NetIFListener listener;
+    NetIFListener listener = null;
+
+    long startTime = 0;
+    long stopTime = 0;
 
     // closed ?
     boolean closed = true;
@@ -52,37 +59,36 @@ public class TCPNetIF implements NetIF , Runnable {
     // got a remote close 
     boolean remoteClose = false;
 
-    // Read Thread
+    // reading thread stuff
     Thread readThread = null;
     boolean paused = false;
     boolean reading = false;
 
-    // Thread doing queue.take()
-    //Thread takeThread = null;
-    boolean waitingForQueue = false;
-
-    // Write Thread
-    Thread writeThread = null;
-
-    // Is the thread running
+    // Is the current reading thread running
     boolean running = false;
 
+    // Inbound Thread
+    InboundThread inboundThread = null;
+
+    // Outbound Thread
+    OutboundThread outboundThread = null;
+
     // a Queue of incoming Datagrams
-//    BlockingQueue<Datagram> incomingQueue;
+    LinkedBlockingQueue<Datagram> incomingQueue;
 
     // a Queue of outgoing Datagram
-    //BlockingQueue<Datagram> outgoingQueue;
+    LinkedBlockingQueue<Datagram> outgoingQueue;
 
     // counts
     NetStats netStats;
 
+    int MAX_QUEUE_SIZE = 4096;
+
     // queue high limit
-    int QUEUE_PAUSE_LIMIT = 120;
+    int QUEUE_PAUSE_LIMIT = MAX_QUEUE_SIZE * 4 / 5;
     // queue low limit
-    int QUEUE_TOO_LOW = 60;
+    int QUEUE_TOO_LOW = MAX_QUEUE_SIZE * 1 / 5;
 
-
-   
 
     /**
      * Construct a TCPNetIF around a Socket.
@@ -90,8 +96,8 @@ public class TCPNetIF implements NetIF , Runnable {
     public TCPNetIF(TCPEndPointSrc src) throws IOException {
         connection = new ConnectionOverTCP(src);
         netStats = new NetStats();
-        // incomingQueue = new LinkedBlockingQueue<Datagram>();    
-        // outgoingQueue = new LinkedBlockingQueue<Datagram>();
+        incomingQueue = new LinkedBlockingQueue<Datagram>(MAX_QUEUE_SIZE);    
+        outgoingQueue = new LinkedBlockingQueue<Datagram>(MAX_QUEUE_SIZE);
     }
 
     /**
@@ -100,8 +106,8 @@ public class TCPNetIF implements NetIF , Runnable {
     public TCPNetIF(TCPEndPointDst dst) throws IOException {
         connection = new ConnectionOverTCP(dst);
         netStats = new NetStats();
-        // incomingQueue = new LinkedBlockingQueue<Datagram>();    
-        // outgoingQueue = new LinkedBlockingQueue<Datagram>();
+        incomingQueue = new LinkedBlockingQueue<Datagram>(MAX_QUEUE_SIZE);    
+        outgoingQueue = new LinkedBlockingQueue<Datagram>(MAX_QUEUE_SIZE/2);
     }
 
     /**
@@ -233,12 +239,19 @@ public class TCPNetIF implements NetIF , Runnable {
      * Set the Listener of this NetIF.
      */
     public NetIF setNetIFListener(NetIFListener l) {
-        listener = l;
+        if (listener != null) {
+            Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: already has a NetIFListener");
+        } else {
+            listener = l;
 
-        // there is already something
-       // if (incomingQueue.size() > 0) {
-       //     listener.datagramArrived(this);
-       // }
+            inboundThread = new InboundThread(listener, this, incomingQueue);
+            inboundThread.start();
+
+            outboundThread = new OutboundThread(connection, this, outgoingQueue);
+            outboundThread.start();
+
+        }
+
         return this;
     }
 
@@ -246,24 +259,14 @@ public class TCPNetIF implements NetIF , Runnable {
      * Send a Datagram -- sets source to this interface
      */
     public boolean sendDatagram(Datagram dg) {
-         // set the source address and port on the Datagram
-        dg.setSrcAddress(connection.getAddress());
+        if (running == true) {
+            // set the source address and port on the Datagram
+            dg.setSrcAddress(connection.getAddress());
 
-        try {
-            boolean sent =  connection.sendDatagram(dg);
-
-            // stats
-            netStats.increment(NetStats.Stat.OutPackets);
-            netStats.add(NetStats.Stat.OutBytes, dg.getTotalLength());
-
-            return sent;
-
-        } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: send error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
-            ioe.printStackTrace();
+            return forwardDatagram(dg);
+        } else {
             return false;
         }
-
     }
     
     /**
@@ -272,21 +275,28 @@ public class TCPNetIF implements NetIF , Runnable {
     public boolean forwardDatagram(Datagram dg) {
         //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " Forw(" + forwardCount + ")");
 
-        //outgoingQueue.add(dg);
+        netStats.setValue(NetStats.Stat.OutQueue, outgoingQueue.size());
 
-        try {
-            boolean sent =  connection.sendDatagram(dg);
-
-            // stats
-            netStats.increment(NetStats.Stat.OutPackets);
-            netStats.add(NetStats.Stat.OutBytes, dg.getTotalLength());
-        
-            return sent;
-        } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: forwardDatagram error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
-            ioe.printStackTrace();
-            return false;
+        if (outgoingQueue.offer(dg)) {
+            // Datagram went on queue
+            if (outgoingQueue.size() > netStats.getValue(NetStats.Stat.BiggestOutQueue)) {
+                netStats.setValue(NetStats.Stat.BiggestOutQueue, outgoingQueue.size());
+                
+            }
+        } else {
+            // its dropped
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "dropped at queue size " + outgoingQueue.size());
+            netStats.increment(NetStats.Stat.OutDropped);
         }
+            
+        /*
+        try {
+            connection.sendDatagram(dg);
+        } catch (Exception e) {
+        }
+        */
+
+        return true;
     }
 
     
@@ -309,8 +319,21 @@ public class TCPNetIF implements NetIF , Runnable {
 
             controlClose();
         }
-        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: " + getName() + " -> Close stop");
 
+        reallyClose();
+
+        Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: " + getName() + " close() biggestIncomingSize = " + netStats.getValue(NetStats.Stat.BiggestInQueue) + " biggestOutgoingSize = " + netStats.getValue(NetStats.Stat.BiggestOutQueue));
+
+
+    }
+
+    /**
+     * Really close the connection
+     */
+    private void reallyClose() {
+        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: reallyClose " + getName() + " -> Close stop");
+
+        // stop all threads
         stop();
 
         connection.close();
@@ -329,7 +352,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * Get the interface stats.
      * Returns a NetStats object.
      */
-    public NetStats getStats() {
+    public synchronized NetStats getStats() {
         return netStats;
     }
 
@@ -353,68 +376,86 @@ public class TCPNetIF implements NetIF , Runnable {
     /**
      * Thread body to read from Connection.
      * This reads the Datagrams from the network
-     * and queues them up ready to be collected.
+     * and queues them up ready to be delivered to the NetIFListener.
      * If the queue is at the high limit then it waits until 
      * the queue has been drained to a certain level, the low limit,
      * and is told to start reading again.
-     * <p>
-     * However, if the Datagram is a control Datagram, then it is 
-     * processed immediately and not put on the queue.
      */
     public void run() {
-        //TODO: 
-        // 1. implement more control packets
-        // 2. implement state machine so NetIf can see the state of a Connection
-        // 3. PAUSE a connection so it is connected but no traffic flows over it
-
         // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + readThread + " top of run()");
+
+        // EOF
+        boolean eof = false;
+
+        // now go and read
+        Datagram datagram = null;
 
 	// sit in a loop and grab input
 	while (running) {
-            // if the queue has reached its limit
-            // dont read any more until we get an interrupt
-           // if (incomingQueue.size() >= QUEUE_PAUSE_LIMIT) {
-            //    holdOn(); // this sets paused
-           // }
 
-            // now go and read
-            Datagram datagram = null;
-
-            try {
-                reading = true;
-
-                datagram = connection.readDatagram();
-
-                reading = false;
-            } catch (IOException ioe) {
-                Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF readDatagram error " + connection + " " + netStats.getValue(NetStats.Stat.InPackets) + " IOException " + ioe);
-                // TODO:  THIS ERROR DOES OCCUR SOMETIMES -- DO NOT KNOW WHY
+            /*
+            if (listener == null) {
+                Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " NO listener");
+                reallyClose();
             }
+            */
+
+            if (!eof) {
+                if (incomingQueue.size() < QUEUE_PAUSE_LIMIT) {
+                    // not EOF and there is room in the queue
+                    // so read
+
+                    try {
+                        reading = true;
+
+                        datagram = connection.readDatagram();
+
+                        reading = false;
+                    } catch (Exception ioe) {
+                        Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF readDatagram error " + connection + " " + netStats.getValue(NetStats.Stat.InPackets) + " IOException " + ioe);
+                        ioe.printStackTrace();
+                        // TODO:  THIS ERROR DOES OCCUR SOMETIMES -- DO NOT KNOW WHY
+                    }
 
 
-            // check the return value
-            if (datagram == null) {
-                // EOF
-                running = false;
-            } else {
-                // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + incomingCount + " got a Datagram");
+                    // check the return value
+                    if (datagram == null) {
+                        // EOF
+                        // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF readDatagram NULL datagram");
+                        eof = true;
 
-                // stats
-                netStats.increment(NetStats.Stat.InPackets);
-                netStats.add(NetStats.Stat.InBytes, datagram.getTotalLength());
+                    } else {
+                        // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " " + incomingCount + " got a Datagram");
 
-               // incomingQueue.add(datagram);
+                        incomingQueue.add(datagram);
 
-                    // inform the listener
-                if (listener != null) {
-                    //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " Recv(" + incomingCount + ")");
+                        // stats
+                        netStats.increment(NetStats.Stat.InPackets);
+                        netStats.add(NetStats.Stat.InBytes, datagram.getTotalLength());
 
-                    listener.datagramArrived(this, datagram);
+                        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " Recv(" + incomingCount + ")");
 
-                    //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " Inf(" + incomingCount + ")");
+                        netStats.setValue(NetStats.Stat.InQueue, incomingQueue.size());
+
+                        if (incomingQueue.size() > netStats.getValue(NetStats.Stat.BiggestInQueue)) {
+                            netStats.setValue(NetStats.Stat.BiggestInQueue, incomingQueue.size());
+                        }
+
+                        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " Inf(" + incomingCount + ")");
+
+                    }
+
                 } else {
-                    // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: " + getName() + " NO listener");
+                    // if the queue has reached its limit
+                    // dont read any more until we get out of holdOn()
+                    // if (incomingQueue.size() >= QUEUE_PAUSE_LIMIT) {
+                     holdOn(); // this sets paused
                 }
+
+            } else {
+                // reached EOF
+                // so wait for stop()
+                waitFor();
             }
         }
 
@@ -424,11 +465,29 @@ public class TCPNetIF implements NetIF , Runnable {
     }
 
    
+    /**
+     * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
+     */
+    private void waitFor() {
+          try {
+              //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"waiting");
+              synchronized(this) {
+                  wait();
+              }
+          } catch (InterruptedException ie) {
+              //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"wait Interrupted");
+          }
+       
+    }
+    
     
     /**
      * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void theEnd() {
+        synchronized(this) {
+            notifyAll();
+        }
 
     }
 
@@ -441,17 +500,18 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     private synchronized void holdOn() {
         // the queue is actually too empty to wait()
-      //  if (incomingQueue.size() < QUEUE_TOO_LOW) {
+        if (incomingQueue.size() < QUEUE_TOO_LOW) {
             // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: bail out of wait() at queue size: " + incomingQueue.size());
-       //     return;
-      //  }
+            return;
+        }
 
         // Logger.getLogger("log").logln(USR.ERROR, "run() about to wait() at incomingQueue size: " + incomingQueue.size());
 
-        // now wait
+        // now sleep a bit
         try {
             paused = true;
-            wait();
+            // WAS wait();
+            Thread.sleep(50);
         } catch (InterruptedException ie) {
             paused = false;
             // Logger.getLogger("log").logln(USR.ERROR, "run() with Exception out of wait() at incomingQueue size: " + incomingQueue.size());
@@ -468,6 +528,8 @@ public class TCPNetIF implements NetIF , Runnable {
     private synchronized void informReadAgain() {
         // This causes the wait() in run() to be woken up
         // and then real reading will start again
+        // called after holdOn()
+
         // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF:  informReadAgain " + readThread + " incomingQueue size: " + incomingQueue.size());
         notifyAll();
     }
@@ -477,12 +539,11 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     public void start() {
         if (running == false) {
+            startTime = System.currentTimeMillis();
+
             readThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
             running = true;
             readThread.start();
-
-            //writeThread = new TCPNetIF.WriteThread((Connection)connection, outgoingQueue);
-            //writeThread.start();
         }
     }
 
@@ -490,19 +551,55 @@ public class TCPNetIF implements NetIF , Runnable {
      * Stop the thread.
      */
     public void stop() {
+        // this can cause the underlying connection to
+        // close-on-interrupt if there is still data being written out.
+        // we need to be careful
+
+        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in stop() with incoming queue size: " + incomingQueue.size() + " outgoing queue size = " + outgoingQueue.size());
+
         if (running == true) {
             try {
                 running = false;
+
+                // stop reader
                 readThread.interrupt();
-                //writeThread.interrupt();
+
+                boolean doJoin = false;
+
+                // flush OutboundThread
+                doJoin = outboundThread.isFinished();
+
+                if (doJoin) {
+                    outboundThread.join();
+                }
+
+                // flush InboundThread
+                doJoin = inboundThread.isFinished();
+
+                if (doJoin) {
+                    inboundThread.join();
+                }
+
+                // stop OutboundThread
+                outboundThread.terminate();
+
+                // stop InboundThread
+                inboundThread.terminate();
+
+                stopTime = System.currentTimeMillis();
 
 
             } catch (Exception e) {
-                // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: Exception in stop() " + e);
+                Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: Exception in stop() " + e);
             }
 
             
+        } else {
+            //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: not running in stop() ");
+            
         }
+
+        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: exit stop() with incoming queue size: " + incomingQueue.size() + " outgoing queue size = " + outgoingQueue.size());
     }
 
     public boolean equals(Object obj) { 
@@ -537,7 +634,7 @@ public class TCPNetIF implements NetIF , Runnable {
 
             return sent;
 
-        } catch (IOException ioe) {
+        } catch (Exception ioe) {
             Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: controlClose error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
             ioe.printStackTrace();
             return false;
@@ -587,53 +684,221 @@ public class TCPNetIF implements NetIF , Runnable {
     }
 
     /**
-     * A write thread class
+     * A thread class to deliver to the NetIFListener
      */
-    public class WriteThread extends Thread {
-        // The connection
-        Connection connection;
+    class InboundThread extends Thread {
+        // The NetIFListener - the RouterFabric
+        NetIFListener listener;
+
+        // The sending NetIF
+        NetIF netIF;
 
         // The queue
-        BlockingQueue<Datagram> queue;
+        LinkedBlockingQueue<Datagram> queue;
 
         // is running
         boolean running = false;
 
         /**
-         * Construct a WriteThread given a queue to read from
-         * and a Connection to send to.
+         * Construct a InboundThread given a queue to take from
+         * and a NetIFListener to send to.
          */
-        public WriteThread(Connection c, BlockingQueue<Datagram> q) {
-            connection = c;
+        public InboundThread(NetIFListener l, NetIF n, LinkedBlockingQueue<Datagram> q) {
+            listener = l;
+            netIF = n;
             queue = q;
+            setName("InboundThread-" + n.getName());
         }
 
         public void run() {
-            /*
-            Logger.getLogger("log").logln(USR.STDOUT, "WriteThread: run");
+            //Logger.getLogger("log").logln(USR.STDOUT, "InboundThread: run");
 
             running = true;
 
-            while (running) {
-                Datagram datagram;
+            Datagram datagram;
+            int sleepCount = 0;
+
+            while (running || queue.size() > 0) {
                 try {
-                    // Logger.getLogger("log").logln(USR.STDOUT, "WriteThread: queue size = " + queue.size());
+                    //Logger.getLogger("log").logln(USR.STDOUT, "InboundThread: queue size = " + queue.size());
 
-                    datagram = outgoingQueue.take();
+                    if (listener.canAcceptDatagram(netIF)) {
+                        // tell fabric we have a Datagram
+                        datagram = queue.take();
+                        listener.datagramArrived(netIF, datagram);
+                        netStats.setValue(NetStats.Stat.InQueue, queue.size());
+                        sleepCount = 0;
+                    } else {
+                        try {
+                            sleepCount++;
+                            //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF.InboundThread-" + netIF.getName() + " : SLEEP " + sleepCount + "incomingQueue size = " + queue.size());
+                            Thread.sleep(50 * sleepCount);
+                        } catch (InterruptedException ie) {
+                            running = false;
+                        }
+                    }
 
-                    connection.sendDatagram(datagram);
 
                 } catch (InterruptedException ie) {
+                    // jumped out of queue.take()
                     running = false;
-                    // Logger.getLogger("log").logln(USR.STDOUT, "WriteThread: interrupted");
+                    // Logger.getLogger("log").logln(USR.STDOUT, "InboundThread: interrupted");
                     break;
                 }
 
             }
-            */
+        }
+
+        /**
+         * Can we Stop the InboundThread
+         */
+        public boolean isFinished() {
+            if (running == true) {
+                running = false;
+
+                try {
+                    if (queue.size() > 0) {
+                        // wait for queue to drain
+                        Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF.InboundThread: wait for queue to drain");
+                        return true;
+                    } else {
+                        return false;
+                    }
+
+                } catch (Exception e) {
+                    //Logger.getLogger("log").logln(USR.ERROR, "InboundThread: Exception in terminate() " + e);
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Stop the InboundThread
+         */
+        public void terminate() {
+                running = false;
+                    
+                try {
+                    this.interrupt();
+                } catch (Exception e) {
+                    //Logger.getLogger("log").logln(USR.ERROR, "InboundThread: Exception in terminate() " + e);
+                }
+
+            
         }
 
 
-            
     }
+
+
+    /**
+     * A thread class to send outbound traffic
+     */
+    class OutboundThread extends Thread {
+        // The connection
+        Connection connection;
+
+        // The NetIF
+        TCPNetIF netIF;
+
+        // The queue
+        LinkedBlockingQueue<Datagram> queue;
+
+        // is running
+        boolean running = false;
+
+        /**
+         * Construct a OutboundThread given a queue to take from
+         * and a connection send to.
+         */
+        public OutboundThread(Connection c, TCPNetIF n, LinkedBlockingQueue<Datagram> q) {
+            connection = c;
+            netIF = n;
+            queue = q;
+            setName("OutboundThread-" + n.getName());
+        }
+
+        public void run() {
+            //Logger.getLogger("log").logln(USR.STDOUT, "OutboundThread: run");
+
+            running = true;
+
+            Datagram datagram;
+
+            while (running || queue.size() > 0) {
+                try {
+                    //Logger.getLogger("log").logln(USR.STDOUT, "OutboundThread: queue size = " + queue.size());
+
+
+                    try {
+                        datagram = queue.take();
+                        netStats.setValue(NetStats.Stat.OutQueue, outgoingQueue.size());
+
+                        boolean sent =  connection.sendDatagram(datagram);
+
+                        // stats
+                        netStats.increment(NetStats.Stat.OutPackets);
+                        netStats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
+
+
+                    } catch (IOException ioe) {
+                        Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF.OutboundThread: send error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
+                        ioe.printStackTrace();
+                        Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF.OutboundThread: " + netIF.getName() + " -> ReallyClose from run()");
+                        netIF.reallyClose();
+                    }
+                } catch (InterruptedException ie) {
+                    // jumped out of queue.take()
+                    running = false;
+                    //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF.OutboundThread: interrupted");
+                    break;
+                }
+            }
+        }
+
+
+        /**
+         * Stop the OutboundThread
+         */
+        public boolean isFinished() {
+            if (running == true) {
+                try {
+                    running = false;
+
+                    if (queue.size() > 0) {
+                        // wait for queue to drain
+                        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF.OutboundThread: wait for queue to drain");
+                        return true;
+                    } else {
+                        return false;
+                    }
+
+                } catch (Exception e) {
+                    //Logger.getLogger("log").logln(USR.ERROR, "OutboundThread: Exception in terminate() " + e);
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+
+        /**
+         * Stop the OutboundThread
+         */
+        public void terminate() {
+                try {
+                    running = false;
+                    
+                    this.interrupt();
+                } catch (Exception e) {
+                    //Logger.getLogger("log").logln(USR.ERROR, "OutboundThread: Exception in terminate() " + e);
+                }
+        }
+
+
+    }
+
 }

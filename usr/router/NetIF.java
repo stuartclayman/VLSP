@@ -102,13 +102,6 @@ public interface NetIF {
      */
     public boolean forwardDatagram(Datagram dg);
 
-
-    /**
-     * Read a Datagram.
-     */
-    //public Datagram readDatagram();
-
-
     /**
      * Close a NetIF
      */

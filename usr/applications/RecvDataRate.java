@@ -5,22 +5,34 @@ import usr.logging.*;
 import java.nio.ByteBuffer;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * An application for Receiving some data
+ * It prints out the data rate.
  */
-public class Recv implements Application {
+public class RecvDataRate implements Application {
     int port = 0;
-
-    int count = 0;
 
     boolean running = false;
     DatagramSocket socket = null;
 
+    // Timer stuff
+    Timer timer;
+    TimerTask timerTask;
+
+    // total no of Datagrams in
+    int count = 0;
+    // last time count
+    int lastTimeCount = 0;
+    // no per second
+    int diffs = 0;
+
     /**
-     * Constructor for Recv
+     * Constructor for RecvDataRate
      */
-    public Recv() {
+    public RecvDataRate() {
     }
 
     /**
@@ -59,6 +71,41 @@ public class Recv implements Application {
             return new ApplicationResponse(false,  "Cannot open socket " + e.getMessage());
         }
 
+        // set up timer to count throughput
+        timerTask = new TimerTask() { 
+                boolean running = true;
+
+                public void run() {
+                    if (running) {
+                        diffs = count - lastTimeCount;
+                        Logger.getLogger("log").logln(USR.STDOUT, "Task count: " + count + " diff: "  + diffs);
+                        lastTimeCount = count;
+                    }
+                }
+
+                public boolean cancel() {
+                    Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
+                    if (running) {
+                        running = false;
+                    } 
+
+
+                    return running;
+                }
+
+                public long scheduledExecutionTime() {
+                    Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
+                    return 0;
+                }
+            };
+
+        // if there is no timer, start one
+        if (timer == null) {
+            timer = new Timer();
+            timer.schedule(timerTask, 1000, 1000);
+        }
+
+
         running = true;
 
         return new ApplicationResponse(true, "");
@@ -67,6 +114,8 @@ public class Recv implements Application {
     /** Implement graceful shut down */
     public ApplicationResponse stop() {
         running = false;
+
+        timer.cancel();
 
         if (socket != null) {
             socket.close();
@@ -82,22 +131,6 @@ public class Recv implements Application {
         Datagram datagram;
 
         while ((datagram = socket.receive()) != null) {
-
-            Logger.getLogger("log").log(USR.STDOUT, count + ". ");
-            Logger.getLogger("log").log(USR.STDOUT, "HL: " + datagram.getHeaderLength() +
-                             " TL: " + datagram.getTotalLength() +
-                             " From: " + datagram.getSrcAddress() +
-                             " To: " + datagram.getDstAddress() +
-                             ". ");
-            byte[] payload = datagram.getPayload();
-
-            if (payload == null) {
-                Logger.getLogger("log").log(USR.STDOUT, "No payload");
-            } else {
-                Logger.getLogger("log").log(USR.STDOUT, new String(payload));
-            }
-            Logger.getLogger("log").log(USR.STDOUT, "\n");
-
             count++;
         }
 

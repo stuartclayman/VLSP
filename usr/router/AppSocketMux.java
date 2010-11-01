@@ -27,11 +27,12 @@ public class AppSocketMux implements NetIF, Runnable {
     // the next free port
     int freePort = 32768;
 
-    // Incoming queue
-    LinkedBlockingQueue<Datagram> incomingQueue;
+    // Incoming queue from RouterFabric
+    LinkedBlockingQueue<Datagram> outboundQueue;
 
-    // Outgoing queue
-    LinkedBlockingQueue<Datagram> outgoingQueue;
+    // Outgoing queue to RouterFabric
+    LinkedBlockingQueue<Datagram> inboundQueue;
+    int MAX_QUEUE_SIZE = 256;
 
     // The list of all AppSockets
     HashMap<Integer, AppSocket>socketMap;
@@ -43,6 +44,9 @@ public class AppSocketMux implements NetIF, Runnable {
     Thread myThread;
     boolean running = false;
     
+    // Write Thread
+    InboundThread inboundThread = null;
+
     /*
      * NetIF stuff
      */
@@ -77,8 +81,8 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     AppSocketMux(RouterController controller) {
         this.controller = controller;
-        incomingQueue = new LinkedBlockingQueue<Datagram>();
-        outgoingQueue = new LinkedBlockingQueue<Datagram>();
+        outboundQueue = new LinkedBlockingQueue<Datagram>();
+        inboundQueue = new LinkedBlockingQueue<Datagram>(MAX_QUEUE_SIZE);
         socketMap = new HashMap<Integer, AppSocket>();
         socketQueue = new HashMap<Integer, LinkedBlockingQueue<Datagram>>();
         netStats = new NetStats();
@@ -93,7 +97,7 @@ public class AppSocketMux implements NetIF, Runnable {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
             // start my own thread
-            myThread = new Thread(this);
+            myThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
             running = true;
             myThread.start();
 
@@ -110,24 +114,31 @@ public class AppSocketMux implements NetIF, Runnable {
      * Close all sockets.
      */
     public boolean stop() {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
+        if (running == true) {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
-        HashSet<AppSocket> sockets = new HashSet<AppSocket>(socketMap.values());
+            HashSet<AppSocket> sockets = new HashSet<AppSocket>(socketMap.values());
 
-        for (AppSocket s : sockets) {
-            s.close();
+            for (AppSocket s : sockets) {
+                s.close();
+            }
+
+            close();
+
+            // stop my own thread
+            running = false;
+            myThread.interrupt();
+            // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached WaitFor");
+            // stop InboundThread
+            inboundThread.terminate();
+
+            waitFor();
+
+            // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached end of stop");
+            return true;
+        } else {
+            return false;
         }
-
-        close();
-
-        // stop my own thread
-        running = false;
-        myThread.interrupt();
-        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached WaitFor");
-        waitFor();
-
-        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached end of stop");
-        return true;
     }
 
     public void run() {
@@ -136,7 +147,7 @@ public class AppSocketMux implements NetIF, Runnable {
             Datagram datagram;
 
             try {
-                datagram = incomingQueue.take();
+                datagram = outboundQueue.take();
             } catch (InterruptedException ie) {
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run INTERRUPTED");
                 continue;
@@ -167,8 +178,9 @@ public class AppSocketMux implements NetIF, Runnable {
             if (socket != null) {
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "About to queue for " + socket);
 
-                LinkedBlockingQueue<Datagram> queue = getQueueForPort(dstPort);
-                queue.add(datagram);
+                // find queue for a port
+                LinkedBlockingQueue<Datagram> portQueue = getQueueForPort(dstPort);
+                portQueue.add(datagram);
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Queue for " + socket + " is size: " + queue.size());
 
                 // now do stats
@@ -209,14 +221,12 @@ public class AppSocketMux implements NetIF, Runnable {
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "theEnd");
         while (!ended()) {
             try {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
                 Thread.sleep(100);
             } catch (Exception e) {
             
             }
         }
-        
-        
         
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"notifying");
         synchronized(this) {
@@ -381,13 +391,21 @@ public class AppSocketMux implements NetIF, Runnable {
     public  boolean sendDatagram(Datagram dg) {
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "datagramArrived: ");
 
+        outboundQueue.add(dg);
+
         // stats
         netStats.increment(NetStats.Stat.InPackets);
         netStats.add(NetStats.Stat.InBytes, dg.getTotalLength());
 
-        incomingQueue.add(dg);
+        netStats.setValue(NetStats.Stat.InQueue, outboundQueue.size());
 
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Incoming queue size: " + incomingQueue.size());
+        if (outboundQueue.size() > netStats.getValue(NetStats.Stat.BiggestInQueue)) {
+            netStats.setValue(NetStats.Stat.BiggestInQueue, outboundQueue.size());
+        }
+
+
+
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Incoming queue size: " + outboundQueue.size());
 
         return true;
     }
@@ -406,9 +424,10 @@ public class AppSocketMux implements NetIF, Runnable {
      * into the RouterFabric.
      */
     public Datagram readDatagram() {
+        // THIS HAS BEEN SUPERCEDED BY socketSendDatagram()
         /* WAS
         try {
-            Datagram datagram = outgoingQueue.take();
+            Datagram datagram = inboundQueue.take();
 
             // stats
 
@@ -444,13 +463,21 @@ public class AppSocketMux implements NetIF, Runnable {
             stats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
         }
 
+        // add a datagram, if there is room
+        try {
+            inboundQueue.put(datagram);  // WAS add()
+            netStats.setValue(NetStats.Stat.OutQueue, inboundQueue.size());
 
-        //outgoingQueue.add(datagram);
+            if (inboundQueue.size() > netStats.getValue(NetStats.Stat.BiggestOutQueue)) {
+                netStats.setValue(NetStats.Stat.BiggestOutQueue, inboundQueue.size());
+                
+            }
 
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Outgoing queue size: " + outgoingQueue.size());
 
-        // tell fabric we have a Datagram
-        listener.datagramArrived(this,datagram);
+        } catch (InterruptedException ie) {
+        }
+
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Outgoing queue size: " + inboundQueue.size());
 
         return true;
     }
@@ -485,6 +512,14 @@ public class AppSocketMux implements NetIF, Runnable {
      */
     public NetIF setNetIFListener(NetIFListener l) {
         listener = l;
+
+        if (inboundThread == null) {
+            inboundThread = new InboundThread(listener, this, inboundQueue);
+            inboundThread.start();
+        } else {
+            Logger.getLogger("log").logln(USR.ERROR, "AppSocketMux: already has a NetIFListener");
+        }
+
         return this;
     }
     
@@ -587,6 +622,124 @@ public class AppSocketMux implements NetIF, Runnable {
         final String AS = "ASM: ";
 
         return controller.getName() + " " + AS;
+    }
+
+    /**
+     * A thread class to deliver to the NetIFListener
+     */
+    public class InboundThread extends Thread {
+        // The NetIFListener - the RouterFabric
+        NetIFListener listener;
+
+        // The sending NetIF
+        NetIF netIF;
+
+        // The queue
+        LinkedBlockingQueue<Datagram> queue;
+
+        // is running
+        boolean running = false;
+
+        /**
+         * Construct a InboundThread given a queue to read from
+         * and a NetIFListener to send to.
+         */
+        public InboundThread(NetIFListener l, NetIF n, LinkedBlockingQueue<Datagram> q) {
+            listener = l;
+            netIF = n;
+            queue = q;
+            setName("InboundThread-" + n.getName());
+        }
+
+        public void run() {
+            //Logger.getLogger("log").logln(USR.STDOUT, "InboundThread: run");
+
+            running = true;
+
+            Datagram datagram;
+            int sleepCount = 0;
+
+            while (running || queue.size() > 0) {
+                try {
+                    //Logger.getLogger("log").logln(USR.STDOUT, "InboundThread: queue size = " + queue.size());
+
+                    if (listener.canAcceptDatagram(netIF)) {
+                        // tell fabric we have a Datagram
+                        datagram = queue.take();
+                        listener.datagramArrived(netIF, datagram);
+                        netStats.setValue(NetStats.Stat.OutQueue, queue.size());
+                        sleepCount = 0;
+                    } else {
+                        try {
+                            sleepCount++;
+                            Thread.sleep(50);
+                            //Logger.getLogger("log").logln(USR.STDOUT, "AppSocket.InboundThread: sleep " + sleepCount);
+                        } catch (InterruptedException ie) {
+                        }
+                    }
+
+                } catch (InterruptedException ie) {
+                    // jumped out of queue.take()
+                    running = false;
+                    // Logger.getLogger("log").logln(USR.STDOUT, "InboundThread: interrupted");
+                    break;
+                }
+
+            }
+
+            theEnd();
+        }
+
+        /**
+         * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
+         */
+        private void waitFor() {
+            try {
+                //Logger.getLogger("log").logln(USR.STDOUT, "AppSocketMux.InboundThread " +"waiting");
+                synchronized(this) {
+                    wait();
+                }
+            } catch (InterruptedException ie) {
+            }
+       
+        }
+    
+        /**
+         * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
+         */
+        private void theEnd() {
+            //Logger.getLogger("log").logln(USR.STDOUT, "AppSocketMux.InboundThread " + "theEnd");
+            synchronized(this) {
+                notifyAll();
+            }
+        }
+
+
+
+        /**
+         * Stop the InboundThread
+         */
+        public void terminate() {
+            if (running == true) {
+                try {
+                    running = false;
+                    
+                    if (queue.size() > 0) {
+                        // wait for queue to drain
+                        //Logger.getLogger("log").logln(USR.ERROR, "InboundThread: wait for queue to drain");
+                        waitFor();
+                    }
+
+                    this.interrupt();
+                } catch (Exception e) {
+                    //Logger.getLogger("log").logln(USR.ERROR, "InboundThread: Exception in terminate() " + e);
+                }
+
+            
+            }
+        }
+
+
     }
 
 

@@ -233,7 +233,7 @@ public class RouterController implements ComponentController, Runnable {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
         // start my own thread
-        myThread = new Thread(this);
+        myThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
         running = true;
         myThread.start();
 
@@ -252,13 +252,14 @@ public class RouterController implements ComponentController, Runnable {
     public boolean stop() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
+        // stop applications
+        stopApplications();
+
         // stop the management console listener
         boolean stoppedL = management.stop();
 
         // stop the router to router connections
         boolean stoppedC = connections.stop();
-
-        stopApplications();
 
         // stop my own thread
         running = false;
