@@ -121,7 +121,7 @@ public class LocalController implements ComponentController {
 
         Logger.getLogger("log").logln(USR.STDOUT, "Local controller got shutdown message from global controller.");
 
-        ThreadTools.findAllThreads("LC top of shutDown:");
+        //ThreadTools.findAllThreads("LC top of shutDown:");
 
         Logger.getLogger("log").logln(USR.STDOUT, "Stopping all running routers"); 
         for (int i= 0; i < routers_.size(); i++) {
@@ -138,7 +138,7 @@ public class LocalController implements ComponentController {
                 Logger.getLogger("log").logln(USR.ERROR,e.getMessage());          
             }
 
-            ThreadTools.findAllThreads("LC after router shutDown:");
+            //ThreadTools.findAllThreads("LC after router shutDown:");
 
 
 
@@ -174,7 +174,7 @@ public class LocalController implements ComponentController {
         }
 
 
-        ThreadTools.findAllThreads("LC end of shutDown:");
+        //ThreadTools.findAllThreads("LC end of shutDown:");
 
         
     }

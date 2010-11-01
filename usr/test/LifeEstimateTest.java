@@ -2,6 +2,7 @@ package usr.test;
 
 import usr.common.*;
 import usr.logging.*;
+import java.util.*;
 
 import usr.APcontroller.*;
 
@@ -88,7 +89,7 @@ public class LifeEstimateTest {
             //System.out.println("Life is "+lifeSpans[i]);
             tot+= lifeSpans[i];
         }
-        System.out.println(tot/noTests);
+        //System.out.println(tot/noTests);
         int endTime= (int)(tot*10/(noTests)); // Run for 10x mean lifespan
         int lifeStep= endTime/noTests;
         int time= 0;
@@ -107,9 +108,13 @@ public class LifeEstimateTest {
             }
             time+= lifeStep;
         }
-        System.out.println("Alive at end "+alive+" outlasting "+outlast);
+        //System.out.println("Alive at end "+alive+" outlasting "+outlast);
         e.sortDeaths();
-        e.plotKMGraph(time);
+        ArrayList<Pair<Integer,Double>> graph= e.plotKMGraph(time);
+        for (Pair<Integer, Double>p : graph) {
+            System.out.println(p.getFirst()+" "+p.getSecond()+" "+
+                (1.0 - dist.getCumulativeDistribution(p.getFirst())));
+        }
         e.fitTail();
         
     }

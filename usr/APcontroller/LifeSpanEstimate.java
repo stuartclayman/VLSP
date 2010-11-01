@@ -5,6 +5,8 @@ import usr.logging.*;
 import usr.router.Router;
 import usr.globalcontroller.GlobalController;
 import usr.router.RouterOptions;
+import usr.common.Pair;
+import usr.common.MathFunctions;
 
 /** Produces estimates of life spans given information about node births 
 and deaths*/
@@ -49,18 +51,20 @@ public class LifeSpanEstimate {
     
     
     /** Plot a graph of the Kaplan--Meier Estimator */
-    public void plotKMGraph(long time) {
+    public ArrayList<Pair<Integer,Double>> plotKMGraph(long time) {
         updateKMEstimate(time);
         if (KMTime_ == null) {
             Logger.getLogger("log").logln(USR.STDOUT, 
                 "Insuffient data for KM estimate");
-            return;
+            return null;
         }
+        ArrayList<Pair<Integer,Double>> graph= new ArrayList<Pair<Integer,Double>>();
         for (int i= 0; i < KMTime_.size();i++) {
-            double Fx= 0.5*erfc(-(Math.log(KMTime_.get(i)) - 4.0)/(2.0*Math.sqrt(2.0)));
-            Logger.getLogger("log").logln(USR.STDOUT, KMTime_.get(i)+" "+ KMProb_.get(i) + " "
-                + (1.0 - Fx));
+            //double Fx= 0.5*erfc(-(Math.log(KMTime_.get(i)) - 4.0)/(2.0*Math.sqrt(2.0)));
+            Pair <Integer,Double> p= new Pair<Integer,Double>(KMTime_.get(i),KMProb_.get(i));
+            graph.add(p);
         }
+        return graph;
     }
 
     /** Fit the lognormal tail */
@@ -81,7 +85,7 @@ public class LifeSpanEstimate {
         double []yi= new double[len];
         for (int i= 0; i < len; i++) {
             xi[i]= (Math.log((KMTime_.get(i+startpos+1)+KMTime_.get(i+startpos))/2));
-            yi[i]= (inverfc(2.0*(1.0-KMProb_.get(i+startpos))));
+            yi[i]= (MathFunctions.inverfc(2.0*(1.0-KMProb_.get(i+startpos))));
         }    
         // Now do a least squares fit.
         double xsum= 0.0;
@@ -98,7 +102,7 @@ public class LifeSpanEstimate {
         double c= (ysum - m*xsum)/len;
         sigma_= -1.0/(m*Math.sqrt(2.0));
         mu_=sigma_*c*(Math.sqrt(2.0));
-        System.out.println("mu= "+mu_+" sigma= "+sigma_);
+        //System.out.println("mu= "+mu_+" sigma= "+sigma_);
     }
 
     /** A node is born at a given time -- register this */
@@ -226,10 +230,10 @@ public class LifeSpanEstimate {
         int ni= deaths_.size() + births_.size();
         
         ArrayList <Long> life= new ArrayList<Long> (births_.values());
-        System.out.println("Start "+ni+ " deaths "+deaths_.size()+ " live "+ life.size());
+        //System.out.println("Start "+ni+ " deaths "+deaths_.size()+ " live "+ life.size());
         Collections.sort(life,Collections.reverseOrder());
-        System.out.println("Time "+time);
-        System.out.println(life);
+        //System.out.println("Time "+time);
+        //System.out.println(life);
         int deathCount= 0;
         int lifeCount= 0;
         int di= 0;
@@ -272,85 +276,11 @@ public class LifeSpanEstimate {
                 
             }
        }
-       System.out.println("Alive at end of KM "+ni+" tot deaths "+totD +
-        " tot expire "+totExpire);
+       //System.out.println("Alive at end of KM "+ni+" tot deaths "+totD +
+       // " tot expire "+totExpire);
    }    
   
   
-      /**Calculate inverse erf function -- see wikipedia for formula
-      We shoudl be good with small number of iter since y is small.
-      */
-      
-      public static double inverf(double y) 
-      {
-          final int MAX_ERFITR= 200;
-          double x= Math.sqrt(Math.PI)*y/2.0;
-          double []cn= new double[MAX_ERFITR];
-          cn[0]= 1.0;
-          double inverf= x;
-          for (int k= 1; k<MAX_ERFITR; k++) {
-              cn[k]= 0.0;
-              for (int m= 0; m <k; m++) {
-                  cn[k]+= cn[m]*cn[k-1-m]/((m+1)*(2*m+1));
-              }
-              inverf+= cn[k]/(2*k+1)*(Math.pow(x,(2*k+1)));
-          }
-          return inverf;
-      }
-      
-      
-      /** Calculate inverse of erfc (1-erf)
-      */
-      public static double inverfc(double y) 
-      {
-          return inverf(1.0-y);
-      }
-      
-  
-     /** Calculate erf function 
-      * see http://www.cs.princeton.edu/introcs/21function/
-      * fractional error in math formula less than 1.2 * 10 ^ -7.
-      * although subject to catastrophic cancellation when z in very close to 0
-      * from Chebyshev fitting formula for erf(z) from Numerical Recipes, 6.2 */
-      
-    public static double erf(double z) {
-        double t = 1.0 / (1.0 + 0.5 * Math.abs(z));
-
-        // use Horner's method
-        double ans = 1 - t * Math.exp( -z*z   -   1.26551223 +
-                                            t * ( 1.00002368 +
-                                            t * ( 0.37409196 + 
-                                            t * ( 0.09678418 + 
-                                            t * (-0.18628806 + 
-                                            t * ( 0.27886807 + 
-                                            t * (-1.13520398 + 
-                                            t * ( 1.48851587 + 
-                                            t * (-0.82215223 + 
-                                            t * ( 0.17087277))))))))));
-        if (z >= 0) return  ans;
-        else        return -ans;
-    }
-
-    // fractional error less than x.xx * 10 ^ -4.
-    // Algorithm 26.2.17 in Abromowitz and Stegun, Handbook of Mathematical.
-    public static double erf2(double z) {
-        double t = 1.0 / (1.0 + 0.47047 * Math.abs(z));
-        double poly = t * (0.3480242 + t * (-0.0958798 + t * (0.7478556)));
-        double ans = 1.0 - poly * Math.exp(-z*z);
-        if (z >= 0) return  ans;
-        else        return -ans;
-    }
-
-    // cumulative normal distribution
-    // See Gaussia.java for a better way to compute Phi(z)
-    public static double Phi(double z) {
-        return 0.5 * (1.0 + erf(z / (Math.sqrt(2.0))));
-    }
-    public static double erfc(double x) 
-    {
-        return 1-erf(x);
-    }
     
-
 
 }

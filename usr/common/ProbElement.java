@@ -72,7 +72,117 @@ public class ProbElement
         }
            
     }
+    
+    /**Return the *cumulative* distribution function value at x*/
+    public double getCumulativeDistribution(double x) throws ProbException {
+         if (distType_ == EXPO_DIST) {
+            return exponentialDist(x,parm1_);
+        }
+        if (distType_ == WEIBULL_DIST) {
+            return weibullDist(x,parm1_,parm2_);
+        }
+        if (distType_ == GAMMA_DIST) {
+            return gammaDist(x,parm1_, parm2_);
+        }
+        if (distType_ == UNIFORM_DIST) {
+            return uniformDist(x,parm1_, parm2_);
+        }
+        if (distType_ == PARETO_DIST) {
+            return paretoDist(x,parm1_, parm2_);
+        }
+        if (distType_ == POISSON_DIST) {
+            return poissonDist(x,parm1_);
+        }
+        if (distType_ == POISSON_MIN_DIST) {
+            return poissonMinDist(x,parm1_,parm2_);
+        }
+        if (distType_ == POISSON_PLUS_DIST) {
+            return poissonDist(x-parm2_,parm1_);
+        }
+        if (distType_ == LOG_NORMAL_DIST) {
+            return logNormalDist(x,parm1_,parm2_);
+        }
+        if (distType_ == NORMAL_DIST) {
+            return normalDist(x,parm1_,parm2_);
+        }
+        throw new ProbException("Unknown distribution type");
+        
+    }
 
+    /** Cum Dist function for exponential*/
+    double exponentialDist(double x, double mean) {
+        return 1.0 - Math.exp(-x/mean);
+    }
+
+    /** Cum dist function for weibull */
+    double weibullDist(double x, double lambda, double beta) 
+    {
+        return (1.0- Math.exp(-Math.pow(x/lambda,beta)));
+    }
+    
+    /** Cum dist function for gamma Function */
+    double gammaDist(double y, double shape, double scale) throws ProbException
+    {
+        throw new ProbException("Not yet written gammaDist");
+    }
+    
+    /** Cum dist function for unifrom Function */
+    double uniformDist(double x, double min, double max) 
+    {
+        return ((x-min)/(max-min));
+    }
+    
+     /** Cum dist function for Pareto dist */
+    double paretoDist(double x, double scale, double shape) 
+    {
+        return (1.0 -Math.pow(scale/x,shape));
+    }
+    
+    /** Cum dist function for Poisson */
+    double poissonDist(double x, double mean)
+    {
+        double dist= 0.0;
+        double fact= 1.0;
+        for (int i= 0; i <= x; i++) {
+            if (i > 1) {
+                fact*= i;
+            }
+            dist+= Math.exp(-mean)*Math.pow(mean,i)/fact;
+            
+        }     
+        return dist;
+    }
+    
+    /** Cum dist function for Poisson */
+    double poissonMinDist(double x, double mean, double min)
+    {
+        if (x < min) {
+            return 0;
+        }
+        double dist= 0.0;
+        double fact= 1.0;
+        for (int i= 0; i <= x; i++) {
+            if (i > 1) {
+                fact*= i;
+            }
+            dist+= Math.exp(-mean)*Math.pow(mean,i)/fact;
+            
+        }     
+        return dist;
+    }
+    
+    /** Cum dist function for log Normal */
+    double logNormalDist(double x, double mu, double sd)
+    {   
+        return 0.5+0.5*MathFunctions.erf((Math.log(x)-mu)/(sd*Math.sqrt(2.0)));
+    }
+
+    /** Cum dist for normal Dist */
+    double normalDist(double x, double mu, double sd)
+    { 
+        return 0.5+ 0.5*MathFunctions.erf((x-mu)/(sd*Math.sqrt(2.0)));
+    }
+    
     public double getVariate() throws ProbException {
         if (distType_ == EXPO_DIST) {
             return exponentialVariate(parm1_);

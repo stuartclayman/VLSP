@@ -46,9 +46,27 @@ public class ProbDistribution
         } catch (ProbException e) {
           Logger.getLogger("log").logln(USR.ERROR, "Error in getVariate");
           Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-          System.exit(-1);
+          return 0.0;
         }
-        return 0.0;
+    }
+    
+    /**Return the *cumulative* distribution function value at x*/
+    public double getCumulativeDistribution(double x)
+    {
+        double distribution= 0.0;
+        double range= 0.0;
+        try {
+            for (ProbElement e: distParts_) {
+                distribution+= (e.getWeight() - range)*e.getCumulativeDistribution(x);
+                range= e.getWeight();
+            }
+        } catch (ProbException e) {
+            Logger.getLogger("log").logln(USR.ERROR, "Error in getVariate");
+          Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+          return 0.0;
+        }
+        return distribution;
+    
     }
     
     public void checkParts() throws ProbException {
