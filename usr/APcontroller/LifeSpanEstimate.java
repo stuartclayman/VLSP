@@ -19,14 +19,20 @@ public class LifeSpanEstimate {
     RouterOptions options_;     // Options for simulations
     ArrayList <Integer> KMTime_= null;
     ArrayList <Double> KMProb_= null;
-    double mu_= 0.0;
+    int T_;
+    double mu_= 0.0;      // Parameters of lognormal tail fit
     double sigma_= 0.0;
     
     static final int MIN_DEATHS= 5;
-    static final int MIN_LIVE= 5;
+    static final int MIN_LIVE= 0;
+    
     static final int MIN_TAIL_FIT= 10;
-    static final double TAIL_PERCENT= 0.1;
-    static final double TAIL_FIT_PERCENT=0.35;
+    static final double TAIL_PERCENT= 0.2;      // Percentage of estiamted 
+          // K-M estimator points to be replaced with tail estimate
+    static final double TAIL_FIT_PERCENT=0.2;    // Per centage of KM
+        // estimator points to be used to fit lognormal parms
+    static final double TAIL_MISS_PERCENT=0.0;    // Per centage of KM
+        // estimator points to be used to fit lognormal parms
     
     
     public LifeSpanEstimate(RouterOptions o) 
@@ -50,7 +56,7 @@ public class LifeSpanEstimate {
 
     
     
-    /** Plot a graph of the Kaplan--Meier Estimator */
+    /** Plot (return co-ords of a graph of the Kaplan--Meier Estimator */
     public ArrayList<Pair<Integer,Double>> plotKMGraph(long time) {
         updateKMEstimate(time);
         if (KMTime_ == null) {
@@ -67,25 +73,56 @@ public class LifeSpanEstimate {
         return graph;
     }
 
+  
+    
+    /** Plot (return co-ords of a graph of the Kaplan--Meier Estimator with tail*/
+    public ArrayList<Pair<Integer,Double>> plotKMGraphTail(long time) {
+        updateKMEstimate(time);
+        if (KMTime_ == null) {
+            Logger.getLogger("log").logln(USR.STDOUT, 
+                "Insuffient data for KM estimate");
+            return null;
+        }
+        fitTail();
+        if (mu_ == 0 && sigma_ == 0)  {  // Insufficient points for tail plot
+            return plotKMGraph(time);
+        }
+        ArrayList<Pair<Integer,Double>> graph= new ArrayList<Pair<Integer,Double>>();
+        
+
+        Pair <Integer,Double> p;        
+        for (int i= 0; i < KMTime_.size();i++) {
+            //double Fx= 0.5*erfc(-(Math.log(KMTime_.get(i)) - 4.0)/(2.0*Math.sqrt(2.0)));
+            if (KMTime_.get(i) < T_) {
+               p = new Pair<Integer,Double>(KMTime_.get(i),KMProb_.get(i));
+            } else {
+               p= new Pair<Integer,Double>(KMTime_.get(i),
+                    getTailProb(KMTime_.get(i)));
+            }
+            graph.add(p);
+        }
+        return graph;
+    }
     /** Fit the lognormal tail */
     public void fitTail() {
         /** Fit the parameters of the lognormal distribution */
         if (KMTime_ == null || KMTime_.size() * TAIL_FIT_PERCENT < MIN_TAIL_FIT) {
             mu_= 0;
             sigma_= 0;
+             T_= KMTime_.get(KMTime_.size()-1)+1;
             return;
         }
         // Get time series of the distribution tail
         // log versus erfcinv (see paper)
         
-        int startpos= (int)(KMTime_
-        .size() * (1.0 - TAIL_FIT_PERCENT));
-        int len= (KMTime_.size()-10)-startpos;
+        int startpos= (int)((KMTime_.size()-1.0) * (1.0 - TAIL_FIT_PERCENT-TAIL_MISS_PERCENT));
+        int endpos= (int)((KMTime_.size()-1.0) * (1.0 - TAIL_MISS_PERCENT));
+        int len= 1+endpos-startpos;
         double []xi= new double[len];
         double []yi= new double[len];
         for (int i= 0; i < len; i++) {
-            xi[i]= (Math.log((KMTime_.get(i+startpos+1)+KMTime_.get(i+startpos))/2));
-            yi[i]= (MathFunctions.inverfc(2.0*(1.0-KMProb_.get(i+startpos))));
+            xi[i]= Math.log(KMTime_.get(i+startpos));
+            yi[i]= MathFunctions.inverfc(2.0*(1.0-KMProb_.get(i+startpos)));
         }    
         // Now do a least squares fit.
         double xsum= 0.0;
@@ -103,7 +140,43 @@ public class LifeSpanEstimate {
         sigma_= -1.0/(m*Math.sqrt(2.0));
         mu_=sigma_*c*(Math.sqrt(2.0));
         //System.out.println("mu= "+mu_+" sigma= "+sigma_);
+          //Calculate point where we are considered "in tail" for 
+       // purpose of calcs
+      
+       T_= KMTime_.get((int)(KMTime_.size()*(1.0-TAIL_PERCENT)));
     }
+    
+    
+    /** */
+    public double getKMTailProb(int t) 
+    {
+        if (KMTime_ == null)
+            return 0.0;
+        if (t < T_ || mu_ == 0 && sigma_ == 0) {
+            return getKMProb(t);
+        }   
+        return getTailProb(t);
+    }
+    
+    /** returns the Kaplan-Meir estimate for time t */
+    public double getKMProb(int t) {
+        for (int i= 0; i < KMTime_.size(); i++) {
+            if (t <= KMTime_.get(i))
+                return KMProb_.get(i);
+        }
+        return 0.0;
+    }
+    
+    /** Return the lognormal probability for a fitted tail */
+    public double getTailProb(int t) {
+        double rawProb= (1.0 -usr.common.ProbElement.logNormalDist(t,mu_,sigma_));
+        double fact= getKMProb(T_)/
+          (1.0 -usr.common.ProbElement.logNormalDist(T_,mu_,sigma_));
+        return rawProb*fact;
+          
+    }
+    
+    
 
     /** A node is born at a given time -- register this */
     public void newNode(long time, int gid) 
@@ -174,7 +247,7 @@ public class LifeSpanEstimate {
 
     /** Get an estimate of remaining lifespan using KM estimator */
     
-    public int getKMEstimate(int life, int T) 
+    public int getKMLifeEstimate(int life, int T) 
     { 
         if (KMTime_ == null)    // No parameters, return life
             return life*2;
@@ -208,10 +281,7 @@ public class LifeSpanEstimate {
         return (int)(estlife/KMProb_.get(l));
     }
     
-    public int getTailEstimate(int life, int T, int KMT, double mu, double sig) {
-        
-        return 0;
-    }
+   
     
     public void sortDeaths()
     {
@@ -227,60 +297,102 @@ public class LifeSpanEstimate {
         KMTime_= new ArrayList<Integer>();
         KMProb_= new ArrayList<Double>();
         double KMEst=1.0;
-        int ni= deaths_.size() + births_.size();
         
         ArrayList <Long> life= new ArrayList<Long> (births_.values());
         //System.out.println("Start "+ni+ " deaths "+deaths_.size()+ " live "+ life.size());
         Collections.sort(life,Collections.reverseOrder());
         //System.out.println("Time "+time);
         //System.out.println(life);
-        int deathCount= 0;
-        int lifeCount= 0;
-        int di= 0;
+        //System.err.println("deaths "+deaths_);
+        //System.err.println("lives "+life);
+        int nextDeathTime= deaths_.get(0);    // Times of next death or
+        int nextLifeTime;
+        if (life.size() == 0) {
+            nextLifeTime= -1; 
+        } else {
+            nextLifeTime= (int)(time - life.get(0));    // still alive (but only up to this time)
+        }
+        int dCount= 0;    // Position in array of births and deaths
+        int lCount= 0;
+        int ni= deaths_.size() + births_.size();  // No alive in system
+        int prevni= ni;       // ni at previous time period
+        int prevDCount= 0;
+        int prevTime= -1;
+        double totProb= 1.0;
         
-        int nextDeathTime= deaths_.get(0);
-        int nextLifeTime= (int)(time - life.get(0));
-        int totExpire= 0;
-        int totD= 0;
         while (true) {
-            if (nextDeathTime == -1) {
+            if (ni == 0) 
+                break;
+           // System.err.println("Next Death Time = "+nextDeathTime+
+           //   "Next Life Time "+ nextLifeTime);
+            int nextTime= getNextTime(nextDeathTime, nextLifeTime);
+            if (nextTime == -1) {
+                  
+                KMTime_.add(prevTime);
+                KMProb_.add(totProb);
                 break;
             }
-            if (nextDeathTime < nextLifeTime || nextLifeTime == -1) {
-                int deathTime= nextDeathTime;
-                while (nextDeathTime == deathTime) {
-                    di+= 1;
-                    deathCount+= 1;
-                    if (deathCount >= deaths_.size()) {
-                        nextDeathTime= -1;
-                    } else {
-                        nextDeathTime= deaths_.get(deathCount);
-                    }
-                }
-                KMEst*=( (double)ni - di)/ni;
-                ni-= di;
-                totD+= di;
-                KMTime_.add(deathTime);
-                KMProb_.add(KMEst);
-                di= 0;
-                continue;
-            }
-           
-            ni-= 1;
-            totExpire+= 1;
-            lifeCount+= 1;
-            if (lifeCount >= births_.size()) {
-                nextLifeTime= -1;
-            } else {
-                nextLifeTime= (int) (time - life.get(lifeCount));
+            // Time we are considering has changed -- so move it on
+            if (nextTime != prevTime) {
                 
+                int di= dCount-prevDCount;
+                
+                
+                if (di != 0) {
+                    
+                    KMTime_.add(prevTime);
+                    
+                    KMProb_.add(totProb);
+                    //System.err.println("di="+di+"ni="+prevni);
+                    totProb *= (double)(prevni-di)/(double)prevni;
+                    //totProb= (double)(prevni)/(prevni+dCount);
+                    prevDCount= dCount;
+                }
+                prevni= ni;
+                prevTime=nextTime;
+               
             }
+            // Time corresponded to a lifespan of something
+            // with no death yet observed
+            
+            if (nextTime == nextLifeTime) {
+                //System.err.println("New life, length"+nextLifeTime);
+                ni-=1;
+                lCount++;
+                // If there are more "still alive" get the time
+                if (lCount < life.size()) {
+                    nextLifeTime= (int) (time-life.get(lCount));
+                   // System.err.println("Next life "+nextLifeTime);
+                } else {
+                    nextLifeTime= -1;  
+                } 
+            }
+            // Time corresponded to a lifespan of something
+            // which is now dead
+            if (nextTime == nextDeathTime) {
+               // System.err.println("New death, length"+nextDeathTime);
+                ni-=1;
+                dCount++;
+                // If there are more deaths get the time
+                if (dCount < deaths_.size()) {
+                    nextDeathTime= deaths_.get(dCount);
+                } else {
+                    nextDeathTime= -1;
+                }
+            }
+            
        }
-       //System.out.println("Alive at end of KM "+ni+" tot deaths "+totD +
-       // " tot expire "+totExpire);
+     
    }    
   
-  
+    // 
+    int getNextTime(int dt, int lt) {
+        if (dt == -1)
+            return lt;
+        if (lt == -1)
+            return dt;
+        return Math.min(lt,dt);
+    }  
     
 
 }

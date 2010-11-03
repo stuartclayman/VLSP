@@ -83,39 +83,53 @@ public class LifeEstimateTest {
         //System.out.println("Inverse ="+ e.inverfc(y));
         noTests= Integer.parseInt(args[1]);
         int []lifeSpans= new int[noTests];
-        int tot= 0;
+        double tot= 0;
+        int maxL= 0;
         for (i= 0; i < noTests; i++) {
-            lifeSpans[i]= (int)dist.getIntVariate();
-            //System.out.println("Life is "+lifeSpans[i]);
-            tot+= lifeSpans[i];
+            lifeSpans[i]= Math.max(1,(int)(dist.getVariate()*1000));
+         //   System.err.println("Life is "+lifeSpans[i]);
+            maxL= Math.max(maxL,lifeSpans[i]);
+            
         }
         //System.out.println(tot/noTests);
-        int endTime= (int)(tot*10/(noTests)); // Run for 10x mean lifespan
+        int endTime= (int)((1.0+Math.random())*maxL); // Run a random proportion of 
+            // max life -- with births all through period
+       // System.err.println("MaxL="+maxL+" end time "+endTime);
         int lifeStep= endTime/noTests;
         int time= 0;
         int alive= 0;
         int outlast= 0;
+        int deaths= 0;
         for (i= 0; i < noTests; i++) {
             e.newNode(time,i);
             if (lifeSpans[i] > endTime)
                 outlast+= 1;
             if (time + lifeSpans[i] < endTime) {
                 e.nodeDeath(time + lifeSpans[i],i);
-               // System.out.println("Death at time "+time+" life span "+lifeSpans[i]+ 
-                //  " end Time "+endTime);
+              //  System.err.println("Death at time "+time+" life span "+lifeSpans[i]+ 
+              //    " end Time "+endTime);
+                deaths++;
             } else {
+              //   System.err.println("Node born at time "+time+" life span "+lifeSpans[i]+ 
+               //   " outlasts end Time "+endTime);
                 alive+= 1;
             }
             time+= lifeStep;
         }
-        //System.out.println("Alive at end "+alive+" outlasting "+outlast);
+        int noPoints= 1000;
         e.sortDeaths();
-        ArrayList<Pair<Integer,Double>> graph= e.plotKMGraph(time);
-        for (Pair<Integer, Double>p : graph) {
-            System.out.println(p.getFirst()+" "+p.getSecond()+" "+
-                (1.0 - dist.getCumulativeDistribution(p.getFirst())));
-        }
+        e.updateKMEstimate(endTime);
         e.fitTail();
+        int x= 0;
+        for (i= 1; i < noPoints; i++) {
+            
+            
+            System.out.println(x+" "+e.getKMProb(x)+" "+ 
+                e.getKMTailProb(x)+" "+(1.0 - dist.getCumulativeDistribution((double)x/1000)));
+            x+= endTime*2/noPoints;
+        }
+        
+        
         
     }
 

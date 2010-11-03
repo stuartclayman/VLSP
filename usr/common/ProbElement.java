@@ -110,36 +110,38 @@ public class ProbElement
     }
 
     /** Cum Dist function for exponential*/
-    double exponentialDist(double x, double mean) {
+     public static double exponentialDist(double x, double mean) {
         return 1.0 - Math.exp(-x/mean);
     }
 
     /** Cum dist function for weibull */
-    double weibullDist(double x, double lambda, double beta) 
+     public static double weibullDist(double x, double lambda, double beta) 
     {
         return (1.0- Math.exp(-Math.pow(x/lambda,beta)));
     }
     
     /** Cum dist function for gamma Function */
-    double gammaDist(double y, double shape, double scale) throws ProbException
+     public static double gammaDist(double y, double shape, double scale) throws ProbException
     {
         throw new ProbException("Not yet written gammaDist");
     }
     
     /** Cum dist function for unifrom Function */
-    double uniformDist(double x, double min, double max) 
+     public static double uniformDist(double x, double min, double max) 
     {
         return ((x-min)/(max-min));
     }
     
      /** Cum dist function for Pareto dist */
-    double paretoDist(double x, double scale, double shape) 
+     public static double paretoDist(double x, double scale, double shape) 
     {
+        if (x < scale)
+            return 0.0;
         return (1.0 -Math.pow(scale/x,shape));
     }
     
     /** Cum dist function for Poisson */
-    double poissonDist(double x, double mean)
+     public static double poissonDist(double x, double mean)
     {
         double dist= 0.0;
         double fact= 1.0;
@@ -154,7 +156,7 @@ public class ProbElement
     }
     
     /** Cum dist function for Poisson */
-    double poissonMinDist(double x, double mean, double min)
+    public static double poissonMinDist(double x, double mean, double min)
     {
         if (x < min) {
             return 0;
@@ -172,13 +174,13 @@ public class ProbElement
     }
     
     /** Cum dist function for log Normal */
-    double logNormalDist(double x, double mu, double sd)
+    public static double logNormalDist(double x, double mu, double sd)
     {   
         return 0.5+0.5*MathFunctions.erf((Math.log(x)-mu)/(sd*Math.sqrt(2.0)));
     }
 
     /** Cum dist for normal Dist */
-    double normalDist(double x, double mu, double sd)
+    public static  double normalDist(double x, double mu, double sd)
     { 
         return 0.5+ 0.5*MathFunctions.erf((x-mu)/(sd*Math.sqrt(2.0)));
     }
@@ -323,12 +325,13 @@ public class ProbElement
     public static double normalVariate(double mean, double sd)
     {
             double v1, v2, s;
+            
             do { 
                     v1 = 2 * Math.random() - 1;   // between -1.0 and 1.0
                     v2 = 2 * Math.random() - 1;   // between -1.0 and 1.0
                     s = v1 * v1 + v2 * v2;
             } while (s >= 1 || s == 0);
-            double multiplier = Math.sqrt(-2 * Math.log(s)/s);
+            double multiplier = Math.sqrt(-2.0 * Math.log(s)/s);
           
             double g= v1 * multiplier;
 
