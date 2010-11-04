@@ -8,6 +8,7 @@ import usr.interactor.RouterInteractor;
 import usr.protocol.Protocol;
 import java.util.Scanner;
 import java.nio.ByteBuffer;
+import java.net.SocketException;
 
 /**
  * Test Router startup and simple AppSocket.
@@ -72,11 +73,11 @@ public class RouterApp2 {
             datagram = DatagramFactory.newDatagram(buffer);
 
 
-            if (sendSocket.send(datagram) == false) {
-                return;
-            } else {
-
+            try {
+                sendSocket.send(datagram);
                 //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
+            } catch (SocketException se) {
+                return;
             }
         }
     }

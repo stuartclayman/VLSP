@@ -56,6 +56,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     SimpleRoutingTable table_= null;
 
     // routing table info
+    TreeSet<Address> routableAddresses;
 
     NetIF nextUpdateIF_= null;
 
@@ -75,6 +76,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         for (int p=0; p < limit; p++) {
             setupPort(p);
         }
+
+        routableAddresses = new TreeSet<Address>();
 
         localNetIF = null;
 
@@ -333,7 +336,17 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public synchronized RouterPort addNetIF(NetIF netIF) {
         Address address = netIF.getAddress();
+
+        // add this address into the routableAddresses set
+        routableAddresses.add(address);
+            
+        // tell the NetIF, this is its listener
+        netIF.setNetIFListener(this);
+
+        // is this actually the local NetIF
         boolean localPort= (address.asInteger() == 0);
+
+        // bind NetIF into a port
         RouterPort rp= null;
         if (!localPort) {
             int nextFree = findNextFreePort();
@@ -345,8 +358,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
         }
         
-        // tell the NetIF, this is its listener
-        netIF.setNetIFListener(this);
+        // it is the local port
         if (localPort) {
             if (localNetIF != null) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Attempt to create second local multiplex port");
@@ -354,10 +366,13 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             localNetIF= netIF;
             return null;
         }
+
+        // sort out when to send routing tables to this NetIF
         Long next= System.currentTimeMillis();
         lastTableUpdateTime_.put(netIF,new Long(0));
         nextTableUpdateTime_.put(netIF,next);
         //Logger.getLogger("log").logln(USR.ERROR, "REQUEST NEW ROUTING TABLE UPDATE NOW");
+        // send a Routing table immediately
         queueRoutingRequest(netIF);
         
         // add this to the RoutingTable
@@ -378,12 +393,21 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         // find port associated with netIF
         //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NETIF");
         Address address = netIF.getAddress();
+
+        // remove this address into the routableAddresses set
+        routableAddresses.remove(address);
+            
+        // is this actually the local NetIF
         boolean localPort= (address.asInteger() == 0);
+
+        // it is the local port
         if (localPort) {
             closeLocalNetIF();
             //Logger.getLogger("log").logln(USR.ERROR, "Removed local");
             return true;
         }
+
+        // check Ports
         RouterPort port = findNetIF(netIF);
 
         if (port != null) {
@@ -605,6 +629,11 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         //Logger.getLogger("log").logln(USR.STDOUT, "DATAGRAM WITH NULL ADDRESS");
         if (addr == null )
             return true;
+        else {
+            return routableAddresses.contains(addr);
+        }
+
+        /*
         if (addr.equals(router.getAddress()))
             return true;
         for (NetIF n: listNetIF()) { 
@@ -614,6 +643,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
            }
         }
         return false;
+        */
     }
     
     /** Datagram which has arrived is ours */
@@ -666,8 +696,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             if (ourAddress(addr)) {
                 receiveOurDatagram(datagram, null);
                 return;
+            } else {
+                noRoute(datagram);
             }
-            noRoute(datagram);
             
             
         } else {
@@ -680,6 +711,26 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
     }
     
+    /**
+     * Can we route this datagram.
+     */
+    public synchronized boolean canRoute(Datagram datagram) {
+        Address addr= datagram.getDstAddress();
+        NetIF inter= table_.getInterface(addr);
+
+        if (inter == null) {  // Routing table returns no interface
+            
+            if (ourAddress(addr)) {
+                // it's for ourselves
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }            
+    }
+
     synchronized void noRoute(Datagram dg) 
     {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " no route to "+dg.getDstAddress());
@@ -710,7 +761,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     }
     
     /**
-     * Process a datagram.
+     * Process a datagram for ourselves.
+     * NetIF is the original NetIF that the datagram was received on.
      */
     synchronized  void  processDatagram(Datagram datagram, NetIF netIF) {
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
@@ -727,8 +779,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         return;
     }
 
-     /**
+    /**
      * Process a control datagram
+     * NetIF is the original NetIF that the datagram was received on.
      */
     synchronized boolean  processControlDatagram(Datagram dg,NetIF netIF) {
        

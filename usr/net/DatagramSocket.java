@@ -5,6 +5,7 @@ import usr.logging.*;
 import usr.router.Router;
 import usr.router.RouterDirectory;
 import java.net.SocketException;
+import java.net.NoRouteToHostException;
 
 /**
  * A DatagramSocket looks similar to a Java DatagramSocket.
@@ -126,8 +127,8 @@ public class DatagramSocket {
      * its length, the address of the remote router, and the port number 
      * on the remote router.
      */
-    public boolean send(Datagram dg) {
-        return socketImpl.send(dg);
+    public void send(Datagram dg) throws SocketException, NoRouteToHostException {
+        socketImpl.send(dg);
     }
 
     /**

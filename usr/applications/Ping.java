@@ -3,6 +3,7 @@ package usr.applications;
 import usr.net.*;
 import usr.logging.*;
 import java.nio.ByteBuffer;
+import java.net.SocketException;
 import usr.protocol.Protocol;
 
 /**
@@ -71,12 +72,11 @@ public class Ping implements Application {
             ByteBuffer buffer = ByteBuffer.allocate(1);
             buffer.put("P".getBytes());
             Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
-            if (socket_.send(datagram) == false) {
-                throw new java.net.SocketException("socket_ returned false");
-            }
-        } catch (Exception e) {
+            socket_.send(datagram);
+
+        } catch (SocketException se) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+"Cannot open socket to write");
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());  
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+se.getMessage());  
                 return;
         }
         long now= System.currentTimeMillis();

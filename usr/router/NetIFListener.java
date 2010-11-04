@@ -7,7 +7,7 @@ import usr.logging.*;
  */
 public interface NetIFListener {
     /**
-     * A NetIF has a datagram.
+     * Pass the NetIFListener a new Datagram from a NetIF.
      */
     public boolean datagramArrived(NetIF netIF, Datagram datagram);
 
@@ -15,6 +15,11 @@ public interface NetIFListener {
      * Can the NetIFListener accept a new datagram.
      */
     public boolean canAcceptDatagram(NetIF netIF);
+
+    /**
+     * Can the NetIFListener route this datagram.
+     */
+    public boolean canRoute(Datagram dg);
 
     /**
      * A NetIF is closing.

@@ -112,6 +112,13 @@ public class StubServer implements NetIFListener {
     }
 
     /**
+     * Can route a Datagram
+     */
+    public boolean canRoute(Datagram d) {
+        return true;
+    }
+
+    /**
      * A NetIF has a datagram.
      */
     public boolean datagramArrived(NetIF netIF, Datagram datagram) {

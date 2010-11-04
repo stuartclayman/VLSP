@@ -3,7 +3,7 @@ package usr.net;
 import java.net.InetAddress;
 import usr.logging.*;
 
-public interface Address {
+public interface Address extends Comparable {
     /**
      * Get the size in bytes of an instantiation of an Address.
      */

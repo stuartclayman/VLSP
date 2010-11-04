@@ -303,8 +303,8 @@ public class RouterController implements ComponentController, Runnable {
         // get a handle on the Listener Queue
         BlockingQueue<Request> queue = management.queue();
 
-        // create an Executor pool of size 3
-        ExecutorService pool = Executors.newFixedThreadPool(3);
+        // create an Executor pool
+        ExecutorService pool = Executors.newCachedThreadPool();  // WAS newFixedThreadPool(3);
         long now= System.currentTimeMillis();
         long next= now + options_.getRouterConsiderTime();
         while (running) {

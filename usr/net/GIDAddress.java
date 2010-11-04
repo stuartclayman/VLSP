@@ -97,6 +97,22 @@ public class GIDAddress extends Size4 implements Address, Serializable {
     }
 
     /**
+     * Compare this IPV4Address to another one
+     */
+    public int compareTo(Object other) { 
+        int val1 = this.asInteger();
+        int val2 = ((Address)other).asInteger();
+
+        if (val1 == val2) {
+            return 0;
+        } else if (val1 < val2) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+
+    /**
      * Equals
      */
     public boolean equals(Object obj) {

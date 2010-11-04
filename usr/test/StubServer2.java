@@ -77,6 +77,13 @@ public class StubServer2 implements NetIFListener {
         }
     }
 
+    /**
+     * Can route a Datagram
+     */
+    public boolean canRoute(Datagram d) {
+        return true;
+    }
+
     public boolean canAcceptDatagram(NetIF n) {
         return true;
     }

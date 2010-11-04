@@ -7,6 +7,7 @@ import usr.net.*;
 import usr.interactor.RouterInteractor;
 import java.util.Scanner;
 import java.nio.ByteBuffer;
+import java.net.SocketException;
 
 /**
  * Test Router startup and simple AppSocket.
@@ -80,10 +81,9 @@ public class RouterApp1C {
             datagram = DatagramFactory.newDatagram(buffer);
 
 
-            if (socket.send(datagram) == false) {
-                return;
-            } else {
-
+            try {
+                socket.send(datagram);
+            } catch (SocketException se) {
                 //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
 

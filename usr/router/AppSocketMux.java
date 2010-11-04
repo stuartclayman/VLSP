@@ -445,7 +445,12 @@ public class AppSocketMux implements NetIF, Runnable {
     /**
      * Sends a Datagram from an AppSocket towards to RouterFabric.
      */
-    public boolean socketSendDatagram(Datagram datagram) {
+    public void socketSendDatagram(Datagram datagram) throws SocketException, NoRouteToHostException {
+        // check if packet is routable
+        if (!listener.canRoute(datagram)) {
+            throw new NoRouteToHostException("No route to " + datagram.getDstAddress());
+        }
+
         // patch up the source address in the Datagram
         Address srcAddr = controller.getAddress();
         datagram.setSrcAddress(srcAddr);
@@ -475,11 +480,10 @@ public class AppSocketMux implements NetIF, Runnable {
 
 
         } catch (InterruptedException ie) {
+            throw new SocketException("Cannot send to router fabric. Queue full.");
         }
 
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Outgoing queue size: " + inboundQueue.size());
-
-        return true;
     }
 
 

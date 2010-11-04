@@ -107,14 +107,12 @@ public class Send implements Application {
 
             datagram = DatagramFactory.newDatagram(buffer);
 
-
-            if (socket.send(datagram) == false) {
+            try {
+                socket.send(datagram);
+            } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " + datagram + " with " + new String(datagram.getPayload()));
-            } else {
+            } 
 
-                //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
-                //Logger.getLogger("log").log(USR.STDOUT, i + " ");
-            }
         }
 
         Logger.getLogger("log").log(USR.STDOUT, "\n");

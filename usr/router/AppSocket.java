@@ -5,6 +5,7 @@ import usr.logging.*;
 import usr.net.SocketAddress;
 import usr.net.Datagram;
 import java.net.SocketException;
+import java.net.NoRouteToHostException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -215,7 +216,7 @@ public class AppSocket {
      * its length, the address of the remote router, and the port number 
      * on the remote router.
      */
-    public boolean send(Datagram dg) {
+    public void send(Datagram dg) throws SocketException, NoRouteToHostException {
         if (isBound) {
             dg.setSrcPort(localPort);
         }
@@ -225,7 +226,7 @@ public class AppSocket {
             dg.setDstPort(remotePort);
         }
 
-        return appSockMux.socketSendDatagram(dg);
+        appSockMux.socketSendDatagram(dg);
     }
 
     /**
