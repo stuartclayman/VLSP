@@ -7,11 +7,15 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.*;
 
 /**
  * The GetRouterStatsCommand command.
  */
-public class GetRouterStatsCommand extends LocalCommand {
+public class GetRouterStatsCommand extends LocalCommand implements Callable<Boolean> {
+    // the original request
+    String request;
+
     /**
      * Construct a GetRouterStatsCommand.
      */
@@ -23,11 +27,37 @@ public class GetRouterStatsCommand extends LocalCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
+        request = req;
+
+        // create an Executor pool
+        ExecutorService pool = Executors.newCachedThreadPool();
+
+        // run GET_ROUTER_STATS collection in separate thread
+        Future<Boolean> future = pool.submit(this);
+
+        // wait for result
+        boolean result = false;
+
+        try {
+            result = future.get(); // use future
+        } catch (ExecutionException ex) {
+            error("GetRouterStatsCommand: ExecutionException " + ex);
+        } catch (InterruptedException ie) {
+            error("GetRouterStatsCommand: InterruptedException " + ie);
+        }
+
+        // shutdown pool
+        pool.shutdown();
+        
+        return result;
+    }
+
+    public Boolean call() {
         // the result list
         List<String> list;
 
         // get arg for specified router
-        String []args= req.split(" ");
+        String []args= request.split(" ");
 
         if (args.length == 1) {
             // no args so get data for all routers
@@ -80,7 +110,7 @@ public class GetRouterStatsCommand extends LocalCommand {
         boolean result = success("END " + size);
 
         if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "LIST_CONNECTIONS response failed");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "GET_ROUTER_STATS response failed");
         }
 
         return result;
