@@ -876,6 +876,8 @@ public class GlobalController implements ComponentController {
             outputNetwork(time,p,o);
         } else if (type == OutputType.OUTPUT_SUMMARY) {
             outputSummary(p,o,time);
+        } else if (type == OutputType.OUTPUT_TRAFFIC) {
+            outputTraffic(p,o,time);
         }
         // Schedule next output time
         if (o.getTimeType() == OutputType.AT_INTERVAL) {
@@ -936,6 +938,17 @@ public class GlobalController implements ComponentController {
         s.print(" "+APController_.APTrafficEstimate(this));
         s.print(" "+APController_.meanNodeLife()+" "+APController_.meanAPLife());
         s.println();    
+    }
+    
+    /** Output traffic from the network */
+    private void outputTraffic(PrintStream s, OutputType o, long time) {
+        if (options_.isSimulation()) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                "Request for output of traffic makes sense only in context of emulation");
+            return;
+        }
+        TrafficEstimateThread t= new TrafficEstimateThread(s,o,time,this);
+        new Thread(t).start();
     }
     
     /** Output summary */

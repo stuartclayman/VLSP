@@ -14,6 +14,7 @@ public class OutputType {
     
     public static final int OUTPUT_NETWORK= 1;
     public static final int OUTPUT_SUMMARY= 2;
+    public static final int OUTPUT_TRAFFIC= 3;
     
     Logger mylog= null;
     private String fileName_="";
@@ -41,6 +42,10 @@ public class OutputType {
         }
         if (t.equals("Summary")) {
             outputType_= OUTPUT_SUMMARY;
+            return;
+        } 
+        if (t.equals("Traffic")) {
+            outputType_= OUTPUT_TRAFFIC;
             return;
         } 
         throw new java.lang.IllegalArgumentException("Cannot parse Type "+t);
