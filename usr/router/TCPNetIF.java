@@ -321,8 +321,8 @@ public class TCPNetIF implements NetIF , Runnable {
         }
 
         reallyClose();
-
-        Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: " + getName() + " close() biggestIncomingSize = " + netStats.getValue(NetStats.Stat.BiggestInQueue) + " biggestOutgoingSize = " + netStats.getValue(NetStats.Stat.BiggestOutQueue));
+        
+        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: " + getName() + " close() biggestIncomingSize = " + netStats.getValue(NetStats.Stat.BiggestInQueue) + " biggestOutgoingSize = " + netStats.getValue(NetStats.Stat.BiggestOutQueue));
 
 
     }

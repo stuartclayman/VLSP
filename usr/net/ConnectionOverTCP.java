@@ -319,7 +319,7 @@ public class ConnectionOverTCP implements Connection {
      * Close the connection.
      */
     public void close() {
-        Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " + inCounter + " outCounter = " + outCounter);
+        //Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " + inCounter + " outCounter = " + outCounter);
 
         Socket socket = getSocket();
 
