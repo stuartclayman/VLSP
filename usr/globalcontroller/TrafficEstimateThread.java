@@ -67,10 +67,10 @@ public class TrafficEstimateThread implements Runnable {
     
     void outputAggregate (List <String> out) 
     {
-            
+        Hashtable<Integer,Boolean> routers= new Hashtable<Integer,Boolean>();       
         if (out.size() < 1) 
             return;
-        int nField= out.get(0).split("\\s+").length -2;
+        int nField= out.get(0).split("\\s+").length;
         if (nField <= 0)
             return;
         int []count= new int [nField];
@@ -81,7 +81,7 @@ public class TrafficEstimateThread implements Runnable {
             String []args= s.split("\\s+");
             if (o_.isFirst()) {
                 o_.setFirst(false);
-                s_.print("Time ");
+                s_.print("Time nRouters nLinks*2");
                 for (int i= 2; i < args.length;i++) {
                     s_.print(args[i].split("=")[0]);
                     s_.print(" ");
@@ -92,10 +92,15 @@ public class TrafficEstimateThread implements Runnable {
                 continue;
             if (args[1].equals("localnet"))
                 continue;
-            
-            
+            int router= Integer.parseInt(args[0]);
+            //System.err.println(args[1]+" "+Rname);
+            if (!routers.containsKey(router)){
+                count[0]++;
+                routers.put(router,true);
+            }
+            count[1]++;
             for (int i= 2; i < args.length;i++) {
-                count[i-2]+=Integer.parseInt(args[i].split("=")[1]);
+                count[i]+=Integer.parseInt(args[i].split("=")[1]);
             }
         }
         s_.print(time_+" ");
