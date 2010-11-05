@@ -777,7 +777,7 @@ public class GlobalController implements ComponentController {
     /**
      * Get the router stats
      */
-    public List<String> getRouterStats()  {
+    public synchronized List<String> getRouterStats()  {
         try {
             List<String> result = new ArrayList<String>();
 
@@ -786,7 +786,9 @@ public class GlobalController implements ComponentController {
 
                 List<String> routerStats = lci.getRouterStats();
 
-                result.addAll(routerStats);
+                if (routerStats != null) {
+                    result.addAll(routerStats);
+                }
             }
         
             return result;

@@ -471,7 +471,7 @@ public class LocalController implements ComponentController {
     /**
      * Get router stats for all routers managed by this LocalController
      */
-    public List<String> getRouterStats() {
+    public synchronized List<String> getRouterStats() {
         Set<Integer> routerIDs = routerMap_.keySet();
 
         List<String> result = new ArrayList<String>();
@@ -480,7 +480,9 @@ public class LocalController implements ComponentController {
         for (int routerID : routerIDs) {
             List<String> routerStats = getRouterStats(routerID);
 
-            result.addAll(routerStats);
+            if (routerStats != null) {
+                result.addAll(routerStats);
+            }
         }
         
         return result;
@@ -489,7 +491,7 @@ public class LocalController implements ComponentController {
     /**
      * Get some router stats
      */
-    public List<String> getRouterStats(int routerID) {
+    public synchronized List<String> getRouterStats(int routerID) {
         BasicRouterInfo br = routerMap_.get(routerID);
 
         if (br == null) {
