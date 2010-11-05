@@ -733,7 +733,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
     synchronized void noRoute(Datagram dg) 
     {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + " no route to "+dg.getDstAddress());
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + " no route to "+dg.getDstAddress() + " for " + dg.getSrcAddress() + "/" + dg.getSrcPort() + " -> " + dg.getDstAddress() + "/" + dg.getDstPort());
         /** TODO -- improve this */
     }
     
