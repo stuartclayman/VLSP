@@ -12,14 +12,17 @@ import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException; 
 import java.io.*;
+import usr.common.MathFunctions;
 
 public class VariateTest {
     public static void main(String[] args) {
         int i;
         int noTests;
+        System.out.println(MathFunctions.incompleteGamma(1.0,0.5));
         ProbDistribution dist= null;
         if (args.length != 2) {
             System.out.println("Need arguments --  distribution file and no tests");
+            return;
         }
         
       try { DocumentBuilderFactory docBuilderFactory = 

@@ -129,6 +129,12 @@ public class ProbElement
     /** Cum dist function for unifrom Function */
      public static double uniformDist(double x, double min, double max) 
     {
+        if (x < min) {
+            x= min;
+        }
+        if (x > max) {
+            x= max;
+        }
         return ((x-min)/(max-min));
     }
     
@@ -184,6 +190,96 @@ public class ProbElement
     { 
         return 0.5+ 0.5*MathFunctions.erf((x-mu)/(sd*Math.sqrt(2.0)));
     }
+    
+    /** Get conditional Expectation */
+    public double getCondExp(double x) throws ProbException {
+        if (distType_ == EXPO_DIST) {
+            return exponentialCondExp(x,parm1_);
+        }
+        if (distType_ == WEIBULL_DIST) {
+            return weibullCondExp(x,parm1_,parm2_);
+        }
+        if (distType_ == GAMMA_DIST) {
+            return gammaCondExp(x,parm1_, parm2_);
+        }
+        if (distType_ == UNIFORM_DIST) {
+            return uniformCondExp(x,parm1_, parm2_);
+        }
+        if (distType_ == PARETO_DIST) {
+            return paretoCondExp(x,parm1_, parm2_);
+        }
+        if (distType_ == POISSON_DIST) {
+            return poissonCondExp(x,parm1_);
+        }
+        if (distType_ == POISSON_MIN_DIST) {
+            
+            return poissonCondExp(Math.max(parm2_,x),parm1_);
+        }
+        if (distType_ == POISSON_PLUS_DIST) {
+            double ans= parm2_+poissonCondExp(x,parm1_);
+            return ans;
+        }
+        if (distType_ == LOG_NORMAL_DIST) {
+            return logNormalCondExp(x,parm1_,parm2_);
+        }
+        if (distType_ == NORMAL_DIST) {
+            return normalCondExp(x,parm1_,parm2_);
+        }
+        throw new ProbException("Unknown distribution type");
+        
+    }
+
+    /** Conditional Expectation function for exponential*/
+     public static double exponentialCondExp(double x, double mean) {
+        return x+ mean;
+    }
+
+    /** Conditional Expectation function for weibull */
+     public static double weibullCondExp(double x, double lambda, double beta) throws ProbException
+    {
+        throw new ProbException("Not yet written weibullCondExp");
+    }
+    
+    /** Conditional Expectation function for gamma Function */
+     public static double gammaCondExp(double y, double shape, double scale) throws ProbException
+    {
+        throw new ProbException("Not yet written gammaCondExp");
+        // scale * incompletegamma(1+shape, y/scale)/incompletegamma(shape,y/scale);
+    }
+    
+    /** Conditional Expectation function for unifrom Function */
+     public static double uniformCondExp(double x, double min, double max) throws ProbException
+    {
+         return x+(max-x)/2.0;
+    }
+    
+    
+    
+     /** Conditional Expectation function for Pareto dist */
+     public static double paretoCondExp(double x, double scale, double shape) throws ProbException
+    {
+        throw new ProbException("Not yet written paretoCondExp");
+    }
+    
+    /** Conditional Expectation function for Poisson */
+     public static double poissonCondExp(double x, double mean) throws ProbException
+    {
+        throw new ProbException("Not yet written poissonCondExp");
+    }
+    
+        /** Conditional expectation for  Normal variate */
+    public static double logNormalCondExp(double x, double mu, double sd) throws ProbException
+    {
+      throw new ProbException("Not yet written normalCondExp");
+    }
+  
+  
+          /** Conditional expectation for log normal variate */
+    public static double normalCondExp(double x, double mu, double sd) throws ProbException
+    {
+         throw new ProbException("Not yet written normalCondExp");
+    }
+  
     
     public double getVariate() throws ProbException {
         if (distType_ == EXPO_DIST) {

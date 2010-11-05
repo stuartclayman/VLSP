@@ -116,7 +116,7 @@ public class LifeEstimateTest {
             }
             time+= lifeStep;
         }
-        int noPoints= 1000;
+        int noPoints= 100000;
         e.sortDeaths();
         e.updateKMEstimate(endTime);
         e.fitTail();

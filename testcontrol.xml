@@ -2,7 +2,6 @@
   <GlobalController>
      <Port>8888</Port>
      <StartLocalControllers>true</StartLocalControllers>
-     <Simulation>true</Simulation>
      <ConnectedNetwork>true</ConnectedNetwork>
   </GlobalController>
   <LocalController>
@@ -13,7 +12,7 @@
   </LocalController>
   <EventEngine>
      <Name>Probabilistic</Name>
-     <EndTime>3600</EndTime>
+     <EndTime>360</EndTime>
      <Parameters>probdists.xml</Parameters>
   </EventEngine>
   <RouterOptions>
@@ -29,5 +28,12 @@
         <When>Interval</When>
         <Time>10000</Time>
         <Type>Summary</Type>
+    </Output>  
+    <Output>
+        <File>Traffic.out</File>
+        <When>Interval</When>
+        <Time>10000</Time>
+        <Type>Traffic</Type>
+        <Parameter>Aggregate</Parameter>
     </Output>
 </SimOptions>

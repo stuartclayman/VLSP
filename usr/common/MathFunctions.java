@@ -3,6 +3,41 @@ package usr.common;
 
 public class MathFunctions {
 
+      /** Calculate the (lower) incomplete gamma function -- using Gauss continued fraction*/
+      public static double incompleteGamma(double s, double z) 
+      // See http://en.wikipedia.org/wiki/Incomplete_gamma_function
+      // Continued fractions iterations method was invented by J. Wallis in 1655 (!),
+      {
+          final int MIN_ITER=10;
+          final int MAX_ITER=1000;
+          final double ACC_PERC=1e-06;
+          double denom= 1.0+z-s;
+          double value= Math.pow(z,s)*Math.exp(-z)/denom;
+          double oldValue= 0.0;
+
+          double Ajm1= Math.pow(z,s)*Math.exp(-z);
+          double Ajm2= 0.0;
+          double Bjm1= 1.0+z-s;         
+          double Bjm2= 1.0;
+          double Aj,Bj,aj,bj;
+          for (int i=2; i < MAX_ITER+2;i++) {
+               aj= (s-(i-1.0))*(i-1.0);
+               bj= 2.0*i-1.0+z-s;
+               Aj= bj*Ajm1 + aj*Ajm2;
+               Bj= bj*Bjm1 + aj*Bjm2;
+               value= Aj/Bj;
+               if (Math.abs(value-oldValue)/value < ACC_PERC && i >= MIN_ITER)
+                  break;
+               oldValue=value;
+               Bjm2=Bjm1;
+               Bjm1= Bj;
+               Ajm2=Ajm1;
+               Ajm1=Aj;
+     
+          }
+          return 1.0-value;
+      }
+
 /**Calculate inverse erf function -- see wikipedia for formula
       We shoudl be good with small number of iter since y is small.
       */
