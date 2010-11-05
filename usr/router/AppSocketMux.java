@@ -448,6 +448,9 @@ public class AppSocketMux implements NetIF, Runnable {
     public void socketSendDatagram(Datagram datagram) throws SocketException, NoRouteToHostException {
         // check if packet is routable
         if (!listener.canRoute(datagram)) {
+            // mark as dropped
+            netStats.increment(NetStats.Stat.OutDropped);
+
             throw new NoRouteToHostException("No route to " + datagram.getDstAddress());
         }
 
