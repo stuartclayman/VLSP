@@ -135,17 +135,21 @@ public class ApplicationManager {
                 return new ApplicationResponse(false, "Application called " + appName + " already stopped");
             } else {               
 
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
+                try {
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
 
-                Application app = appH.getApplication();
+                    Application app = appH.getApplication();
 
-                app.stop();
+                    app.stop();
 
-                appH.setState(ApplicationHandle.AppState.STOPPED);
+                    appH.setState(ApplicationHandle.AppState.STOPPED);
 
-                appMap.remove(appName);
+                    appMap.remove(appName);
 
-                return new ApplicationResponse(true, "");
+                    return new ApplicationResponse(true, "");
+                } catch (Exception e) {
+                    return new ApplicationResponse(false, "Application called " + appName + " failed to stop with Exception " + e.getMessage());
+                }
             }
         }
     }
