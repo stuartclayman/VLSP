@@ -774,8 +774,28 @@ public class GlobalController implements ComponentController {
 
     }
 
+
+    /** Request router stats */
+    public void requestRouterStats() {
+         try {
+
+            // Get all LocalControllers
+            for (LocalControllerInteractor lci : localControllers_) {
+                lci.requestRouterStats();
+            }
+      
+
+        } catch (IOException e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() +"Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+        } catch (MCRPException e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+        }    
+    }
+
     /**
-     * Get the router stats
+     * Get the router stats -- method is blocking
      */
     public synchronized List<String> getRouterStats()  {
         try {
@@ -941,9 +961,21 @@ public class GlobalController implements ComponentController {
         s.print(" "+APController_.meanNodeLife()+" "+APController_.meanAPLife());
         s.println();    
     }
-    
+
     /** Output traffic from the network */
     private void outputTraffic(PrintStream s, OutputType o, long time) {
+        if (options_.isSimulation()) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                "Request for output of traffic makes sense only in context of emulation");
+            return;
+        }
+        //System.err.println("Call request router stats");
+        requestRouterStats();
+        //System.err.println("Stats requested stats");
+    }
+    
+    /** Output traffic from the network */
+    private void outputTraffic2(PrintStream s, OutputType o, long time) {
         if (options_.isSimulation()) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + 
                 "Request for output of traffic makes sense only in context of emulation");

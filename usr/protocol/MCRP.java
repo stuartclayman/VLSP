@@ -364,6 +364,22 @@ public class MCRP implements Protocol {
         public final static int CODE= 285;
     }
     
+     /**
+     * REQUEST_ROUTER_STATS gets stats for each Router
+     */
+    public final static class REQUEST_ROUTER_STATS {
+        public final static String CMD = "REQUEST_ROUTER_STATS";
+        public final static int CODE= 286;
+    }
+    
+    /**
+     * RETURN_ROUTER_STATS gets stats for each Router
+     */
+    public final static class SEND_ROUTER_STATS {
+        public final static String CMD = "SEND_ROUTER_STATS";
+        public final static int CODE= 287;
+    }
+    
     /*
      * Spare - 290 - 299
      */

@@ -34,11 +34,15 @@ public abstract class ChannelResponder {
      */
     public boolean respond(String message) {
         message = message.concat("\n");
-
+      
         try {
-            channel.write(ByteBuffer.wrap(message.getBytes()));
+            int count= channel.write(ByteBuffer.wrap(message.getBytes()));
+            if (count != message.getBytes().length) {
+                System.err.println("YIPE MESSAGE LEN ISSUE");
+            }
             return true;
         } catch (IOException ioe) {
+            System.err.println("ERROR IN SOCKET CHANNEL"+ioe.getMessage());
             return false;
         }
     }

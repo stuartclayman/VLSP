@@ -56,7 +56,18 @@ public class GlobalControllerInteractor extends MCRPInteractor
 	    expect(MCRP.OK_LOCAL_CONTROLLER.CODE);
 	    return this;
     }
-    
+
+
+    /**
+     * Sends collected router stats to the global controller
+     */
+    public MCRPInteractor sendRouterStats(String stats) throws IOException, MCRPException {
+     
+      String command= MCRP.SEND_ROUTER_STATS.CMD+" "+stats;
+      interact(command);
+	    expect(MCRP.SEND_ROUTER_STATS.CODE);
+	    return this;
+    } 
        /**
      * Quit talking to the router
      * Close a connection to the ManagementConsole of the router.

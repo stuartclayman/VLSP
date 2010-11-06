@@ -343,6 +343,27 @@ public class LocalController implements ComponentController {
        }       
     }
 
+    /** Send router stats to global controller*/
+    public boolean sendRouterStats(List<String> list) 
+    {
+        StringBuilder sb = new StringBuilder();
+
+        
+        for (String s: list) {
+            sb.append(s);
+            sb.append("***");
+        }
+        String allStats = sb.toString();
+        try {
+            gcInteractor_.sendRouterStats(allStats);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                "Cannot send stats to global controller "+e.getMessage());
+            return false;
+        }
+        return true; 
+    }
+
     /** Local controller receives request to end a router */
     public boolean endRouter(LocalHostInfo r1) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
@@ -576,6 +597,11 @@ public class LocalController implements ComponentController {
         Logger.getLogger("log").logln(USR.ERROR,
           leadin()+"Unable to find router interactor listening on port "+port);
         return null;
+    }
+    
+    public GlobalControllerInteractor getGlobalControllerInteractor()
+    {
+        return gcInteractor_;
     }
 
     /**

@@ -97,7 +97,7 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
         sb.append(" ");
         sb.append(s);
         String resp = sb.toString();
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "<<< RESPONSE: " + resp);
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "<<< RESPONSE: " + resp);
 
         return respond(resp);
     }

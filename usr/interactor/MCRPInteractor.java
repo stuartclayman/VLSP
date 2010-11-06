@@ -328,10 +328,13 @@ public abstract class MCRPInteractor {
 	    System.out.print(">> " + str);
 	    System.out.print(" ");
 	}
-
+  //System.err.print(">>" + str+"\n");
 	output.print(str);
-	output.print("\n");
+	output.print("+++");
 	output.flush();
+	if (output.checkError()) {
+	    System.err.println("Error in writing to stream in MCRPInteractor");
+	}   
     }
 
     /**

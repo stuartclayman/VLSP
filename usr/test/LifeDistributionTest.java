@@ -16,7 +16,7 @@ import org.xml.sax.SAXParseException;
 import java.io.*;
 
 
-public class LifeEstimateTest {
+public class LifeDistributionTest {
     public static void main(String[] args) {
         int i;
         int noTests;
@@ -116,11 +116,20 @@ public class LifeEstimateTest {
             }
             time+= lifeStep;
         }
-        
+        int noPoints= 1000;
         e.sortDeaths();
         e.updateKMEstimate(endTime);
         e.fitTail();
-   
+        int x= 0;
+        for (i= 1; i < noPoints; i++) {
+            
+            
+            System.out.println(x+" "+e.getKMProb(x)+" "+ 
+                e.getKMTailProb(x)+" "+(1.0 - dist.getCumulativeDistribution((double)x/1000)));
+            x+= endTime*2/noPoints;
+        }
+        
+        
         
     }
 

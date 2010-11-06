@@ -192,6 +192,14 @@ public class LocalControllerInteractor extends MCRPInteractor
 	      return this;
     }
 
+
+    /** Request stats from routers -- stats are returned by a separate command*/
+    public void  requestRouterStats() throws IOException, MCRPException {
+
+      interact(MCRP.REQUEST_ROUTER_STATS.CMD);
+	    expect(MCRP.REQUEST_ROUTER_STATS.CODE);
+	  }
+
     /**
      * Get the stats from a Router.
      */

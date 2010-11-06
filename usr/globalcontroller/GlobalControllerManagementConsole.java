@@ -43,6 +43,7 @@ public class GlobalControllerManagementConsole extends AbstractManagementConsole
         register(new ReportAPCommand());
         register(new OnRouterCommand());
         register(new GetRouterStatsCommand());
+        register(new SendRouterStatsCommand());
     }
     
 }

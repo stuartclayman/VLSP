@@ -29,6 +29,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
     // read data from channel into the buffer
     ByteBuffer buffer = ByteBuffer.allocate(4096);
+    StringBuilder readString= new StringBuilder(4096);
 
     // default Charset
     Charset charset = Charset.forName("UTF-8");
@@ -434,41 +435,54 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * This does not deal with end of line or end of input delineator.
      */
     protected void processInput(SocketChannel sc) {
+        
         int read = -1;
-
+        int index= readString.indexOf("+++");
+        if (index != -1) {
+          //  System.err.println("Index = "+index);
+            String value = readString.substring(0,index);
+          //  System.err.println("Found string "+value);
+            readString.delete(0,index+3);
+            
+            handleInput(value, sc);
+            return;            
+        }
         // read some data
-        try {
-            // clear buffer
+        while (true) {
             buffer.clear();
-            // read into buffer
-            read = sc.read(buffer);
-        } catch (IOException ioe) {
-            // bad error
-            endConnection(sc);
-            return;
-        }
+            
+            try {
 
-        // check what was read
-        if (read != -1) {
-            // set buffer ready
-            buffer.flip();
-
-            // convert buffer to string
-            String value = charset.decode(buffer).toString().trim();
-
-            // inform the input handler
-            // with the value and the channel the input came from
-            boolean result = handleInput(value, sc);
-
-            if (result == false) {
-                // there was an error in responding down the channel
-                // TODO:  decide what to do
+                // read into buffer
+                read = sc.read(buffer);
+            } catch (IOException ioe) {
+                // bad error
+               // System.err.println("IO ERROR");
+                endConnection(sc);
+                return;
             }
-
-        } else {
-            // EOF for the connection
-            endConnection(sc);
+            if (read == -1) {
+              ///  System.err.println("No characters");
+                endConnection(sc);
+            }
+            buffer.flip();
+            readString.append(charset.decode(buffer).toString());
+            index= readString.indexOf("+++"); // look for the /n character
+            if (index == -1)  // No \n we need to read some more
+                continue;  
+           // System.err.println( "Index = "+index);
+            String value = readString.substring(0,index);
+            //System.err.println("Found string "+value);
+           // System.err.println("Read string "+value);
+           // System.err.println("String was "+readString);
+            readString.delete(0,index+3);
+           // System.err.println("String is "+readString);
+            handleInput(value, sc);
+            break;
         }
+            
+
+
     }
 
 
