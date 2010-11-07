@@ -400,7 +400,7 @@ public class ControlOptions {
         String ls = System.getProperty("line.separator");
         while( ( line = reader.readLine() ) != null ) {
            stringBuilder.append( line );
-           stringBuilder.append( ls );
+           stringBuilder.append( " ");
         }
         routerOptionsString_= stringBuilder.toString();
         //Logger.getLogger("log").logln(USR.ERROR, "User Options String "+routerOptionsString_);

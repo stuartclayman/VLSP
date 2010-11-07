@@ -437,12 +437,12 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     protected void processInput(SocketChannel sc) {
         
         int read = -1;
-        int index= readString.indexOf("+++");
+        int index= readString.indexOf("\n");
         if (index != -1) {
           //  System.err.println("Index = "+index);
             String value = readString.substring(0,index);
           //  System.err.println("Found string "+value);
-            readString.delete(0,index+3);
+            readString.delete(0,index+1);
             
             handleInput(value, sc);
             return;            
@@ -467,7 +467,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             }
             buffer.flip();
             readString.append(charset.decode(buffer).toString());
-            index= readString.indexOf("+++"); // look for the /n character
+            index= readString.indexOf("\n"); // look for the /n character
             if (index == -1)  // No \n we need to read some more
                 continue;  
            // System.err.println( "Index = "+index);
@@ -475,7 +475,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             //System.err.println("Found string "+value);
            // System.err.println("Read string "+value);
            // System.err.println("String was "+readString);
-            readString.delete(0,index+3);
+            readString.delete(0,index+1);
            // System.err.println("String is "+readString);
             handleInput(value, sc);
             break;

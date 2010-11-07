@@ -1085,7 +1085,7 @@ public class GlobalController implements ComponentController {
         String []out= routerStats_.split("\\*\\*\\*");
         if (out.length < 1) 
             return;
-        int nField= out[0].split("\\s+").length - 2;
+        int nField= out[0].split("\\s+").length - 3;
         if (nField <= 0) {
            Logger.getLogger("log").logln(USR.ERROR, "Can't parse no of fields in stats line "+out[0]);
            Logger.getLogger("log").logln(USR.ERROR, "Stats Line \""+routerStats_+"\"");
@@ -1109,16 +1109,16 @@ public class GlobalController implements ComponentController {
             String []args= s.split("\\s+");
             if (o.isFirst()) {
                 o.setFirst(false);
-                p.print("Time nRouters nLinks*2");
-                for (int i= 2; i < args.length;i++) {
+                p.print("Time nRouters nLinks*2 ");
+                for (int i= 3; i < args.length;i++) {
                     p.print(args[i].split("=")[0]);
                     p.print(" ");
                 }
                 p.println();
             }
-            if (args.length < 2)
+            if (args.length < 3)
                 continue;
-            if (args[1].equals("localnet"))
+            if (args[2].equals("localnet"))
                 continue;
             nLinks++;
             
@@ -1131,15 +1131,15 @@ public class GlobalController implements ComponentController {
             }   
             
             
-            String linkName= args[0]+args[1];
+            String linkName= args[0]+"-"+args[2];
             
-            for (int i= 2; i < args.length;i++) {
+            for (int i= 3; i < args.length;i++) {
                 String[] spl= args[i].split("=");
                 if (spl.length !=2) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin()+
                       " Cannot parse traffic stats "+args[i]);
                 } else {
-                   count[i-2]=Integer.parseInt(spl[1]);
+                   count[i-3]=Integer.parseInt(spl[1]);
                 
                 }
             }

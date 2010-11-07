@@ -329,8 +329,11 @@ public abstract class MCRPInteractor {
 	    System.out.print(" ");
 	}
   //System.err.print(">>" + str+"\n");
+  if (str.indexOf("\n") != -1) {
+      System.err.println("Cannot send console messages with \\n character");
+  }
 	output.print(str);
-	output.print("+++");
+	output.print("\n");
 	output.flush();
 	if (output.checkError()) {
 	    System.err.println("Error in writing to stream in MCRPInteractor");
