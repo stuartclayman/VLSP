@@ -35,6 +35,7 @@ public class GlobalController implements ComponentController {
     private ArrayList <int []> linkCosts_= null;
     private ArrayList <Integer> routerList_= null;
     private ArrayList <String> childNames_= null;
+
     private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
     private HashMap <Integer, BasicRouterInfo> routerIdMap_= null;
     private HashMap <LocalControllerInfo, PortPool> portPools_= null;
@@ -45,6 +46,12 @@ public class GlobalController implements ComponentController {
     private int noLinks_=0;
     private RouterOptions routerOptions_= null;
     
+    // Variables relate to traffic output
+    private ArrayList <OutputType> trafficOutputRequests_= null;
+    private String routerStats_= "";
+    private int statsCount_= 0;
+    private ArrayList <Long> trafficOutputTime_= null;
+    private HashMap<String, int []> trafficLinkCounts_ = null;
 
 
     private Thread ProcessOutputThread_;
@@ -881,6 +888,8 @@ public class GlobalController implements ComponentController {
     
     /** Produce some output */
     private void produceOutput(long time, OutputType o) {
+        int type= o.getType();
+       
         File f;
         FileOutputStream s;
         PrintStream p;
@@ -893,14 +902,18 @@ public class GlobalController implements ComponentController {
               " for output "+e.getMessage());
             return;
         }
-        int type= o.getType();
+        
         if (type == OutputType.OUTPUT_NETWORK) {
             outputNetwork(time,p,o);
         } else if (type == OutputType.OUTPUT_SUMMARY) {
             outputSummary(p,o,time);
         } else if (type == OutputType.OUTPUT_TRAFFIC) {
-            outputTraffic(p,o,time);
-        }
+            outputTraffic(o,time);
+        } else {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown output type "+ 
+               type);
+        } 
+        
         // Schedule next output time
         if (o.getTimeType() == OutputType.AT_INTERVAL) {
             SimEvent e= new SimEvent(SimEvent.EVENT_OUTPUT,
@@ -962,27 +975,225 @@ public class GlobalController implements ComponentController {
         s.println();    
     }
 
-    /** Output traffic from the network */
-    private void outputTraffic(PrintStream s, OutputType o, long time) {
+    /** Output traffic from the network -- this merely triggers a request rahter
+    than printing */
+    private synchronized void outputTraffic(OutputType o, long time) {
         if (options_.isSimulation()) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + 
                 "Request for output of traffic makes sense only in context of emulation");
             return;
         }
-        //System.err.println("Call request router stats");
+        if (trafficOutputRequests_ == null) {
+            trafficOutputRequests_= new ArrayList<OutputType>();
+            trafficOutputTime_= new ArrayList<Long>();
+        }
+        trafficOutputRequests_.add(o);
+        trafficOutputTime_.add(time);
+       /** If requests already sent then just add it to the output request queue
+        rather than sending a fruther request */
+        if (trafficOutputRequests_.size() > 1) {
+            return;
+        }
+        //  Make request for stats
         requestRouterStats();
-        //System.err.println("Stats requested stats");
     }
     
-    /** Output traffic from the network */
-    private void outputTraffic2(PrintStream s, OutputType o, long time) {
-        if (options_.isSimulation()) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-                "Request for output of traffic makes sense only in context of emulation");
+    /** Receiver router traffic -- if it completes a set then output it */
+    public synchronized void receiveRouterStats(String stats)
+    {
+        
+        statsCount_++;
+        
+        routerStats_= routerStats_.concat(stats);
+       // System.err.println("Stat count is "+statsCount_);
+        if (statsCount_ < localControllers_.size())   // Not got all stats yet
             return;
+        //System.err.println("Enough"+routerStats_);
+        File f;
+        FileOutputStream s;
+        PrintStream p;            
+        for (int i= 0; i < trafficOutputRequests_.size(); i++) {
+            OutputType o = trafficOutputRequests_.get(i);
+            try {
+                f= new File(o.getFileName());
+                s = new FileOutputStream(f,true);
+                p = new PrintStream(s,true);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot open "+o.getFileName()+ 
+                  " for output "+e.getMessage());
+                return;
+            }
+            outputTraffic(o , trafficOutputTime_.get(i),p);
         }
-        TrafficEstimateThread t= new TrafficEstimateThread(s,o,time,this);
-        new Thread(t).start();
+    //    System.err.println("Requests done");
+        trafficOutputRequests_= new ArrayList<OutputType>();
+        trafficOutputTime_= new ArrayList<Long>();
+        statsCount_= 0;
+        routerStats_= "";
+    //    System.err.println("Finished here");
+    }
+
+    synchronized  void outputTraffic (OutputType o, long t, PrintStream p) {
+
+         if (routerStats_.equals(""))
+            return;
+         if (o.getParameter().equals("Local")) {
+             outputTrafficLocal(o,t,p);
+         } else if (o.getParameter().equals("Aggregate")) {
+             outputTrafficAggregate(o,t,p);
+         } else if (o.getParameter().equals("Raw")) {
+             for (String s: routerStats_.split("\\*\\*\\*")) {
+                p.println(s);
+             } 
+         } else {
+             outputTrafficSeparate(o,t,p);
+         }
+    }
+
+    synchronized void outputTrafficLocal(OutputType o, long t, PrintStream p) 
+    {
+        for (String s: routerStats_.split("\\*\\*\\*")) {
+            String []args= s.split("\\s+");
+            if (o.isFirst()) {
+                o.setFirst(false);
+                p.print("Time r_no name ");
+                for (int i= 2; i < args.length;i++) {
+                    p.print(args[i].split("=")[0]);
+                    p.print(" ");
+                }
+                p.println();
+            }
+            if (args.length < 2)
+                continue;
+            if (!args[1].equals("localnet"))
+                continue;
+            p.print(t+" ");
+            p.print(args[0]+" "+args[1]);
+            for (int i= 2; i < args.length;i++) {
+                p.print(args[i].split("=")[1]);
+                p.print(" ");
+            }
+            p.println();
+        }
+    }
+    
+    synchronized void  outputTrafficAggregate (OutputType o, long t, PrintStream p) 
+    {
+     
+        Hashtable<Integer,Boolean> routerCount= new Hashtable<Integer, Boolean>();
+        
+        String []out= routerStats_.split("\\*\\*\\*");
+        if (out.length < 1) 
+            return;
+        int nField= out[0].split("\\s+").length - 2;
+        if (nField <= 0) {
+           Logger.getLogger("log").logln(USR.ERROR, "Can't parse no of fields in stats line "+out[0]);
+           Logger.getLogger("log").logln(USR.ERROR, "Stats Line \""+routerStats_+"\"");
+
+           return;
+        }
+        int []count= new int [nField];
+        for (int i= 0; i < nField; i++) {
+            count[i]= 0;
+        } 
+        if (trafficLinkCounts_ == null) {
+            trafficLinkCounts_ = new HashMap<String, int []>();
+        }
+        int nLinks= 0;
+        int nRouters= 0;
+        int []totCount= new int [nField];
+        for (int i=0; i < nField; i++) {
+            totCount[i]= 0;
+        }
+        for (String s: out) {
+            String []args= s.split("\\s+");
+            if (o.isFirst()) {
+                o.setFirst(false);
+                p.print("Time nRouters nLinks*2");
+                for (int i= 2; i < args.length;i++) {
+                    p.print(args[i].split("=")[0]);
+                    p.print(" ");
+                }
+                p.println();
+            }
+            if (args.length < 2)
+                continue;
+            if (args[1].equals("localnet"))
+                continue;
+            nLinks++;
+            
+            int router= Integer.parseInt(args[0]);
+            
+            if (routerCount.get(router) == null) {
+                nRouters++;
+                routerCount.put(router,true);
+                //System.err.println("Time "+t+" found router "+router);
+            }   
+            
+            
+            String linkName= args[0]+args[1];
+            
+            for (int i= 2; i < args.length;i++) {
+                String[] spl= args[i].split("=");
+                if (spl.length !=2) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                      " Cannot parse traffic stats "+args[i]);
+                } else {
+                   count[i-2]=Integer.parseInt(spl[1]);
+                
+                }
+            }
+            int []oldCount= trafficLinkCounts_.get(linkName);
+            if (oldCount == null) {
+                for (int i= 0; i < nField; i++) {
+                    totCount[i]+= count[i];
+                }
+            } else {
+                for (int i= 0; i < nField; i++) {
+                    totCount[i]+= count[i]-oldCount[i];
+                }
+            }
+            trafficLinkCounts_.put(linkName,count);
+        }
+        
+ 
+        p.print(t+" "+nRouters+" "+nLinks+" ");
+        for (int i= 0; i < nField; i++) {
+            p.print(totCount[i]+" ");
+        }
+        p.println();
+    }
+    
+    synchronized void outputTrafficSeparate (OutputType o, long t, PrintStream p) 
+    {   
+        //System.err.println("Performing output");
+        String []out= routerStats_.split("\\*\\*\\*");
+        if (out.length < 1) 
+            return;
+        for (String s: out) { 
+            //System.err.println("String is "+s);
+            String []args= s.split("\\s+");
+            if (o.isFirst()) {
+                o.setFirst(false);
+                p.print("Time r_no name ");
+                for (int i= 2; i < args.length;i++) {
+                    p.print(args[i].split("=")[0]);
+                    p.print(" ");
+                }
+                p.println();
+            }
+            if (args.length < 2)
+                continue;
+            if (args[1].equals("localnet"))
+                continue;
+            p.print(t+" ");
+            p.print(args[0]+" "+args[1]);
+            for (int i= 2; i < args.length;i++) {
+                p.print(args[i].split("=")[1]);
+                p.print(" ");
+            }
+            p.println();
+        }
     }
     
     /** Output summary */
