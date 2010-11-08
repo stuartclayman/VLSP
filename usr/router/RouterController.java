@@ -330,8 +330,7 @@ public class RouterController implements ComponentController, Runnable {
                     pool.execute(new CreateConnection(this, nextRequest));
 
                 } else if (value.startsWith("END_LINK")) {
-                    // incr connection count
-                    connectionCount--;
+                    // do not decrease connectionCount, it MUST only increase
                     pool.execute(new EndLink(this,nextRequest));
                    
                     
