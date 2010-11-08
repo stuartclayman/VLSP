@@ -2,7 +2,7 @@ package usr.console;
 
 import usr.net.Address;
 import usr.logging.*;
-import usr.net.IPV4Address;
+import usr.protocol.MCRP;
 import java.util.*;
 import java.util.concurrent.*;
 import java.io.*;
@@ -271,6 +271,14 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     }
 
     /**
+     * Is the ManagementConsole ready selecting.
+     */
+    public boolean isSelecting() {
+        return fsm == FSMState.SELECTING;
+    }
+
+
+    /**
      * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void waitFor() {
@@ -531,12 +539,35 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             // so bind the command to the channel
             command.setChannel(sc);
             // and evaluate the input
-            result = command.evaluate(value);
+            try {
+                result = command.evaluate(value);
 
-            return result;
+                return result;
+
+            } catch (Exception e) {
+                // try and send generic error code
+                respond(sc, MCRP.ERROR.CODE + " Error Exception " + e + " in " + value);
+                return false;
+            }
+
 
         }
     }
+
+    /**
+     * Respond with a given string.
+     * Returns false if it cannot send the response down the channel.
+     */
+    private void respond(SocketChannel channel, String message) {
+        message = message.concat("\n");
+
+        try {
+            channel.write(ByteBuffer.wrap(message.getBytes()));
+        } catch (IOException ioe) {
+        }
+    }
+
+
 
     /**
      * Create the String to print out before a message
