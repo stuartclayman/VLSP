@@ -474,9 +474,10 @@ public class GlobalController implements ComponentController {
     private void unregisterRouter(int rId)
     {
         int[] out= getOutLinks(rId);
+        //Logger.getLogger("log").logln(USR.ERROR, "Unregister router "+rId);
         for (int i= out.length-1; i >= 0; i--) {
              unregisterLink(rId,out[i]);
-                //Logger.getLogger("log").logln(USR.ERROR, "Unregister link "+rId+" "+i);
+               // Logger.getLogger("log").logln(USR.ERROR, "Unregister link "+rId+" "+out[i]);
             
         }
         int index= routerList_.indexOf(rId);
@@ -551,7 +552,12 @@ public class GlobalController implements ComponentController {
     private void startLink(long time, int router1Id, int router2Id) {
         //Logger.getLogger("log").logln(USR.ERROR, "Start link "+router1Id+" "+router2Id);
         
-        
+        int index= routerList_.indexOf(router1Id);
+        if (index == -1)
+            return;  // Cannot start link as router 1 dead already
+        index= routerList_.indexOf(router2Id);
+        if (index == -1)
+            return;  // Cannot start link as router 2 dead already
         // check if this link already exists
         int [] outForRouter1 = getOutLinks(router1Id);
         
@@ -1043,7 +1049,7 @@ public class GlobalController implements ComponentController {
              outputTrafficAggregate(o,t,p);
          } else if (o.getParameter().equals("Raw")) {
              for (String s: routerStats_.split("\\*\\*\\*")) {
-                p.println(s);
+                p.println(t+" "+s);
              } 
          } else {
              outputTrafficSeparate(o,t,p);
@@ -1092,10 +1098,7 @@ public class GlobalController implements ComponentController {
 
            return;
         }
-        int []count= new int [nField];
-        for (int i= 0; i < nField; i++) {
-            count[i]= 0;
-        } 
+        
         if (trafficLinkCounts_ == null) {
             trafficLinkCounts_ = new HashMap<String, int []>();
         }
@@ -1106,6 +1109,10 @@ public class GlobalController implements ComponentController {
             totCount[i]= 0;
         }
         for (String s: out) {
+            int []count= new int [nField];
+            for (int i= 0; i < nField; i++) {
+                count[i]= 0;
+            } 
             String []args= s.split("\\s+");
             if (o.isFirst()) {
                 o.setFirst(false);
@@ -1131,7 +1138,7 @@ public class GlobalController implements ComponentController {
             }   
             
             
-            String linkName= args[0]+"-"+args[2];
+            String linkName= args[0]+args[2];
             
             for (int i= 3; i < args.length;i++) {
                 String[] spl= args[i].split("=");
@@ -1143,14 +1150,18 @@ public class GlobalController implements ComponentController {
                 
                 }
             }
+            //System.err.println("new count "+linkName+" "+count[0]);
             int []oldCount= trafficLinkCounts_.get(linkName);
             if (oldCount == null) {
+                
                 for (int i= 0; i < nField; i++) {
                     totCount[i]+= count[i];
                 }
             } else {
+                //System.err.println("old count "+linkName+" "+oldCount[0]);
                 for (int i= 0; i < nField; i++) {
                     totCount[i]+= count[i]-oldCount[i];
+                    
                 }
             }
             trafficLinkCounts_.put(linkName,count);

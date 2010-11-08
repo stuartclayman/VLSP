@@ -9,14 +9,14 @@
       <NodeDeathDist>
             <ProbElement>
                  <Type>Exponential</Type>
-                 <Weight>0.9</Weight>
-                 <Parameter>50</Parameter>
+                 <Weight>0.5</Weight>
+                 <Parameter>500</Parameter>
             </ProbElement>
             <ProbElement>
                  <Type>LogNormal</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>4.0</Parameter>
-                 <Parameter>2.0</Parameter>
+                 <Parameter>5.0</Parameter>
+                 <Parameter>3.0</Parameter>
             </ProbElement>
       </NodeDeathDist>
       <LinkCreateDist>

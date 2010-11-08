@@ -34,7 +34,7 @@ public class GetNetIFStatsCommand extends RouterCommand {
         NetIF localNetIF = controller.getLocalNetIF();
         NetStats stats = localNetIF.getStats();
         // put out netif name
-        String statsString =localNetIF.getRemoteRouterAddress()+ " "+localNetIF.getName() 
+        String statsString =localNetIF.getRemoteRouterName()+ " "+localNetIF.getName() 
           + " " + stats.toString();
 
         list(statsString);
@@ -50,7 +50,7 @@ public class GetNetIFStatsCommand extends RouterCommand {
 
 
                 // put out netif name
-                statsString = localNetIF.getRemoteRouterAddress()+ " " +
+                statsString = netIF.getRemoteRouterName()+ " " +
                   netIF.getName() + " " + stats.toString();
 
                 list(statsString);
