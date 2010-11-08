@@ -218,6 +218,15 @@ public class MCRP implements Protocol {
     }
 
     
+    /**
+     * Get the address of a remote router of a port on the router.
+     */
+    public final static class GET_PORT_REMOTE_ADDRESS {
+        public final static String CMD =  "GET_PORT_REMOTE_ADDRESS";
+        public final static int CODE = 237;
+        public final static int ERROR = 403;
+    }
+
 
 
 

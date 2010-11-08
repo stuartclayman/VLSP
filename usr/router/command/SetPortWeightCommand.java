@@ -12,16 +12,16 @@ import java.nio.channels.SocketChannel;
 import java.net.UnknownHostException;
 
 /**
- * The GET_PORT_NAME command.
- * GET_PORT_NAME port 
- * GET_PORT_NAME port0
+ * The SET_PORT_WEIGHT command.
+ * SET_PORT_WEIGHT port weight
+ * SET_PORT_WEIGHT port0 15
  */
-public class GetPortNameCommand extends RouterCommand {
+public class SetPortWeightCommand extends RouterCommand {
     /**
-     * Construct a GetPortNameCommand.
+     * Construct a SetPortWeightCommand.
      */
-    public GetPortNameCommand() {
-        super(MCRP.GET_PORT_NAME.CMD, MCRP.GET_PORT_NAME.CODE, MCRP.GET_PORT_NAME.ERROR);
+    public SetPortWeightCommand() {
+        super(MCRP.SET_PORT_WEIGHT.CMD, MCRP.SET_PORT_WEIGHT.CODE, MCRP.SET_PORT_WEIGHT.ERROR);
     }
 
     /**
@@ -30,12 +30,13 @@ public class GetPortNameCommand extends RouterCommand {
     public boolean evaluate(String req) {
         boolean result = true;
 
-        String rest = req.substring(MCRP.GET_PORT_NAME.CMD.length()).trim();
+        String rest = req.substring(MCRP.SET_PORT_WEIGHT.CMD.length()).trim();
         String[] parts = rest.split(" ");
                     
-        if (parts.length == 1) {
+        if (parts.length == 2) {
 
             String routerPortName = parts[0];
+            String weightStr = parts[1];
                         
             // find port
             String portNo;
@@ -54,14 +55,20 @@ public class GetPortNameCommand extends RouterCommand {
                 error(getName() + " invalid port " + routerPortName);
             }
 
-            // get name on netIF in port
-            NetIF netIF = routerPort.getNetIF();
-            String name = netIF.getName();
+            // instantiate the weight
+            int weight = Integer.MIN_VALUE;
+            try {
+                weight = Integer.parseInt(weightStr);
+            } catch (NumberFormatException nfe) {
+                error(getName() + " weight is not a number " + weightStr);
+            }
 
-            if (name != null) {
-                result = success(name.toString());
-            } else {
-                result = success("");
+            // set weight on netIF in port
+            if (weight != Integer.MIN_VALUE) {
+                NetIF netIF = routerPort.getNetIF();
+                netIF.setWeight(weight);
+
+                result = success(routerPortName);
             }
 
         } else {

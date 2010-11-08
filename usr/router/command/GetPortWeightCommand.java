@@ -12,16 +12,16 @@ import java.nio.channels.SocketChannel;
 import java.net.UnknownHostException;
 
 /**
- * The SET_PORT_WEIGHT command.
- * SET_PORT_WEIGHT port weight
- * SET_PORT_WEIGHT port0 15
+ * The GET_PORT_WEIGHT command.
+ * GET_PORT_WEIGHT port 
+ * GET_PORT_WEIGHT port0
  */
-public class SetWeightCommand extends RouterCommand {
+public class GetPortWeightCommand extends RouterCommand {
     /**
-     * Construct a SetWeightCommand.
+     * Construct a GetPortWeightCommand.
      */
-    public SetWeightCommand() {
-        super(MCRP.SET_PORT_WEIGHT.CMD, MCRP.SET_PORT_WEIGHT.CODE, MCRP.SET_PORT_WEIGHT.ERROR);
+    public GetPortWeightCommand() {
+        super(MCRP.GET_PORT_WEIGHT.CMD, MCRP.GET_PORT_WEIGHT.CODE, MCRP.GET_PORT_WEIGHT.ERROR);
     }
 
     /**
@@ -30,16 +30,22 @@ public class SetWeightCommand extends RouterCommand {
     public boolean evaluate(String req) {
         boolean result = true;
 
-        String rest = req.substring(MCRP.SET_PORT_WEIGHT.CMD.length()).trim();
+        String rest = req.substring(MCRP.GET_PORT_WEIGHT.CMD.length()).trim();
         String[] parts = rest.split(" ");
                     
-        if (parts.length == 2) {
+        if (parts.length == 1) {
 
             String routerPortName = parts[0];
-            String weightStr = parts[1];
                         
             // find port
-            String portNo = routerPortName.substring(4);
+            String portNo;
+
+            if (routerPortName.startsWith("port")) {
+                portNo = routerPortName.substring(4);
+            } else {
+                portNo = routerPortName;
+            }
+
             Scanner scanner = new Scanner(portNo);
             int p = scanner.nextInt();
             RouterPort routerPort = controller.getPort(p);
@@ -48,21 +54,12 @@ public class SetWeightCommand extends RouterCommand {
                 error(getName() + " invalid port " + routerPortName);
             }
 
-            // instantiate the weight
-            int weight = Integer.MIN_VALUE;
-            try {
-                weight = Integer.parseInt(weightStr);
-            } catch (NumberFormatException nfe) {
-                error(getName() + " weight is not a number " + weightStr);
-            }
+            // get weight on netIF in port
+            NetIF netIF = routerPort.getNetIF();
+            int weight = netIF.getWeight();
 
-            // set weight on netIF in port
-            if (weight != Integer.MIN_VALUE) {
-                NetIF netIF = routerPort.getNetIF();
-                netIF.setWeight(weight);
+            result = success(Integer.toString(weight));
 
-                result = success(routerPortName);
-            }
 
         } else {
             error(getName() + " wrong no of args ");

@@ -38,7 +38,14 @@ public class GetPortRemoteRouterCommand extends RouterCommand {
             String routerPortName = parts[0];
                         
             // find port
-            String portNo = routerPortName.substring(4);
+            String portNo;
+
+            if (routerPortName.startsWith("port")) {
+                portNo = routerPortName.substring(4);
+            } else {
+                portNo = routerPortName;
+            }
+
             Scanner scanner = new Scanner(portNo);
             int p = scanner.nextInt();
             RouterPort routerPort = controller.getPort(p);

@@ -13,18 +13,18 @@ public class MCRPEvent extends EventObject {
     // The type of the event
     private MCRPEventType type;
 
-    // The ID of the router client this event is associated with.
-    private ID routerID;
+    // The object sent back.
+    private Object obj;
 
-    public enum MCRPEventType { LINK_DIED, LINK_RESTARTED };
+    public enum MCRPEventType { LINK_DIED, LINK_RESTARTED, ROUTER_STATS };
 
     /**
      * Construct an MCRPEvent given a source object.
      */
-    public MCRPEvent(Object source, MCRPEventType type,  ID routerID) {
+    public MCRPEvent(Object source, MCRPEventType type,  Object obj) {
 	super(source);
 	this.type = type;
-	this.routerID = routerID;
+	this.obj = obj;
     }
 
     /**
@@ -35,16 +35,16 @@ public class MCRPEvent extends EventObject {
     }
 
     /**
-     * Get the ID of the router client this event is associated with.
+     * Get the object
      */
-    public ID getRouterID() {
-	return routerID;
+    public Object getObject() {
+	return obj;
     }
 
     /**
      * MCRPEvent to String.
      */
     public String toString() {
-	return "MCRPEvent " + type +  " from router: " + routerID;
+	return "MCRPEvent " + type +  " with: " + obj;
     }
 }

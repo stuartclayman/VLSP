@@ -16,11 +16,11 @@ import java.net.UnknownHostException;
  * GET_PORT_ADDRESS port 
  * GET_PORT_ADDRESS port0
  */
-public class GetAddressCommand extends RouterCommand {
+public class GetPortAddressCommand extends RouterCommand {
     /**
-     * Construct a GetAddressCommand.
+     * Construct a GetPortAddressCommand.
      */
-    public GetAddressCommand() {
+    public GetPortAddressCommand() {
         super(MCRP.GET_PORT_ADDRESS.CMD, MCRP.GET_PORT_ADDRESS.CODE, MCRP.GET_PORT_ADDRESS.ERROR);
     }
 
@@ -38,7 +38,14 @@ public class GetAddressCommand extends RouterCommand {
             String routerPortName = parts[0];
                         
             // find port
-            String portNo = routerPortName.substring(4);
+            String portNo;
+
+            if (routerPortName.startsWith("port")) {
+                portNo = routerPortName.substring(4);
+            } else {
+                portNo = routerPortName;
+            }
+
             Scanner scanner = new Scanner(portNo);
             int p = scanner.nextInt();
             RouterPort routerPort = controller.getPort(p);

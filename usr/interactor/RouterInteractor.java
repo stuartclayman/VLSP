@@ -147,6 +147,18 @@ public class RouterInteractor extends MCRPInteractor {
     }
 
     /**
+     * Get the address of a remote router of a port on the router.
+     * @param port the port name
+     */
+    public String getPortRemoteAddress(String port) throws IOException, MCRPException {
+        String toSend = MCRP.GET_PORT_REMOTE_ADDRESS.CMD + " " + port ; 
+	MCRPResponse response = interact(toSend);
+	expect(MCRP.GET_PORT_REMOTE_ADDRESS.CODE);
+
+        return response.get(0)[1];
+    }
+
+    /**
      * Get the address of a port on the router.
      * @param port the port name
      */

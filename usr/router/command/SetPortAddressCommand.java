@@ -16,11 +16,11 @@ import java.net.UnknownHostException;
  * SET_PORT_ADDRESS port type address
  * SET_PORT_ADDRESS port0 IPV4 192.168.1.53
  */
-public class SetAddressCommand extends RouterCommand {
+public class SetPortAddressCommand extends RouterCommand {
     /**
-     * Construct a SetAddressCommand.
+     * Construct a SetPortAddressCommand.
      */
-    public SetAddressCommand() {
+    public SetPortAddressCommand() {
         super(MCRP.SET_PORT_ADDRESS.CMD, MCRP.SET_PORT_ADDRESS.CODE, MCRP.SET_PORT_ADDRESS.ERROR);
     }
 
@@ -41,7 +41,14 @@ public class SetAddressCommand extends RouterCommand {
             Address address = null;
                         
             // find port
-            String portNo = routerPortName.substring(4);
+            String portNo;
+
+            if (routerPortName.startsWith("port")) {
+                portNo = routerPortName.substring(4);
+            } else {
+                portNo = routerPortName;
+            }
+
             Scanner scanner = new Scanner(portNo);
             int p = scanner.nextInt();
             RouterPort routerPort = controller.getPort(p);

@@ -158,48 +158,51 @@ public abstract class MCRPInteractor {
     protected void gotEvent(MCRPResponse response) throws IllegalArgumentException {
 	String code = response.getCode();
 
-        /*
-	String speechID = response.get(0)[1];
-	String clientID = response.get(1)[1];
 	MCRPEvent event;
 
-	if (code.equals("700")) {
-	    // INDEX_MARK event
-	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.INDEX_MARK, new ID(speechID), new ID(clientID));
+        System.out.println(getClass().getName() + ": got event " + code);
 
-	} else if (code.equals("701")) {
-	    // BEGIN event
-	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.BEGIN, new ID(speechID), new ID(clientID));
+	if (code.equals("700")) {
+            String connectionName = response.get(0)[1];
+            // LINK_DIED event
+	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.LINK_DIED, connectionName);
+
+        } else if (code.equals("701")) {
+            String connectionName = response.get(0)[1];
+            // LINK_RESTARTED event
+	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.LINK_RESTARTED, connectionName);
 
 	} else if (code.equals("702")) {
-	    // END event
-	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.END, new ID(speechID), new ID(clientID));
+            // now we convert the replies in the response
+            // into a list of connections
 
-	} else if (code.equals("703")) {
-	    // CANCEL event
-	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.CANCEL, new ID(speechID), new ID(clientID));
+            // get no of netifs
+            int routerReplies = response.getReplies() - 1;
 
-	} else if (code.equals("704")) {
-	    // PAUSE event
-	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.PAUSE, new ID(speechID), new ID(clientID));
+            // create a list for the names
+            List<String> stats = new ArrayList<String>();
 
-	} else if (code.equals("705")) {
-	    // RESUME event
-	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.RESUME, new ID(speechID), new ID(clientID));
+            for (int r=0; r < routerReplies; r++) {
+                // pick out the r-th connection
+                stats.add(response.get(r)[1]);
+            }
+
+
+	    // ROUTER_STATS event
+	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.ROUTER_STATS, stats);
 
 	} else {
 	    // not a valid event code
 	    throw new IllegalArgumentException("MCRPInteractor: unknown event code from server: " + code);
 	}
 
-	//Logger.getLogger("log").logln(USR.ERROR, "Event = " + event);
+	Logger.getLogger("log").logln(USR.ERROR, "Event = " + event);
 
 	// pass the event to the listeners, if there are any
 	if (getMCRPEventListenerCount() > 0) {
 	    // pass the event
 	    generateEvent(event);
 	}
-        */
 
     }
      
