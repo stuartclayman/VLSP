@@ -158,6 +158,8 @@ public class LifeSpanEstimate {
         return getTailProb(t);
     }
     
+
+    
     /** returns the Kaplan-Meir estimate for time t */
     public double getKMProb(int t) {
         for (int i= 0; i < KMTime_.size(); i++) {
@@ -243,14 +245,12 @@ public class LifeSpanEstimate {
         }
         return totLife/(1000.0*APDeaths_.size());
     }  
-    
 
-    /** Get an estimate of remaining lifespan using KM estimator */
-    
-    public int getKMLifeEstimate(int life, int T) 
+   /** Get an estimate of remaining lifespan using KM estimator plus tail*/
+    public long getKMTailLifeEst(int life) 
     { 
         if (KMTime_ == null)    // No parameters, return life
-            return life*2;
+            return life;
         int l= KMTime_.size();
         for (int i= 0; i < KMTime_.size(); i++) {
             if (KMTime_.get(i) < life) {
@@ -258,30 +258,62 @@ public class LifeSpanEstimate {
                 break;
             }
         }
-        if (l >= KMTime_.size()) {
-            return life*2;
+        if (l == KMTime_.size() && T_ == 0) {
+            return life;   // No estimate possible
         }
         int h= KMTime_.size()-1;
-        if (T > 0) {
+        if (T_ > 0) {
             for (int i= KMTime_.size()-1; i >= 0; i--) {
-                if (KMTime_.get(i) < T) {
+                if (KMTime_.get(i) < T_) {
                     h= i;
                     break;
                 }
             }
         }
-        int estlife= 0;
+        long estlife= 0;
         for (int i= l; i < h; i++) {
             estlife+=KMProb_.get(i)*(KMTime_.get(i) + KMTime_.get(i+1))/2;
-        }    
-        estlife-= KMProb_.get(l)*(KMTime_.get(l)+ life)/2;
-        if (T > 0) {
-            estlife-= KMProb_.get(h)*(KMTime_.get(h+1) + T)/2;
+        } 
+        if (l < KMTime_.size()) {
+            estlife-= KMProb_.get(l)*(KMTime_.get(l)+ life)/2;
         }
-        return (int)(estlife/KMProb_.get(l));
+        if (T_ > 0 && h < KMTime_.size()-2) {
+            estlife-= KMProb_.get(h)*(KMTime_.get(h+1) + T_)/2;
+            estlife+= 100.0;  //FIXME
+        }
+        return (long)(estlife*getKMTailProb(life));
+    }
+        
+
+    /** Get an estimate of remaining lifespan using KM estimator plus tail*/
+    public long getKMLifeEst(int life) 
+    { 
+        if (KMTime_ == null)    // No parameters, return life
+            return life;
+        int l= KMTime_.size();
+        for (int i= 0; i < KMTime_.size(); i++) {
+            //System.err.println(life+" "+KMTime_.get(i));
+            if (KMTime_.get(i) > life) {
+                l= i;
+                break;
+            }
+        }
+        if (l >= KMTime_.size()-1) {
+            return life;
+        }
+        
+        //System.err.println(life+" "+l);
+        double estlife= 0;
+        for (int i= l; i < KMTime_.size()-1; i++) {
+            estlife+=(KMProb_.get(i)-KMProb_.get(i+1))*
+           (KMTime_.get(i+1)+KMTime_.get(i))/2.0;
+        }   
+        estlife+=(KMProb_.get(l-1)-KMProb_.get(l))*
+           (KMTime_.get(l)+life)/2.0;
+        return (long)(estlife/KMProb_.get(l));
     }
     
-   
+    
     
     public void sortDeaths()
     {
@@ -319,7 +351,8 @@ public class LifeSpanEstimate {
         int prevDCount= 0;
         int prevTime= -1;
         double totProb= 1.0;
-        
+        KMTime_.add(0);
+        KMProb_.add(1.0);
         while (true) {
             if (ni == 0) 
                 break;
@@ -339,12 +372,15 @@ public class LifeSpanEstimate {
                 
                 
                 if (di != 0) {
-                    
-                    KMTime_.add(prevTime);
-                    
+                    if (prevTime == -1) {
+                        KMTime_.add(0);
+                    } else {
+                        KMTime_.add(prevTime);
+                    }
+                    totProb *= (double)(prevni-di)/(double)prevni;
                     KMProb_.add(totProb);
                     //System.err.println("di="+di+"ni="+prevni);
-                    totProb *= (double)(prevni-di)/(double)prevni;
+                    
                     //totProb= (double)(prevni)/(prevni+dCount);
                     prevDCount= dCount;
                 }
@@ -385,6 +421,7 @@ public class LifeSpanEstimate {
      
    }    
   
+
     // 
     int getNextTime(int dt, int lt) {
         if (dt == -1)
@@ -393,6 +430,18 @@ public class LifeSpanEstimate {
             return dt;
         return Math.min(lt,dt);
     }  
+
+    /** accessor function for KMTime_*/ 
+    public List<Integer> getKMTimeList()
+    {
+        return KMTime_;
+    }
     
+    /** accessor function for KMProb_*/ 
+    public List<Double> getKMProbList()
+    {
+        return KMProb_;
+    }
+     
 
 }

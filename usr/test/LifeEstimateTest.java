@@ -120,7 +120,19 @@ public class LifeEstimateTest {
         e.sortDeaths();
         e.updateKMEstimate(endTime);
         e.fitTail();
-   
+        int noPoints= 100;
+        double startx= 1.0;
+        double xmult= Math.pow(maxL*10.0/startx,1.0/noPoints);
+        double dx= startx;
+        //System.err.println(e.getKMProbList());
+        //System.err.println(e.getKMTimeList());
+        for (i= 1; i < noPoints; i++) {
+            
+            int x= (int)dx;
+            System.out.println(x+" "+(e.getKMLifeEst(x)-x)+" "+ 
+                (e.getKMTailLifeEst(x)-x)+" "+(1000.0*dist.getCondExp((double)x/1000.0)-x));
+            dx*= xmult;
+        }
         
     }
 

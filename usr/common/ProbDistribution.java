@@ -69,6 +69,25 @@ public class ProbDistribution
     
     }
     
+     /**Return the conditional expectation value at x*/
+    public double getCondExp(double x)
+    {
+        double condExp= 0.0;
+        double range= 0.0;
+        try {
+            for (ProbElement e: distParts_) {
+                condExp+= (e.getWeight() - range)*e.getCondExp(x);
+                range= e.getWeight();
+            }
+        } catch (ProbException e) {
+            Logger.getLogger("log").logln(USR.ERROR, "Error in getVariate");
+          Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+          return 0.0;
+        }
+        return condExp;
+    
+    }
+    
     public void checkParts() throws ProbException {
         double prevWeight= 0.0;
         double newWeight;

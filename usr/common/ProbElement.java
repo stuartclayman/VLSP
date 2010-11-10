@@ -268,9 +268,10 @@ public class ProbElement
     }
     
         /** Conditional expectation for  Normal variate */
-    public static double logNormalCondExp(double x, double mu, double sd) throws ProbException
+    public static double logNormalCondExp(double x, double mu, double sd) 
     {
-      throw new ProbException("Not yet written normalCondExp");
+        return Math.exp(mu+0.5*sd*sd)*
+        0.5*MathFunctions.erfc(-(mu+sd*sd-Math.log(x))/(sd*Math.sqrt(2.0)));
     }
   
   
