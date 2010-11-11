@@ -121,7 +121,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         routingTableTransmitter.terminate();
 
         // notify all waiting threads
-        notifyAll();
+        synchronized (this) {
+            notifyAll();
+        } 
 
         // wait for myself
         waitFor();
@@ -209,7 +211,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
                 //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
                 wait(100);
             } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "The end interrupted");
+                // Logger.getLogger("log").logln(USR.ERROR, leadin() + "The end interrupted");
             }
         }
         synchronized(this) {
