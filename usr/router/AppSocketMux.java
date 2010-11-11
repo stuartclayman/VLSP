@@ -163,6 +163,7 @@ public class AppSocketMux implements NetIF, Runnable {
                     //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Got Close");
                     remoteClose();
                 }
+                
             }
         
             //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramCount + " GOT DATAGRAM from "  + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
@@ -177,10 +178,11 @@ public class AppSocketMux implements NetIF, Runnable {
 
             if (socket != null) {
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "About to queue for " + socket);
-
+                if (datagram.getProtocol() != Protocol.CONTROL) {
                 // find queue for a port
-                LinkedBlockingQueue<Datagram> portQueue = getQueueForPort(dstPort);
-                portQueue.add(datagram);
+                    LinkedBlockingQueue<Datagram> portQueue = getQueueForPort(dstPort);
+                    portQueue.add(datagram);
+                }
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Queue for " + socket + " is size: " + queue.size());
 
                 // now do stats
