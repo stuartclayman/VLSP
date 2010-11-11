@@ -14,7 +14,7 @@
     </APManager>
    <Output>
 	    <FileName>output.txt</FileName>
-  	  <ExtendedFileName>true</ExtendedFileName>
+  	  <ExtendedName>true</ExtendedName>
 	    <ErrorName>error.txt</ErrorName>
    </Output>
 
