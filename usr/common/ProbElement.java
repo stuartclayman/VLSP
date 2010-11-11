@@ -123,7 +123,8 @@ public class ProbElement
     /** Cum dist function for gamma Function */
      public static double gammaDist(double y, double shape, double scale) throws ProbException
     {
-        throw new ProbException("Not yet written gammaDist");
+        return MathFunctions.incompleteLowerGamma(shape,y/scale)/
+          MathFunctions.completeGamma(shape);
     }
     
     /** Cum dist function for unifrom Function */
@@ -243,8 +244,10 @@ public class ProbElement
     /** Conditional Expectation function for gamma Function */
      public static double gammaCondExp(double y, double shape, double scale) throws ProbException
     {
-        throw new ProbException("Not yet written gammaCondExp");
-        // scale * incompletegamma(1+shape, y/scale)/incompletegamma(shape,y/scale);
+        double ans= scale *
+          MathFunctions.incompleteLowerGamma(1.0+shape, y/scale)/
+          MathFunctions.completeGamma(shape);
+        return ans;
     }
     
     /** Conditional Expectation function for unifrom Function */
@@ -270,15 +273,25 @@ public class ProbElement
         /** Conditional expectation for  Normal variate */
     public static double logNormalCondExp(double x, double mu, double sd) 
     {
-        return Math.exp(mu+0.5*sd*sd)*
-        0.5*MathFunctions.erfc(-(mu+sd*sd-Math.log(x))/(sd*Math.sqrt(2.0)));
+        double phi= 
+        MathFunctions.Phi((mu+sd*sd-Math.log(x))/(sd*Math.sqrt(2.0)));
+       // System.err.println("mu "+mu+" sd "+sd+ " Phi "+phi);
+        return Math.exp(mu+0.5*sd*sd)*phi/(1.0-logNormalDist(x,mu,sd));
     }
   
   
           /** Conditional expectation for log normal variate */
     public static double normalCondExp(double x, double mu, double sd) throws ProbException
     {
-         throw new ProbException("Not yet written normalCondExp");
+         double ans= mu*MathFunctions.erf((mu-x)/(sd*Math.sqrt(2.0)));
+         ans+=mu;
+         ans+=Math.exp(-(mu-x)*(mu-x)/(2.0*sd*sd))*Math.sqrt(2.0/Math.PI)*sd;
+         ans*=0.5;
+       // System.err.println("mu "+mu+" sd "+sd+ " Phi "+phi);
+         double divisor= 1.0-normalDist(x,mu,sd);
+         if (divisor <= 1e-10)  // Rounding problems for very low divisors
+            return x;
+        return ans/(1.0-normalDist(x,mu,sd));
     }
   
     

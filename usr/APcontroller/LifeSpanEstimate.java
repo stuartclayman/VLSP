@@ -7,7 +7,7 @@ import usr.globalcontroller.GlobalController;
 import usr.router.RouterOptions;
 import usr.common.Pair;
 import usr.common.MathFunctions;
-
+import usr.common.ProbElement;
 /** Produces estimates of life spans given information about node births 
 and deaths*/
 
@@ -249,39 +249,51 @@ public class LifeSpanEstimate {
    /** Get an estimate of remaining lifespan using KM estimator plus tail*/
     public long getKMTailLifeEst(int life) 
     { 
+        if (T_ <= 0)        // Not enough data for tail fit.
+            getKMLifeEst(life);
         if (KMTime_ == null)    // No parameters, return life
             return life;
         int l= KMTime_.size();
         for (int i= 0; i < KMTime_.size(); i++) {
-            if (KMTime_.get(i) < life) {
+            //System.err.println(life+" "+KMTime_.get(i));
+            if (KMTime_.get(i) > life) {
                 l= i;
                 break;
             }
         }
-        if (l == KMTime_.size() && T_ == 0) {
-            return life;   // No estimate possible
+        if (l >= KMTime_.size()-1) {
+            return life;
         }
+        
         int h= KMTime_.size()-1;
-        if (T_ > 0) {
-            for (int i= KMTime_.size()-1; i >= 0; i--) {
-                if (KMTime_.get(i) < T_) {
-                    h= i;
-                    break;
-                }
+        for (int i=0; i < KMTime_.size(); i++) {
+            if (KMTime_.get(i) > T_); {
+                h= i;
+                break;
             }
         }
-        long estlife= 0;
-        for (int i= l; i < h; i++) {
-            estlife+=KMProb_.get(i)*(KMTime_.get(i) + KMTime_.get(i+1))/2;
-        } 
-        if (l < KMTime_.size()) {
-            estlife-= KMProb_.get(l)*(KMTime_.get(l)+ life)/2;
+        
+        //System.err.println(life+" "+l);
+        double estlife= 0;
+        System.err.println("life  "+life+" T_"+ T_);
+        if (life >= T_) {  // Estimate is from in tail
+            estlife= ProbElement.logNormalCondExp(life,mu_,sigma_)/getKMTailProb(life);
+            System.err.println("cond exp is "+estlife/getKMTailProb(life));
+            return (long)(estlife/getKMTailProb(life));
+        } else {
+          for (int i= l; i < h-1; i++) {
+             estlife+=(KMProb_.get(i)-KMProb_.get(i+1))*
+              (KMTime_.get(i+1)+KMTime_.get(i))/2.0;
+            
+          }   
+          estlife+=(KMProb_.get(l-1)-KMProb_.get(l))*
+              (KMTime_.get(l)+life)/2.0;
+          estlife+= ProbElement.logNormalCondExp(KMTime_.get(h),mu_,sigma_);
+          System.err.println("Sum is "+estlife);
         }
-        if (T_ > 0 && h < KMTime_.size()-2) {
-            estlife-= KMProb_.get(h)*(KMTime_.get(h+1) + T_)/2;
-            estlife+= 100.0;  //FIXME
-        }
-        return (long)(estlife*getKMTailProb(life));
+        
+        return (long)(estlife/getKMTailProb(life));
+    
     }
         
 

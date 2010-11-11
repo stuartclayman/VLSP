@@ -75,12 +75,11 @@ public class LifeEstimateTest {
       }
         
         LifeSpanEstimate e= new LifeSpanEstimate();
-        //double y= e.erf(0.9);
-        //System.out.println("Erf 0.5 ="+ y);
-        //System.out.println("Inverse ="+ e.inverf(y));
-        //y= e.erfc(0.9);
-        //System.out.println("Erfc 0.5 ="+ y);
-        //System.out.println("Inverse ="+ e.inverfc(y));
+        //System.err.println("Gamma (1.2) "+MathFunctions.completeGamma(1.2));
+        //System.err.println("Gamma (0.5) "+MathFunctions.completeGamma(0.5));
+        //System.err.println("LowerGamma (0.5,1.2) "+MathFunctions.incompleteLowerGamma(0.5,1.2));
+        //System.err.println("UpperGamma (0.5,1.2) "+MathFunctions.incompleteUpperGamma(0.5,1.2));
+        //System.err.println("UpperGamma (0.5,0.0) "+MathFunctions.incompleteUpperGamma(0.5,0.0));
         noTests= Integer.parseInt(args[1]);
         int []lifeSpans= new int[noTests];
         double tot= 0;

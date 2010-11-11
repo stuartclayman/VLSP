@@ -3,39 +3,110 @@ package usr.common;
 
 public class MathFunctions {
 
-      /** Calculate the (lower) incomplete gamma function -- using Gauss continued fraction*/
-      public static double incompleteGamma(double s, double z) 
-      // See http://en.wikipedia.org/wiki/Incomplete_gamma_function
-      // Continued fractions iterations method was invented by J. Wallis in 1655 (!),
+      public static double gammaLn(double s) 
+      /* Return the ln Gamma(s) for s > 0  -- taken from
+      Numerical recipies in C*/
       {
-          final int MIN_ITER=10;
-          final int MAX_ITER=1000;
-          final double ACC_PERC=1e-06;
-          double denom= 1.0+z-s;
-          double value= Math.pow(z,s)*Math.exp(-z)/denom;
-          double oldValue= 0.0;
-
-          double Ajm1= Math.pow(z,s)*Math.exp(-z);
-          double Ajm2= 0.0;
-          double Bjm1= 1.0+z-s;         
-          double Bjm2= 1.0;
-          double Aj,Bj,aj,bj;
-          for (int i=2; i < MAX_ITER+2;i++) {
-               aj= (s-(i-1.0))*(i-1.0);
-               bj= 2.0*i-1.0+z-s;
-               Aj= bj*Ajm1 + aj*Ajm2;
-               Bj= bj*Bjm1 + aj*Bjm2;
-               value= Aj/Bj;
-               if (Math.abs(value-oldValue)/value < ACC_PERC && i >= MIN_ITER)
-                  break;
-               oldValue=value;
-               Bjm2=Bjm1;
-               Bjm1= Bj;
-               Ajm2=Ajm1;
-               Ajm1=Aj;
-     
+          double x,y,tmp,ser;
+          double []cof={76.18009172947146,
+              -86.50532032941677,
+              24.01409824083091,
+              -1.231739572450155,
+              0.1208650973866179e-2,
+              -0.5395239384953e-5
+              };
+          y=x=s;
+          tmp=x+5.5;
+          tmp-= (x+0.5)*Math.log(tmp);
+          ser= 1.000000000190015;
+          for (int j= 0; j < 6; j++) {
+             y++;
+             ser+=cof[j]/y;
           }
-          return 1.0-value;
+          return -tmp+Math.log(2.5066282746310005*ser/x);
+      }
+
+      /* Return the complete gamma fucntion*/
+      public static double completeGamma(double s) 
+      {
+          return Math.exp(gammaLn(s));
+      }
+
+      /* Return the upper incomplete gamma fucntion a is shape, x scale*/
+      public static double incompleteLowerGamma(double a, double x) 
+      {
+          if (x < a+1.0) {
+               return incompleteLowerGammaER(a,x);
+          } else {
+              return completeGamma(a)-incompleteUpperGammaCF(a,x);
+          }
+      }
+      
+      /** Calculate the (Upper) incomplete gamma function -- from num rec in C*/
+      /** a = shape, x is range */
+      public static double incompleteUpperGamma(double a, double x)
+      {
+          if (x < a+1.0) {
+               return completeGamma(a)-incompleteLowerGammaER(a,x);
+          } else {
+              return incompleteUpperGammaCF(a,x);
+          }
+      } 
+      
+      /** incomplete lower gamma by series expansion */
+      public static double incompleteLowerGammaER(double a, double x)
+      {
+          final int ITMAX= 100;
+          final double EPS= 3.0e-7;
+          final double FPMIN= 1.0e-30;
+          
+          double sum,del,ap;
+          ap= a;
+          del=sum=1.0/a;
+          for (int n= 1; n<=ITMAX;n++) {
+              ap++;
+              del*= x/ap;
+              sum+= del;
+              if (Math.abs(del) < Math.abs(sum)*EPS) {
+                  return sum*Math.exp(-x+a*Math.log(x));
+              }
+          }
+          System.err.println("incompleteLowerGammaER failed to converge");
+          return 0.0;
+      }
+      
+      
+      /** incomplete upper gamma by continued fraction */
+      public static double incompleteUpperGammaCF(double a, double x)
+      {
+          final int ITMAX= 100;
+          final double EPS= 3.0e-7;
+          final double FPMIN= 1.0e-30;
+          
+          double an, b,c,d,del,h;
+          //double gln= gammaLn(s);
+          b= x+1.0-a;
+          c= 1.0/FPMIN;
+          d=1.0/b;
+          h=d;
+          for (int i=1; i <=ITMAX; i++) {
+              an= -i*(i-a);
+              b+= 2.0;
+              d=an*d+b;
+              if (Math.abs(d) < FPMIN) 
+                  d= FPMIN;
+              c= b+an/c;
+              if (Math.abs(c) < FPMIN)
+                  c= FPMIN;
+              d= 1.0/d;
+              del=d*c;
+              h*=del;
+              if (Math.abs(del-1.0) < EPS)
+                  break;
+              
+          }
+          return Math.exp(-x+a*Math.log(x))*h;
+          
       }
 
 /**Calculate inverse erf function -- see wikipedia for formula
