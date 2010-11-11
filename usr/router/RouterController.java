@@ -350,10 +350,11 @@ public class RouterController implements ComponentController, Runnable {
             }
         }
         if (shutDown) {
+            // shutdown Thread pool
+            pool.shutdown();
             shutDown();
         }
-        // shutdown Thread pool
-        pool.shutdown();
+        
 
     }
 
