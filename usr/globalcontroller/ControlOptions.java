@@ -384,7 +384,7 @@ public class ControlOptions {
     }
     
     private void processRouterOptions(NodeList n) throws SAXException, 
-      FileNotFoundException, IOException, 
+       IOException, 
       javax.xml.parsers.ParserConfigurationException {
         if (n.getLength() == 0) {
             return;
@@ -395,8 +395,14 @@ public class ControlOptions {
         Element hElement = (Element)n.item(0);
         NodeList textFNList = hElement.getChildNodes();
         String fName= ((Node)textFNList.item(0)).getNodeValue().trim();
-        //Logger.getLogger("log").logln(USR.ERROR, "Read router file "+fName);    
-        BufferedReader reader = new BufferedReader( new FileReader (fName));
+        //Logger.getLogger("log").logln(USR.ERROR, "Read router file "+fName); 
+         BufferedReader reader;
+        try {   
+             reader = new BufferedReader( new FileReader (fName));
+        } catch (FileNotFoundException e) {
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot find router file "+fName); 
+            throw new SAXException();
+        }
         String line  = null;
         StringBuilder stringBuilder = new StringBuilder();
           

@@ -9,22 +9,17 @@
       <NodeDeathDist>
             <ProbElement>
                  <Type>Exponential</Type>
-                 <Weight>0.1</Weight>
-                 <Parameter>200</Parameter>
+                 <Weight>0.7</Weight>
+                 <Parameter>60</Parameter>
             </ProbElement>
             <ProbElement>
-                 <Type>Weibull</Type>
-                 <Weight>0.9</Weight>
-                 <Parameter>1000.0</Parameter>
+                 <Type>LogNormal</Type>
+                 <Weight>1.0</Weight>
+                 <Parameter>7.0</Parameter>
                  <Parameter>1.5</Parameter>
             </ProbElement>
-            <ProbElement>
-                 <Type>Weibull</Type>
-                 <Weight>1.0</Weight>
-                 <Parameter>10000.0</Parameter>
-                 <Parameter>2.0</Parameter>
-            </ProbElement>
       </NodeDeathDist>
+
       <LinkCreateDist>
             
             <ProbElement>

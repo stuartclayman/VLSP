@@ -3,21 +3,22 @@
             <ProbElement>
                  <Type>Exponential</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>10.0</Parameter>
+                 <Parameter>5.0</Parameter>
             </ProbElement>
       </NodeBirthDist>
       <NodeDeathDist>
             <ProbElement>
                  <Type>Exponential</Type>
                  <Weight>0.5</Weight>
-                 <Parameter>500</Parameter>
+                 <Parameter>60</Parameter>
             </ProbElement>
             <ProbElement>
                  <Type>LogNormal</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>5.0</Parameter>
-                 <Parameter>3.0</Parameter>
+                 <Parameter>4.0</Parameter>
+                 <Parameter>1.5</Parameter>
             </ProbElement>
+
       </NodeDeathDist>
       <LinkCreateDist>
             
@@ -29,6 +30,6 @@
             </ProbElement>
       </LinkCreateDist>
       <Parameters>
-          <PreferentialAttachment>true</PreferentialAttachment>
+          <PreferentialAttachment>false</PreferentialAttachment>
       </Parameters>
 </ProbabilisticEngine>
