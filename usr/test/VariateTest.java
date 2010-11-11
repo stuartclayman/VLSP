@@ -18,7 +18,7 @@ public class VariateTest {
     public static void main(String[] args) {
         int i;
         int noTests;
-        System.out.println(MathFunctions.incompleteGamma(1.0,0.5));
+        //System.out.println(MathFunctions.incompleteGamma(1.0,0.5));
         ProbDistribution dist= null;
         if (args.length != 2) {
             System.out.println("Need arguments --  distribution file and no tests");
