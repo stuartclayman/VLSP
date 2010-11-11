@@ -180,7 +180,14 @@ public class RouterOptions {
         } catch (XMLNoTagException e) {
            
         }
-        
+        NodeList nl= o.getChildNodes();
+        for (int i= 0; i < nl.getLength(); i++) {         
+            Node n= nl.item(i); 
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                throw new SAXException("Unrecognised tag "+n.getNodeName());
+            }
+                
+        }
         o.getParentNode().removeChild(o);
     }
     
