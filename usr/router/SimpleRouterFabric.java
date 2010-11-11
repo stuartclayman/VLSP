@@ -110,7 +110,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /**
      * Stop the RouterController.
      */
-    public synchronized boolean stop() {
+    public boolean stop() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
         // stop my own thread
@@ -481,7 +481,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /**
      * Close ports.
      */
-    public synchronized void closePorts() {
+    public void closePorts() {
         //Logger.getLogger("log").logln(USR.ERROR, "Local NetIF close");
         closeLocalNetIF();
         
@@ -514,7 +514,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /**
      * Close port.
      */
-    public synchronized void closePort(RouterPort port) {
+    public void closePort(RouterPort port) {
         if (port.equals(RouterPort.EMPTY)) {
             // nothing to do
         } else {
