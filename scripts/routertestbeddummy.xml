@@ -15,7 +15,7 @@
    <Output>
 	    <FileName>output.txt</FileName>
   	  <ExtendedName>true</ExtendedName>
-	    <ErrorName>error.txt</ErrorName>
+	    <ErrorFileName>error.txt</ErrorFileName>
    </Output>
 
 </RouterOptions>
