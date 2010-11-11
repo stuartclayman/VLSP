@@ -90,11 +90,10 @@ public class ProcessWrapper {
             eListener.stop();
 
             // now splat it
-		process.waitFor();
+            process.destroy();
 
         } catch (IOException ioe) {
-        } catch (java.lang.InterruptedException e) {
-	}
+        }
     }
        
     /**

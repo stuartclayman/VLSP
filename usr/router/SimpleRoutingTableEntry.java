@@ -22,8 +22,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
       throws Exception
     {
         if (tableEntry.length < 8) {
-            System.err.println("Length "+tableEntry.length);
-		throw new Exception
+            throw new Exception
              ("Byte array received to construct routing table too short");
         }
         ByteBuffer bytes= ByteBuffer.wrap(tableEntry);
