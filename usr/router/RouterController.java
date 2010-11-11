@@ -307,6 +307,7 @@ public class RouterController implements ComponentController, Runnable {
         ExecutorService pool = Executors.newCachedThreadPool();  // WAS newFixedThreadPool(3);
         long now= System.currentTimeMillis();
         long next= now + options_.getRouterConsiderTime();
+        boolean shutDown= false;
         while (running) {
             try {
                 now= System.currentTimeMillis();
@@ -335,8 +336,8 @@ public class RouterController implements ComponentController, Runnable {
                    
                     
                 }  else if (value.startsWith("SHUT_DOWN")) {
-                    Logger.getLogger("log").logln(USR.STDOUT, "Found SHUT DOWN");
-                    pool.execute(new ShutDown(this, nextRequest));
+                    shutDown= true;
+                    break;
                 }
                 
                 else {
@@ -348,7 +349,9 @@ public class RouterController implements ComponentController, Runnable {
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "BlockingQueue: interrupt " + ie);
             }
         }
-
+        if (shutDown) {
+            shutDown();
+        }
         // shutdown Thread pool
         pool.shutdown();
 
