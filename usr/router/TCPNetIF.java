@@ -635,9 +635,9 @@ public class TCPNetIF implements NetIF , Runnable {
             return sent;
 
         } catch (Exception ioe) {
-            Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: controlClose error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
-            ioe.printStackTrace();
-            return false;
+            Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: controlClose error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
+            //ioe.printStackTrace();
+            return true;
         }
  
     }
@@ -844,8 +844,8 @@ public class TCPNetIF implements NetIF , Runnable {
 
 
                     } catch (IOException ioe) {
-                        Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF.OutboundThread: send error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
-                        ioe.printStackTrace();
+                        Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF.OutboundThread: send error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
+                        //ioe.printStackTrace();
                         Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF.OutboundThread: " + netIF.getName() + " -> ReallyClose from run()");
                         netIF.reallyClose();
                     }
