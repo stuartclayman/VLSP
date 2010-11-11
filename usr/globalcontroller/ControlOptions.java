@@ -8,6 +8,7 @@ import usr.logging.*;
 import usr.localcontroller.LocalControllerInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Properties;
 import java.io.*;
 import usr.engine.*;
 import org.w3c.dom.Document;
@@ -52,8 +53,10 @@ public class ControlOptions {
       outputs_= new ArrayList <OutputType>();
       remoteLoginCommand_ = "/usr/bin/ssh";
       remoteLoginFlags_ = "-n";
+      Properties prop = System.getProperties();
+      
       remoteStartController_ = 
-        "java -cp code/userspacerouter usr.localcontroller.LocalController";
+        "java -cp "+prop.getProperty("java.class.path", null)+" usr.localcontroller.LocalController";
       routerOptions_= new RouterOptions(null);
     }
     
