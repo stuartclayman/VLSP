@@ -626,7 +626,7 @@ public class TCPNetIF implements NetIF , Runnable {
 
 
         try {
-            boolean sent = connection.sendDatagram(datagram);
+            boolean sent = forwardDatagram(datagram);
 
             // stats
             netStats.increment(NetStats.Stat.OutPackets);
