@@ -863,7 +863,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         SimpleRoutingTable t;
         try {
             t= new SimpleRoutingTable(bytes,netIF);
-        } catch (Exception e) {
+        } catch (Exception e) {	
+	    System.err.println("Received from "+netIF+" "+bytes.length+" bytes");
             Logger.getLogger("log").logln(USR.ERROR, leadin()+"Received unreadable routing table");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             return;

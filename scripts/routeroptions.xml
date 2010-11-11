@@ -5,11 +5,17 @@
         <MaxNetIFUpdateTime>30000</MaxNetIFUpdateTime>
     </RoutingParameters>
     <APManager>
-        <Name>HotSpot</Name>
+        <Name>Random</Name>
         <MinAPs>1</MinAPs>
         <RouterConsiderTime>10000</RouterConsiderTime>
         <ControllerConsiderTime>10000</ControllerConsiderTime>
         <MaxAPWeight>5</MaxAPWeight>
         <MinPropAP>0.1</MinPropAP>
     </APManager>
+   <Output>
+	    <FileName>output.txt</FileName>
+  	  <ExtendedName>true</ExtendedName>
+	    <ErrorName>error.txt</ErrorName>
+   </Output>
+
 </RouterOptions>

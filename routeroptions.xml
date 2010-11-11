@@ -12,5 +12,10 @@
         <ControllerConsiderTime>10000</ControllerConsiderTime>
         <MaxAPWeight>5</MaxAPWeight>
         <MinPropAP>0.1</MinPropAP>
-    </APManager>
+    </APManager> 
+    <Output>
+	<FileName>output.txt</FileName>
+	<ExtendedFileName>true</ExtendedFileName>
+	<ErrorName>error.txt</ErrorName>
+    </Output>
 </RouterOptions>
