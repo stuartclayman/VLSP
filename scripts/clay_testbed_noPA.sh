@@ -14,8 +14,8 @@ for i in  5.0 10.0 20.0 50.0 100.0; do
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
     sed -e 's/xxx/'$i'/g' $PIN > $POUT
     java usr.globalcontroller.GlobalController $CONTROL  > out
-    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
-    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
   done
 done
 POLICY=Pressure
@@ -26,8 +26,8 @@ for i in  5.0 10.0 20.0 50.0 100.0; do
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
     sed -e 's/xxx/'$i'/g' $PIN > $POUT
     java usr.globalcontroller.GlobalController $CONTROL  > out
-    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
-    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
   done
 done
 POLICY=HotSpot
@@ -39,7 +39,7 @@ for i in  5.0 10.0 20.0 50.0 100.0; do
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
     sed -e 's/xxx/'$i'/g' $PIN > $POUT
     java usr.globalcontroller.GlobalController $CONTROL  > out
-    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
-    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
   done
 done

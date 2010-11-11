@@ -47,6 +47,6 @@
         <When>Interval</When>
         <Time>10000</Time>
         <Type>Traffic</Type>
-        <Parameter>
+        <Parameter>Aggregate</Parameter>
     </Output>
 </SimOptions>
