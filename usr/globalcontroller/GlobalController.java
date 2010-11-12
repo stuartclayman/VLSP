@@ -441,7 +441,7 @@ public class GlobalController implements ComponentController {
         }
         if (minUse > 1.0) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-              "Could not start new router on " + leastUsed+ " too  many routers");
+              "Could not start new router on " + leastUsed+ " too many routers");
             bailOut();
             return;
         }
@@ -531,10 +531,11 @@ public class GlobalController implements ComponentController {
             bailOut();
             return;
         }
-        
-        PortPool pp= portPools_.get(br.getLocalControllerInfo());
+        LocalControllerInfo lcinf= br.getLocalControllerInfo();
+        PortPool pp= portPools_.get(lcinf);
         pp.freePort(br.getManagementPort());
         pp.freePort(br.getRoutingPort());
+        lcinf.delRouter();
         routerIdMap_.remove(rId);
     }
     
