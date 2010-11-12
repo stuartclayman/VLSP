@@ -194,7 +194,9 @@ public class ApplicationManager {
      * Application name is passed in.
      */
     public static void stopAll() {
+        //System.err.println("Stopping all apps");
         singleton.shutdown();
+        //System.err.println("Stopped all apps");
     }
 
     /**

@@ -104,7 +104,7 @@ public class ConnectionOverTCP implements Connection {
 
             return true;
         } else {
-            Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " outCounter = " + outCounter + " ALREADY CLOSED ");
+            Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: " + endPoint + " outCounter = " + outCounter + " ALREADY CLOSED ");
 
             return false;
         }

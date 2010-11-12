@@ -160,6 +160,7 @@ public class GlobalController implements ComponentController {
       } catch (Exception e) {
           Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
           bailOut();
+          return;
       }
       
       // Set up simulations options
@@ -247,6 +248,7 @@ public class GlobalController implements ComponentController {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() +
                       "Simulation lagging too much, slow down events");
                     bailOut();
+                    return;
                 }
                 if ((simulationStartTime + eventTime) <= simulationTime) {
                     executeEvent(e);
@@ -282,7 +284,6 @@ public class GlobalController implements ComponentController {
         shutDown();
         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exit after bailout");
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Bailing out of simulation!");
-        System.exit(-1);
     }
     
     private void executeEvent(SimEvent e) {
@@ -438,34 +439,60 @@ public class GlobalController implements ComponentController {
                 leastUsed= lc;
             }
         }
-        LocalControllerInteractor lci= interactorMap_.get(leastUsed);
-        PortPool pp= portPools_.get(leastUsed);
-        try {
-            int port= pp.findPort(2);
-            leastUsed.addRouter();  // Increment count
-            
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Creating router " + id + " on " + leastUsed);
-
-            // create the new router and get it's name
-            String routerName = lci.newRouter(id, port);
-
-            BasicRouterInfo br= new BasicRouterInfo(id,simulationTime, leastUsed,port);
-            br.setName(routerName);
-
-            // keep a handle on this router
-            routerIdMap_.put(id,br);
-
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerName);
-
-        } catch (IOException e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() +"Could not start new router on " + leastUsed);
-            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+        if (minUse > 1.0) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+              "Could not start new router on " + leastUsed+ " too  many routers");
             bailOut();
-        } catch (MCRPException e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not start new router on " + leastUsed);
-            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-            bailOut();
+            return;
         }
+        leastUsed.addRouter();  // Increment count
+        LocalControllerInteractor lci= interactorMap_.get(leastUsed);
+        
+       
+        int MAX_TRIES= 5;
+        for (int i= 0; i < MAX_TRIES; i++) {
+            try {
+                if (tryRouterStart(id, leastUsed, lci)) 
+                    return;
+            } catch (IOException e) {
+                 Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+              "Could not start new router on " + leastUsed+ " out of ports ");
+                bailOut();
+                return;
+            }   
+        }
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not start new router on " 
+              + leastUsed + " after "+MAX_TRIES+" tries.");
+        bailOut();
+        return;
+    }
+    
+    /** Make one attempt to start a router */
+    boolean tryRouterStart (int id, LocalControllerInfo local, LocalControllerInteractor lci) 
+        throws IOException {
+        int port= 0;
+        PortPool pp= portPools_.get(local);
+        String routerName;
+        try {
+            port = pp.findPort(2);
+            
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Creating router " + id);
+            // create the new router and get it's name
+            routerName = lci.newRouter(id, port);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerName);
+        }
+        catch (MCRPException e) { 
+           // Failed to start
+           if (port != 0) 
+              pp.freePorts(port,port+1);  // Free ports but different ones will be tried next time
+           return false;
+        }
+        
+        BasicRouterInfo br= new BasicRouterInfo(id,simulationTime,local,port);
+        br.setName(routerName);
+        // keep a handle on this router
+        routerIdMap_.put(id,br);
+        return true;
         
     }
     
@@ -487,12 +514,13 @@ public class GlobalController implements ComponentController {
     
     /** remove a router in simulation*/
     private void endSimulationRouter(int rId) {
-         
+             
     }
     
     /** Send shutdown to a virtual router */
     private void endVirtualRouter(int rId) {
         BasicRouterInfo br= routerIdMap_.get(rId);
+        
         LocalControllerInteractor lci= interactorMap_.get
             (br.getLocalControllerInfo());
         try {
@@ -501,7 +529,12 @@ public class GlobalController implements ComponentController {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down router "+
               br.getHost()+":"+br.getManagementPort());
             bailOut();
+            return;
         }
+        
+        PortPool pp= portPools_.get(br.getLocalControllerInfo());
+        pp.freePort(br.getManagementPort());
+        pp.freePort(br.getRoutingPort());
         routerIdMap_.remove(rId);
     }
     
@@ -621,11 +654,13 @@ public class GlobalController implements ComponentController {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot link routers");
             Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             bailOut();
+            return;
         }
         catch (MCRPException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot link routers");
             Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             bailOut();
+            return;
         }
 
     }
@@ -749,6 +784,7 @@ public class GlobalController implements ComponentController {
               br1.getHost()+":"+br1.getManagementPort()+" " +
               br2.getHost()+":"+br2.getManagementPort());
             bailOut();
+            return;
         }
     }
     
@@ -1365,6 +1401,7 @@ public class GlobalController implements ComponentController {
             // We can keep a list of failures if we need to.
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Can't talk to all LocalControllers");
             bailOut();
+            return;
         }
 
 
@@ -1385,6 +1422,7 @@ public class GlobalController implements ComponentController {
         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Only "+aliveCount+" from "+noControllers_+
                            " local Controllers responded.");
         bailOut();
+        return;
     }
     
     /** 
@@ -1559,6 +1597,7 @@ public class GlobalController implements ComponentController {
                 if (l1 == -1 || l2 == -1) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection "+l1+" "+l2);
                     bailOut();
+                    return;
                 }
                 // Make a new link to connect network
                 //System.err.println("Link "+l1+" is "+visited[l1]+" "+l2+" is "+visited[l2]);
@@ -1632,6 +1671,7 @@ public class GlobalController implements ComponentController {
                 if (l1 == -1 || l2 == -1) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection "+l1+" "+l2);
                     bailOut();
+                    return;
                 }
                 // Make a new link to connect network
                 //System.err.println("Link "+l1+" is "+visited[l1]+" "+l2+" is "+visited[l2]);

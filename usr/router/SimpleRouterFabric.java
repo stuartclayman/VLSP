@@ -825,6 +825,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         if (controlChar == 'X') {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Received TTL expired from "+dg.getSrcAddress()
                 +":"+dg.getSrcPort());
+            return true;
         }
         if (controlChar == 'E') {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Received echo from "+dg.getSrcAddress()

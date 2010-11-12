@@ -35,6 +35,7 @@ public class PortPool {
        int startPort= currPort_;
        if (startPort >= highPort_) {
             startPort= lowPort_; 
+            currPort_= lowPort_;
        }
        for (int i= startPort; i < highPort_; i++) {
           int freeCount= 0;

@@ -257,8 +257,8 @@ public class LocalController implements ComponentController {
         // create a RouterInteractor
         RouterInteractor interactor = null;
 
-        // try 50 times, with 100 millisecond gap
-        int MAX_TRIES = 50;
+        // try 20 times, with 100 millisecond gap
+        int MAX_TRIES = 20;
         int tries = 0;
         int millis = 100;
         boolean isOK = false;

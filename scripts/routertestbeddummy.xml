@@ -13,9 +13,8 @@
         <MinPropAP>0.1</MinPropAP>
     </APManager>
    <Output>
-	    <FileName>output.txt</FileName>
+	    <FileName>/space/rclegg/testbedoutput</FileName>
   	  <ExtendedName>true</ExtendedName>
-	    <ErrorFileName>error.txt</ErrorFileName>
    </Output>
 
 </RouterOptions>
