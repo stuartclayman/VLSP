@@ -23,10 +23,11 @@ public class ShutDownCommand extends RouterCommand {
     public boolean evaluate(String req) {
         SocketChannel sc = getChannel();
         Logger.getLogger("log").logln(USR.STDOUT, "Shutdown command asynchronous");
+        success("SHUTDOWN REQUESTED");
         managementConsole.addRequest(new Request(sc, req));
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Requests = " + managementConsole.queue());
         
-        return success("SHUTDOWN REQUESTED");
+        return true;
     }
 
 }
