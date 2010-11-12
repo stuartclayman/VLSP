@@ -55,7 +55,7 @@ public class RouterController implements ComponentController, Runnable {
 
     // are we running
     boolean running = false;
-
+    
     // My name
     String name;
 
@@ -262,19 +262,21 @@ public class RouterController implements ComponentController, Runnable {
         boolean stoppedC = connections.stop();
 
         // stop my own thread
-       // running = false;
-       // myThread.interrupt();
+        running = false;
+        
+  /*      myThread.interrupt();
 
         // wait for myself
-        //try {
-        //    myThread.join();
-        //} catch (InterruptedException ie) {
+        try {
+            myThread.join();
+        } catch (InterruptedException ie) {
             // Logger.getLogger("log").logln(USR.ERROR, "RouterController: stop - InterruptedException for myThread join on " + myThread);
-        //}
-
+        }*/
 
         return stoppedL && stoppedC;
     }
+
+
 
     /**
      * Shutdown the Router.
@@ -337,7 +339,8 @@ public class RouterController implements ComponentController, Runnable {
                     
                 }  else if (value.startsWith("SHUT_DOWN")) {
                     shutDown= true;
-                    break;
+                    shutDown();
+                   
                 }
                 
                 else {
@@ -352,9 +355,8 @@ public class RouterController implements ComponentController, Runnable {
         if (shutDown) {
             // shutdown Thread pool
             pool.shutdown();
-            shutDown();
+            
         }
-        
 
     }
 

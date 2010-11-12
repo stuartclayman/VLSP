@@ -42,7 +42,7 @@ public abstract class ChannelResponder {
             }
             return true;
         } catch (IOException ioe) {
-            System.err.println("ERROR IN SOCKET CHANNEL"+ioe.getMessage());
+            System.err.println("ERROR IN SOCKET CHANNEL "+ioe.getMessage());
             return false;
         }
     }
