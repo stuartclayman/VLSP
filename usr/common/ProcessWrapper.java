@@ -90,7 +90,7 @@ public class ProcessWrapper {
             eListener.stop();
 
             // now splat it
-            process.destroy();
+            //process.destroy();
 
         } catch (IOException ioe) {
         }

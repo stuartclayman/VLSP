@@ -5,7 +5,7 @@
         <MaxNetIFUpdateTime>30000</MaxNetIFUpdateTime>
     </RoutingParameters>
     <APManager>
-        <Name>None</Name>
+        <Name>Random</Name>
         <MaxAPs>100</MaxAPs>
         <MinAPs>1</MinAPs>
         <RouterConsiderTime>10000</RouterConsiderTime>
@@ -13,9 +13,9 @@
         <MaxAPWeight>5</MaxAPWeight>
         <MinPropAP>0.1</MinPropAP>
     </APManager> 
-    <Output>
-	<FileName>output.txt</FileName>
-	<ExtendedFileName>true</ExtendedFileName>
-	<ErrorName>error.txt</ErrorName>
-    </Output>
+       <Output>
+	    <FileName>/home/richard/testbedoutput</FileName>
+  	  <ExtendedName>true</ExtendedName>
+   </Output>
+
 </RouterOptions>
