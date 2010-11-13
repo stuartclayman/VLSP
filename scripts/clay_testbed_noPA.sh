@@ -11,16 +11,6 @@ CPVAR=/home/rclegg/code/userspacerouter/libs/monitoring-0.6.7.jar:/home/rclegg/c
 
 AWK=gawk
 rm -f $OUTPUT
-for i in  50.0 25.0 10.0 5.0 2.5; do
-    for j in `seq 3`; do
-    echo -n $i " " >> $OUTPUT
-    sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
-    sed -e 's/xxx/'$i'/g' $PIN > $POUT
-    java -cp $CPVAR usr.globalcontroller.GlobalController $CONTROL  > out
-    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
-    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
-  done
-done
 POLICY=Pressure
 OUTPUT=pressure_testbed_noPA
 for i in  50.0 25.0 10.0 5.0 2.5 ; do
@@ -46,3 +36,14 @@ for i in 50.0 25.0 10.0 5.0 2.5 ; do
     tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
   done
 done
+for i in  50.0 25.0 10.0 5.0 2.5; do
+    for j in `seq 3`; do
+    echo -n $i " " >> $OUTPUT
+    sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
+    sed -e 's/xxx/'$i'/g' $PIN > $POUT
+    java -cp $CPVAR usr.globalcontroller.GlobalController $CONTROL  > out
+    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+  done
+done
+
