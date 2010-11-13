@@ -87,6 +87,10 @@ public class ProbabilisticEventEngine implements EventEngine {
         //Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
         e1= new SimEvent(SimEvent.EVENT_START_ROUTER, now+time, null);
         s.addEvent(e1);
+        if (g.getRouterList().indexOf(routerId) == -1) {
+            //System.err.println("Router did not start -- adding no links");
+            return;
+        }
         // Schedule links
         int noLinks= linkCreateDist_.getIntVariate();
         ArrayList <Integer>nodes= new ArrayList<Integer>(g.getRouterList());

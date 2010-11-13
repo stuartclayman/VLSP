@@ -414,11 +414,15 @@ public class GlobalController implements ComponentController {
         registerRouter(rId);
         APController_.addNode(time, rId);
         if (!options_.isSimulation()) {
-            startVirtualRouter(maxRouterId_);
+            //System.err.println("Trying to start");
+            if (startVirtualRouter(maxRouterId_) == false) {
+              //  System.err.println("Did not start");
+                unregisterRouter(rId);
+            }
         }
     }
     
-    private void startVirtualRouter(int id) 
+    private boolean startVirtualRouter(int id) 
     {
         // Find least used local controller
 
@@ -439,11 +443,11 @@ public class GlobalController implements ComponentController {
                 leastUsed= lc;
             }
         }
-        if (minUse > 1.0) {
+        if (minUse >= 1.0) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + 
               "Could not start new router on " + leastUsed+ " too many routers");
-            bailOut();
-            return;
+            //System.err.println("Too many routers");
+            return false;
         }
         leastUsed.addRouter();  // Increment count
         LocalControllerInteractor lci= interactorMap_.get(leastUsed);
@@ -452,19 +456,21 @@ public class GlobalController implements ComponentController {
         int MAX_TRIES= 5;
         for (int i= 0; i < MAX_TRIES; i++) {
             try {
-                if (tryRouterStart(id, leastUsed, lci)) 
-                    return;
+                if (tryRouterStart(id, leastUsed, lci)) { 
+                    //System.err.println("Started");
+                    return true;
+                }
             } catch (IOException e) {
                  Logger.getLogger("log").logln(USR.ERROR, leadin() + 
               "Could not start new router on " + leastUsed+ " out of ports ");
-                bailOut();
-                return;
+                //System.err.println("Out of ports");
+                return false;
             }   
         }
         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not start new router on " 
               + leastUsed + " after "+MAX_TRIES+" tries.");
-        bailOut();
-        return;
+        //System.err.println("Could not start");
+        return false;
     }
     
     /** Make one attempt to start a router */

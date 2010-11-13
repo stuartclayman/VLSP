@@ -42,6 +42,7 @@ public class LocalControllerInfo extends LocalHostInfo {
     
     public double getUsage() {
         double usage= (double)currRouters_/maxRouters_;
+     //   System.err.println("Port "+getPort()+ " R "+currRouters_+" max "+maxRouters_);
         return usage;
     }
     
