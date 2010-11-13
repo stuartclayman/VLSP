@@ -13,7 +13,7 @@ AWK=gawk
 rm -f $OUTPUT
 POLICY=Pressure
 OUTPUT=pressure_testbed_noPA
-for i in  50.0 25.0 10.0 5.0 2.5 ; do
+for i in  7.5 10.0 12.5 15.0 17.5 20.0 22.5 25.0 ; do
     for j in `seq 3`; do
     echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
@@ -26,7 +26,7 @@ done
 POLICY=HotSpot
 OUTPUT=hotspot_testbed_noPA
 rm -f $OUTPUT
-for i in 50.0 25.0 10.0 5.0 2.5 ; do
+for i in  7.5 10.0 12.5 15.0 17.5 20.0 22.5 25.0 ; do
     for j in `seq 3`; do
     echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
@@ -36,7 +36,7 @@ for i in 50.0 25.0 10.0 5.0 2.5 ; do
     tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
   done
 done
-for i in  50.0 25.0 10.0 5.0 2.5; do
+for i in   7.5 10.0 12.5 15.0 17.5 20.0 22.5 25.0; do
     for j in `seq 3`; do
     echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT

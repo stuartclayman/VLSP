@@ -120,13 +120,13 @@ public class LifeDistributionTest {
         e.sortDeaths();
         e.updateKMEstimate(endTime);
         e.fitTail();
-        double startx= 1.0;
+        double startx= 1000.0;
         double xmult= Math.pow(maxL*10.0/startx,1.0/noPoints);
         double dx= startx;
         for (i= 1; i < noPoints; i++) {
             
             int x= (int)dx;
-            System.out.println(x+" "+e.getKMProb(x)+" "+ 
+            System.out.println(x/1000.0+" "+e.getKMProb(x)+" "+ 
                 e.getKMTailProb(x)+" "+(1.0 - dist.getCumulativeDistribution((double)x/1000)));
             dx*= xmult;
         }

@@ -3,19 +3,19 @@
             <ProbElement>
                  <Type>Exponential</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>5.0</Parameter>
+                 <Parameter>10.0</Parameter>
             </ProbElement>
       </NodeBirthDist>
       <NodeDeathDist>
             <ProbElement>
                  <Type>Exponential</Type>
-                 <Weight>0.5</Weight>
+                 <Weight>0.7</Weight>
                  <Parameter>60</Parameter>
             </ProbElement>
             <ProbElement>
                  <Type>LogNormal</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>4.0</Parameter>
+                 <Parameter>7.0</Parameter>
                  <Parameter>1.5</Parameter>
             </ProbElement>
 
