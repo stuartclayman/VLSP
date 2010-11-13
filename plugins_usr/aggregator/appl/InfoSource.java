@@ -390,6 +390,9 @@ public class InfoSource implements Application {
             dataIndex.close();
 	} catch (TimeIndexException tie) {
 	    tie.printStackTrace();
+	     synchronized (this) {
+            notifyAll();
+        }
 	    return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
 	}
 
