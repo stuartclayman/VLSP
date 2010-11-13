@@ -482,7 +482,8 @@ public class GlobalController implements ComponentController {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerName);
         }
         catch (MCRPException e) { 
-           // Failed to start
+           // Failed to start#
+           Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not create router " + routerName);
            if (port != 0) 
               pp.freePorts(port,port+1);  // Free ports but different ones will be tried next time
            return false;
