@@ -161,8 +161,9 @@ public class ApplicationManager {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "shutdown ");
 
         Collection<ApplicationHandle> apps = new java.util.LinkedList<ApplicationHandle>(appMap.values());
-
+        
         for (ApplicationHandle appH : apps) {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Attempting to terminate "+appH); 
             terminate(appH.getName());
         }
 

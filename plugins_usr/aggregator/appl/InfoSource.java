@@ -61,6 +61,7 @@ public class InfoSource implements Application {
 
     // initial delay
     int initialDelay = 0;
+    boolean closing_= false;
 
     /*
      * The Time Index that holds the sent data
@@ -380,6 +381,7 @@ public class InfoSource implements Application {
      * Stop
      */
     public ApplicationResponse stop() {
+        closing_= true;
 	dataSource.removeProbe(probe);
 
         dataSource.disconnect();
@@ -409,21 +411,22 @@ public class InfoSource implements Application {
             Thread.sleep(getInitialDelay() * 1000);
         } catch (InterruptedException ie) {
         }
-
+        
         //Logger.getLogger("log").logln(USR.STDOUT, "TURN ON Probe: " + probe.getName());
         dataSource.turnOnProbe(probe);
 
         // A DataSource already runs in itws own thread
         // so this one can wait and do nothing.
-        try {
-            synchronized (this) {
-                wait();
+        if (!closing_) {
+            try {
+                synchronized (this) {
+                    wait();
+                }
+            } catch (InterruptedException ie) {
             }
-        } catch (InterruptedException ie) {
         }
-
         // Logger.getLogger("log").logln(USR.STDOUT, "TURN OFF Probe: " + probe.getName());
-	dataSource.turnOffProbe(probe);
+	  dataSource.turnOffProbe(probe);
     }
 
 
