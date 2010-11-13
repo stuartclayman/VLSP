@@ -11,7 +11,7 @@ CPVAR=/home/rclegg/code/userspacerouter/libs/monitoring-0.6.7.jar:/home/rclegg/c
 
 AWK=gawk
 rm -f $OUTPUT
-for i in  5.0 10.0 20.0 50.0; do
+for i in  10.0 20.0 30.0 40.0 50.0; do
     for j in `seq 3`; do
     echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
@@ -23,7 +23,7 @@ for i in  5.0 10.0 20.0 50.0; do
 done
 POLICY=Pressure
 OUTPUT=pressure_testbed_noPA
-for i in  5.0 10.0 20.0 50.0 ; do
+for i in  10.0 20.0 30.0 40.0 50.0 ; do
     for j in `seq 3`; do
     echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
@@ -36,7 +36,7 @@ done
 POLICY=HotSpot
 OUTPUT=hotspot_testbed_noPA
 rm -f $OUTPUT
-for i in  5.0 10.0 20.0 50.0 ; do
+for i in 10.0 20.0 30.0 40.0 50.0 ; do
     for j in `seq 3`; do
     echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
