@@ -14,7 +14,7 @@ AWK=gawk
 POLICY=Pressure
 OUTPUT=pressure_testbed_noPA
 rm -f $OUTPUT
-SCHEDULE="5.0 10.0 15.0 20.0 25.0"
+SCHEDULE="10.0 15.0 20.0 25.0"
 
 
 for i in $SCHEDULE; do
