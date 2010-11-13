@@ -108,10 +108,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
 
     /**
-     * Stop the RouterController.
+     * Stop the RouterFabric.
      */
     public boolean stop() {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router fabric stop");
 
         // stop my own thread
         //Logger.getLogger("log").logln(USR.ERROR, "Run set to false");

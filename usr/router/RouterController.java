@@ -254,6 +254,12 @@ public class RouterController implements ComponentController, Runnable {
 
         // stop applications
         stopApplications();
+        try{
+  
+            Thread.currentThread().sleep(1000);
+        }
+          catch(InterruptedException ie){
+        }
 
         // stop the management console listener
         boolean stoppedL = management.stop();
@@ -274,21 +280,6 @@ public class RouterController implements ComponentController, Runnable {
         }*/
 
         return stoppedL && stoppedC;
-    }
-
-
-
-    /**
-     * Shutdown the Router.
-     */
-    public void shutDown() {
-        // We have to stop the ManagementConsole and the RouterConnections
-        // The we have to wait for this thread to terminate
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Shutdown");
-
-        // stop other ManagementConsole and RouterConnections
-        router.stop();
-
     }
 
 
@@ -338,9 +329,7 @@ public class RouterController implements ComponentController, Runnable {
                    
                     
                 }  else if (value.startsWith("SHUT_DOWN")) {
-                    shutDown= true;
-                    shutDown();
-                   
+                    break;
                 }
                 
                 else {
@@ -352,12 +341,8 @@ public class RouterController implements ComponentController, Runnable {
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "BlockingQueue: interrupt " + ie);
             }
         }
-        if (shutDown) {
-            // shutdown Thread pool
-            pool.shutdown();
-            
-        }
-
+        pool.shutdown();
+        router.stop();
     }
 
    

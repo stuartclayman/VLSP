@@ -885,7 +885,9 @@ public class GlobalController implements ComponentController {
     }  
       
     void shutDown() {
+        simulationRunning_= false;
         if (isActive) {
+              
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "SHUTDOWN CALLED!");
             if (!options_.isSimulation()) {
 
@@ -1486,6 +1488,8 @@ public class GlobalController implements ComponentController {
     public void setAP(int gid, int AP) 
     {
          //System.out.println("setAP called");
+         if (!simulationRunning_)
+            return;
          Logger.getLogger("log").logln(USR.STDOUT,leadin()+" router "+gid+
             " now has access point "+AP);
         if (options_.isSimulation())
