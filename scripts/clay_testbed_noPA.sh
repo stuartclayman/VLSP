@@ -10,9 +10,10 @@ CPVAR=/home/rclegg/code/userspacerouter/libs/monitoring-0.6.7.jar:/home/rclegg/c
 
 
 AWK=gawk
-rm -f $OUTPUT
+
 POLICY=Pressure
 OUTPUT=pressure_testbed_noPA
+rm -f $OUTPUT
 SCHEDULE="5.0 10.0 15.0 20.0 25.0"
 
 
