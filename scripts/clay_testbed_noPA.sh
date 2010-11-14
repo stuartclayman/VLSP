@@ -19,7 +19,7 @@ SCHEDULE="10.0 15.0 20.0 25.0"
 
 for i in $SCHEDULE; do
     for j in `seq 3`; do
-    echo -n $i " " $j >> $OUTPUT
+    echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
     sed -e 's/xxx/'$i'/g' $PIN > $POUT
     java -cp $CPVAR usr.globalcontroller.GlobalController $CONTROL  > out
