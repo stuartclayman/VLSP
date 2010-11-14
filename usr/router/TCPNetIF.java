@@ -759,7 +759,7 @@ public class TCPNetIF implements NetIF , Runnable {
                 try {
                     if (queue.size() > 0) {
                         // wait for queue to drain
-                        Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF.InboundThread: wait for queue to drain");
+                        Logger.getLogger("log").logln(USR.STDOUT,leadin()+ "TCPNetIF.InboundThread: wait for queue to drain");
                         return true;
                     } else {
                         return false;

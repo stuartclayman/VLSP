@@ -81,6 +81,7 @@ public class ProcessWrapper {
     public void stop() {
         try {
             // disconnect the process
+            // System.err.println("STOPPING "+name);
             process.getOutputStream().close();
             process.getInputStream().close();
             process.getErrorStream().close();
@@ -90,7 +91,7 @@ public class ProcessWrapper {
             eListener.stop();
 
             // now splat it
-            //process.destroy();
+           // process.destroy();
 
         } catch (IOException ioe) {
         }

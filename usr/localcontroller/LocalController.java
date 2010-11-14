@@ -290,6 +290,7 @@ public class LocalController implements ComponentController {
         } else {
             // we connected
             BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,port1);
+            br.setName(routerName);
             routers_.add(br);
 
             // tell the router its new name and config if available
@@ -395,8 +396,14 @@ public class LocalController implements ComponentController {
             return false;
         }
         BasicRouterInfo br= routers_.get(i);
+        String name=br.getName();
         routerMap_.remove(br.getId());
         routers_.remove(i);
+        ProcessWrapper p= childProcessWrappers_.get(name);
+        //System.err.println("PRocess wrapper "+p+" name "+name);
+        p.stop();
+        //System.err.println(p.getName());
+        childProcessWrappers_.remove(name);
         return true;    
     }
     

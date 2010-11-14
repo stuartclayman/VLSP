@@ -20,6 +20,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     // the port this router is listening on
     int port;
     boolean theEnd= false;
+    boolean waitFor_= false;
     // A Server socket
     ServerSocketChannel channel = null;
     ServerSocket serverSocket = null;
@@ -282,14 +283,15 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void waitFor() {
-        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "waitFor");
-        
-        try {
-            synchronized(this) {
-              setTheEnd();
-              wait();
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "waitFor");
+        while (!waitFor_) {
+            try {
+                synchronized(this) {
+                  setTheEnd();
+                  wait();
+                }
+            } catch (InterruptedException ie) {
             }
-        } catch (InterruptedException ie) {
         }
     }
     
@@ -297,7 +299,8 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void theEnd() {
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "theEnd");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "theEnd");
+        waitFor_= true;
         while (!ended()) {
             try {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
