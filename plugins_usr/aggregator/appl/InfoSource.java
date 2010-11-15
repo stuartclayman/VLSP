@@ -61,7 +61,11 @@ public class InfoSource implements Application {
 
     // initial delay
     int initialDelay = 0;
+
+    boolean inInitialDelay = false;
+
     boolean closing_= false;
+
 
     /*
      * The Time Index that holds the sent data
@@ -382,39 +386,51 @@ public class InfoSource implements Application {
      */
     public ApplicationResponse stop() {
         closing_= true;
-	dataSource.removeProbe(probe);
 
+        // we might stop while the Application is in the inInitialDelay stage
+        if (inInitialDelay) {
+            // so interrupt the sleep
+            Thread.currentThread().interrupt();
+       }
+            
+        dataSource.removeProbe(probe);
+        
         dataSource.disconnect();
 
         try {
             dataIndex.close();
-	} catch (TimeIndexException tie) {
-	    tie.printStackTrace();
-	     synchronized (this) {
-            notifyAll();
+        } catch (TimeIndexException tie) {
+            tie.printStackTrace();
+            synchronized (this) {
+                notifyAll();
+            }
+            return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
         }
-	    return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
-	}
-
 
         synchronized (this) {
             notifyAll();
         }
 
         return new ApplicationResponse(true, "");
-
     }
 
     /**
      * Run
      */
     public void run() {
+        // we might stop while the Application is in the 
+        // initial delay stage, so we have to label this situation
+        inInitialDelay = true;
+
         try {
             //Logger.getLogger("log").logln(USR.STDOUT, "SLEEP  " + getInitialDelay() + " seconds");
             Thread.sleep(getInitialDelay() * 1000);
         } catch (InterruptedException ie) {
+            return;
         }
-        
+
+        inInitialDelay = false;
+
         //Logger.getLogger("log").logln(USR.STDOUT, "TURN ON Probe: " + probe.getName());
         dataSource.turnOnProbe(probe);
 
@@ -429,7 +445,7 @@ public class InfoSource implements Application {
             }
         }
         // Logger.getLogger("log").logln(USR.STDOUT, "TURN OFF Probe: " + probe.getName());
-	  dataSource.turnOffProbe(probe);
+        // dataSource.turnOffProbe(probe);
     }
 
 
