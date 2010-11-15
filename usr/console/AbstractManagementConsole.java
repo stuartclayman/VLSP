@@ -271,50 +271,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     }
 
 
-    /**
-     * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
-     */
-    private void waitFor() {
-        
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "waitFor");
-        while (!waitFor_) {
-          try {
-                synchronized(this) {
-                  setTheEnd();
-                  wait();
-                }
-            } catch (InterruptedException ie) {
-          }
-        }
-        
-    }
-    
-    /**
-     * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
-     */
-    private void theEnd() {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "theEnd");
-        waitFor_= true;
-        while (!ended()) {
-            try {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
-                Thread.sleep(100);
-            } catch (Exception e) {
-            
-            }
-        }
-        synchronized(this) {
-            notify();
-        }
-    }
-
-    synchronized void setTheEnd() {
-        theEnd= true;
-    }
-
-    synchronized boolean ended() {
-      return theEnd;  
-    }
+   
 
   
 
