@@ -918,7 +918,7 @@ public class GlobalController implements ComponentController {
                 //ThreadTools.findAllThreads("GC post checkMessages:");
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Stopping console");
-                console_.stop(false);
+                console_.stop();
 
                 //ThreadTools.findAllThreads("GC post stop console:");
             }
@@ -943,8 +943,8 @@ public class GlobalController implements ComponentController {
         int type= o.getType();
        
         File f;
-        FileOutputStream s;
-        PrintStream p;
+        FileOutputStream s= null;
+        PrintStream p= null;
         try {
             f= new File(o.getFileName());
             s = new FileOutputStream(f,true);
@@ -972,7 +972,12 @@ public class GlobalController implements ComponentController {
                 time+o.getTime(),o);
             scheduler_.addEvent(e);
         }
+        p.close();
+        try {
+            s.close();
+        } catch (java.io.IOException ex) {
         
+        }
     }
     
     /** Output a network */
@@ -1062,8 +1067,8 @@ public class GlobalController implements ComponentController {
             return;
         //System.err.println("Enough"+routerStats_);
         File f;
-        FileOutputStream s;
-        PrintStream p;            
+        FileOutputStream s=null;
+        PrintStream p=null;            
         for (int i= 0; i < trafficOutputRequests_.size(); i++) {
             OutputType o = trafficOutputRequests_.get(i);
             try {
@@ -1083,6 +1088,12 @@ public class GlobalController implements ComponentController {
         statsCount_= 0;
         routerStats_= "";
     //    System.err.println("Finished here");
+        p.close();
+        try {
+            s.close();
+        } catch (java.io.IOException ex) {
+          
+        }
     }
 
     synchronized  void outputTraffic (OutputType o, long t, PrintStream p) {

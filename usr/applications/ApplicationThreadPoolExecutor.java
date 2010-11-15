@@ -37,7 +37,7 @@ class ApplicationThreadPoolExecutor extends ThreadPoolExecutor {
         super.beforeExecute(t, r);
 
         // make sure each App is a daemon thread
-        t.setDaemon(true);
+        //t.setDaemon(true);
 
         ApplicationHandle handle = (ApplicationHandle)r;
         Application app = handle.getApplication();

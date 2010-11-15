@@ -254,32 +254,33 @@ public class RouterController implements ComponentController, Runnable {
 
         // stop applications
         stopApplications();
-        try{
-  
-            Thread.currentThread().sleep(1000);
-        }
-          catch(InterruptedException ie){
-        }
+        
 
         // stop the management console listener
-        boolean stoppedL = management.stop(true);
-
+        //System.err.println("Management stop");
+        boolean stoppedL = management.stop();
+        //System.err.println("Connection stop");
         // stop the router to router connections
         boolean stoppedC = connections.stop();
 
         // stop my own thread
         running = false;
         
-  /*      myThread.interrupt();
+        myThread.interrupt();
 
         // wait for myself
         try {
             myThread.join();
         } catch (InterruptedException ie) {
             // Logger.getLogger("log").logln(USR.ERROR, "RouterController: stop - InterruptedException for myThread join on " + myThread);
-        }*/
+        }
 
         return stoppedL && stoppedC;
+    }
+
+    /** Shut down the router -- pass the message up to the router object */
+    public void shutDown() {
+        router.stop();
     }
 
 
@@ -327,11 +328,7 @@ public class RouterController implements ComponentController, Runnable {
                     // do not decrease connectionCount, it MUST only increase
                     pool.execute(new EndLink(this,nextRequest));
                    
-                    
-                }  else if (value.startsWith("SHUT_DOWN")) {
-                    break;
                 }
-                
                 else {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown request " + nextRequest);
                 }
@@ -341,8 +338,8 @@ public class RouterController implements ComponentController, Runnable {
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "BlockingQueue: interrupt " + ie);
             }
         }
+       // System.err.println("Pool stop");
         pool.shutdown();
-        router.stop();
     }
 
    
@@ -537,16 +534,21 @@ public class RouterController implements ComponentController, Runnable {
         if (monGenName_ != null) { // stop previous monitoring generator
             appStop(monGenName_);
         }
-        ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid);
-        monGenName_= resp.getMessage();
-        System.out.println(leadin()+" now has aggregation point "+ap);
+        // If this is becoming an AP then start an AP
+        // If this WAS an AP and is no longer then stop an AP
         if (gid == ap && ap_ != ap) {
             startAP(ap);
         } else if (ap_ == gid && ap_ != ap) {
             stopAP();
         }
         ap_= ap;
+        
+        // Now start an info source pointing at the new AP.
+        ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
+            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid);
+        monGenName_= resp.getMessage();
+        System.out.println(leadin()+" now has aggregation point "+ap);
+        
         return true;
     }
      

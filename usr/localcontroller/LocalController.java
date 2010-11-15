@@ -161,7 +161,7 @@ public class LocalController implements ComponentController {
 
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
-        console_.stop(false);
+        console_.stop();
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Pausing.");
 

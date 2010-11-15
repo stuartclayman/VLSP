@@ -19,8 +19,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
     // the port this router is listening on
     int port;
-    volatile boolean theEnd= false;
-    volatile boolean waitFor_= false;
+
     // are we running
     volatile boolean running = false;
     
@@ -164,7 +163,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     /**
      * Stop the listener -- if threaded is true then we want to wait for the run method to exit first
      */
-    public boolean stop(boolean threaded) {
+    public boolean stop() {
         boolean cleardown= true;
         try {
             running = false;
@@ -182,27 +181,12 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+" failure in stop method");
         }
 
-            /* join too dangerous
-            // wait for the thread to end
-            // wait for myself
-            try {
-                myThread.join();
-            } catch (InterruptedException ie) {
-                // Logger.getLogger("log").logln(USR.ERROR, "RouterController: stop - InterruptedException for myThread join on " + myThread);
-            }
-            */
-
-            // wait for the thread to end
-        if (threaded)
-            waitFor();
-        else {
-            setTheEnd();
+        try {
+             myThread.join();
+        } catch (InterruptedException ie) {
+             Logger.getLogger("log").logln(USR.ERROR, "RouterController: stop - InterruptedException for myThread join on " + myThread);
         }
-
-
-        return cleardown;
-
-        
+        return cleardown;      
     }
 
     /**
@@ -274,7 +258,6 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         // Logger.getLogger("log").logln(USR.STDOUT, leadin() + " End of thread " +  Thread.currentThread());
         // notify we have reached the end of this thread
       //  System.err.println("End of thread");
-        theEnd();
         
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "end");       
 

@@ -35,6 +35,9 @@ public class Router {
     // Is the router active
     boolean isActive = false;
 
+    // Stream for output
+    FileOutputStream outputStream_= null;
+  
     /**
      * Construct a Router listening on a specified port for the
      * management console and on port+1 for the Router to Router 
@@ -158,7 +161,12 @@ public class Router {
             fabric.stop();
 
             isActive = false;
-
+            try {
+                if (outputStream_ != null) {
+                    outputStream_.close();
+                }
+            } catch (java.io.IOException ex) {
+            }
             return true;
         } else {
             return false;
@@ -350,8 +358,8 @@ public class Router {
             }
             File output= new File(fileName);
             try {
-                FileOutputStream fos = new FileOutputStream(output);
-                PrintWriter pw = new PrintWriter(fos,true);
+                outputStream_ = new FileOutputStream(output);
+                PrintWriter pw = new PrintWriter(outputStream_,true);
                 logger.removeOutput(System.out);
                 logger.addOutput(pw, new BitMask(USR.STDOUT));
             } catch (Exception e) {
