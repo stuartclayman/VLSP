@@ -284,15 +284,14 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      */
     private void waitFor() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "waitFor");
-        while (!waitFor_) {
-            try {
+        try {
                 synchronized(this) {
                   setTheEnd();
                   wait();
                 }
             } catch (InterruptedException ie) {
-            }
         }
+        
     }
     
     /**
