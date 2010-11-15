@@ -19,8 +19,11 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
     // the port this router is listening on
     int port;
-    boolean theEnd= false;
-    boolean waitFor_= false;
+    volatile boolean theEnd= false;
+    volatile boolean waitFor_= false;
+    // are we running
+    volatile boolean running = false;
+    
     // A Server socket
     ServerSocketChannel channel = null;
     ServerSocket serverSocket = null;
@@ -47,8 +50,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     // The Thread
     Thread myThread;
 
-    // are we running
-    boolean running = false;
+    
 
     // The Finite State Machine
     FSMState fsm;
@@ -160,9 +162,9 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     }
     
     /**
-     * Stop the listener.
+     * Stop the listener -- if threaded is true then we want to wait for the run method to exit first
      */
-    public boolean stop() {
+    public boolean stop(boolean threaded) {
         boolean cleardown= true;
         try {
             running = false;
@@ -191,7 +193,11 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             */
 
             // wait for the thread to end
-        waitFor();
+        if (threaded)
+            waitFor();
+        else {
+            setTheEnd();
+        }
 
 
         return cleardown;
@@ -209,8 +215,9 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                 fsm = FSMState.SELECTING;
 
                 // select() on all channels
+              //  System.err.println("Enter select");
                 int num = selector.select();
-
+               // System.err.println("Selected");
                 // did select() return with no values ?
                 if (num == 0) {
                     // go again
@@ -221,6 +228,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                     Set<SelectionKey> keys = selector.selectedKeys();
 
                     for (SelectionKey key : keys) {
+                       // System.err.println("Selecting "+key);
                         
                         if ((key.readyOps() & SelectionKey.OP_ACCEPT) == SelectionKey.OP_ACCEPT) {
                             // do we have an accept
@@ -237,7 +245,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
                         } else if ((key.readyOps() & SelectionKey.OP_READ) == SelectionKey.OP_READ) {
                             // do we have a read
-
+                            //  System.err.println("Processing "+key);
                             // FSM
                             fsm = FSMState.PROCESSING;
 
@@ -265,6 +273,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
         // Logger.getLogger("log").logln(USR.STDOUT, leadin() + " End of thread " +  Thread.currentThread());
         // notify we have reached the end of this thread
+      //  System.err.println("End of thread");
         theEnd();
         
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "end");       
@@ -283,13 +292,16 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void waitFor() {
+        
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "waitFor");
-        try {
+        while (!waitFor_) {
+          try {
                 synchronized(this) {
                   setTheEnd();
                   wait();
                 }
             } catch (InterruptedException ie) {
+          }
         }
         
     }

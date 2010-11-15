@@ -262,7 +262,7 @@ public class RouterController implements ComponentController, Runnable {
         }
 
         // stop the management console listener
-        boolean stoppedL = management.stop();
+        boolean stoppedL = management.stop(true);
 
         // stop the router to router connections
         boolean stoppedC = connections.stop();

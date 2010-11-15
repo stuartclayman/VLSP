@@ -157,20 +157,19 @@ public class LocalController implements ComponentController {
             
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot exit from global interactor");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-            System.exit(-1);
         }
 
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
-        console_.stop();
+        console_.stop(false);
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Pausing.");
 
         try {
             Thread.sleep(10);
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+ e.getMessage());
-            System.exit(-1);
+           // Logger.getLogger("log").logln(USR.ERROR, leadin()+ e.getMessage());
+            
         }
 
 

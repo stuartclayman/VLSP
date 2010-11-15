@@ -24,7 +24,7 @@ public interface ManagementConsole extends Runnable {
     /**
      * Stop the ManagementConsole.
      */
-    public boolean stop();
+    public boolean stop(boolean threaded);
 
     /**
      * Construct a ManagementConsole, given a specific port.
