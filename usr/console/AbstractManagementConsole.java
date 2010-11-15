@@ -175,14 +175,16 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             fsm = FSMState.STOP;
 
             // interrupt any waits
-            
-            myThread.interrupt();
+            if (myThread != null) 
+                myThread.interrupt();
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+" failure in stop method");
         }
 
         try {
-             myThread.join();
+             if (myThread != null) {
+                 myThread.join();
+             }
         } catch (InterruptedException ie) {
              Logger.getLogger("log").logln(USR.STDOUT, "RouterController: stop - InterruptedException for myThread join on " + myThread);
         }

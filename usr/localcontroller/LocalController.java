@@ -221,8 +221,8 @@ public class LocalController implements ComponentController {
 
         String routerName = "Router-" + routerId;
 
-        Process child;
-        ProcessWrapper pw;
+        Process child= null;
+        ProcessWrapper pw= null;
 
         String [] cmd= new String[7];
         cmd[0] = "/usr/bin/java";
@@ -238,15 +238,19 @@ public class LocalController implements ComponentController {
 
             child = new ProcessBuilder(cmd).start();
             pw = new ProcessWrapper(child, routerName);
-            childProcessWrappers_.put(routerName, pw);
+            
 
         } catch (java.io.IOException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute command "+ Arrays.asList(cmd));
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+            if (child != null) {
+                child= null;
+            }
+            pw.stop();
             //System.exit(-1);
             return null;
         }
-
+        childProcessWrappers_.put(routerName, pw);
         /// In JVM Router
         ///Router router= new Router(maxPort_, "Router-" + routerId);
         ///router.start();
@@ -275,7 +279,7 @@ public class LocalController implements ComponentController {
                 routerInteractors_.add(interactor);
                 isOK = true;
                 break;
-            } catch (UnknownHostException uhe) {
+            } catch (UnknownHostException uhe) { // Try again
             } catch (IOException e) {
             }
         }
@@ -285,29 +289,64 @@ public class LocalController implements ComponentController {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to connect to Router on port " + port1);
             // stop process
             pw.stop();
+            child= null;
+            try {
+                interactor.shutDown();
+            } catch (IOException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "IOException connecting to Router on port " + port1);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
+            }catch (MCRPException e2) {
+            }
+            
             return null;
-        } else {
-            // we connected
-            BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,port1);
+        } 
+        BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,port1);
             br.setName(routerName);
             routers_.add(br);
 
             // tell the router its new name and config if available
-            try {
-                interactor.setName(routerName);
-                interactor.setRouterAddress(new GIDAddress(routerId));
+        try {
+            interactor.setName(routerName);
+            interactor.setRouterAddress(new GIDAddress(routerId));
 
-                if (routerConfigString_ != "") {
-                    interactor.setConfigString(routerConfigString_);
-                }
-            } catch (IOException ioexc) {
-                return null;
-            } catch (MCRPException mcrpe) {
-                return null;
+            if (routerConfigString_ != "") {
+                interactor.setConfigString(routerConfigString_);
             }
-            routerMap_.put(routerId,br);
-            return routerName;
+        } catch (IOException ioexc) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "IOException setting interactor details for Router on port " + port1);
+            pw.stop();
+            child= null;
+            try {
+                interactor.shutDown();
+            } catch (IOException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "IOException connecting to Router on port " + port1);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
+            }catch (MCRPException e2) {
+            }
+        
+           return null;
+        } catch (MCRPException mcrpe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "MCRP Exception setting interactor details for Router on port " + port1);
+            pw.stop();
+            child= null;
+            try {
+                interactor.shutDown();
+            } catch (IOException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "IOException connecting to Router on port " + port1);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
+            }catch (MCRPException e2) {
+            }
+            return null;
         }
+        routerMap_.put(routerId,br);
+        return routerName;
+       
+
     }
     
     
