@@ -385,6 +385,8 @@ public class InfoSource implements Application {
      * Stop
      */
     public ApplicationResponse stop() {
+        if (closing_)
+            return new ApplicationResponse(false, "Stop already called for InfoSource");
         closing_= true;
 
         // we might stop while the Application is in the inInitialDelay stage
@@ -410,7 +412,6 @@ public class InfoSource implements Application {
         synchronized (this) {
             notifyAll();
         }
-
         return new ApplicationResponse(true, "");
     }
 

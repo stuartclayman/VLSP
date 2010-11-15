@@ -192,7 +192,7 @@ public class AppSocketMux implements NetIF, Runnable {
 
 
             } else {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cant deliver to port " + dstPort);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Can't deliver to port " + dstPort);
                 // so count dropped
                 netStats.increment(NetStats.Stat.InDropped);
             }

@@ -56,6 +56,12 @@ public class RouterController implements ComponentController, Runnable {
     // are we running
     boolean running = false;
     
+    // Id no to make agg point name unique
+    int aggPointId_= 1;
+    
+    // Info source Id to make name unique
+    int infoSourceId_= 1;
+    
     // My name
     String name;
 
@@ -524,39 +530,43 @@ public class RouterController implements ComponentController, Runnable {
     }
 
     /** Set the aggregation point for this router */
-    public boolean setAP(int gid, int ap) 
+    public synchronized void setAP(int gid, int ap) 
     
     { 
-        if (gid != getGlobalID())
-            return false;
         if (ap == ap_)    // No change to AP
-            return true;
+            return;
         if (monGenName_ != null) { // stop previous monitoring generator
+            //System.err.println("APP STOP");
             appStop(monGenName_);
+            try {
+                Thread.sleep(4000);
+           } catch (InterruptedException e) {
+           }
         }
-        // If this is becoming an AP then start an AP
-        // If this WAS an AP and is no longer then stop an AP
-        if (gid == ap && ap_ != ap) {
+
+        if (gid == ap) {  // If this is becoming an AP then start an AP
             startAP(ap);
-        } else if (ap_ == gid && ap_ != ap) {
+        } else if (ap_ == gid) { // If this WAS an AP and is no longer then stop an AP
             stopAP();
         }
         ap_= ap;
         
         // Now start an info source pointing at the new AP.
+        infoSourceId_++;
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid);
+            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+infoSourceId_);
         monGenName_= resp.getMessage();
-        System.out.println(leadin()+" now has aggregation point "+ap);
-        
-        return true;
+        //System.err.println("NEW NAME "+monGenName_);
+        Logger.getLogger("log").logln(USR.STDOUT,leadin()+" now has aggregation point "+ap);
+
     }
      
     /** This node starts as an AP */
     public void startAP(int gid) {
         System.out.println(leadin()+" has become an AP");
+        aggPointId_++;
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.AggPoint -i 0/3000"+
-        " -t 5 -a average -n agg-point-"+gid); 
+        " -t 5 -a average -n agg-point-"+gid+"-"+aggPointId_); 
         apName_= resp.getMessage();
     }
     

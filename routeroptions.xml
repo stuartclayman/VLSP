@@ -14,7 +14,7 @@
         <MinPropAP>0.1</MinPropAP>
     </APManager> 
        <Output>
-	    <FileName>/home/richard/testbedoutput</FileName>
+	    <FileName>/home/richard/tmp/testbedoutput</FileName>
   	  <ExtendedName>true</ExtendedName>
    </Output>
 

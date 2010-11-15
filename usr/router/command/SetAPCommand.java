@@ -42,12 +42,9 @@ public class SetAPCommand extends RouterCommand {
             error ("SET_AP command requires GID and AP GID");
             return false; 
         }
-        if (controller.setAP(GID, AP)) {
-            success(GID+" has set AP to "+AP);
-            return true;
-        }
-        error ("Incorrect GID number "+GID);
-        return false;
+        success(GID+" has set AP to "+AP);
+        controller.setAP(GID, AP);
+        return true;
     }
 
 }
