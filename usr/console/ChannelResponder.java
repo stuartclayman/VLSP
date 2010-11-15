@@ -42,7 +42,8 @@ public abstract class ChannelResponder {
             }
             return true;
         } catch (IOException ioe) {
-            System.err.println("ERROR IN SOCKET CHANNEL "+ioe.getMessage());
+              Logger.getLogger("log").logln(USR.ERROR, 
+              "Channel responder found an error writign to socket channel "+ioe.getMessage());
             return false;
         }
     }
