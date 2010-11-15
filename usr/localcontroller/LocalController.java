@@ -119,11 +119,11 @@ public class LocalController implements ComponentController {
     /** Received shut Down data gram from global */
     public void shutDown() {
 
-        Logger.getLogger("log").logln(USR.STDOUT, "Local controller got shutdown message from global controller.");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Local controller got shutdown message from global controller.");
 
         //ThreadTools.findAllThreads("LC top of shutDown:");
 
-        Logger.getLogger("log").logln(USR.STDOUT, "Stopping all running routers"); 
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Stopping all running routers"); 
         for (int i= 0; i < routers_.size(); i++) {
 
             RouterInteractor interactor = routerInteractors_.get(i);
