@@ -184,7 +184,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         try {
              myThread.join();
         } catch (InterruptedException ie) {
-             Logger.getLogger("log").logln(USR.ERROR, "RouterController: stop - InterruptedException for myThread join on " + myThread);
+             Logger.getLogger("log").logln(USR.STDOUT, "RouterController: stop - InterruptedException for myThread join on " + myThread);
         }
         return cleardown;      
     }
