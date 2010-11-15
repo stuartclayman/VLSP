@@ -307,7 +307,7 @@ public class TCPNetIF implements NetIF , Runnable {
         //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: " + getName() + " -> Close");
 
         if (closed) {
-            //Logger.getLogger("log").logln(USR.ERROR, leadin()+"Aleard closed");
+            //Logger.getLogger("log").logln(USR.ERROR, leadin()+"Already closed");
             return;
         }
 
@@ -335,10 +335,6 @@ public class TCPNetIF implements NetIF , Runnable {
 
         // stop all threads
         stop();
-
-        connection.close();
-
-        closed = true;
     }
 
     /**
@@ -561,15 +557,13 @@ public class TCPNetIF implements NetIF , Runnable {
             try {
                 running = false;
 
-                // stop reader
-                readThread.interrupt();
-
                 boolean doJoin = false;
 
                 // flush OutboundThread
                 doJoin = outboundThread.isFinished();
 
                 if (doJoin) {
+                    //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() outboundThread");
                     outboundThread.join();
                 }
 
@@ -577,6 +571,7 @@ public class TCPNetIF implements NetIF , Runnable {
                 doJoin = inboundThread.isFinished();
 
                 if (doJoin) {
+                    //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() inboundThread");
                     inboundThread.join();
                 }
 
@@ -588,6 +583,13 @@ public class TCPNetIF implements NetIF , Runnable {
 
                 stopTime = System.currentTimeMillis();
 
+                // stop reader
+                readThread.interrupt();
+
+                // these 2 lines were in reallyClose
+                connection.close();
+
+                closed = true;
 
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: Exception in stop() " + e);
@@ -617,7 +619,7 @@ public class TCPNetIF implements NetIF , Runnable {
      * Consturct and send a control message.
      */
     protected boolean controlClose() {
-        // Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: -> controlClose");
+        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: -> controlClose");
         ByteBuffer buffer = ByteBuffer.allocate(1);
         String c= "C";
         buffer.put(c.getBytes());
@@ -626,7 +628,7 @@ public class TCPNetIF implements NetIF , Runnable {
 
 
         try {
-            boolean sent = forwardDatagram(datagram);
+            boolean sent = forwardDatagram(datagram); // WAS connection.sendDatagram(datagram); 
 
             // stats
             netStats.increment(NetStats.Stat.OutPackets);
@@ -742,7 +744,7 @@ public class TCPNetIF implements NetIF , Runnable {
                 } catch (InterruptedException ie) {
                     // jumped out of queue.take()
                     running = false;
-                    // Logger.getLogger("log").logln(USR.STDOUT, "InboundThread: interrupted");
+                    //Logger.getLogger("log").logln(USR.STDOUT, "InboundThread: interrupted");
                     break;
                 }
 
@@ -759,14 +761,14 @@ public class TCPNetIF implements NetIF , Runnable {
                 try {
                     if (queue.size() > 0) {
                         // wait for queue to drain
-                        Logger.getLogger("log").logln(USR.STDOUT,leadin()+ "TCPNetIF.InboundThread: wait for queue to drain");
+                        //Logger.getLogger("log").logln(USR.STDOUT,leadin()+ "TCPNetIF.InboundThread: wait for queue to drain");
                         return true;
                     } else {
                         return false;
                     }
 
                 } catch (Exception e) {
-                    //Logger.getLogger("log").logln(USR.ERROR, "InboundThread: Exception in terminate() " + e);
+                    //Logger.getLogger("log").logln(USR.ERROR, "InboundThread: Exception in isFinished() " + e);
                     return false;
                 }
             } else {
