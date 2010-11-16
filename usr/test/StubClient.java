@@ -5,6 +5,7 @@ import usr.logging.*;
 import usr.logging.*;
 import usr.router.NetIF;
 import usr.router.TCPNetIF;
+import usr.router.NetIFListener;
 import usr.protocol.Protocol;
 import java.io.*;
 import java.net.*;
@@ -12,7 +13,7 @@ import java.util.Scanner;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 
-public class StubClient {
+public class StubClient implements NetIFListener {
     final static int PORT_NUMBER = 4433;
     ConnectionOverTCP connection;
     NetIF netIF;
@@ -28,6 +29,7 @@ public class StubClient {
 
             netIF = new TCPNetIF(src);
             netIF.setAddress(new GIDAddress(1));
+            netIF.setNetIFListener(this);
             netIF.connect();
             
             Logger.getLogger("log").logln(USR.ERROR, "StubClient: Connected to: " + host);
@@ -70,6 +72,33 @@ public class StubClient {
         netIF.close();
     }
 
+    /**
+     * A NetIF is closing.
+     */
+    public boolean netIFClosing(NetIF netIF) {
+        return true;
+    }
+
+    /**
+     * Can accept a Datagram
+     */
+    public boolean canAcceptDatagram(NetIF n) {
+        return true;
+    }
+
+    /**
+     * Can route a Datagram
+     */
+    public boolean canRoute(Datagram d) {
+        return true;
+    }
+
+    /**
+     * A NetIF has a datagram.
+     */
+    public boolean datagramArrived(NetIF netIF, Datagram datagram) {
+        return true;
+    }
 
     public static void main(String[] args) throws IOException {
         int count = 100;
