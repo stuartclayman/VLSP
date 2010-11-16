@@ -140,9 +140,9 @@ public class ApplicationManager {
 
                     Application app = appH.getApplication();
 
-                    app.stop();
-
                     appH.setState(ApplicationHandle.AppState.STOPPED);
+
+                    app.stop();
 
                     appMap.remove(appName);
 

@@ -40,6 +40,11 @@ class ApplicationThreadPoolExecutor extends ThreadPoolExecutor {
         //t.setDaemon(true);
 
         ApplicationHandle handle = (ApplicationHandle)r;
+
+        // set the thread the ApplicationHandle has
+        handle.setThread(t);
+
+        // get the Application object itself
         Application app = handle.getApplication();
 
         // start up sequence
@@ -68,12 +73,19 @@ class ApplicationThreadPoolExecutor extends ThreadPoolExecutor {
 
         if (handle.getState() == ApplicationHandle.AppState.RUNNING) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + handle.getName());
-            app.stop();
-            handle.setState(ApplicationHandle.AppState.STOPPED);
+
+            //app.stop();
+            //handle.setState(ApplicationHandle.AppState.STOPPED);
+
+            manager.terminate(handle.getName());
+
+        } else {
+
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "ALREADY STOPPED");
+
         }
 
 
-        manager.terminate(handle.getName());
     }
 
     String leadin() {

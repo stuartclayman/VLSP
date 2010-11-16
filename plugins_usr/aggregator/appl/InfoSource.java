@@ -459,6 +459,7 @@ public class InfoSource implements Application {
             Thread.sleep(getInitialDelay() * 1000);
         } catch (InterruptedException ie) {
             Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: initial delay interrupted");
+            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: End of run()");
             return;
         }
 
@@ -477,8 +478,8 @@ public class InfoSource implements Application {
             } catch (InterruptedException ie) {
             }
         }
-        // Logger.getLogger("log").logln(USR.STDOUT, "TURN OFF Probe: " + probe.getName());
-        // dataSource.turnOffProbe(probe);
+
+        Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: End of run()");
     }
 
 

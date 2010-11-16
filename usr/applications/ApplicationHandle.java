@@ -14,6 +14,9 @@ public class ApplicationHandle implements Runnable {
     // The app
     Application app;
 
+    // The Thread
+    Thread thread;
+
     // The state
     AppState state;
 
@@ -40,6 +43,21 @@ public class ApplicationHandle implements Runnable {
         return app;
     }
 
+
+    /**
+     * Get the thread
+     */
+    public Thread getThread() {
+        return thread;
+    }
+
+    /**
+     * Set the thread
+     */
+    ApplicationHandle setThread(Thread t) {
+        thread = t;
+        return this;
+    }
 
     /**
      * Get the state
