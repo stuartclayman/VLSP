@@ -538,10 +538,7 @@ public class RouterController implements ComponentController, Runnable {
         if (monGenName_ != null) { // stop previous monitoring generator
             //System.err.println("APP STOP");
             appStop(monGenName_);
-            try {
-                Thread.sleep(4000);
-           } catch (InterruptedException e) {
-           }
+
         }
 
         if (gid == ap) {  // If this is becoming an AP then start an AP
@@ -554,7 +551,7 @@ public class RouterController implements ComponentController, Runnable {
         // Now start an info source pointing at the new AP.
         infoSourceId_++;
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+infoSourceId_);
+            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid);
         monGenName_= resp.getMessage();
         //System.err.println("NEW NAME "+monGenName_);
         Logger.getLogger("log").logln(USR.STDOUT,leadin()+" now has aggregation point "+ap);
@@ -566,7 +563,7 @@ public class RouterController implements ComponentController, Runnable {
         System.out.println(leadin()+" has become an AP");
         aggPointId_++;
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.AggPoint -i 0/3000"+
-        " -t 5 -a average -n agg-point-"+gid+"-"+aggPointId_); 
+        " -t 5 -a average -n agg-point-"+gid); 
         apName_= resp.getMessage();
     }
     
