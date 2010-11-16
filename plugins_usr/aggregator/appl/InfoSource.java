@@ -63,6 +63,7 @@ public class InfoSource implements Application {
     int initialDelay = 0;
 
     boolean inInitialDelay = false;
+    Thread myThread;
 
     boolean closing_= false;
 
@@ -339,10 +340,28 @@ public class InfoSource implements Application {
 	    realName = name+"-log";
             dataIndexPath = new File(collectorPath, realName);
 	    indexProperties.setProperty("indexpath",  dataIndexPath.getPath());
-	    indexProperties.setProperty("name", realName);
 
-	    dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
+            // try and append to an existing index
+            dataIndex = factory.append(indexProperties);
+
+            // if it does not exist
+            if (dataIndex == null) {
+                Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: about to create index: " +  realName);
+
+                // create it
+                indexProperties.setProperty("name", realName);
+
+                dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
+
+                Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: created index: " +  realName);
+
+            } else {
+                dataIndex.activate();
+                Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: appending to: " +  realName);
+            }
+
             dataIndex.setAutoCommit(true);
+
 
 	} catch (TimeIndexException tie) {
 	    tie.printStackTrace();
@@ -352,6 +371,7 @@ public class InfoSource implements Application {
         try {
             Logger.getLogger("log").logln(USR.STDOUT, "InfoSource connect to " + outputDataAddress);
 
+            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: about to setup data source: " +  name);
             DataPlane outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
 
             dataSource = new InfoDataSource(dataIndex);
@@ -374,6 +394,8 @@ public class InfoSource implements Application {
 
             // turn on probe
             dataSource.addProbe(probe);  // this does registerProbe and activateProbe
+            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: setup data source: " +  name);
+
             return new ApplicationResponse(true, "");
         } catch (Exception e) {
             return new ApplicationResponse(false, e.getMessage());
@@ -392,7 +414,8 @@ public class InfoSource implements Application {
         // we might stop while the Application is in the inInitialDelay stage
         if (inInitialDelay) {
             // so interrupt the sleep
-            Thread.currentThread().interrupt();
+            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: about to interrupt initial delay");
+            myThread.interrupt();
        }
             
         dataSource.removeProbe(probe);
@@ -401,18 +424,23 @@ public class InfoSource implements Application {
 
         try {
             dataIndex.close();
-        } catch (TimeIndexException tie) {
-            tie.printStackTrace();
+
             synchronized (this) {
                 notifyAll();
             }
-            return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
-        }
 
-        synchronized (this) {
-            notifyAll();
+            return new ApplicationResponse(true, "");
+
+        } catch (TimeIndexException tie) {
+            tie.printStackTrace();
+
+            synchronized (this) {
+                notifyAll();
+            }
+
+            return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
+
         }
-        return new ApplicationResponse(true, "");
     }
 
     /**
@@ -421,12 +449,14 @@ public class InfoSource implements Application {
     public void run() {
         // we might stop while the Application is in the 
         // initial delay stage, so we have to label this situation
+        myThread = Thread.currentThread();
         inInitialDelay = true;
 
         try {
             //Logger.getLogger("log").logln(USR.STDOUT, "SLEEP  " + getInitialDelay() + " seconds");
             Thread.sleep(getInitialDelay() * 1000);
         } catch (InterruptedException ie) {
+            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: initial delay interrupted");
             return;
         }
 
@@ -635,7 +665,7 @@ public class InfoSource implements Application {
 		dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
                 return result;
 	    } catch (TimeIndexException tie) {
-		Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName());
+		Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName() + " because " + tie.getMessage());
                 return result;
 	    }
 	}
