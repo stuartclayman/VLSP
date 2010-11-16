@@ -21,18 +21,21 @@ public class ApplicationManager {
     Router router;
 
     // A pool of Executors
-    ThreadPoolExecutor pool;
+    //ThreadPoolExecutor pool;
+   //ArrayList <Thread> pool= null;
 
     // A map of all the Applications, name -> ApplicationHandle object
     HashMap<String, ApplicationHandle> appMap;
+    HashMap<String, Thread> threads;
 
     public ApplicationManager() {
         // create an Executor pool 
         // WAS pool = (ThreadPoolExecutor)Executors.newCachedThreadPool();
-        pool =  new ApplicationThreadPoolExecutor(this);
+        //pool =  new ApplicationThreadPoolExecutor(this);
+       //pool = new ArrayList<Thread>();
 
         appMap = new HashMap<String, ApplicationHandle>();
-
+        threads= new HashMap<String, Thread>();
         router = RouterDirectory.getRouter();
     }
 
@@ -76,16 +79,23 @@ public class ApplicationManager {
 
             // otherwise create an ApplicationHandle for the app
             ApplicationHandle handle = new ApplicationHandle(appName, app);
-
+            handle.setState(ApplicationHandle.AppState.RUNNING);
             // now add details to Application list
             appMap.put(appName, handle);
-            
+            ApplicationResponse startR = app.start();
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "pool.execute " + appName);
+             // if start succeeded then go onto run()
+            if (startR.isSuccess()) {
+                 handle.setState(ApplicationHandle.AppState.RUNNING);
+             } else {
+                 handle.setState(ApplicationHandle.AppState.STOPPED);
+                 return startR;
+            }
 
-            // now enter run() of handle
-            pool.execute(handle);
+            Thread t= new Thread(app);
+            t.start();
 
+            threads.put(appName,t);
             // Logger.getLogger("log").logln(USR.ERROR, leadin() + "pool = " + pool.getActiveCount() + "/" + pool.getTaskCount() + "/" + pool.getPoolSize());
 
             return new ApplicationResponse(true, appName);
@@ -139,11 +149,15 @@ public class ApplicationManager {
                     Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
 
                     Application app = appH.getApplication();
-
+                    Thread t= threads.get(appName);
                     appH.setState(ApplicationHandle.AppState.STOPPED);
 
                     app.stop();
-
+                    try {
+                        t.join();
+                    } catch (InterruptedException e) {
+                        
+                    }
                     appMap.remove(appName);
 
                     return new ApplicationResponse(true, "");
@@ -167,8 +181,8 @@ public class ApplicationManager {
             terminate(appH.getName());
         }
 
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "pool shutdown ");
-        pool.shutdown();
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "pool shutdown ");
+        //pool.shutdown();
     }
 
     /**
