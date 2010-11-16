@@ -117,6 +117,9 @@ public class AppSocketMux implements NetIF, Runnable {
         if (running == true) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
+            // stop my own thread
+            running = false;
+
             HashSet<AppSocket> sockets = new HashSet<AppSocket>(socketMap.values());
 
             for (AppSocket s : sockets) {
@@ -125,12 +128,11 @@ public class AppSocketMux implements NetIF, Runnable {
 
             close();
 
-            // stop my own thread
-            running = false;
-            myThread.interrupt();
-            // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached WaitFor");
             // stop InboundThread
             inboundThread.terminate();
+
+            myThread.interrupt();
+            // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached WaitFor");
 
             waitFor();
 
@@ -448,47 +450,49 @@ public class AppSocketMux implements NetIF, Runnable {
      * Sends a Datagram from an AppSocket towards to RouterFabric.
      */
     public void socketSendDatagram(Datagram datagram) throws SocketException, NoRouteToHostException {
-        // check if packet is routable
-        if (!listener.canRoute(datagram)) {
-            // mark as dropped
-            netStats.increment(NetStats.Stat.OutDropped);
+        if (inboundThread.isRunning()) {
+            // check if packet is routable
+            if (!listener.canRoute(datagram)) {
+                // mark as dropped
+                netStats.increment(NetStats.Stat.OutDropped);
 
-            throw new NoRouteToHostException("No route to " + datagram.getDstAddress());
-        }
-
-        // patch up the source address in the Datagram
-        Address srcAddr = controller.getAddress();
-        datagram.setSrcAddress(srcAddr);
-
-        // stats
-        netStats.increment(NetStats.Stat.OutPackets);
-        netStats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
-
-        // do per socket stats
-        int srcPort = datagram.getSrcPort();
-        NetStats stats = socketStats.get(srcPort);
-
-        if (stats != null) {
-            stats.increment(NetStats.Stat.OutPackets);
-            stats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
-        }
-
-        // add a datagram, if there is room
-        try {
-            inboundQueue.put(datagram);  // WAS add()
-            netStats.setValue(NetStats.Stat.OutQueue, inboundQueue.size());
-
-            if (inboundQueue.size() > netStats.getValue(NetStats.Stat.BiggestOutQueue)) {
-                netStats.setValue(NetStats.Stat.BiggestOutQueue, inboundQueue.size());
-                
+                throw new NoRouteToHostException("No route to " + datagram.getDstAddress());
             }
 
+            // patch up the source address in the Datagram
+            Address srcAddr = controller.getAddress();
+            datagram.setSrcAddress(srcAddr);
 
-        } catch (InterruptedException ie) {
-            throw new SocketException("Cannot send to router fabric. Queue full.");
+            // stats
+            netStats.increment(NetStats.Stat.OutPackets);
+            netStats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
+
+            // do per socket stats
+            int srcPort = datagram.getSrcPort();
+            NetStats stats = socketStats.get(srcPort);
+
+            if (stats != null) {
+                stats.increment(NetStats.Stat.OutPackets);
+                stats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
+            }
+
+            // add a datagram, if there is room
+            try {
+                inboundQueue.put(datagram);  // WAS add()
+                netStats.setValue(NetStats.Stat.OutQueue, inboundQueue.size());
+
+                if (inboundQueue.size() > netStats.getValue(NetStats.Stat.BiggestOutQueue)) {
+                    netStats.setValue(NetStats.Stat.BiggestOutQueue, inboundQueue.size());
+                
+                }
+
+
+            } catch (InterruptedException ie) {
+                throw new SocketException("Cannot send to router fabric. Queue full.");
+            }
+
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Outgoing queue size: " + inboundQueue.size());
         }
-
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Outgoing queue size: " + inboundQueue.size());
     }
 
 
@@ -723,7 +727,12 @@ public class AppSocketMux implements NetIF, Runnable {
             }
         }
 
-
+        /**
+         * Is this thread running.
+         */
+        public boolean isRunning() {
+            return running;
+        }
 
         /**
          * Stop the InboundThread

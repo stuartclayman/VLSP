@@ -418,6 +418,8 @@ public class InfoSource implements Application {
             myThread.interrupt();
        }
             
+        dataSource.turnOffProbe(probe);
+
         dataSource.removeProbe(probe);
         
         dataSource.disconnect();
