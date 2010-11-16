@@ -612,7 +612,7 @@ public class AggPoint implements Application {
     /**
      * Start the aggpoint
      */
-    public ApplicationResponse start() {
+    public synchronized ApplicationResponse start() {
         Logger.getLogger("log").logln(USR.STDOUT, "AggPoint: input = " + inputDataAddress);
 
         // set up data plane
@@ -649,7 +649,7 @@ public class AggPoint implements Application {
     /**
      * Stop
      */
-    public ApplicationResponse stop() {
+    public synchronized ApplicationResponse stop() {
         aggPoint.deactivateControl();
 
         synchronized (this) {

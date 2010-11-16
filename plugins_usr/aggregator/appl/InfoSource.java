@@ -328,7 +328,7 @@ public class InfoSource implements Application {
     /**
      * Start
      */
-    public ApplicationResponse start() {
+    public synchronized ApplicationResponse start() {
 	try {
 	    // create a TimeIndexFactory
 	    TimeIndexFactory factory = new TimeIndexFactory();
@@ -406,7 +406,7 @@ public class InfoSource implements Application {
     /**
      * Stop
      */
-    public ApplicationResponse stop() {
+    public synchronized ApplicationResponse stop() {
         if (closing_)
             return new ApplicationResponse(false, "Stop already called for InfoSource");
         closing_= true;
