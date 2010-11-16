@@ -158,8 +158,20 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
     }
     
+    /** shutDown should be called from external threads */
+    public void shutDown() {
+        stop();
+        myThread.interrupt();
+        try {
+            myThread.join();
+        } catch (InterruptedException e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " console shutDown method interrupted.");
+        }
+    }
+    
     /**
-     * Stop the listener -- if threaded is true then we want to wait for the run method to exit first
+     * Stop the listener -- this should be called by shut down commands from within the thread 
+     of the console
      */
     public synchronized boolean stop() {
         if (!running) {
@@ -168,13 +180,13 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         }
         boolean cleardown= true;
        
-            running = false;
+        running = false;
 
             // call Cleardown
-            cleardown= clearDown();
+        cleardown= clearDown();
             //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" exits cleardown");
             // FSM
-            fsm = FSMState.STOP;
+        fsm = FSMState.STOP;
 
             // interrupt any waits
         

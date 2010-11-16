@@ -918,7 +918,7 @@ public class GlobalController implements ComponentController {
                 //ThreadTools.findAllThreads("GC post checkMessages:");
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Stopping console");
-                console_.stop();
+                console_.shutDown();
 
                 //ThreadTools.findAllThreads("GC post stop console:");
             }
