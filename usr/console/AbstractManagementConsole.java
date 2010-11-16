@@ -49,8 +49,6 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     // The Thread
     Thread myThread;
 
-    
-
     // The Finite State Machine
     FSMState fsm;
 
@@ -163,9 +161,13 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     /**
      * Stop the listener -- if threaded is true then we want to wait for the run method to exit first
      */
-    public boolean stop() {
+    public synchronized boolean stop() {
+        if (!running) {
+            System.err.println("CALLED TWICE");
+            return true;
+        }
         boolean cleardown= true;
-        try {
+       
             running = false;
 
             // call Cleardown
@@ -175,19 +177,8 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             fsm = FSMState.STOP;
 
             // interrupt any waits
-            if (myThread != null) 
-                myThread.interrupt();
-        } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" failure in stop method");
-        }
+        
 
-        try {
-             if (myThread != null) {
-                 myThread.join();
-             }
-        } catch (InterruptedException ie) {
-             Logger.getLogger("log").logln(USR.STDOUT, "RouterController: stop - InterruptedException for myThread join on " + myThread);
-        }
         return cleardown;      
     }
 
@@ -256,11 +247,11 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
                 ioe.printStackTrace();
             }
         }
-
-        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + " End of thread " +  Thread.currentThread());
+        
+         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " End of thread " +  Thread.currentThread());
         // notify we have reached the end of this thread
       //  System.err.println("End of thread");
-        
+ 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "end");       
 
     }
@@ -386,6 +377,8 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         SelectionKey key = channelKeys.get(c);
 
         // Remove it from the Selector
+        if (key == null)
+            return;
         key.cancel();
 
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Selector keys = " + selector.keys());
