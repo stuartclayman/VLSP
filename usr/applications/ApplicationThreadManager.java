@@ -61,13 +61,13 @@ class ApplicationThreadManager {
             // no thread for this app, so notihng to wait for
         } else {
             // there is a thread, so do a join
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Waiting for thread "  + threadName);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Waiting for thread "  + threadName);
 
             try {
                 t.join();
             } catch (InterruptedException e) {
             } finally {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "End of "  + threadName);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of "  + threadName);
 
                 // remove the thread from the threads map
                 threads.remove(threadName);
