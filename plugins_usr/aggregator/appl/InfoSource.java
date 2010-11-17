@@ -418,7 +418,9 @@ public class InfoSource implements Application {
             myThread.interrupt();
        }
             
-        dataSource.turnOffProbe(probe);
+        if (dataSource.isProbeOn(probe)) {
+            dataSource.turnOffProbe(probe);
+        }
 
         dataSource.removeProbe(probe);
         
@@ -427,22 +429,20 @@ public class InfoSource implements Application {
         try {
             dataIndex.close();
 
-            synchronized (this) {
-                notifyAll();
-            }
-
             return new ApplicationResponse(true, "");
 
         } catch (TimeIndexException tie) {
             tie.printStackTrace();
 
+            return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
+
+        } finally {
             synchronized (this) {
                 notifyAll();
             }
 
-            return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
-
         }
+
     }
 
     /**
@@ -453,6 +453,11 @@ public class InfoSource implements Application {
         // initial delay stage, so we have to label this situation
         myThread = Thread.currentThread();
         inInitialDelay = true;
+
+        if (closing_) {
+            // stop was called before we got here
+            return;
+        }
 
         try {
             //Logger.getLogger("log").logln(USR.STDOUT, "SLEEP  " + getInitialDelay() + " seconds");

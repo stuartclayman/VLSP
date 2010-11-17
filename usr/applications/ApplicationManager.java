@@ -80,9 +80,9 @@ public class ApplicationManager {
             // try and start the app
             ApplicationResponse startR;
 
-            //synchronized (app) {
+            synchronized (app) {
                 startR = app.start();
-            //}
+            }
 
             // if start succeeded then go onto run()
             if (startR.isSuccess()) {
@@ -159,9 +159,9 @@ public class ApplicationManager {
                     Application app = appH.getApplication();
                     appH.setState(ApplicationHandle.AppState.STOPPED);
 
-                    //synchronized (app) {
+                    synchronized (app) {
                         app.stop();
-                    //}
+                    }
 
 
                     // wait for the thread to actually end
