@@ -11,7 +11,7 @@ CPVAR=/home/rclegg/code/userspacerouter/libs/monitoring-0.6.7.jar:/home/rclegg/c
 
 AWK=gawk
 
-SCHEDULE="2.5 5.0 10.0 25.0 50.0"
+SCHEDULE="50.0 25.0 10.0 5.0"
 
 POLICY=Random
 OUTPUT=random_testbed_noPA
