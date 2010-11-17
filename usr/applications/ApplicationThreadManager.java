@@ -39,7 +39,7 @@ class ApplicationThreadManager {
         // save it in the threads map
         threads.put(threadName, t);
 
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Starting thread "  + threadName);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting thread "  + threadName);
 
         // and start it
         t.start();
