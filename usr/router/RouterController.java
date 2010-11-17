@@ -284,10 +284,11 @@ public class RouterController implements ComponentController, Runnable {
         return stoppedL && stoppedC;
     }
 
-    /** Shut down the router -- pass the message up to the router object */
+    /** Shut down the router from internal message from console -- pass the message up to the router object */
     public void shutDown() {
         router.stop();
     }
+
 
 
     /**

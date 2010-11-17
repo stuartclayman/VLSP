@@ -146,9 +146,9 @@ public class Router {
             return false;
         }
     }
-        
+
     /**
-     * Stop the router
+     * Stop the router --- called from internal threads such as management console
      */
     public boolean stop() {
         if (isActive) {

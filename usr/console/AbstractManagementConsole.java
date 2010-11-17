@@ -158,24 +158,14 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
     }
     
-    /** shutDown should be called from external threads */
-    public void shutDown() {
-        stop();
-        myThread.interrupt();
-        try {
-            myThread.join();
-        } catch (InterruptedException e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " console shutDown method interrupted.");
-        }
-    }
+  
     
     /**
-     * Stop the listener -- this should be called by shut down commands from within the thread 
-     of the console
+     * Stop the console
      */
     public synchronized boolean stop() {
         if (!running) {
-            System.err.println("CALLED TWICE");
+            
             return true;
         }
         boolean cleardown= true;
@@ -188,8 +178,16 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             // FSM
         fsm = FSMState.STOP;
 
-            // interrupt any waits
-        
+        //  Two circumstances are possible here -- it may be this thread is the same thread as run
+        // in which case exit.  Alternatively we may need to wait for the run thread to exit.s
+        if (!Thread.currentThread().getName().equals(myThread.getName())) {
+            myThread.interrupt();
+            try {
+                myThread.join();
+            } catch (InterruptedException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + " console shutDown method interrupted.");
+            }
+        }
 
         return cleardown;      
     }
