@@ -56,12 +56,6 @@ public class RouterController implements ComponentController, Runnable {
     // are we running
     boolean running = false;
     
-    // Id no to make agg point name unique
-    int aggPointId_= 1;
-    
-    // Info source Id to make name unique
-    int infoSourceId_= 1;
-    
     // My name
     String name;
 
@@ -536,6 +530,7 @@ public class RouterController implements ComponentController, Runnable {
     { 
         if (ap == ap_)    // No change to AP
             return;
+
         if (monGenName_ != null) { // stop previous monitoring generator
             //System.err.println("APP STOP");
             appStop(monGenName_);
@@ -550,7 +545,6 @@ public class RouterController implements ComponentController, Runnable {
         ap_= ap;
         
         // Now start an info source pointing at the new AP.
-        infoSourceId_++;
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
             "/3000 -p rt -t 1 -d 3 -n info-source-"+gid);
         monGenName_= resp.getMessage();
@@ -562,7 +556,6 @@ public class RouterController implements ComponentController, Runnable {
     /** This node starts as an AP */
     public void startAP(int gid) {
         System.out.println(leadin()+" has become an AP");
-        aggPointId_++;
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.AggPoint -i 0/3000"+
         " -t 5 -a average -n agg-point-"+gid); 
         apName_= resp.getMessage();
