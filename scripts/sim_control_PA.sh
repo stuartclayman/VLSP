@@ -6,7 +6,7 @@ PIN=scripts/probdummy_PA.xml
 POUT=scripts/probdists.xml
 AWK=gawk
 
-SEQ="2.5 5.0 10.0 25.0 50.0"
+SEQ="0.1 0.25 0.5 1.0 2.5 5.0 10.0 25.0 50.0"
 
 OUTPUT=random_sim_PA
 POLICY=Random

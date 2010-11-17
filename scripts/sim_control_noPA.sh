@@ -6,10 +6,12 @@ PIN=scripts/probdummy_PA.xml
 POUT=scripts/probdists.xml
 AWK=gawk
 
+SEQ="0.1 0.25 0.5 1.0 2.5 5.0 10.0 25.0 50.0"
+
 OUTPUT=random_sim_noPA
 POLICY=Random
 rm -f $OUTPUT
-for i in  0.1 0.2 0.5 1.0 2.0 5.0 10.0 20.0 50.0 100.0; do
+for i in  $SEQ; do
     for j in `seq 5`; do
     echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
@@ -21,7 +23,7 @@ done
 POLICY=Pressure
 OUTPUT=pressure_sim_noPA
 rm -f $OUTPUT
-for i in  0.1 0.2 0.5 1.0 2.0 5.0 10.0 20.0 50.0 100.0; do
+for i in $SEQ; do
     for j in `seq 5`; do
     echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
@@ -33,7 +35,7 @@ done
 POLICY=HotSpot
 OUTPUT=hotspot_sim_noPA
 rm -f $OUTPUT
-for i in 0.1 0.2 0.5 1.0 2.0 5.0 10.0 20.0 50.0 100.0; do
+for i in $SEQ; do
     for j in `seq 5`; do
     echo -n $i " " >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
