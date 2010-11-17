@@ -155,17 +155,15 @@ public class ConnectionOverTCP implements Connection {
               shuffleBuffer();
           }
           
+          readMoreData();
           // Try to read more data
           if (bufferStartData_ == bufferEndData_) {
-              readMoreData();
+              return null;
           }
 
           // get at least enough data to read length or exit
           if (bufferEndData_ - bufferStartData_ < 8) {
-              readMoreData();
-              if (bufferEndData_ - bufferStartData_ < 8) {
-                  return null;
-              }
+              return null;
               // WAS return null;
           }
           short packetLen= getPacketLen();
@@ -184,13 +182,13 @@ public class ConnectionOverTCP implements Connection {
               buffer=bigB;
               bufferStartData_= 0;
               bufferEndData_= bufferRead;
-              readMoreData();
+              return null;
           }
           // Because of buffer position we cannot read a full packet
           if (packetLen > bufferSize_ - bufferStartData_) {
           
               shuffleBuffer();
-              readMoreData();  
+              return null; 
           }
           
           if (bufferEndData_ - bufferStartData_ < packetLen) {

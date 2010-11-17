@@ -551,7 +551,7 @@ public class TCPNetIF implements NetIF , Runnable {
         // close-on-interrupt if there is still data being written out.
         // we need to be careful
 
-        //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in stop() with incoming queue size: " + incomingQueue.size() + " outgoing queue size = " + outgoingQueue.size());
+       // Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in stop() with incoming queue size: " + incomingQueue.size() + " outgoing queue size = " + outgoingQueue.size());
 
         if (running == true) {
             try {
@@ -563,20 +563,22 @@ public class TCPNetIF implements NetIF , Runnable {
                 doJoin = outboundThread.isFinished();
 
                 if (doJoin) {
-                    //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() outboundThread");
-                    outboundThread.join();
+                    Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() outboundThread");
+                    outboundThread.join(1000);  // Give thread time to finish
                 }
-
+  
+                
                 // flush InboundThread
                 doJoin = inboundThread.isFinished();
 
                 if (doJoin) {
-                    //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() inboundThread");
-                    inboundThread.join();
+                    Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() inboundThread");
+                    inboundThread.join(1000);   // Give thread time to finish
                 }
-
-                // stop OutboundThread
+                
+                 // stop OutboundThread
                 outboundThread.terminate();
+               
 
                 // stop InboundThread
                 inboundThread.terminate();
