@@ -22,20 +22,17 @@ public class ApplicationManager {
 
     // A pool of Executors
     //ThreadPoolExecutor pool;
-   //ArrayList <Thread> pool= null;
+    ApplicationThreadManager pool;
 
     // A map of all the Applications, name -> ApplicationHandle object
     HashMap<String, ApplicationHandle> appMap;
-    HashMap<String, Thread> threads;
 
     public ApplicationManager() {
         // create an Executor pool 
-        // WAS pool = (ThreadPoolExecutor)Executors.newCachedThreadPool();
-        //pool =  new ApplicationThreadPoolExecutor(this);
-       //pool = new ArrayList<Thread>();
+        //WAS pool =  new ApplicationThreadPoolExecutor(this);
+        pool = new ApplicationThreadManager(this);
 
         appMap = new HashMap<String, ApplicationHandle>();
-        threads= new HashMap<String, Thread>();
         router = RouterDirectory.getRouter();
     }
 
@@ -79,26 +76,33 @@ public class ApplicationManager {
 
             // otherwise create an ApplicationHandle for the app
             ApplicationHandle handle = new ApplicationHandle(appName, app);
-            handle.setState(ApplicationHandle.AppState.RUNNING);
-            // now add details to Application list
-            appMap.put(appName, handle);
-            ApplicationResponse startR = app.start();
 
-             // if start succeeded then go onto run()
+            // try and start the app
+            ApplicationResponse startR;
+
+            //synchronized (app) {
+                startR = app.start();
+            //}
+
+            // if start succeeded then go onto run()
             if (startR.isSuccess()) {
-                 handle.setState(ApplicationHandle.AppState.RUNNING);
-             } else {
-                 handle.setState(ApplicationHandle.AppState.STOPPED);
-                 return startR;
+                // now add details to Application map
+                appMap.put(appName, handle);
+
+                handle.setState(ApplicationHandle.AppState.RUNNING);
+
+                pool.execute(handle);
+
+                // Logger.getLogger("log").logln(USR.ERROR, leadin() + "pool = " + pool.getActiveCount() + "/" + pool.getTaskCount() + "/" + pool.getPoolSize());
+
+                return new ApplicationResponse(true, appName);
+
+            } else {
+                // the app did not start properly
+                handle.setState(ApplicationHandle.AppState.STOPPED);
+
+                return startR;
             }
-
-            Thread t= new Thread(app);
-            t.start();
-
-            threads.put(appName,t);
-            // Logger.getLogger("log").logln(USR.ERROR, leadin() + "pool = " + pool.getActiveCount() + "/" + pool.getTaskCount() + "/" + pool.getPoolSize());
-
-            return new ApplicationResponse(true, appName);
 
         } catch (ClassNotFoundException cnfe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "ClassNotFoundException " + cnfe); 
@@ -140,6 +144,10 @@ public class ApplicationManager {
         } else {
             if (appH.getState() == ApplicationHandle.AppState.STOPPED) {
 
+                // wait for the thread to actually end
+                pool.waitFor(appH);
+
+                // and remove from the app map
                 appMap.remove(appName);
 
                 return new ApplicationResponse(false, "Application called " + appName + " already stopped");
@@ -149,15 +157,17 @@ public class ApplicationManager {
                     Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
 
                     Application app = appH.getApplication();
-                    Thread t= threads.get(appName);
                     appH.setState(ApplicationHandle.AppState.STOPPED);
 
-                    app.stop();
-                    try {
-                        t.join();
-                    } catch (InterruptedException e) {
-                        
-                    }
+                    //synchronized (app) {
+                        app.stop();
+                    //}
+
+
+                    // wait for the thread to actually end
+                    pool.waitFor(appH);
+
+                    // and remove from the app map
                     appMap.remove(appName);
 
                     return new ApplicationResponse(true, "");

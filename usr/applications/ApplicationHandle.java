@@ -11,11 +11,11 @@ public class ApplicationHandle implements Runnable {
     // The name
     String name;
 
+    // The thread name
+    String threadName;
+
     // The app
     Application app;
-
-    // The Thread
-    Thread thread;
 
     // The state
     AppState state;
@@ -45,17 +45,17 @@ public class ApplicationHandle implements Runnable {
 
 
     /**
-     * Get the thread
+     * Get the thread name
      */
-    public Thread getThread() {
-        return thread;
+    public String getThreadName() {
+        return threadName;
     }
 
     /**
-     * Set the thread
+     * Set the thread name
      */
-    ApplicationHandle setThread(Thread t) {
-        thread = t;
+    ApplicationHandle setThreadName(String name) {
+        threadName = name;
         return this;
     }
 
@@ -78,13 +78,13 @@ public class ApplicationHandle implements Runnable {
      * This run() delegates to Application run()
      */
     public void run() {
-        Logger.getLogger("log").logln(USR.STDOUT, "entering run: " + app);
+        Logger.getLogger("log").logln(USR.STDOUT, "ApplicationHandle: entering run: " + app);
 
         if (getState() == ApplicationHandle.AppState.RUNNING) {
             app.run();
         }
 
-        Logger.getLogger("log").logln(USR.STDOUT, "exiting run: " + app); 
+        Logger.getLogger("log").logln(USR.STDOUT, "ApplicationHandle: exiting run: " + app); 
     }
 
     /**

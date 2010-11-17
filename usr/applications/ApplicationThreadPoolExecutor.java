@@ -50,7 +50,11 @@ class ApplicationThreadPoolExecutor extends ThreadPoolExecutor {
         // start up sequence
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "starting " + handle.getName());
 
-        ApplicationResponse startR = app.start();
+        ApplicationResponse startR;
+
+        synchronized (app) {
+            startR = app.start();
+        }
 
         // if start succeeded then go onto run()
         if (startR.isSuccess()) {

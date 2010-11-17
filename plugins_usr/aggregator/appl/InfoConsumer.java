@@ -135,7 +135,7 @@ public class InfoConsumer implements Reporter, Application {
     /**
      * Start the InfoConsumer.
      */
-    public synchronized ApplicationResponse start() {
+    public ApplicationResponse start() {
 	try {
 	    // create a TimeIndexFactory
 	    TimeIndexFactory factory = new TimeIndexFactory();
@@ -179,7 +179,7 @@ public class InfoConsumer implements Reporter, Application {
     /**
      * Stop
      */
-    public synchronized ApplicationResponse stop() {
+    public ApplicationResponse stop() {
         dataDomain.disconnect();
 
         try {
