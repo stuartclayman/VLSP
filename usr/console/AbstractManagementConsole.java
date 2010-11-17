@@ -260,11 +260,11 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             }
         }
         
-         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " End of thread " +  Thread.currentThread());
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " End of thread " +  Thread.currentThread());
         // notify we have reached the end of this thread
-      //  System.err.println("End of thread");
+        //  System.err.println("End of thread");
  
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "end");       
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "end");       
 
     }
 
@@ -274,11 +274,6 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     public boolean isSelecting() {
         return fsm == FSMState.SELECTING;
     }
-
-
-   
-
-  
 
     /**
      * Set up.
@@ -369,7 +364,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      * End a connection
      */
     public void endConnection(SocketChannel c) {
-        // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "endConnection: " + c.socket());
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "endConnection: " + c.socket());
 
         unregisterChannel(c);
 
@@ -388,14 +383,17 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
         // find the SelectionKey for this channel
         SelectionKey key = channelKeys.get(c);
 
-        // Remove it from the Selector
-        if (key == null)
-            return;
-        key.cancel();
 
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Selector keys = " + selector.keys());
+        if (key == null) {
+            // already unregistered
+        } else {
+            // Remove it from the Selector
+            key.cancel();
 
-        channelKeys.remove(c);
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Selector keys = " + selector.keys());
+
+            channelKeys.remove(c);
+        }
     }
 
     /**
