@@ -432,7 +432,8 @@ public class InfoSource implements Application {
             return new ApplicationResponse(true, "");
 
         } catch (TimeIndexException tie) {
-            tie.printStackTrace();
+            Logger.getLogger("log").logln(USR.STDOUT, "Cannot close index " + dataIndex + " because " + tie.getMessage());
+            //tie.printStackTrace();
 
             return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
 
