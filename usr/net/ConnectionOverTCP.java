@@ -118,99 +118,116 @@ public class ConnectionOverTCP implements Connection {
     public Datagram readDatagram() throws IOException {
         Datagram dg;
 
-        while (true) {
-            dg = decodeDatagram();
+        dg = decodeDatagram();
 
-            if (eof) {
-                // hit eof, so really return null
-                return null;
-            }
-            if (dg != null) {
-                inCounter++;
-                return dg;
-            }
-            readMoreData();
+        if (eof) {
+            // hit eof, so really return null
+            return null;
+        }
+
+        if (dg != null) {
+            inCounter++;
+            return dg;
+        } else {
+            throw new Error("ConnectionOverTCP: Unexpected Null in readDatagram()");
         }
     }
 
     /** look at buffer and try to decode a datagram from it without reading more data */
     Datagram decodeDatagram() {
-        // Read a datagram at pos bufferStartData_ -- it may be partly read into buffer
-        // and it may have other datagrams following it in buffer
+        while (true) {
 
-          // Do we have enough space left in buffer to read at least
-          // packet length if not then shuffle the buffer and try again.
-          if (bufferSize_ - bufferStartData_ < 8) {
-              shuffleBuffer();
-              return decodeDatagram();
-          }
-          
-          // Do we have enough data to read packetLen -- if not return null
-          if (bufferEndData_ - bufferStartData_ < 8) {
-              return null;
-          }
+            // if we hit EOF an anytime, return null
+            if (eof) {
+                return null;
+            }
 
-          short packetLen= getPacketLen();
+            // Read a datagram at pos bufferStartData_ -- it may be partly read into buffer
+            // and it may have other datagrams following it in buffer
+
+            // Do we have enough space left in buffer to read at least
+            // packet length if not then shuffle the buffer and try again.
+            if (bufferSize_ - bufferStartData_ < 8) {
+                shuffleBuffer();
+                continue;
+            }
           
-          // If our buffer is too short (want several packets before recopy)
-          //, make it longer and read more data
+
+            // Do we have enough data to read packetLen -- if not return null
+            if (bufferEndData_ - bufferStartData_ < 8) {
+                readMoreData();
+                continue;
+            }
+
+            short packetLen= getPacketLen();
+          
+            // Because of buffer position we cannot read a full packet 
+            // -- shuffle the buffer and retry
+            if (packetLen > bufferSize_ - bufferStartData_) {
+          
+                shuffleBuffer();
+                readMoreData();
+
+                continue;
+            }
+          
+            // Not enough data has been read to get a packet
+            if (bufferEndData_ - bufferStartData_ < packetLen) {
+                readMoreData();
+
+                continue;
+            }
+
+            // If our buffer is too short (want several packets before recopy)
+            //, make it longer and read more data
          
-          if (packetLen * PACKETS_BEFORE_SHUFFLE > bufferSize_) {
-             // Logger.getLogger("log").logln(USR.ERROR, "Increasing buffer size");
-              bufferSize_= packetLen * PACKETS_BEFORE_SHUFFLE;
-              ByteBuffer bigB= ByteBuffer.allocate(bufferSize_);
-              int bufferRead= bufferEndData_- bufferStartData_;
-              buffer.position(bufferStartData_);
-              buffer.limit(bufferEndData_);
-              bigB.put(buffer);
-              buffer=bigB;
-              bufferStartData_= 0;
-              bufferEndData_= bufferRead;
-              return decodeDatagram();
-          }
-          // Because of buffer position we cannot read a full packet 
-          // -- shuffle the buffer and retry
-          if (packetLen > bufferSize_ - bufferStartData_) {
-          
-              shuffleBuffer();
-              return decodeDatagram(); 
-          }
-          
-          // Not enough data has been read to get a packet
-          if (bufferEndData_ - bufferStartData_ < packetLen) {
-              return null;
-          }
+            if (packetLen * PACKETS_BEFORE_SHUFFLE > bufferSize_) {
+                Logger.getLogger("log").logln(USR.ERROR, "Increasing buffer size");
+                bufferSize_= packetLen * PACKETS_BEFORE_SHUFFLE;
+                ByteBuffer bigB= ByteBuffer.allocate(bufferSize_);
+                int bufferRead= bufferEndData_- bufferStartData_;
+                buffer.position(bufferStartData_);
+                buffer.limit(bufferEndData_);
+                bigB.put(buffer);
+                buffer=bigB;
+                bufferStartData_= 0;
+                bufferEndData_= bufferRead;
+                // SC return decodeDatagram();
+                continue;
+            }
 
 
-          // OK -- we got a full packet of data, let's make a datagram of it
+            // OK -- we got a full packet of data, let's make a datagram of it
+            if (bufferEndData_ - bufferStartData_ < packetLen) {
+                throw new Error("ConnectionOverTCP: Bug in decodeDatagram()");
+            }
+
+            byte[] latestDGData = new byte[packetLen];
           
-          byte[] latestDGData = new byte[packetLen];
+            //Logger.getLogger("log").logln(USR.STDOUT, "READING PACKET FROM "+bufferStartData_+ " to "+
+            //  bufferStartData_+packetLen);
+            buffer.position(bufferStartData_);
+            buffer.get(latestDGData);
+            //for (int i= 0; i < packetLen; i++) {
+            //   Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+" char is "+ (char) latestDGData[i]);
+            //}
           
-          //Logger.getLogger("log").logln(USR.STDOUT, "READING PACKET FROM "+bufferStartData_+ " to "+
-          //  bufferStartData_+packetLen);
-          buffer.position(bufferStartData_);
-          buffer.get(latestDGData);
-          //for (int i= 0; i < packetLen; i++) {
-           //   Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+" char is "+ (char) latestDGData[i]);
-          //}
+            bufferStartData_+= packetLen;
+            ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
+            // get an empty Datagram
+            Datagram dg = DatagramFactory.newDatagram();  // WAS new IPV4Datagram();
+            // and fill in contents
+            // not just the payload, but all headers too
+            ((DatagramPatch)dg).fromByteBuffer(newBB);
           
-          bufferStartData_+= packetLen;
-          ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
-          // get an empty Datagram
-          Datagram dg = DatagramFactory.newDatagram();  // WAS new IPV4Datagram();
-          // and fill in contents
-          // not just the payload, but all headers too
-          ((DatagramPatch)dg).fromByteBuffer(newBB);
-          
-          checkDatagram(latestDGData,dg);
-          return dg;
+            checkDatagram(latestDGData,dg);
+            return dg;
               
-     
+        }     
     } 
     
     /** Read more data from channel to buffer if possible */
-    void readMoreData() throws IOException {
-
+    void readMoreData() {
         buffer.position(bufferEndData_);
      
         //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: readMoreData: buffer position = " + bufferStartData_ + "/" + bufferEndData_ + "/" + buffer.limit() + "/" + buffer.capacity());
@@ -303,7 +320,7 @@ public class ConnectionOverTCP implements Connection {
      * Close the connection.
      */
     public void close() {
-        //Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " + inCounter + " outCounter = " + outCounter);
+        Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " + inCounter + " outCounter = " + outCounter);
 
         Socket socket = getSocket();
 

@@ -417,7 +417,7 @@ public class TCPNetIF implements NetIF , Runnable {
                     // check the return value
                     if (datagram == null) {
                         // EOF
-                        // Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF readDatagram NULL datagram");
+                        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF readDatagram NULL datagram");
                         eof = true;
 
                     } else {
@@ -466,7 +466,7 @@ public class TCPNetIF implements NetIF , Runnable {
      */
     private void waitFor() {
           try {
-              //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"waiting");
+              Logger.getLogger("log").logln(USR.STDOUT, leadin()+"waiting");
               synchronized(this) {
                   wait();
               }
@@ -563,7 +563,7 @@ public class TCPNetIF implements NetIF , Runnable {
                 doJoin = outboundThread.isFinished();
 
                 if (doJoin) {
-                    Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() outboundThread");
+                    //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() outboundThread");
                     outboundThread.join(1000);  // Give thread time to finish
                 }
   
@@ -572,24 +572,29 @@ public class TCPNetIF implements NetIF , Runnable {
                 doJoin = inboundThread.isFinished();
 
                 if (doJoin) {
-                    Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() inboundThread");
+                    //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: in join() inboundThread");
                     inboundThread.join(1000);   // Give thread time to finish
                 }
                 
                  // stop OutboundThread
+                //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: terminate() outboundThread");
                 outboundThread.terminate();
                
 
                 // stop InboundThread
+                //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: terminate() inboundThread");
                 inboundThread.terminate();
 
-                stopTime = System.currentTimeMillis();
-
                 // stop reader
+                //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: terminate() readThread");
                 readThread.interrupt();
 
                 // these 2 lines were in reallyClose
+                //Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: connection.close()");
                 connection.close();
+
+
+                stopTime = System.currentTimeMillis();
 
                 closed = true;
 
