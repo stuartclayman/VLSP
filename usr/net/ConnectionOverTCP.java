@@ -119,53 +119,37 @@ public class ConnectionOverTCP implements Connection {
         Datagram dg;
 
         while (true) {
-            dg = readDatagramAndWait();
+            dg = decodeDatagram();
 
             if (eof) {
                 // hit eof, so really return null
                 return null;
-            } if (dg == null) {
-                // not enough data to really return a Datagram
-                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + inCounter + " read NULL");
-                //Logger.getLogger("log").log(USR.EXTRA, ("N"));
-                continue;
-            } else {
-                // a real Datagram
-                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + inCounter + " read " + dg.getTotalLength());
+            }
+            if (dg != null) {
                 inCounter++;
-
                 return dg;
             }
+            readMoreData();
         }
     }
 
-    /**
-     * Read a Datagram.
-     * This actually reads from the network connection.
-     * The datagram read is a datagram or at least
-     * assumes length as a short in bits 5-8
-     */
-    Datagram readDatagramAndWait() throws IOException {
+    /** look at buffer and try to decode a datagram from it without reading more data */
+    Datagram decodeDatagram() {
         // Read a datagram at pos bufferStartData_ -- it may be partly read into buffer
         // and it may have other datagrams following it in buffer
 
           // Do we have enough space left in buffer to read at least
-          // packet length
+          // packet length if not then shuffle the buffer and try again.
           if (bufferSize_ - bufferStartData_ < 8) {
               shuffleBuffer();
+              return decodeDatagram();
           }
           
-          readMoreData();
-          // Try to read more data
-          if (bufferStartData_ == bufferEndData_) {
+          // Do we have enough data to read packetLen -- if not return null
+          if (bufferEndData_ - bufferStartData_ < 8) {
               return null;
           }
 
-          // get at least enough data to read length or exit
-          if (bufferEndData_ - bufferStartData_ < 8) {
-              return null;
-              // WAS return null;
-          }
           short packetLen= getPacketLen();
           
           // If our buffer is too short (want several packets before recopy)
@@ -182,19 +166,21 @@ public class ConnectionOverTCP implements Connection {
               buffer=bigB;
               bufferStartData_= 0;
               bufferEndData_= bufferRead;
-              return null;
+              return decodeDatagram();
           }
-          // Because of buffer position we cannot read a full packet
+          // Because of buffer position we cannot read a full packet 
+          // -- shuffle the buffer and retry
           if (packetLen > bufferSize_ - bufferStartData_) {
           
               shuffleBuffer();
-              return null; 
+              return decodeDatagram(); 
           }
           
+          // Not enough data has been read to get a packet
           if (bufferEndData_ - bufferStartData_ < packetLen) {
-
               return null;
           }
+
 
           // OK -- we got a full packet of data, let's make a datagram of it
           
