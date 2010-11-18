@@ -39,7 +39,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         // check command
         String[] parts = value.split(" ");
-        if (parts.length != 3) {
+        if (parts.length != 3 && parts.length != 2) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection command: " + request);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION wrong no of args");
             return;
@@ -65,15 +65,21 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             return;
         }
 
-        // get weight/distance factor
-        sc = new Scanner(parts[2]);
         int weight;
 
-        try {
-            weight = sc.nextInt();
-        }  catch (Exception e) {
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid weight " + parts[2]);
-            return;
+        // if we have a 3rd arg
+        if (parts.length == 3) {
+            // get weight/distance factor
+            sc = new Scanner(parts[2]);
+
+            try {
+                weight = sc.nextInt();
+            }  catch (Exception e) {
+                respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid weight " + parts[2]);
+                return;
+            }
+        } else {
+            weight = 1;
         }
 
         // if we get here all the args seem OK
