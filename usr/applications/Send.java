@@ -115,7 +115,7 @@ public class Send implements Application {
 
         }
 
-        Logger.getLogger("log").log(USR.STDOUT, "\n");
+        Logger.getLogger("log").logln(USR.STDOUT, "Send: end of run()");
 
 
     }

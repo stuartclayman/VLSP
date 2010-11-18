@@ -84,7 +84,16 @@ public class ApplicationHandle implements Runnable {
             app.run();
         }
 
-        Logger.getLogger("log").logln(USR.STDOUT, "ApplicationHandle: exiting run: " + app); 
+        Logger.getLogger("log").logln(USR.STDOUT, "ApplicationHandle: exiting run: " + app + " with state of: " + getState()); 
+
+        // if we get to the end of run() and the app
+        // is still in the RUNNING state, 
+        // we need to stop it
+        if (getState() == ApplicationHandle.AppState.RUNNING) {
+            setState(ApplicationHandle.AppState.APP_POST_RUN);
+            ApplicationManager.stopApp(getName());
+        }
+
     }
 
     /**
@@ -93,7 +102,9 @@ public class ApplicationHandle implements Runnable {
     public enum AppState {
         APP_POST_INIT,   // after for init()
         RUNNING,         // we have entered run()
-        STOPPED          // we have called stop() and the the app should stop
+        APP_POST_RUN,    // the app dropped out of run(), without a stop()
+        STOPPING,          // we have called stop() and the the app should stop
+        STOPPED          // the app is stopped
     }
 
 

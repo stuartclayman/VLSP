@@ -145,7 +145,7 @@ public class ApplicationManager {
             if (appH.getState() == ApplicationHandle.AppState.STOPPED) {
 
                 // wait for the thread to actually end
-                pool.waitFor(appH);
+                //pool.waitFor(appH);
 
                 // and remove from the app map
                 appMap.remove(appName);
@@ -154,18 +154,26 @@ public class ApplicationManager {
             } else {               
 
                 try {
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
 
                     Application app = appH.getApplication();
-                    appH.setState(ApplicationHandle.AppState.STOPPED);
 
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
                     synchronized (app) {
                         app.stop();
                     }
 
 
-                    // wait for the thread to actually end
-                    pool.waitFor(appH);
+                    if (appH.getState() == ApplicationHandle.AppState.RUNNING) {
+                        appH.setState(ApplicationHandle.AppState.STOPPING);
+
+                        // wait for the thread to actually end
+                        pool.waitFor(appH);
+                    } else  if (appH.getState() == ApplicationHandle.AppState.APP_POST_RUN) {
+                        // the app had already exited the run loop
+                        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Cleanup app after exiting run() " + appName);
+                    }
+
+                    appH.setState(ApplicationHandle.AppState.STOPPED);
 
                     // and remove from the app map
                     appMap.remove(appName);
