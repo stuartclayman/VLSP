@@ -251,13 +251,6 @@ public class LocalController implements ComponentController {
             return null;
         }
         childProcessWrappers_.put(routerName, pw);
-        /// In JVM Router
-        ///Router router= new Router(maxPort_, "Router-" + routerId);
-        ///router.start();
-        ///routerList_.add(router);
-
-        // Separate JVM Router
-        // create a RouterInteractor
         RouterInteractor interactor = null;
 
         // try 20 times, with 100 millisecond gap
@@ -277,10 +270,11 @@ public class LocalController implements ComponentController {
                 // connect to ManagementConsole of the router on port port1
                 interactor = new RouterInteractor("localhost", port1);
                 routerInteractors_.add(interactor);
-                isOK = true;
+                isOK= interactor.routerOK();
                 break;
             } catch (UnknownHostException uhe) { // Try again
             } catch (IOException e) {
+            } catch (MCRPException ex) {
             }
         }
 

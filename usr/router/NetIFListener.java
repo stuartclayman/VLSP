@@ -1,28 +1,20 @@
 package usr.router;
 import usr.net.Datagram;
+import usr.net.Address;
 
 import usr.logging.*;
 /**
- * A Listener of NetIFs.
+ * Interface is for "glue" to hold together netifs -- it allows routing between them
  */
 public interface NetIFListener {
-    /**
-     * Pass the NetIFListener a new Datagram from a NetIF.
-     */
-    public boolean datagramArrived(NetIF netIF, Datagram datagram);
 
-    /**
-     * Can the NetIFListener accept a new datagram.
-     */
-    public boolean canAcceptDatagram(NetIF netIF);
 
-    /**
-     * Can the NetIFListener route this datagram.
-     */
-    public boolean canRoute(Datagram dg);
+    /** Return the router Fabric device for this datagram -- this is
+    the correct way to route datagrams */    
+    public FabricDevice getRouteFabric(Datagram dg);
+    
+    /** Is this address an address associated with this netiflistener*/
+    public boolean ourAddress(Address a);
+    
 
-    /**
-     * A NetIF is closing.
-     */
-    public boolean netIFClosing(NetIF netIF);
 }

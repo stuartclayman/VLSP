@@ -6,6 +6,7 @@ import usr.router.NetIF;
 import usr.router.TCPNetIF;
 import usr.protocol.Protocol;
 import usr.logging.*;
+import usr.router.FabricDevice;
 import usr.router.NetIFListener;
 import java.io.*;
 import java.net.*;
@@ -67,9 +68,8 @@ public class StubServer2 implements NetIFListener {
 
             TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
 
-            netIF = new TCPNetIF(dst);
+            netIF = new TCPNetIF(dst,this);
             netIF.connect();
-            netIF.setNetIFListener(this);
             logger.log(error, "StubServer: Listening on port: " + listenPort + "\n");
         } catch (IOException ioe) {
             logger.log(error, "StubServer: Cannot listen on port: " + listenPort + "\n");
@@ -80,11 +80,19 @@ public class StubServer2 implements NetIFListener {
     /**
      * Can route a Datagram
      */
-    public boolean canRoute(Datagram d) {
-        return true;
+    public NetIF getRoute(Datagram d) {
+        return null;
     }
 
-    public boolean canAcceptDatagram(NetIF n) {
+    /**
+     * Fake interface
+     */
+    public FabricDevice getRouteFabric(Datagram d) {
+        return null;
+    }
+    
+    /** Accept all traffic*/
+    public boolean ourAddress(Address a) {
         return true;
     }
 

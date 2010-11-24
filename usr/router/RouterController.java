@@ -378,7 +378,7 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * Plug a NetIF into the RouterFabric
      */
-    public synchronized RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
+    public RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
         RouterPort rp = router.plugInNetIF(netIF);
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
 
@@ -436,6 +436,11 @@ public class RouterController implements ComponentController, Runnable {
     }
 
 
+    /** Access the listener */
+    public NetIFListener getListener() {
+        return router.getListener();
+    }
+
     /** run a particular command on a router*/
     public ApplicationResponse runCommand(String commandstr) {
         String [] split= commandstr.split(" ");
@@ -457,13 +462,6 @@ public class RouterController implements ComponentController, Runnable {
         
     }
 
-    /** ping neighbours of router */
-    public void pingNeighbours() 
-    {
-        router.pingNeighbours();
-        
-    }
-    
     /** Try to ping router with a given id */
     public boolean ping(int id){
         return router.ping(id);

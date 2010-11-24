@@ -20,7 +20,9 @@ public class ConnectionOverTCP implements Connection {
     static final byte []checkbytes="USRD".getBytes();
     // The underlying connection
     SocketChannel channel;
-
+    
+    int pktsToSend= 0;  // # of packets to send
+    
     // The local address for this connection
     Address localAddress;
 
@@ -38,6 +40,8 @@ public class ConnectionOverTCP implements Connection {
 
     // eof
     boolean eof = false;
+    
+    Object closeObject_= null;
 
     /**
      * Construct a ConnectionOverTCP given a TCPEndPointSrc
@@ -45,6 +49,7 @@ public class ConnectionOverTCP implements Connection {
     public ConnectionOverTCP(TCPEndPointSrc src) throws IOException {
         endPoint = src;
         buffer = ByteBuffer.allocate(bufferSize_);
+        closeObject_= new Object();
     }
 
     /**
@@ -53,6 +58,7 @@ public class ConnectionOverTCP implements Connection {
     public ConnectionOverTCP(TCPEndPointDst dst) throws IOException {
         endPoint = dst;
         buffer = ByteBuffer.allocate(bufferSize_);
+        closeObject_= new Object();
     }
 
     /**
@@ -62,14 +68,28 @@ public class ConnectionOverTCP implements Connection {
         endPoint.connect();
 
         Socket socket = endPoint.getSocket(); 
-
+        
         if (socket == null) {
             throw new Error("EndPoint: " + endPoint + " is not connected");
         }
         
 
         channel = socket.getChannel();
-
+        int i;
+        for (i= 0; i < 10; i++) {
+                if (channel.finishConnect()) 
+                    break;
+                try {
+                    Thread.sleep(100);
+                }
+                catch (InterruptedException e) {
+                }
+               
+            }
+            if (i == 10) {
+                Logger.getLogger("log").logln(USR.ERROR, "Could not connect");
+                System.exit(-1);
+            }
         if (channel == null) {
             throw new Error("Socket: " + socket + " has no channel");
         }
@@ -92,25 +112,60 @@ public class ConnectionOverTCP implements Connection {
         return this;
     }
 
-
-    public boolean sendDatagram(Datagram dg) throws IOException {
+    
+    /** Send datagram down channel -- must be synchronized to prevent close occuring
+    when this is working */
+    public synchronized boolean sendDatagram(Datagram dg) throws IOException {
         //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: send(" + outCounter + ")");
-
+        if (dg == null) {
+            Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: received null datagram");
+            return false;
+        }
+        if (dg.getProtocol() == Protocol.SHUTCONNECTION && closeObject_ != null) {
+            synchronized(closeObject_) {
+                closeObject_.notify();
+                closeObject_= null;
+                
+            }
+            return true;
+        }
+       
         if (channel.isOpen()) {
-            int count = channel.write(((DatagramPatch)dg).toByteBuffer());
+            boolean success = writeBytesToChannel(((DatagramPatch)dg).toByteBuffer());
+            if (success == false) {
+                throw new IOException ("Channel closed");
+            }
             outCounter++;
+            
 
-            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
+           // Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
 
             return true;
         } else {
-            //Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: " + endPoint + " outCounter = " + outCounter + " ALREADY CLOSED ");
+            Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: " + endPoint + " outCounter = " + outCounter + " ALREADY CLOSED -- channel is closed");
 
             return false;
         }
 
     }
 
+    public boolean writeBytesToChannel(ByteBuffer bb) throws IOException {
+        int len= channel.write(bb);
+        if (len < 0)
+            return false;
+        while (bb.remaining()>0){  // Here to be cautious
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+            
+            }
+            len= channel.write(bb);          
+            if (len < 0) {
+                return false; 
+            }
+        }
+        return true;
+    }
 
     /**
      * Read a Datagram.
@@ -203,9 +258,9 @@ public class ConnectionOverTCP implements Connection {
             }
 
             byte[] latestDGData = new byte[packetLen];
-          
+           
             //Logger.getLogger("log").logln(USR.STDOUT, "READING PACKET FROM "+bufferStartData_+ " to "+
-            //  bufferStartData_+packetLen);
+            //  (bufferStartData_+packetLen));
             buffer.position(bufferStartData_);
             buffer.get(latestDGData);
             //for (int i= 0; i < packetLen; i++) {
@@ -317,11 +372,21 @@ public class ConnectionOverTCP implements Connection {
     
    
     /**
-     * Close the connection.
+     * Close the connection -- must be synchronized to prevent close while 
+     * we are in sendDatagram
      */
-    public void close() {
+    public synchronized void close() {
         Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " + inCounter + " outCounter = " + outCounter);
-
+        //System.out.println("COTCPClose");
+       // if (closeObject_ != null) {
+       //     try {
+       //         synchronized (closeObject_) {
+        //            wait(1);
+         //       } 
+         //   } catch (InterruptedException e) {
+         //   }
+        //} else {
+       // }
         Socket socket = getSocket();
 
         try {

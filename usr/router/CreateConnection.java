@@ -30,13 +30,26 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         this.controller = controller;
         this.request = request;
         setChannel(request.channel);
+        
+
     }
 
     public void run() {
         // process the request
         String value = request.value;
         SocketChannel channel = request.channel;
-
+               
+         Logger logger = Logger.getLogger("log");
+        // tell it to output to stdout
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 
+        // USR.STDOUT set
+        logger.addOutput(System.out, new BitMask(USR.STDOUT));
+        // tell it to output to stderr
+        // and tell it what to pick up
+        // it will actually output things where the log has bit
+        // USR.ERROR set
+        logger.addOutput(System.err, new BitMask(USR.ERROR));
         // check command
         String[] parts = value.split(" ");
         if (parts.length != 3 && parts.length != 2) {
@@ -147,7 +160,16 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         try {
 	    // make a connection to a remote router
             TCPEndPointSrc src = new TCPEndPointSrc(host, connectionPort);
-            netIF = new TCPNetIF(src);
+            netIF = new TCPNetIF(src,controller.getListener());
+
+            // set its name
+            netIF.setName(latestConnectionId);
+            // set its weight
+            netIF.setWeight(weight);
+
+            // set its Address
+            netIF.setAddress(controller.getAddress());
+            
             netIF.connect();
 
             // get socket so we can determine the Inet Address
@@ -155,17 +177,12 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "connection socket: " + socket);
 
+
+            
             refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
 
-            // patch up the NetIF
-            // set its name
-            netIF.setName(latestConnectionId);
-            // set its weight
-            netIF.setWeight(weight);
             // set its ID
             netIF.setID(refAddr.hashCode());
-            // set its Address
-            netIF.setAddress(controller.getAddress());
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
 
@@ -193,11 +210,8 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         try {
         // now get router name
-
             remoteRouterName = interactor.getName();
-
             remoteRouterAddress = interactor.getRouterAddress();
-
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);

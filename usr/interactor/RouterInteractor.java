@@ -220,7 +220,7 @@ public class RouterInteractor extends MCRPInteractor {
      * @param port the port number
      */
     public MCRPInteractor incomingConnection(String connectionID, String name, Address addr, int weight, int port) throws IOException, MCRPException {
-        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + addr.asInteger() + " " + weight  + " " + port ; 
+        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + addr.asInteger() + " " + weight  + " " + port; 
 	interact(toSend);
 	expect(MCRP.INCOMING_CONNECTION.CODE);
 	return this;
@@ -420,7 +420,13 @@ public class RouterInteractor extends MCRPInteractor {
 
 	return stats;
     }
-
+    
+    /** Check router is responding */
+    public boolean routerOK() throws IOException, MCRPException {
+        interact(MCRP.ROUTER_OK.CMD);
+        expect(MCRP.ROUTER_OK.CODE);
+        return true;
+    }
 
     /**
      * Shutdown the Router we are interacting with.

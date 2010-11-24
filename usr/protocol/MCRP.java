@@ -389,6 +389,15 @@ public class MCRP implements Protocol {
         public final static int CODE= 287;
     }
     
+     /**
+     * ROUTER_OK -- check router on
+     */
+    public final static class ROUTER_OK {
+        public final static String CMD = "ROUTER_OK";
+        public final static int CODE= 288;
+    }
+    
+    
     /*
      * Spare - 290 - 299
      */

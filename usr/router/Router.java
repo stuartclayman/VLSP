@@ -63,6 +63,7 @@ public class Router {
         try {
           int gid= Integer.parseInt(name);
           setGlobalID(gid);
+          
         } catch (Exception e) {
         
         }
@@ -153,13 +154,9 @@ public class Router {
     public boolean stop() {
         if (isActive) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
-
             controller.stop();
-
             appSocketMux.stop();
-
             fabric.stop();
-
             isActive = false;
             try {
                 if (outputStream_ != null) {
@@ -247,6 +244,12 @@ public class Router {
     boolean setGlobalID(int id) {
         return controller.setGlobalID(id);
     }
+    
+    /** get listener */
+    
+    public NetIFListener getListener() {
+        return fabric;
+    }
 
     /** 
      * Get the routing table
@@ -311,26 +314,7 @@ public class Router {
 
     
 
-     public void pingNeighbours() 
-    {
-       
-        byte []b= new byte[1];
-        b[0]='P';
-        //Logger.getLogger("log").logln(USR.ERROR, "Pinging");
-        Datagram dg= DatagramFactory.newDatagram(Protocol.CONTROL, 
-            ByteBuffer.wrap(b));
-        List<NetIF> nif= listNetIF();
-        if (nif == null)
-            return;
-        //Logger.getLogger("log").logln(USR.ERROR, "COLLECTION IS  "+nif);
-        for (NetIF n : nif) {
-            
-            if (n.sendDatagram(dg) == true) {
-                Logger.getLogger("log").logln(USR.ERROR, "Ping sent");
-            }
-        }
-    }
-    
+
     /** Remove a network interface from the router */
     public void removeNetIF(NetIF n) {
        fabric.removeNetIF(n);
@@ -511,6 +495,8 @@ class TidyUp extends Thread {
 
     public void run() {
         Router router = RouterDirectory.getRouter();
+        if (router == null)
+            return;
 
         if (router.isActive()) {
             router.stop();

@@ -1352,12 +1352,6 @@ public class GlobalController implements ComponentController {
         return maxRouterId_;
     }
 
-    /**
-     * Wakeup the controller.
-     */
-    public synchronized void wakeUp() {
-        notify();  // or All version
-    }
      
 
     /** 

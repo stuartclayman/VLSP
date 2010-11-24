@@ -1,5 +1,6 @@
 package usr.router;
 
+import java.net.*;
 import usr.net.Address;
 import usr.logging.*;
 import usr.net.Datagram;
@@ -10,22 +11,12 @@ import java.io.IOException;
 /**
  * A Network Interface for a Router.
  */
-public interface NetIF {
+public interface NetIF extends DatagramDevice {
     /**
      * Connect
      */
     public boolean connect() throws IOException;
 
-    /**
-     * Get the name of this NetIF.
-     */
-    public String getName();
-
-
-    /**
-     * Set the name of this NetIF.
-     */
-    public NetIF setName(String name);
 
     /**
      * Get the ID of this NetIF.
@@ -35,7 +26,7 @@ public interface NetIF {
     /**
      * Set the ID of this NetIF.
      */
-    public NetIF setID(int id);
+    public void setID(int id);
 
     /**
      * Get the weight of this NetIF.
@@ -45,17 +36,7 @@ public interface NetIF {
     /**
      * Set the weight of this NetIF.
      */
-    public NetIF setWeight(int w);
-
-    /**
-     * Get the Address for this connection.
-     */
-    public Address getAddress();
-
-    /**
-     * Set the Address for this connection.
-     */
-    public NetIF setAddress(Address addr);
+    public void setWeight(int w);
 
     /**
      * Get the name of the remote router this NetIF is connected to.
@@ -66,7 +47,7 @@ public interface NetIF {
     /**
      * Set the name of the remote router this NetIF is connected to.
      */
-    public NetIF setRemoteRouterName(String name);
+    public void setRemoteRouterName(String name);
 
     /**
      * Get the Address  of the remote router this NetIF is connected to
@@ -76,7 +57,7 @@ public interface NetIF {
     /**
      * Set the Address  of the remote router this NetIF is connected to.
      */
-    public NetIF setRemoteRouterAddress(Address addr);
+    public void setRemoteRouterAddress(Address addr);
 
     /**
      * Get the interface stats.
@@ -92,36 +73,19 @@ public interface NetIF {
      */
     public NetStats getStats();
 
-    /**
-     * Send a Datagram originating at this host (sets src address)
-     */
-    public boolean sendDatagram(Datagram dg);
-
-    /**
-     * forward a datagram (does not set src address)
-     */
-    public boolean forwardDatagram(Datagram dg);
-
-    /**
-     * Close a NetIF
+     /* Close a NetIF
      */
     public void close();
 
-    /**
+    /** Is this a local interface */
+    public boolean isLocal();
+
+  /**
      * Is closed.
      */
     public boolean isClosed();
 
-    /**
-     * Get the Listener of a NetIF.
-     */
-    public NetIFListener getNetIFListener();
 
-    /**
-     * Set the Listener of NetIF.
-     */
-    public NetIF setNetIFListener(NetIFListener l);
-    
     /** Remote close received */
     public void remoteClose();
         

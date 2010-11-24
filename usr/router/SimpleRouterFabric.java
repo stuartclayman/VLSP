@@ -4,6 +4,7 @@ import java.util.List;
 import usr.logging.*;
 import java.util.ArrayList;
 import usr.net.*;
+import java.net.*;
 import usr.protocol.Protocol;
 import java.nio.ByteBuffer;
 import java.lang.*;
@@ -14,36 +15,32 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * A RouterFabric within UserSpaceRouting.
  */
-public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable {
+public class SimpleRouterFabric implements RouterFabric, NetIFListener, 
+    DatagramDevice{
     // The Router this is fabric for
     Router router;
     RouterOptions options_;
 
+  
     boolean theEnd=false;
 
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
    
     LinkedBlockingQueue<DatagramHandle> datagramQueue_;
-    int MAX_QUEUE_SIZE = 128;
-    int HIGH_MARK = MAX_QUEUE_SIZE * 4 / 5;
-    int LOW_MARK = MAX_QUEUE_SIZE * 1 / 5;
     int biggestQueueSeen = 0;
 
     boolean drainingQueue = false;
-
-    
+      
     // The localNetIF
     NetIF localNetIF = null;
 
-    // The Thread
-    Thread myThread;
 
+    FabricDevice fabricDevice_= null;
     // are we running
     boolean running = false;
 
-    // are we waiting
-    boolean waiting = false;
+
 
     // The RoutingTableTransmitter
     RoutingTableTransmitter routingTableTransmitter;
@@ -62,17 +59,18 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
     HashMap <NetIF, Long> lastTableUpdateTime_;
     HashMap <NetIF, Long> nextTableUpdateTime_;
+    
+    String name_= "";
 
     /**
      * Construct a SimpleRouterFabric.
      */
-    public SimpleRouterFabric(Router router, RouterOptions opt) {
-        this.router = router;
+    public SimpleRouterFabric(Router r, RouterOptions opt) {
+        router = r;
         options_= opt;
         table_= new SimpleRoutingTable();
         int limit = 32;
         ports = new ArrayList<RouterPort>(limit);
-        
         for (int p=0; p < limit; p++) {
             setupPort(p);
         }
@@ -80,24 +78,26 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         routableAddresses = new TreeSet<Address>();
 
         localNetIF = null;
+        name_= router.getName();
 
         lastTableUpdateTime_= new HashMap <NetIF, Long>();
         nextTableUpdateTime_= new HashMap <NetIF, Long>();
-        datagramQueue_= new LinkedBlockingQueue<DatagramHandle>(MAX_QUEUE_SIZE);
+        datagramQueue_= new LinkedBlockingQueue<DatagramHandle>();
     }
 
     /**
      * Start me up.
      */
     public boolean start() {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
-
-        // start my own thread
-        running = true;
-        myThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
+        table_.setListener(this);
         
-        //Logger.getLogger("log").logln(USR.ERROR, "Running set to true");
-        myThread.start();
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
+        // fabric device -- no queueing
+        fabricDevice_= new FabricDevice(this, this);
+
+        fabricDevice_.setName("RouterControl");
+        fabricDevice_.start();
+        running = true;
 
         // start RoutingTableTransmitter
         routingTableTransmitter = new RoutingTableTransmitter(this);
@@ -112,260 +112,51 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      */
     public boolean stop() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router fabric stop");
-
-        // stop my own thread
-        //Logger.getLogger("log").logln(USR.ERROR, "Run set to false");
-        running = false;
-
         // stop RoutingTableTransmitter thread
         routingTableTransmitter.terminate();
-
-        // notify all waiting threads
-        synchronized (this) {
-            notifyAll();
-        } 
-
-        // wait for myself
-        waitFor();
 
         //Logger.getLogger("log").logln(USR.ERROR, "Closing ports");
         // close fabric ports
         closePorts();
-
+        fabricDevice_.stop();
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "datagramInCount = " + datagramInCount + " datagramOutCount = " + datagramOutCount + " queue size = "+ datagramQueue_.size()+ " biggest queue size = " + biggestQueueSeen);
 
         return true;
     }
 
-    /**
-     * The main thread loop.
-     */
-    public void run() {
-        /*
-         * It should occasionally check to see if the
-         * NetIFs plugged into the ports are alive.
-         */      
-
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Running");
-
-        while (true) {
-
-            long now=  System.currentTimeMillis();
-
-            synchronized (this) {
-                int queueSize = datagramQueue_.size();
-                if (running ||  queueSize > 0) {
-                    if (queueSize > 0) {
-                        //Logger.getLogger("log").logln(USR.ERROR, "Got datagram to process");
-                        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "queue size " + datagramQueue_.size());
-                        //Logger.getLogger("log").log(USR.EXTRA,"P");
-
-                        processDatagram();
-
-                        // check queue draining status
-                        if (queueSize <= LOW_MARK) {
-                            drainingQueue = false;
-                        }
-
-                        continue;
-                    } else {
-                        // nothing in queue
-                        waitUntil(now + 100);
-                    }
-                } else {
-                    // not running and nothing left in queue
-                    break;
-                }
-            }
-        }
-
-        theEnd();
 
 
-    }
 
-
-    /**
-     * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
-     */
-    private void waitFor() {
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "waitFor");
-        
-        try {
-            synchronized(this) {
-              setTheEnd();
-              notifyAll(); //Attempt to wake "the end" process
-              wait();
-            }
-        } catch (InterruptedException ie) {
-        }
-    }
-    
-    /**
-     * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
-     */
-    private void theEnd() {
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "theEnd");
-        while (!ended()) {
-            try {
-                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
-                wait(100);
-            } catch (Exception e) {
-                // Logger.getLogger("log").logln(USR.ERROR, leadin() + "The end interrupted");
-            }
-        }
-        synchronized(this) {
-            notifyAll();
-        }
-    }
-
-    synchronized void setTheEnd() {
-        theEnd= true;
-    }
-
-    synchronized boolean ended() {
-      return theEnd;  
-    }
-
-
-    /**
-     * Wait until a specified absolute time is milliseconds.
-     */
-    void waitUntil(long time){
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
-        long now = System.currentTimeMillis();
-
-        if (time <= now)
-            return;
-        try {
-            long timeout = time - now + 1;
-
-            synchronized (this) {
-                waiting = true;
-
-                wait(timeout);
-
-                waiting = false;
-
-            }
-
-        } catch(InterruptedException e){
-            //Logger.getLogger("log").logln(USR.ERROR, "Wait interrupted");
-            waiting = false;
-        }
-    }
-    
-    /** Calculate when the next table send event is */
-    synchronized long calcNextTableSendTime() {
-        long now= System.currentTimeMillis();
-        long nextUpdateTime= now+options_.getMaxCheckTime();
-        nextUpdateIF_= null;
-        for (NetIF n: listNetIF()) {
-            
-            Long next= nextTableUpdateTime_.get(n);
-            if (next == null) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+"NetIF not in nextTableTime");
-                continue;
-            }
-            //Logger.getLogger("log").logln(USR.ERROR, "Considering update from "+n+" at time "+next);
-            if (next < nextUpdateTime) {
-                //Logger.getLogger("log").logln(USR.ERROR, "Next update interface is now "+n);
-                nextUpdateTime= next;
-                nextUpdateIF_= n;
-            }
-        }
-        //Logger.getLogger("log").logln(USR.ERROR, "Next event at "+nextUpdateTime+" from "+nextUpdateIF_);
-        return nextUpdateTime;
-    }
-    
-    /** Now send a routing table */
-    synchronized void sendNextTable() {
-        //Logger.getLogger("log").log(USR.EXTRA, "T");
-        NetIF inter = nextUpdateIF_;
-        long now= System.currentTimeMillis();
-        if (inter == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "No table to send");
-            
-            return;
-        }
-
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table " + table_ + " for "+ inter);
-
-        byte[]table= table_.toBytes();
-
-        byte []toSend= new byte[table.length+1];
-        if (table.length % 8 != 0) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Routing table length not multiple of 8");
-        }
-        toSend[0]= (byte)'T';
-        System.arraycopy(table, 0, toSend,1,table.length);
-        ByteBuffer buffer = ByteBuffer.allocate(table.length+1);
-        buffer.put(toSend);
-        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
-
-        datagramOutCount++;
-        inter.sendDatagram(datagram);  
-        
-        lastTableUpdateTime_.put(inter,now);
-        nextTableUpdateTime_.put(inter,now+options_.getMaxNetIFUpdateTime());
-        //Logger.getLogger("log").logln(USR.ERROR, "Next table update time"+nextUpdateTime_);
-
-    }
-      
-    /** NetIF wants to send a routing Request */
-    synchronized void queueRoutingRequest(NetIF netIF) {
-        long now= System.currentTimeMillis();
-        Long last= lastTableUpdateTime_.get(netIF);
-        Long curr= nextTableUpdateTime_.get(netIF);
-        if (last == null || curr == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+"NetIF not in nextTableTime");
-            return;
-        }
-        Long next= last + options_.getMinNetIFUpdateTime();
-        
-        if (next >= curr) // Already updating at this time or earlier 
-            return;
-        nextTableUpdateTime_.put(netIF,next);
-        if (next <= now) {
-            // WAS notifyAll();
-            routingTableTransmitter.informNewData();
-        }
-        
-    }  
-      
     /**
      * Add a Network Interface to this Router.
      */
     public synchronized RouterPort addNetIF(NetIF netIF) {
         Address address = netIF.getAddress();
-
+        Address remoteAddress = netIF.getRemoteRouterAddress();
         // add this address into the routableAddresses set
         routableAddresses.add(address);
-            
-        // tell the NetIF, this is its listener
-        netIF.setNetIFListener(this);
-
         // is this actually the local NetIF
-        boolean localPort= (address.asInteger() == 0);
-
+        boolean localPort= netIF.isLocal();
         // bind NetIF into a port
         RouterPort rp= null;
         if (!localPort) {
+            if (address.equals(remoteAddress)) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                  "netIF has same remote and local address");
+                return null;
+            }
             int nextFree = findNextFreePort();
-
             rp = new RouterPort(nextFree, netIF);
-
             ports.set(nextFree, rp);
-
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
-        }
-        
+        }        
         // it is the local port
         if (localPort) {
             if (localNetIF != null) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Attempt to create second local multiplex port");
             }
             localNetIF= netIF;
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "added localNetIF: ");
             return null;
         }
 
@@ -382,9 +173,6 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             sendToOtherInterfaces(netIF);
             
         }
-
-        notifyAll();
-
         return rp;
     }
     
@@ -422,7 +210,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             // Remove table update times
             lastTableUpdateTime_.remove(netIF);
             nextTableUpdateTime_.remove(netIF);
-            notifyAll();
+            routingTableTransmitter.informNewData();
             if (table_.removeNetIF(netIF)) {
                 sendToOtherInterfaces(netIF);
             }
@@ -443,18 +231,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
 
         if (l == null)  {
             return;
-        } else {
-            for (NetIF i: l) {
-                Address address = i.getAddress();
-                if (address.asInteger() == 0) {
-                    // dont queue RoutingTable for 0
-                } else if (! i.equals(inter)) {
-                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Queuing routes to other interface "+i);
-                    queueRoutingRequest(i);
-
-                } else {
-                    // dont send out RoutingTable
-                }
+        }
+        for (NetIF i: l) {
+            if (i.isLocal() == false && !i.equals(inter)) {
+                queueRoutingRequest(i);
             }
         }
     }
@@ -537,96 +317,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         }
     }
 
-    /**
-     * Can the NetIFListener accept a new datagram.
-     */
-    public synchronized boolean canAcceptDatagram(NetIF netIF) {
-        // if draining  the queue, don't accept
-        if (drainingQueue) {
-            return false;
-        } else {
-            // check if we hit the high water mark
-            if (datagramQueue_.size() > HIGH_MARK) {
-                drainingQueue = true;
-                //Logger.getLogger("log").log(USR.EXTRA, "-");
-                return false;
-            } else {
-                //Logger.getLogger("log").log(USR.EXTRA, "+");
-                return true;
-            }
-        }
-    }
-
-
-    /**
-     * A NetIF has a datagram.
-     */
-    public synchronized boolean datagramArrived(NetIF netIF, Datagram datagram) {
-        if (datagram == null)
-            return false;
-
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "D(" + datagramInCount + ")");
-
-        //Logger.getLogger("log").log(USR.EXTRA, "A");
-
-        datagramInCount++;
-
-        datagramQueue_.add(new DatagramHandle(datagram, netIF));
-
-        /*
-        try {
-            datagramQueue_.put(new DatagramHandle(datagram, netIF));
-        } catch (InterruptedException ie) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "put interrupted on D(" + datagramInCount + ")");
-        }
-        */
-
-        if (datagramQueue_.size() > biggestQueueSeen) {
-            biggestQueueSeen = datagramQueue_.size();
-        }
-
-
-        if (waiting) {
-            notifyAll();
-        } 
-
-        return true;
-    }
-   
-   
-    public synchronized boolean processDatagram() {
-        
-        //if (datagramQueue_.size() == 0)
-        //    return false;
-
-        DatagramHandle datagramHandle = null;;
-        try {
-            datagramHandle =  datagramQueue_.take();
-        } catch (InterruptedException ie) {
-        }
-
-        //WAS DatagramHandle datagramHandle = datagramQueue_.poll(); 
-
-        // inspect
-        Datagram datagram = datagramHandle.datagram;
-        NetIF netIF = datagramHandle.netIF;
-
-        if (datagram == null) {
-            return false;
-        }
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " GOT DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
-        if (ourAddress(datagram.getDstAddress())) {
-            //Logger.getLogger("log").logln(USR.ERROR, "OUR DATAGRAM");
-            receiveOurDatagram(datagram,netIF);
-        } else {
-            //Logger.getLogger("log").logln(USR.ERROR, "FORWARDING DATAGRAM");
-            forwardDatagram(datagram);
-        }
-        return true;
-    }
-    
     /** Is this datagram for us */
-    public synchronized boolean ourAddress(Address addr)
+    public boolean ourAddress(Address addr)
     {
         //Logger.getLogger("log").logln(USR.STDOUT, "DATAGRAM WITH NULL ADDRESS");
         if (addr == null )
@@ -634,110 +326,50 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         else {
             return routableAddresses.contains(addr);
         }
-
-        /*
-        if (addr.equals(router.getAddress()))
-            return true;
-        for (NetIF n: listNetIF()) { 
-           if (addr.equals(n.getAddress())) {
-               //System.err.println ("ADDRESS MATCH "+addr+ " OUR INTERFACE "+n.getAddress());
-               return true;
-           }
-        }
-        return false;
-        */
     }
     
-    /** Datagram which has arrived is ours */
-    void  receiveOurDatagram(Datagram datagram, NetIF netIF) {
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " receiveOurDatagram ");
-         
-        if (datagram.getProtocol() == Protocol.CONTROL) {
-            processControlDatagram(datagram, netIF);
-        } else {
-            processDatagram(datagram, netIF);
-        }
-    }
 
-    /** Send a datagram */
-    synchronized void sendDatagram(Datagram datagram)
-    {
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + " SEND = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+ 
+     
 
-        Address addr= datagram.getDstAddress();
-        //Logger.getLogger("log").logln(USR.ERROR, "Forwarding datagram with source "+dg.getSrcAddress());
-        NetIF inter= table_.getInterface(addr);
-        if (inter == null) {  // Routing table returns no interface
-            
-            if (ourAddress(addr)) {
-                receiveOurDatagram(datagram, null);
-                return;
-            } else {
-                noRoute(datagram);
-            }
 
-        } else {
-            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " sending datagram to "+addr);
-            datagramOutCount++;
 
-            inter.sendDatagram(datagram);
-        }
-    }
-
-    /** Forward a datagram */
-    synchronized void forwardDatagram(Datagram datagram)
-    {
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + " FORWARD = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
-
-        Address addr= datagram.getDstAddress();
-        //Logger.getLogger("log").logln(USR.ERROR, "Forwarding datagram with source "+dg.getSrcAddress());
-        NetIF inter= table_.getInterface(addr);
-
-        if (inter == null) {  // Routing table returns no interface
-            
-            if (ourAddress(addr)) {
-                receiveOurDatagram(datagram, null);
-                return;
-            } else {
-                noRoute(datagram);
-            }
-            
-            
-        } else {
-            if (datagram.TTLReduce()) {
-                datagramOutCount++;
-                inter.forwardDatagram(datagram);
-            } else {
-                sendTTLExpired(datagram);
-            }
-        }
-    }
-    
     /**
-     * Can we route this datagram.
+     * Return either the NetIF for the datagram or failing this null to indicate
+     unroutable or datagram is for router
      */
-    public synchronized boolean canRoute(Datagram datagram) {
-        Address addr= datagram.getDstAddress();
-        NetIF inter= table_.getInterface(addr);
-
-        if (inter == null) {  // Routing table returns no interface
-            
-            if (ourAddress(addr)) {
-                // it's for ourselves
-                return true;
+    public DatagramDevice getRoute(Datagram dg) {
+        Address addr= dg.getDstAddress();
+        NetIF netif= table_.getInterface(addr);
+        if (ourAddress(addr)) {
+            if (dg.getDstPort() == 0) {
+                return this;
             } else {
-                return false;
+                return localNetIF;
             }
-        } else {
-            return true;
-        }            
+        }
+        if (netif != null)
+            return netif;
+        return null;
     }
-
-    synchronized void noRoute(Datagram dg) 
-    {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + " no route to "+dg.getDstAddress() + " for " + dg.getSrcAddress() + "/" + dg.getSrcPort() + " -> " + dg.getDstAddress() + "/" + dg.getDstPort());
-        /** TODO -- improve this */
+    
+    
+    /** Get the Fabric Device which this packet should be sent to */
+    public FabricDevice getRouteFabric(Datagram dg) {
+        if (ourAddress(dg.getDstAddress())) {
+            if (dg.getDstPort() == 0 || dg.getProtocol() == Protocol.CONTROL) 
+                return fabricDevice_;
+            else {
+                return localNetIF.getFabricDevice();
+            }
+        }
+        DatagramDevice inter= getRoute(dg);
+        if (inter == null)
+            return null;
+        return inter.getFabricDevice();
     }
+    
+    
     
     /** Return a TTL expired datagram unless this is a TTL expired datagram */
     synchronized void sendTTLExpired(Datagram dg)
@@ -762,21 +394,51 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         sendDatagram(datagram);
     }
     
+        /** NetIF wants to send a routing Request */
+    synchronized void queueRoutingRequest(NetIF netIF) {
+        long now= System.currentTimeMillis();
+        Long last= lastTableUpdateTime_.get(netIF);
+        Long curr= nextTableUpdateTime_.get(netIF);
+        if (last == null || curr == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"NetIF not in nextTableTime");
+            return;
+        }
+        Long next= last + options_.getMinNetIFUpdateTime();
+        
+        if (next >= curr) // Already updating at this time or earlier 
+            return;
+        nextTableUpdateTime_.put(netIF,next);
+        if (next <= now) {
+            routingTableTransmitter.informNewData();
+        }
+        
+    }  
+    
+        /** Datagram which has arrived is ours */
+    public boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " receiveOurDatagram ");
+        if (running == false) {  // If we're not running simply pretend to have received it
+            return true;
+        }
+    
+        if (datagram.getProtocol() == Protocol.CONTROL) {
+            processControlDatagram(datagram, device);
+        } else {
+            processOrdinaryDatagram(datagram, device);
+        }
+        return true;
+    }
+
+
+    
     /**
      * Process a datagram for ourselves.
      * NetIF is the original NetIF that the datagram was received on.
      */
-    synchronized  void  processDatagram(Datagram datagram, NetIF netIF) {
+    synchronized  void  processOrdinaryDatagram(Datagram datagram, DatagramDevice device) {
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
-        // forward datagram if there is a local NetIF
-        if (localNetIF != null && datagram.getDstPort() != 0) {
-            localNetIF.forwardDatagram(datagram);
-            return;
-        }
-
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " FABRIC GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
-
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " FABRIC GOT ORDINARY DATAGRAM from "  + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
         return;
     }
@@ -785,12 +447,16 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
      * Process a control datagram
      * NetIF is the original NetIF that the datagram was received on.
      */
-    synchronized boolean  processControlDatagram(Datagram dg,NetIF netIF) {
+    synchronized boolean  processControlDatagram(Datagram dg,DatagramDevice device) {
        
-
+        NetIF netif= null;
+        if (device != null && device.getClass().equals(TCPNetIF.class)) {
+            netif= (TCPNetIF)device;
+        }
         // forward datagram if there is a local NetIF and port is not zero
         if (localNetIF != null && dg.getDstPort() != 0) {
-            localNetIF.forwardDatagram(dg);
+            //localNetIF.forwardDatagram(dg);
+            System.err.println("TODO FORWARD DATAGRAM to ASM");
             //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"datagram to port "+dg.getDstPort()+" passed to LOCAL NETIF");
             
             return true;
@@ -811,14 +477,47 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
        
 
         if (controlChar == 'C') {
-            netIF.remoteClose();
+            if (netif != null) {
+                netif.remoteClose();
+                removeNetIF(netif);
+            } else {
+                String className= "null";
+                String name= "null";
+                if (device != null) {
+                    name= device.getName();
+                    className= device.getClass().getName();
+                }
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                  "Remote close on object which is not NetIF" + " " +className + " " +
+                   name);
+                
+            }
             return true;
         }
         if (controlChar == 'T') {
             if ((payload.length -1) % 8 != 0) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+"Routing table length not multiple of 8");
             }
-            receiveRoutingTable(payload,netIF);
+            if (netif == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                    "Received routing table from object not NetIF");
+                if (device != null) {
+                  Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                    "Sending device "+device.getName()+" "+device.getClass());
+                  
+                }
+                
+                SimpleRoutingTable t= null;
+                try {
+                   t= new SimpleRoutingTable(payload,netif);
+                } catch (Exception e) {
+                }
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+t);
+            } else {
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+
+                //    "Received routing table from "+netif);
+                receiveRoutingTable(payload,netif);
+            }
             return true;
         }
         
@@ -861,7 +560,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /** Routing table received via netIF */
     synchronized void receiveRoutingTable(byte []bytes, NetIF netIF)
     {   
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Received routing table from " + netIF);
+        //sLogger.getLogger("log").logln(USR.STDOUT, leadin()+"Received routing table from " + netIF);
 
         SimpleRoutingTable t;
         try {
@@ -973,10 +672,20 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         return null;
     }
     
+    /** 
+    */
+    public void setNetIFListener(NetIFListener l) {
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Call to setNETIFListener illegal");
+    }
+    
+    public NetIFListener getNetIFListener() {
+        return this;
+    }
+    
      /** 
      * Get a list of all connected Network Interfaces
      */
-    public synchronized List<NetIF> listNetIF() {
+    public List<NetIF> listNetIF() {
         ArrayList<NetIF> list = new ArrayList<NetIF>();
         int limit = ports.size();
         for (int p = 0;  p < limit; p++) {
@@ -1025,6 +734,41 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
         return true;
     }
     
+    public Address getAddress() {
+        return router.getAddress();
+    } 
+    
+    public void setAddress(Address a) {
+        router.setAddress(a);
+    }
+    
+    public String getName() {
+        return name_;
+    }
+    
+    public void setName(String n) {
+        name_= n;
+    }
+    
+    public FabricDevice getFabricDevice() {
+        return fabricDevice_;
+    }
+    
+    public boolean sendDatagram(Datagram dg)
+    {
+        dg.setSrcAddress(router.getAddress());
+        return enqueueDatagram(dg);
+    }
+    
+    public boolean enqueueDatagram(Datagram dg)
+    {
+        try {
+           return fabricDevice_.addToInQueue(dg, this);
+        } catch (NoRouteToHostException e) {
+            
+        }
+        return false;
+    }
     
     /** Echo command received */
     public synchronized boolean echo (int id) {
@@ -1073,18 +817,21 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
     /**
      * A Thread that sends out the Routing Table
      */
-    class RoutingTableTransmitter extends Thread {
+class RoutingTableTransmitter extends Thread {
         // The Fabric
         SimpleRouterFabric fabric;
 
         // is running
         boolean running = false;
 
+
+        Object waitObj_= null;
         /**
          * Constructor
          */
         public RoutingTableTransmitter(SimpleRouterFabric srf) {
             fabric = srf;
+            waitObj_= new Object();
 
             setName("RoutingTableTransmitter-" + fabric.hashCode());
         }
@@ -1107,14 +854,14 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
                 long now=  System.currentTimeMillis();
 
                 // dont need to do this every time, but how
-                nextUpdateTime = fabric.calcNextTableSendTime();
+                nextUpdateTime = calcNextTableSendTime();
 
                 //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run TIME: "+now + " nextUpdateTime: " + nextUpdateTime + " diff: " + (nextUpdateTime - now));
             
                 if (nextUpdateTime <= now) {
                     //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Sending table");
 
-                    fabric.sendNextTable();
+                    sendNextTable();
                     continue;
                 }
             
@@ -1133,38 +880,102 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener, Runnable
             //theEnd();
         }
 
-        /**
-         * Wait until a specified absolute time is milliseconds.
-         */
-        void waitUntil(long time){
-            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
-            long now = System.currentTimeMillis();
-
-            if (time <= now)
-                return;
-            try {
-                long timeout = time - now + 1;
-
-                synchronized (this) {
-                    wait(timeout);
-                }
-
-            } catch(InterruptedException e){
-                //Logger.getLogger("log").logln(USR.ERROR, "Wait interrupted");
+      
+          /** Calculate when the next table send event is */
+    synchronized long calcNextTableSendTime() {
+        long now= System.currentTimeMillis();
+        long nextUpdateTime= now+options_.getMaxCheckTime();
+        nextUpdateIF_= null;
+        for (NetIF n: listNetIF()) {
+            if (n.isLocal())
+                continue;
+            Long next= nextTableUpdateTime_.get(n);
+            if (next == null) {
+                //for whatever reason this is not in table -- add it
+                nextTableUpdateTime_.put(n,nextUpdateTime);
+                continue;
+            }
+            //Logger.getLogger("log").logln(USR.ERROR, "Considering update from "+n+" at time "+next);
+            if (next < nextUpdateTime) {
+                //Logger.getLogger("log").logln(USR.ERROR, "Next update interface is now "+n);
+                nextUpdateTime= next;
+                nextUpdateIF_= n;
             }
         }
-
+        //Logger.getLogger("log").logln(USR.ERROR, "Next event at "+nextUpdateTime+" from "+nextUpdateIF_);
+        return nextUpdateTime;
+    }
+    
 
         /**
          * Notify 
          */
         public void informNewData() {
-            synchronized(this) {
-                notifyAll();
+            synchronized(waitObj_) {
+                waitObj_.notify();
             }
 
         }
 
+
+    /**
+     * Wait until a specified absolute time is milliseconds.
+     */
+    void waitUntil(long time){
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
+        long now = System.currentTimeMillis();
+
+        if (time <= now)
+            return;
+        try {
+            long timeout = time - now + 1;
+
+            synchronized (waitObj_) {
+
+                waitObj_.wait(timeout);
+
+            }
+
+        } catch(InterruptedException e){
+        }
+    }
+    
+  
+    /** Now send a routing table */
+    synchronized void sendNextTable() {
+        //Logger.getLogger("log").log(USR.EXTRA, "T");
+        NetIF inter = nextUpdateIF_;
+        long now= System.currentTimeMillis();
+        if (inter == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "No table to send");
+            
+            return;
+        }
+
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table " + table_ + " for "+ inter);
+
+        byte[]table= table_.toBytes();
+
+        byte []toSend= new byte[table.length+1];
+        if (table.length % 8 != 0) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Routing table length not multiple of 8");
+        }
+        toSend[0]= (byte)'T';
+        System.arraycopy(table, 0, toSend,1,table.length);
+        ByteBuffer buffer = ByteBuffer.allocate(table.length+1);
+        buffer.put(toSend);
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+        datagram.setDstAddress(inter.getRemoteRouterAddress());
+        datagramOutCount++;
+        sendDatagram(datagram);
+        lastTableUpdateTime_.put(inter,now);
+        nextTableUpdateTime_.put(inter,now+options_.getMaxNetIFUpdateTime());
+        //Logger.getLogger("log").logln(USR.ERROR, "Next table update time"+nextUpdateTime_);
+
+    }
+      
+
+      
 
         /**
          * Stop the RoutingTableTransmitter

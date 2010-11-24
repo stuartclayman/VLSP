@@ -89,7 +89,8 @@ public class RouterConnections implements Runnable {
         while (running) {
             try {
                 TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
-                NetIF netIF = new TCPNetIF(dst);
+                NetIF netIF = new TCPNetIF(dst,controller.getListener());
+                netIF.setName("Temp NetIF");
                 netIF.connect();
 
                 Socket local = dst.getSocket();

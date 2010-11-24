@@ -6,6 +6,7 @@ import usr.logging.*;
 import usr.router.NetIF;
 import usr.router.TCPNetIF;
 import usr.router.NetIFListener;
+import usr.router.FabricDevice;
 import usr.protocol.Protocol;
 import java.io.*;
 import java.net.*;
@@ -22,15 +23,24 @@ public class StubClient implements NetIFListener {
     public StubClient(String host, int port) {
         try {
             logger = Logger.getLogger("log");
-            logger.addOutput(System.err, new BitMask(USR.ERROR));
-
+        // tell it to output to stdout
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 1 set
+        logger.addOutput(System.out, new BitMask(USR.STDOUT));
+        // tell it to output to stderr
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 2 set
+        logger.addOutput(System.err, new BitMask(USR.ERROR));
 	    // initialise socket
             TCPEndPointSrc src = new TCPEndPointSrc(host, port);
 
-            netIF = new TCPNetIF(src);
+            netIF = new TCPNetIF(src,this);
             netIF.setAddress(new GIDAddress(1));
-            netIF.setNetIFListener(this);
+            
+            netIF.setName("StubClient");
+            netIF.setRemoteRouterAddress(new GIDAddress(555));
             netIF.connect();
+            int i;
             
             Logger.getLogger("log").logln(USR.ERROR, "StubClient: Connected to: " + host);
 
@@ -58,40 +68,33 @@ public class StubClient implements NetIFListener {
             datagram = DatagramFactory.newDatagram(buffer);
 
 
-            datagram.setDstAddress(new GIDAddress(47));
+            datagram.setDstAddress(netIF.getRemoteRouterAddress());
             datagram.setDstPort(3333);
-
-            if (netIF.sendDatagram(datagram) == false) {
-                return;
-            } else {
-
-                //Logger.getLogger("log").logln(USR.ERROR, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
+            try {
+                if (netIF.sendDatagram(datagram) == false) {
+                   Logger.getLogger("log").logln(USR.ERROR, "Failed: " + datagram + " with " + new String(datagram.getPayload()));
+                }
+            } catch (NoRouteToHostException e) {
+                Logger.getLogger("log").logln(USR.ERROR, "No route to host");
             }
         }
-
+        
         netIF.close();
     }
 
+  
     /**
-     * A NetIF is closing.
+     * Fake interface
      */
-    public boolean netIFClosing(NetIF netIF) {
-        return true;
+    public FabricDevice getRouteFabric(Datagram d) {
+        return netIF.getFabricDevice();
     }
-
-    /**
-     * Can accept a Datagram
-     */
-    public boolean canAcceptDatagram(NetIF n) {
-        return true;
+    
+    /** Client does not accept incoming traffic and has no address */
+    public boolean ourAddress(Address a) {
+        return false;
     }
-
-    /**
-     * Can route a Datagram
-     */
-    public boolean canRoute(Datagram d) {
-        return true;
-    }
+    
 
     /**
      * A NetIF has a datagram.

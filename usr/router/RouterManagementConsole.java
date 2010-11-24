@@ -62,13 +62,13 @@ public class RouterManagementConsole extends AbstractManagementConsole implement
         register(new AppStartCommand());
         register(new AppStopCommand());
         register(new AppListCommand());
-        register(new PingNeighboursCommand());
         register(new PingCommand());
         register(new RunCommand());
         register(new EchoCommand());
         register(new SetAPCommand());
         register(new GetNetIFStatsCommand());
         register(new GetSocketStatsCommand());
+        register(new RouterOKCommand());
     }
     
 }

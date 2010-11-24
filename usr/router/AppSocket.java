@@ -225,8 +225,9 @@ public class AppSocket {
             dg.setDstAddress(remoteAddress);
             dg.setDstPort(remotePort);
         }
-
-        appSockMux.socketSendDatagram(dg);
+        if (appSockMux.sendDatagram(dg) == false) {
+              Logger.getLogger("log").logln(USR.ERROR, "AppSocket: forwardDatagram queue full in ASM");
+        }
     }
 
     /**

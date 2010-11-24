@@ -6,6 +6,7 @@ import usr.router.NetIF;
 import usr.router.NetIFListener;
 import usr.router.TCPNetIF;
 import usr.protocol.Protocol;
+import usr.router.*;
 import usr.logging.*;
 import java.io.*;
 import java.net.*;
@@ -15,12 +16,12 @@ import java.util.TimerTask;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 
-public class StubServer implements NetIFListener {
+public class StubServer extends MinimalDatagramDevice implements NetIFListener  {
     final static int PORT_NUMBER = 4433;
 
     static BitMask normal;
     static BitMask error;
-
+    
     TCPNetIF netIF;
     ConnectionOverTCP connection;
     ServerSocket serverSocket;
@@ -36,15 +37,25 @@ public class StubServer implements NetIFListener {
     int diffs = 0;
     // start time
     long t0 = 0;
-
+    Address addr;
     // Timer stuff
     Timer timer;
     TimerTask timerTask;
+    int listenPort= 0;
+    Object endObject_= null;
 
-    public StubServer(int listenPort) throws IOException {
+    public StubServer(int lp) throws IOException {
+        super("StubSeverver Fabric");
+        listenPort= lp;
+        addr= new GIDAddress(555);
+        setAddress(addr);  // Dummy address for us
+    }    
+        
+    void run() {
+        endObject_= new Object();
+        start();  //  Starts Minimal datagram device
         normal = new BitMask(USR.STDOUT);
         error = new BitMask(USR.ERROR);
-
         // allocate a new logger
         logger = Logger.getLogger("log");
         // tell it to output to stdout
@@ -55,8 +66,7 @@ public class StubServer implements NetIFListener {
         // and tell it what to pick up
         // it will actually output things where the log has bit 2 set
         logger.addOutput(System.err, error);
-
-
+        
 
 	// initialise the socket
         try {
@@ -66,13 +76,14 @@ public class StubServer implements NetIFListener {
 
             TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
 
-            netIF = new TCPNetIF(dst);
-            netIF.setNetIFListener(this);
+            netIF = new TCPNetIF(dst, this);
+            netIF.setName("TCPNetIF");
+            netIF.setRemoteRouterAddress(new GIDAddress(1));
             netIF.connect();
             logger.log(error, "StubServer: Listening on port: " + listenPort + "\n");
         } catch (IOException ioe) {
             logger.log(error, "StubServer: Cannot listen on port: " + listenPort + "\n");
-            throw ioe;
+            return;
         }
 
         // set up timer to count throughput
@@ -102,26 +113,29 @@ public class StubServer implements NetIFListener {
                     return 0;
                 }
             };
+         synchronized(endObject_) {
+            try {
+                endObject_.wait();
+            } catch (InterruptedException e) {
+            
+            }
+         }
+         stop();
     }
 
-    /**
-     * Can accept a Datagram
+     /**
+     * Route either outbound down the interface or to ourselves.
      */
-    public boolean canAcceptDatagram(NetIF n) {
-        return true;
+    public FabricDevice getRouteFabric(Datagram d) {
+        if (ourAddress(d.getDstAddress())) {
+            return getFabricDevice();
+        }
+        return netIF.getFabricDevice();
     }
-
-    /**
-     * Can route a Datagram
-     */
-    public boolean canRoute(Datagram d) {
-        return true;
-    }
-
     /**
      * A NetIF has a datagram.
      */
-    public boolean datagramArrived(NetIF netIF, Datagram datagram) {
+    public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice dd) {
         // if there is no timer, start one
         if (timer == null) {
             timer = new Timer();
@@ -131,8 +145,10 @@ public class StubServer implements NetIFListener {
 
         // check if Protocol.CONTROL
         if (datagram.getProtocol() == Protocol.CONTROL) {
-            this.netIFClosing(netIF);
-            return false;
+            synchronized(endObject_) {
+                endObject_.notify();
+            }
+            return true;
         }
 
         logger.log(normal, count + ". ");
@@ -158,7 +174,8 @@ public class StubServer implements NetIFListener {
     /**
      * A NetIF is closing.
      */
-    public boolean netIFClosing(NetIF netIF) {
+    public void stop() {
+        super.stop();
         long t1 = System.currentTimeMillis();
 
         long elapsed = t1 - t0;
@@ -168,19 +185,19 @@ public class StubServer implements NetIFListener {
         NumberFormat millisFormat = new DecimalFormat("000"); 
         logger.log(error, "elapsed[" + count + "] = " + secs + ":" + millisFormat.format(millis) + "\n");
 
-        netIF.close();
-
-        timer.cancel();
+        netIF.remoteClose();
+        if (timer != null) 
+            timer.cancel();
 
         timer = null;
-
-        return true;
+        
     }
-
 
 
 
     public static void main(String[] args) throws IOException {
         StubServer server = new StubServer(PORT_NUMBER);
+
+        server.run();
     }
 }

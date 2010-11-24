@@ -7,7 +7,7 @@ import usr.net.*;
 /**
  * A RouterFabric within UserSpaceRouting.
  */
-public interface RouterFabric {
+public interface RouterFabric extends NetIFListener {
     /**
      * Add a Network Interface to this Router.
      */

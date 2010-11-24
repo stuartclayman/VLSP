@@ -83,7 +83,8 @@ public class IncomingConnectionCommand extends RouterCommand {
 
             // create an address from the same host, but
             // using the passed in port number
-            InetSocketAddress refAddr = new InetSocketAddress(sc.socket().getInetAddress(), port);
+            InetSocketAddress refAddr = new InetSocketAddress(sc.socket().getInetAddress(),
+              port);
             //Logger.getLogger("log").logln(USR.ERROR, "ManagementConsole => " + refAddr + " # " + refAddr.hashCode());
 
             /*
@@ -96,6 +97,7 @@ public class IncomingConnectionCommand extends RouterCommand {
 
                 // set its name
                 netIF.setName(connectionID);
+               
                 // set its weight
                 netIF.setWeight(weight);
                 // set its Address

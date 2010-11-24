@@ -10,12 +10,14 @@ tables
 public class SimpleRoutingTable implements RoutingTable {
     // The routing table
     HashMap <String, SimpleRoutingTableEntry> table_= null;
+    NetIFListener listener_= null;
     
     /** Construct a new routing table */
     SimpleRoutingTable() {
-        table_= new HashMap<String,SimpleRoutingTableEntry>();
-        
+    
+        table_= new HashMap<String,SimpleRoutingTableEntry>();   
     }
+
 
     /** Construct a new routing table with the assumption that
     everything on it comes down a given interface -- note the first byte is T*/
@@ -43,8 +45,12 @@ public class SimpleRoutingTable implements RoutingTable {
         }
     }
     
-
-
+    /** Set the NetIFListener */
+    public void setListener(NetIFListener l) 
+    {
+        listener_= l;
+    }
+    
     /**
      * The size of the RoutingTable.
      */
@@ -82,15 +88,20 @@ public class SimpleRoutingTable implements RoutingTable {
     public  synchronized boolean addNetIF(NetIF inter, RouterOptions options) {
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table before = " + this);
+        Address a= inter.getAddress();
 
-        Address newif= inter.getAddress();
-        int weight= inter.getWeight();
-        //System.err.println("New entry to router "+newif.toString());
-        SimpleRoutingTableEntry e1= new SimpleRoutingTableEntry(newif, 0, null);
-        boolean changed1= mergeEntry(e1, null, options); // Add local entry
+        boolean changed1= false;
+        // If necessary add this local address to routing table
+        if (table_.get(a) == null) {
+            
+            SimpleRoutingTableEntry e1= new SimpleRoutingTableEntry(a, 0, null);
+            table_.put(a.toString(),e1);
+            changed1= true;
+        } 
         //System.err.println("New entry from router "+inter.getRemoteRouterAddress());
-        SimpleRoutingTableEntry e2= new SimpleRoutingTableEntry(inter.getRemoteRouterAddress(), 
-            0, inter);
+        // Note weight here is null because weight of inter will be added by merge
+        SimpleRoutingTableEntry e2= new SimpleRoutingTableEntry
+          (inter.getRemoteRouterAddress(),0, inter);
         boolean changed2= mergeEntry(e2, inter,options); // Add entry for remote end
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table after = " + this);
         return changed1 || changed2;
@@ -114,8 +125,12 @@ public class SimpleRoutingTable implements RoutingTable {
                 // If this entry is on the same interface we are getting
                 // info from but route is longer or no entry then assume
                 // we need updating
+                Address a= e.getAddress();
+                if (listener_.ourAddress(a)) { //  Don't update info about our own address
+                    //System.err.println("Address is our address");
+                    continue;
+                }
                 if (inter.equals(e.getNetIF())) {
-                    Address a= e.getAddress();
                     String addrStr= addressAsString(a);
                     SimpleRoutingTableEntry e2= table2.getEntry(addrStr);
                     // If interface can no longer reach address remove it
@@ -163,14 +178,20 @@ public class SimpleRoutingTable implements RoutingTable {
             //System.err.println ("NULL ENTRY");
             return false;
         }
-        Address addr= newEntry.getAddress();
-        
+       /* if (inter == null) {
+            System.err.println("Merging entry "+newEntry+" from null");
+        } else {
+            System.err.println("Merging entry "+newEntry+" from "+inter+" "+inter.getClass());
+        }*/
+        Address addr= newEntry.getAddress();  
+        if (listener_.ourAddress(addr))
+            return false;      
         int weight= 0;
-        if (inter == null) 
-            weight= 0;
-        else
+        if (inter != null) 
             weight= inter.getWeight();
       //  Logger.getLogger("log").logln(USR.ERROR, "Weight = "+weight);
+        // Can't be told more about our address
+
         SimpleRoutingTableEntry oldEntry= table_.get(addressAsString(addr));
         // CASE 1 -- NO ENTRY EXISTED
         if (oldEntry == null) {
@@ -178,7 +199,7 @@ public class SimpleRoutingTable implements RoutingTable {
             int newCost= newEntry.getCost() + weight;
             //Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY "+addr+" cost "+newCost);
             if (newCost > options.getMaxDist()) {
-                //Logger.getLogger("log").logln(USR.ERROR, "TOO EXPENSIVE");
+               //Logger.getLogger("log").logln(USR.ERROR, "TOO EXPENSIVE");
                 return false;
             } else {
                 SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(addr,newCost, inter);
@@ -187,6 +208,8 @@ public class SimpleRoutingTable implements RoutingTable {
                 return true;
             }
         }
+        // Can't
+        
         // CASE 2 -- ENTRY EXISTED BUT WAS MORE EXPENSIVE -- CHEAPER ROUTE FOUND
         int newCost= newEntry.getCost() + weight;
         if (oldEntry.getCost() > newCost) {
@@ -195,6 +218,8 @@ public class SimpleRoutingTable implements RoutingTable {
             oldEntry.setNetIF(inter);
             return true;
         }
+        
+        
         // CASE 3 -- ENTRY EXISTED WAS ON THIS INTERFACE 
         if (inter != null && inter.equals(oldEntry.getNetIF()) && newCost > oldEntry.getCost()) {
             if (newCost > options.getMaxDist()) {

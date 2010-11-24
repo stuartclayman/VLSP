@@ -76,10 +76,10 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     public String toString() {
         String entry;
         if (inter_ == null) {
-            entry= addressAsString(address_) + " " + cost_;
+            entry= addressAsString(address_) + " " + cost_+ " nullIF";
         } else {
-            entry= addressAsString(address_) + " " + cost_ + " " + 
-            inter_.getRemoteRouterName();
+            entry= addressAsString(address_) + " " + cost_ + " IF: " + 
+            inter_;
         }
         //Logger.getLogger("log").logln(USR.ERROR, "ENTRY: "+entry);
         return entry;
