@@ -35,6 +35,8 @@ public class FabricDevice implements FabricDeviceInterface {
     DatagramDevice device_;
     InQueueHandler inQueueHandler_= null;
     OutQueueHandler outQueueHandler_= null;
+        // counts
+    NetStats netStats_= null;
     
     int inDrop_= 0;
     int inSent_= 0;
@@ -52,6 +54,7 @@ public class FabricDevice implements FabricDeviceInterface {
     {
         device_= ep;
         listener_= l;
+        netStats_ = new NetStats();
     }
     
     /** Set the queue type for the inbound queue */
@@ -193,12 +196,17 @@ public class FabricDevice implements FabricDeviceInterface {
     
     void inSentPacket(Datagram dg) 
     {
+                // stats
+        netStats_.increment(NetStats.Stat.InPackets);
+        netStats_.add(NetStats.Stat.InBytes, dg.getTotalLength());
         inSent_++;
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" in sent "+inSent_);
     }
     
     void outSentPacket(Datagram dg) 
     {
+        netStats_.increment(NetStats.Stat.OutPackets);
+        netStats_.add(NetStats.Stat.OutBytes, dg.getTotalLength());
         outSent_++;
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" out sent "+outSent_);
     }
@@ -287,6 +295,10 @@ public class FabricDevice implements FabricDeviceInterface {
             inDroppedPacket(dg);
         }
         return false;
+    }
+    
+    public NetStats getNetStats() {
+        return netStats_;
     }
     
       /** Add a datagram to the out queue */

@@ -56,8 +56,7 @@ public class TCPNetIF implements NetIF, Runnable {
 
     Thread runThread_= null;
 
-    // counts
-    NetStats netStats;
+
 
     Object runWait_= null;
 
@@ -67,7 +66,7 @@ public class TCPNetIF implements NetIF, Runnable {
     public TCPNetIF(TCPEndPointSrc src, NetIFListener l) throws IOException {
         connection = new ConnectionOverTCP(src);
         listener= l;
-        netStats = new NetStats();
+        
     }
 
     /**
@@ -75,7 +74,6 @@ public class TCPNetIF implements NetIF, Runnable {
      */
     public TCPNetIF(TCPEndPointDst dst, NetIFListener l) throws IOException {
         connection = new ConnectionOverTCP(dst);
-        netStats = new NetStats();
         listener= l;
     }
     
@@ -100,7 +98,6 @@ public class TCPNetIF implements NetIF, Runnable {
             } catch (Exception ioe) {
                 Logger.getLogger("log").logln(USR.ERROR, 
                 "TCPNetIF readDatagram error " + connection + 
-                " " + netStats.getValue(NetStats.Stat.InPackets) + 
                 " IOException " + ioe);
                 ioe.printStackTrace();
             } 
@@ -280,12 +277,10 @@ public class TCPNetIF implements NetIF, Runnable {
     /** Finally send the datagram onwards */
     
     public boolean outQueueHandler(Datagram dg, DatagramDevice dd) {
-       // if (running_ == false)  // If we're no longer running simply pretend to have done it
-       //     return true;  
         try {
             return connection.sendDatagram(dg);
         } catch (IOException e) {
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + " failure in connection.send");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + " failure in connection.send "+address+"->"+remoteRouterAddress);
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + e.getMessage());
             return false;
         }
@@ -344,8 +339,8 @@ public class TCPNetIF implements NetIF, Runnable {
      * Get the interface stats.
      * Returns a NetStats object.
      */
-    public synchronized NetStats getStats() {
-        return netStats;
+    public NetStats getStats() {
+        return fabricDevice_.getNetStats();
     }
     
     /** Accessor function for the fabric device associated with this */
@@ -419,16 +414,12 @@ public class TCPNetIF implements NetIF, Runnable {
             
             sendDatagram(datagram); 
 
-            // stats
-            netStats.increment(NetStats.Stat.OutPackets);
-            netStats.add(NetStats.Stat.OutBytes, datagram.getTotalLength());
+
             sendDatagram(datagram2); 
-            netStats.increment(NetStats.Stat.OutPackets);
-            netStats.add(NetStats.Stat.OutBytes, datagram2.getTotalLength());
             return true;
 
         } catch (Exception ioe) {
-            Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: controlClose error " + connection + " " + netStats.getValue(NetStats.Stat.OutPackets) + " IOException " + ioe);
+            Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: controlClose error " + connection + " IOException " + ioe);
             //ioe.printStackTrace();
             return true;
         }

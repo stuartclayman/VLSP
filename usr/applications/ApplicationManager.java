@@ -218,7 +218,7 @@ public class ApplicationManager {
      * Static entry point to stop an Application.
      * Application name is passed in.
      */
-    public static ApplicationResponse stopApp(String appName) {
+    public synchronized static ApplicationResponse stopApp(String appName) {
         return singleton.terminate(appName);
     }
 

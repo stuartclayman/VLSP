@@ -94,6 +94,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
         // fabric device -- no queueing
         fabricDevice_= new FabricDevice(this, this);
+        // Need an out queue to prevent "in->triggers out" style lockups
+        fabricDevice_.setOutQueueDiscipline(FabricDevice.QUEUE_DROPPING);
+        fabricDevice_.setOutQueueLength(0);
 
         fabricDevice_.setName("RouterControl");
         fabricDevice_.start();
@@ -122,105 +125,6 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "datagramInCount = " + datagramInCount + " datagramOutCount = " + datagramOutCount + " queue size = "+ datagramQueue_.size()+ " biggest queue size = " + biggestQueueSeen);
 
         return true;
-    }
-
-
-
-
-    /**
-     * Add a Network Interface to this Router.
-     */
-    public synchronized RouterPort addNetIF(NetIF netIF) {
-        Address address = netIF.getAddress();
-        Address remoteAddress = netIF.getRemoteRouterAddress();
-        // add this address into the routableAddresses set
-        routableAddresses.add(address);
-        // is this actually the local NetIF
-        boolean localPort= netIF.isLocal();
-        // bind NetIF into a port
-        RouterPort rp= null;
-        if (!localPort) {
-            if (address.equals(remoteAddress)) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-                  "netIF has same remote and local address");
-                return null;
-            }
-            int nextFree = findNextFreePort();
-            rp = new RouterPort(nextFree, netIF);
-            ports.set(nextFree, rp);
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
-        }        
-        // it is the local port
-        if (localPort) {
-            if (localNetIF != null) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Attempt to create second local multiplex port");
-            }
-            localNetIF= netIF;
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "added localNetIF: ");
-            return null;
-        }
-
-        // sort out when to send routing tables to this NetIF
-        Long next= System.currentTimeMillis();
-        lastTableUpdateTime_.put(netIF,new Long(0));
-        nextTableUpdateTime_.put(netIF,next);
-        //Logger.getLogger("log").logln(USR.ERROR, "REQUEST NEW ROUTING TABLE UPDATE NOW");
-        // send a Routing table immediately
-        queueRoutingRequest(netIF);
-        
-        // add this to the RoutingTable
-        if (table_.addNetIF(netIF, options_)) {
-            sendToOtherInterfaces(netIF);
-            
-        }
-        return rp;
-    }
-    
-    /**
-     * Remove a Network Interface from this Router.
-     */
-    public synchronized boolean removeNetIF(NetIF netIF) {
-        // find port associated with netIF
-        //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NETIF");
-        Address address = netIF.getAddress();
-
-        // remove this address into the routableAddresses set
-        routableAddresses.remove(address);
-            
-        // is this actually the local NetIF
-        boolean localPort= (address.asInteger() == 0);
-
-        // it is the local port
-        if (localPort) {
-            closeLocalNetIF();
-            //Logger.getLogger("log").logln(USR.ERROR, "Removed local");
-            return true;
-        }
-
-        // check Ports
-        RouterPort port = findNetIF(netIF);
-
-        if (port != null) {
-            // disconnect netIF from port
-            //Logger.getLogger("log").logln(USR.ERROR, "CLOSE PORT");
-            closePort(port);
-            //Logger.getLogger("log").logln(USR.ERROR, "RESET PORT");
-            resetPort(port.getPortNo());
-
-            // Remove table update times
-            lastTableUpdateTime_.remove(netIF);
-            nextTableUpdateTime_.remove(netIF);
-            routingTableTransmitter.informNewData();
-            if (table_.removeNetIF(netIF)) {
-                sendToOtherInterfaces(netIF);
-            }
-            //Logger.getLogger("log").logln(USR.ERROR, "REMOVED");
-            return true;
-        } else {
-            //Logger.getLogger("log").logln(USR.ERROR, "NOT CONNECTED TO PORT");
-            // didn't find netIF in any RouterPort
-            return false;
-        }
     }
 
     /** Send routing table to all other interfaces apart from inter*/
@@ -360,6 +264,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
             if (dg.getDstPort() == 0 || dg.getProtocol() == Protocol.CONTROL) 
                 return fabricDevice_;
             else {
+                if (localNetIF == null) {// possible only during shutdown
+                    return null;
+                }
                 return localNetIF.getFabricDevice();
             }
         }
@@ -587,10 +494,6 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
      */
     public synchronized boolean netIFClosing(NetIF netIF) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Remote close from " + netIF);
-
-        if (localNetIF != null) 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "localNetIF  stats = " + localNetIF.getStats());
-
         if (!netIF.isClosed()) {
 
             boolean didit = removeNetIF(netIF);
@@ -789,7 +692,105 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         sendDatagram(datagram);
         return true;
     }
+  
+    /**
+     * Add a Network Interface to this Router.
+     */
+    public synchronized RouterPort addNetIF(NetIF netIF) {
+        Address address = netIF.getAddress();
+        Address remoteAddress = netIF.getRemoteRouterAddress();
+        // add this address into the routableAddresses set
+        routableAddresses.add(address);
+        // is this actually the local NetIF
+        boolean localPort= netIF.isLocal();
+        // bind NetIF into a port
+        RouterPort rp= null;
+        if (!localPort) {
+            if (address.equals(remoteAddress)) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                  "netIF has same remote and local address");
+                return null;
+            }
+            int nextFree = findNextFreePort();
+            rp = new RouterPort(nextFree, netIF);
+            ports.set(nextFree, rp);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
+        }        
+        // it is the local port
+        if (localPort) {
+            if (localNetIF != null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Attempt to create second local multiplex port");
+            }
+            localNetIF= netIF;
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "added localNetIF: ");
+            return null;
+        }
 
+        // sort out when to send routing tables to this NetIF
+        Long next= System.currentTimeMillis();
+        lastTableUpdateTime_.put(netIF,new Long(0));
+        nextTableUpdateTime_.put(netIF,next);
+        //Logger.getLogger("log").logln(USR.ERROR, "REQUEST NEW ROUTING TABLE UPDATE NOW");
+        // send a Routing table immediately
+        queueRoutingRequest(netIF);
+        
+        // add this to the RoutingTable
+        if (table_.addNetIF(netIF, options_)) {
+            sendToOtherInterfaces(netIF);
+            
+        }
+        return rp;
+    }
+    
+    /**
+     * Remove a Network Interface from this Router.
+     */
+    public synchronized boolean removeNetIF(NetIF netIF) {
+        // find port associated with netIF
+        //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NETIF");
+        Address address = netIF.getAddress();
+
+        // remove this address into the routableAddresses set
+        routableAddresses.remove(address);
+            
+        // is this actually the local NetIF
+        boolean localPort= (address.asInteger() == 0);
+
+        // it is the local port
+        if (localPort) {
+            closeLocalNetIF();
+            //Logger.getLogger("log").logln(USR.ERROR, "Removed local");
+            return true;
+        }
+
+        // check Ports
+        RouterPort port = findNetIF(netIF);
+
+        if (port != null) {
+            // disconnect netIF from port
+            //Logger.getLogger("log").logln(USR.ERROR, "CLOSE PORT");
+            closePort(port);
+            //Logger.getLogger("log").logln(USR.ERROR, "RESET PORT");
+            resetPort(port.getPortNo());
+
+            // Remove table update times
+            lastTableUpdateTime_.remove(netIF);
+            nextTableUpdateTime_.remove(netIF);
+            routingTableTransmitter.informNewData();
+            if (table_.removeNetIF(netIF)) {
+                sendToOtherInterfaces(netIF);
+            }
+            //Logger.getLogger("log").logln(USR.ERROR, "REMOVED");
+            return true;
+        } else {
+            //Logger.getLogger("log").logln(USR.ERROR, "NOT CONNECTED TO PORT");
+            // didn't find netIF in any RouterPort
+            return false;
+        }
+    }
+
+
+   
     /**
      * Create the String to print out before a message
      */
@@ -814,6 +815,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         }
     }
 
+  
     /**
      * A Thread that sends out the Routing Table
      */

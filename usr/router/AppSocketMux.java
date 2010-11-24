@@ -372,7 +372,7 @@ public class AppSocketMux implements NetIF {
      * Puts a datagram on the incoming queue for this network interface
      */
     public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
-        return fabricDevice_.addToInQueue(dg,null);
+        return fabricDevice_.blockingAddToInQueue(dg,this);
     }
 
 
