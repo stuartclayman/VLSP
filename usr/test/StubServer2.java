@@ -111,7 +111,10 @@ public class StubServer2 implements NetIFListener {
         return true;
     }
     
-
+    /** Deal with TTL expire */
+    public void TTLDrop(Datagram dg)
+    {
+    }
 
 
     /**

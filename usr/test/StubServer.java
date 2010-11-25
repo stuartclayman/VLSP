@@ -171,6 +171,12 @@ public class StubServer extends MinimalDatagramDevice implements NetIFListener  
         return true;
     }
 
+
+    /** Deal with TTL expire */
+    public void TTLDrop(Datagram dg)
+    {
+    }
+    
     /**
      * A NetIF is closing.
      */

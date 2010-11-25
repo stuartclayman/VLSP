@@ -39,18 +39,6 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         String value = request.value;
         SocketChannel channel = request.channel;
                
-         Logger logger = Logger.getLogger("log");
-        // tell it to output to stdout
-        // and tell it what to pick up
-        // it will actually output things where the log has bit 
-        // USR.STDOUT set
-        logger.addOutput(System.out, new BitMask(USR.STDOUT));
-        // tell it to output to stderr
-        // and tell it what to pick up
-        // it will actually output things where the log has bit
-        // USR.ERROR set
-        logger.addOutput(System.err, new BitMask(USR.ERROR));
-        // check command
         String[] parts = value.split(" ");
         if (parts.length != 3 && parts.length != 2) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection command: " + request);

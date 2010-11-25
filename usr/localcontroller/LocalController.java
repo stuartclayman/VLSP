@@ -246,17 +246,19 @@ public class LocalController implements ComponentController {
             if (child != null) {
                 child= null;
             }
-            pw.stop();
+            if (pw != null) {
+                pw.stop();
+            }
             //System.exit(-1);
             return null;
         }
         childProcessWrappers_.put(routerName, pw);
         RouterInteractor interactor = null;
 
-        // try 20 times, with 100 millisecond gap
+        // try 20 times, with 250 millisecond gap (max 5 seconds)
         int MAX_TRIES = 20;
         int tries = 0;
-        int millis = 100;
+        int millis = 250;
         boolean isOK = false;
         for (tries = 0; tries < MAX_TRIES; tries++) {
             // sleep a bit
@@ -282,10 +284,13 @@ public class LocalController implements ComponentController {
             // we didnt connect
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to connect to Router on port " + port1);
             // stop process
-            pw.stop();
+            if (pw != null) {
+                pw.stop();
+            }
             child= null;
             try {
-                interactor.shutDown();
+                if (interactor != null)
+                    interactor.shutDown();
             } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + 
                     "IOException connecting to Router on port " + port1);

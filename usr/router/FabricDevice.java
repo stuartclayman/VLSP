@@ -38,11 +38,6 @@ public class FabricDevice implements FabricDeviceInterface {
         // counts
     NetStats netStats_= null;
     
-    int inDrop_= 0;
-    int inSent_= 0;
-    int outDrop_= 0;
-    int outSent_= 0;
-    
     LinkedList<Object> inWaitQueue_= null;  // Queue stores objects waiting for 
     LinkedList<Object> outWaitQueue_= null;  // notification from blocking queue
    
@@ -172,25 +167,26 @@ public class FabricDevice implements FabricDeviceInterface {
     /** Register stats using these functions */
     void inDroppedPacket(Datagram dg) 
     {
-        inDrop_++;
+        
+        netStats_.increment(NetStats.Stat.InDropped);
         if (inIsBlocking()) {
-           Logger.getLogger("log").logln(USR.ERROR, leadin()+" in drops "+inDrop_);
+           Logger.getLogger("log").logln(USR.ERROR, leadin()+" in dropped packet");
         }
     }
 
     /** Register stats using these functions  --- packet dropped due to no route*/
     void inDroppedPacketNR(Datagram dg) 
     {
-        inDrop_++;
+         netStats_.increment(NetStats.Stat.InDropped);
        
     }
     
     void outDroppedPacket(Datagram dg) 
     
     {
-        outDrop_++;
+        netStats_.increment(NetStats.Stat.OutDropped);
         if (outIsBlocking()) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+" out drops "+outDrop_);
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+" out dropped packet");
         }
     }
     
@@ -199,7 +195,6 @@ public class FabricDevice implements FabricDeviceInterface {
                 // stats
         netStats_.increment(NetStats.Stat.InPackets);
         netStats_.add(NetStats.Stat.InBytes, dg.getTotalLength());
-        inSent_++;
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" in sent "+inSent_);
     }
     
@@ -207,7 +202,6 @@ public class FabricDevice implements FabricDeviceInterface {
     {
         netStats_.increment(NetStats.Stat.OutPackets);
         netStats_.add(NetStats.Stat.OutBytes, dg.getTotalLength());
-        outSent_++;
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" out sent "+outSent_);
     }
     
@@ -250,8 +244,8 @@ public class FabricDevice implements FabricDeviceInterface {
         Object waitHere= new Object();
         while(true) {
             
-            boolean sent= addToInQueue(dg, dd ,waitHere);
-            if (sent)
+            boolean processed= addToInQueue(dg, dd ,waitHere);
+            if (processed)
                 break;
             synchronized(waitHere) {
                 try {
@@ -269,7 +263,8 @@ public class FabricDevice implements FabricDeviceInterface {
         return addToInQueue(dg,dd,null);
     }
     
-    /** Add a datagram to the in queue */
+    /** Add a datagram to the in queue -- true means packet has been "dealt with" -- dropped or sent
+    false means "blocked" */
     public synchronized boolean addToInQueue(Datagram dg, DatagramDevice dd, Object waitObj) 
       throws NoRouteToHostException{
         
@@ -279,8 +274,16 @@ public class FabricDevice implements FabricDeviceInterface {
             name= dd.getName();
         }
         if (inQueueDiscipline_ == QUEUE_NOQUEUE) {
-            inSentPacket(dg);
-            return transferDatagram(dh);
+            boolean processed= transferDatagram(dh);
+            if (processed) {
+                return true;
+            }
+            if (waitObj == null || outIsBlocking() == false) {
+                inDroppedPacket(dg);
+                return true;
+            }
+            // Here we have not processed the datagram -- the user may resend later
+            return false;
         }
         // Queue the packet if possible
         if (inQueueLen_ == 0 || inQueue_.size() < inQueueLen_) {
@@ -291,20 +294,16 @@ public class FabricDevice implements FabricDeviceInterface {
         
         if (waitObj != null) {
             inWaitQueue_.addLast(waitObj);
-        } else {
-            inDroppedPacket(dg);
+            return false;
         }
-        return false;
+        inDroppedPacket(dg);
+        return true;
     }
     
     public NetStats getNetStats() {
         return netStats_;
     }
     
-      /** Add a datagram to the out queue */
-    public synchronized boolean addToOutQueue(DatagramHandle dh) throws NoRouteToHostException{
-        return addToOutQueue(dh,null);
-    }
     
     /** Set the listener device for this fabric device */
     public void setListener(NetIFListener l) {
@@ -316,10 +315,35 @@ public class FabricDevice implements FabricDeviceInterface {
         return listener_;
     } 
     
-        /** Add a datagram to the out queue */
+      /** Add a datagram to the out queue -- return true if datagram processed (dropped or sent)*/
+    public synchronized boolean addToOutQueue(DatagramHandle dh) throws NoRouteToHostException{
+        return addToOutQueue(dh,null);
+    }
+    
+    
+        /** Add a datagram to the out queue --
+        true means dealt with and accounted in stats
+        false means not dealt with*/
     public synchronized boolean addToOutQueue(DatagramHandle dh, Object waitObj) throws NoRouteToHostException{
+        if (dh.datagram.TTLReduce() == false) {
+            listener_.TTLDrop(dh.datagram);
+            inDroppedPacket(dh.datagram);
+            return true;
+        }
         if (outQueueDiscipline_ == QUEUE_NOQUEUE) {
-            return sendOutDatagram(dh);
+             boolean processed= sendOutDatagram(dh);
+             //sent
+             if (processed) {
+                  outSentPacket(dh.datagram);
+                  return true;
+             }
+             //blocked
+             if (waitObj != null && outIsBlocking()) {
+                  return false;
+             }
+             //dropped
+             outDroppedPacket(dh.datagram);
+             return true;
         }
         // Queue the packet if possible
         if (outQueueLen_ == 0 || outQueue_.size() < outQueueLen_) {
@@ -333,17 +357,21 @@ public class FabricDevice implements FabricDeviceInterface {
         return false;
     }
     
-    /** transfer datagram from in queue to out queue using no queue discipline */
+    /** transfer datagram from in queue to out queue using no queue discipline -- true
+     means dealt with and accounted for in stats -- false means could not send*/
     public boolean transferDatagram(DatagramHandle dh) throws NoRouteToHostException{
+        if (dh.datagram.TTLReduce() == false) {
+            listener_.TTLDrop(dh.datagram);
+            inDroppedPacket(dh.datagram);
+            return true;
+        }
         FabricDevice f= getRouteFabric(dh.datagram);
         if (f == null) {
             inDroppedPacketNR(dh.datagram); 
             throw (new NoRouteToHostException());
         }
         boolean sent= f.addToOutQueue(dh, null);
-        if (sent == false) {
-            inDroppedPacket(dh.datagram);
-        } else {
+        if (sent) {
             inSentPacket(dh.datagram);
         }
         return sent;
@@ -357,7 +385,13 @@ public class FabricDevice implements FabricDeviceInterface {
         if (dd != null) {
             name= dd.getName();
         }
-        return device_.outQueueHandler(dh.datagram, dh.datagramDevice);
+        boolean sent= device_.outQueueHandler(dh.datagram, dh.datagramDevice);
+        if (sent) {
+            outSentPacket(dh.datagram);
+        } else {
+            outDroppedPacket(dh.datagram);
+        }
+        return sent;
     }
     
     /** Is the inbound queue currently full */

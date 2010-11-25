@@ -16,5 +16,7 @@ public interface NetIFListener {
     /** Is this address an address associated with this netiflistener*/
     public boolean ourAddress(Address a);
     
+    /** Deal with TTL expire */
+    public void TTLDrop(Datagram dg);
 
 }

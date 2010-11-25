@@ -81,8 +81,12 @@ public class StubClient implements NetIFListener {
         
         netIF.close();
     }
+    
+    /** Deal with TTL expire */
+    public void TTLDrop(Datagram dg)
+    {
+    }
 
-  
     /**
      * Fake interface
      */
