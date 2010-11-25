@@ -277,13 +277,19 @@ public class TCPNetIF implements NetIF, Runnable {
     /** Finally send the datagram onwards */
     
     public boolean outQueueHandler(Datagram dg, DatagramDevice dd) {
+        boolean sent= false;
         try {
-            return connection.sendDatagram(dg);
+            sent= connection.sendDatagram(dg);
         } catch (IOException e) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + " failure in connection.send "+address+"->"+remoteRouterAddress);
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + e.getMessage());
             return false;
         }
+        if (sent == false) {
+            listener.closedDevice(this);
+            return false;
+        }
+        return true;
     }
     
     /** Close a netIF given remote end has called close -- this is done as a

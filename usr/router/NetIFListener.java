@@ -18,5 +18,8 @@ public interface NetIFListener {
     
     /** Deal with TTL expire */
     public void TTLDrop(Datagram dg);
+    
+    /** A datagram device has closed and must be removed */
+    void closedDevice(DatagramDevice dd);
 
 }

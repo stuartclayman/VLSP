@@ -62,8 +62,6 @@ public class AppSocketMux implements NetIF {
 
     boolean isClosed = false;
 
-    // stats for interface
-    NetStats netStats;
     // stats for each socket
     HashMap<Integer, NetStats> socketStats;
 
@@ -74,7 +72,6 @@ public class AppSocketMux implements NetIF {
         this.controller = controller;
         socketMap = new HashMap<Integer, AppSocket>();
         socketQueue = new HashMap<Integer, LinkedBlockingQueue<Datagram>>();
-        netStats = new NetStats();
         socketStats = new HashMap<Integer, NetStats>();
     }
 
@@ -295,7 +292,7 @@ public class AppSocketMux implements NetIF {
      * Returns a NetStats object.
      */
     public NetStats getStats() {
-        return netStats;
+        return fabricDevice_.getNetStats();
     }
 
     /**
@@ -306,7 +303,6 @@ public class AppSocketMux implements NetIF {
         // now add queues for sockets
         for (int port : socketStats.keySet()) {
             NetStats stats = socketStats.get(port);
-            stats.setValue(NetStats.Stat.OutQueue, socketQueue.get(port).size());
         }
 
         return socketStats;
@@ -399,7 +395,6 @@ public class AppSocketMux implements NetIF {
         if (socket == null) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
                 "Can't deliver to port " + dstPort);
-            netStats.increment(NetStats.Stat.InDropped);
             return true;  // Returns true as packet is dropped not blocked
         }
         LinkedBlockingQueue<Datagram> portQueue = getQueueForPort(dstPort);

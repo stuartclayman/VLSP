@@ -52,6 +52,7 @@ public class GetNetIFStatsCommand extends RouterCommand {
                 // put out netif name
                 statsString = netIF.getRemoteRouterName()+ " " +
                   netIF.getName() + " " + stats.toString();
+                //System.err.println(statsString);  
 
                 list(statsString);
                 count++;

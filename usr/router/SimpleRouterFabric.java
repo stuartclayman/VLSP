@@ -841,6 +841,15 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
     } 
 
+    public void closedDevice(DatagramDevice dd) {
+        if (dd instanceof NetIF) {
+            remoteRemoveNetIF((NetIF)dd);
+            return;
+        }
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+dd+" Datagram device reports as broken");
+    }
+    
+
     /**
      * Remove a Network Interface from this Router after remote request
      */

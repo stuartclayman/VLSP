@@ -334,6 +334,7 @@ public class FabricDevice implements FabricDeviceInterface {
              boolean processed= sendOutDatagram(dh);
              //sent
              if (processed) {
+                  inSentPacket(dh.datagram);
                   outSentPacket(dh.datagram);
                   return true;
              }
@@ -342,19 +343,24 @@ public class FabricDevice implements FabricDeviceInterface {
                   return false;
              }
              //dropped
+             inSentPacket(dh.datagram);
              outDroppedPacket(dh.datagram);
              return true;
         }
         // Queue the packet if possible
         if (outQueueLen_ == 0 || outQueue_.size() < outQueueLen_) {
             outQueue_.offer(dh);
+            inSentPacket(dh.datagram);
             return true;
         }
-        // Packet is dropped;
-        if (waitObj != null) {
+        // Packet is blocked -- do not know yet if it is sent or not
+        if (waitObj != null && outIsBlocking()) {
             outWaitQueue_.addLast(waitObj);
+            return false;
         } 
-        return false;
+        inSentPacket(dh.datagram);
+        outDroppedPacket(dh.datagram);
+        return true;
     }
     
     /** transfer datagram from in queue to out queue using no queue discipline -- true
