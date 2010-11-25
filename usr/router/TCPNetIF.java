@@ -291,6 +291,7 @@ public class TCPNetIF implements NetIF, Runnable {
     to be written to during close*/
     public synchronized void remoteClose() {
         if (closed) {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when remoteClose() called");
             return;
         }
         remoteClose= true;
@@ -300,13 +301,15 @@ public class TCPNetIF implements NetIF, Runnable {
     }
     
     /**
-     * Close a NetIF
+     * Close a NetIF -- must be synchronized to prevent close() exiting prematurely when a
+     * remoteClose has already been encountered -- close will never exit until the netif actually
+     * is closed
      */
     public synchronized void close() {
         Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: " + getName() + " -> Close");
         
         if (closed) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Already closed");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when close() called");
             return;
         }
         closed= true;
@@ -380,9 +383,6 @@ public class TCPNetIF implements NetIF, Runnable {
         fabricDevice_.setName(name);
         fabricDevice_.start();
         runThread_= new Thread(this,"TCPNetIF-"+name);
-
-        
-        
         runThread_.start();
     }
 
