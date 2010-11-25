@@ -286,13 +286,17 @@ public class TCPNetIF implements NetIF, Runnable {
         }
     }
     
-    /** Close a netIF given remote end has called close */
-    public void remoteClose() {
+    /** Close a netIF given remote end has called close -- this is done as a
+    spawned process since it would otherwise block out queues which might need
+    to be written to during close*/
+    public synchronized void remoteClose() {
         if (closed) {
             return;
         }
         remoteClose= true;
-        close();
+        CloseThread ct= new CloseThread(this);
+        Thread t= new Thread(ct,"RemoteClose-"+name);
+        t.start();
     }
     
     /**
@@ -437,6 +441,17 @@ public class TCPNetIF implements NetIF, Runnable {
     String leadin() {
       return "TCPNetIF "+name+":";
     }
-
+    
+    /** Thread to perform remote close on netif */
+    class CloseThread implements Runnable {
+        TCPNetIF netif_;
+        CloseThread(TCPNetIF n) {
+            netif_= n;
+        }
+        
+        public void run() {
+            netif_.close();
+        }
+    }
 
 }
