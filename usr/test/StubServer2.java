@@ -4,6 +4,7 @@ import usr.net.*;
 import usr.logging.*;
 import usr.router.NetIF;
 import usr.router.TCPNetIF;
+import usr.router.DatagramDevice;
 import usr.protocol.Protocol;
 import usr.logging.*;
 import usr.router.FabricDevice;
@@ -102,20 +103,17 @@ public class StubServer2 implements NetIFListener {
         return true;
     }
 
-    /**
-     * A NetIF is closing.
-     */
-    public boolean netIFClosing(NetIF netIF) {
-      
-        running= false;
-        return true;
-    }
+
     
     /** Deal with TTL expire */
     public void TTLDrop(Datagram dg)
     {
     }
 
+    /** A datagram device has closed and must be removed */
+    public void closedDevice(DatagramDevice dd){
+    
+    }
 
     /**
      * Read stuff

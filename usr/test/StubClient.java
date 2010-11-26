@@ -7,6 +7,7 @@ import usr.router.NetIF;
 import usr.router.TCPNetIF;
 import usr.router.NetIFListener;
 import usr.router.FabricDevice;
+import usr.router.DatagramDevice;
 import usr.protocol.Protocol;
 import java.io.*;
 import java.net.*;
@@ -85,6 +86,12 @@ public class StubClient implements NetIFListener {
     /** Deal with TTL expire */
     public void TTLDrop(Datagram dg)
     {
+    }
+
+
+    /** A datagram device has closed and must be removed */
+    public void closedDevice(DatagramDevice dd){
+    
     }
 
     /**

@@ -7,6 +7,7 @@ import usr.router.NetIFListener;
 import usr.router.TCPNetIF;
 import usr.protocol.Protocol;
 import usr.router.*;
+import usr.router.DatagramDevice;
 import usr.logging.*;
 import java.io.*;
 import java.net.*;
@@ -175,6 +176,11 @@ public class StubServer extends MinimalDatagramDevice implements NetIFListener  
     /** Deal with TTL expire */
     public void TTLDrop(Datagram dg)
     {
+    }
+    
+    /** A datagram device has closed and must be removed */
+    public void closedDevice(DatagramDevice dd){
+    
     }
     
     /**
