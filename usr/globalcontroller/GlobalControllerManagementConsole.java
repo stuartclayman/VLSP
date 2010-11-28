@@ -29,7 +29,7 @@ public class GlobalControllerManagementConsole extends AbstractManagementConsole
         // call superclass addRequest
         BlockingQueue<Request> rq = super.addRequest(q);
         // notify the GlobalController
-        globalController_.notify();
+        globalController_.wakeWait();
 
         return rq;
     }

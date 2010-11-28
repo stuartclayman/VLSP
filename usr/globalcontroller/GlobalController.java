@@ -46,6 +46,8 @@ public class GlobalController implements ComponentController {
     private int noLinks_=0;
     private RouterOptions routerOptions_= null;
     
+    private Object waitCounter_= null;
+    
     // Variables relate to traffic output
     private ArrayList <OutputType> trafficOutputRequests_= null;
     private String routerStats_= "";
@@ -115,6 +117,7 @@ public class GlobalController implements ComponentController {
       routerList_= new ArrayList<Integer>();
       options_= new ControlOptions(xmlFile_);
       routerOptions_= options_.getRouterOptions();
+      waitCounter_= new Object();
 
       // Redirect ouptut for error and normal output if requested in
       // router options file
@@ -854,7 +857,8 @@ public class GlobalController implements ComponentController {
     /**
      * Get the router stats -- method is blocking
      */
-    public synchronized List<String> getRouterStats()  {
+    public List<String> getRouterStats()  {
+       
         try {
             List<String> result = new ArrayList<String>();
 
@@ -879,16 +883,16 @@ public class GlobalController implements ComponentController {
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             return null;
         }
-        
+      
     }
 
     /** Shutdown called from console -- add shut down command to list to
     happen now */
-    public synchronized void shutDownCommand() {
+    public void shutDownCommand() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Shut down called from console");
         SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION,0,null);
         scheduler_.addEvent(e);
-        notifyAll();
+        wakeWait();
     }  
       
     void shutDown() {
@@ -1034,7 +1038,7 @@ public class GlobalController implements ComponentController {
 
     /** Output traffic from the network -- this merely triggers a request rahter
     than printing */
-    private synchronized void outputTraffic(OutputType o, long time) {
+    private  void outputTraffic(OutputType o, long time) {
         if (options_.isSimulation()) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + 
                 "Request for output of traffic makes sense only in context of emulation");
@@ -1056,9 +1060,9 @@ public class GlobalController implements ComponentController {
     }
     
     /** Receiver router traffic -- if it completes a set then output it */
-    public synchronized void receiveRouterStats(String stats)
+    public void receiveRouterStats(String stats)
     {
-        
+      synchronized(routerStats_) {
         statsCount_++;
         
         routerStats_= routerStats_.concat(stats);
@@ -1094,10 +1098,11 @@ public class GlobalController implements ComponentController {
         } catch (java.io.IOException ex) {
           
         }
+      }
     }
 
-    synchronized  void outputTraffic (OutputType o, long t, PrintStream p) {
-
+    void outputTraffic (OutputType o, long t, PrintStream p) {
+      synchronized(routerStats_) {
          if (routerStats_.equals(""))
             return;
          if (o.getParameter().equals("Local")) {
@@ -1111,9 +1116,10 @@ public class GlobalController implements ComponentController {
          } else {
              outputTrafficSeparate(o,t,p);
          }
+       }
     }
 
-    synchronized void outputTrafficLocal(OutputType o, long t, PrintStream p) 
+    void outputTrafficLocal(OutputType o, long t, PrintStream p) 
     {
         for (String s: routerStats_.split("\\*\\*\\*")) {
             String []args= s.split("\\s+");
@@ -1140,7 +1146,7 @@ public class GlobalController implements ComponentController {
         }
     }
     
-    synchronized void  outputTrafficAggregate (OutputType o, long t, PrintStream p) 
+    void  outputTrafficAggregate (OutputType o, long t, PrintStream p) 
     {
      
         Hashtable<Integer,Boolean> routerCount= new Hashtable<Integer, Boolean>();
@@ -1232,7 +1238,7 @@ public class GlobalController implements ComponentController {
         p.println();
     }
     
-    synchronized void outputTrafficSeparate (OutputType o, long t, PrintStream p) 
+    void outputTrafficSeparate (OutputType o, long t, PrintStream p) 
     {   
         //System.err.println("Performing output");
         String []out= routerStats_.split("\\*\\*\\*");
@@ -1328,7 +1334,7 @@ public class GlobalController implements ComponentController {
     /**
      * Wait until a specified absolute time is milliseconds.
      */
-    public synchronized void waitUntil(long time){
+    public void waitUntil(long time){
         long now = System.currentTimeMillis();
 
         if (time <= now)
@@ -1339,11 +1345,19 @@ public class GlobalController implements ComponentController {
             Logger.getLogger("log").logln(USR.STDOUT, "SIMULATION: " +  "<" + lastEventLength + "> " +
                                (now - simulationStartTime) + " @ " + 
                                now +  " waiting " + timeout);
-            wait(timeout);
-
+            synchronized(waitCounter_) {
+                waitCounter_.wait(timeout);
+            }
             lastEventLength = System.currentTimeMillis() - now;
         } catch(InterruptedException e){
             checkMessages();
+        }
+    }
+
+    /** Interrupt above wait*/
+    public void wakeWait() {
+        synchronized (waitCounter_) {
+            waitCounter_.notify();
         }
     }
 
@@ -1358,7 +1372,7 @@ public class GlobalController implements ComponentController {
      * Check all controllers listed are functioning and
      * creates interactors with the LocalControllers.
     */
-    private synchronized void checkAllControllers() {
+    private void checkAllControllers() {
         // try 10 times, with 500 millisecond gap
         int MAX_TRIES = 10;
         int tries = 0;
