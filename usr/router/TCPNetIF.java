@@ -44,19 +44,17 @@ public class TCPNetIF implements NetIF, Runnable {
     long stopTime = 0;
 
     // closed ?
-    boolean closed = true;
+    Boolean closed = true;
     // got a remote close 
     boolean remoteClose = false;
     // Is the current reading thread running
     boolean running_ = false;
     // Has the stream closed
-    boolean eof= false;
-    
+    boolean eof= false; 
+    // Fabric device does the data transfer
     FabricDevice fabricDevice_= null;
-
+    // Run thread for main loop
     Thread runThread_= null;
-
-
 
     Object runWait_= null;
 
@@ -77,12 +75,30 @@ public class TCPNetIF implements NetIF, Runnable {
         listener= l;
     }
     
-      Datagram datagram = null;
+
+    /**
+     * Start the netIF  -- TODO make the queue lengths settable in router
+     * control
+     */
+    public synchronized void start() {
+        running_= true;
+        //System.err.println("New fabric device listener "+listener);
+        fabricDevice_= new FabricDevice(this, listener); 
+        fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
+        fabricDevice_.setInQueueLength(100);
+        fabricDevice_.setOutQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
+        fabricDevice_.setOutQueueLength(100);
+        fabricDevice_.setName(name);
+        fabricDevice_.start();
+        runThread_= new Thread(this,"TCPNetIF-"+name);
+        runThread_.start();
+    }
 
     /** Run method loops and grabs input from connection to queue in
        fabricDevice */
  	  public void run() 
 	  {
+	      Datagram datagram= null;
       	while (running_) {
       	    if (eof) {
       	        runWait_= new Object();
@@ -106,8 +122,11 @@ public class TCPNetIF implements NetIF, Runnable {
                 continue;
             }
             try {
-                //fabricDevice_.blockingAddToInQueue(datagram, this);
-                fabricDevice_.addToInQueue(datagram,this);
+                if (fabricDevice_.inIsBlocking()) {
+                    fabricDevice_.blockingAddToInQueue(datagram, this);
+                } else {
+                    fabricDevice_.addToInQueue(datagram,this);
+                }
             } catch (NoRouteToHostException e) {
             }
         }
@@ -256,7 +275,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Send a Datagram -- sets source to this interface and puts the datagram
      on the incoming queue for this interface
      */
-    public synchronized boolean sendDatagram(Datagram dg) throws NoRouteToHostException{
+    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException{
         if (running_ == true) {
             // set the source address and port on the Datagram
             dg.setSrcAddress(getAddress());
@@ -275,7 +294,6 @@ public class TCPNetIF implements NetIF, Runnable {
 
   
     /** Finally send the datagram onwards */
-    
     public boolean outQueueHandler(Datagram dg, DatagramDevice dd) {
         boolean sent= false;
         try {
@@ -283,6 +301,7 @@ public class TCPNetIF implements NetIF, Runnable {
         } catch (IOException e) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + " failure in connection.send "+address+"->"+remoteRouterAddress);
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + e.getMessage());
+            listener.closedDevice(this);
             return false;
         }
         if (sent == false) {
@@ -295,7 +314,10 @@ public class TCPNetIF implements NetIF, Runnable {
     /** Close a netIF given remote end has called close -- this is done as a
     spawned process since it would otherwise block out queues which might need
     to be written to during close*/
-    public synchronized void remoteClose() {
+    public void remoteClose() {
+      
+      synchronized (closed) {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() +"RemoteClose");
         if (closed) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when remoteClose() called");
             return;
@@ -304,15 +326,17 @@ public class TCPNetIF implements NetIF, Runnable {
         CloseThread ct= new CloseThread(this);
         Thread t= new Thread(ct,"RemoteClose-"+name);
         t.start();
+      }
     }
     
     /**
      * Close a NetIF -- must be synchronized to prevent close() exiting prematurely when a
      * remoteClose has already been encountered -- close will never exit until the netif actually
-     * is closed
+     * is closed -- synchronized on "closed" object to prevent lock ups with other sync objects
      */
-    public synchronized void close() {
-        Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: " + getName() + " -> Close");
+    public void close() {
+      synchronized(closed) {  // prevent this running twice by blocking
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() +"  Close");
         
         if (closed) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when close() called");
@@ -338,6 +362,7 @@ public class TCPNetIF implements NetIF, Runnable {
                 runWait_.notify();
             }
         }
+      }
     }
 
 
@@ -374,23 +399,6 @@ public class TCPNetIF implements NetIF, Runnable {
             (remoteAddress == null ? "No_Remote_Address" : "" + remoteAddress);
     }
     
-    /**
-     * Start the netIF  -- TODO make the queue lengths settable in router
-     * control
-     */
-    public synchronized void start() {
-        running_= true;
-        //System.err.println("New fabric device listener "+listener);
-        fabricDevice_= new FabricDevice(this, listener); 
-        fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_DROPPING);
-        fabricDevice_.setInQueueLength(100);
-        fabricDevice_.setOutQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
-        fabricDevice_.setOutQueueLength(100);
-        fabricDevice_.setName(name);
-        fabricDevice_.start();
-        runThread_= new Thread(this,"TCPNetIF-"+name);
-        runThread_.start();
-    }
 
 
 
@@ -408,8 +416,9 @@ public class TCPNetIF implements NetIF, Runnable {
     /**
      * Consturct and send a control message.
      */
-    protected synchronized boolean controlClose() {
-        Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: -> controlClose");
+    protected boolean controlClose() {
+      synchronized(closed) {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"controlClose to "+remoteRouterAddress);
         ByteBuffer buffer = ByteBuffer.allocate(1);
         String c= "C";
         buffer.put(c.getBytes());
@@ -429,11 +438,11 @@ public class TCPNetIF implements NetIF, Runnable {
             return true;
 
         } catch (Exception ioe) {
-            Logger.getLogger("log").logln(USR.STDOUT, "TCPNetIF: controlClose error " + connection + " IOException " + ioe);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" controlClose error " + connection + " IOException " + ioe);
             //ioe.printStackTrace();
             return true;
         }
- 
+      } 
     }
    
     public boolean isLocal() {

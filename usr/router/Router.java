@@ -65,7 +65,7 @@ public class Router {
           setGlobalID(gid);
           
         } catch (Exception e) {
-        
+          System.err.println("Router expected integer as name for GID");
         }
     }
 
@@ -155,7 +155,7 @@ public class Router {
         if (isActive) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
             controller.stop();
-            appSocketMux.stop();
+            appSocketMux.stop(); 
             fabric.stop();
             isActive = false;
             try {

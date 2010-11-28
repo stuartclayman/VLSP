@@ -131,6 +131,7 @@ public class StubServer extends MinimalDatagramDevice implements NetIFListener  
         if (ourAddress(d.getDstAddress())) {
             return getFabricDevice();
         }
+        System.err.println("Received datagram to go the other way");
         return netIF.getFabricDevice();
     }
     /**

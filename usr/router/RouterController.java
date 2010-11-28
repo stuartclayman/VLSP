@@ -57,7 +57,7 @@ public class RouterController implements ComponentController, Runnable {
     boolean running = false;
     
     // My name
-    String name;
+    String name= null;
 
     // My Address - a special feature where the router has its own address
     Address myAddress;
@@ -99,26 +99,17 @@ public class RouterController implements ComponentController, Runnable {
         this.router = router;
 
         name = "Router-" + mPort + "-" + r2rPort;
-        myAddress = new GIDAddress(name.hashCode());
-
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Address set initially "+globalID);
         
-
+        myAddress = new GIDAddress(name.hashCode());
         this.managementConsolePort = mPort;
-
         // delegate listening of commands to a ManagementConsole object
         management = new RouterManagementConsole(this, mPort);
-
         newConnectionPort = r2rPort;
-
         // delegate listening for new connections to RouterConnections object
         connections = new RouterConnections(this, r2rPort);
-
         connectionCount = 0;
-
         // a map of NetIFs
         tempNetIFMap = new HashMap<Integer, NetIF>();
-
         // Set up info for AP management
         //System.out.println("Construct AP Controller");
         apController_= ConstructAPController.constructAPController

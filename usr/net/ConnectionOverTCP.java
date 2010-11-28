@@ -133,13 +133,9 @@ public class ConnectionOverTCP implements Connection {
         if (channel.isOpen()) {
             boolean success = writeBytesToChannel(((DatagramPatch)dg).toByteBuffer());
             if (success == false) {
-                throw new IOException ("Channel closed");
+                throw new IOException ("Channel closed to write");
             }
             outCounter++;
-            
-
-           // Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: " + endPoint + " " + outCounter + " write " + count);
-
             return true;
         } else {
             Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: " + endPoint + " outCounter = " + outCounter + " ALREADY CLOSED -- channel is closed");
@@ -184,7 +180,7 @@ public class ConnectionOverTCP implements Connection {
             inCounter++;
             return dg;
         } else {
-            throw new Error("ConnectionOverTCP: Unexpected Null in readDatagram()");
+            throw new IOException("ConnectionOverTCP: Unexpected Null in readDatagram()");
         }
     }
 
@@ -291,25 +287,16 @@ public class ConnectionOverTCP implements Connection {
             int count= channel.read(buffer);
 
             if (count == -1) {
-                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: readMoreData: READ "+count+" bytes");
-                // EOF
                 eof = true;
                 return;
-
             } else {
                 bufferEndData_+= count;
-                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: readMoreData: READ "+count+" bytes");
-                // for (int i= 0; i < count; i++) {
-                //      byte b= buffer.get(bufferStartData_+i);
-                //      System.err.println ("Byte "+i+ " as char "+(char)
-                // }
             }
 
         } catch (IOException ioe) {
-            eof = true;
-            //Logger.getLogger("log").logln(USR.ERROR, "Connection over TCP read error "+ioe.getMessage());
-             // TODO:: THIS ERROR DOES OCCUR SOMETIMES
-             return;
+            eof = true;  // Error occurs on shut down sometimes as pipe must close from one end
+          //  Logger.getLogger("log").logln(USR.ERROR, "Connection over TCP read error "+ioe.getMessage());  
+            return;
         }
     }
     
@@ -340,18 +327,6 @@ public class ConnectionOverTCP implements Connection {
             buffer.position(0);
             return;
         }
-
-        // two versions of shuffling data
-
-        /*
-        // this does a two copy shuffle
-        byte [] tmp= new byte[remaining];
-        buffer.position(bufferStartData_);
-        buffer.get(tmp);
-        buffer.position(0);
-        buffer.put(tmp);
-        */
-
         // this is a single copy shuffle
         ByteBuffer newBuf = ByteBuffer.allocate(bufferSize_);
         buffer.position(bufferStartData_);
@@ -376,19 +351,9 @@ public class ConnectionOverTCP implements Connection {
      * we are in sendDatagram
      */
     public synchronized void close() {
-        Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " + inCounter + " outCounter = " + outCounter);
-        //System.out.println("COTCPClose");
-       // if (closeObject_ != null) {
-       //     try {
-       //         synchronized (closeObject_) {
-        //            wait(1);
-         //       } 
-         //   } catch (InterruptedException e) {
-         //   }
-        //} else {
-       // }
+        Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " + 
+            inCounter + " outCounter = " + outCounter);
         Socket socket = getSocket();
-
         try {
             eof = true;
             socket.close();

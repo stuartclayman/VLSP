@@ -36,6 +36,6 @@ public interface FabricDeviceInterface {
         (inserted) or false (dropped/blocked) -- if the queue is blocking
         a notify will be sent to waitObj when there is room in the queue*/
     public boolean addToInQueue(Datagram dg, DatagramDevice dd, Object waitObj)
-        throws java.net.NoRouteToHostException; 
+        throws java.net.NoRouteToHostException, usr.net.InterfaceBlockedException; 
   
 }

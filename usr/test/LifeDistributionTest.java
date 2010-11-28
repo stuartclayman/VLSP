@@ -25,7 +25,7 @@ public class LifeDistributionTest {
             System.out.println("Need arguments --  distribution file and no tests");
             System.exit(-1);
         }
-              Logger logger = Logger.getLogger("log");
+        Logger logger = Logger.getLogger("log");
       // tell it to output to stdout
       // and tell it what to pick up
       // it will actually output things where the log has bit 

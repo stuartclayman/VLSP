@@ -36,12 +36,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     // The localNetIF
     NetIF localNetIF = null;
 
-
     FabricDevice fabricDevice_= null;
     // are we running
     boolean running = false;
-
-
 
     // The RoutingTableTransmitter
     RoutingTableTransmitter routingTableTransmitter;
@@ -54,7 +51,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     SimpleRoutingTable table_= null;
 
     // routing table info
-    HashMap<Address, Integer> routableAddresses_= null;
+    HashMap<Integer, Integer> routableAddresses_= null;
 
     NetIF nextUpdateIF_= null;
 
@@ -80,7 +77,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
 
         localNetIF = null;
         name_= router.getName();
-        routableAddresses_= new HashMap<Address,Integer>();
+        routableAddresses_= new HashMap<Integer,Integer>();
 
         lastTableUpdateTime_= new HashMap <NetIF, Long>();
         nextTableUpdateTime_= new HashMap <NetIF, Long>();
@@ -97,8 +94,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         // fabric device -- no queueing
         fabricDevice_= new FabricDevice(this, this);
         // Need an out queue to prevent "in->triggers out" style lockups
-        fabricDevice_.setOutQueueDiscipline(FabricDevice.QUEUE_DROPPING);
-        fabricDevice_.setOutQueueLength(0);
+        //fabricDevice_.setOutQueueDiscipline(FabricDevice.QUEUE_DROPPING);
+        //fabricDevice_.setOutQueueLength(0);
 
         fabricDevice_.setName("RouterControl");
         fabricDevice_.start();
@@ -140,6 +137,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         }
         for (NetIF i: l) {
             if (i.isLocal() == false && !i.equals(inter)) {
+                System.err.println("Queueing to "+i);
                 queueRoutingRequest(i);
             }
         }
@@ -254,9 +252,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         //Logger.getLogger("log").logln(USR.STDOUT, "DATAGRAM WITH NULL ADDRESS");
         if (addr == null )
             return true; 
-        if (addr.equals(address_))
+        if (address_ == null) 
+            return false;
+        if (addr.asInteger() == address_.asInteger())
             return true;
-        return (routableAddresses_.get(addr) != null);
+            
+        return (routableAddresses_.get(addr.asInteger()) != null);
     }
     
 
@@ -271,25 +272,34 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
      */
     public DatagramDevice getRoute(Datagram dg) {
         Address addr= dg.getDstAddress();
-        NetIF netif= table_.getInterface(addr);
+       /* if (dg.getProtocol() == Protocol.CONTROL) {
+            System.err.println("Got CONTROL "+ dg.getDstAddress()+" "+
+              dg.getDstPort() + " vs "+address_);
+        }*/
         if (ourAddress(addr)) {
             if (dg.getDstPort() == 0) {
+                System.err.println("For SRF");
                 return this;
             } else {
                 return localNetIF;
             }
         }
-        if (netif != null)
+        NetIF netif= table_.getInterface(addr);
+        if (netif != null) {
             return netif;
+        }
+        //System.err.println("null");
         return null;
     }
     
     
     /** Get the Fabric Device which this packet should be sent to */
     public FabricDevice getRouteFabric(Datagram dg) {
+
         if (ourAddress(dg.getDstAddress())) {
-            if (dg.getDstPort() == 0 || dg.getProtocol() == Protocol.CONTROL) 
-                return fabricDevice_;
+            if (dg.getDstPort() == 0 || dg.getProtocol() == Protocol.CONTROL) {
+                 return fabricDevice_;
+            }
             else {
                 if (localNetIF == null) {// possible only during shutdown
                     return null;
@@ -297,9 +307,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
                 return localNetIF.getFabricDevice();
             }
         }
+
         DatagramDevice inter= getRoute(dg);
-        if (inter == null)
+        if (inter == null) {
             return null;
+            
+        }
         return inter.getFabricDevice();
     }
     
@@ -818,27 +831,26 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
     /** Track routable addresses for this router */
     void addRoutableAddress(Address a) {
-        Integer aCount= routableAddresses_.get(a);
+        Integer aCount= routableAddresses_.get(a.asInteger());
         if (aCount == null) {
-            routableAddresses_.put(a,1);
+            routableAddresses_.put(a.asInteger(),1);
         } else {
-            routableAddresses_.put(a,(aCount+1));
+            routableAddresses_.put(a.asInteger(),(aCount+1));
         }
     }
     
     void removeRoutableAddress(Address a) {
-        Integer aCount= routableAddresses_.get(a);
+        Integer aCount= routableAddresses_.get(a.asInteger());
         if (aCount == null) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() +
                "Request to remove address "+a+" not on routable list");
             return;
         }
         if (aCount == 1) {
-            routableAddresses_.remove(a);
+            routableAddresses_.remove(a.asInteger());
         } else {
-            routableAddresses_.put(a,aCount-1);
+            routableAddresses_.put(a.asInteger(),aCount-1);
         }
-    
     } 
 
     public void closedDevice(DatagramDevice dd) {

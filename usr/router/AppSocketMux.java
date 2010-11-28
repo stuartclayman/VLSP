@@ -88,7 +88,7 @@ public class AppSocketMux implements NetIF {
                 //Inbound is 100 packets, blocking
                 //Outbound is no queue                                  
             fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
-            fabricDevice_.setInQueueLength(100);
+            fabricDevice_.setInQueueLength(1000);
             fabricDevice_.setName("ASM");
             fabricDevice_.start();
             boolean connected = connect();
@@ -375,7 +375,7 @@ public class AppSocketMux implements NetIF {
     /** 
         Deliver a received datagram to the appropriate app
     */
-    public boolean outQueueHandler(Datagram datagram, DatagramDevice device) 
+    public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice device) 
     {
        // if (running == false)  // If we're not running simply pretend to have received it
        //     return true;
