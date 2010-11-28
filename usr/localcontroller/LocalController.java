@@ -384,6 +384,7 @@ public class LocalController implements ComponentController {
     /** Send router stats to global controller*/
     public boolean sendRouterStats(List<String> list) 
     {
+      synchronized(gcInteractor_) {  // Synchronize on gcInteractor to prevent overlap
         StringBuilder sb = new StringBuilder();
 
         
@@ -400,6 +401,7 @@ public class LocalController implements ComponentController {
             return false;
         }
         return true; 
+      }
     }
 
     /** Local controller receives request to end a router */
@@ -570,7 +572,9 @@ public class LocalController implements ComponentController {
         } else {
             try {
                 // original data
+                
                 List<String> list = ri.getNetIFStats();
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+" requesting statistics from router "+routerID);
 
                 // now add the router id to each element of the list
                 List<String> newList = new ArrayList<String>();

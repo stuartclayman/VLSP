@@ -346,7 +346,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         Long last= lastTableUpdateTime_.get(netIF);
         Long curr= nextTableUpdateTime_.get(netIF);
         if (last == null || curr == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+"NetIF not in nextTableTime");
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+netIF+" not in nextTableTime");
             return;
         }
         Long next= last + options_.getMinNetIFUpdateTime();
@@ -522,23 +522,6 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         if (merged) {
             //Logger.getLogger("log").logln(USR.STDOUT, "Send to other interfaces");
             sendToOtherInterfaces(netIF);
-        }
-    }
-
-
-
-    /**
-     * A NetIF is closing.
-     */
-    public synchronized boolean netIFClosing(NetIF netIF) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Remote close from " + netIF);
-        if (!netIF.isClosed()) {
-
-            boolean didit = removeNetIF(netIF);
-
-            return didit;
-        } else {
-            return false;
         }
     }
 
@@ -784,21 +767,27 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     /**
      * Remove a Network Interface from this Router.
      */
-    public synchronized boolean removeNetIF(NetIF netIF) {
-        // find port associated with netIF
-        //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NETIF");
+    public synchronized boolean removeNetIF(NetIF netIF) {   
+        return doRemove(netIF, false);
+    }    
+    
+     /**
+     * Remove a Network Interface from this Router after remote request
+     */
+    public synchronized boolean remoteRemoveNetIF(NetIF netIF) {
+        return doRemove(netIF, true);
+    }
+        
+    /** Do work for remote or normal remove -- onyl difference is in
+    sending control close */    
+    public boolean doRemove(NetIF netIF, boolean remote) {
         Address address = netIF.getAddress();
-
-        // remove this address into the routableAddresses set
+        // remove this address from the routableAddresses set
         removeRoutableAddress(address);
-            
-        // is this actually the local NetIF
-        boolean localPort= (address.asInteger() == 0);
 
         // it is the local port
-        if (localPort) {
+        if (netIF.isLocal()) {
             closeLocalNetIF();
-            //Logger.getLogger("log").logln(USR.ERROR, "Removed local");
             return true;
         }
 
@@ -807,19 +796,19 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
 
         if (port != null) {
             // disconnect netIF from port
-            //Logger.getLogger("log").logln(USR.ERROR, "CLOSE PORT");
-            closePort(port);
-            //Logger.getLogger("log").logln(USR.ERROR, "RESET PORT");
-            resetPort(port.getPortNo());
-
-            // Remove table update times
+             // Remove table update times
             lastTableUpdateTime_.remove(netIF);
             nextTableUpdateTime_.remove(netIF);
-            routingTableTransmitter.informNewData();
+            if (remote) {
+                remoteClosePort(port);
+            } else {
+                closePort(port);
+            }
+            resetPort(port.getPortNo());
             if (table_.removeNetIF(netIF)) {
                 sendToOtherInterfaces(netIF);
             }
-            //Logger.getLogger("log").logln(USR.ERROR, "REMOVED");
+            routingTableTransmitter.informNewData();
             return true;
         } else {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+netIF+" NOT CONNECTED TO PORT");
@@ -827,6 +816,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
             return false;
         }
     }
+    
+   
+
     
     /** Track routable addresses for this router */
     void addRoutableAddress(Address a) {
@@ -861,58 +853,13 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     }
     
 
-    /**
-     * Remove a Network Interface from this Router after remote request
-     */
-    public synchronized boolean remoteRemoveNetIF(NetIF netIF) {
-        // find port associated with netIF
-        //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NETIF");
-        Address address = netIF.getAddress();
-
-        // remove this address into the routableAddresses set
-        removeRoutableAddress(address);   
-        // is this actually the local NetIF
-        boolean localPort= (address.asInteger() == 0);
-
-        // it is the local port
-        if (localPort) {
-            closeLocalNetIF();
-            //Logger.getLogger("log").logln(USR.ERROR, "Removed local");
-            return true;
-        }
-
-        // check Ports
-        RouterPort port = findNetIF(netIF);
-
-        if (port != null) {
-            // disconnect netIF from port
-            //Logger.getLogger("log").logln(USR.ERROR, "CLOSE PORT");
-            remoteClosePort(port);
-            //Logger.getLogger("log").logln(USR.ERROR, "RESET PORT");
-            resetPort(port.getPortNo());
-
-            // Remove table update times
-            lastTableUpdateTime_.remove(netIF);
-            nextTableUpdateTime_.remove(netIF);
-            routingTableTransmitter.informNewData();
-            if (table_.removeNetIF(netIF)) {
-                sendToOtherInterfaces(netIF);
-            }
-            //Logger.getLogger("log").logln(USR.ERROR, "REMOVED");
-            return true;
-        } else {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+netIF+" NOT CONNECTED TO PORT");
-            // didn't find netIF in any RouterPort
-            return false;
-        }
-    }
 
    
     /**
      * Create the String to print out before a message
      */
     String leadin() {
-        final String RF = "RF: ";
+        final String RF = "SRF: ";
         RouterController controller = router.getRouterController();
 
         return controller.getName() + " " + RF;
@@ -1111,7 +1058,7 @@ class RoutingTableTransmitter extends Thread {
         }
 
         String leadin() {
-            final String RF = "RF.RTT ";
+            final String RF = "SRF.RTT ";
 
             RouterController controller = fabric.router.getRouterController();
 

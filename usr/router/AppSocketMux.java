@@ -36,6 +36,8 @@ public class AppSocketMux implements NetIF {
     Thread myThread;
     boolean running = false;
     
+    boolean removeRequested_= false;
+    
     FabricDevice fabricDevice_= null;
    
     /*
@@ -483,6 +485,7 @@ public class AppSocketMux implements NetIF {
     LinkedBlockingQueue<Datagram> getQueueForPort(int port) {
         return socketQueue.get(port);
     }
+
 
     /**
      * Create the String to print out before a message

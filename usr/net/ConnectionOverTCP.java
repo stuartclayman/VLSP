@@ -38,6 +38,8 @@ public class ConnectionOverTCP implements Connection {
     int inCounter = 0;
     int outCounter = 0;
 
+    boolean socketClosing_= false;
+
     // eof
     boolean eof = false;
     
@@ -351,6 +353,9 @@ public class ConnectionOverTCP implements Connection {
      * we are in sendDatagram
      */
     public synchronized void close() {
+        if (socketClosing_) 
+            return;
+        socketClosing_= true;
         Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " + 
             inCounter + " outCounter = " + outCounter);
         Socket socket = getSocket();

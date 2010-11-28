@@ -29,6 +29,9 @@ public class FabricDevice implements FabricDeviceInterface {
     int outQueueLen_= 0;
     int inQueueDiscipline_= QUEUE_NOQUEUE;
     int outQueueDiscipline_= QUEUE_NOQUEUE;
+    
+    int maxInQueue_ = 0;
+    int maxOutQueue_= 0;
 
     LinkedBlockingDeque <DatagramHandle> inQueue_= null;  // queue for inbound -- towards fabric
     LinkedBlockingDeque <DatagramHandle> outQueue_= null;  // queue for outgoing -- away from fabric
@@ -177,7 +180,7 @@ public class FabricDevice implements FabricDeviceInterface {
         }
     }
 
-    /** Register stats using these functions  --- packet dropped due to no route*/
+    /** Register stats using these functions  --- packet dropped but in expected manner*/
     void inDroppedPacketNR(Datagram dg) 
     {
          netStats_.increment(NetStats.Stat.InDropped);
@@ -280,6 +283,10 @@ public class FabricDevice implements FabricDeviceInterface {
         synchronized(inQueue_) {
         if (inQueueLen_ == 0 || inQueue_.size() < inQueueLen_) {
             inQueue_.offerLast(dh);
+            if (inQueue_.size() > maxInQueue_) {
+                maxInQueue_= inQueue_.size();
+                netStats_.setValue(NetStats.Stat.BiggestInQueue,maxInQueue_);
+            }
             inSentPacket(dg);
             return true;
         }
@@ -345,6 +352,10 @@ public class FabricDevice implements FabricDeviceInterface {
         synchronized(outQueue_) {
         if (outQueueLen_ == 0 || outQueue_.size() < outQueueLen_) {
             outQueue_.offerLast(dh);
+            if (outQueue_.size() > maxOutQueue_) {
+                maxOutQueue_= outQueue_.size();
+                netStats_.setValue(NetStats.Stat.BiggestOutQueue,maxOutQueue_);
+            }
             return true;
         }
         }
@@ -595,7 +606,7 @@ class OutQueueHandler implements Runnable {
             }
             if (dh.datagram.TTLReduce() == false) {
                 fabricDevice_.listener_.TTLDrop(dh.datagram);
-                fabricDevice_.inDroppedPacket(dh.datagram);
+                fabricDevice_.inDroppedPacketNR(dh.datagram);
             }
             if (dh != null) {
                 boolean sent= fabricDevice_.sendOutDatagram(dh);
