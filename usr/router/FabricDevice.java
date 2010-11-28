@@ -191,9 +191,10 @@ public class FabricDevice implements FabricDeviceInterface {
     
     {
         netStats_.increment(NetStats.Stat.OutDropped);
-        if (outIsBlocking()) {
+        //  This can happen on blocking out interface if interface is shut beforehand
+      /*  if (outIsBlocking()) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+" out dropped packet");
-        }
+        }*/
     }
     
     void inSentPacket(Datagram dg) 
@@ -607,6 +608,7 @@ class OutQueueHandler implements Runnable {
             if (dh.datagram.TTLReduce() == false) {
                 fabricDevice_.listener_.TTLDrop(dh.datagram);
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
+                continue;
             }
             if (dh != null) {
                 boolean sent= fabricDevice_.sendOutDatagram(dh);
