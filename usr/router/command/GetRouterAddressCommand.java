@@ -24,7 +24,6 @@ public class GetRouterAddressCommand extends RouterCommand {
     public boolean evaluate(String req) {
         Address a = controller.getAddress();
         int id= a.asInteger();
-        System.err.println("Address "+a+" "+id);
         boolean result = success("" + id);
 
         if (!result) {

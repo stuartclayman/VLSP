@@ -137,7 +137,6 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         }
         for (NetIF i: l) {
             if (i.isLocal() == false && !i.equals(inter)) {
-                System.err.println("Queueing to "+i);
                 queueRoutingRequest(i);
             }
         }
