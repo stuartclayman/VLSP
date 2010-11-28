@@ -518,7 +518,7 @@ class InQueueHandler implements Runnable {
                         fabricDevice_.inSentPacket(dh.datagram);
                     } else {
                         fabricDevice_.inSentPacket(dh.datagram);
-                        fabricDevice_.outDroppedPacket(dh.datagram);
+                        f.outDroppedPacket(dh.datagram);
                     }
                     break;
                 } catch (NoRouteToHostException e) {
