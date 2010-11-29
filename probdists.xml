@@ -30,6 +30,6 @@
             </ProbElement>
       </LinkCreateDist>
       <Parameters>
-          <PreferentialAttachment>false</PreferentialAttachment>
+          <PreferentialAttachment>true</PreferentialAttachment>
       </Parameters>
 </ProbabilisticEngine>
