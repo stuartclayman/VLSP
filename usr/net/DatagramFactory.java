@@ -22,7 +22,6 @@ public class DatagramFactory {
     static {
         setClassForProtocol("usr.net.GIDDatagram", Protocol.DATA);
         setClassForProtocol("usr.net.GIDDatagram", Protocol.CONTROL);
-        setClassForProtocol("usr.net.GIDDatagram", Protocol.SHUTCONNECTION);
     }
 
 

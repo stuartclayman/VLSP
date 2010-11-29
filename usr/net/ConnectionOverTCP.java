@@ -43,7 +43,6 @@ public class ConnectionOverTCP implements Connection {
     // eof
     boolean eof = false;
     
-    Object closeObject_= null;
 
     /**
      * Construct a ConnectionOverTCP given a TCPEndPointSrc
@@ -51,7 +50,6 @@ public class ConnectionOverTCP implements Connection {
     public ConnectionOverTCP(TCPEndPointSrc src) throws IOException {
         endPoint = src;
         buffer = ByteBuffer.allocate(bufferSize_);
-        closeObject_= new Object();
     }
 
     /**
@@ -60,7 +58,6 @@ public class ConnectionOverTCP implements Connection {
     public ConnectionOverTCP(TCPEndPointDst dst) throws IOException {
         endPoint = dst;
         buffer = ByteBuffer.allocate(bufferSize_);
-        closeObject_= new Object();
     }
 
     /**
@@ -122,14 +119,6 @@ public class ConnectionOverTCP implements Connection {
         if (dg == null) {
             Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: received null datagram");
             return false;
-        }
-        if (dg.getProtocol() == Protocol.SHUTCONNECTION && closeObject_ != null) {
-            synchronized(closeObject_) {
-                closeObject_.notify();
-                closeObject_= null;
-                
-            }
-            return true;
         }
        
         if (channel.isOpen()) {

@@ -425,16 +425,8 @@ public class TCPNetIF implements NetIF, Runnable {
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
          ByteBuffer b= ((DatagramPatch)datagram).toByteBuffer();
         datagram.setDstAddress(remoteRouterAddress);
-        
-        ByteBuffer buffer2 = ByteBuffer.allocate(0);
-        Datagram datagram2 = DatagramFactory.newDatagram(Protocol.SHUTCONNECTION,buffer2);
-        datagram2.setDstAddress(remoteRouterAddress);
         try {
-            
             sendDatagram(datagram); 
-
-
-            sendDatagram(datagram2); 
             return true;
 
         } catch (Exception ioe) {

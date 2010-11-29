@@ -369,8 +369,11 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
         if (datagram.getProtocol() == Protocol.CONTROL) {
             processControlDatagram(datagram, device);
-        } else {
+        } else if (datagram.getProtocol() == Protocol.DATA) {
             processOrdinaryDatagram(datagram, device);
+        } else {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "datagram protocol"+
+              datagram.getProtocol());  
         }
         return true;
     }
