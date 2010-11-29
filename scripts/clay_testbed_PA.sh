@@ -14,7 +14,7 @@ AWK=gawk
 SCHEDULE="50.0 25.0 10.0 5.0"
 
 POLICY=Random
-OUTPUT=random_testbed_noPA
+OUTPUT=random_testbed_PA
 rm -f $OUTPUT
 for i in $SCHEDULE; do
     for j in `seq 3`; do
@@ -28,7 +28,7 @@ for i in $SCHEDULE; do
 done
 
 POLICY=Pressure
-OUTPUT=pressure_testbed_noPA
+OUTPUT=pressure_testbed_PA
 rm -f $OUTPUT
 for i in $SCHEDULE; do
     for j in `seq 3`; do
@@ -41,7 +41,7 @@ for i in $SCHEDULE; do
   done
 done
 POLICY=HotSpot
-OUTPUT=hotspot_testbed_noPA
+OUTPUT=hotspot_testbed_PA
 rm -f $OUTPUT
 for i in $SCHEDULE; do
     for j in `seq 3`; do
