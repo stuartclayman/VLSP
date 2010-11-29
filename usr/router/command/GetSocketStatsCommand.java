@@ -33,6 +33,10 @@ public class GetSocketStatsCommand extends RouterCommand {
 
         // get local NetIF
         NetIF netIF = controller.getLocalNetIF();
+        if (netIF == null) {
+            boolean result= success("END 0");
+            return result;
+        }
 
         // double check it is an AppSocketMux
         if (netIF instanceof AppSocketMux) {
@@ -42,6 +46,8 @@ public class GetSocketStatsCommand extends RouterCommand {
             // now list the stats, one line per socket
             for (int port : socketStats.keySet()) {
                 NetStats stats = socketStats.get(port);
+                if (stats == null)
+                    continue;
 
                 // put out netif name
                 String statsString = port + " " + stats.toString();

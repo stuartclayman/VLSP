@@ -29,33 +29,39 @@ public class GetNetIFStatsCommand extends RouterCommand {
     public boolean evaluate(String req) {
         List<RouterPort> ports = controller.listPorts();
         int count = 0;
-
+        NetStats stats= null;
+        String statsString;
         // do localnet first
         NetIF localNetIF = controller.getLocalNetIF();
-        NetStats stats = localNetIF.getStats();
+        if (localNetIF != null) {
+           stats = localNetIF.getStats();
+       
         // put out netif name
-        String statsString =localNetIF.getRemoteRouterName()+ " "+localNetIF.getName() 
-          + " " + stats.toString();
-
-        list(statsString);
-        count++;
+            statsString =localNetIF.getRemoteRouterName()+ " "+localNetIF.getName() 
+               + " " + stats.toString();
+            list(statsString);
+            count++;
+        }
+        
 
         for (RouterPort rp : ports) {
             if (rp.equals(RouterPort.EMPTY)) {
                 continue;
             } else {
                 NetIF netIF = rp.getNetIF();
+                if (netIF != null) {
 
-                stats = netIF.getStats();
+                    stats = netIF.getStats();
 
 
                 // put out netif name
-                statsString = netIF.getRemoteRouterName()+ " " +
-                  netIF.getName() + " " + stats.toString();
+                    statsString = netIF.getRemoteRouterName()+ " " +
+                        netIF.getName() + " " + stats.toString();
                 //System.err.println(statsString);  
 
-                list(statsString);
-                count++;
+                      list(statsString);
+                      count++;
+                }
             }               
         }             
 

@@ -248,7 +248,6 @@ public abstract class MCRPInteractor {
 	try {
 	    socket.close();
 	} catch (IOException ioe) {
-	    ;
 	} finally {
 	    // free up SocketInputHandler
 	    inputHandler = null;
@@ -280,12 +279,14 @@ public abstract class MCRPInteractor {
 	    fsm = FSMState.FSM_WAITING;
 
 	    // sit and wait for a response
-	    while (fsm == FSMState.FSM_WAITING) {
-		try {
-		    wait();
-		} catch (InterruptedException ie) {
+	   
+		  try {
+		      wait(5000);
+		  } catch (InterruptedException ie) {
 		    //Logger.getLogger("log").logln(USR.ERROR, "Got InterruptedException " + ie);
-		}
+	    }
+	    if (fsm == FSMState.FSM_WAITING) {
+	        throw new MCRPException("MCRPInteractor: wait timeout: ");
 	    }
 
 	    // we got here because there was a notifyAll.
