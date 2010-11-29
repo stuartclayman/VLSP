@@ -385,7 +385,11 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
         Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " FABRIC GOT ORDINARY DATAGRAM from "  + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
-        
+        byte [] payl= datagram.getPayload();
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Length "+ payl.length + " Contents "+payl.toString());
+        if (payl.length > 0) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "First chard "+(char)payl[0]);
+        }
         return;
     }
 
