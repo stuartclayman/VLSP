@@ -75,7 +75,7 @@ public class ConnectionOverTCP implements Connection {
 
         channel = socket.getChannel();
         int i;
-        for (i= 0; i < 10; i++) {
+        for (i= 0; i < 20; i++) {
                 if (channel.finishConnect()) 
                     break;
                 try {
@@ -87,7 +87,7 @@ public class ConnectionOverTCP implements Connection {
             }
             if (i == 10) {
                 Logger.getLogger("log").logln(USR.ERROR, "Could not connect");
-                System.exit(-1);
+                return false;
             }
         if (channel == null) {
             throw new Error("Socket: " + socket + " has no channel");

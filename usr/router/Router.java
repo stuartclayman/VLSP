@@ -153,11 +153,12 @@ public class Router {
      */
     public boolean stop() {
         if (isActive) {
+            isActive = false;
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
             controller.stop();
             appSocketMux.stop(); 
             fabric.stop();
-            isActive = false;
+            
             try {
                 if (outputStream_ != null) {
                     outputStream_.close();
