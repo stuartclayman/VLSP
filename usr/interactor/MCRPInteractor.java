@@ -286,7 +286,7 @@ public abstract class MCRPInteractor {
 		    //Logger.getLogger("log").logln(USR.ERROR, "Got InterruptedException " + ie);
 	    }
 	    if (fsm == FSMState.FSM_WAITING) {
-	        System.err.println("Got timeout");
+	        System.err.println("MCRP Interactor Got timeout: command was:"+str);
 	        fsm= FSMState.FSM_READY;
 	        throw new MCRPException("MCRPInteractor: wait timeout: ");
 	    }

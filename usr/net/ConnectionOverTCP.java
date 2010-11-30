@@ -75,7 +75,8 @@ public class ConnectionOverTCP implements Connection {
 
         channel = socket.getChannel();
         int i;
-        for (i= 0; i < 20; i++) {
+        int MAX_TRIES=25;
+        for (i= 0; i < MAX_TRIES; i++) {
                 if (channel.finishConnect()) 
                     break;
                 try {
@@ -85,7 +86,7 @@ public class ConnectionOverTCP implements Connection {
                 }
                
             }
-            if (i == 10) {
+            if (i == MAX_TRIES) {
                 Logger.getLogger("log").logln(USR.ERROR, "Could not connect");
                 return false;
             }
