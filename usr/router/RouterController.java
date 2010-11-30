@@ -53,6 +53,10 @@ public class RouterController implements ComponentController, Runnable {
     // The Thread
     Thread myThread;
 
+    // Counts ensure that Info Source and Aggreg Points have unique names
+    int isCount_= 1;
+    int apCount_= 1; 
+    
     // are we running
     boolean running = false;
     
@@ -535,7 +539,8 @@ public class RouterController implements ComponentController, Runnable {
         
         // Now start an info source pointing at the new AP.
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid);
+            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
+        isCount_++;
         monGenName_= resp.getMessage();
         //System.err.println("NEW NAME "+monGenName_);
         Logger.getLogger("log").logln(USR.STDOUT,leadin()+" now has aggregation point "+ap);
@@ -546,7 +551,8 @@ public class RouterController implements ComponentController, Runnable {
     public void startAP(int gid) {
         System.out.println(leadin()+" has become an AP");
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.AggPoint -i 0/3000"+
-        " -t 5 -a average -n agg-point-"+gid); 
+        " -t 5 -a average -n agg-point-"+gid+"-"+apCount_);
+        apCount_++; 
         apName_= resp.getMessage();
     }
     
