@@ -25,7 +25,7 @@
             <ProbElement>
                  <Type>PoissonPlus</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>1.5</Parameter>
+                 <Parameter>3.5</Parameter>
                  <Parameter>1.0</Parameter>
             </ProbElement>
       </LinkCreateDist>

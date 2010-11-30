@@ -517,10 +517,14 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
      */
     private void respond(SocketChannel channel, String message) {
         message = message.concat("\n");
-
         try {
-            channel.write(ByteBuffer.wrap(message.getBytes()));
+            int count= channel.write(ByteBuffer.wrap(message.getBytes()));
+            if (count != message.getBytes().length) {
+                System.err.println("Error error error!");
+                
+            }
         } catch (IOException ioe) {
+            System.err.println(leadin()+"Exception raised "+ioe.getMessage());
         }
     }
 

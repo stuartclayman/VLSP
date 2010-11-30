@@ -426,7 +426,6 @@ public class Router {
 
     public static void main(String[] args) {
         Router router = null;
-
         if (args.length == 1) {
             int mPort = 0;
             Scanner sc = new Scanner(args[0]);

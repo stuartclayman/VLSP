@@ -43,7 +43,7 @@ public class GetNetIFStatsCommand extends RouterCommand {
             count++;
         }
         
-
+      
         for (RouterPort rp : ports) {
             if (rp.equals(RouterPort.EMPTY)) {
                 continue;
@@ -63,8 +63,8 @@ public class GetNetIFStatsCommand extends RouterCommand {
                       count++;
                 }
             }               
-        }             
-
+                     
+        }
         boolean result = success("END " + count);
 
         if (!result) {

@@ -34,19 +34,33 @@ public abstract class ChannelResponder {
      */
     public boolean respond(String message) {
         message = message.concat("\n");
-      
+        //System.err.println("Responding");
         try {
-            int count= channel.write(ByteBuffer.wrap(message.getBytes()));
-            if (count != message.getBytes().length) {
-                System.err.println("YIPE MESSAGE LEN ISSUE");
-            }
-            return true;
+            return writeBytesToChannel(ByteBuffer.wrap(message.getBytes()));
         } catch (IOException ioe) {
               Logger.getLogger("log").logln(USR.ERROR, 
               "Channel responder found an error writing to socket channel");
               Logger.getLogger("log").logln(USR.ERROR,"Channel responder message was "+ioe.getMessage());
             return false;
         }
+    }
+
+    public boolean writeBytesToChannel(ByteBuffer bb) throws IOException {
+        int len= channel.write(bb);
+        if (len < 0)
+            return false;
+        while (bb.remaining()>0){  // Here to be cautious
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+            
+            }
+            len= channel.write(bb);          
+            if (len < 0) {
+                return false; 
+            }
+        }
+        return true;
     }
 
 }
