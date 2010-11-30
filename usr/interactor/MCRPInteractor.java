@@ -287,6 +287,7 @@ public abstract class MCRPInteractor {
 	    }
 	    if (fsm == FSMState.FSM_WAITING) {
 	        System.err.println("Got timeout");
+	        fsm= FSMState.FSM_READY;
 	        throw new MCRPException("MCRPInteractor: wait timeout: ");
 	    }
 

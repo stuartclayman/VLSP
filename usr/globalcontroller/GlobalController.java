@@ -162,8 +162,7 @@ public class GlobalController implements ComponentController {
           myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
       } catch (Exception e) {
           Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
-          bailOut();
-          return;
+          System.exit(-1);
       }
       
       // Set up simulations options
@@ -533,13 +532,22 @@ public class GlobalController implements ComponentController {
         
         LocalControllerInteractor lci= interactorMap_.get
             (br.getLocalControllerInfo());
-        try {
-            lci.endRouter(br.getHost(),br.getManagementPort());
-        } catch (Exception e) {
+        int MAX_TRIES= 5;
+        int i;
+        for (i= 0; i < MAX_TRIES; i++) {
+          try {
+              lci.endRouter(br.getHost(),br.getManagementPort());
+              break;
+          } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down router "+
-              br.getHost()+":"+br.getManagementPort());
+              br.getHost()+":"+br.getManagementPort()+ " attempt "+(i+1));
+          }
+        }
+        if (i == MAX_TRIES) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+ 
+                "Failed to shut down router " +
+            br.getHost()+":"+br.getManagementPort());
             bailOut();
-            return;
         }
         LocalControllerInfo lcinf= br.getLocalControllerInfo();
         PortPool pp= portPools_.get(lcinf);
@@ -657,22 +665,30 @@ public class GlobalController implements ComponentController {
         //Logger.getLogger("log").logln(USR.STDOUT, "Got LCI");
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Global controller linking routers "+
             br1 + " and "+ br2);
-        try {
-            String connectionName = lci.connectRouters(br1.getHost(), br1.getManagementPort(),
+        int MAX_TRIES= 5;
+        int i;
+        for (i=0; i < MAX_TRIES; i++) {
+            try {
+                String connectionName = lci.connectRouters(br1.getHost(), br1.getManagementPort(),
                br2.getHost(), br2.getManagementPort());
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + br1 + " -> " + br2 + " = " + connectionName);
-        } catch (IOException e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot link routers");
+               Logger.getLogger("log").logln(USR.STDOUT, leadin() + br1 + " -> " + br2 + " = " + connectionName);
+               break;
+            } catch (IOException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "Cannot link routers "+router1Id+" "+router2Id+" try "+(i+1));
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
+                
+            }
+           catch (MCRPException e) {
+              Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "Cannot link routers "+router1Id+" "+router2Id+" try "+(i+1));
             Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
-            bailOut();
-            return;
+            }
         }
-        catch (MCRPException e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot link routers");
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
+        if (i == MAX_TRIES) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Giving up on linking");
             bailOut();
-            return;
-        }
+        }   
 
     }
     
@@ -788,15 +804,23 @@ public class GlobalController implements ComponentController {
         BasicRouterInfo br2= routerIdMap_.get(rId2);
         LocalControllerInteractor lci= interactorMap_.get
             (br1.getLocalControllerInfo());
-        try {
+        int MAX_TRIES= 5;
+        int i;
+        for (i= 0; i < MAX_TRIES; i++) {
+          try {
             lci.endLink(br1.getHost(),br1.getManagementPort(),rId2);
-        } catch (Exception e) {
+            break;
+          } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down link "+
               br1.getHost()+":"+br1.getManagementPort()+" " +
-              br2.getHost()+":"+br2.getManagementPort());
-            bailOut();
-            return;
+              br2.getHost()+":"+br2.getManagementPort()+ " try "+(i+1) );
         }
+       }
+       if (i == MAX_TRIES) {
+          Logger.getLogger("log").logln(USR.ERROR,"Giving up after failure to shut link");
+          bailOut();
+       }
+       
     }
     
     /** Event to unlink two routers */
@@ -821,16 +845,22 @@ public class GlobalController implements ComponentController {
 
         if (lci == null) {
             return null;
-        } else {
+        }
+        int i;
+        int MAX_TRIES= 5;
+        for (i=0; i < MAX_TRIES; i++) {
             try {
                 String appName = lci.onRouter(routerID, className, args);
                 return appName;
             } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+"");
-                return null;
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                  " failed to start app "+className+" on "+ routerID+ " try "+i);
+                  
             }
-
         }
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                  " failed to start app "+className+" on "+ routerID+ " giving up ");
+        return null;
 
     }
 

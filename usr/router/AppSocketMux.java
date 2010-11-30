@@ -87,8 +87,7 @@ public class AppSocketMux implements NetIF {
             // start my own thread
             running = true;
             fabricDevice_= new FabricDevice(this, controller.getListener()); 
-                //Inbound is 100 packets, blocking
-                //Outbound is no queue                                  
+                                                 
             fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
             fabricDevice_.setInQueueLength(1000);
             fabricDevice_.setName("ASM");

@@ -773,6 +773,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
     /**
      * Remove a Network Interface from this Router.
+     * synchronized to prevent multiple calls
      */
     public synchronized boolean removeNetIF(NetIF netIF) {   
         return doRemove(netIF, false);
@@ -780,6 +781,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
      /**
      * Remove a Network Interface from this Router after remote request
+     * synchronized to prevent multiple calls
      */
     public synchronized boolean remoteRemoveNetIF(NetIF netIF) {
         return doRemove(netIF, true);
@@ -790,10 +792,11 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     public boolean doRemove(NetIF netIF, boolean remote) {
         Address address = netIF.getAddress();
         // remove this address from the routableAddresses set
-        removeRoutableAddress(address);
+        
 
         // it is the local port
         if (netIF.isLocal()) {
+            removeRoutableAddress(address);
             closeLocalNetIF();
             return true;
         }
@@ -803,7 +806,9 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
 
         if (port != null) {
             // disconnect netIF from port
-             // Remove table update times
+           
+            removeRoutableAddress(address);
+              // Remove table update times
             lastTableUpdateTime_.remove(netIF);
             nextTableUpdateTime_.remove(netIF);
             if (remote) {
@@ -818,7 +823,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
             routingTableTransmitter.informNewData();
             return true;
         } else {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+netIF+" NOT CONNECTED TO PORT");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+netIF+
+              " second attempt to remove");
             // didn't find netIF in any RouterPort
             return false;
         }
