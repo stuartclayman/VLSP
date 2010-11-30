@@ -128,8 +128,11 @@ public class LifeEstimateTest {
         for (i= 1; i < noPoints; i++) {
             
             int x= (int)dx;
-            System.out.println(x+" "+(e.getKMLifeEst(x)-x)+" "+ 
-                (e.getKMTailLifeEst(x)-x)+" "+(1000.0*dist.getCondExp((double)x/1000.0)-x));
+            double actual= (1000.0*dist.getCondExp((double)x/1000.0));
+            double lifeest= e.getKMLifeEst(x)-x;
+            double tailest= e.getKMTailLifeEst(x)-x;
+            
+            System.out.println(x+" "+lifeest+" "+tailest+" "+actual);
             dx*= xmult;
         }
         

@@ -109,7 +109,7 @@ public class LifeSpanEstimate {
         if (KMTime_ == null || KMTime_.size() * TAIL_FIT_PERCENT < MIN_TAIL_FIT) {
             mu_= 0;
             sigma_= 0;
-             T_= KMTime_.get(KMTime_.size()-1)+1;
+             T_= 0;
             return;
         }
         // Get time series of the distribution tail
@@ -142,8 +142,8 @@ public class LifeSpanEstimate {
         //System.out.println("mu= "+mu_+" sigma= "+sigma_);
           //Calculate point where we are considered "in tail" for 
        // purpose of calcs
-      
        T_= KMTime_.get((int)(KMTime_.size()*(1.0-TAIL_PERCENT)));
+
     }
     
     
@@ -262,37 +262,38 @@ public class LifeSpanEstimate {
             }
         }
         if (l >= KMTime_.size()-1) {
-            return life;
+            l= KMTime_.size()-1;
         }
         
-        int h= KMTime_.size()-1;
-        for (int i=0; i < KMTime_.size(); i++) {
-            if (KMTime_.get(i) > T_); {
-                h= i;
+        int h= KMTime_.size()-2;
+        for (int i=0; i < KMTime_.size()-2; i++) {
+            if (KMTime_.get(i) > T_) {
+                h= i-1;
                 break;
             }
         }
         
         //System.err.println(life+" "+l);
         double estlife= 0;
-        System.err.println("life  "+life+" T_"+ T_);
+       // System.err.println("life  "+life+" T_"+ T_);
         if (life >= T_) {  // Estimate is from in tail
-            estlife= ProbElement.logNormalCondExp(life,mu_,sigma_)/getKMTailProb(life);
-            System.err.println("cond exp is "+estlife/getKMTailProb(life));
-            return (long)(estlife/getKMTailProb(life));
+            estlife= ProbElement.logNormalCondExp(life,mu_,sigma_);
+            //System.err.println("cond exp is "+estlife/getKMTailProb(life));
+            return (long)(estlife);
         } else {
           for (int i= l; i < h-1; i++) {
-             estlife+=(KMProb_.get(i)-KMProb_.get(i+1))*
-              (KMTime_.get(i+1)+KMTime_.get(i))/2.0;
-            
+            estlife+=(KMProb_.get(i)-KMProb_.get(i+1))*
+           (KMTime_.get(i)+KMTime_.get(i+1))/2.0;
           }   
           estlife+=(KMProb_.get(l-1)-KMProb_.get(l))*
-              (KMTime_.get(l)+life)/2.0;
-          estlife+= ProbElement.logNormalCondExp(KMTime_.get(h),mu_,sigma_);
-          System.err.println("Sum is "+estlife);
+             (life+KMTime_.get(l) )/2.0;
+          estlife+= ProbElement.logNormalCondExp(KMTime_.get(h),mu_,sigma_) *
+               (1.0-ProbElement.logNormalDist(KMTime_.get(h),mu_,sigma_))/
+               (1.0-ProbElement.logNormalDist(life,mu_,sigma_));
+              
         }
         
-        return (long)(estlife/getKMTailProb(life));
+        return (long)estlife;
     
     }
         
@@ -318,11 +319,11 @@ public class LifeSpanEstimate {
         double estlife= 0;
         for (int i= l; i < KMTime_.size()-1; i++) {
             estlife+=(KMProb_.get(i)-KMProb_.get(i+1))*
-           (KMTime_.get(i+1)+KMTime_.get(i))/2.0;
+           (KMTime_.get(i)+KMTime_.get(i+1))/2.0;
         }   
         estlife+=(KMProb_.get(l-1)-KMProb_.get(l))*
-           (KMTime_.get(l)+life)/2.0;
-        return (long)(estlife/KMProb_.get(l));
+          (life+KMTime_.get(l) )/2.0;
+        return (long)(estlife);
     }
     
     

@@ -135,13 +135,14 @@ public class ApplicationManager {
     /**
      * Stop an Application
      */
-    synchronized ApplicationResponse terminate(String appName) {
+    ApplicationResponse terminate(String appName) {
         ApplicationHandle appH = appMap.get(appName);
+        synchronized(appH) {   // This must not be called twice for the same appH simultaneously
 
-        if (appH == null) {
+          if (appH == null) {
             // no app with that name
             return new ApplicationResponse(false, "No Application called " + appName);
-        } else {
+          } else {
             if (appH.getState() == ApplicationHandle.AppState.STOPPED) {
 
                 // wait for the thread to actually end
@@ -184,6 +185,7 @@ public class ApplicationManager {
                 }
             }
         }
+      }
     }
 
     /**
