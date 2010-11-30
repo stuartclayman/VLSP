@@ -12,8 +12,7 @@ CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/claycleanscript.sh
 
 AWK=gawk
 
-SCHEDULE="50.0 25.0 10.0 5.0"
-
+SCHEDULE="12.0 6.0 4.0 3.0"
 
 $CLEANSCRIPT
 
