@@ -159,13 +159,14 @@ public class ApplicationManager {
                     Application app = appH.getApplication();
 
                     Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
-                    synchronized (app) {
-                        app.stop();
-                    }
-
+                    
 
                     if (appH.getState() == ApplicationHandle.AppState.RUNNING) {
                         appH.setState(ApplicationHandle.AppState.STOPPING);
+                        synchronized (app) {
+                            app.stop();
+                        }
+
 
                         // wait for the thread to actually end
                         pool.waitFor(appH);

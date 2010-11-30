@@ -29,6 +29,7 @@ class ApplicationThreadManager {
      */
     public void execute(ApplicationHandle appH) {
         // create a thread name
+       synchronized(threads) {
         String threadName =  appH.getApplication().getClass().getName() + "-" + threadCount;
         // set the thread name in the ApplicationHandle
         appH.setThreadName(threadName);
@@ -45,13 +46,15 @@ class ApplicationThreadManager {
         t.start();
 
         threadCount++;
-
+       }
      }
 
     /**
      * Cleanup a thread
      */
     public void waitFor(ApplicationHandle appH) {
+    
+      synchronized(threads) {
         String threadName = appH.getThreadName();
 
         // get the thread
@@ -74,6 +77,7 @@ class ApplicationThreadManager {
             }
 
         }
+      }
     }
 
     String leadin() {

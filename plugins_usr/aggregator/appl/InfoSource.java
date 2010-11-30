@@ -65,7 +65,7 @@ public class InfoSource implements Application {
     boolean inInitialDelay = false;
     Thread myThread;
 
-    boolean closing_= false;
+    Boolean closing_= false;
 
 
     /*
@@ -407,6 +407,7 @@ public class InfoSource implements Application {
      * Stop
      */
     public ApplicationResponse stop() {
+      synchronized(closing_) {
         if (closing_)
             return new ApplicationResponse(false, "Stop already called for InfoSource");
         closing_= true;
@@ -443,7 +444,7 @@ public class InfoSource implements Application {
             }
 
         }
-
+      }
     }
 
     /**
