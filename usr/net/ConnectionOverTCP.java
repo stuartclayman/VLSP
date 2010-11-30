@@ -226,7 +226,7 @@ public class ConnectionOverTCP implements Connection {
          
             if (packetLen * PACKETS_BEFORE_SHUFFLE > bufferSize_) {
                 Logger.getLogger("log").logln(USR.STDOUT, "Increasing buffer size");
-                bufferSize_= packetLen * PACKETS_BEFORE_SHUFFLE;
+                bufferSize_= packetLen * PACKETS_BEFORE_SHUFFLE *2;
                 ByteBuffer bigB= ByteBuffer.allocate(bufferSize_);
                 int bufferRead= bufferEndData_- bufferStartData_;
                 buffer.position(bufferStartData_);
