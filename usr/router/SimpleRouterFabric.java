@@ -523,7 +523,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
             return;
         }
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " merging routing table received on "+netIF);
-        boolean merged = table_.mergeTables(t,netIF, options_);
+        boolean merged= false;
+        synchronized(table_) {
+            merged = table_.mergeTables(t,netIF, options_);
+        }
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " merged routing table received on "+netIF);
         if (merged) {
@@ -763,10 +766,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         // send a Routing table immediately
         queueRoutingRequest(netIF);
         
-        // add this to the RoutingTable
-        if (table_.addNetIF(netIF, options_)) {
-            sendToOtherInterfaces(netIF);
+        synchronized(table_) {
+          
+            if (table_.addNetIF(netIF, options_)) {
+                sendToOtherInterfaces(netIF);
             
+            }
         }
         return rp;
     }
@@ -817,8 +822,10 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
                 closePort(port);
             }
             resetPort(port.getPortNo());
-            if (table_.removeNetIF(netIF)) {
-                sendToOtherInterfaces(netIF);
+            synchronized(table_) {
+                if (table_.removeNetIF(netIF)) {
+                    sendToOtherInterfaces(netIF);
+                }
             }
             routingTableTransmitter.informNewData();
             return true;
@@ -835,15 +842,18 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
     /** Track routable addresses for this router */
     void addRoutableAddress(Address a) {
+      synchronized(routableAddresses_) {
         Integer aCount= routableAddresses_.get(a.asInteger());
         if (aCount == null) {
             routableAddresses_.put(a.asInteger(),1);
         } else {
             routableAddresses_.put(a.asInteger(),(aCount+1));
         }
+      }
     }
     
     void removeRoutableAddress(Address a) {
+      synchronized(routableAddresses_) {
         Integer aCount= routableAddresses_.get(a.asInteger());
         if (aCount == null) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() +
@@ -855,6 +865,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         } else {
             routableAddresses_.put(a.asInteger(),aCount-1);
         }
+      }
     } 
 
     public void closedDevice(DatagramDevice dd) {
@@ -1033,9 +1044,10 @@ class RoutingTableTransmitter extends Thread {
         }
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table " + table_ + " for "+ inter);
-
-        byte[]table= table_.toBytes();
-
+        byte[]table;
+        synchronized(table_) {
+            table= table_.toBytes();
+        }
         byte []toSend= new byte[table.length+1];
         if (table.length % 8 != 0) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+"Routing table length not multiple of 8");
