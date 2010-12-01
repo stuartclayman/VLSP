@@ -43,6 +43,19 @@ public class RandomAPController extends NullAPController {
     /** Add no aggregation points chosen at random */
     void addAP(long time, GlobalController g, int no) 
     {
+		if(options_ != null && options_.getAPLifeBias() > 0.0) {
+			double scores[]= new double[g.getMaxRouterId()+1];
+			ArrayList<Integer> nodes= nonAPNodes(g);
+			for (Integer node:nodes) {
+				scores[node]= 1.0;
+			}
+			ArrayList<Integer> picked= lse_.pickNByScore(no, scores, 
+			  nodes, true,time);
+			for (Integer p: picked) {
+				addAccessPoint(time, p, g);
+			}
+			return;
+		}
       for (int i= 0; i < no; i++) {
         ArrayList <Integer> elect= nonAPNodes(g);
         Logger.getLogger("log").logln(USR.STDOUT,leadin()+" adding random AP");
@@ -62,6 +75,19 @@ public class RandomAPController extends NullAPController {
     /** Remove no aggregation points chosen at random */
     void removeAP(long time, GlobalController g, int no) 
     {
+		if(options_ != null && options_.getAPLifeBias() > 0.0) {
+			double scores[]= new double[g.getMaxRouterId()+1];
+			ArrayList<Integer> nodes= nonAPNodes(g);
+			for (Integer node:nodes) {
+				scores[node]= 1.0;
+			}
+			ArrayList<Integer> picked= lse_.pickNByScore(no, scores, 
+			  nodes, false,time);
+			for (Integer p: picked) {
+				removeAccessPoint(time, p);
+			}
+			return;
+		}
         for (int i= 0; i < no; i++) {
             ArrayList <Integer> APs= new ArrayList<Integer>(getAPList());
             while (APs.size() > 0) {

@@ -127,7 +127,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     }
 
     /** Send routing table to all other interfaces apart from inter*/
-    synchronized void sendToOtherInterfaces(NetIF inter) 
+    void sendToOtherInterfaces(NetIF inter) 
       
     {
         List <NetIF> l= listNetIF();
@@ -152,14 +152,14 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     /**
      * Get port N.
      */
-    public synchronized RouterPort getPort(int p) {
+    public RouterPort getPort(int p) {
         return ports.get(p);
     }
 
     /**
      * Get a list of all the ports with Network Interfaces.
      */
-    public synchronized List<RouterPort> listPorts() {
+    public List<RouterPort> listPorts() {
         return ports;
     }
 
@@ -184,7 +184,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         
     }
 
-    synchronized void closeLocalNetIF() {
+    void closeLocalNetIF() {
+      synchronized(localNetIF) {
         if (localNetIF != null) {
             //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO CLOSE LOCALNETIF");
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + localNetIF + " stats = " + localNetIF.getStats());
@@ -194,6 +195,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         }
 
         localNetIF= null;
+      }
     }
 
     /**
@@ -318,7 +320,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
     
     /** Return a TTL expired datagram unless this is a TTL expired datagram */
-    synchronized public void TTLDrop(Datagram dg)
+    public void TTLDrop(Datagram dg)
     {
         // Can't return datagram with no source
         if (ourAddress(dg.getSrcAddress()))  
@@ -341,7 +343,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     }
     
         /** NetIF wants to send a routing Request */
-    synchronized void queueRoutingRequest(NetIF netIF) {
+     void queueRoutingRequest(NetIF netIF) {
         long now= System.currentTimeMillis();
         Long last= lastTableUpdateTime_.get(netIF);
         Long curr= nextTableUpdateTime_.get(netIF);
@@ -361,7 +363,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     }  
     
         /** Datagram which has arrived is ours */
-    public boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
+    public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
+      
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " receiveOurDatagram ");
         if (running == false) {  // If we're not running simply pretend to have received it
             return true;
@@ -384,7 +387,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
      * Process a datagram for ourselves.
      * NetIF is the original NetIF that the datagram was received on.
      */
-    synchronized  void  processOrdinaryDatagram(Datagram datagram, DatagramDevice device) {
+    void  processOrdinaryDatagram(Datagram datagram, DatagramDevice device) {
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " GOT ORDINARY DATAGRAM from " + netIF.getRemoteRouterAddress() + " = " + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
 
         Logger.getLogger("log").logln(USR.ERROR, leadin() + datagramInCount + " FABRIC GOT ORDINARY DATAGRAM from "  + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
@@ -400,7 +403,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
      * Process a control datagram
      * NetIF is the original NetIF that the datagram was received on.
      */
-    synchronized boolean  processControlDatagram(Datagram dg,DatagramDevice device) {
+    boolean  processControlDatagram(Datagram dg,DatagramDevice device) {
        
         NetIF netif= null;
         if (device != null && device.getClass().equals(TCPNetIF.class)) {
@@ -497,7 +500,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     }
 
     /** Respond to a ping with an echo */
-    synchronized boolean pingResponse(Datagram dg)
+    boolean pingResponse(Datagram dg)
     {
        
         Address dst= dg.getSrcAddress();
@@ -510,7 +513,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     }
 
     /** Routing table received via netIF */
-    synchronized void receiveRoutingTable(byte []bytes, NetIF netIF)
+    void receiveRoutingTable(byte []bytes, NetIF netIF)
     {   
         //sLogger.getLogger("log").logln(USR.STDOUT, leadin()+"Received routing table from " + netIF);
 
@@ -543,22 +546,26 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     /**
      * Setup a port
      */
-    synchronized void setupPort(int p) {
+    void setupPort(int p) {
+      synchronized(ports) {
         ports.add(p, RouterPort.EMPTY);
+      }
     }
     
     /**
      * Reset a port
      */
-    synchronized void resetPort(int p) {
+    void resetPort(int p) {
+      synchronized(ports) {
         ports.set(p, RouterPort.EMPTY);
+      }
     }
     
     
     /**
      * Return the routing table 
      */
-    public synchronized RoutingTable getRoutingTable() {
+    public RoutingTable getRoutingTable() {
         return table_;
     }
 
@@ -567,7 +574,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
      * Skip through all ports to find a NetIF
      * @return null if a NetIF is not found.
      */
-    synchronized RouterPort findNetIF(NetIF netIF) {
+    RouterPort findNetIF(NetIF netIF) {
+      synchronized(ports) {
         int limit = ports.size();
         for (int p = 0;  p < limit; p++) {
             RouterPort port = ports.get(p);
@@ -582,13 +590,15 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         }
 
         return null;
+      }
     }
     
     /** Find the netIF which connects to a given end host 
      * or a connection name
       @return null if none exists*/
     
-    public synchronized NetIF findNetIF(String name) {
+    public NetIF findNetIF(String name) {
+      synchronized(ports) {
         int limit = ports.size();
         for (int p = 0;  p < limit; p++) {
             RouterPort port = ports.get(p);
@@ -604,6 +614,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
             }
         }
         return null;
+      }
     }
     
     /** 
@@ -638,7 +649,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
      * Find the next free port to use.
      * Start at port 0 and work way up.
      */
-    synchronized int findNextFreePort() {
+    int findNextFreePort() {
+      synchronized(ports) {
         int limit = ports.size();
         for (int p = 0;  p < limit; p++) {
             if (ports.get(p).equals(RouterPort.EMPTY)) {
@@ -654,10 +666,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         }
 
         return limit;
+       
+       }
     }
     
     /** Ping command received */
-    public synchronized boolean ping (int id) {
+    public boolean ping (int id) {
         GIDAddress dst= new GIDAddress(id);   
         ByteBuffer buffer = ByteBuffer.allocate(1);
         buffer.put("P".getBytes());
@@ -706,12 +720,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     }
     
     /** Echo command received */
-    public synchronized boolean echo (int id) {
+    public boolean echo (int id) {
         return echo(id, 0);
     }
     
     /** Echo command received */
-    public synchronized boolean echo (int id, int port) {
+    public boolean echo (int id, int port) {
     
         GIDAddress dst= new GIDAddress(id);
         int dstPort= port;
@@ -728,7 +742,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     /**
      * Add a Network Interface to this Router.
      */
-    public synchronized RouterPort addNetIF(NetIF netIF) {
+    public RouterPort addNetIF(NetIF netIF) {
+      synchronized(ports) {
         Address address = netIF.getAddress();
         Address remoteAddress = netIF.getRemoteRouterAddress();
         // add this address into the routableAddresses set
@@ -774,22 +789,27 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
             }
         }
         return rp;
+      }
     }
     
     /**
      * Remove a Network Interface from this Router.
      * synchronized to prevent multiple calls
      */
-    public synchronized boolean removeNetIF(NetIF netIF) {   
+    public boolean removeNetIF(NetIF netIF) {   
+       synchronized (netIF) {
         return doRemove(netIF, false);
+      }
     }    
     
      /**
      * Remove a Network Interface from this Router after remote request
      * synchronized to prevent multiple calls
      */
-    public synchronized boolean remoteRemoveNetIF(NetIF netIF) {
+    public boolean remoteRemoveNetIF(NetIF netIF) {
+      synchronized (netIF) { 
         return doRemove(netIF, true);
+      }
     }
         
     /** Do work for remote or normal remove -- onyl difference is in
@@ -973,7 +993,8 @@ class RoutingTableTransmitter extends Thread {
 
       
           /** Calculate when the next table send event is */
-    synchronized long calcNextTableSendTime() {
+     long calcNextTableSendTime() {
+       synchronized(nextTableUpdateTime_) {
         long now= System.currentTimeMillis();
         long nextUpdateTime= now+options_.getMaxCheckTime();
         nextUpdateIF_= null;
@@ -995,6 +1016,7 @@ class RoutingTableTransmitter extends Thread {
         }
         //Logger.getLogger("log").logln(USR.ERROR, "Next event at "+nextUpdateTime+" from "+nextUpdateIF_);
         return nextUpdateTime;
+      }
     }
     
 
@@ -1033,7 +1055,8 @@ class RoutingTableTransmitter extends Thread {
     
   
     /** Now send a routing table */
-    synchronized void sendNextTable() {
+    void sendNextTable() {
+      
         //Logger.getLogger("log").log(USR.EXTRA, "T");
         NetIF inter = nextUpdateIF_;
         long now= System.currentTimeMillis();

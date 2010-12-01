@@ -47,30 +47,15 @@ public class HotSpotAPController extends NullAPController {
         if (nNodes == 0) {
             return;
         }
-        int []scores= new int [g.getMaxRouterId()+1];
+        double []scores= new double [g.getMaxRouterId()+1];
         for (int e: elect) {
             scores[e]= getHotSpotScore(e,g);
         }
-        for (int i= 0; i < no; i++) {
-            int bottomScore= -1;
-            int removeNode= 0;
-            for (int e: elect) {
-                int score= scores[e];
-                if (score < bottomScore || bottomScore == -1 && removable(e,g)) {
-                    bottomScore= score;
-                    removeNode= e;
-                }
-            }
-            // No node can be removed
-            if (removeNode == 0)
-                return;
-            removeAccessPoint(time, removeNode);
-            Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too many APs remove "+removeNode);
-            int index= elect.indexOf(removeNode);
-            elect.remove(index);
-            if(elect.size() == 0)
-                break;
-        }
+        ArrayList<Integer> picked= lse_.pickNByScore(no, scores, 
+			  elect, false,time);
+	    for (Integer p: picked) {
+			removeAccessPoint(time, p);
+		}
     }
     
     
@@ -84,28 +69,15 @@ public class HotSpotAPController extends NullAPController {
             return;
         }
         
-        int []scores= new int [g.getMaxRouterId()+1];
+        double []scores= new double [g.getMaxRouterId()+1];
         for (int e: elect) {
            scores[e]= getHotSpotScore(e,g);
         }
-        for (int i= 0; i < no; i++) {
-            int topScore= -1;
-            int electNode= 0;
-            for (int e: elect) {
-              
-                int score= scores[e];
-                if (score > topScore) {
-                    topScore= score;
-                    electNode= e;
-                }
-            }
-            addAccessPoint(time, electNode,g);
-            Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too few APs add "+electNode);
-            int index= elect.indexOf(electNode);
-            elect.remove(index);
-            if(elect.size() == 0)
-                break;
-        }
+        ArrayList<Integer> picked= lse_.pickNByScore(no, scores, 
+			  elect, true,time);
+	    for (Integer p: picked) {
+			addAccessPoint(time, p, g);
+		}
     }
  
      /** Accessor for hot spot score */

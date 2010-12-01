@@ -36,7 +36,8 @@ public class RouterOptions {
     int routerConsiderTime_= 10000;   // Time router reconsiders
     int controllerConsiderTime_= 10000;   // Time controller reconsiders
     int maxAPWeight_= 0;  // Maximum link weight an AP can be away
-    int trafficStatTime_= 10000;  // Time to send traffic statss
+    int trafficStatTime_= 10000;  // Time to send traffic stats
+    double apLifeBias_= 0.0;  // Weight to give to AP lifetime predictions  -- 0 means ignore
 
     double minPropAP_= 0.0;     // Minimum proportion of AP
     double maxPropAP_= 1.0;     // Maximum proportion of AP
@@ -334,8 +335,7 @@ public class RouterOptions {
             ReadXMLUtils.removeNode(n,"MinPropAP","APManager");
         } catch (SAXException e) {
             throw e;
-        } catch (XMLNoTagException e) {
-           
+        } catch (XMLNoTagException e) {  
         }
         
         try {
@@ -344,10 +344,17 @@ public class RouterOptions {
             ReadXMLUtils.removeNode(n,"MaxPropAP","APManager");
         } catch (SAXException e) {
             throw e;
-        } catch (XMLNoTagException e) {
-           
+        } catch (XMLNoTagException e) {      
         }
         
+        try {
+			apLifeBias_= ReadXMLUtils.parseSingleDouble
+			  (n,"APLifeBias","APManager",true);
+			ReadXMLUtils.removeNode(n,"APLifeBias","APManager");
+		} catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {     
+        }   
         
         try {
             APParms_= ReadXMLUtils.parseArrayString(n,"Parameter","APManager");
@@ -450,6 +457,12 @@ public class RouterOptions {
     public double getMaxPropAP() {
         return maxPropAP_;
     }
+    
+    /** Accessor function for AP life bias -- weight given to life
+     * estimation in working out which AP to choose */
+    public double getAPLifeBias() {
+		return apLifeBias_;
+	}
     
     /** Accessor function for output file name */
     public String getOutputFile() {

@@ -54,7 +54,58 @@ public class LifeSpanEstimate {
         APBirths_= new HashMap <Integer,Long>();
     }    
 
+	/* Given a list of nodes, scores and lifetimes, pick n of them
+	 * with the highest score, possibly with weighting due to lifespan
+	 */
+	ArrayList<Integer> pickNByScore(int N, double[]score, 
+		ArrayList <Integer> nodes, boolean max, long time) {
+		int noReturn= Math.min(nodes.size(), N);
+		ArrayList <Integer>picked= new ArrayList<Integer>();
+		if (options_ != null && options_.getAPLifeBias() >= 0.0) {
+			weightScoresByLife(nodes, score, time);
+		}
+		for (int i= 0; i< noReturn; i++) {
+			double bestScore= 0.0;
+			int bestNode= -1;
+			for (Integer n: nodes) {
+				if (picked.contains(n)) {
+					continue;
+				}
+				if (bestNode == -1 || (max && score[n] > bestScore) ||
+				(!max & score[n] < bestScore)) {
+					bestScore= score[n];
+					bestNode= n;
+				}
+			}	
+			picked.add(bestNode);
+		}
+		return picked;
+	}
     
+    /** 
+     * 
+     */
+    void weightScoresByLife(ArrayList<Integer> nodes, double []score, long time)
+    {
+		int n= nodes.size();
+		double []lifeEstimates= new double[score.length];
+		double lifeBias= options_.getAPLifeBias();
+		
+		// Prepare for the lifespan estimates 
+		sortDeaths();
+        updateKMEstimate(time);
+        fitTail();
+        // Now get life Estimates for each node
+        double maxEstimate= 0.0;
+		for (Integer node: nodes) {
+			lifeEstimates[node]= getKMTailLifeEst(getNodeLife(node,time));
+			if (lifeEstimates[node] > maxEstimate) 
+				maxEstimate= lifeEstimates[node];
+		}
+		for (Integer node: nodes) {
+			score[node]*= Math.pow(lifeEstimates[node]/maxEstimate, lifeBias);
+		}
+	}
     
     /** Plot (return co-ords of a graph of the Kaplan--Meier Estimator */
     public ArrayList<Pair<Integer,Double>> plotKMGraph(long time) {
@@ -205,6 +256,13 @@ public class LifeSpanEstimate {
     {
         APBirths_.put(gid,time);
     }
+    
+    public int getNodeLife(int id, long time) {
+		Long birth= births_.get(id);
+		if (birth == null)
+		   return 0;
+		return (int)(time-birth); 
+	}
     
     /** A node dies -- register this */
     public void APDeath(long time, int gid)

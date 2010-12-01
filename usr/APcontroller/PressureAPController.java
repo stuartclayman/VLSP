@@ -44,28 +44,16 @@ public class PressureAPController extends NullAPController {
     
      void removeAP(long time, GlobalController g, int no) {
         ArrayList <Integer> elect= new ArrayList<Integer>(getAPList());
-        int score[]= new int[g.getMaxRouterId()+1];
-        for (int e: elect) {
-            score[e]= getAPPressure(e,g);
-        }
-        for (int i= 0; i < no; i++) {
         
-            int bottomScore= -1;
-            int removeNode= 0;
-            for (int e: elect) {
-            
-                if (score[e] < bottomScore || bottomScore == -1 && removable(e,g)) {
-                    bottomScore= score[e];
-                    removeNode= e;
-                }
-            }
-            // No node can be removed
-            if (removeNode == 0)
-                return;
-            removeAccessPoint(time, removeNode);
-            Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too many APs remove "+removeNode);
-            elect.remove(elect.indexOf(removeNode));
+        double scores[]= new double[g.getMaxRouterId()+1];
+        for (int e: elect) {
+            scores[e]= getPressure(e,g);
         }
+        ArrayList<Integer> picked= lse_.pickNByScore(no, scores, 
+			  elect, false,time);
+	    for (Integer p: picked) {
+			removeAccessPoint(time, p);
+		}
     }
     
     
@@ -75,28 +63,15 @@ public class PressureAPController extends NullAPController {
        // System.err.println("At "+time+" adding "+no);
         ArrayList <Integer> elect= new ArrayList<Integer>(nonAPNodes(g));
         // No nodes which can be made managers
-        int score[]= new int[g.getMaxRouterId()+1];
+        double scores[]= new double[g.getMaxRouterId()+1];
         for (int e: elect) {
-            score[e]= getPressure(e,g);
+            scores[e]= getPressure(e,g);
         }
-        for (int i= 0; i < no; i++) {
-        
-            int topScore= -1;
-            int addNode= 0;
-            for (int e: elect) {
-            
-                if (score[e] > topScore || topScore == -1) {
-                    topScore= score[e];
-                    addNode= e;
-                }
-            }
-            // No node can be removed
-            if (addNode == 0)
-                return;
-            addAccessPoint(time, addNode,g);
-            Logger.getLogger("log").logln(USR.STDOUT,leadin()+" too few APs add "+addNode);
-            elect.remove(elect.indexOf(addNode));
-        }
+        ArrayList<Integer> picked= lse_.pickNByScore(no, scores, 
+			  elect, true,time);
+	    for (Integer p: picked) {
+			addAccessPoint(time, p, g);
+		}
     }
  
     /** No score for this function */
