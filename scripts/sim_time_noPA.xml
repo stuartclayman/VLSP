@@ -11,7 +11,7 @@
      <Parameters>scripts/probdistfast_noPA.xml</Parameters>
   </EventEngine>
   <RouterOptions>
-      scripts/routeroptions.xml
+      scripts/routeroptions_time.xml
   </RouterOptions>
       <Output>
         <File>out.net</File>

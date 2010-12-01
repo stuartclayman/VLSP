@@ -58,6 +58,10 @@ public interface APController {
     died*/
     public double meanAPLife();
     
+    
+     /** Return the mean life of an AP -- includes all  APs*/
+    public double meanAPLifeSoFar(long time);
+    
     /** Return score at given time */
     public int getScore(long time, int gid, GlobalController g);
     

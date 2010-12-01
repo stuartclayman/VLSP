@@ -61,8 +61,11 @@ public class LifeSpanEstimate {
 		ArrayList <Integer> nodes, boolean max, long time) {
 		int noReturn= Math.min(nodes.size(), N);
 		ArrayList <Integer>picked= new ArrayList<Integer>();
+		double []fixedScore;
 		if (options_ != null && options_.getAPLifeBias() >= 0.0) {
-			weightScoresByLife(nodes, score, time);
+			fixedScore= weightScoresByLife(nodes, score, time);
+		} else {
+		  fixedScore= score;
 		}
 		for (int i= 0; i< noReturn; i++) {
 			double bestScore= 0.0;
@@ -71,13 +74,14 @@ public class LifeSpanEstimate {
 				if (picked.contains(n)) {
 					continue;
 				}
-				if (bestNode == -1 || (max && score[n] > bestScore) ||
-				(!max & score[n] < bestScore)) {
-					bestScore= score[n];
+				if (bestNode == -1 || (max && fixedScore[n] > bestScore) ||
+				(!max & fixedScore[n] < bestScore)) {
+					bestScore= fixedScore[n];
 					bestNode= n;
 				}
 			}	
 			picked.add(bestNode);
+			//System.err.println("Picked "+bestNode+" score "+bestScore+" max "+max);
 		}
 		return picked;
 	}
@@ -85,7 +89,7 @@ public class LifeSpanEstimate {
     /** 
      * 
      */
-    void weightScoresByLife(ArrayList<Integer> nodes, double []score, long time)
+    double []weightScoresByLife(ArrayList<Integer> nodes, double []score, long time)
     {
 		int n= nodes.size();
 		double []lifeEstimates= new double[score.length];
@@ -93,18 +97,25 @@ public class LifeSpanEstimate {
 		
 		// Prepare for the lifespan estimates 
 		sortDeaths();
-        updateKMEstimate(time);
-        fitTail();
+    updateKMEstimate(time);
+    fitTail();
         // Now get life Estimates for each node
-        double maxEstimate= 0.0;
+    double maxEstimate= 0.0;
 		for (Integer node: nodes) {
-			lifeEstimates[node]= getKMTailLifeEst(getNodeLife(node,time));
+		  int lifeSoFar= getNodeLife(node,time);
+			lifeEstimates[node]= getKMTailLifeEst(lifeSoFar)- lifeSoFar;
 			if (lifeEstimates[node] > maxEstimate) 
 				maxEstimate= lifeEstimates[node];
 		}
 		for (Integer node: nodes) {
+		  //System.err.println("Score was "+score[node]);
 			score[node]*= Math.pow(lifeEstimates[node]/maxEstimate, lifeBias);
+/*			System.err.println("Score is now "+score[node]);
+		  System.err.println("Node "+node+" life so far "+getNodeLife(node,time)+ 
+		" estimate "+lifeEstimates[node]+" factor "+ Math.pow(lifeEstimates[node]/maxEstimate, lifeBias));*/
 		}
+		
+		return score;
 	}
     
     /** Plot (return co-ords of a graph of the Kaplan--Meier Estimator */
@@ -213,6 +224,8 @@ public class LifeSpanEstimate {
     
     /** returns the Kaplan-Meir estimate for time t */
     public double getKMProb(int t) {
+        if (KMTime_ == null) 
+            return 0.0;
         for (int i= 0; i < KMTime_.size(); i++) {
             if (t <= KMTime_.get(i))
                 return KMProb_.get(i);
@@ -303,15 +316,37 @@ public class LifeSpanEstimate {
         }
         return totLife/(1000.0*APDeaths_.size());
     }  
+    
+        /** Return the mean life of an AP -- includes all*/
+    public double meanAPLifeSoFar(long time) {
+        double totLife= 0;
+        if (APDeaths_.size() == 0) {
+            return 0.0;
+        }
+        int totAP= 0;
+        for (int l : APDeaths_) {
+            totLife+= l;
+            totAP++;
+        }
+        for (Long l : APBirths_.values()) {
+            totLife+= time-l;
+            totAP++;
+        }
+        return totLife/(1000.0*totAP);
+    } 
 
    /** Get an estimate of remaining lifespan using KM estimator plus tail*/
     public long getKMTailLifeEst(int life) 
     { 
-        if (T_ <= 0)        // Not enough data for tail fit.
-            getKMLifeEst(life);
-        if (KMTime_ == null)    // No parameters, return life
-            return life;
+        if (KMTime_ == null) {   // No parameters, return life
+            return life*2;
+        }
+        if (T_ <= 0) {       // Not enough data for tail fit.
+            return getKMLifeEst(life);
+        }
+        
         int l= KMTime_.size();
+        //System.err.println("Estimate in tail from "+l+" readings T_ = "+T_);
         for (int i= 0; i < KMTime_.size(); i++) {
             //System.err.println(life+" "+KMTime_.get(i));
             if (KMTime_.get(i) > life) {
@@ -332,27 +367,27 @@ public class LifeSpanEstimate {
         }
         
         //System.err.println(life+" "+l);
-        double estlife= 0;
+        double estlife= 0.0;
        // System.err.println("life  "+life+" T_"+ T_);
         if (life >= T_) {  // Estimate is from in tail
             estlife= ProbElement.logNormalCondExp(life,mu_,sigma_);
             //System.err.println("cond exp is "+estlife/getKMTailProb(life));
             return (long)(estlife);
-        } else {
-          for (int i= l; i < h-1; i++) {
+        } 
+        for (int i= l; i < h-1; i++) {
             estlife+=(KMProb_.get(i)-KMProb_.get(i+1))*
            (KMTime_.get(i)+KMTime_.get(i+1))/2.0;
           }   
           estlife+=(KMProb_.get(l-1)-KMProb_.get(l))*
              (life+KMTime_.get(l) )/2.0;
           estlife+= ProbElement.logNormalCondExp(KMTime_.get(h),mu_,sigma_) *
-               (1.0-ProbElement.logNormalDist(KMTime_.get(h),mu_,sigma_))/
-               (1.0-ProbElement.logNormalDist(life,mu_,sigma_));
-              
-        }
+           (1.0-ProbElement.logNormalDist(KMTime_.get(h),mu_,sigma_))/
+               (1.0-ProbElement.logNormalDist(life,mu_,sigma_))
+              *getKMTailProb(life);
         
-        return (long)estlife;
-    
+        
+        return (long)(estlife/getKMTailProb(life));
+   
     }
         
 
@@ -360,7 +395,7 @@ public class LifeSpanEstimate {
     public long getKMLifeEst(int life) 
     { 
         if (KMTime_ == null)    // No parameters, return life
-            return life;
+            return life*2;
         int l= KMTime_.size();
         for (int i= 0; i < KMTime_.size(); i++) {
             //System.err.println(life+" "+KMTime_.get(i));
@@ -369,19 +404,19 @@ public class LifeSpanEstimate {
                 break;
             }
         }
-        if (l >= KMTime_.size()-1) {
-            return life;
+        if (l >= KMTime_.size()-MIN_DEATHS) {
+            return life*2;
         }
         
         //System.err.println(life+" "+l);
-        double estlife= 0;
+        double estlife= 0.0;
         for (int i= l; i < KMTime_.size()-1; i++) {
             estlife+=(KMProb_.get(i)-KMProb_.get(i+1))*
            (KMTime_.get(i)+KMTime_.get(i+1))/2.0;
         }   
-        estlife+=(KMProb_.get(l-1)-KMProb_.get(l))*
+        estlife+=(KMProb_.get(l)-KMProb_.get(l+1))*
           (life+KMTime_.get(l) )/2.0;
-        return (long)(estlife);
+        return (long)(estlife/(KMProb_.get(l)));
     }
     
     
@@ -392,9 +427,13 @@ public class LifeSpanEstimate {
     }
     /** Update tables for estimators using Kaplan--Meier procedure */
     public void updateKMEstimate(long time) {
+        T_= 0;
+        mu_= 0;
+        sigma_= 0;
         if (deaths_.size() < MIN_DEATHS || births_.size() < MIN_LIVE) {
              KMTime_= null;
              KMProb_= null;
+            
              return; 
         }
         KMTime_= new ArrayList<Integer>();

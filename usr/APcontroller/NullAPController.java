@@ -28,7 +28,7 @@ public class NullAPController implements APController {
         APCosts_= new ArrayList<Integer>();
         APs_.add(0);    // Make arrays offset 1
         APCosts_.add(0);
-        lse_= new LifeSpanEstimate();
+        lse_= new LifeSpanEstimate(o);
         options_= o;
     } 
     
@@ -405,6 +405,12 @@ public class NullAPController implements APController {
     public double meanAPLife() {
         return lse_.meanAPLife();
     }    
+    
+      /** Return the mean life of an AP -- includes all*/
+    public double meanAPLifeSoFar(long time) {
+        return lse_.meanAPLifeSoFar(time);
+    }    
+    
     
     String leadin() {
         return ("NullAPController:");

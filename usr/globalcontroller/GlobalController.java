@@ -1063,6 +1063,7 @@ public class GlobalController implements ComponentController {
         APController_.controllerUpdate(time, this);
         s.print(" "+APController_.APTrafficEstimate(this));
         s.print(" "+APController_.meanNodeLife()+" "+APController_.meanAPLife());
+        s.print(" "+APController_.meanAPLifeSoFar(time));
         s.println();    
     }
 

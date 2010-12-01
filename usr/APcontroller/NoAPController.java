@@ -144,6 +144,11 @@ public class NoAPController implements APController {
         return 0.0;
     }    
     
+    /** Return the mean life of an AP -- this only APs which have not died */
+    public double meanAPLifeSoFar(long time) {
+        return 0.0;
+    }
+    
     String leadin() {
         return ("NullAPController:");
     }
