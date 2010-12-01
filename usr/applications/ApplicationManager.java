@@ -80,29 +80,33 @@ public class ApplicationManager {
             // try and start the app
             ApplicationResponse startR;
 
-            synchronized (app) {
-                startR = app.start();
+            synchronized (handle) {
+
+                synchronized (app) {
+                    startR = app.start();
+                }
+
+                // if start succeeded then go onto run()
+                if (startR.isSuccess()) {
+                    // now add details to Application map
+                    appMap.put(appName, handle);
+
+                    handle.setState(ApplicationHandle.AppState.RUNNING);
+
+                    pool.execute(handle);
+
+                    // Logger.getLogger("log").logln(USR.ERROR, leadin() + "pool = " + pool.getActiveCount() + "/" + pool.getTaskCount() + "/" + pool.getPoolSize());
+
+                    return new ApplicationResponse(true, appName);
+
+                } else {
+                    // the app did not start properly
+                    handle.setState(ApplicationHandle.AppState.STOPPED);
+
+                    return startR;
+                }
             }
 
-            // if start succeeded then go onto run()
-            if (startR.isSuccess()) {
-                // now add details to Application map
-                appMap.put(appName, handle);
-
-                handle.setState(ApplicationHandle.AppState.RUNNING);
-
-                pool.execute(handle);
-
-                // Logger.getLogger("log").logln(USR.ERROR, leadin() + "pool = " + pool.getActiveCount() + "/" + pool.getTaskCount() + "/" + pool.getPoolSize());
-
-                return new ApplicationResponse(true, appName);
-
-            } else {
-                // the app did not start properly
-                handle.setState(ApplicationHandle.AppState.STOPPED);
-
-                return startR;
-            }
 
         } catch (ClassNotFoundException cnfe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "ClassNotFoundException " + cnfe); 
