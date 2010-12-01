@@ -419,13 +419,14 @@ public class InfoSource implements Application {
             myThread.interrupt();
        }
             
+        dataSource.disconnect();
+
         if (dataSource.isProbeOn(probe)) {
             dataSource.turnOffProbe(probe);
         }
 
         dataSource.removeProbe(probe);
         
-        dataSource.disconnect();
 
         try {
             dataIndex.close();
@@ -672,10 +673,16 @@ public class InfoSource implements Application {
 								 m.getValues());
 
 		Serializable object = (Serializable)cm;
-		dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
+
+                if (! dataIndex.isClosed()) {
+                    dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
+                } else {
+                    Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName() + " because it is closed");
+                }
+
                 return result;
 	    } catch (TimeIndexException tie) {
-		Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName() + " because " + tie.getMessage());
+		Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName() + " because of exception " + tie.getMessage());
                 return result;
 	    }
 	}
