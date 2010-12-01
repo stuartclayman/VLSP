@@ -14,20 +14,6 @@ SCHEDULE="12.0 6.0 4.0 3.0"
 
 $CLEANSCRIPT
 
-POLICY=Random
-OUTPUT=random_testbed_PA
-rm -f $OUTPUT
-for i in $SCHEDULE; do
-    for j in `seq 3`; do
-    echo -n $i " " >> $OUTPUT
-    sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
-    sed -e 's/xxx/'$i'/g' $PIN > $POUT
-    java -cp $CPVAR usr.globalcontroller.GlobalController $CONTROL  > out
-    $CLEANSCRIPT
-    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
-    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
-  done
-done
 
 POLICY=Pressure
 OUTPUT=pressure_testbed_PA
@@ -43,6 +29,7 @@ for i in $SCHEDULE; do
     tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
   done
 done
+
 POLICY=HotSpot
 OUTPUT=hotspot_testbed_PA
 rm -f $OUTPUT
@@ -59,3 +46,17 @@ for i in $SCHEDULE; do
 done
 
 
+POLICY=Random
+OUTPUT=random_testbed_PA
+rm -f $OUTPUT
+for i in $SCHEDULE; do
+    for j in `seq 3`; do
+    echo -n $i " " >> $OUTPUT
+    sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
+    sed -e 's/xxx/'$i'/g' $PIN > $POUT
+    java -cp $CPVAR usr.globalcontroller.GlobalController $CONTROL  > out
+    $CLEANSCRIPT
+    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g ",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+    tail -50 traffic.agg | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{printf("%g %g %g %g %g %g\n",a/n,b/n,c/n,d/n,e/n,f/n);}' >> $OUTPUT
+  done
+done
