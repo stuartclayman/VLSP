@@ -674,7 +674,7 @@ public class InfoSource implements Application {
 
 		Serializable object = (Serializable)cm;
 
-                if (! dataIndex.isClosed()) {
+                if (! dataIndex.isClosed() && dataIndex.isActivated()) {
                     dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
                 } else {
                     Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName() + " because it is closed");

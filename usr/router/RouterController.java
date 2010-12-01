@@ -21,6 +21,14 @@ import java.nio.channels.SocketChannel;
 import usr.protocol.*;
 import usr.net.*;
 import usr.APcontroller.*;
+import usr.monitoring.NetIFStatsProbe;
+import eu.reservoir.monitoring.core.*;
+import eu.reservoir.monitoring.core.plane.DataPlane;
+import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
+import eu.reservoir.monitoring.appl.BasicDataSource;
+import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
+import java.net.InetSocketAddress;
+
 
 /**
  * The Router Controller provides the management and control
@@ -82,6 +90,10 @@ public class RouterController implements ComponentController, Runnable {
     // and are temporarily held here in the RouterController.
     HashMap<Integer, NetIF> tempNetIFMap;
 
+    // A BasicDataSource for the stats of a Router
+    BasicDataSource dataSource;
+    Probe probe;
+
     /**
      * Construct a RouterController, given a specific port.
      * The ManagementConsole listens on 'port' and
@@ -119,6 +131,11 @@ public class RouterController implements ComponentController, Runnable {
         apController_= ConstructAPController.constructAPController
             (options_);
         apInfo_= apController_.newAPInfo();
+
+        // setup DataSource
+        dataSource = new BasicDataSource(name + ".dataSource");
+        // and probe
+        probe = new NetIFStatsProbe(this);
 
     }
 
@@ -238,6 +255,14 @@ public class RouterController implements ComponentController, Runnable {
         // start management console listener
         boolean startedL = management.start();
 
+        /*
+         * TEST HACK
+        // start monitoring
+        InetSocketAddress socketAddress = new InetSocketAddress("localhost", 22997);
+        startMonitoring(socketAddress, 5);
+
+        */
+
         return startedL && startedC;
     }
     
@@ -257,6 +282,12 @@ public class RouterController implements ComponentController, Runnable {
         //System.err.println("Connection stop");
         // stop the router to router connections
         boolean stoppedC = connections.stop();
+
+        /*
+         * TEST HACK
+        // stop the dataSource and associated probe
+        stopMonitoring();
+        */
 
         // stop my own thread
         running = false;
@@ -387,7 +418,7 @@ public class RouterController implements ComponentController, Runnable {
      * It takes a class name and some args.
      * It returns app_name ~= /Router-1/App/class.blah.Blah/1
      */    
-    public ApplicationResponse appStart(String commandstr) {
+    public synchronized ApplicationResponse appStart(String commandstr) {
         String[] split= commandstr.split(" ");
 
         if (split.length == 0)  {
@@ -406,7 +437,7 @@ public class RouterController implements ComponentController, Runnable {
      * Stop an App.
      * It takes an app name
      */    
-    public ApplicationResponse appStop(String commandstr) {
+    public synchronized ApplicationResponse appStop(String commandstr) {
         String [] split= commandstr.split(" ");
         if (split.length == 0) {
             return new ApplicationResponse(false, "appStop needs application name");
@@ -539,7 +570,8 @@ public class RouterController implements ComponentController, Runnable {
         
         // Now start an info source pointing at the new AP.
         ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
+            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid);
+        // WAS "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
         isCount_++;
         monGenName_= resp.getMessage();
         //System.err.println("NEW NAME "+monGenName_);
@@ -549,19 +581,94 @@ public class RouterController implements ComponentController, Runnable {
      
     /** This node starts as an AP */
     public void startAP(int gid) {
-        System.out.println(leadin()+" has become an AP");
-        ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.AggPoint -i 0/3000"+
-        " -t 5 -a average -n agg-point-"+gid+"-"+apCount_);
-        apCount_++; 
-        apName_= resp.getMessage();
+        synchronized(this) {
+            System.out.println(leadin()+" has become an AP");
+            ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.AggPoint -i 0/3000"+
+                                               " -t 5 -a average -n agg-point-"+gid);
+            // WAS " -t 5 -a average -n agg-point-"+gid+"-"+apCount_);
+            apCount_++; 
+            apName_= resp.getMessage();
+        }
     }
     
     /** This node stops as an AP*/
     public void stopAP() {
-        System.out.println(leadin()+" has stopped being an AP");
-        appStop(apName_);
+        synchronized (this) {
+            System.out.println(leadin()+" has stopped being an AP");
+            appStop(apName_);
+            apName_ = null;
+        }
     }
+
     
+
+    /*
+     * Stuff to do with monitoring
+     */
+
+    /**
+     * Start monitoring.
+     * Sends to a particular UDP address, and
+     * sets the initial gap between transmits at every 'when' seconds.
+     */
+    public synchronized void startMonitoring(InetSocketAddress addr, int when) {
+        // check to see if the monitoring is already connected and running
+        if (dataSource.isConnected()) {
+            // if it is, stop it first
+            stopMonitoring();
+        }
+
+        // set up DataPlane
+        DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
+        dataSource.setDataPlane(outputDataPlane);
+
+        // set up probe
+        probe.setName(getName() + ".netIFStatsProbe");
+        probe.setDataRate(new EveryNSeconds(when));
+
+        // turn on probe
+        dataSource.addProbe(probe);  // this does registerProbe and activateProbe
+
+        // and connect
+        dataSource.connect();
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "setup data source: " +  dataSource.getName() + " with probe " + probe.getName());
+
+        dataSource.turnOnProbe(probe);
+
+    }
+
+    /**
+     * Pause monitoring
+     */
+     public synchronized void pauseMonitoring() {
+         if (dataSource.isProbeOn(probe)) {
+             dataSource.turnOffProbe(probe);
+         }
+     }
+
+    /**
+     * Resume monitoring
+     */
+     public synchronized void resumeMonitoring() {
+         if (!dataSource.isProbeOn(probe)) {
+             dataSource.turnOnProbe(probe);
+         }
+     }
+
+    /**
+     * Stop monitoring.
+     */
+    public synchronized void stopMonitoring() {
+        if (dataSource.isConnected()) {
+            pauseMonitoring();
+
+            dataSource.removeProbe(probe);
+        
+            dataSource.disconnect();
+        }
+
+    }
 
     /**
      * Create the String to print out before a message

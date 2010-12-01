@@ -209,7 +209,7 @@ public class ApplicationManager {
     /**
      * Static entry point to start an Application.
      */
-    public static ApplicationResponse startApp(String className, String[] args) {
+    public synchronized static ApplicationResponse startApp(String className, String[] args) {
         // args should be class name + args for class
 
         ApplicationResponse result = singleton.execute(className, args);
@@ -229,7 +229,7 @@ public class ApplicationManager {
      * Static entry point to stop all Application.
      * Application name is passed in.
      */
-    public static void stopAll() {
+    public synchronized static void stopAll() {
         //System.err.println("Stopping all apps");
         singleton.shutdown();
         //System.err.println("Stopped all apps");
@@ -238,7 +238,7 @@ public class ApplicationManager {
     /**
      * Static entry point to list Applications.
      */
-    public static Collection<ApplicationHandle> listApps() {
+    public synchronized static Collection<ApplicationHandle> listApps() {
         return singleton.appMap.values();
     }
 
