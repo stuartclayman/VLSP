@@ -315,13 +315,12 @@ public class TCPNetIF implements NetIF, Runnable {
     spawned process since it would otherwise block out queues which might need
     to be written to during close*/
     public void remoteClose() {
-      
-      synchronized (closed) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() +"RemoteClose");
-        if (closed) {
+      if (closed) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when remoteClose() called");
             return;
-        }
+      }
+      synchronized (closed) {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() +"RemoteClose");
         remoteClose= true;
         CloseThread ct= new CloseThread(this);
         Thread t= new Thread(ct,"RemoteClose-"+name);
@@ -369,7 +368,7 @@ public class TCPNetIF implements NetIF, Runnable {
     /**
      * Is closed.
      */
-    public synchronized boolean isClosed() {
+    public boolean isClosed() {
         return closed;
     }
         
