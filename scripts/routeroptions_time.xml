@@ -5,8 +5,8 @@
         <MaxNetIFUpdateTime>30000</MaxNetIFUpdateTime>
     </RoutingParameters>
     <APManager>
-        <Name>HotSpot</Name>
-        <APLifeBias>100.0</APLifeBias>
+        <Name>Random</Name>
+        <APLifeBias>0.0</APLifeBias>
         <MinAPs>1</MinAPs>
         <RouterConsiderTime>10000</RouterConsiderTime>
         <ControllerConsiderTime>10000</ControllerConsiderTime>
