@@ -21,8 +21,6 @@ public class ConnectionOverTCP implements Connection {
     // The underlying connection
     SocketChannel channel;
     
-    int pktsToSend= 0;  // # of packets to send
-    
     // The local address for this connection
     Address localAddress;
 
