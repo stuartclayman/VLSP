@@ -12,6 +12,8 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     // as an IPV4 Address is 4 bytes long
     final static int HEADER_SIZE = 24;
     final static int CHECKSUM_SIZE = 4;
+    
+
 
     // The full datagram contents
     ByteBuffer fullDatagram;
@@ -28,7 +30,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     // Dst port
     int dstPort = 0;
 
-
+    static int initialTTL_= 64;
 
     /**
      * Construct a IPV4Datagram given a payload.
@@ -117,6 +119,11 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
      */
     public void setTTL(int ttl) {
         fullDatagram.put(8,(byte)ttl);
+    }
+
+    /** Set the default TTL to be used by new packets */
+    static void setInitialTTL(int ttl) {
+        initialTTL_= ttl;
     }
 
     /**
@@ -352,8 +359,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fullDatagram.put(7, (byte)flags);
 
         // put ttl
-        int ttl = 0;
-        fullDatagram.put(8, (byte)ttl);
+        fullDatagram.put(8, (byte)initialTTL_);
 
         // protocol
         int protocol = 0;

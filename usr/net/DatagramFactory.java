@@ -24,6 +24,12 @@ public class DatagramFactory {
         setClassForProtocol("usr.net.GIDDatagram", Protocol.CONTROL);
     }
 
+    /** Set the default Initial TTL for each datagram type */
+    public static void setInitialTTL(int ttl) 
+    {
+        GIDDatagram.setInitialTTL(ttl);
+        IPV4Datagram.setInitialTTL(ttl);
+    }
 
     /**
      * Return an empty Datagram.

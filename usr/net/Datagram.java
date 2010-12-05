@@ -36,7 +36,7 @@ public interface Datagram {
      * Set the TTL
      */
     public void setTTL(int ttl);
-
+    
     /**
      * Get the protocol
      */

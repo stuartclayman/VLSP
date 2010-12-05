@@ -7,7 +7,7 @@ import java.io.*;
 import usr.engine.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
-
+import usr.net.DatagramFactory;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
@@ -242,6 +242,9 @@ public class RouterOptions {
          try {
            int n= ReadXMLUtils.parseSingleInt(rp, "MaxDist","RoutingParameters",true);
            maxDist_= n;
+           if (n != 0) {
+                DatagramFactory.setInitialTTL(n);
+           }
           ReadXMLUtils.removeNode(rp,"MaxDist","RoutingParameters");
         } catch (SAXException e) {
             throw e;

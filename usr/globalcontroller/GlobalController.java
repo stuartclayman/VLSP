@@ -1144,8 +1144,10 @@ public class GlobalController implements ComponentController {
              for (String s: routerStats_.split("\\*\\*\\*")) {
                 p.println(t+" "+s);
              } 
+         } else if (o.getParameter().equals("Separate")) {
+             outputTrafficSeparate(o,t,p); 
          } else {
-             outputTrafficSeparate(o,t,p);
+            Logger.getLogger("log").logln(USR.ERROR, "Unable to parse traffic output parameter "+o.getParameter());            
          }
        }
     }

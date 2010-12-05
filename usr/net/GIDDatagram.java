@@ -13,6 +13,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
     final static int HEADER_SIZE = 24;
     final static int CHECKSUM_SIZE = 4;
 
+ 
     // The full datagram contents
     ByteBuffer fullDatagram;
 
@@ -22,8 +23,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
     // Dst port
     int dstPort = 0;
 
-    // defualt ttl
-    public static int ttl = 64;
+   static int initialTTL_= 64; // TTL used for new 
 
     /**
      * Construct a GIDDatagram given a payload.
@@ -112,6 +112,10 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      */
     public void setTTL(int ttl) {
         fullDatagram.put(8,(byte)ttl);
+    }
+
+    static void setInitialTTL(int ttl) {
+        initialTTL_= ttl;
     }
 
     /**
@@ -359,7 +363,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
 
         // put ttl
         // start with default
-        fullDatagram.put(8, (byte)ttl);
+        fullDatagram.put(8, (byte)initialTTL_);
 
         // protocol
         int protocol = 0;

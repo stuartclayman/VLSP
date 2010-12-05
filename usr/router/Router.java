@@ -25,10 +25,8 @@ public class Router {
 
     // Router options
     RouterOptions options_;
-
     // The Router controller
     RouterController controller;
-
     // ApplicationSocket Multiplexor
     AppSocketMux appSocketMux;
 

@@ -17,7 +17,8 @@ for i in  $SEQ; do
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
     sed -e 's/xxx/'$i'/g' $PIN > $POUT
     java usr.globalcontroller.GlobalController scripts/simcontrol.xml  > out
-    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{print a/n,b/n,c/n,d/n,e/n,f/n;}' >> $OUTPUT
+    tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
+    echo >> $OUTPUT
   done
 done
 POLICY=Pressure
@@ -29,7 +30,8 @@ for i in $SEQ; do
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
     sed -e 's/xxx/'$i'/g' $PIN > $POUT
     java usr.globalcontroller.GlobalController scripts/simcontrol.xml  > out
-    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{print a/n,b/n,c/n,d/n,e/n,f/n;}' >> $OUTPUT
+    tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
+    echo >> $OUTPUT
   done
 done
 POLICY=HotSpot
@@ -41,7 +43,8 @@ for i in $SEQ; do
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
     sed -e 's/xxx/'$i'/g' $PIN > $POUT
     java usr.globalcontroller.GlobalController scripts/simcontrol.xml  > out
-    tail -50 summary.out | $AWK '{a+=$1; b+=$2; c+=$3;d+=$4;e+=$5;f+=$6;n++;}END{print a/n,b/n,c/n,d/n,e/n,f/n;}' >> $OUTPUT
+    tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
+    echo >> $OUTPUT
   done
 done
 

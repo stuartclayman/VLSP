@@ -72,6 +72,7 @@ public class AppSocketMux implements NetIF {
      */
     AppSocketMux(RouterController controller) {
         this.controller = controller;
+        name= new String("localnet");
         socketMap = new HashMap<Integer, AppSocket>();
         socketQueue = new HashMap<Integer, LinkedBlockingQueue<Datagram>>();
         socketStats = new HashMap<Integer, NetStats>();
@@ -90,7 +91,7 @@ public class AppSocketMux implements NetIF {
                                                  
             fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
             fabricDevice_.setInQueueLength(1000);
-            fabricDevice_.setName("ASM");
+            fabricDevice_.setName("localnet");
             fabricDevice_.start();
             boolean connected = connect();
             return connected;

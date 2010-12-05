@@ -4,7 +4,7 @@ package usr.router;
  * Some stats for a NetIF.
  */
 public class NetStats {
-    int [] stats = new int[12];
+    int [] stats = new int[16];
 
     /**
      * Constructor
@@ -65,10 +65,14 @@ public class NetStats {
             InPackets,
             InErrors,
             InDropped,
+            InDataBytes,
+            InDataPackets,
             OutBytes,
             OutPackets,
             OutErrors,
             OutDropped,
+            OutDataBytes,
+            OutDataPackets,
             InQueue,
             BiggestInQueue,
             OutQueue,

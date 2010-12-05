@@ -192,24 +192,29 @@ public class FabricDevice implements FabricDeviceInterface {
     {
         netStats_.increment(NetStats.Stat.OutDropped);
         //  This can happen on blocking out interface if interface is shut beforehand
-      /*  if (outIsBlocking()) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+" out dropped packet");
-        }*/
+
     }
     
     void inSentPacket(Datagram dg) 
     {
                 // stats
         netStats_.increment(NetStats.Stat.InPackets);
-        netStats_.add(NetStats.Stat.InBytes, dg.getTotalLength());
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" in sent "+inSent_);
+        netStats_.add(NetStats.Stat.InBytes, dg.getTotalLength());    
+        if (dg.getProtocol() == Protocol.DATA) {
+            netStats_.increment(NetStats.Stat.InDataPackets);
+            netStats_.add(NetStats.Stat.InDataBytes, dg.getTotalLength());    
+        }
     }
     
     void outSentPacket(Datagram dg) 
     {
         netStats_.increment(NetStats.Stat.OutPackets);
         netStats_.add(NetStats.Stat.OutBytes, dg.getTotalLength());
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" out sent "+outSent_);
+        if (dg.getProtocol() == Protocol.DATA) {
+            netStats_.increment(NetStats.Stat.OutDataPackets);
+            netStats_.add(NetStats.Stat.OutDataBytes, dg.getTotalLength());    
+        }
+
     }
     
 
@@ -238,7 +243,6 @@ public class FabricDevice implements FabricDeviceInterface {
                     return processed;
                 }
                 catch (usr.net.InterfaceBlockedException e) {
-                    long now= 0;
                     try {
                        waitHere.wait(100);
                     } catch (InterruptedException ie) {
@@ -282,15 +286,14 @@ public class FabricDevice implements FabricDeviceInterface {
         }
         // Queue the packet if possible
         synchronized(inQueue_) {
-        if (inQueueLen_ == 0 || inQueue_.size() < inQueueLen_) {
-            inQueue_.offerLast(dh);
-            if (inQueue_.size() > maxInQueue_) {
-                maxInQueue_= inQueue_.size();
-                netStats_.setValue(NetStats.Stat.BiggestInQueue,maxInQueue_);
-            }
-            inSentPacket(dg);
-            return true;
-        }
+            if (inQueueLen_ == 0 || inQueue_.size() < inQueueLen_) {
+                inQueue_.offerLast(dh);
+                if (inQueue_.size() > maxInQueue_) {
+                    maxInQueue_= inQueue_.size();
+                    netStats_.setValue(NetStats.Stat.BiggestInQueue,maxInQueue_);
+                }
+                return true;
+            }   
         }
         
         
@@ -339,14 +342,7 @@ public class FabricDevice implements FabricDeviceInterface {
                 return false;
             }
              boolean processed= sendOutDatagram(dh);
-             //sent
-             if (processed) {
-                  outSentPacket(dh.datagram);
-             } else {
-                  outDroppedPacket(dh.datagram);
-             }
-             
-             return true;  // Has been added to out queue (however briefly)
+             return true;  
              
         }
         // Queue the packet if possible
@@ -400,7 +396,7 @@ public class FabricDevice implements FabricDeviceInterface {
     }
     
     /** Send the outbound Datagram onwards */
-    public boolean sendOutDatagram(DatagramHandle dh) {
+    public boolean sendOutDatagram(DatagramHandle dh) throws InterfaceBlockedException{
         Datagram dg= dh.datagram;
         DatagramDevice dd= dh.datagramDevice;
 
@@ -610,12 +606,15 @@ class OutQueueHandler implements Runnable {
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
                 continue;
             }
-            if (dh != null) {
-                boolean sent= fabricDevice_.sendOutDatagram(dh);
-                if (sent) {
-                    fabricDevice_.outSentPacket(dh.datagram);
-                } else {
-                    fabricDevice_.outDroppedPacket(dh.datagram);
+            while (dh != null) {
+                try {
+                    boolean sent= fabricDevice_.sendOutDatagram(dh);
+                    break;
+                } catch (InterfaceBlockedException e) {
+                    try {
+                        wait(50);
+                    } catch (InterruptedException ex) {
+                    }
                 }
             }
         }
