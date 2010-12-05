@@ -36,8 +36,8 @@ public class ConstructAPController
         }
         
         Logger.getLogger("log").logln(USR.ERROR, "Unknown Access Point controller name "+name+
-          " using null controller");
-        a= new NullAPController(o);
+          " using no controller");
+        a= new NoAPController();
         return a;
     }
 }
