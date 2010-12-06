@@ -147,7 +147,7 @@ public class ConnectionOverUDP implements Connection {
                 buffer.get(latestDGData);
                 ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
 
-                Datagram dg = DatagramFactory.newDatagram(null); // WAS new IPV4Datagram();
+                Datagram dg = DatagramFactory.newDatagram(); // WAS new IPV4Datagram();
                 ((DatagramPatch)dg).fromByteBuffer(newBB);
 
                 buffer.clear();
