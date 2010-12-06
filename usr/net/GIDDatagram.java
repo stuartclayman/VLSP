@@ -38,6 +38,13 @@ public class GIDDatagram implements Datagram, DatagramPatch {
     }
 
     /**
+     * Construct a GIDDatagram given a payload.
+     */
+    GIDDatagram(byte[] payload) {
+        this(ByteBuffer.wrap(payload));
+    }
+
+    /**
      * Construct a GIDDatagram given a payload and a destination address
      */
     GIDDatagram(ByteBuffer payload, Address address) {
@@ -49,6 +56,13 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
         fillDatagram(payload);
+    }
+
+    /**
+     * Construct a GIDDatagram given a payload and a destination address
+     */
+    GIDDatagram(byte[] payload, Address address) {
+        this(ByteBuffer.wrap(payload), address);
     }
 
     /**
@@ -65,6 +79,14 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
         fillDatagram(payload);
+    }
+
+    /**
+     * Construct a GIDDatagram given a payload, a destination address,
+     * and a destination port.
+     */
+    GIDDatagram(byte[] payload, Address address, int port) {
+        this(ByteBuffer.wrap(payload), address, port);
     }
 
     GIDDatagram() {

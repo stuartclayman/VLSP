@@ -25,8 +25,6 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     int dstPort = 0;
 
     // defualt ttl
-    public static int ttl = 64;
-
     static int initialTTL_= 64;
 
     /**
@@ -39,6 +37,13 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
         fillDatagram(payload);
+    }
+
+    /**
+     * Construct a IPV4Datagram given a payload.
+     */
+    IPV4Datagram(byte[] payload) {
+        this(ByteBuffer.wrap(payload));
     }
 
     /**
@@ -56,6 +61,13 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     }
 
     /**
+     * Construct a IPV4Datagram given a payload and a destination address
+     */
+    IPV4Datagram(byte[] payload, Address address) {
+        this(ByteBuffer.wrap(payload), address);
+    }
+
+    /**
      * Construct a IPV4Datagram given a payload, a destination address,
      * and a destination port.
      */
@@ -69,6 +81,14 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
         fillDatagram(payload);
+    }
+
+    /**
+     * Construct a IPV4Datagram given a payload, a destination address,
+     * and a destination port.
+     */
+    IPV4Datagram(byte[] payload, Address address, int port) {
+        this(ByteBuffer.wrap(payload), address, port);
     }
 
     IPV4Datagram() {
