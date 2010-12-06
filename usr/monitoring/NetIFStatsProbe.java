@@ -37,10 +37,14 @@ public class NetIFStatsProbe extends AbstractProbe implements Probe {
         // InPackets,
         // InErrors,
         // InDropped,
+        // InDataBytes,
+        // InDataPackets,
         // OutBytes,
         // OutPackets,
         // OutErrors,
         // OutDropped,
+        // OutDataBytes,
+        // OutDataPackets,
         // InQueue,
         // BiggestInQueue,
         // OutQueue,
@@ -51,10 +55,14 @@ public class NetIFStatsProbe extends AbstractProbe implements Probe {
 	    add("InPackets", ProbeAttributeType.INTEGER).
 	    add("InErrors", ProbeAttributeType.INTEGER).
 	    add("InDropped", ProbeAttributeType.INTEGER).
+	    add("InDataBytes", ProbeAttributeType.INTEGER).
+	    add("InDataPackets", ProbeAttributeType.INTEGER).
 	    add("OutBytes", ProbeAttributeType.INTEGER).
 	    add("OutPackets", ProbeAttributeType.INTEGER).
 	    add("OutErrors", ProbeAttributeType.INTEGER).
 	    add("OutDropped", ProbeAttributeType.INTEGER).
+	    add("OutDataBytes", ProbeAttributeType.INTEGER).
+	    add("OutDataPackets", ProbeAttributeType.INTEGER).
 	    add("InQueue", ProbeAttributeType.INTEGER).
 	    add("BiggestInQueue", ProbeAttributeType.INTEGER).
 	    add("OutQueue", ProbeAttributeType.INTEGER).
