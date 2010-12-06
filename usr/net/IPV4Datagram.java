@@ -18,17 +18,14 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     // The full datagram contents
     ByteBuffer fullDatagram;
 
-    // Src address
-    Address srcAddr = null;
-
-    // Src port
-    int srcPort = 0;
-
     // Dst address
     Address dstAddr = null;
 
     // Dst port
     int dstPort = 0;
+
+    // defualt ttl
+    public static int ttl = 64;
 
     static int initialTTL_= 64;
 
@@ -96,7 +93,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
      * Get the checksum size
      */
     public byte getChecksumLength() {
-        return (byte)CHECKSUM_SIZE;
+        return (byte)(CHECKSUM_SIZE & 0xFF);
     }
 
 
@@ -111,14 +108,17 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
      * Get the TTL
      */
     public int getTTL() {
-        return fullDatagram.get(8);
+        byte b = fullDatagram.get(8);
+        return 0 | (0xFF & b);
     }
 
    /**
      * Set the TTL
      */
-    public void setTTL(int ttl) {
-        fullDatagram.put(8,(byte)ttl);
+    public Datagram setTTL(int ttl) {
+        byte b = (byte)(ttl & 0xFF);
+        fullDatagram.put(8, b);
+        return this;
     }
 
     /** Set the default TTL to be used by new packets */
@@ -137,7 +137,8 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
      * Set the protocol
      */
     public Datagram setProtocol(int p) {
-        fullDatagram.put(9, (byte)p);
+        byte b = (byte)(p & 0xFF);
+        fullDatagram.put(9, b);
 
         return this;
     }
@@ -164,15 +165,16 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
      * Set the src address
      */
     public Datagram setSrcAddress(Address addr) {
-        srcAddr = addr;
+        if (addr != null && ! (addr instanceof Size4)) {
+            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in IPV4Datagram");
+        }
 
         // put src addr
-        // to be filled in later
         fullDatagram.position(10);
-        if (srcAddr == null) {
+        if (addr == null) {
             fullDatagram.put(IPV4Address.EMPTY, 0, 4);
         } else {
-            fullDatagram.put(srcAddr.asByteArray(), 0, 4);
+            fullDatagram.put(addr.asByteArray(), 0, 4);
         }
 
         return this;
@@ -196,18 +198,14 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
     }
 
 
-    boolean emptyAddress(byte []address) 
-    {
-       for (int i= 0; i < 4; i++) {
-          if (address[i] != IPV4Address.EMPTY[i])
-            return false;
-       }
-       return true;
-    }
     /**
      * Set the dst address
      */
     public Datagram setDstAddress(Address addr) {
+        if (addr != null && ! (addr instanceof Size4)) {
+            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in IPV4Datagram");
+        }
+
         dstAddr = addr;
 
         // put dst addr
@@ -222,20 +220,33 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         return this;
     }
 
+    boolean emptyAddress(byte []address) 
+    {
+       for (int i= 0; i < 4; i++) {
+          if (address[i] != IPV4Address.EMPTY[i])
+            return false;
+       }
+       return true;
+    }
 
     /**
      * Get src port.
      */
     public int getSrcPort() {
-        return (int)fullDatagram.getShort(20);
+        int p = (int)fullDatagram.getShort(20);
+        // convert signed to unsigned
+        if (p < 0) {
+            return p + 65536;
+        } else {
+            return p;
+        }
     }
 
     /**
      * Set the src port
      */
     public Datagram setSrcPort(int p) {
-        srcPort = p;
-        fullDatagram.putShort(20, (short)srcPort);
+        fullDatagram.putShort(20, (short)p);
 
         return this;
     }
@@ -244,7 +255,13 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
      * Get dst port.
      */
     public int getDstPort() {
-        return (int)fullDatagram.getShort(22);
+        int p = (int)fullDatagram.getShort(22);
+        // convert signed to unsigned
+        if (p < 0) {
+            return p + 65536;
+        } else {
+            return p;
+        }
     }
 
     /**
@@ -349,7 +366,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fullDatagram.put("USRD".getBytes(), 0, 4);
 
         // put header len
-        fullDatagram.put(4, (byte)HEADER_SIZE);
+        fullDatagram.put(4, (byte)(HEADER_SIZE & 0xFF));
 
         // put total len
         fullDatagram.putShort(5, (short)fullDatagram.capacity());
@@ -362,17 +379,13 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
         fullDatagram.put(8, (byte)initialTTL_);
 
         // protocol
-        int protocol = 0;
+        byte protocol = 0;
         fullDatagram.put(9, (byte)protocol);
 
         // put src addr
         // to be filled in later
         fullDatagram.position(10);
-        if (srcAddr == null) {
-            fullDatagram.put(IPV4Address.EMPTY, 0, 4);
-        } else {
-            fullDatagram.put(srcAddr.asByteArray(), 0, 4);
-        }
+        fullDatagram.put(IPV4Address.EMPTY, 0, 4);
 
         // put dst addr
         // to be filled in later
@@ -389,7 +402,7 @@ public class IPV4Datagram implements Datagram, DatagramPatch {
 
         // put src port
         // to be filled in later
-        fullDatagram.putShort(20, (short)srcPort);
+        fullDatagram.putShort(20, (short)0);
 
         // put dst port
         // to be filled in later

@@ -89,7 +89,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      * Get the checksum size
      */
     public byte getChecksumLength() {
-        return (byte)CHECKSUM_SIZE;
+        return (byte)(CHECKSUM_SIZE & 0xFF);
     }
 
 
@@ -104,14 +104,17 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      * Get the TTL
      */
     public int getTTL() {
-        return (int)fullDatagram.get(8);
+        byte b = fullDatagram.get(8);
+        return 0 | (0xFF & b);
     }
     
     /**
      * Set the TTL
      */
-    public void setTTL(int ttl) {
-        fullDatagram.put(8,(byte)ttl);
+    public Datagram setTTL(int ttl) {
+        byte b = (byte)(ttl & 0xFF);
+        fullDatagram.put(8, b);
+        return this;
     }
 
     static void setInitialTTL(int ttl) {
@@ -122,14 +125,16 @@ public class GIDDatagram implements Datagram, DatagramPatch {
      * Get the protocol
      */
     public byte getProtocol() {
-        return fullDatagram.get(9);
+        byte b = fullDatagram.get(9);
+        return b;
     }
 
     /**
      * Set the protocol
      */
     public Datagram setProtocol(int p) {
-        fullDatagram.put(9, (byte)p);
+        byte b = (byte)(p & 0xFF);
+        fullDatagram.put(9, b);
 
         return this;
     }
@@ -157,11 +162,10 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         }
 
         // put src addr
+        fullDatagram.position(10);
         if (addr == null) {
-            fullDatagram.position(10);
             fullDatagram.put(GIDAddress.EMPTY, 0, 4);
         } else {
-            fullDatagram.position(10);
             fullDatagram.put(addr.asByteArray(), 0, 4);
         }
 
@@ -192,14 +196,13 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         }
 
         dstAddr = addr;
+        fullDatagram.position(14);
 
         // put dst addr
         // to be filled in later
         if (addr == null) {
-            fullDatagram.position(14);
             fullDatagram.put(GIDAddress.EMPTY, 0, 4);
         } else {
-            fullDatagram.position(14);
             fullDatagram.put(dstAddr.asByteArray(), 0, 4);
         }
 
@@ -352,13 +355,13 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         fullDatagram.put("USRD".getBytes(), 0, 4);
         //Logger.getLogger("log").logln(USR.ERROR, "USRD set");
         // put header len
-        fullDatagram.put(4, (byte)HEADER_SIZE);
+        fullDatagram.put(4, (byte)(HEADER_SIZE & 0xFF));
 
         // put total len
         fullDatagram.putShort(5, (short)fullDatagram.capacity());
 
         // put flags
-        int flags = 0;
+        byte flags = 0;
         fullDatagram.put(7, (byte)flags);
 
         // put ttl
@@ -366,7 +369,7 @@ public class GIDDatagram implements Datagram, DatagramPatch {
         fullDatagram.put(8, (byte)initialTTL_);
 
         // protocol
-        int protocol = 0;
+        byte protocol = 0;
         fullDatagram.put(9, (byte)protocol);
 
         // put src addr
