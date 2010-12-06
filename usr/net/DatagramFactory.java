@@ -35,18 +35,25 @@ public class DatagramFactory {
      * Return an empty Datagram.
      */
     static Datagram newDatagram() {
-        return newDatagram(Protocol.DATA, null);
+        return newDatagram(Protocol.DATA, (ByteBuffer)null);
     }
 
     /**
-     * Return a Datagram.
+     * Return a Datagram given a ByteBuffer
      */
     public static Datagram newDatagram(ByteBuffer payload) {
         return newDatagram(Protocol.DATA, payload);
     }
 
     /**
-     * Return the relevant Datagram.
+     * Return a Datagram given a byte[]
+     */
+    public static Datagram newDatagram(byte[] payload) {
+        return newDatagram(Protocol.DATA, ByteBuffer.wrap(payload));
+    }
+
+    /**
+     * Return the relevant Datagram given a ByteBuffer
      */
     public static Datagram newDatagram(int protocol, ByteBuffer payload) {
         DatagramFactoryInfo dfi = null;
@@ -68,6 +75,13 @@ public class DatagramFactory {
             throw new Error("DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: " + dfi.className + " for protocol " + protocol);
         }
 
+    }
+
+    /**
+     * Return the relevant Datagram given a ByteBuffer
+     */
+    public static Datagram newDatagram(int protocol, byte[] payload) {
+        return newDatagram(protocol, ByteBuffer.wrap(payload));
     }
 
     /**
