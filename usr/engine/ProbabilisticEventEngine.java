@@ -128,7 +128,7 @@ public class ProbabilisticEventEngine implements EventEngine {
                 int newLink= nodes.get(index);
                 //Logger.getLogger("log").logln(USR.ERROR, "Picked "+newLink);
                 nodes.remove(index);
-                e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
+                 e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
                 new Pair<Integer,Integer>(newLink,routerId));
                 s.addEvent(e1);
             }

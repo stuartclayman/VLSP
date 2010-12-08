@@ -399,12 +399,7 @@ public class GlobalController implements ComponentController {
     /** Register existence of router */
     private void registerRouter(int rId) 
     {
-        //System.out.println("ADD ROUTER TO LIST");
         routerList_.add(rId);
-        /*System.out.println("NEW LIST");
-        for (int r: routerList_) {
-            System.out.println("List has"+r);
-        }*/
     }
     
     /** Event to start a router */
@@ -1334,7 +1329,7 @@ public class GlobalController implements ComponentController {
             childProcessWrappers_.put(procName, new ProcessWrapper(child, procName));
 
             try {
-                Thread.sleep(10);  // Simple wait is to
+                Thread.sleep(100);  // Simple wait is to
                             // ensure controllers start up
             }
             catch (java.lang.InterruptedException e) {
@@ -1406,8 +1401,8 @@ public class GlobalController implements ComponentController {
      * creates interactors with the LocalControllers.
     */
     private void checkAllControllers() {
-        // try 10 times, with 500 millisecond gap
-        int MAX_TRIES = 10;
+        // try 20 times, with 500 millisecond gap
+        int MAX_TRIES = 20;
         int tries = 0;
         int millis = 500;
         boolean isOK = false;

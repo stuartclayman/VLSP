@@ -9,6 +9,7 @@ import usr.protocol.Protocol;
 import java.nio.ByteBuffer;
 import java.lang.*;
 import java.util.*;
+import java.net.NoRouteToHostException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -266,7 +267,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
      * Return either the NetIF for the datagram or failing this null to indicate
      unroutable or datagram is for router
      */
-    public DatagramDevice getRoute(Datagram dg) {
+    public DatagramDevice getRoute(Datagram dg) throws NoRouteToHostException {
         Address addr= dg.getDstAddress();
        /* if (dg.getProtocol() == Protocol.CONTROL) {
             System.err.println("Got CONTROL "+ dg.getDstAddress()+" "+
@@ -274,9 +275,11 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         }*/
         if (ourAddress(addr)) {
             if (dg.getDstPort() == 0) {
-                System.err.println("For SRF");
                 return this;
             } else {
+                if (localNetIF == null) {
+                    throw new NoRouteToHostException();
+                }
                 return localNetIF;
             }
         }
@@ -285,12 +288,12 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
             return netif;
         }
         //System.err.println("null");
-        return null;
+       throw new NoRouteToHostException();
     }
     
     
     /** Get the Fabric Device which this packet should be sent to */
-    public FabricDevice getRouteFabric(Datagram dg) {
+    public FabricDevice getRouteFabric(Datagram dg) throws NoRouteToHostException{
 
         if (ourAddress(dg.getDstAddress())) {
             if (dg.getDstPort() == 0 || dg.getProtocol() == Protocol.CONTROL) {
@@ -298,7 +301,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
             }
             else {
                 if (localNetIF == null) {// possible only during shutdown
-                    return null;
+                    throw new NoRouteToHostException();
                 }
                 return localNetIF.getFabricDevice();
             }
@@ -306,10 +309,16 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
 
         DatagramDevice inter= getRoute(dg);
         if (inter == null) {
-            return null;
+            throw new NoRouteToHostException();
             
         }
-        return inter.getFabricDevice();
+        FabricDevice f= inter.getFabricDevice();
+        if (f == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+            "Cannot find fabric device for interface"+inter);
+            throw new NoRouteToHostException();
+        }
+        return f;
     }
     
     
@@ -329,8 +338,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
         }
         // OK -- send TTL expired datagram
         Address dst= dg.getSrcAddress();
-        ByteBuffer buffer = ByteBuffer.allocate(1);
-        buffer.put("X".getBytes());
+        byte[] buffer = new byte[1];
+        buffer[0]='X';
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
 
         datagram.setDstAddress(dst);
@@ -656,8 +665,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     /** Ping command received */
     public boolean ping (int id) {
         GIDAddress dst= new GIDAddress(id);   
-        ByteBuffer buffer = ByteBuffer.allocate(1);
-        buffer.put("P".getBytes());
+        byte[] buffer= new byte[1];
+        buffer[0]='P';
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
         datagram.setDstAddress(dst);
         sendDatagram(datagram);
@@ -712,8 +721,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
         GIDAddress dst= new GIDAddress(id);
         int dstPort= port;
-        ByteBuffer buffer = ByteBuffer.allocate(1);
-        buffer.put("E".getBytes());
+        byte []buffer= new byte[1];
+        buffer[0]= 'E';
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
 
         datagram.setDstAddress(dst);
@@ -1058,9 +1067,7 @@ class RoutingTableTransmitter extends Thread {
         }
         toSend[0]= (byte)'T';
         System.arraycopy(table, 0, toSend,1,table.length);
-        ByteBuffer buffer = ByteBuffer.allocate(table.length+1);
-        buffer.put(toSend);
-        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, toSend);
         datagram.setDstAddress(inter.getRemoteRouterAddress());
         sendDatagram(datagram);
         lastTableUpdateTime_.put(inter,now);

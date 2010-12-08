@@ -88,8 +88,8 @@ public class StubServer2 implements NetIFListener {
     /**
      * Fake interface
      */
-    public FabricDevice getRouteFabric(Datagram d) {
-        return null;
+    public FabricDevice getRouteFabric(Datagram d) throws NoRouteToHostException {
+        throw new NoRouteToHostException();
     }
     
     /** Accept all traffic*/

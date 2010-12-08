@@ -221,7 +221,7 @@ public class FabricDevice implements FabricDeviceInterface {
     
     /** Return the fabric device that this datagram may route to or no 
     such fabric */
-    FabricDevice getRouteFabric(Datagram dg) {
+    FabricDevice getRouteFabric(Datagram dg) throws NoRouteToHostException {
         if (listener_ == null) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+" no listener");
             return null;
@@ -368,15 +368,17 @@ public class FabricDevice implements FabricDeviceInterface {
     /** transfer datagram from in queue to out queue using no queue discipline
         add right now or drop
         */
-    public boolean transferDatagram(DatagramHandle dh) {
+    public boolean transferDatagram(DatagramHandle dh) throws NoRouteToHostException{
         
         if (dh.datagram.TTLReduce() == false) {
             listener_.TTLDrop(dh.datagram);
             return false;
         }
-        FabricDevice f= getRouteFabric(dh.datagram);
-        if (f == null) {
-            return false;
+        FabricDevice f= null;
+        try {
+            f= getRouteFabric(dh.datagram);
+        } catch (NoRouteToHostException e) {
+            throw (e);
         }
         Object waitObj= new Object();
         while (true) {
@@ -497,8 +499,10 @@ class InQueueHandler implements Runnable {
             } catch (InterruptedException e) {
                 break;  // Interrupt should only occur when queue is zero
             }
-            FabricDevice f= fabricDevice_.getRouteFabric(dh.datagram);
-            if (f == null) { //  Cannot route
+            FabricDevice f= null;
+            try {
+                f= fabricDevice_.getRouteFabric(dh.datagram);
+            } catch (NoRouteToHostException e) { //  Cannot route
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
                 continue;
             }
