@@ -19,8 +19,8 @@ for i in  $SEQ; do
     java -cp . usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
-    count=`expr $count + 1` 
   done
+  count=`expr $count + 1` 
 done
 POLICY=Pressure
 OUTPUT=pressure_sim_time_noPA
@@ -33,8 +33,8 @@ for i in $SEQ; do
     java -cp . usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
-        count=`expr $count + 1` 
   done
+  count=`expr $count + 1` 
 done
 POLICY=HotSpot
 OUTPUT=hotspot_sim_time_noPA
@@ -47,7 +47,7 @@ for i in $SEQ; do
     java -cp . usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
-    count=`expr $count + 1` 
   done
+  count=`expr $count + 1` 
 done
 
