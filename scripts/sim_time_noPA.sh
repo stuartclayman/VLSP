@@ -17,7 +17,7 @@ for i in  $SEQ; do
     for j in `seq $REPS`; do
     echo -n $count $i "" >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN | sed -e 's/xxx/'$i'/g' > $ROUT
-    java usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
+    java -cp . usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
     count=`expr $count + 1` 
@@ -31,7 +31,7 @@ for i in $SEQ; do
     for j in `seq $REPS`; do
     echo -n $count $i "" >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN | sed -e 's/xxx/'$i'/g' > $ROUT
-    java usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
+    java -cp . usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
         count=`expr $count + 1` 
@@ -44,7 +44,7 @@ for i in $SEQ; do
     for j in `seq $REPS`; do
     echo -n $count $i "" >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN | sed -e 's/xxx/'$i'/g' > $ROUT
-    java usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
+    java -cp . usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
     count=`expr $count + 1` 
