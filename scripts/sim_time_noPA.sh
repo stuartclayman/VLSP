@@ -12,7 +12,7 @@ REPS="10"
 OUTPUT=random_sim_time_noPA
 POLICY=Random
 rm -f $OUTPUT
-count= 0
+count=0
 for i in  $SEQ; do
     for j in `seq $REPS`; do
     echo -n $count $i "" >> $OUTPUT
@@ -26,7 +26,7 @@ done
 POLICY=Pressure
 OUTPUT=pressure_sim_time_noPA
 rm -f $OUTPUT
-count= 0
+count=0
 for i in $SEQ; do
     for j in `seq $REPS`; do
     echo -n $count $i "" >> $OUTPUT
@@ -40,6 +40,7 @@ done
 POLICY=HotSpot
 OUTPUT=hotspot_sim_time_noPA
 rm -f $OUTPUT
+count=0
 for i in $SEQ; do
     for j in `seq $REPS`; do
     echo -n $count $i "" >> $OUTPUT
