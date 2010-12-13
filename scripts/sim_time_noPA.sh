@@ -1,5 +1,4 @@
 #!/bin/sh
-
 MASTERSCRIPT=scripts/sim_time_noPA.xml
 
 RIN=scripts/routerdummy_time.xml
