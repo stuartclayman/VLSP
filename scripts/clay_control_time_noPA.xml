@@ -29,7 +29,7 @@
   <EventEngine>
      <Name>Probabilistic</Name>
      <EndTime>3600</EndTime>
-     <Parameters>scripts/probdists.xml</Parameters>
+     <Parameters>scripts/probdists_testbed_time.xml</Parameters>
   </EventEngine>
   <RouterOptions>
       scripts/routeroptions_time.xml

@@ -2,7 +2,7 @@
 MASTERSCRIPT=scripts/clay_control_time_noPA.xml
 
 RIN=scripts/routerdummy_time.xml
-ROUT=scripts/routeroptions_time.xml
+ROUT=scripts/routeroptions_testbed_time.xml
 AWK=gawk
 
 SEQ="0.0 1.0 2.0 3.0"
