@@ -5,7 +5,7 @@ RIN=scripts/routerdummy_time.xml
 ROUT=scripts/routeroptions_time.xml
 AWK=gawk
 
-SEQ="0.0 1.0 10.0 100.0"
+SEQ="0.1 0.5"
 REPS="10"
 
 OUTPUT=random_sim_time_noPA
