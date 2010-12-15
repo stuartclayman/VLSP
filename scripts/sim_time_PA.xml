@@ -1,0 +1,27 @@
+<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <StartLocalControllers>true</StartLocalControllers>
+     <ConnectedNetwork>true</ConnectedNetwork>
+     <Simulation>true</Simulation>
+  </GlobalController>
+  <EventEngine>
+     <Name>Probabilistic</Name>
+     <EndTime>3600</EndTime>
+     <Parameters>scripts/probdistfast_PA.xml</Parameters>
+  </EventEngine>
+  <RouterOptions>
+      scripts/routeroptions_time.xml
+  </RouterOptions>
+      <Output>
+        <File>out.net</File>
+        <When>End</When>
+        <Type>Network</Type>
+    </Output>
+    <Output>
+        <File>summary.out</File>
+        <When>Interval</When>
+        <Time>10000</Time>
+        <Type>Summary</Type>
+    </Output>
+</SimOptions>
