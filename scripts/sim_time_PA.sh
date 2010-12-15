@@ -1,5 +1,5 @@
 #!/bin/sh
-MASTERSCRIPT=scripts/sim_time_noPA.xml
+MASTERSCRIPT=scripts/sim_time_PA.xml
 
 RIN=scripts/routerdummy_time.xml
 ROUT=scripts/routeroptions_time.xml
@@ -8,7 +8,7 @@ AWK=gawk
 SEQ="0.0 0.1 1.0 10.0 100.0"
 REPS="10"
 
-OUTPUT=random_sim_time_noPA
+OUTPUT=random_sim_time_PA
 POLICY=Random
 rm -f $OUTPUT
 count=0
@@ -23,7 +23,7 @@ for i in  $SEQ; do
   count=`expr $count + 1` 
 done
 POLICY=Pressure
-OUTPUT=pressure_sim_time_noPA
+OUTPUT=pressure_sim_time_PA
 rm -f $OUTPUT
 count=0
 for i in $SEQ; do
@@ -37,7 +37,7 @@ for i in $SEQ; do
   count=`expr $count + 1` 
 done
 POLICY=HotSpot
-OUTPUT=hotspot_sim_time_noPA
+OUTPUT=hotspot_sim_time_PA
 rm -f $OUTPUT
 count=0
 for i in $SEQ; do
