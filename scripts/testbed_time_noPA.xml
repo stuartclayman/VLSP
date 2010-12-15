@@ -44,4 +44,18 @@
         <Time>10000</Time>
         <Type>Summary</Type>
     </Output>
+    <Output>
+        <File>summary.out</File>
+        <When>Interval</When>
+        <Time>10000</Time>
+        <Type>Summary</Type>
+    </Output>
+    <Output>
+        <File>traffic.agg</File>
+        <When>Interval</When>
+        <Time>10000</Time>
+        <Type>Traffic</Type>
+        <Parameter>Aggregate</Parameter>
+    </Output>
+
 </SimOptions>
