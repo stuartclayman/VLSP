@@ -5,7 +5,7 @@ RIN=scripts/routertestbeddummy_time.xml
 ROUT=scripts/routertestbed_time.xml
 AWK=gawk
 
-SEQ="0.0 1.0 10.0 100.0"
+SEQ="0.0 0.1 1.0 10.0 100.0"
 REPS="3"
 
 OUTPUT=random_testbed_time_noPA
