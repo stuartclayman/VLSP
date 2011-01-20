@@ -131,6 +131,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
             return;
         }
         for (NetIF i: l) {
+            if (i == null) 
+                continue;
             if (i.isLocal() == false && !i.equals(inter)) {
                 queueRoutingRequest(i);
             }
@@ -1049,13 +1051,14 @@ class RoutingTableTransmitter extends Thread {
       
         //Logger.getLogger("log").log(USR.EXTRA, "T");
         NetIF inter = nextUpdateIF_;
-        long now= System.currentTimeMillis();
+        
         if (inter == null) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "No table to send");
             
             return;
         }
-
+      synchronized(inter) {
+        long now= System.currentTimeMillis();
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table " + table_ + " for "+ inter);
         byte[]table;
         synchronized(table_) {
@@ -1073,7 +1076,7 @@ class RoutingTableTransmitter extends Thread {
         lastTableUpdateTime_.put(inter,now);
         nextTableUpdateTime_.put(inter,now+options_.getMaxNetIFUpdateTime());
         //Logger.getLogger("log").logln(USR.ERROR, "Next table update time"+nextUpdateTime_);
-
+      }
     }
       
 

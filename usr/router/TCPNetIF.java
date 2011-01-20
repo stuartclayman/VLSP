@@ -319,13 +319,11 @@ public class TCPNetIF implements NetIF, Runnable {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when remoteClose() called");
             return;
       }
-      synchronized (closed) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() +"RemoteClose");
-        remoteClose= true;
-        CloseThread ct= new CloseThread(this);
-        Thread t= new Thread(ct,"RemoteClose-"+name);
-        t.start();
-      }
+      Logger.getLogger("log").logln(USR.STDOUT, leadin() +"RemoteClose");
+      remoteClose= true;
+      CloseThread ct= new CloseThread(this, this.closed);
+      Thread t= new Thread(ct,"RemoteClose-"+name);
+      t.start();
     }
     
     /**
@@ -451,12 +449,14 @@ public class TCPNetIF implements NetIF, Runnable {
     /** Thread to perform remote close on netif */
     class CloseThread implements Runnable {
         TCPNetIF netif_;
-        CloseThread(TCPNetIF n) {
+        CloseThread(TCPNetIF n, Boolean closed) {
             netif_= n;
         }
         
         public void run() {
-            netif_.close();
+            synchronized(closed) {
+                netif_.close();
+            }
         }
     }
 
