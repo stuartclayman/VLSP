@@ -13,4 +13,10 @@
         <MaxAPWeight>5</MaxAPWeight>
         <MinPropAP>xxx</MinPropAP>
     </APManager>
+   <Output>
+	    <FileName>/space/rclegg/testbedoutput</FileName>
+  	  <ExtendedName>true</ExtendedName>
+   </Output>
+
 </RouterOptions>
+
