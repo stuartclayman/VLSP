@@ -569,8 +569,13 @@ public class RouterController implements ComponentController, Runnable {
         ap_= ap;
         
         // Now start an info source pointing at the new AP.
-        ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-            "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
+        String command= new String("plugins_usr.aggregator.appl.InfoSource -o "+ap+
+            "/3000 -p rt -t 1 -d 3");
+        command+= (" -n info-source-"+gid+"-"+isCount_);  // Make source name unique
+        if (options_.getAPOutputPath() != null) {
+			command+= " -l "+ options_.getAPOutputPath();
+	    }
+        ApplicationResponse resp= appStart(command);
         // WAS "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
         isCount_++;
         monGenName_= resp.getMessage();
@@ -583,8 +588,12 @@ public class RouterController implements ComponentController, Runnable {
     public void startAP(int gid) {
         synchronized(this) {
             System.out.println(leadin()+" has become an AP");
-            ApplicationResponse resp= appStart("plugins_usr.aggregator.appl.AggPoint -i 0/3000"+
-                                               " -t 5 -a average -n agg-point-"+gid+"-"+apCount_);
+            String command= new String("plugins_usr.aggregator.appl.AggPoint -i 0/3000 -t 5 -a average");
+            command+= (" -n agg-point-"+gid+"-"+apCount_);
+            if (options_.getAPOutputPath() != null) {
+				command+= " -l "+ options_.getAPOutputPath();
+			}
+            ApplicationResponse resp= appStart(command);
             // WAS " -t 5 -a average -n agg-point-"+gid+"-"+apCount_);
             apCount_++; 
             apName_= resp.getMessage();

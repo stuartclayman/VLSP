@@ -31,6 +31,7 @@ public class RouterOptions {
     // Parameters set in APManager Tag
     
     String APManagerName_= null;    // Name of  APManager
+    String APOutputPath_= null;   // Path to which infosource and aggpoint should write
     int maxAPs_= 0;   // max APs
     int minAPs_= 0;   // min APs
     int routerConsiderTime_= 10000;   // Time router reconsiders
@@ -283,6 +284,15 @@ public class RouterOptions {
            
         }
         try {
+            APOutputPath_= ReadXMLUtils.parseSingleString
+              (n, "OutputPath","APManager",true);
+            ReadXMLUtils.removeNode(n,"OutputPath","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        try {
             maxAPs_= ReadXMLUtils.parseSingleInt
               (n, "MaxAPs","APManager",true);
             ReadXMLUtils.removeNode(n,"MaxAPs","APManager");
@@ -407,7 +417,12 @@ public class RouterOptions {
     { 
         return APManagerName_;
     }
-  
+    
+    /** Accessor function for output path for AP*/
+    public String getAPOutputPath()
+    {
+		return APOutputPath_;
+	}
     /** Accessor function for max no of APs */
     public int getMaxAPs()
     { 
