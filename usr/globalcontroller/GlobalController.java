@@ -21,48 +21,78 @@ import java.nio.channels.FileChannel;
  * gives set up and tear down instructions directly to them.
  */
 public class GlobalController implements ComponentController {
-    private long simulationTime;
-    private long simulationStartTime;
-    private long lastEventLength;
-    private String xmlFile_;
-    private LocalHostInfo myHostInfo_;
-    private ControlOptions options_;
-    private boolean listening_;
+    private long simulationTime;   // Current time in simulation
+    private long simulationStartTime;  // time at which simulation started  (assuming realtime)
+    private long lastEventLength;   // length of time previous event took
+    private String xmlFile_;          // name of XML file containing config
+    private LocalHostInfo myHostInfo_;  // Information about the local info 
+    private ControlOptions options_;   // Options affecting the simulation
+    private boolean listening_;  			// Is this
     private GlobalControllerManagementConsole console_= null;
     private ArrayList <LocalControllerInteractor> localControllers_ = null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
-    private ArrayList <int []> outLinks_= null;
-    private ArrayList <int []> linkCosts_= null;
-    private ArrayList <Integer> routerList_= null;
-    private ArrayList <String> childNames_= null;
-
+    
+    // Arrays below are sparse and this approach is for fast access.
+    // outLinks_.get(i) returns a primitive array containing all the
+    // nodes directly connected from node i
+    private ArrayList <int []> outLinks_= null;  // numbers of nodes which are connected from 
+												// a given node 
+    private ArrayList <int []> linkCosts_= null;	// costs of connections in above
+    private ArrayList <Integer> routerList_= null;   // List of integers which
+										// contains the numbers of nodes present
+    private ArrayList <String> childNames_= null;  // names of child processes
+	
+				
     private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
+		// Map connections LocalControllerInfo for given LCs to the appropriate interactors
+
     private HashMap <Integer, BasicRouterInfo> routerIdMap_= null;
+    // Map is from router Id to information one which machine router is stored on.
+    
     private HashMap <LocalControllerInfo, PortPool> portPools_= null;
+    // Map is used to store vacant ports on local controllers
+    
     private int aliveCount= 0;
+    // Counts number of live nodes running.
+    
     private EventScheduler scheduler_= null;
+    // Class holds scheduler for event list
+    
     private boolean simulationRunning_= true;
+    // Used to stop simulation
+    
     private int maxRouterId_=0;
-    private int noLinks_=0;
+    // Maximum ID no of any router instantiated so far.  Next router
+    // will have number maxRouterId_+1
+    
+    private int noLinks_=0;  // number of links in network
+
+	// Options structure which is given to each router.
     private RouterOptions routerOptions_= null;
     
+    // Synchronization object used to wait for next event.
     private Object waitCounter_= null;
     
-    // Variables relate to traffic output
+    // Variables relate to traffic output of statistics
     private ArrayList <OutputType> trafficOutputRequests_= null;
     private String routerStats_= "";
     private int statsCount_= 0;
     private ArrayList <Long> trafficOutputTime_= null;
     private HashMap<String, int []> trafficLinkCounts_ = null;
 
-
+    
     private Thread ProcessOutputThread_;
+    
+    // Number of aggregation point controllers
     private int noControllers_= 0;
     
+    // Thread name
     private String myName = "GlobalController";
 
+		// Controller assigns aggregation points
     private APController APController_= null;
     
+    // Used in shut down routines
     private boolean isActive = false;
 
     /**
