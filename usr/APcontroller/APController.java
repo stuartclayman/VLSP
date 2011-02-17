@@ -29,6 +29,9 @@ public interface APController {
     /** Controller regular AP update action */
     public void controllerUpdate(long time, GlobalController g);
     
+    /** Controller regular AP remove then add action */
+ //   public void controllerRemove(long time, GlobalController g);
+    
     /** Calculate AP traffic estimate */
     public int APTrafficEstimate(GlobalController g);
     

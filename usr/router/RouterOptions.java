@@ -34,12 +34,16 @@ public class RouterOptions {
     String APOutputPath_= null;   // Path to which infosource and aggpoint should write
     int maxAPs_= 0;   // max APs
     int minAPs_= 0;   // min APs
-    int routerConsiderTime_= 10000;   // Time router reconsiders
-    int controllerConsiderTime_= 10000;   // Time controller reconsiders
+    int routerConsiderTime_= 10000;   // Time router reconsiders APs
+
+    int controllerConsiderTime_= 10000;   // Time controller reconsiders APs
+    int controllerRemoveTime_= 0;           // Time to consider removing weakest AP --
+                                        // if non-zero then weakest AP removed 
+                                        // and appropriate new APs added
     int maxAPWeight_= 0;  // Maximum link weight an AP can be away
+    double APfilter_= 1.0;  // AP filtering percentage
     int trafficStatTime_= 10000;  // Time to send traffic stats
     double apLifeBias_= 0.0;  // Weight to give to AP lifetime predictions  -- 0 means ignore
-
     double minPropAP_= 0.0;     // Minimum proportion of AP
     double maxPropAP_= 1.0;     // Maximum proportion of AP
     String []APParms_= {}; // Parameters for AP Options
@@ -330,6 +334,16 @@ public class RouterOptions {
         }
         
         try {
+            controllerRemoveTime_= ReadXMLUtils.parseSingleInt
+              (n, "ControllerRemoveTime","APManager",true);
+            ReadXMLUtils.removeNode(n,"ControllerRemoveTime","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+        
+        try {
             maxAPWeight_= ReadXMLUtils.parseSingleInt
               (n, "MaxAPWeight","APManager",true);
             ReadXMLUtils.removeNode(n,"MaxAPWeight","APManager");
@@ -338,7 +352,15 @@ public class RouterOptions {
         } catch (XMLNoTagException e) {
            
         }
-        
+        try {
+            APfilter_= ReadXMLUtils.parseSingleDouble
+              (n, "APFilter","APManager",true);
+            ReadXMLUtils.removeNode(n,"APFilter","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
     
 
         

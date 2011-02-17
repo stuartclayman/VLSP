@@ -164,6 +164,7 @@ public class GlobalController implements ComponentController {
           logger.addOutput(pw, new BitMask(USR.STDOUT));
         } catch (Exception e) {
           System.err.println("Cannot output to file");
+          System.err.println(fileName);
             System.exit(-1);
         }
       }
@@ -180,6 +181,7 @@ public class GlobalController implements ComponentController {
           logger.addOutput(pw, new BitMask(USR.ERROR));
         } catch (Exception e) {
           System.err.println("Cannot output to file");
+          System.err.println(fileName);
             System.exit(-1);
         }
       }
