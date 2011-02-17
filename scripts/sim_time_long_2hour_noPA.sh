@@ -22,7 +22,6 @@ for i in  $SEQ; do
     sed -e 's/yyy/'$POLICY'/g' $RIN | sed -e 's/xxx/'$i'/g' > $ROUT
     java -cp $CPVAR usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
-    tail -50 traffic.agg | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
     $CLEANSCRIPT
     done
@@ -39,7 +38,6 @@ for i in $SEQ; do
     java -cp $CPVAR usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
     $CLEANSCRIPT
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
-    tail -50 traffic.agg | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
   done
   count=`expr $count + 1` 
@@ -55,7 +53,6 @@ for i in $SEQ; do
     java -cp $CPVAR usr.globalcontroller.GlobalController $MASTERSCRIPT  > out
     $CLEANSCRIPT
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
-    tail -50 traffic.agg | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
   done
   count=`expr $count + 1` 
