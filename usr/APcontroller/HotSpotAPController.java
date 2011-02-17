@@ -39,6 +39,13 @@ public class HotSpotAPController extends NullAPController {
         addAP(time, g, noToAdd);
     }
     
+    /** Use the controller to remove the least efficient AP using HotSpot alg*/
+    public void controllerRemove(long time, GlobalController g)
+    {
+        System.err.println("To write");
+    }
+    
+    
     /** Remove no APs using hotSpot */ 
      void removeAP(long time, GlobalController g, int no) {
         ArrayList <Integer> elect= new ArrayList<Integer>(getAPList());

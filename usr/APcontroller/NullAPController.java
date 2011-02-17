@@ -128,6 +128,13 @@ public class NullAPController implements APController {
        changedAPs_= false;
     }
   
+        /** Use the controller to remove the least efficient AP */
+    public void controllerRemove(long time, GlobalController g)
+    {
+        System.err.println("To write");
+    }
+    
+  
     /** Return a list of potential access points */
     public ArrayList<Integer> nonAPNodes(GlobalController g)
     {

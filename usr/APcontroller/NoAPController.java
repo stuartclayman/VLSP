@@ -79,6 +79,12 @@ public class NoAPController implements APController {
       
     }
  
+     /** Use the controller to remove the least efficient AP */
+    public void controllerRemove(long time, GlobalController g)
+    {
+       //
+    }
+    
     
     /** Return an estimate of traffic for all nodes and APs*/
     public int APTrafficEstimate(GlobalController g) 

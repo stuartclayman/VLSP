@@ -40,8 +40,15 @@ public class PressureAPController extends NullAPController {
         addAP(time, g, noToAdd);
     }
     
-    /** Remove no APs using hotSpot */
+    /** Use the controller to remove the least efficient AP using Pressure alg*/
+    public void controllerRemove(long time, GlobalController g)
+    {
+        System.err.println("To write");
+    }
     
+    
+    
+    /** Remove no APs using pressure algorithm */
      void removeAP(long time, GlobalController g, int no) {
         ArrayList <Integer> elect= new ArrayList<Integer>(getAPList());
         

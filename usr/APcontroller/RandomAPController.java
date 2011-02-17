@@ -39,6 +39,13 @@ public class RandomAPController extends NullAPController {
         addAP(time,g,no);
         
     }
+ 
+     /** Use the controller to remove one random AP controller */
+    public void controllerRemove(long time, GlobalController g)
+    {
+        System.err.println("To write");
+    }
+    
     
     /** Add no aggregation points chosen at random */
     void addAP(long time, GlobalController g, int no) 
