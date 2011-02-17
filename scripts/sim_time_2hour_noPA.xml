@@ -11,7 +11,7 @@
      <Parameters>scripts/probdistslow_noPA.xml</Parameters>
   </EventEngine>
   <RouterOptions>
-      scripts/routertestbed_time.xml
+      scripts/routersim_time.xml
   </RouterOptions>
     <Output>
         <File>summary.out</File>

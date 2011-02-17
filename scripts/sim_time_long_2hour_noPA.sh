@@ -1,8 +1,8 @@
 #!/bin/sh
 MASTERSCRIPT=scripts/sim_time_2hour_noPA.xml
 
-RIN=scripts/routertestbeddummy_time.xml
-ROUT=scripts/routertestbed_time.xml
+RIN=scripts/routersimdummy_time.xml
+ROUT=scripts/routersim_time.xml
 CPVAR=/home/rclegg/code/userspacerouter:/home/rclegg/code/userspacerouter/libs/monitoring-0.6.7.jar:/home/rclegg/code/userspacerouter/libs/timeindex-20101020.jar:/home/rclegg/code/userspacerouter/libs/aggregator-0.3.jar
 CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/claycleanscript.sh
 
