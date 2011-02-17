@@ -5,6 +5,7 @@
      <ConnectedNetwork>true</ConnectedNetwork>
      <Simulation>true</Simulation>
   </GlobalController>
+  <EventEngine>
      <Name>Probabilistic</Name>
      <EndTime>7200</EndTime>
      <Parameters>scripts/probdistslow_noPA.xml</Parameters>
