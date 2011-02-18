@@ -1167,7 +1167,8 @@ public class GlobalController implements ComponentController {
         s.println("graph G {");
 
         for (String host : routerLocations.keySet()) {
-            s.println("subgraph " + host + " {");
+            s.println("    subgraph " + host + " {");
+            s.println("\tgraph [bb=2]");
 
             // now get routers for this host
             for (BasicRouterInfo routerInfo : routerLocations.get(host)) {
@@ -1176,9 +1177,9 @@ public class GlobalController implements ComponentController {
                 int ap= APController_.getAP(r);
 
                 if (ap == r) {
-                    s.print(r+" [shape=box");
+                    s.print("\t" + r +" [shape=box");
                 } else {
-                    s.print(r+" [shape=circle");
+                    s.print("\t" + r +" [shape=circle");
                 }
 
                 s.print(",label=\"" + routerInfo.getName() + "\"");
@@ -1186,7 +1187,7 @@ public class GlobalController implements ComponentController {
                 s.println("];");
             }
 
-            s.println("}");
+            s.println("    }");
         }
         
         for (int i: getRouterList()) {

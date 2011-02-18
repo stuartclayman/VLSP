@@ -115,10 +115,13 @@ public class InputHandler implements Runnable {
 	boolean finalReply = false;
 
 	// read a line
-	String line = input.readLine();
+	String line = null;
 
 	// loop around getting all message id tagged replies
 	do {
+            // read a line
+            line = input.readLine();
+
 
 	    if (line == null) {
 		// the input is at EOF
@@ -129,18 +132,18 @@ public class InputHandler implements Runnable {
             if (line.matches("^[0-9][0-9][0-9].*")) {
                 if (isStreamResponse) {
                     // this is just a line of data in the stream
-                    System.err.println("MCRPInputHandler: line of data: " + line);
+                    //System.err.println("MCRPInputHandler: line of data: " + line);
                 } else {
                     // this is the final response code
                     // and is what happens most of the time
-                    System.err.println("MCRPInputHandler: normal response: " + line);
+                    //System.err.println("MCRPInputHandler: normal response: " + line);
                 }
             } else {                
                 if (isStreamResponse) {
                     // it does not match [0-9][0-9][0-9]
                     // and we're in a stream response
                     // so it is kust a line of data
-                    System.err.println("MCRPInputHandler: line of data: " + line);
+                    //System.err.println("MCRPInputHandler: line of data: " + line);
                 } else {
                     // it does not match [0-9][0-9][0-9]
                     // therefore it must be the first line of a stream response
@@ -149,7 +152,7 @@ public class InputHandler implements Runnable {
                     isStreamFinished = false;
                     builder = new StringBuilder();
 
-                    System.err.println("MCRPInputHandler: setup StreamResponse: " + line);
+                    //System.err.println("MCRPInputHandler: setup StreamResponse: " + line);
                 }
             }
                 
@@ -162,6 +165,7 @@ public class InputHandler implements Runnable {
                    continue;
                  } else {
                     builder.append(line);
+                    builder.append("\n");
                     continue;
                 }
             }
@@ -213,9 +217,6 @@ public class InputHandler implements Runnable {
 
 
 		response.add(parts);
-
-		// read another line
-		line = input.readLine();
 
 	    }
 

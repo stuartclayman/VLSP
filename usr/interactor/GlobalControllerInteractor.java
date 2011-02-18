@@ -68,7 +68,8 @@ public class GlobalControllerInteractor extends MCRPInteractor
 	    expect(MCRP.SEND_ROUTER_STATS.CODE);
 	    return this;
     } 
-       /**
+
+    /**
      * Quit talking to the router
      * Close a connection to the ManagementConsole of the router.
      */
@@ -78,15 +79,28 @@ public class GlobalControllerInteractor extends MCRPInteractor
 	    return this;
     }
     
-      /** Send a message to a local controller informing it about a routers
+    /** Send a message to a local controller informing it about a routers
     status as an aggregation point */
     public MCRPInteractor reportAP(int GID, int AP) throws IOException, MCRPException {
-        String toSend = MCRP.REPORT_AP.CMD + 
-            " " + GID + " " +AP;
+        String toSend = MCRP.REPORT_AP.CMD + " " + GID + " " +AP;
        
-	      interact(toSend);
-	      expect(MCRP.REPORT_AP.CODE);
-	      return this;
+        interact(toSend);
+        expect(MCRP.REPORT_AP.CODE);
+        return this;
+    }
+
+
+    /**
+     * Get the networkGraph as a String representation.
+     */
+    public String networkGraph() throws IOException, MCRPException {
+        String toSend = MCRP.NETWORK_GRAPH.CMD + " " + "dot";
+        
+        MCRPResponse response = interact(toSend);
+        expect(MCRP.NETWORK_GRAPH.CODE);
+
+        // return the graph
+        return response.get(0)[1];
     }
 
 
