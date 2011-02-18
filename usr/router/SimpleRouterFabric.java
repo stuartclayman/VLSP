@@ -763,7 +763,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Attempt to create second local multiplex port");
             }
             localNetIF= netIF;
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "added localNetIF: ");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "added localNetIF: " + localNetIF.getName());
             return null;
         }
 

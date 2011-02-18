@@ -280,11 +280,12 @@ public abstract class MCRPInteractor {
 
 	    // sit and wait for a response
 	   
-		  try {
-		      wait(5000);
-		  } catch (InterruptedException ie) {
-		    //Logger.getLogger("log").logln(USR.ERROR, "Got InterruptedException " + ie);
+            try {
+                wait(5000);
+            } catch (InterruptedException ie) {
+                //Logger.getLogger("log").logln(USR.ERROR, "Got InterruptedException " + ie);
 	    }
+
 	    if (fsm == FSMState.FSM_WAITING) {
 	        System.err.println("MCRP Interactor Got timeout: command was:"+str);
 	        fsm= FSMState.FSM_READY;

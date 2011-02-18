@@ -402,52 +402,63 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
     protected void processInput(SocketChannel sc) {
         
         int read = -1;
+
+        // check to see if we have a line ending in \n in the buffer
         int index= readString.indexOf("\n");
+        
         if (index != -1) {
-          //  System.err.println("Index = "+index);
+            // we do
             String value = readString.substring(0,index);
-          //  System.err.println("Found string "+value);
             readString.delete(0,index+1);
             
+            // so process it
             handleInput(value, sc);
-            return;            
-        }
-        // read some data
-        while (true) {
-            buffer.clear();
+            return;
+
+        } else {
+            // we don;t, so
+            // read some data
+            while (true) {
+                // reset buffer
+                buffer.clear();
             
-            try {
+                try {
+                    // read into buffer
+                    read = sc.read(buffer);
+                } catch (IOException ioe) {
+                    // bad error
+                    // System.err.println("IO ERROR");
+                    endConnection(sc);
+                    return;
+                }
 
-                // read into buffer
-                read = sc.read(buffer);
-            } catch (IOException ioe) {
-                // bad error
-               // System.err.println("IO ERROR");
-                endConnection(sc);
-                return;
-            }
-            if (read == -1) {
-              ///  System.err.println("No characters");
-                endConnection(sc);
-            }
-            buffer.flip();
-            readString.append(charset.decode(buffer).toString());
-            index= readString.indexOf("\n"); // look for the /n character
-            if (index == -1)  // No \n we need to read some more
-                continue;  
-           // System.err.println( "Index = "+index);
-            String value = readString.substring(0,index);
-            //System.err.println("Found string "+value);
-           // System.err.println("Read string "+value);
-           // System.err.println("String was "+readString);
-            readString.delete(0,index+1);
-           // System.err.println("String is "+readString);
-            handleInput(value, sc);
-            break;
+                if (read == -1) {
+                    // Did we hit EOF
+                    endConnection(sc);
+                } else {
+                    // we got some data
+                    buffer.flip();
+
+                    // so append it to the StringBuilder
+                    readString.append(charset.decode(buffer).toString());
+
+                    
+                    // check again to see if we have \n
+                    index= readString.indexOf("\n"); // look for the /n character
+                    if (index == -1) { // No \n we need to read some more
+                        continue;
+                    } else {
+                        // we got a \n
+                        String value = readString.substring(0,index);
+                        readString.delete(0,index+1);
+
+                        // so process it
+                        handleInput(value, sc);
+                        return;
+                    }
+                }
+            }            
         }
-            
-
-
     }
 
 
@@ -504,6 +515,7 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             } catch (Exception e) {
                 // try and send generic error code
                 respond(sc, MCRP.ERROR.CODE + " Error Exception " + e + " in " + value);
+                e.printStackTrace();
                 return false;
             }
 

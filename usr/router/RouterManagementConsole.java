@@ -68,6 +68,8 @@ public class RouterManagementConsole extends AbstractManagementConsole implement
         register(new SetAPCommand());
         register(new GetNetIFStatsCommand());
         register(new GetSocketStatsCommand());
+        register(new MonitoringStartCommand());
+        register(new MonitoringStopCommand());
         register(new RouterOKCommand());
     }
     

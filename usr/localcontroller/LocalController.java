@@ -22,7 +22,7 @@ import usr.interactor.*;
  * java LocalController.java 8080
  * In its own start up the Global Controller will contact each
  * Local Controller to give it more state
-*/
+ */
 public class LocalController implements ComponentController {
     private LocalControllerInfo hostInfo_;
     private LocalHostInfo globalController_;
@@ -51,20 +51,20 @@ public class LocalController implements ComponentController {
         
         if (args.length != 1) {
             Logger.getLogger("log").logln(USR.ERROR, "Command line must specify "+
-              "port number to listen on and nothing else.");
+                                          "port number to listen on and nothing else.");
             System.exit(-1);
         }
         int port= 0;
         
         try {
-          port= Integer.parseInt(args[0]);
-          if (port < 0) 
-            throw new NumberFormatException ("Port number must be > 0");
+            port= Integer.parseInt(args[0]);
+            if (port < 0) 
+                throw new NumberFormatException ("Port number must be > 0");
         }
         catch (NumberFormatException e) {
-          Logger.getLogger("log").logln(USR.ERROR, "Unable to understand port number."+
-            e.getMessage());
-          System.exit(-1);
+            Logger.getLogger("log").logln(USR.ERROR, "Unable to understand port number."+
+                                          e.getMessage());
+            System.exit(-1);
         }
         self_= new LocalController(port);
 
@@ -134,7 +134,7 @@ public class LocalController implements ComponentController {
                 Logger.getLogger("log").logln(USR.ERROR,e.getMessage()); 
             } catch (usr.interactor.MCRPException e) {
                 Logger.getLogger("log").logln(USR.ERROR,
-                  leadin() + "Cannot send shut down to Router");
+                                              leadin() + "Cannot send shut down to Router");
                 Logger.getLogger("log").logln(USR.ERROR,e.getMessage());          
             }
 
@@ -152,7 +152,7 @@ public class LocalController implements ComponentController {
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping global controller interactor");
         try {        
-          gcInteractor_.quit();
+            gcInteractor_.quit();
         } catch (Exception e) {
             
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot exit from global interactor");
@@ -168,7 +168,7 @@ public class LocalController implements ComponentController {
         try {
             Thread.sleep(10);
         } catch (Exception e) {
-           // Logger.getLogger("log").logln(USR.ERROR, leadin()+ e.getMessage());
+            // Logger.getLogger("log").logln(USR.ERROR, leadin()+ e.getMessage());
             
         }
 
@@ -293,7 +293,7 @@ public class LocalController implements ComponentController {
                     interactor.shutDown();
             } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-                    "IOException connecting to Router on port " + port1);
+                                              "IOException connecting to Router on port " + port1);
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             }catch (MCRPException e2) {
             }
@@ -301,10 +301,10 @@ public class LocalController implements ComponentController {
             return null;
         } 
         BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,port1);
-            br.setName(routerName);
-            routers_.add(br);
+        br.setName(routerName);
+        routers_.add(br);
 
-            // tell the router its new name and config if available
+        // tell the router its new name and config if available
         try {
             interactor.setName(routerName);
             interactor.setRouterAddress(new GIDAddress(routerId));
@@ -312,37 +312,43 @@ public class LocalController implements ComponentController {
             if (routerConfigString_ != "") {
                 interactor.setConfigString(routerConfigString_);
             }
+
+            // tell the router to start some monitoring
+            
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-                    "IOException setting interactor details for Router on port " + port1);
+                                          "IOException setting interactor details for Router on port " + port1);
             pw.stop();
             child= null;
             try {
                 interactor.shutDown();
             } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-                    "IOException connecting to Router on port " + port1);
+                                              "IOException connecting to Router on port " + port1);
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             }catch (MCRPException e2) {
             }
         
-           return null;
+            return null;
         } catch (MCRPException mcrpe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-                    "MCRP Exception setting interactor details for Router on port " + port1);
+                                          "MCRP Exception setting interactor details for Router on port " + port1);
             pw.stop();
             child= null;
             try {
                 interactor.shutDown();
             } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-                    "IOException connecting to Router on port " + port1);
+                                              "IOException connecting to Router on port " + port1);
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             }catch (MCRPException e2) {
             }
             return null;
         }
+
+        // keep router ID -> BasicRouterInfo
         routerMap_.put(routerId,br);
+
         return routerName;
        
 
@@ -355,59 +361,59 @@ public class LocalController implements ComponentController {
      * @return the name of the connection, on success, or null, on failure.
      */
     public String connectRouters(LocalHostInfo r1, LocalHostInfo r2) {
-       Logger.getLogger("log").logln(USR.STDOUT,leadin() + "Got connect request for routers");
+        Logger.getLogger("log").logln(USR.STDOUT,leadin() + "Got connect request for routers");
 
-       RouterInteractor ri= findRouterInteractor(r1.getPort());
+        RouterInteractor ri= findRouterInteractor(r1.getPort());
 
-       if (ri == null) {
-           return null;
-       } else {
-           try {
-               String address= r2.getName()+":"+r2.getPort();
+        if (ri == null) {
+            return null;
+        } else {
+            try {
+                String address= r2.getName()+":"+r2.getPort();
 
-               // Create a connection
-               String connectionName = ri.createConnection(address,1);
+                // Create a connection
+                String connectionName = ri.createConnection(address,1);
 
-               Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Connection from Router: " + r1 + " to Router: " + r2 + " is " + connectionName);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Connection from Router: " + r1 + " to Router: " + r2 + " is " + connectionName);
 
 
-               return connectionName;
-           }
-           catch (Exception e) {
-               Logger.getLogger("log").logln(USR.ERROR, "Cannot connect routers");
-               Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-               return null;
-           }
-       }       
+                return connectionName;
+            }
+            catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, "Cannot connect routers");
+                Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+                return null;
+            }
+        }       
     }
 
     /** Send router stats to global controller*/
     public boolean sendRouterStats(List<String> list) 
     {
-      synchronized(gcInteractor_) {  // Synchronize on gcInteractor to prevent overlap
-        StringBuilder sb = new StringBuilder();
+        synchronized(gcInteractor_) {  // Synchronize on gcInteractor to prevent overlap
+            StringBuilder sb = new StringBuilder();
 
         
-        for (String s: list) {
-            sb.append(s);
-            sb.append("***");
+            for (String s: list) {
+                sb.append(s);
+                sb.append("***");
+            }
+            String allStats = sb.toString();
+            try {
+                gcInteractor_.sendRouterStats(allStats);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                                              "Cannot send stats to global controller "+e.getMessage());
+                return false;
+            }
+            return true; 
         }
-        String allStats = sb.toString();
-        try {
-            gcInteractor_.sendRouterStats(allStats);
-        } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+
-                "Cannot send stats to global controller "+e.getMessage());
-            return false;
-        }
-        return true; 
-      }
     }
 
     /** Local controller receives request to end a router */
     public boolean endRouter(LocalHostInfo r1) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
-          "Got terminate request for router "+r1);
+                                      "Got terminate request for router "+r1);
         RouterInteractor ri= findRouterInteractor(r1.getPort());
         if (ri == null) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+"Cannot find router interactor");
@@ -449,7 +455,7 @@ public class LocalController implements ComponentController {
     /** Local controller receives request to end a router */
     public boolean endLink(LocalHostInfo r1, int r2) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
-          "Got terminate request for link from"+r1+" to Id "+r2);
+                                      "Got terminate request for link from"+r1+" to Id "+r2);
         RouterInteractor ri= findRouterInteractor(r1.getPort());
         if (ri == null)
             return false;
@@ -467,47 +473,47 @@ public class LocalController implements ComponentController {
     /** Set string which configures routers */
     public void setRouterOptions(String str) 
     { 
-      Logger logger = Logger.getLogger("log");
-      routerConfigString_= str;
-      try {
-          routerOptions_.setOptionsFromString(str);
-      } catch (Exception e) {
-          Logger.getLogger("log").logln(USR.ERROR,leadin()+"Cannot read options string");
-          return;
-      }
+        Logger logger = Logger.getLogger("log");
+        routerConfigString_= str;
+        try {
+            routerOptions_.setOptionsFromString(str);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR,leadin()+"Cannot read options string");
+            return;
+        }
       
-      String fileName= routerOptions_.getOutputFile();
-      if (!fileName.equals("")) { 
-         if (routerOptions_.getOutputFileAddName()) {
-            fileName+= "_"+leadinFname();
-         }
-         File output= new File(fileName);
-         try {
-          FileOutputStream fos = new FileOutputStream(output,true);
-          PrintWriter pw = new PrintWriter(fos,true);
-          logger.removeOutput(System.out);
-          logger.addOutput(pw, new BitMask(USR.STDOUT));
-        } catch (Exception e) {
-          System.err.println("Cannot output to file");
-            System.exit(-1);
+        String fileName= routerOptions_.getOutputFile();
+        if (!fileName.equals("")) { 
+            if (routerOptions_.getOutputFileAddName()) {
+                fileName+= "_"+leadinFname();
+            }
+            File output= new File(fileName);
+            try {
+                FileOutputStream fos = new FileOutputStream(output,true);
+                PrintWriter pw = new PrintWriter(fos,true);
+                logger.removeOutput(System.out);
+                logger.addOutput(pw, new BitMask(USR.STDOUT));
+            } catch (Exception e) {
+                System.err.println("Cannot output to file");
+                System.exit(-1);
+            }
         }
-      }
-      String errorName= routerOptions_.getErrorFile();
-      if (!errorName.equals("")) { 
-         if (routerOptions_.getOutputFileAddName()) {
-            errorName+= "_"+leadinFname();
-         }
-         File output= new File(fileName);
-         try {
-          FileOutputStream fos = new FileOutputStream(output,true);
-          PrintWriter pw = new PrintWriter(fos,true);
-          logger.removeOutput(System.err);
-          logger.addOutput(pw, new BitMask(USR.ERROR));
-        } catch (Exception e) {
-          System.err.println("Cannot output to file");
-            System.exit(-1);
+        String errorName= routerOptions_.getErrorFile();
+        if (!errorName.equals("")) { 
+            if (routerOptions_.getOutputFileAddName()) {
+                errorName+= "_"+leadinFname();
+            }
+            File output= new File(fileName);
+            try {
+                FileOutputStream fos = new FileOutputStream(output,true);
+                PrintWriter pw = new PrintWriter(fos,true);
+                logger.removeOutput(System.err);
+                logger.addOutput(pw, new BitMask(USR.ERROR));
+            } catch (Exception e) {
+                System.err.println("Cannot output to file");
+                System.exit(-1);
+            }
         }
-      }
         
     } 
     
@@ -517,8 +523,8 @@ public class LocalController implements ComponentController {
         BasicRouterInfo br= routerMap_.get(GID);
         if (br == null) {
             Logger.getLogger("log").logln(USR.ERROR,
-              leadin()+" cannot find information for router "+GID+
-            " to set AP");
+                                          leadin()+" cannot find information for router "+GID+
+                                          " to set AP");
             return false;
         }
         int port= br.getManagementPort();
@@ -529,7 +535,7 @@ public class LocalController implements ComponentController {
             ri.setAP(GID,AP);
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR,
-              leadin()+"cannot set aggregation point for router "+GID);
+                                          leadin()+"cannot set aggregation point for router "+GID);
             return false;
         }
         return true;    
@@ -624,7 +630,7 @@ public class LocalController implements ComponentController {
             gcInteractor_.reportAP(GID,AP);
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR,
-              leadin()+"cannot set aggregation point for router "+GID);
+                                          leadin()+"cannot set aggregation point for router "+GID);
             return false;
         }
         return true;    
@@ -639,11 +645,11 @@ public class LocalController implements ComponentController {
     private RouterInteractor findRouterInteractor(int port) 
     {
         for (RouterInteractor r: routerInteractors_) {
-          if (port == r.getPort())
-              return r;
+            if (port == r.getPort())
+                return r;
         }
         Logger.getLogger("log").logln(USR.ERROR,
-          leadin()+"Unable to find router interactor listening on port "+port);
+                                      leadin()+"Unable to find router interactor listening on port "+port);
         return null;
     }
     

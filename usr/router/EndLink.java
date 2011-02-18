@@ -53,6 +53,10 @@ public class EndLink extends ChannelResponder implements Runnable {
         } 
         controller.removeNetIF(netif);
         respond(MCRP.END_LINK.CODE + " END_LINK to " + rId);
+
+        // send EVENT
+        respond("700 " + netif.getName());
+
         //Logger.getLogger("log").logln(USR.ERROR, "END LINK EXIT");
     }
 

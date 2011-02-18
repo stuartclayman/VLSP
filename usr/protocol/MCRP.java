@@ -1,7 +1,6 @@
 package usr.protocol;
 
 /**
-import usr.logging.*;
  * Request strings and response codes for the MCRP protocol.
  */
 public class MCRP implements Protocol {
@@ -133,6 +132,22 @@ public class MCRP implements Protocol {
     }
     
     /**
+     * MONITORING_START starts an monitoring
+     */
+    public final static class MONITORING_START {
+        public final static String CMD = "MONITORING_START";
+        public final static int CODE= 231;
+    }
+    
+    /**
+     * MONITORING_STOP starts an monitoring
+     */
+    public final static class MONITORING_STOP {
+        public final static String CMD = "MONITORING_STOP";
+        public final static int CODE= 232;
+    }
+    
+    /**
      * GET_NETIF_STATS gets stats for each NetIF
      */
     public final static class GET_NETIF_STATS {
@@ -153,7 +168,7 @@ public class MCRP implements Protocol {
      */
     public final static class CREATE_CONNECTION {
         public final static String CMD =  "CREATE_CONNECTION";
-        public final static int CODE = 249;
+        public final static int CODE = 239;
         public final static int ERROR = 401;
     }
 
@@ -167,7 +182,7 @@ public class MCRP implements Protocol {
      */
     public final static class GET_PORT_NAME {
         public final static String CMD =  "GET_PORT_NAME";
-        public final static int CODE = 231;
+        public final static int CODE = 241;
         public final static int ERROR = 403;
     }
 
@@ -176,7 +191,7 @@ public class MCRP implements Protocol {
      */
     public final static class GET_PORT_REMOTE_ROUTER {
         public final static String CMD =  "GET_PORT_REMOTE_ROUTER";
-        public final static int CODE = 232;
+        public final static int CODE = 242;
         public final static int ERROR = 403;
     }
 
@@ -185,7 +200,7 @@ public class MCRP implements Protocol {
      */
     public final static class GET_PORT_ADDRESS {
         public final static String CMD =  "GET_PORT_ADDRESS";
-        public final static int CODE = 233;
+        public final static int CODE = 243;
         public final static int ERROR = 403;
     }
 
@@ -194,7 +209,7 @@ public class MCRP implements Protocol {
      */
     public final static class SET_PORT_ADDRESS {
         public final static String CMD =  "SET_PORT_ADDRESS";
-        public final static int CODE = 234;
+        public final static int CODE = 244;
         public final static int ERROR = 403;
     }
 
@@ -204,7 +219,7 @@ public class MCRP implements Protocol {
      */
     public final static class GET_PORT_WEIGHT {
         public final static String CMD =  "GET_PORT_WEIGHT";
-        public final static int CODE = 235;
+        public final static int CODE = 245;
         public final static int ERROR = 403;
     }
 
@@ -213,7 +228,7 @@ public class MCRP implements Protocol {
      */
     public final static class SET_PORT_WEIGHT {
         public final static String CMD =  "SET_PORT_WEIGHT";
-        public final static int CODE = 236;
+        public final static int CODE = 246;
         public final static int ERROR = 403;
     }
 
@@ -223,7 +238,7 @@ public class MCRP implements Protocol {
      */
     public final static class GET_PORT_REMOTE_ADDRESS {
         public final static String CMD =  "GET_PORT_REMOTE_ADDRESS";
-        public final static int CODE = 237;
+        public final static int CODE = 247;
         public final static int ERROR = 403;
     }
 
@@ -242,6 +257,15 @@ public class MCRP implements Protocol {
        public final static String CMD = "OK_LOCAL_CONTROLLER";
        public final static int CODE= 250;
        public final static int ERROR = 410;
+    }
+
+
+    /**
+     * Get the network connectivity graph managed by the GlobalController
+     */
+    public final static class NETWORK_GRAPH {
+       public final static String CMD = "NETWORK_GRAPH";
+       public final static int CODE= 251;
     }
 
     /*

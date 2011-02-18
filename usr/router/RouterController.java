@@ -255,13 +255,9 @@ public class RouterController implements ComponentController, Runnable {
         // start management console listener
         boolean startedL = management.start();
 
-        /*
-         * TEST HACK
         // start monitoring
         InetSocketAddress socketAddress = new InetSocketAddress("localhost", 22997);
         startMonitoring(socketAddress, 5);
-
-        */
 
         return startedL && startedC;
     }
@@ -283,11 +279,8 @@ public class RouterController implements ComponentController, Runnable {
         // stop the router to router connections
         boolean stoppedC = connections.stop();
 
-        /*
-         * TEST HACK
         // stop the dataSource and associated probe
         stopMonitoring();
-        */
 
         // stop my own thread
         running = false;

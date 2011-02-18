@@ -212,7 +212,7 @@ public class AppSocketMux implements NetIF {
      * Set the name of this NetIF.
      */
     public void setName(String name) {
-        name = name;
+        this.name = name;
     }
 
     /**

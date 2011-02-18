@@ -14,6 +14,11 @@ import usr.APcontroller.*;
 import usr.router.RouterOptions;
 import usr.output.OutputType;
 import java.nio.channels.FileChannel;
+import eu.reservoir.monitoring.core.*;
+import eu.reservoir.monitoring.core.plane.DataPlane;
+import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneConsumerWithNames;
+import eu.reservoir.monitoring.appl.BasicConsumer;
+import java.net.InetSocketAddress;
 
 /**
  * The GlobalController is in overall control of the software.  It
@@ -94,6 +99,11 @@ public class GlobalController implements ComponentController {
     
     // Used in shut down routines
     private boolean isActive = false;
+
+    // A BasicConsumer for the stats of a Router
+    BasicConsumer dataConsumer;
+    Reporter reporter;
+
 
     /**
      * Main entry point.
@@ -197,6 +207,16 @@ public class GlobalController implements ComponentController {
           System.exit(-1);
       }
       
+
+      // setup DataConsumer
+      dataConsumer = new BasicConsumer();
+      // and reporter
+      reporter = new NetIFStatsReporter(this);
+
+      // start monitoring
+      InetSocketAddress socketAddress = new InetSocketAddress("localhost", 22997);
+      startMonitoringConsumer(socketAddress);
+
       // Set up simulations options
       if (!options_.isSimulation()) {
           initEmulation();
@@ -959,6 +979,9 @@ public class GlobalController implements ComponentController {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "SHUTDOWN CALLED!");
             if (!options_.isSimulation()) {
 
+                // stop monitoring
+                stopMonitoringConsumer();
+
                 //ThreadTools.findAllThreads("GC pre killAllControllers:");
 
                 killAllControllers();
@@ -1045,8 +1068,28 @@ public class GlobalController implements ComponentController {
     private void outputNetwork(long time, PrintStream s, OutputType o) {
         //System.err.println("APS are "+APController_.getAPList());
         APController_.controllerUpdate(time,this);
+
         boolean printAP= o.getParameter().equals("AP");
         boolean printScore= o.getParameter().equals("Score");
+
+        if (printAP) {
+            networkWithCostGraphviz(time, s);
+            return;
+        }
+
+        if (printScore) {
+            networkWithScoreGraphviz(time,s);
+            return;
+        }
+
+        networkGraphAsGraphvis(time, s);
+    }
+
+
+    /**
+     * Send a network showing AP costs as Graphviz to a PrintStream
+     */
+    public void networkWithCostGraphviz(long time, PrintStream s) {
         s.println("Graph G {");
         for (int r: getRouterList()) {
             int ap= APController_.getAP(r);
@@ -1055,16 +1098,95 @@ public class GlobalController implements ComponentController {
             } else {
                 s.print(r+" [shape=circle");
             }
-            if (printAP) {
-               s.print(",label=\""+ap+" ("+APController_.getAPCost(r)+")\"");
-            }
-            if (printScore) {
-               s.print(",label=\""+ap+" ("+APController_.getScore(time,r,this)+")\"");
-            }
+
+            s.print(",label=\""+ap+" ("+APController_.getAPCost(r)+")\"");
+
             s.println("];");
-            //System.err.println(r+" controller is "+APController_.getAP(r));
-            //System.err.println("Which is believed to be a controller "+
-             //   APController_.isAP(APController_.getAP(r)));
+        }
+        
+        for (int i: getRouterList()) {
+            for (int j: getOutLinks(i)) {
+                if (i < j) 
+                    s.println(i+ " -- "+j+";");
+            }
+        }
+        s.println("}");
+       
+    }
+    
+    /**
+     * Send a network showing AP costs as Graphviz to a PrintStream
+     */
+    public void networkWithScoreGraphviz(long time, PrintStream s) {
+        s.println("Graph G {");
+        for (int r: getRouterList()) {
+            int ap= APController_.getAP(r);
+            if (ap == r) {
+                s.print(r+" [shape=box");
+            } else {
+                s.print(r+" [shape=circle");
+            }
+
+            s.print(",label=\""+ap+" ("+APController_.getScore(time,r,this)+")\"");
+
+            s.println("];");
+        }
+        
+        for (int i: getRouterList()) {
+            for (int j: getOutLinks(i)) {
+                if (i < j) 
+                    s.println(i+ " -- "+j+";");
+            }
+        }
+        s.println("}");
+       
+    }
+    
+    /**
+     * Send a Graphviz network to a PrintStream
+     */
+    public void networkGraphAsGraphvis(long time, PrintStream s) {
+        HashMap<String, ArrayList<BasicRouterInfo>>routerLocations = new HashMap<String, ArrayList<BasicRouterInfo>>();
+
+        // work out which router is where
+        for (BasicRouterInfo routerInfo : routerIdMap_.values()) {
+            String host = routerInfo.getHost();
+
+            if (routerLocations.containsKey(host)) { // we've seen this host
+                ArrayList<BasicRouterInfo> list = routerLocations.get(host);
+                list.add(routerInfo);
+            } else {                                 //  it's a new host
+                ArrayList<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
+                list.add(routerInfo);
+
+                routerLocations.put(host, list);
+            }
+        }
+
+        // now visit each host and output the routers
+        s.println("graph G {");
+
+        for (String host : routerLocations.keySet()) {
+            s.println("subgraph " + host + " {");
+
+            // now get routers for this host
+            for (BasicRouterInfo routerInfo : routerLocations.get(host)) {
+                int r = routerInfo.getId();
+
+                int ap= APController_.getAP(r);
+
+                if (ap == r) {
+                    s.print(r+" [shape=box");
+                } else {
+                    s.print(r+" [shape=circle");
+                }
+
+                s.print(",label=\"" + routerInfo.getName() + "\"");
+
+                s.println("];");
+            }
+
+            s.println("}");
         }
         
         for (int i: getRouterList()) {
@@ -1159,6 +1281,48 @@ public class GlobalController implements ComponentController {
       }
     }
 
+    /**
+     * Start listening for router stats using monitoring framework.
+     */
+    public synchronized void startMonitoringConsumer(InetSocketAddress addr) {
+
+        // check to see if the monitoring is already connected and running
+        if (dataConsumer.isConnected()) {
+            // if it is, stop it first
+            stopMonitoringConsumer();
+        }
+
+        // set up DataPlane
+        DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(addr);
+        dataConsumer.setDataPlane(inputDataPlane);
+
+        // set the reporter
+        dataConsumer.setReporter(reporter);
+
+        // and connect
+        boolean connected = dataConsumer.connect();
+
+        if (!connected) {
+            System.err.println("Cannot startMonitoringConsumer on " + addr + ". Address probably in use. Exiting.");
+            System.exit(1);
+        }
+
+    }
+
+    /**
+     * Stop monitoring.
+     */
+    public synchronized void stopMonitoringConsumer() {
+        if (dataConsumer.isConnected()) {
+            dataConsumer.setReporter(null);
+        
+            dataConsumer.disconnect();
+        }
+
+    }
+
+
+    /** Output traffic */
     void outputTraffic (OutputType o, long t, PrintStream p) {
       synchronized(routerStats_) {
          if (routerStats_.equals(""))

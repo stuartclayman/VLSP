@@ -421,6 +421,28 @@ public class RouterInteractor extends MCRPInteractor {
 	return stats;
     }
     
+    /**
+     * Monitoring Start.
+     * @param addr The InetSocketAddress of the Monitoring data consumer
+     * @param howOften How many seconds between measurements
+     */
+    public MCRPInteractor monitoringStart(InetAddress addr, int port, int howOften) throws IOException, MCRPException {
+        String toSend = MCRP.MONITORING_START.CMD + " " + addr.toString() + ":" +
+            port + " " + howOften;
+	MCRPResponse response = interact(toSend);
+	expect(MCRP.MONITORING_START.CODE);
+        return this;
+    }
+
+    /**
+     * Monitoring Stop
+     */
+    public MCRPInteractor monitoringStop() throws IOException, MCRPException {
+        interact(MCRP.MONITORING_STOP.CMD);
+        expect(MCRP.MONITORING_STOP.CODE);
+        return this;
+    }
+
     /** Check router is responding */
     public boolean routerOK() throws IOException, MCRPException {
         interact(MCRP.ROUTER_OK.CMD);

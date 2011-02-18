@@ -49,12 +49,16 @@ public abstract class ChannelResponder {
         int len= channel.write(bb);
         if (len < 0)
             return false;
-        while (bb.remaining()>0){  // Here to be cautious
+        while (bb.remaining()>0){  
+            /*
+            // Here to be cautious
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
-            
             }
+            */
+
+
             len= channel.write(bb);          
             if (len < 0) {
                 return false; 

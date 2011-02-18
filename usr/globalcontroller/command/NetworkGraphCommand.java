@@ -1,0 +1,57 @@
+package usr.globalcontroller.command;
+
+import usr.protocol.MCRP;
+import usr.logging.*;
+import usr.globalcontroller.*;
+import java.nio.channels.SocketChannel;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
+/**
+ * A NetworkGraphCommand
+ */
+public class NetworkGraphCommand extends GlobalCommand {
+    /**
+     * Construct a NetworkGraphCommand.
+     */
+    public NetworkGraphCommand() {
+        super(MCRP.NETWORK_GRAPH.CMD, MCRP.NETWORK_GRAPH.CODE, MCRP.ERROR.CODE);
+    }
+
+    /**
+     * Evaluate the Command.
+     */
+    public boolean evaluate(String req) {
+        String graphStyle = null;
+
+        String []args= req.split(" ");
+        if (args.length == 1) {
+            graphStyle = "dot";
+        } else if (args.length == 2) {
+            graphStyle = args[1];
+        } else {
+            error ("Expected 0 or 1 arguments for NetworkGraphCommand");
+            return false;
+        }
+
+
+        // allocate PrintStream
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+
+
+        // get the network in the PrintStream
+        controller.networkGraphAsGraphvis(0, ps);
+
+        // convert the ByteArrayOutputStream to a String
+        String theString = baos.toString();
+
+        // now send it as a response
+        respond(theString);
+        respond(".");
+
+        success("");
+        return true;
+    }
+
+}
