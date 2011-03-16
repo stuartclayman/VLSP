@@ -21,7 +21,6 @@ import java.nio.channels.SocketChannel;
 import usr.protocol.*;
 import usr.net.*;
 import usr.APcontroller.*;
-import usr.monitoring.NetIFStatsProbe;
 import eu.reservoir.monitoring.core.*;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
@@ -256,8 +255,8 @@ public class RouterController implements ComponentController, Runnable {
         boolean startedL = management.start();
 
         // start monitoring
-        InetSocketAddress socketAddress = new InetSocketAddress("localhost", 22997);
-        startMonitoring(socketAddress, 5);
+        //InetSocketAddress socketAddress = new InetSocketAddress("localhost", 22997);
+        //startMonitoring(socketAddress, 5);
 
         return startedL && startedC;
     }

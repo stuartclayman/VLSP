@@ -11,18 +11,18 @@ import java.io.*;
  */
 public class ProcessWrapper {
     // The Process
-    Process process;
+    protected Process process;
 
     // The name
     String name;
 
     // InputStream thread
-    ProcessListener iListener;
-    Thread iThread;
+    protected ProcessListener iListener;
+    protected Thread iThread;
 
     // ErrorStream thread
-    ProcessListener eListener;
-    Thread eThread;
+    protected ProcessListener eListener;
+    protected Thread eThread;
 
     /**
      * A ProcessWrapper wraps a Process with a name.
@@ -76,12 +76,28 @@ public class ProcessWrapper {
     }
 
     /**
+     * It's EOF
+     * By default nothing special happens.
+     */
+    public void eof() {
+    }
+
+    /**
+     * There has been an IO error
+     */
+    public void ioerror(String label, IOException ioe) {
+        System.err.println("ProcessWrapper: " + label + " Got IOException " + ioe);
+        stop();
+    }
+
+    /**
      * Stop the process wrapper.
      */
     public void stop() {
         try {
             // disconnect the process
-            // System.err.println("STOPPING "+name);
+            //System.err.println("ProcessWrapper: STOPPING "+name);
+
             process.getOutputStream().close();
             process.getInputStream().close();
             process.getErrorStream().close();
@@ -91,10 +107,14 @@ public class ProcessWrapper {
             eListener.stop();
 
             // now splat it
-            process.destroy();
+            destroy();
 
         } catch (IOException ioe) {
         }
+    }
+
+    protected void destroy() {
+        process.destroy();
     }
        
     /**
@@ -151,11 +171,13 @@ public class ProcessWrapper {
                     }
                 } catch (IOException ieo) {
                     // error
+                    wrapper.ioerror(label, ieo);
                     running = false;
                 }
             }
 
             //wrapper.print(label, "EOF");
+            wrapper.eof();
 
         }
     }

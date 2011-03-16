@@ -42,6 +42,9 @@ public class LocalController implements ComponentController {
     
     private String routerConfigString_= "";
     
+    private InetSocketAddress monitoringAddress;
+    private int monitoringTimeout;
+
     /**
      * Main entry point.
      */
@@ -314,7 +317,8 @@ public class LocalController implements ComponentController {
             }
 
             // tell the router to start some monitoring
-            
+            interactor.monitoringStart(monitoringAddress, monitoringTimeout);
+
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + 
                                           "IOException setting interactor details for Router on port " + port1);
@@ -596,6 +600,36 @@ public class LocalController implements ComponentController {
                 return null;
             }
 
+        }
+    }
+
+    /**
+     * Start monitoring, sending data to a specified address
+     * with a particular timeout.
+     */
+    public void startMonitoring(InetSocketAddress socketAddress, int timeout) {
+        monitoringAddress = socketAddress;
+        monitoringTimeout = timeout;
+    }
+
+    /**
+     * Stop any monitoring
+     */
+    public void stopMonitoring() {
+        // tell all the Routers to stop monitoring
+        for (int i= 0; i < routers_.size(); i++) {
+
+            RouterInteractor interactor = routerInteractors_.get(i);
+            try {
+                interactor.monitoringStop();
+            } catch (java.io.IOException e) {
+                Logger.getLogger("log").logln(USR.ERROR,leadin() + "Cannot send stopMonitoring to Router");
+                Logger.getLogger("log").logln(USR.ERROR,e.getMessage()); 
+            } catch (usr.interactor.MCRPException e) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin() + "Cannot send stopMonitoring to Router");
+                Logger.getLogger("log").logln(USR.ERROR,e.getMessage());          
+            }
         }
     }
 

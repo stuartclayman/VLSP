@@ -27,6 +27,9 @@ public class ApplicationManager {
     // A map of all the Applications, name -> ApplicationHandle object
     HashMap<String, ApplicationHandle> appMap;
 
+    /**
+     * ApplicationManager Constructor.
+     */
     public ApplicationManager() {
         // create an Executor pool 
         //WAS pool =  new ApplicationThreadPoolExecutor(this);
@@ -36,7 +39,9 @@ public class ApplicationManager {
         router = RouterDirectory.getRouter();
     }
 
-
+    /**
+     * Execute an object with ClassName and args
+     */
     synchronized ApplicationResponse execute(String className, String[] args) {
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "execute: " + className + " args: " + Arrays.asList(args));
@@ -137,56 +142,57 @@ public class ApplicationManager {
      */
     ApplicationResponse terminate(String appName) {
         ApplicationHandle appH = appMap.get(appName);
-        synchronized(appH) {   // This must not be called twice for the same appH simultaneously
-
-          if (appH == null) {
+        if (appH == null) {
             // no app with that name
             return new ApplicationResponse(false, "No Application called " + appName);
-          } else {
-            if (appH.getState() == ApplicationHandle.AppState.STOPPED) {
-
-                // wait for the thread to actually end
-                //pool.waitFor(appH);
-
-                // and remove from the app map
-                appMap.remove(appName);
-
-                return new ApplicationResponse(false, "Application called " + appName + " already stopped");
-            } else {               
-
-                try {
-
-                    Application app = appH.getApplication();
-
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
-                    
-
-                    if (appH.getState() == ApplicationHandle.AppState.RUNNING) {
-                        appH.setState(ApplicationHandle.AppState.STOPPING);
-                        synchronized (app) {
-                            app.stop();
-                        }
+        } else {
+            synchronized(appH) {   // This must not be called twice for the same appH simultaneously
 
 
-                        // wait for the thread to actually end
-                        pool.waitFor(appH);
-                    } else  if (appH.getState() == ApplicationHandle.AppState.APP_POST_RUN) {
-                        // the app had already exited the run loop
-                        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Cleanup app after exiting run() " + appName);
-                    }
+                if (appH.getState() == ApplicationHandle.AppState.STOPPED) {
 
-                    appH.setState(ApplicationHandle.AppState.STOPPED);
+                    // wait for the thread to actually end
+                    //pool.waitFor(appH);
 
                     // and remove from the app map
                     appMap.remove(appName);
 
-                    return new ApplicationResponse(true, "");
-                } catch (Exception e) {
-                    return new ApplicationResponse(false, "Application called " + appName + " failed to stop with Exception " + e.getMessage());
+                    return new ApplicationResponse(false, "Application called " + appName + " already stopped");
+                } else {               
+
+                    try {
+
+                        Application app = appH.getApplication();
+
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
+                    
+
+                        if (appH.getState() == ApplicationHandle.AppState.RUNNING) {
+                            appH.setState(ApplicationHandle.AppState.STOPPING);
+                            synchronized (app) {
+                                app.stop();
+                            }
+
+
+                            // wait for the thread to actually end
+                            pool.waitFor(appH);
+                        } else  if (appH.getState() == ApplicationHandle.AppState.APP_POST_RUN) {
+                            // the app had already exited the run loop
+                            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Cleanup app after exiting run() " + appName);
+                        }
+
+                        appH.setState(ApplicationHandle.AppState.STOPPED);
+
+                        // and remove from the app map
+                        appMap.remove(appName);
+
+                        return new ApplicationResponse(true, "");
+                    } catch (Exception e) {
+                        return new ApplicationResponse(false, "Application called " + appName + " failed to stop with Exception " + e.getMessage());
+                    }
                 }
             }
         }
-      }
     }
 
     /**

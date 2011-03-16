@@ -396,7 +396,7 @@ public class AppSocketMux implements NetIF {
         AppSocket socket = socketMap.get(dstPort);
         if (socket == null) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
-                "Can't deliver to port " + dstPort);
+                                          "Can't deliver to port " + dstPort + " from " + datagram.getSrcAddress() + "/" + datagram.getSrcPort());
             return true;  // Returns true as packet is dropped not blocked
         }
         LinkedBlockingQueue<Datagram> portQueue = getQueueForPort(dstPort);

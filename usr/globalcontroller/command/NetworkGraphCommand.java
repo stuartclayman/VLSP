@@ -13,6 +13,12 @@ import java.io.PrintStream;
 public class NetworkGraphCommand extends GlobalCommand {
     /**
      * Construct a NetworkGraphCommand.
+     * Process arg:
+     * cost -> network with costs
+     * AP -> network with costs
+     * score -> network with scores
+     * host -> network with nodes aligned per host
+     * 
      */
     public NetworkGraphCommand() {
         super(MCRP.NETWORK_GRAPH.CMD, MCRP.NETWORK_GRAPH.CODE, MCRP.ERROR.CODE);
@@ -25,12 +31,10 @@ public class NetworkGraphCommand extends GlobalCommand {
         String graphStyle = null;
 
         String []args= req.split(" ");
-        if (args.length == 1) {
-            graphStyle = "dot";
-        } else if (args.length == 2) {
+        if (args.length == 2) {
             graphStyle = args[1];
         } else {
-            error ("Expected 0 or 1 arguments for NetworkGraphCommand");
+            error ("Expected 1 argument for NetworkGraphCommand");
             return false;
         }
 
@@ -41,7 +45,7 @@ public class NetworkGraphCommand extends GlobalCommand {
 
 
         // get the network in the PrintStream
-        controller.networkGraphAsGraphvis(0, ps);
+        controller.outputNetworkUsingStyle(graphStyle, 0, ps);
 
         // convert the ByteArrayOutputStream to a String
         String theString = baos.toString();

@@ -36,6 +36,8 @@ public class GlobalController implements ComponentController {
     private GlobalControllerManagementConsole console_= null;
     private ArrayList <LocalControllerInteractor> localControllers_ = null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
+    private ArrayList <String> childNames_= null;  // names of child processes
+
     
     // Arrays below are sparse and this approach is for fast access.
     // outLinks_.get(i) returns a primitive array containing all the
@@ -45,8 +47,8 @@ public class GlobalController implements ComponentController {
     private ArrayList <int []> linkCosts_= null;	// costs of connections in above
     private ArrayList <Integer> routerList_= null;   // List of integers which
 										// contains the numbers of nodes present
-    private ArrayList <String> childNames_= null;  // names of child processes
-	
+
+    private HashMap<Pair<Integer,Integer>, String> linkNames = null; // A map of (routerID, routerID) links to link names
 				
     private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
 		// Map connections LocalControllerInfo for given LCs to the appropriate interactors
@@ -100,6 +102,9 @@ public class GlobalController implements ComponentController {
     // Used in shut down routines
     private boolean isActive = false;
 
+    // A monitoring address
+    InetSocketAddress monitoringAddress;
+    int monitoringTimeout = 5;
     // A BasicConsumer for the stats of a Router
     BasicConsumer dataConsumer;
     Reporter reporter;
@@ -155,6 +160,7 @@ public class GlobalController implements ComponentController {
       outLinks_= new ArrayList<int []> ();
       linkCosts_= new ArrayList<int []> ();
       routerList_= new ArrayList<Integer>();
+      linkNames = new HashMap<Pair<Integer,Integer>, String>();
       options_= new ControlOptions(xmlFile_);
       routerOptions_= options_.getRouterOptions();
       waitCounter_= new Object();
@@ -214,8 +220,16 @@ public class GlobalController implements ComponentController {
       reporter = new NetIFStatsReporter(this);
 
       // start monitoring
-      InetSocketAddress socketAddress = new InetSocketAddress("localhost", 22997);
-      startMonitoringConsumer(socketAddress);
+      String gcAddress = "localhost";
+
+      try {
+          gcAddress = InetAddress.getLocalHost().getHostAddress();
+      } catch (UnknownHostException uhe) {
+      }
+
+      monitoringAddress = new InetSocketAddress(gcAddress, 22997);
+      monitoringTimeout = 5;
+      startMonitoringConsumer(monitoringAddress);
 
       // Set up simulations options
       if (!options_.isSimulation()) {
@@ -718,6 +732,10 @@ public class GlobalController implements ComponentController {
             try {
                 String connectionName = lci.connectRouters(br1.getHost(), br1.getManagementPort(),
                br2.getHost(), br2.getManagementPort());
+
+                // add Pair<router1Id, router2Id> -> connectionName to linkNames
+                linkNames.put(new Pair(router1Id, router2Id), connectionName);
+               
                Logger.getLogger("log").logln(USR.STDOUT, leadin() + br1 + " -> " + br2 + " = " + connectionName);
                break;
             } catch (IOException e) {
@@ -856,6 +874,11 @@ public class GlobalController implements ComponentController {
         for (i= 0; i < MAX_TRIES; i++) {
           try {
             lci.endLink(br1.getHost(),br1.getManagementPort(),rId2);
+       
+            // remove Pair<router1Id, router2Id> -> connectionName to linkNames
+            linkNames.remove(new Pair(rId1, rId2));
+               
+
             break;
           } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down link "+
@@ -867,7 +890,6 @@ public class GlobalController implements ComponentController {
           Logger.getLogger("log").logln(USR.ERROR,"Giving up after failure to shut link");
           bailOut();
        }
-       
     }
     
     /** Event to unlink two routers */
@@ -1085,11 +1107,28 @@ public class GlobalController implements ComponentController {
         networkGraphAsGraphvis(time, s);
     }
 
+    /**
+     * Send a network graph showing various attributes to a PrintStream.
+     */
+    public void outputNetworkUsingStyle(String style, long time, PrintStream s) {
+        if (style.equals("cost") || style.equals("AP")) {
+            networkWithCostGraphviz(time, s);
+
+        } else if (style.equals("score")) {
+            networkWithScoreGraphviz(time, s);
+
+        } else if (style.equals("dot")) {
+            networkGraphAsGraphvis(time, s);
+
+        } else {
+            networkGraphAsGraphvis(time, s);
+        }
+    }
 
     /**
      * Send a network showing AP costs as Graphviz to a PrintStream
      */
-    public void networkWithCostGraphviz(long time, PrintStream s) {
+    private void networkWithCostGraphviz(long time, PrintStream s) {
         s.println("Graph G {");
         for (int r: getRouterList()) {
             int ap= APController_.getAP(r);
@@ -1117,7 +1156,7 @@ public class GlobalController implements ComponentController {
     /**
      * Send a network showing AP costs as Graphviz to a PrintStream
      */
-    public void networkWithScoreGraphviz(long time, PrintStream s) {
+    private void networkWithScoreGraphviz(long time, PrintStream s) {
         s.println("Graph G {");
         for (int r: getRouterList()) {
             int ap= APController_.getAP(r);
@@ -1145,7 +1184,7 @@ public class GlobalController implements ComponentController {
     /**
      * Send a Graphviz network to a PrintStream
      */
-    public void networkGraphAsGraphvis(long time, PrintStream s) {
+    private void networkGraphAsGraphvis(long time, PrintStream s) {
         HashMap<String, ArrayList<BasicRouterInfo>>routerLocations = new HashMap<String, ArrayList<BasicRouterInfo>>();
 
         // work out which router is where
@@ -1164,27 +1203,62 @@ public class GlobalController implements ComponentController {
         }
 
         // now visit each host and output the routers
-        s.println("graph G {");
+        s.println("graph gg {");
 
+        s.println("    K=1;");
+        s.println("    ratio=0.7;");
+        s.println("    graph [");
+        s.println("      splines=true,");
+        s.println("      rankdir = \"TB\",");
+        s.println("      ranksep = 1.2,");
+        s.println("      style=\"setlinewidth(2)\",");
+        s.println("      center=true,");
+        s.println("      overlap=false,");
+        s.println("      fontname=\"Helvetica\",fontsize=16, fontcolor=red");
+        s.println("    ];");
+        s.println("    maxiter=2;");
+        s.println("    node [style=filled, fillcolor=\"white\", fontname=\"Helvetica\"];");
+        s.println("    labelloc=t;");
+        //s.println("    rank=source;");
+
+        // label
+        s.print("    label=" + "\"snapshot:");
+        s.print(" time=");
+        long t = simulationTime-simulationStartTime;
+        int totalSecs = (int)t / 1000;
+        int millis = (int)t % 1000;
+        int hundreths = millis / 10;
+        int minutes = totalSecs / 60;
+        int secs = totalSecs % 60;
+        s.printf("%02d:%02d:%02d", minutes, secs, hundreths);
+        s.print(" hosts=" + routerLocations.keySet().size());
+        s.print(" routers=" + routerIdMap_.values().size());
+        s.print(" links=" + noLinks_);
+        s.println("\";");
+
+        // visit each host
         for (String host : routerLocations.keySet()) {
-            s.println("    subgraph " + host + " {");
-            s.println("\tgraph [bb=2]");
+            List<BasicRouterInfo> routersOnHost = routerLocations.get(host);
+
+            s.println("    subgraph cluster_" + host + " {");
+            s.print("\tlabel=\"" + host + " routers=" + routersOnHost.size() +"\";");
+            s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"palegoldenrod\"];");
+            s.println("\tnode [ shape=ellipse ];");
 
             // now get routers for this host
-            for (BasicRouterInfo routerInfo : routerLocations.get(host)) {
+            for (BasicRouterInfo routerInfo : routersOnHost) {
                 int r = routerInfo.getId();
 
                 int ap= APController_.getAP(r);
 
+                s.print("\t" + r +" [ label=\"" + routerInfo.getName() + "\"");
+
                 if (ap == r) {
-                    s.print("\t" + r +" [shape=box");
+                    s.print(", style=filled, fillcolor=\"grey82\"");
                 } else {
-                    s.print("\t" + r +" [shape=circle");
                 }
 
-                s.print(",label=\"" + routerInfo.getName() + "\"");
-
-                s.println("];");
+                s.println(" ];");
             }
 
             s.println("    }");
@@ -1192,8 +1266,17 @@ public class GlobalController implements ComponentController {
         
         for (int i: getRouterList()) {
             for (int j: getOutLinks(i)) {
-                if (i < j) 
-                    s.println(i+ " -- "+j+";");
+                if (i < j)  {
+                    s.print(i+ " -- "+j);
+
+                    String name = linkNames.get(new Pair(i,j));
+
+                    if (name != null) {
+                        s.print(" [ label = \"" + name + "\", labelangle=180 ]");
+                    }
+
+                    s.println(";");
+                }
             }
         }
         s.println("}");
@@ -1271,7 +1354,7 @@ public class GlobalController implements ComponentController {
         trafficOutputRequests_= new ArrayList<OutputType>();
         trafficOutputTime_= new ArrayList<Long>();
         statsCount_= 0;
-        routerStats_= "";
+        // routerStats_= "";
     //    System.err.println("Finished here");
         p.close();
         try {
@@ -1486,10 +1569,15 @@ public class GlobalController implements ComponentController {
             if (args[1].equals("localnet"))
                 continue;
             p.print(t+" ");
-            p.print(args[0]+" "+args[1]);
-            for (int i= 2; i < args.length;i++) {
-                p.print(args[i].split("=")[1]);
-                p.print(" ");
+            p.print(args[1]+" "+args[2] + " ");
+            for (int i= 3; i < args.length;i++) {
+                String []splitit= args[i].split("=");
+                if (splitit.length < 2) {
+                    System.err.println("Cannot split "+ args[i]);
+                } else {
+                    p.print(args[i].split("=")[1]);
+                    p.print(" ");
+                }
             }
             p.println();
         }
@@ -1633,6 +1721,9 @@ public class GlobalController implements ComponentController {
                         if (options_.getRouterOptionsString() != "") {
                             inter.setConfigString(options_.getRouterOptionsString());
                         }
+
+                        // tell the LocalController to start monitoring
+                        inter.monitoringStart(monitoringAddress, monitoringTimeout);
                     } catch (Exception e) {
                     }
            

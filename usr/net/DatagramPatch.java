@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import usr.logging.*;
 
 /**
- * A Datagram.
+ * An interface for Datagram obejcts that can patch themselves up to and from a ByteBuffer.
  */
 public interface DatagramPatch {
     /**

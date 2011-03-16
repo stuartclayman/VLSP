@@ -6,6 +6,7 @@ import usr.net.Address;
 import usr.net.GIDAddress;
 import java.net.Socket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.io.*;
 import java.util.List;
@@ -426,9 +427,8 @@ public class RouterInteractor extends MCRPInteractor {
      * @param addr The InetSocketAddress of the Monitoring data consumer
      * @param howOften How many seconds between measurements
      */
-    public MCRPInteractor monitoringStart(InetAddress addr, int port, int howOften) throws IOException, MCRPException {
-        String toSend = MCRP.MONITORING_START.CMD + " " + addr.toString() + ":" +
-            port + " " + howOften;
+    public MCRPInteractor monitoringStart(InetSocketAddress addr, int howOften) throws IOException, MCRPException {
+        String toSend = MCRP.MONITORING_START.CMD + " " + addr.getAddress().getHostAddress() + ":" + addr.getPort() + " " + howOften;
 	MCRPResponse response = interact(toSend);
 	expect(MCRP.MONITORING_START.CODE);
         return this;

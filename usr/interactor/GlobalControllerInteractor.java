@@ -93,8 +93,8 @@ public class GlobalControllerInteractor extends MCRPInteractor
     /**
      * Get the networkGraph as a String representation.
      */
-    public String networkGraph() throws IOException, MCRPException {
-        String toSend = MCRP.NETWORK_GRAPH.CMD + " " + "dot";
+    public String networkGraph(String arg) throws IOException, MCRPException {
+        String toSend = MCRP.NETWORK_GRAPH.CMD + " " + arg;
         
         MCRPResponse response = interact(toSend);
         expect(MCRP.NETWORK_GRAPH.CODE);
