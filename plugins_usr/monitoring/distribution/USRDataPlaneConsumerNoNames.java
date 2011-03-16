@@ -125,6 +125,9 @@ public class USRDataPlaneConsumerNoNames extends AbstractUSRDataPlaneConsumer im
 	} catch (IOException ioe) {
 	    System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
 	    throw ioe;
+	} catch (Exception e) {
+	    System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
+            throw new TypeException(e.getMessage());
 	}
     }
 
