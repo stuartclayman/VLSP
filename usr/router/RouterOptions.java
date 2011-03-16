@@ -41,7 +41,8 @@ public class RouterOptions {
                                         // if non-zero then weakest AP removed 
                                         // and appropriate new APs added
     int maxAPWeight_= 0;  // Maximum link weight an AP can be away
-    double APfilter_= 1.0;  // AP filtering percentage
+    String APFilter_= null;  // AP filtering percentage
+    String monType_= "rt";	// What to monitor
     int trafficStatTime_= 10000;  // Time to send traffic stats
     double apLifeBias_= 0.0;  // Weight to give to AP lifetime predictions  -- 0 means ignore
     double minPropAP_= 0.0;     // Minimum proportion of AP
@@ -353,7 +354,7 @@ public class RouterOptions {
            
         }
         try {
-            APfilter_= ReadXMLUtils.parseSingleDouble
+            APFilter_= ReadXMLUtils.parseSingleString
               (n, "APFilter","APManager",true);
             ReadXMLUtils.removeNode(n,"APFilter","APManager");
         } catch (SAXException e) {
@@ -361,7 +362,15 @@ public class RouterOptions {
         } catch (XMLNoTagException e) {
            
         }
-    
+		try {
+            monType_= ReadXMLUtils.parseSingleString
+              (n, "MonitorType","APManager",true);
+            ReadXMLUtils.removeNode(n,"MonitorType","APManager");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
 
         
         try {
@@ -475,6 +484,18 @@ public class RouterOptions {
         return maxAPWeight_;
     }
     
+    /** Accessor function for monitor type */
+    public String getMonType() 
+    {
+		return monType_;
+	}
+	
+	 /** Accessor function for AP filter type */
+	public String getAPFilter()
+	{
+		return APFilter_;
+	}
+	
      /** Accessor function for maximum dist in network*/
     public int getMaxDist()
     { 

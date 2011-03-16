@@ -563,8 +563,12 @@ public class RouterController implements ComponentController, Runnable {
         
         // Now start an info source pointing at the new AP.
         String command= new String("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-            "/3000 -p rt -t 1 -d 3");
+            "/3000 -t 1 -d 3");
+        command+= (" -p "+options_.getMonType());    // What type of data do we monitor
         command+= (" -n info-source-"+gid+"-"+isCount_);  // Make source name unique
+        if (options_.getAPFilter() != null) {
+			command+= (" -f "+options_.getAPFilter()); // Filter output
+		}
         if (options_.getAPOutputPath() != null) {
 			command+= " -l "+ options_.getAPOutputPath();
 	    }
