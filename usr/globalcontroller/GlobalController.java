@@ -105,9 +105,11 @@ public class GlobalController implements ComponentController {
     // A monitoring address
     InetSocketAddress monitoringAddress;
     int monitoringTimeout = 5;
+
     // A BasicConsumer for the stats of a Router
     BasicConsumer dataConsumer;
-    Reporter reporter;
+    // and a Reporter object that handles the incoming measurements
+    NetIFStatsReporter reporter;
 
 
     /**
@@ -734,7 +736,7 @@ public class GlobalController implements ComponentController {
                br2.getHost(), br2.getManagementPort());
 
                 // add Pair<router1Id, router2Id> -> connectionName to linkNames
-                linkNames.put(new Pair(router1Id, router2Id), connectionName);
+                linkNames.put(makePair(router1Id, router2Id), connectionName);
                
                Logger.getLogger("log").logln(USR.STDOUT, leadin() + br1 + " -> " + br2 + " = " + connectionName);
                break;
@@ -799,6 +801,12 @@ public class GlobalController implements ComponentController {
         else 
             rpair= new Pair<Integer,Integer>(r2,r1);
         return rpair;
+    }
+
+    /** Create pair of integers  */
+    private Pair <Integer, Integer> makePair (int r1, int r2)
+    {
+        return  new Pair<Integer,Integer>(r1,r2);
     }
     
     /** Register a link with structures necessary in Global
@@ -876,7 +884,7 @@ public class GlobalController implements ComponentController {
             lci.endLink(br1.getHost(),br1.getManagementPort(),rId2);
        
             // remove Pair<router1Id, router2Id> -> connectionName to linkNames
-            linkNames.remove(new Pair(rId1, rId2));
+            linkNames.remove(makePair(rId1, rId2));
                
 
             break;
@@ -1214,15 +1222,16 @@ public class GlobalController implements ComponentController {
         s.println("      style=\"setlinewidth(2)\",");
         s.println("      center=true,");
         s.println("      overlap=false,");
-        s.println("      fontname=\"Helvetica\",fontsize=16, fontcolor=red");
+        s.println("      fontname=\"Helvetica\", fontsize=16, fontcolor=red");
         s.println("    ];");
         s.println("    maxiter=2;");
         s.println("    node [style=filled, fillcolor=\"white\", fontname=\"Helvetica\"];");
+        s.println("    edge [ fontname=\"Helvetica\", fontsize=12 ];");
         s.println("    labelloc=t;");
         //s.println("    rank=source;");
 
         // label
-        s.print("    label=" + "\"snapshot:");
+        s.print("    label=" + "\"KAPPA Prototype - snapshot:");
         s.print(" time=");
         long t = simulationTime-simulationStartTime;
         int totalSecs = (int)t / 1000;
@@ -1251,7 +1260,11 @@ public class GlobalController implements ComponentController {
 
                 int ap= APController_.getAP(r);
 
-                s.print("\t" + r +" [ label=\"" + routerInfo.getName() + "\"");
+                if (ap == r) {
+                    s.print("\t" + r +" [ label=\"" + "Aggregation-" + r + "\""); 
+                } else {
+                    s.print("\t" + r +" [ label=\"" + "Virtual-Object-" + r + "\"");  // was routerInfo.getName()
+                }
 
                 if (ap == r) {
                     s.print(", style=filled, fillcolor=\"grey82\"");
@@ -1269,13 +1282,71 @@ public class GlobalController implements ComponentController {
                 if (i < j)  {
                     s.print(i+ " -- "+j);
 
-                    String name = linkNames.get(new Pair(i,j));
 
-                    if (name != null) {
-                        s.print(" [ label = \"" + name + "\", labelangle=180 ]");
+                    s.print(" [ ");
+
+                    String router1Name = routerIdMap_.get(i).getName();
+                    String router2Name = routerIdMap_.get(j).getName();
+
+                    /*
+                    // get trafffic for link i -> j as router1Name => router2Name
+                    List<Object> iToj = reporter.getTraffic(router1Name, router2Name);
+
+                    // get trafffic for link j -> i as router2Name => router1Name
+                    List<Object> jToi = reporter.getTraffic(router2Name, router1Name);
+
+                    String name = linkNames.get(makePair(i,j));
+
+                    //s.print("label = \"" + name + "\", ");
+
+                    if (iToj != null) {
+                        s.print(" headlabel = \"" + iToj.get(2) + "/" + iToj.get(8) + "\", ");
                     }
 
-                    s.println(";");
+                    if (jToi != null) {
+                        s.print(" taillabel = \"" + jToi.get(2) + "/" + jToi.get(8) + "\", ");
+                    }
+                    */
+
+                    // get trafffic for link i -> j as router1Name => router2Name
+                    List<Object> iToj = reporter.getTraffic(router1Name, router2Name);
+
+                    if (iToj != null) {
+                        int traffic = (Integer)iToj.get(1) + (Integer)iToj.get(7);
+
+                        s.print("label = \"" + traffic + "\", ");
+
+                        // link colour
+                        s.print("color = \"");
+                    
+                        if (traffic < 1000) {
+                            s.print("black");
+                        } else if (traffic >= 1000 && traffic < 3000) {
+                            s.print("blue");
+                        } else if (traffic >= 3000 && traffic < 5000) {
+                            s.print("green");
+                        } else if (traffic >= 5000 && traffic < 7000) {
+                            s.print("yellow");
+                        } else if (traffic >= 7000 && traffic < 10000) {
+                            s.print("orange");
+                        } else if (traffic >= 10000) {
+                            s.print("red");
+
+                        }
+
+                        s.print("\", ");
+
+                        if (traffic >= 3000 && traffic < 7000) {
+                            s.print(" style=\"setlinewidth(2)\", ");
+                        } else if (traffic >= 7000 && traffic < 20000) {
+                            s.print(" style=\"setlinewidth(3)\", ");
+                        } else if (traffic >= 20000) {
+                            s.print(" style=\"setlinewidth(4)\", ");
+                        } else {
+                        }
+                    }
+
+                    s.println(" ];");
                 }
             }
         }
@@ -1354,7 +1425,7 @@ public class GlobalController implements ComponentController {
         trafficOutputRequests_= new ArrayList<OutputType>();
         trafficOutputTime_= new ArrayList<Long>();
         statsCount_= 0;
-        // routerStats_= "";
+        routerStats_= "";
     //    System.err.println("Finished here");
         p.close();
         try {

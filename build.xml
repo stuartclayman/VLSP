@@ -10,7 +10,7 @@
     <property name="api" value="${basedir}/docs"/>    
     <property name="year" value="2010"/>
     <property name="jars" value="${basedir}"/>
-    <property name="release" value="0.5.0" />
+    <property name="release" value="0.8.1" />
   </target>
 
   <!-- Build -->
@@ -21,6 +21,7 @@
 	   <!-- destdir="${classes}" -->
     <include name="usr/**" />
     <include name="plugins_usr/**" />
+    <include name="demo_usr/**" />
     </javac>
 
   </target>
@@ -71,17 +72,17 @@
   <target name="dist" depends="build">
     <echo message="------ Building Jar file"/>
     <jar jarfile="${jars}/userspacerouting-${release}.jar"
-    basedir="${basedir}" includes="usr/**, plugins_usr/**" />
+    basedir="${basedir}" includes="usr/**, plugins_usr/**, demo_usr/**" />
     <jar jarfile="${jars}/userspacerouting-bin-${release}.jar"
-    basedir="${basedir}" includes="usr/**, plugins_usr/**" excludes="**/*.java" />
+    basedir="${basedir}" includes="usr/**, plugins_usr/**, demo_usr/**" excludes="**/*.java" />
     <jar jarfile="${jars}/userspacerouting-src-${release}.jar"
-    basedir="${basedir}" includes="usr/**, plugins_usr/**" excludes="**/*.class" />
+    basedir="${basedir}" includes="usr/**, plugins_usr/**, demo_usr/**" excludes="**/*.class" />
   </target>
 
   <!-- JavaDoc -->
   <target name="javadoc" depends="build">
      <echo message="------ Running JavaDoc"/>
-     <javadoc packagenames="usr.*, plugins_usr.*"
+     <javadoc packagenames="usr.*, plugins_usr.*, demo_usr.*"
               sourcepath="${sources}"
               destdir="${api}"
 	      classpath="${external.jars}"

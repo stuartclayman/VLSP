@@ -111,7 +111,10 @@ public class ProbElement
 
     /** Cum Dist function for exponential*/
      public static double exponentialDist(double x, double mean) {
-        return 1.0 - Math.exp(-x/mean);
+         System.err.print("exponentialDist: x = " + x + " mean = " + mean);
+         double d = 1.0 - Math.exp(-x/mean);
+         System.err.println(" => " + d);
+         return d;
     }
 
     /** Cum dist function for weibull */
