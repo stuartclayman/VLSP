@@ -11,8 +11,8 @@ CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/claycleanscript.sh
 
 SEQ="0.02 0.05 0.1"
 ITER=5
-OUTPUT=testbed_Nofilter_noPA
-FILTER=None
+OUTPUT=testbed_nofilter_noPA
+FILTER=always
 rm -f $OUTPUT
 for i in  $SEQ; do
     for j in `seq $ITER`; do
