@@ -160,7 +160,7 @@ public abstract class MCRPInteractor {
 
 	MCRPEvent event;
 
-        System.out.println(getClass().getName() + ": got event " + code);
+       // System.out.println(getClass().getName() + ": got event " + code);
 
 	if (code.equals("700")) {
             String connectionName = response.get(0)[1];
@@ -287,7 +287,7 @@ public abstract class MCRPInteractor {
 	    }
 
 	    if (fsm == FSMState.FSM_WAITING) {
-	        System.err.println("MCRP Interactor Got timeout: command was:"+str);
+	        Logger.getLogger("log").logln(USR.ERROR,"MCRP Interactor Got timeout: command was:"+str);
 	        fsm= FSMState.FSM_READY;
 	        throw new MCRPException("MCRPInteractor: wait timeout: ");
 	    }

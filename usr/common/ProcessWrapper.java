@@ -86,7 +86,7 @@ public class ProcessWrapper {
      * There has been an IO error
      */
     public void ioerror(String label, IOException ioe) {
-        System.err.println("ProcessWrapper: " + label + " Got IOException " + ioe);
+        System.out.println("ProcessWrapper: " + label + " Got IOException " + ioe);
         stop();
     }
 
@@ -107,7 +107,7 @@ public class ProcessWrapper {
             eListener.stop();
 
             // now splat it
-            destroy();
+            //destroy();
 
         } catch (IOException ioe) {
         }

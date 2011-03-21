@@ -424,8 +424,8 @@ public class LocalController implements ComponentController {
                                       "Got terminate request for router "+r1);
         RouterInteractor ri= findRouterInteractor(r1.getPort());
         if (ri == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Cannot find router interactor");
-            return false;
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Cannot find router interactor -- router assumed closed");
+            return true;
         }    
         
         try {

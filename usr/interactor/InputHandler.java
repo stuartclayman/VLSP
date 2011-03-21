@@ -53,7 +53,7 @@ public class InputHandler implements Runnable {
 	    try {
 		MCRPResponse response = grabAnswer();
 
-                System.err.println("MCRPInputHandler: got " + response.getCode());
+        // System.err.println("MCRPInputHandler: got " + response.getCode());
 
 		// check the response
 		if (response == null) {
@@ -200,7 +200,7 @@ public class InputHandler implements Runnable {
 
                 finalReply = true;
 
-                Logger.getLogger("log").logln(USR.ERROR, "MCRPInputHandler: response add " + line);
+             //   Logger.getLogger("log").logln(USR.ERROR, "MCRPInputHandler: response add " + line);
 
                 break;
 

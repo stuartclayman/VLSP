@@ -103,7 +103,7 @@ public class GlobalController implements ComponentController {
     private boolean isActive = false;
 
     // Doing Lattice monitoring ?
-    boolean latticeMonitoring = false;
+    boolean latticeMonitoring = true;
 
     // A monitoring address
     InetSocketAddress monitoringAddress;
@@ -1807,7 +1807,9 @@ public class GlobalController implements ComponentController {
                         // TODO: make more robust
                         // only work if address is real
                         // and/ or there is a consumer
-                        // inter.monitoringStart(monitoringAddress, monitoringTimeout);
+                        if (latticeMonitoring) {
+							inter.monitoringStart(monitoringAddress, monitoringTimeout);
+						}
                     } catch (Exception e) {
                     }
            
