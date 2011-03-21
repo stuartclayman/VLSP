@@ -108,7 +108,7 @@ public class GlobalController implements ComponentController {
     // A monitoring address
     InetSocketAddress monitoringAddress;
     int monitoringPort = 22997;
-    int monitoringTimeout = 5;
+    int monitoringTimeout = 1;
 
 
     // A BasicConsumer for the stats of a Router
