@@ -53,7 +53,7 @@ public class USRReceiver implements Runnable {
     /*
      * A default packet size.
      */
-    static int PACKET_SIZE = 1500;
+    static int PACKET_SIZE = 65535;  // was 1500;
 
     /*
      * The packet contents as a ByteArrayInputStream

@@ -42,6 +42,8 @@ public class LocalController implements ComponentController {
     
     private String routerConfigString_= "";
     
+    // Doing Lattice monitoring ?
+    private boolean latticeMonitoring = false;
     private InetSocketAddress monitoringAddress;
     private int monitoringTimeout;
 
@@ -317,7 +319,9 @@ public class LocalController implements ComponentController {
             }
 
             // tell the router to start some monitoring
-            interactor.monitoringStart(monitoringAddress, monitoringTimeout);
+            if (latticeMonitoring) {
+                interactor.monitoringStart(monitoringAddress, monitoringTimeout);
+            }
 
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + 
@@ -608,6 +612,7 @@ public class LocalController implements ComponentController {
      * with a particular timeout.
      */
     public void startMonitoring(InetSocketAddress socketAddress, int timeout) {
+        latticeMonitoring  = true;
         monitoringAddress = socketAddress;
         monitoringTimeout = timeout;
     }
@@ -617,19 +622,22 @@ public class LocalController implements ComponentController {
      */
     public void stopMonitoring() {
         // tell all the Routers to stop monitoring
-        for (int i= 0; i < routers_.size(); i++) {
+        if (latticeMonitoring) {
+            for (int i= 0; i < routers_.size(); i++) {
 
-            RouterInteractor interactor = routerInteractors_.get(i);
-            try {
-                interactor.monitoringStop();
-            } catch (java.io.IOException e) {
-                Logger.getLogger("log").logln(USR.ERROR,leadin() + "Cannot send stopMonitoring to Router");
-                Logger.getLogger("log").logln(USR.ERROR,e.getMessage()); 
-            } catch (usr.interactor.MCRPException e) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin() + "Cannot send stopMonitoring to Router");
-                Logger.getLogger("log").logln(USR.ERROR,e.getMessage());          
+                RouterInteractor interactor = routerInteractors_.get(i);
+                try {
+                    interactor.monitoringStop();
+                } catch (java.io.IOException e) {
+                    Logger.getLogger("log").logln(USR.ERROR,leadin() + "Cannot send stopMonitoring to Router");
+                    Logger.getLogger("log").logln(USR.ERROR,e.getMessage()); 
+                } catch (usr.interactor.MCRPException e) {
+                    Logger.getLogger("log").logln(USR.ERROR,
+                                                  leadin() + "Cannot send stopMonitoring to Router");
+                    Logger.getLogger("log").logln(USR.ERROR,e.getMessage());          
+                }
             }
+            latticeMonitoring = false;
         }
     }
 

@@ -58,6 +58,8 @@ public class NetIFStatsReporter implements Reporter {
 
             measurements.put(routerName, table);
 
+            printTable(table);
+
             // Calculate volume of traffic - in and out
             int volume = calculateTraffic(table);
 

@@ -102,9 +102,14 @@ public class GlobalController implements ComponentController {
     // Used in shut down routines
     private boolean isActive = false;
 
+    // Doing Lattice monitoring ?
+    boolean latticeMonitoring = false;
+
     // A monitoring address
     InetSocketAddress monitoringAddress;
+    int monitoringPort = 22997;
     int monitoringTimeout = 5;
+
 
     // A BasicConsumer for the stats of a Router
     BasicConsumer dataConsumer;
@@ -215,23 +220,26 @@ public class GlobalController implements ComponentController {
           System.exit(-1);
       }
       
+      if (latticeMonitoring) {
 
-      // setup DataConsumer
-      dataConsumer = new BasicConsumer();
-      // and reporter
-      reporter = new NetIFStatsReporter(this);
+          // setup DataConsumer
+          dataConsumer = new BasicConsumer();
+          // and reporter
+          reporter = new NetIFStatsReporter(this);
 
-      // start monitoring
-      String gcAddress = "localhost";
+          // start monitoring
+          // listening on the GlobalController address
+          String gcAddress = "localhost";
 
-      try {
-          gcAddress = InetAddress.getLocalHost().getHostAddress();
-      } catch (UnknownHostException uhe) {
+          try {
+              gcAddress = InetAddress.getLocalHost().getHostAddress();
+          } catch (UnknownHostException uhe) {
+          }
+
+          monitoringAddress = new InetSocketAddress(gcAddress, monitoringPort);
+          startMonitoringConsumer(monitoringAddress);
       }
 
-      monitoringAddress = new InetSocketAddress(gcAddress, 22997);
-      monitoringTimeout = 5;
-      startMonitoringConsumer(monitoringAddress);
 
       // Set up simulations options
       if (!options_.isSimulation()) {
@@ -603,7 +611,7 @@ public class GlobalController implements ComponentController {
               break;
           } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down router "+
-              br.getHost()+":"+br.getManagementPort()+ " attempt "+(i+1));
+              br.getHost()+":"+br.getManagementPort()+ " attempt "+(i+1) + " Exception = " + e);
           }
         }
         if (i == MAX_TRIES) {
@@ -1010,7 +1018,9 @@ public class GlobalController implements ComponentController {
             if (!options_.isSimulation()) {
 
                 // stop monitoring
-                stopMonitoringConsumer();
+                if (latticeMonitoring) {
+                    stopMonitoringConsumer();
+                }
 
                 //ThreadTools.findAllThreads("GC pre killAllControllers:");
 
@@ -1231,7 +1241,7 @@ public class GlobalController implements ComponentController {
         //s.println("    rank=source;");
 
         // label
-        s.print("    label=" + "\"KAPPA Prototype - snapshot:");
+        s.print("    label=" + "\"snapshot:");
         s.print(" time=");
         long t = simulationTime-simulationStartTime;
         int totalSecs = (int)t / 1000;
@@ -1261,9 +1271,9 @@ public class GlobalController implements ComponentController {
                 int ap= APController_.getAP(r);
 
                 if (ap == r) {
-                    s.print("\t" + r +" [ label=\"" + "Aggregation-" + r + "\""); 
+                    s.print("\t" + r +" [ label=\"" + "Router-" + r + "\""); 
                 } else {
-                    s.print("\t" + r +" [ label=\"" + "Virtual-Object-" + r + "\"");  // was routerInfo.getName()
+                    s.print("\t" + r +" [ label=\"" + "Router-" + r + "\"");  // was routerInfo.getName()
                 }
 
                 if (ap == r) {
@@ -1794,7 +1804,10 @@ public class GlobalController implements ComponentController {
                         }
 
                         // tell the LocalController to start monitoring
-                        inter.monitoringStart(monitoringAddress, monitoringTimeout);
+                        // TODO: make more robust
+                        // only work if address is real
+                        // and/ or there is a consumer
+                        // inter.monitoringStart(monitoringAddress, monitoringTimeout);
                     } catch (Exception e) {
                     }
            
