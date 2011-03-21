@@ -351,10 +351,12 @@ public class AggPoint implements Application {
 		// get the first field of oldValue
 		Double oVal = (Double)oldValue.getValues().get(0).getValue();
 
+		if (oVal == 0.0)
+			return mVal != 0.0;
 		double percent = mVal / oVal;
 
-		Logger.getLogger("log").logln(USR.APP_EXTRA, "Filter: " + mVal + "/" + oVal + " = " +
-				   percent);
+	//	Logger.getLogger("log").logln(USR.APP_EXTRA, "Filter: " + mVal + "/" + oVal + " = " +
+	//			   percent);
 
 
 		// test for 5% tolerance -  0.95 -> 1.05
@@ -380,19 +382,20 @@ public class AggPoint implements Application {
 		Double mVal = (Double)m.getValues().get(0).getValue();
 		// get the first field of oldValue
 		Double oVal = (Double)oldValue.getValues().get(0).getValue();
-
+		if (oVal == 0.0)
+			return mVal != 0.0;
 		double percent = mVal / oVal;
 
-		System.out.println("Filter: " + mVal + "/" + oVal + " = " +
-				   percent);
+		//System.out.println("Filter: " + mVal + "/" + oVal + " = " +
+		//		   percent);
 
 
 		float lower = oVal.floatValue() * 0.98f;
 		float upper = oVal.floatValue() * 1.02f;
 
-		System.out.println("Filter: " + mVal + "/" + oVal + " = " +
-				   ((1 - percent) * 100) + " lower = " + lower +
-				   " upper = " + upper);
+		//System.out.println("Filter: " + mVal + "/" + oVal + " = " +
+		//		   ((1 - percent) * 100) + " lower = " + lower +
+		//		   " upper = " + upper);
 
 		// test for 2% tolerance -  0.98 -> 1.02
 		if (0.98 < percent && percent < 1.02) {
@@ -417,11 +420,12 @@ public class AggPoint implements Application {
 		Double mVal = (Double)m.getValues().get(0).getValue();
 		// get the first field of oldValue
 		Double oVal = (Double)oldValue.getValues().get(0).getValue();
-
+		if (oVal == 0.0)
+			return mVal != 0.0;
 		double percent = mVal / oVal;
 
-		System.out.println("Filter: " + mVal + "/" + oVal + " = " +
-				   percent);
+		//System.out.println("Filter: " + mVal + "/" + oVal + " = " +
+		//		   percent);
 
 
 		// test for 10% tolerance -  0.90 -> 1.10

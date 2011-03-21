@@ -107,19 +107,20 @@ public class InfoSource implements Application {
 		if ((oldM = p.getLastMeasurement()) != null) {
 		    oldValue = (Number)oldM.getValues().get(0).getValue();
 		}
-
+        if (oldValue.floatValue() == 0.0)
+			return n.floatValue != 0.0;
 		float percent = n.floatValue() / oldValue.floatValue();
 
-		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
-				   percent);
+		//Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
+		//		   percent);
 
 		// test for 2% tolerance -  0.98 -> 1.02
 		if (0.98 < percent && percent < 1.02) {
 		    // values too similar
-		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
+		    //Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
 		    return false;
 		} else {
-		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
+		   // Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
 		    return true;
 		}
 	    }
@@ -138,7 +139,8 @@ public class InfoSource implements Application {
 		if ((oldM = p.getLastMeasurement()) != null) {
 		    oldValue = (Number)oldM.getValues().get(0).getValue();
 		}
-
+		if (oldValue.floatValue() == 0.0)
+			return n.floatValue != 0.0;
 		float percent = n.floatValue() / oldValue.floatValue();
 
 		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
@@ -169,19 +171,21 @@ public class InfoSource implements Application {
 		if ((oldM = p.getLastMeasurement()) != null) {
 		    oldValue = (Number)oldM.getValues().get(0).getValue();
 		}
+		if (oldValue.floatValue() == 0.0)
+			return n.floatValue != 0.0;
 
 		float percent = n.floatValue() / oldValue.floatValue();
 
-		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
-				   percent);
+	//	Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
+	//			   percent);
 
 		// test for 10% tolerance -  0.90 -> 1.10
 		if (0.90 < percent && percent < 1.10) {
 		    // values too similar
-		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
+		//    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
 		    return false;
 		} else {
-		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
+		//    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
 		    return true;
 		}
 	    }
