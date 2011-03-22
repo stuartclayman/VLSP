@@ -19,6 +19,12 @@ public class NetIFStatsReporter implements Reporter {
     // A HashMap of RouterName -> latest measurement
     HashMap<String, Table> measurements;
 
+    // A HashMap of RouterName -> old measurement
+    HashMap<String, Table> old;
+
+    // count of no of measurements
+    int count = 0;
+
     /**
      * Constructor
      */
@@ -26,6 +32,7 @@ public class NetIFStatsReporter implements Reporter {
         globalController = gc;
 
         measurements = new HashMap<String, Table>();
+        old = new HashMap<String, Table>();
     }
 
     /**
@@ -43,6 +50,8 @@ public class NetIFStatsReporter implements Reporter {
      */
     public void report(Measurement m) {
         if (m.getType().equals("NetIFStats")) {
+            count++;
+
             List<ProbeValue> values = m.getValues();
 
             // ProbeValue 0 is the router name
@@ -56,7 +65,9 @@ public class NetIFStatsReporter implements Reporter {
             // print table
             //printTable(table);
 
-            measurements.put(routerName, table);
+            synchronized (measurements) {
+                measurements.put(routerName, table);
+            }
 
             //printTable(table);
 
@@ -66,7 +77,13 @@ public class NetIFStatsReporter implements Reporter {
             //System.out.println("Traffic for " + routerName + " = " + volume);
 
             // Any dropped ?
-            printAnyDropped(routerName, table);
+            //printAnyDropped(routerName, table);
+
+            // print out total every 100 measurements
+            if (count % 100 == 0) {
+                System.out.println("Total = " + calculateTotalTraffic());
+            }
+
 
         } else {
             // not what we were expecting
@@ -78,7 +95,7 @@ public class NetIFStatsReporter implements Reporter {
      * @param routerSrc the name of source router
      * @param routerDst the name of dest router
      */
-    public List<Object> getTraffic(String routerSrc, String routerDst) {
+    protected List<Object> getTraffic(String routerSrc, String routerDst) {
         Table table = measurements.get(routerSrc);
 
         if (table == null) {
@@ -118,10 +135,24 @@ public class NetIFStatsReporter implements Reporter {
     }
                 
 
+    /**
+     * Tell this reporter that a router has been deleted
+     */
+    protected void routerDeleted(String routerName) {
+        Table oldData = null;
 
+        synchronized (measurements) {
+            oldData = measurements.get(routerName);
+            old.put(routerName, oldData);
+            measurements.remove(routerName);
+        }
+
+        System.out.println("Deleted router: " + routerName + " Lost data " + calculateTraffic(oldData));
+
+    }
 
     /**
-     * Calculate the traffic
+     * Calculate the traffic for a router
      */
     protected int calculateTraffic(Table table) {
         int volume = 0;
@@ -145,6 +176,31 @@ public class NetIFStatsReporter implements Reporter {
         return volume;
     }
 
+
+    /**
+     * Caluclaute total traffic.
+     */
+    protected int calculateTotalTraffic() {
+        int volume = 0;
+
+        for (String routerName : measurements.keySet()) {
+            Table routerData = measurements.get(routerName);
+            volume += calculateTraffic(routerData);
+        }
+
+        System.out.println("Total volume = " + volume);
+
+        int lost = 0;
+
+        for (String routerName : old.keySet()) {
+            Table routerData = old.get(routerName);
+            lost += calculateTraffic(routerData);
+        }
+
+        System.out.println("Total lost = " + lost);
+            
+        return lost + volume;
+    }
 
     /**
      * Any dropped ?

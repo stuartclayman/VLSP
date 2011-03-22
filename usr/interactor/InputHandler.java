@@ -53,7 +53,7 @@ public class InputHandler implements Runnable {
 	    try {
 		MCRPResponse response = grabAnswer();
 
-        // System.err.println("MCRPInputHandler: got " + response.getCode());
+                // System.err.println("MCRPInputHandler: got " + response.getCode());
 
 		// check the response
 		if (response == null) {
@@ -77,6 +77,21 @@ public class InputHandler implements Runnable {
 	}
     } 
 
+    /**
+     * Stop the input handler
+     */
+    public void stop() {
+        running = false;
+        myThread.interrupt();
+
+        // wait for myself
+        try {
+            myThread.join();
+        } catch (InterruptedException ie) {
+            // Logger.getLogger("log").logln(USR.ERROR, "InputHandler: stop - InterruptedException for myThread join on " + myThread);
+        }
+
+    }
 
     /**
      * Grab an answer

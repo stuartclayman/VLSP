@@ -601,8 +601,7 @@ public class GlobalController implements ComponentController {
     private void endVirtualRouter(int rId) {
         BasicRouterInfo br= routerIdMap_.get(rId);
         
-        LocalControllerInteractor lci= interactorMap_.get
-            (br.getLocalControllerInfo());
+        LocalControllerInteractor lci= interactorMap_.get(br.getLocalControllerInfo());
         int MAX_TRIES= 5;
         int i;
         for (i= 0; i < MAX_TRIES; i++) {
@@ -626,6 +625,11 @@ public class GlobalController implements ComponentController {
         pp.freePort(br.getRoutingPort());
         lcinf.delRouter();
         routerIdMap_.remove(rId);
+
+        // tell reporter that this router is gone
+        String routerName = br.getName();
+        reporter.routerDeleted(routerName);
+
     }
     
     /** Event to end a router */
@@ -1262,7 +1266,7 @@ public class GlobalController implements ComponentController {
             s.println("    subgraph cluster_" + host + " {");
             s.print("\tlabel=\"" + host + " routers=" + routersOnHost.size() +"\";");
             s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"palegoldenrod\"];");
-            s.println("\tnode [ shape=ellipse ];");
+            s.println("\tnode [ shape=rect, style=rounded ];");
 
             // now get routers for this host
             for (BasicRouterInfo routerInfo : routersOnHost) {
@@ -1270,15 +1274,11 @@ public class GlobalController implements ComponentController {
 
                 int ap= APController_.getAP(r);
 
-                if (ap == r) {
-                    s.print("\t" + r +" [ label=\"" + "Router-" + r + "\""); 
+                if (ap == r) { // router is also an Agg point
+                    s.print("\t" + r +" [ shape=diamond, label=\"" + routerInfo.getName() + "\""); 
+                    s.print(", style=\"filled,rounded\" , fillcolor=\"grey82\"");
                 } else {
-                    s.print("\t" + r +" [ label=\"" + "Router-" + r + "\"");  // was routerInfo.getName()
-                }
-
-                if (ap == r) {
-                    s.print(", style=filled, fillcolor=\"grey82\"");
-                } else {
+                    s.print("\t" + r +" [ label=\"" + routerInfo.getName() + " (" + ap + ")" + "\"");
                 }
 
                 s.println(" ];");
@@ -1869,6 +1869,7 @@ public class GlobalController implements ComponentController {
           try {
 
               inter.shutDown();
+              inter.terminate();
 
               ThreadTools.findAllThreads("GC post kill :" + i);
 

@@ -91,7 +91,7 @@ public class RouterController implements ComponentController, Runnable {
 
     // A BasicDataSource for the stats of a Router
     BasicDataSource dataSource;
-    Probe probe;
+    NetIFStatsProbe probe;
 
     /**
      * Construct a RouterController, given a specific port.
@@ -254,10 +254,6 @@ public class RouterController implements ComponentController, Runnable {
         // start management console listener
         boolean startedL = management.start();
 
-        // start monitoring
-        //InetSocketAddress socketAddress = new InetSocketAddress("localhost", 22997);
-        //startMonitoring(socketAddress, 5);
-
         return startedL && startedC;
     }
     
@@ -270,6 +266,9 @@ public class RouterController implements ComponentController, Runnable {
         // stop applications
         stopApplications();
         
+        // stop the dataSource and associated probe
+        probe.lastMeasurement();
+        stopMonitoring();
 
         // stop the management console listener
         //System.err.println("Management stop");
@@ -277,9 +276,6 @@ public class RouterController implements ComponentController, Runnable {
         //System.err.println("Connection stop");
         // stop the router to router connections
         boolean stoppedC = connections.stop();
-
-        // stop the dataSource and associated probe
-        stopMonitoring();
 
         // stop my own thread
         running = false;

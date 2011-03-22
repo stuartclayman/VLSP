@@ -15,8 +15,8 @@ import eu.reservoir.monitoring.core.*;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.*;
 import eu.reservoir.monitoring.appl.datarate.*;
-import eu.reservoir.monitoring.appl.host.linux.MemoryInfo;
-import eu.reservoir.monitoring.appl.host.linux.CPUInfo;
+//import eu.reservoir.monitoring.appl.host.linux.MemoryInfo;
+//import eu.reservoir.monitoring.appl.host.linux.CPUInfo;
 import eu.reservoir.demo.RandomProbe;
 import java.net.InetAddress;
 import java.util.Scanner;
@@ -79,7 +79,7 @@ public class InfoSource implements Application {
      * Filters
      */
 
-    // CPUInfo probe generates user / nice / system / idle groups
+    // LinuxCPU probe generates user / nice / system / idle groups
 
     // setup an enum for each of the Filters
     enum FilterSpecifer { Always, Percent2, Percent5, Percent10 };
@@ -107,8 +107,8 @@ public class InfoSource implements Application {
 		if ((oldM = p.getLastMeasurement()) != null) {
 		    oldValue = (Number)oldM.getValues().get(0).getValue();
 		}
-        if (oldValue.floatValue() == 0.0)
-			return n.floatValue != 0.0;
+                if (oldValue.floatValue() == 0.0)
+                    return n.floatValue() != 0.0;
 		float percent = n.floatValue() / oldValue.floatValue();
 
 		//Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
@@ -140,7 +140,7 @@ public class InfoSource implements Application {
 		    oldValue = (Number)oldM.getValues().get(0).getValue();
 		}
 		if (oldValue.floatValue() == 0.0)
-			return n.floatValue != 0.0;
+                    return n.floatValue() != 0.0;
 		float percent = n.floatValue() / oldValue.floatValue();
 
 		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
@@ -172,7 +172,7 @@ public class InfoSource implements Application {
 		    oldValue = (Number)oldM.getValues().get(0).getValue();
 		}
 		if (oldValue.floatValue() == 0.0)
-			return n.floatValue != 0.0;
+                    return n.floatValue() != 0.0;
 
 		float percent = n.floatValue() / oldValue.floatValue();
 
@@ -611,11 +611,11 @@ public class InfoSource implements Application {
     public void setProbe(ProbeSpecifier spec) {
 	switch (spec) {
 	case CPU:
-	    probe = new CPUInfo(name + "cpu-info");
+	    probe = new LinuxCPU(name + "cpu-info");
 	    break;
 
 	case Memory:
-	    probe = new MemoryInfo(name + "memory-info");
+	    probe = new LinuxMem(name + "memory-info");
 	    break;
 
 	case ResponseTime:

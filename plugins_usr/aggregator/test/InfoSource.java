@@ -13,8 +13,10 @@ import eu.reservoir.monitoring.core.*;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.*;
 import eu.reservoir.monitoring.appl.datarate.*;
-import eu.reservoir.monitoring.appl.host.linux.MemoryInfo;
-import eu.reservoir.monitoring.appl.host.linux.CPUInfo;
+import plugins_usr.aggregator.appl.LinuxMem;
+//import eu.reservoir.monitoring.appl.host.linux.MemoryInfo;
+import plugins_usr.aggregator.appl.LinuxCPU;
+//import eu.reservoir.monitoring.appl.host.linux.CPUInfo;
 import eu.reservoir.demo.RandomProbe;
 import java.net.InetAddress;
 import java.util.Scanner;
@@ -65,7 +67,7 @@ public class InfoSource {
      * Filters
      */
 
-    // CPUInfo probe generates user / nice / system / idle groups
+    // LinuxCPU probe generates user / nice / system / idle groups
 
     // setup an enum for each of the Filters
     enum FilterSpecifer { Always, Percent2, Percent5, Percent10 };
@@ -316,18 +318,18 @@ public class InfoSource {
     public void setProbe(ProbeSpecifier spec) {
 	switch (spec) {
 	case CPU:
-	    probe = new CPUInfo(name + "cpu-info");
+	    probe = new LinuxCPU(name + ".cpu-info");
 	    break;
 
 	case Memory:
-	    probe = new MemoryInfo(name + "memory-info");
+	    probe = new LinuxMem(name + ".memory-info");
 	    break;
 
 	case ResponseTime:
 	    // probe name is elapsedTime
 	    // field is called time
 	    // response times are around 30 secs +/- a bit
-	    probe = new RandomProbe(name + "elapsedTime", "time", 30);
+	    probe = new RandomProbe(name + ".elapsedTime", "time", 30);
 	    break;
 	}
     }

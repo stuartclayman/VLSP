@@ -84,7 +84,15 @@ public abstract class MCRPInteractor {
 	inputHandler = new InputHandler(this, input);
     }
 
-
+    /**
+     * Terminate this MCRPInteractor
+     */
+    public void terminate() {
+        //Logger.getLogger("log").logln(USR.STDOUT, getClass().getName() + ": terminate");
+        if (inputHandler != null) {
+            inputHandler.stop();
+        }
+    }
 
 
     /* Methods for managing event listeners. */
@@ -239,6 +247,8 @@ public abstract class MCRPInteractor {
     protected synchronized void gotException(Exception e) {
 	// we got an Exception notification from the SocketInputHandler
 	// set the fsm to the end state.
+        Logger.getLogger("log").logln(USR.STDOUT, getClass().getName() + ": gotException " + e);
+
 	fsm = FSMState.FSM_END;
 
 	// save the exception to throw a bit later

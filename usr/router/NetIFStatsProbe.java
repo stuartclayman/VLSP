@@ -81,7 +81,7 @@ public class NetIFStatsProbe extends AbstractProbe implements Probe {
      * Collect a measurement.
      */
     public ProbeMeasurement collect() {
-        System.out.println("NetIFStats: collect()");
+        //System.out.println("NetIFStats: collect()");
 
         try {
             // check localnet first
@@ -173,6 +173,19 @@ public class NetIFStatsProbe extends AbstractProbe implements Probe {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    /**
+     * Last will get one last measurement
+     */
+    public void lastMeasurement() {
+        System.out.println("NetIFStatsProbe: last collect for " + controller.getName());
+        try {
+            Measurement m = collectThenCheck();
+            getProbeManager().notifyMeasurement(m);
+        } catch (Exception e) {
+            System.err.println("NetIFStatsProbe: last collect failed - " + e);
         }
     }
 
