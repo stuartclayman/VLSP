@@ -20,23 +20,23 @@
   </LocalController>  
     <LocalController>
      <Name>pentane</Name>
-     <Port>41000</Port>
-     <LowPort>41001</LowPort>
-     <HighPort>41999</HighPort>
-     <MaxRouters>75</MaxRouters>
-  </LocalController>  
-      <LocalController>
-     <Name>butane</Name>
      <Port>42000</Port>
      <LowPort>42001</LowPort>
      <HighPort>42999</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>  
       <LocalController>
-     <Name>propane</Name>
+     <Name>butane</Name>
      <Port>43000</Port>
      <LowPort>43001</LowPort>
      <HighPort>43999</HighPort>
+     <MaxRouters>75</MaxRouters>
+  </LocalController>  
+      <LocalController>
+     <Name>propane</Name>
+     <Port>44000</Port>
+     <LowPort>44001</LowPort>
+     <HighPort>44999</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>  
   <EventEngine>
@@ -57,5 +57,18 @@
         <When>Interval</When>
         <Time>10000</Time>
         <Type>Summary</Type>
+    </Output>
+    <Output>
+        <File>summary.out</File>
+        <When>Interval</When>
+        <Time>10000</Time>
+        <Type>Summary</Type>
+    </Output>
+   <Output>
+        <File>traffic.agg</File>
+        <When>Interval</When>
+        <Time>10000</Time>
+        <Type>Traffic</Type>
+        <Parameter>Aggregate</Parameter>
     </Output>
 </SimOptions>
