@@ -12,7 +12,7 @@
         <ControllerConsiderTime>10000</ControllerConsiderTime>
         <MaxAPWeight>5</MaxAPWeight>
         <MinPropAP>xxx</MinPropAP>  
-        <APOutputPath>/tmp/rclegg</APOutputPath>
+        <OutputPath>/tmp/rclegg</OutputPath>
         <MonitorType>cpu</MonitorType>  <!-- cpu/memory/rt-->
         <APFilter>yyy</APFilter>  <!--always 2%/5%/10%-->
     </APManager>
