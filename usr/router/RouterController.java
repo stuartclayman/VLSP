@@ -267,8 +267,10 @@ public class RouterController implements ComponentController, Runnable {
         stopApplications();
         
         // stop the dataSource and associated probe
-        probe.lastMeasurement();
-        stopMonitoring();
+        if (dataSource.isConnected()) {
+            probe.lastMeasurement();
+            stopMonitoring();
+        }
 
         // stop the management console listener
         //System.err.println("Management stop");
