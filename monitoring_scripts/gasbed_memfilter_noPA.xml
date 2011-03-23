@@ -1,6 +1,6 @@
 <SimOptions>
   <GlobalController>
-     <Port>8888</Port>
+     <Port>39999</Port>
      <ConnectedNetwork>false</ConnectedNetwork>
      <Simulation>false</Simulation>
   </GlobalController>
