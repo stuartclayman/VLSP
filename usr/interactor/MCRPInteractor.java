@@ -87,12 +87,12 @@ public abstract class MCRPInteractor {
     /**
      * Terminate this MCRPInteractor
      */
-    public void terminate() {
+  /*  public void terminate() {
         //Logger.getLogger("log").logln(USR.STDOUT, getClass().getName() + ": terminate");
         if (inputHandler != null) {
             inputHandler.stop();
         }
-    }
+    }*/
 
 
     /* Methods for managing event listeners. */

@@ -134,7 +134,7 @@ public class LocalController implements ComponentController {
             RouterInteractor interactor = routerInteractors_.get(i);
             try {
                 interactor.shutDown();
-                interactor.terminate();
+                //interactor.terminate();
             } catch (java.io.IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR,leadin() + "Cannot send shut down to Router");
                 Logger.getLogger("log").logln(USR.ERROR,e.getMessage()); 
@@ -159,7 +159,7 @@ public class LocalController implements ComponentController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping global controller interactor");
         try {        
             gcInteractor_.quit();
-            gcInteractor_.terminate();
+            //gcInteractor_.terminate();
         } catch (Exception e) {
             
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot exit from global interactor");
@@ -434,7 +434,7 @@ public class LocalController implements ComponentController {
         try {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Sending terminate request via interactor");
             ri.shutDown();
-            ri.terminate();
+           // ri.terminate();
         } 
         catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error shutting down router");

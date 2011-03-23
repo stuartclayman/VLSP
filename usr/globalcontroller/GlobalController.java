@@ -1141,7 +1141,7 @@ public class GlobalController implements ComponentController {
             return;
         }
 
-        networkGraphAsGraphvis(time, s);
+        plainNetworkGraphviz(time, s);
     }
 
     /**
@@ -1160,6 +1160,32 @@ public class GlobalController implements ComponentController {
         } else {
             networkGraphAsGraphvis(time, s);
         }
+    }
+
+    /**
+     * Send a network showing plain network as Graphviz to a PrintStream
+     */
+    private void plainNetworkGraphviz(long time, PrintStream s) {
+        s.println("Graph G {");
+        for (int r: getRouterList()) {
+            int ap= APController_.getAP(r);
+            if (ap == r) {
+                s.print(r+" [shape=box");
+            } else {
+                s.print(r+" [shape=circle");
+            }
+
+            s.println("];");
+        }
+        
+        for (int i: getRouterList()) {
+            for (int j: getOutLinks(i)) {
+                if (i < j) 
+                    s.println(i+ " -- "+j+";");
+            }
+        }
+        s.println("}");
+       
     }
 
     /**
@@ -1940,7 +1966,7 @@ public class GlobalController implements ComponentController {
           try {
 
               inter.shutDown();
-              inter.terminate();
+              //inter.terminate();
 
               ThreadTools.findAllThreads("GC post kill :" + i);
 
