@@ -1,0 +1,25 @@
+<RouterOptions>
+    <RoutingParameters>
+        <MaxCheckTime>60000</MaxCheckTime>
+        <MinNetIFUpdateTime>5000</MinNetIFUpdateTime>
+        <MaxNetIFUpdateTime>30000</MaxNetIFUpdateTime>
+	<MaxDist>20</MaxDist>
+    </RoutingParameters>
+    <APManager>
+        <Name>Pressure</Name>
+        <MinAPs>1</MinAPs>
+        <RouterConsiderTime>10000</RouterConsiderTime>
+        <ControllerConsiderTime>10000</ControllerConsiderTime>
+        <MaxAPWeight>5</MaxAPWeight>
+        <MinPropAP>xxx</MinPropAP>  
+        <OutputPath>/tmp/rclegg</OutputPath>
+        <MonitorType>memory</MonitorType>  <!-- cpu/memory/rt-->
+        <APFilter>yyy</APFilter>  <!--always 2%/5%/10%-->
+    </APManager>
+   <Output>
+	    <FileName>/space/rclegg/testbedoutput</FileName>
+  	  <ExtendedName>true</ExtendedName>
+   </Output>
+
+</RouterOptions>
+
