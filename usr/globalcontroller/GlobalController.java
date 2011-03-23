@@ -96,7 +96,7 @@ public class GlobalController implements ComponentController {
     // Thread name
     private String myName = "GlobalController";
 
-		// Controller assigns aggregation points
+    // Controller assigns aggregation points
     private APController APController_= null;
     
     // Used in shut down routines
@@ -787,7 +787,22 @@ public class GlobalController implements ComponentController {
         //System.err.println();
     }
     
-    
+    /**
+     * Is a router directly connected to another one
+     */
+    public boolean isConnected(int routerId, int other) {
+        int [] links = getOutLinks(routerId);
+
+        for (int p=0; p<links.length; p++) {
+            if (links[p] == other) {
+                return true;
+            }
+        }
+
+
+        return false;
+    }
+
     /* Return a list of link costs from a router -- must be used in
         parallel get getOutLinks to id link nos*/
     public int [] getLinkCosts(int routerId)
@@ -1229,6 +1244,20 @@ public class GlobalController implements ComponentController {
 
         s.println("    K=1;");
         s.println("    ratio=0.7;");
+        s.println("    maxiter=2;");
+        s.println("    labelloc=t;");
+        //s.println("    rank=source;");
+
+        // set root node, if using twopi
+        int noAPs = APController_.getNoAPs();
+        int noRouters = routerIdMap_.values().size();
+
+        if (noAPs > 0) {
+            int first = APController_.getAPList().get(0);
+            s.println("    root=" + first +";");
+        }
+
+        // set attributes for subgraphs
         s.println("    graph [");
         s.println("      splines=true,");
         s.println("      rankdir = \"TB\",");
@@ -1238,13 +1267,14 @@ public class GlobalController implements ComponentController {
         s.println("      overlap=false,");
         s.println("      fontname=\"Helvetica\", fontsize=16, fontcolor=red");
         s.println("    ];");
-        s.println("    maxiter=2;");
-        s.println("    node [style=filled, fillcolor=\"white\", fontname=\"Helvetica\"];");
-        s.println("    edge [ fontname=\"Helvetica\", fontsize=12 ];");
-        s.println("    labelloc=t;");
-        //s.println("    rank=source;");
 
-        // label
+        // set attributes for nodes
+        s.println("    node [style=filled, fillcolor=\"white\", fontname=\"Helvetica\"];");
+
+        // set attributes for edges
+        s.println("    edge [ fontname=\"Helvetica\", fontsize=12 ];");
+
+        // the label of the graph
         s.print("    label=" + "\"snapshot:");
         s.print(" time=");
         long t = simulationTime-simulationStartTime;
@@ -1255,7 +1285,7 @@ public class GlobalController implements ComponentController {
         int secs = totalSecs % 60;
         s.printf("%02d:%02d:%02d", minutes, secs, hundreths);
         s.print(" hosts=" + routerLocations.keySet().size());
-        s.print(" routers=" + routerIdMap_.values().size());
+        s.print(" routers=" + noRouters);
         s.print(" links=" + noLinks_);
         s.println("\";");
 
@@ -1266,19 +1296,59 @@ public class GlobalController implements ComponentController {
             s.println("    subgraph cluster_" + host + " {");
             s.print("\tlabel=\"" + host + " routers=" + routersOnHost.size() +"\";");
             s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"palegoldenrod\"];");
-            s.println("\tnode [ shape=rect, style=rounded ];");
+            s.println("\tnode [ shape=ellipse, style=rounded, nodesep=2.0 ];");
 
             // now get routers for this host
             for (BasicRouterInfo routerInfo : routersOnHost) {
+                // get a router
                 int r = routerInfo.getId();
 
+                // get the AggPoint for this router
                 int ap= APController_.getAP(r);
 
-                if (ap == r) { // router is also an Agg point
-                    s.print("\t" + r +" [ shape=diamond, label=\"" + routerInfo.getName() + "\""); 
-                    s.print(", style=\"filled,rounded\" , fillcolor=\"grey82\"");
+                // get position of AggPoint in AggPoint list
+                int position = APController_.getAPList().indexOf(ap);
+
+                // work out the hue for the colour of the router
+                float hue = 1.0f;
+
+                if (position % 2 == 0) { // even
+                    hue = ((float)position / 2) + 1;
                 } else {
-                    s.print("\t" + r +" [ label=\"" + routerInfo.getName() + " (" + ap + ")" + "\"");
+                    hue = (((float)position -1) / 2) + 5 + 1;
+                }
+
+                hue = hue / 10;
+
+                // output the router
+                
+                if (ap == r) { // router is also an Agg point
+                    float value = 0.6f;
+                    float sat = 0.6f;
+
+                    s.print("\t" + r +" [ shape=diamond, label=\"" + routerInfo.getName() + "\""); 
+                    s.print(", style=\"filled,rounded\"" + ", fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
+
+                } else {  // router is not an Agg point
+                    s.print("\t" + r +" [ label=\"" + routerInfo.getName() + "\"");
+                    
+                    // router has a nominated AggPoint
+                    if (ap != 0) {
+                        float value = 0f;
+                        float sat = 0f;
+
+                        // is the router directly connected to its AggPoint
+                        if (isConnected(r, ap)) {
+                            value = 0.85f;
+                            sat = 0.5f;
+                        } else {
+                            value = 0.95f;
+                            sat = 0.1f;
+                        }
+
+
+                        s.print(", style=filled, " + ", fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
+                    }
                 }
 
                 s.println(" ];");
@@ -1287,6 +1357,7 @@ public class GlobalController implements ComponentController {
             s.println("    }");
         }
         
+        // visit all the edges
         for (int i: getRouterList()) {
             for (int j: getOutLinks(i)) {
                 if (i < j)  {
