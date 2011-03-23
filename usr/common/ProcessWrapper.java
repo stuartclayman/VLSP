@@ -107,7 +107,7 @@ public class ProcessWrapper {
             eListener.stop();
 
             // now splat it
-            //destroy();
+            destroy();
 
         } catch (IOException ioe) {
         }

@@ -293,10 +293,7 @@ public class RouterOptions {
               (n, "OutputPath","APManager",true);
             // Now set up path
             File fname= new File(APOutputPath_);
-            if (fname.mkdir() == false) {
-				Logger.getLogger("log").logln(USR.ERROR, 
-				    "Cannot create output path for agg points data");
-			}
+            fname.mkdir();
             ReadXMLUtils.removeNode(n,"OutputPath","APManager");
         } catch (SAXException e) {
             throw e;
