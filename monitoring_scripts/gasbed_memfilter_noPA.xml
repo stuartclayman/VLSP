@@ -25,7 +25,6 @@
      <HighPort>43999</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>  
-      <LocalController> 
   <EventEngine>
      <Name>Probabilistic</Name>
      <EndTime>3600</EndTime>
