@@ -18,13 +18,6 @@
      <HighPort>41999</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>  
-    <LocalController>
-     <Name>pentane</Name>
-     <Port>42000</Port>
-     <LowPort>42001</LowPort>
-     <HighPort>42999</HighPort>
-     <MaxRouters>75</MaxRouters>
-  </LocalController>  
       <LocalController>
      <Name>butane</Name>
      <Port>43000</Port>
@@ -32,13 +25,7 @@
      <HighPort>43999</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>  
-      <LocalController>
-     <Name>propane</Name>
-     <Port>44000</Port>
-     <LowPort>44001</LowPort>
-     <HighPort>44999</HighPort>
-     <MaxRouters>75</MaxRouters>
-  </LocalController>  
+      <LocalController> 
   <EventEngine>
      <Name>Probabilistic</Name>
      <EndTime>3600</EndTime>
