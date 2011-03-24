@@ -293,7 +293,7 @@ public abstract class MCRPInteractor {
             try {
                 wait(5000);
             } catch (InterruptedException ie) {
-                //Logger.getLogger("log").logln(USR.ERROR, "Got InterruptedException " + ie);
+                Logger.getLogger("log").logln(USR.ERROR, "MCRP Interactor Got InterruptedException " + ie);
 	    }
 
 	    if (fsm == FSMState.FSM_WAITING) {
