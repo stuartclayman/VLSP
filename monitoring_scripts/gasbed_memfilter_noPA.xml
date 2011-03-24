@@ -1,28 +1,28 @@
 <SimOptions>
   <GlobalController>
-     <Port>39999</Port>
+     <Port>20001</Port>
      <ConnectedNetwork>false</ConnectedNetwork>
      <Simulation>false</Simulation>
   </GlobalController>
     <LocalController>
      <Name>ethane</Name>
-     <Port>40000</Port>
-     <LowPort>40001</LowPort>
-     <HighPort>40999</HighPort>
+     <Port>21000</Port>
+     <LowPort>21001</LowPort>
+     <HighPort>21999</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>
     <LocalController>
      <Name>methane</Name>
-     <Port>41000</Port>
-     <LowPort>41001</LowPort>
-     <HighPort>41999</HighPort>
+     <Port>22000</Port>
+     <LowPort>22001</LowPort>
+     <HighPort>22999</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>  
       <LocalController>
      <Name>butane</Name>
-     <Port>43000</Port>
-     <LowPort>43001</LowPort>
-     <HighPort>43999</HighPort>
+     <Port>23000</Port>
+     <LowPort>23001</LowPort>
+     <HighPort>23999</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>  
   <EventEngine>
