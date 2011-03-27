@@ -11,9 +11,9 @@ CPVAR=/home/rclegg/code/userspacerouter:/home/rclegg/code/userspacerouter/libs/m
 CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/claycleanscript.sh
 
 
-SEQ="20.0 40.0 60.0 80.0"
+SEQ="0.5 1.0 2.0 5.0 10.0 20.0 50.0 100.0"
 ITER=5
-OUTPUT=testbed_pressure_scale_noPA
+OUTPUT=sim_pressure_scale_noPA
 POLICY=Pressure
 rm -f $OUTPUT
 for i in  $SEQ; do
