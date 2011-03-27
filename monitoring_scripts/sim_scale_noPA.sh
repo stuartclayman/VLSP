@@ -8,7 +8,6 @@ CONTROL_SCRIPT=monitoring_scripts/sim_scale_noPA.xml
 AWK=gawk
 
 CPVAR=/home/rclegg/code/userspacerouter:/home/rclegg/code/userspacerouter/libs/monitoring-0.6.7.jar:/home/rclegg/code/userspacerouter/libs/timeindex-20101020.jar:/home/rclegg/code/userspacerouter/libs/aggregator-0.3.jar
-CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/claycleanscript.sh
 
 
 SEQ="0.5 1.0 2.0 5.0 10.0 20.0 50.0 100.0"
@@ -25,6 +24,5 @@ for i in  $SEQ; do
     tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     tail -50 traffic.agg | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
     echo >> $OUTPUT
-    $CLEANSCRIPT
   done
 done
