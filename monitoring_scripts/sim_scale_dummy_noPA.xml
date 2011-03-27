@@ -14,8 +14,7 @@
         <MinPropAP>0.1</MinPropAP>
     </APManager>
    <Output>
-	    <FileName>/space/rclegg/testbedoutput</FileName>
-  	  <ExtendedName>true</ExtendedName>
+	    <FileName>/dev/null</FileName>
    </Output>
 
 </RouterOptions>
