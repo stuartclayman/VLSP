@@ -13,4 +13,8 @@
         <MaxAPWeight>5</MaxAPWeight>
         <MinPropAP>xxx</MinPropAP>
     </APManager>
+       <Output>
+	    <FileName>/dev/null</FileName>
+  	  <ExtendedName>true</ExtendedName>
+   </Output>
 </RouterOptions>
