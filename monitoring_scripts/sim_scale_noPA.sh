@@ -25,3 +25,29 @@ for i in  $SEQ; do
     echo >> $OUTPUT
   done
 done
+OUTPUT=sim_random_scale_noPA
+POLICY=Random
+rm -f $OUTPUT
+for i in  $SEQ; do
+    for j in `seq $ITER`; do
+    echo -n $i "" >> $OUTPUT
+    sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
+    sed -e 's/xxx/'$i'/g' $PIN > $POUT
+    java -cp $CPVAR usr.globalcontroller.GlobalController $CONTROL_SCRIPT  > out
+    tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
+    echo >> $OUTPUT
+  done
+done
+OUTPUT=sim_hotspot_scale_noPA
+POLICY=HotSpot
+rm -f $OUTPUT
+for i in  $SEQ; do
+    for j in `seq $ITER`; do
+    echo -n $i "" >> $OUTPUT
+    sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
+    sed -e 's/xxx/'$i'/g' $PIN > $POUT
+    java -cp $CPVAR usr.globalcontroller.GlobalController $CONTROL_SCRIPT  > out
+    tail -50 summary.out | $AWK '{for (i=1; i <= NF; i++) {a[i]+= $i} n++;}END{for (i=1; i <= NF; i++) printf("%g ",a[i]/n)}' >> $OUTPUT
+    echo >> $OUTPUT
+  done
+done
