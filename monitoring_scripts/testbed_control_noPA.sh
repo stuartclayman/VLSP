@@ -9,7 +9,7 @@ CPVAR=/home/rclegg/code/userspacerouter:/home/rclegg/code/userspacerouter/libs/m
 CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/claycleanscript.sh
 
 
-SEQ="0.01 0.02 0.05 0.1 0.2"
+SEQ="0.02 0.05 0.1"
 ITER=5
 OUTPUT=random_testbed_noPA
 POLICY=Random

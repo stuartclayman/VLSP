@@ -45,7 +45,7 @@
         <Type>Summary</Type>
     </Output>
     <Output>
-        <File>traffic.agg</File>
+     <File>traffic.agg</File>
         <When>Interval</When>
         <Time>10000</Time>
         <Type>Traffic</Type>
