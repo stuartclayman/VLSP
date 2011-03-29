@@ -129,24 +129,25 @@ public class LocalController implements ComponentController {
         //ThreadTools.findAllThreads("LC top of shutDown:");
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Stopping all running routers"); 
-        for (int i= 0; i < routers_.size(); i++) {
+        synchronized (routerInteractors_) {
 
-            RouterInteractor interactor = routerInteractors_.get(i);
-            try {
-                interactor.shutDown();
-                //interactor.terminate();
-            } catch (java.io.IOException e) {
-                Logger.getLogger("log").logln(USR.ERROR,leadin() + "Cannot send shut down to Router");
-                Logger.getLogger("log").logln(USR.ERROR,e.getMessage()); 
-            } catch (usr.interactor.MCRPException e) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin() + "Cannot send shut down to Router");
-                Logger.getLogger("log").logln(USR.ERROR,e.getMessage());          
+            for (int i= 0; i < routers_.size(); i++) {
+
+                RouterInteractor interactor = routerInteractors_.get(i);
+                try {
+                    interactor.shutDown();
+                } catch (java.io.IOException e) {
+                    Logger.getLogger("log").logln(USR.ERROR,leadin() + "Cannot send shut down to Router");
+                    Logger.getLogger("log").logln(USR.ERROR,e.getMessage()); 
+                } catch (usr.interactor.MCRPException e) {
+                    Logger.getLogger("log").logln(USR.ERROR,
+                                                  leadin() + "Cannot send shut down to Router");
+                    Logger.getLogger("log").logln(USR.ERROR,e.getMessage());          
+                }
+
+                //ThreadTools.findAllThreads("LC after router shutDown:");
+
             }
-
-            //ThreadTools.findAllThreads("LC after router shutDown:");
-
-
 
         }
 
@@ -159,7 +160,6 @@ public class LocalController implements ComponentController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping global controller interactor");
         try {        
             gcInteractor_.quit();
-            //gcInteractor_.terminate();
         } catch (Exception e) {
             
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot exit from global interactor");
@@ -278,8 +278,12 @@ public class LocalController implements ComponentController {
             try {
                 // connect to ManagementConsole of the router on port port1
                 interactor = new RouterInteractor("localhost", port1);
-                routerInteractors_.add(interactor);
                 isOK= interactor.routerOK();
+
+                synchronized (routerInteractors_) {
+                    routerInteractors_.add(interactor);
+                }
+
                 break;
             } catch (UnknownHostException uhe) { // Try again
             } catch (IOException e) {
@@ -434,34 +438,39 @@ public class LocalController implements ComponentController {
         try {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Sending terminate request via interactor");
             ri.shutDown();
-           // ri.terminate();
         } 
         catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error shutting down router");
             Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
             return false;
         }
-        int index= routerInteractors_.indexOf(ri);
-        routerInteractors_.remove(index);
-        int i;
-        for (i= 0; i < routers_.size(); i++) {
-            if (routers_.get(i).getManagementPort() == r1.getPort())
-                break;
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
+                                      "Got shutdown response from router "+r1);
+
+        synchronized (routerInteractors_) {
+            int index= routerInteractors_.indexOf(ri);
+            routerInteractors_.remove(index);
+            int i;
+            for (i= 0; i < routers_.size(); i++) {
+                if (routers_.get(i).getManagementPort() == r1.getPort())
+                    break;
+            }
+            if (i == routers_.size()) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"Router not registered with localcontroller");
+                return false;
+            }
+            BasicRouterInfo br= routers_.get(i);
+            String name=br.getName();
+            routerMap_.remove(br.getId());
+            routers_.remove(i);
+            ProcessWrapper p= childProcessWrappers_.get(name);
+            //System.err.println("PRocess wrapper "+p+" name "+name);
+            p.stop();
+            //System.err.println(p.getName());
+            childProcessWrappers_.remove(name);
+            return true;    
         }
-        if (i == routers_.size()) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Router not registered with localcontroller");
-            return false;
-        }
-        BasicRouterInfo br= routers_.get(i);
-        String name=br.getName();
-        routerMap_.remove(br.getId());
-        routers_.remove(i);
-        ProcessWrapper p= childProcessWrappers_.get(name);
-        //System.err.println("PRocess wrapper "+p+" name "+name);
-        p.stop();
-        //System.err.println(p.getName());
-        childProcessWrappers_.remove(name);
-        return true;    
     }
     
     /** Local controller receives request to end a router */
