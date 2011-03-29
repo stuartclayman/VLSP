@@ -15,8 +15,6 @@ import eu.reservoir.monitoring.core.*;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.*;
 import eu.reservoir.monitoring.appl.datarate.*;
-//import eu.reservoir.monitoring.appl.host.linux.MemoryInfo;
-//import eu.reservoir.monitoring.appl.host.linux.CPUInfo;
 import eu.reservoir.demo.RandomProbe;
 import java.net.InetAddress;
 import java.util.Scanner;
@@ -29,12 +27,12 @@ import com.timeindexing.time.MillisecondTimestamp;
 import com.timeindexing.data.SerializableItem;
 
 /**
- * An InfoSource that can send CPU load, memory usage,
+ * An InfoSource that can send CPU load, memory usage, router traffic,
  * or simulated response times.
  *
  * Has args:
  * output addr
- * probe - cpu, memory, response time
+ * probe - cpu, memory, traffic, response time
  * filter - none, 5% change
  * logpath - the path to log into
  * initial delay - seconds
@@ -207,7 +205,7 @@ public class InfoSource implements Application {
      * init
      * Args are:
      * -o output address
-     * -p probe, [cpu, memory, rt]  (NO default)
+     * -p probe, [cpu, memory, traffic, rt]  (NO default)
      * -f filter, [always, 2%, 5%, 10%]  (default: always)
      * -l log path, (default: /tmp/)
      * -t sleep timeout (default: 30)
@@ -248,6 +246,8 @@ public class InfoSource implements Application {
 			setProbe(ProbeSpecifier.CPU);
 		    } else if (argValue.equals("memory")) {
 			setProbe(ProbeSpecifier.Memory);
+		    } else if (argValue.equals("traffic")) {
+			setProbe(ProbeSpecifier.Traffic);
 		    } else if (argValue.equals("rt")) {
 			setProbe(ProbeSpecifier.ResponseTime);
 		    } else {
@@ -603,7 +603,7 @@ public class InfoSource implements Application {
      */
 
     // an enum for the probe
-    enum ProbeSpecifier { CPU, Memory, ResponseTime };
+    enum ProbeSpecifier { CPU, Memory, Traffic, ResponseTime };
 
     /**
      * Set the probe.
@@ -616,6 +616,10 @@ public class InfoSource implements Application {
 
 	case Memory:
 	    probe = new LinuxMem(name + "memory-info");
+	    break;
+
+	case Traffic:
+	    probe = new RouterTrafficProbe(name + "traffic-info");
 	    break;
 
 	case ResponseTime:
