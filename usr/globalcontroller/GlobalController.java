@@ -219,6 +219,10 @@ public class GlobalController implements ComponentController {
           Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
           System.exit(-1);
       }
+
+      if (options_.latticeMonitoring()) {
+          latticeMonitoring = true;
+      }
       
       if (latticeMonitoring) {
 
@@ -1148,6 +1152,11 @@ public class GlobalController implements ComponentController {
      * Send a network graph showing various attributes to a PrintStream.
      */
     public void outputNetworkUsingStyle(String style, long time, PrintStream s) {
+        if (!latticeMonitoring) {
+            s.close();
+            return;
+        }
+
         if (style.equals("cost") || style.equals("AP")) {
             networkWithCostGraphviz(time, s);
 
@@ -1248,6 +1257,11 @@ public class GlobalController implements ComponentController {
      * Send a Graphviz network to a PrintStream
      */
     private void networkGraphAsGraphvis(long time, PrintStream s) {
+        if (!latticeMonitoring) {
+            s.close();
+            return;
+        }
+
         HashMap<String, ArrayList<BasicRouterInfo>>routerLocations = new HashMap<String, ArrayList<BasicRouterInfo>>();
 
         // work out which router is where
@@ -1287,7 +1301,7 @@ public class GlobalController implements ComponentController {
         s.println("    graph [");
         s.println("      splines=true,");
         s.println("      rankdir = \"TB\",");
-        s.println("      ranksep = 1.2,");
+        //s.println("      ranksep = 1.2,");
         s.println("      style=\"setlinewidth(2)\",");
         s.println("      center=true,");
         s.println("      overlap=false,");
@@ -1321,7 +1335,7 @@ public class GlobalController implements ComponentController {
 
             s.println("    subgraph cluster_" + host + " {");
             s.print("\tlabel=\"" + host + " routers=" + routersOnHost.size() +"\";");
-            s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"palegoldenrod\"];");
+            s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"0.0, 0.0, 0.97\"];");
             s.println("\tnode [ shape=ellipse, style=rounded, nodesep=2.0 ];");
 
             // now get routers for this host
@@ -1338,7 +1352,9 @@ public class GlobalController implements ComponentController {
                 // work out the hue for the colour of the router
                 float hue = 1.0f;
 
-                if (position % 2 == 0) { // even
+                if (position == -1) {
+                    hue = 1.0f;
+                } else if (position % 2 == 0) { // even
                     hue = ((float)position / 2) + 1;
                 } else {
                     hue = (((float)position -1) / 2) + 5 + 1;
@@ -1349,8 +1365,8 @@ public class GlobalController implements ComponentController {
                 // output the router
                 
                 if (ap == r) { // router is also an Agg point
-                    float value = 0.6f;
                     float sat = 0.6f;
+                    float value = 0.6f;
 
                     s.print("\t" + r +" [ shape=diamond, label=\"" + routerInfo.getName() + "\""); 
                     s.print(", style=\"filled,rounded\"" + ", fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
@@ -1358,10 +1374,17 @@ public class GlobalController implements ComponentController {
                 } else {  // router is not an Agg point
                     s.print("\t" + r +" [ label=\"" + routerInfo.getName() + "\"");
                     
-                    // router has a nominated AggPoint
-                    if (ap != 0) {
-                        float value = 0f;
+                    if (ap == 0) {                    // router has NO nominated AggPoint
+                        float huew = 0f;
                         float sat = 0f;
+                        float value = 1f;
+
+                        s.print(", style=filled, " + " fillcolor=\"" + huew + "," + sat + "," + value + "\"");  // h,s,v
+
+                    } else {                      // router has a nominated AggPoint
+
+                        float sat = 0f;
+                        float value = 0f;
 
                         // is the router directly connected to its AggPoint
                         if (isConnected(r, ap)) {
@@ -1369,11 +1392,11 @@ public class GlobalController implements ComponentController {
                             sat = 0.5f;
                         } else {
                             value = 0.95f;
-                            sat = 0.1f;
+                            sat = 0.2f;
                         }
 
 
-                        s.print(", style=filled, " + ", fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
+                        s.print(", style=filled, " + " fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
                     }
                 }
 
@@ -1966,7 +1989,6 @@ public class GlobalController implements ComponentController {
           try {
 
               inter.shutDown();
-              //inter.terminate();
 
               ThreadTools.findAllThreads("GC post kill :" + i);
 

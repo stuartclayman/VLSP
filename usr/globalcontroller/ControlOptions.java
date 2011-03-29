@@ -35,6 +35,8 @@ public class ControlOptions {
     private boolean isSimulation_= false;    //  If true simulation in software not emulation in hardware
     private boolean allowIsolatedNodes_= true;   // If true, check for isolated nodes
     private boolean connectedNetwork_= false;  // If true, keep network connected
+    private boolean latticeMonitoring = false;  // If true, turn on Lattice Monitoring
+
 
     private int controllerWaitTime_= 6;    
     private int lowPort_= 10000;   // Default lowest port to be used on local controller 
@@ -230,6 +232,15 @@ public class ControlOptions {
         } catch (XMLNoTagException e) {
         }
         
+         try {
+           latticeMonitoring = ReadXMLUtils.parseSingleBool(gcn, "LatticeMonitoring","GlobalController",true);
+           ReadXMLUtils.removeNode(gcn,"LatticeMonitoring","GlobalController");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+           
+        }
+
         NodeList nl= gcn.getChildNodes();
         for (int i= 0; i < nl.getLength(); i++) {         
             Node n= nl.item(i); 
@@ -545,6 +556,13 @@ public class ControlOptions {
     /** Do we force the network to be connected */
     public boolean connectedNetwork() {
         return connectedNetwork_;
+    }
+    
+    /** 
+     * Should we turn on Lattice Monitoring
+     */
+    public boolean latticeMonitoring() {
+        return latticeMonitoring;
     }
     
     /** Return port number for global controller 
