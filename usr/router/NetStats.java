@@ -3,7 +3,7 @@ package usr.router;
 /**
  * Some stats for a NetIF.
  */
-public class NetStats {
+public class NetStats implements Cloneable {
     int [] stats = new int[16];
 
     /**
@@ -41,6 +41,16 @@ public class NetStats {
      */
     public int getValue(Stat stat) {
         return stats[stat.ordinal()];
+    }
+
+    /**
+     * Create a copy of a NetStats object.
+     */
+    public Object clone() {
+        NetStats theClone = new NetStats();
+        System.arraycopy(stats, 0, theClone.stats, 0, 16);
+
+        return theClone;
     }
 
     /**

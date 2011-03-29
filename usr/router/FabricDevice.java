@@ -307,7 +307,7 @@ public class FabricDevice implements FabricDeviceInterface {
     }
     
     public NetStats getNetStats() {
-        return netStats_;
+        return (NetStats)netStats_.clone();
     }
     
     
