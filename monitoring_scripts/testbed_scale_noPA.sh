@@ -1,6 +1,6 @@
 #!/bin/sh
 
-RIN=monitoring_scripts/tesbed_scale_dummy_noPA.xml
+RIN=monitoring_scripts/testbed_scale_dummy_noPA.xml
 ROUT=monitoring_scripts/testbed_router_scale_options.xml
 PIN=monitoring_scripts/testbed_scale_probdummy.xml
 POUT=monitoring_scripts/testbed_scale_prob.xml
