@@ -1,10 +1,10 @@
 #!/bin/sh
 
 RIN=monitoring_scripts/tesbed_scale_dummy_noPA.xml
-ROUT=monitoring_scripts/tesbed_router_scale_options.xml
-PIN=monitoring_scripts/tesbed_scale_probdummy.xml
-POUT=monitoring_scripts/tesbed_scale_prob.xml
-CONTROL_SCRIPT=monitoring_scripts/tesbed_scale_noPA.xml
+ROUT=monitoring_scripts/testbed_router_scale_options.xml
+PIN=monitoring_scripts/testbed_scale_probdummy.xml
+POUT=monitoring_scripts/testbed_scale_prob.xml
+CONTROL_SCRIPT=monitoring_scripts/testbed_scale_noPA.xml
 AWK=gawk
 
 CPVAR=/home/rclegg/code/userspacerouter:/home/rclegg/code/userspacerouter/libs/monitoring-0.6.7.jar:/home/rclegg/code/userspacerouter/libs/timeindex-20101020.jar:/home/rclegg/code/userspacerouter/libs/aggregator-0.3.jar
