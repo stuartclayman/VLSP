@@ -75,7 +75,7 @@
      <MaxRouters>50</MaxRouters>
   </LocalController>
         <LocalController>
-     <Name>claydesk2<Name>
+     <Name>claydesk2</Name>
      <Port>20000</Port>
      <LowPort>20001</LowPort>
      <HighPort>21000</HighPort>
