@@ -12,10 +12,11 @@ CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/allcleanscript.sh
 
 
 SEQ="5.0 10.0"
+ITER=5
 OUTPUT=testbed_pressure_big_scale_noPA
 POLICY=Pressure
 rm -f $OUTPUT
-for i in  $SEQ; do
+for i in $SEQ; do
     for j in `seq $ITER`; do
     echo -n $i "" >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
@@ -32,7 +33,7 @@ ITER=5
 OUTPUT=testbed_random_big_scale_noPA
 POLICY=Random
 rm -f $OUTPUT
-for i in  $SEQ; do
+for i in $SEQ; do
     for j in `seq $ITER`; do
     echo -n $i "" >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
@@ -47,7 +48,7 @@ done
 OUTPUT=testbed_hotspot_big_scale_noPA
 POLICY=HotSpot
 rm -f $OUTPUT
-for i in  $SEQ; do
+for i in $SEQ; do
     for j in `seq $ITER`; do
     echo -n $i "" >> $OUTPUT
     sed -e 's/yyy/'$POLICY'/g' $RIN > $ROUT
