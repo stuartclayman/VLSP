@@ -1,6 +1,6 @@
 #!/bin/sh
 
-RIN=monitoring_scripts/sim_scale_dummy_noPA.xml
+RIN=monitoring_scripts/sim_scale_dummy2_noPA.xml
 ROUT=monitoring_scripts/sim_router_scale_options.xml
 PIN=monitoring_scripts/sim_scale_probdummy.xml
 POUT=monitoring_scripts/sim_scale_prob.xml
@@ -12,7 +12,7 @@ CPVAR=/home/rclegg/code/userspacerouter:/home/rclegg/code/userspacerouter/libs/m
 
 SEQ="0.1 0.2 0.5 1.0 2.0 5.0 10.0 20.0 50.0 100.0"
 ITER=5
-OUTPUT=sim_big_pressure_scale_noPA
+OUTPUT=sim_big_pressure_scale2_noPA
 POLICY=Pressure
 rm -f $OUTPUT
 for i in  $SEQ; do
@@ -25,7 +25,7 @@ for i in  $SEQ; do
     echo >> $OUTPUT
   done
 done
-OUTPUT=sim_big_random_scale_noPA
+OUTPUT=sim_big_random_scale2_noPA
 POLICY=Random
 rm -f $OUTPUT
 for i in  $SEQ; do
@@ -38,7 +38,7 @@ for i in  $SEQ; do
     echo >> $OUTPUT
   done
 done
-OUTPUT=sim_big_hotspot_scale_noPA
+OUTPUT=sim_big_hotspot_scale2_noPA
 POLICY=HotSpot
 rm -f $OUTPUT
 for i in  $SEQ; do
