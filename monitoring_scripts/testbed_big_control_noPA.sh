@@ -6,7 +6,7 @@ CONTROL_SCRIPT=monitoring_scripts/testbed_big_control_noPA.xml
 AWK=gawk
 
 CPVAR=/home/rclegg/code/userspacerouter:/home/rclegg/code/userspacerouter/libs/monitoring-0.6.7.jar:/home/rclegg/code/userspacerouter/libs/timeindex-20101020.jar:/home/rclegg/code/userspacerouter/libs/aggregator-0.3.jar
-CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/claycleanscript.sh
+CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/mostcleanscript.sh
 
 
 SEQ="0.02 0.05 0.1"
