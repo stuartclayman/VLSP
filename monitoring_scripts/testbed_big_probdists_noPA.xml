@@ -1,0 +1,21 @@
+<ProbabilisticEngine>
+      <NodeBirthDist>
+            <ProbElement>
+                 <Type>Exponential</Type>
+                 <Weight>1.0</Weight>
+                 <Parameter>5.0</Parameter>
+            </ProbElement>
+      </NodeBirthDist>
+      <LinkCreateDist>
+            
+            <ProbElement>
+                 <Type>PoissonPlus</Type>
+                 <Weight>1.0</Weight>
+                 <Parameter>1.5</Parameter>
+                 <Parameter>1.0</Parameter>
+            </ProbElement>
+      </LinkCreateDist>
+      <Parameters>
+          <PreferentialAttachment>false</PreferentialAttachment>
+      </Parameters>
+</ProbabilisticEngine>
