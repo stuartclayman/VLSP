@@ -631,9 +631,16 @@ public class GlobalController implements ComponentController {
         routerIdMap_.remove(rId);
 
         // tell reporter that this router is gone
-        String routerName = br.getName();
-        reporter.routerDeleted(routerName);
-
+        if (latticeMonitoring) {
+            String routerName = br.getName();
+            if (reporter == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+ 
+                "Freporter does not exist shutting down" +
+                br.getHost()+":"+br.getManagementPort());
+                return;
+            }
+            reporter.routerDeleted(routerName);
+        }
     }
     
     /** Event to end a router */
