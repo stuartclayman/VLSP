@@ -95,7 +95,7 @@ public class NetIFStatsReporter implements Reporter {
      * @param routerSrc the name of source router
      * @param routerDst the name of dest router
      */
-    protected List<Object> getTraffic(String routerSrc, String routerDst) {
+    public List<Object> getTraffic(String routerSrc, String routerDst) {
         Table table = measurements.get(routerSrc);
 
         if (table == null) {

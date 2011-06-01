@@ -106,6 +106,14 @@ public class DatagramSocket {
         return socketImpl.isBound();
     }
 
+    /**
+     * Returns the bound state of the socket.
+     * @return true if the socket is closed.
+     */
+    public boolean isClosed() {
+        return socketImpl.isClosed();
+    }
+
     /** 
      * Returns the local port for this socket
      * to which this socket is bound.

@@ -13,11 +13,7 @@ import java.io.PrintStream;
 public class NetworkGraphCommand extends GlobalCommand {
     /**
      * Construct a NetworkGraphCommand.
-     * Process arg:
-     * cost -> network with costs
-     * AP -> network with costs
-     * score -> network with scores
-     * host -> network with nodes aligned per host
+     * Process arg, it is a string to pass on.
      * 
      */
     public NetworkGraphCommand() {
@@ -45,7 +41,7 @@ public class NetworkGraphCommand extends GlobalCommand {
 
 
         // get the network in the PrintStream
-        controller.outputNetworkUsingStyle(graphStyle, 0, ps);
+        controller.visualizeNetworkGraph(graphStyle, ps);
 
         // convert the ByteArrayOutputStream to a String
         String theString = baos.toString();

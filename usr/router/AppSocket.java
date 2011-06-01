@@ -191,6 +191,14 @@ public class AppSocket {
         return isBound;
     }
 
+    /**
+     * Returns the bound state of the socket.
+     * @return true if the socket is closed.
+     */
+    public boolean isClosed() {
+        return isClosed;
+    }
+
     /** 
      * Returns the local port for this socket
      * to which this socket is bound.

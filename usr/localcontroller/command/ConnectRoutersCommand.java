@@ -35,7 +35,7 @@ public class ConnectRoutersCommand extends LocalCommand {
             error ("CANNOT DECODE HOST INFO FOR CONNECT ROUTER COMMAND"+e.getMessage());
             return false;
         }
-        String connectionName = managementConsole.connectRouters(r1,r2);
+        String connectionName = controller.connectRouters(r1,r2);
         if (connectionName != null) {
             success(connectionName); // WAS success("ROUTERS CONNECTED "+r1+" "+r2);
             return true;

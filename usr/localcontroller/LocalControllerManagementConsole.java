@@ -47,28 +47,4 @@ public class LocalControllerManagementConsole extends AbstractManagementConsole 
         register(new MonitoringStopCommand());
     }
         
-    public boolean endRouter(LocalHostInfo r) {
-        return localController_.endRouter(r);
-    }    
-    
-    public boolean endLink(LocalHostInfo r1, int r2) 
-    {
-        return localController_.endLink(r1,r2);
-    }
-    
-    public String requestNewRouter(int rId, int port1, int port2)
-    {
-        return localController_.requestNewRouter(rId, port1, port2);
-    }
-    
-    public String connectRouters(LocalHostInfo r1, LocalHostInfo r2)
-    {
-        return localController_.connectRouters(r1, r2);
-    }
-
-    public void contactFromGlobal(LocalHostInfo gc) {
-        localController_.aliveMessage(gc);
-        
-    }
-
 }

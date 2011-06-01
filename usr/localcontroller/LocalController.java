@@ -222,11 +222,18 @@ public class LocalController implements ComponentController {
      * Received start new router command
      * @return the name of the router, on success, or null, on failure.     
      */
-    public String requestNewRouter (int routerId, int port1, int port2) 
+    public String requestNewRouter (int routerId, int port1, int port2, String name) 
     
     {
 
-        String routerName = "Router-" + routerId;
+        String routerName;
+
+        if (name == null) {
+            routerName = "Router-" + routerId;
+        } else {
+            routerName = name;
+        }
+
 
         Process child= null;
         ProcessWrapper pw= null;

@@ -36,7 +36,7 @@ public class EndLinkCommand extends LocalCommand {
             error ("CANNOT PARSE HOST INFO FOR END_LINK"+e.getMessage());
             return false;
         }  
-        if (managementConsole.endLink(r1,r2)) {
+        if (controller.endLink(r1,r2)) {
             success("LINK ENDED FROM"+r1+" to Id "+r2);
             return true;
         }

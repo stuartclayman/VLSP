@@ -1,6 +1,7 @@
 package usr.globalcontroller;
 
 import usr.localcontroller.LocalControllerInfo;
+import usr.globalcontroller.visualization.*;
 import usr.logging.*;
 import usr.console.*;
 import java.lang.*;
@@ -28,6 +29,7 @@ import java.net.InetSocketAddress;
 public class GlobalController implements ComponentController {
     private long simulationTime;   // Current time in simulation
     private long simulationStartTime;  // time at which simulation started  (assuming realtime)
+    private long eventTime;            // The time of the current event
     private long lastEventLength;   // length of time previous event took
     private String xmlFile_;          // name of XML file containing config
     private LocalHostInfo myHostInfo_;  // Information about the local info 
@@ -211,8 +213,8 @@ public class GlobalController implements ComponentController {
       
      
       // Set up AP controller 
-      APController_= ConstructAPController.constructAPController
-        (routerOptions_);
+      APController_= ConstructAPController.constructAPController(routerOptions_);
+
       try {
           myHostInfo_= new LocalHostInfo(options_.getGlobalPort());  
       } catch (Exception e) {
@@ -322,16 +324,16 @@ public class GlobalController implements ComponentController {
                 break;
             }
             while(simulationRunning_) {
-                long eventTime= e.getTime();
+                eventTime= e.getTime();
                 simulationTime= System.currentTimeMillis();
                 
-                if (simulationTime - (simulationStartTime + eventTime) > 
-                     options_.getMaxLag()) {
+                if (simulationTime - (simulationStartTime + eventTime) > options_.getMaxLag()) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() +
                       "Simulation lagging too much, slow down events");
                     bailOut();
                     return;
                 }
+
                 if ((simulationStartTime + eventTime) <= simulationTime) {
                     executeEvent(e);
                     break;
@@ -386,8 +388,8 @@ public class GlobalController implements ComponentController {
                 endSimulation(time);
             }
             else if (type == SimEvent.EVENT_START_ROUTER) {
-                
-                startRouter(time);
+                String name = (String)e.getData();
+                startRouter(time, name);
             }
             else if (type == SimEvent.EVENT_END_ROUTER) {
                 int routerNo= (Integer)e.getData();
@@ -483,7 +485,7 @@ public class GlobalController implements ComponentController {
     }
     
     /** Event to start a router */
-    private void startRouter(long time) {
+    private void startRouter(long time, String name) {
         maxRouterId_++;
         int rId= maxRouterId_;
         outLinks_.add(new int [0]);
@@ -492,14 +494,14 @@ public class GlobalController implements ComponentController {
         APController_.addNode(time, rId);
         if (!options_.isSimulation()) {
             //System.err.println("Trying to start");
-            if (startVirtualRouter(maxRouterId_) == false) {
+            if (startVirtualRouter(maxRouterId_,name ) == false) {
               //  System.err.println("Did not start");
                 unregisterRouter(rId);
             }
         }
     }
     
-    private boolean startVirtualRouter(int id) 
+    private boolean startVirtualRouter(int id, String name) 
     {
         // Find least used local controller
 
@@ -533,7 +535,7 @@ public class GlobalController implements ComponentController {
         int MAX_TRIES= 5;
         for (int i= 0; i < MAX_TRIES; i++) {
             try {
-                if (tryRouterStart(id, leastUsed, lci)) { 
+                if (tryRouterStart(id, name, leastUsed, lci)) { 
                     //System.err.println("Started");
                     return true;
                 }
@@ -551,7 +553,7 @@ public class GlobalController implements ComponentController {
     }
     
     /** Make one attempt to start a router */
-    boolean tryRouterStart (int id, LocalControllerInfo local, LocalControllerInteractor lci) 
+    boolean tryRouterStart (int id, String name, LocalControllerInfo local, LocalControllerInteractor lci) 
         throws IOException {
         int port= 0;
         PortPool pp= portPools_.get(local);
@@ -561,7 +563,7 @@ public class GlobalController implements ComponentController {
             
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Creating router " + id);
             // create the new router and get it's name
-            routerName = lci.newRouter(id, port);
+            routerName = lci.newRouter(id, port, port+1, name);
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerName);
         }
         catch (MCRPException e) { 
@@ -654,7 +656,28 @@ public class GlobalController implements ComponentController {
         unregisterRouter(routerId);
         APController_.removeNode(time, routerId);
     }
-    
+
+    /**
+     * Find some router info
+     */
+    public BasicRouterInfo findRouterInfo(int rId) {
+        return routerIdMap_.get(rId);
+    }
+
+    /**
+     * List all RouterInfo.
+     */
+    public Collection<BasicRouterInfo> getAllRouterInfo() {
+        return routerIdMap_.values();
+    }
+
+    /**
+     * Get the number of routers
+     */
+    public int getRouterCount() {
+        return routerList_.size();
+    }
+
     /** Register a link with structures necessary in Global
     Controller */
     private void registerLink(int router1Id, int router2Id) 
@@ -798,6 +821,14 @@ public class GlobalController implements ComponentController {
         //System.err.println();
     }
     
+    /**
+     * Get the number of links
+     */
+    public int getLinkCount() {
+        return noLinks_;
+    }
+
+
     /**
      * Is a router directly connected to another one
      */
@@ -1040,6 +1071,9 @@ public class GlobalController implements ComponentController {
         wakeWait();
     }  
       
+    /*
+     * Shutdown
+     */
     void shutDown() {
         simulationRunning_= false;
         if (isActive) {
@@ -1143,352 +1177,66 @@ public class GlobalController implements ComponentController {
         boolean printScore= o.getParameter().equals("Score");
 
         if (printAP) {
-            networkWithCostGraphviz(time, s);
+            networkWithCostGraphviz(s);
             return;
         }
 
         if (printScore) {
-            networkWithScoreGraphviz(time,s);
+            networkWithScoreGraphviz(s);
             return;
         }
 
-        plainNetworkGraphviz(time, s);
-    }
-
-    /**
-     * Send a network graph showing various attributes to a PrintStream.
-     */
-    public void outputNetworkUsingStyle(String style, long time, PrintStream s) {
-        if (!latticeMonitoring) {
-            s.close();
-            return;
-        }
-
-        if (style.equals("cost") || style.equals("AP")) {
-            networkWithCostGraphviz(time, s);
-
-        } else if (style.equals("score")) {
-            networkWithScoreGraphviz(time, s);
-
-        } else if (style.equals("dot")) {
-            networkGraphAsGraphvis(time, s);
-
-        } else {
-            networkGraphAsGraphvis(time, s);
-        }
+        plainNetworkGraphviz(s);
     }
 
     /**
      * Send a network showing plain network as Graphviz to a PrintStream
+     * showing the APs.
      */
-    private void plainNetworkGraphviz(long time, PrintStream s) {
-        s.println("Graph G {");
-        for (int r: getRouterList()) {
-            int ap= APController_.getAP(r);
-            if (ap == r) {
-                s.print(r+" [shape=box");
-            } else {
-                s.print(r+" [shape=circle");
-            }
+    private void plainNetworkGraphviz(PrintStream s) {
+        Visualization visualization = new ShowAPVisualization();
 
-            s.println("];");
-        }
-        
-        for (int i: getRouterList()) {
-            for (int j: getOutLinks(i)) {
-                if (i < j) 
-                    s.println(i+ " -- "+j+";");
-            }
-        }
-        s.println("}");
-       
+        visualization.setGlobalController(this);
+        visualization.visualize(s);
     }
 
     /**
      * Send a network showing AP costs as Graphviz to a PrintStream
      */
-    private void networkWithCostGraphviz(long time, PrintStream s) {
-        s.println("Graph G {");
-        for (int r: getRouterList()) {
-            int ap= APController_.getAP(r);
-            if (ap == r) {
-                s.print(r+" [shape=box");
-            } else {
-                s.print(r+" [shape=circle");
-            }
+    private void networkWithCostGraphviz(PrintStream s) {
+        Visualization visualization = new ShowAPCostsVisualization();
 
-            s.print(",label=\""+ap+" ("+APController_.getAPCost(r)+")\"");
+        visualization.setGlobalController(this);
+        visualization.visualize(s);
 
-            s.println("];");
-        }
-        
-        for (int i: getRouterList()) {
-            for (int j: getOutLinks(i)) {
-                if (i < j) 
-                    s.println(i+ " -- "+j+";");
-            }
-        }
-        s.println("}");
-       
     }
     
     /**
      * Send a network showing AP costs as Graphviz to a PrintStream
      */
-    private void networkWithScoreGraphviz(long time, PrintStream s) {
-        s.println("Graph G {");
-        for (int r: getRouterList()) {
-            int ap= APController_.getAP(r);
-            if (ap == r) {
-                s.print(r+" [shape=box");
-            } else {
-                s.print(r+" [shape=circle");
-            }
+    private void networkWithScoreGraphviz(PrintStream s) {
+        Visualization visualization = new ShowAPScoreVisualization();
 
-            s.print(",label=\""+ap+" ("+APController_.getScore(time,r,this)+")\"");
+        visualization.setGlobalController(this);
+        visualization.visualize(s);
 
-            s.println("];");
-        }
-        
-        for (int i: getRouterList()) {
-            for (int j: getOutLinks(i)) {
-                if (i < j) 
-                    s.println(i+ " -- "+j+";");
-            }
-        }
-        s.println("}");
-       
     }
     
     /**
-     * Send a Graphviz network to a PrintStream
+     * Send a network graph showing various attributes to a PrintStream.
      */
-    private void networkGraphAsGraphvis(long time, PrintStream s) {
+    public void visualizeNetworkGraph(String arg, PrintStream s) {
         if (!latticeMonitoring) {
             s.close();
-            return;
+        } else {
+            // We might use arg one day.
+            // Maybe to be a classname to instantiate.
+
+            Visualization visualization = new usr.globalcontroller.visualization.ColouredNetworkVisualization();
+
+            visualization.setGlobalController(this);
+            visualization.visualize(s);
         }
-
-        HashMap<String, ArrayList<BasicRouterInfo>>routerLocations = new HashMap<String, ArrayList<BasicRouterInfo>>();
-
-        // work out which router is where
-        for (BasicRouterInfo routerInfo : routerIdMap_.values()) {
-            String host = routerInfo.getHost();
-
-            if (routerLocations.containsKey(host)) { // we've seen this host
-                ArrayList<BasicRouterInfo> list = routerLocations.get(host);
-                list.add(routerInfo);
-            } else {                                 //  it's a new host
-                ArrayList<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
-                list.add(routerInfo);
-
-                routerLocations.put(host, list);
-            }
-        }
-
-        // now visit each host and output the routers
-        s.println("graph gg {");
-
-        s.println("    K=1;");
-        s.println("    ratio=0.7;");
-        s.println("    maxiter=2;");
-        s.println("    labelloc=t;");
-        //s.println("    rank=source;");
-
-        // set root node, if using twopi
-        int noAPs = APController_.getNoAPs();
-        int noRouters = routerIdMap_.values().size();
-
-        if (noAPs > 0) {
-            int first = APController_.getAPList().get(0);
-            s.println("    root=" + first +";");
-        }
-
-        // set attributes for subgraphs
-        s.println("    graph [");
-        s.println("      splines=true,");
-        s.println("      rankdir = \"TB\",");
-        //s.println("      ranksep = 1.2,");
-        s.println("      style=\"setlinewidth(2)\",");
-        s.println("      center=true,");
-        s.println("      overlap=false,");
-        s.println("      fontname=\"Helvetica\", fontsize=16, fontcolor=red");
-        s.println("    ];");
-
-        // set attributes for nodes
-        s.println("    node [style=filled, fillcolor=\"white\", fontname=\"Helvetica\"];");
-
-        // set attributes for edges
-        s.println("    edge [ fontname=\"Helvetica\", fontsize=12 ];");
-
-        // the label of the graph
-        s.print("    label=" + "\"snapshot:");
-        s.print(" time=");
-        long t = simulationTime-simulationStartTime;
-        int totalSecs = (int)t / 1000;
-        int millis = (int)t % 1000;
-        int hundreths = millis / 10;
-        int minutes = totalSecs / 60;
-        int secs = totalSecs % 60;
-        s.printf("%02d:%02d:%02d", minutes, secs, hundreths);
-        s.print(" hosts=" + routerLocations.keySet().size());
-        s.print(" routers=" + noRouters);
-        s.print(" links=" + noLinks_);
-        s.println("\";");
-
-        // visit each host
-        for (String host : routerLocations.keySet()) {
-            List<BasicRouterInfo> routersOnHost = routerLocations.get(host);
-
-            s.println("    subgraph cluster_" + host + " {");
-            s.print("\tlabel=\"" + host + " routers=" + routersOnHost.size() +"\";");
-            s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"0.0, 0.0, 0.97\"];");
-            s.println("\tnode [ shape=ellipse, style=rounded, nodesep=2.0 ];");
-
-            // now get routers for this host
-            for (BasicRouterInfo routerInfo : routersOnHost) {
-                // get a router
-                int r = routerInfo.getId();
-
-                // get the AggPoint for this router
-                int ap= APController_.getAP(r);
-
-                // get position of AggPoint in AggPoint list
-                int position = APController_.getAPList().indexOf(ap);
-
-                // work out the hue for the colour of the router
-                float hue = 1.0f;
-
-                if (position == -1) {
-                    hue = 1.0f;
-                } else if (position % 2 == 0) { // even
-                    hue = ((float)position / 2) + 1;
-                } else {
-                    hue = (((float)position -1) / 2) + 5 + 1;
-                }
-
-                hue = hue / 10;
-
-                // output the router
-                
-                if (ap == r) { // router is also an Agg point
-                    float sat = 0.6f;
-                    float value = 0.6f;
-
-                    s.print("\t" + r +" [ shape=diamond, label=\"" + routerInfo.getName() + "\""); 
-                    s.print(", style=\"filled,rounded\"" + ", fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
-
-                } else {  // router is not an Agg point
-                    s.print("\t" + r +" [ label=\"" + routerInfo.getName() + "\"");
-                    
-                    if (ap == 0) {                    // router has NO nominated AggPoint
-                        float huew = 0f;
-                        float sat = 0f;
-                        float value = 1f;
-
-                        s.print(", style=filled, " + " fillcolor=\"" + huew + "," + sat + "," + value + "\"");  // h,s,v
-
-                    } else {                      // router has a nominated AggPoint
-
-                        float sat = 0f;
-                        float value = 0f;
-
-                        // is the router directly connected to its AggPoint
-                        if (isConnected(r, ap)) {
-                            value = 0.85f;
-                            sat = 0.5f;
-                        } else {
-                            value = 0.95f;
-                            sat = 0.2f;
-                        }
-
-
-                        s.print(", style=filled, " + " fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
-                    }
-                }
-
-                s.println(" ];");
-            }
-
-            s.println("    }");
-        }
-        
-        // visit all the edges
-        for (int i: getRouterList()) {
-            for (int j: getOutLinks(i)) {
-                if (i < j)  {
-                    s.print(i+ " -- "+j);
-
-
-                    s.print(" [ ");
-
-                    String router1Name = routerIdMap_.get(i).getName();
-                    String router2Name = routerIdMap_.get(j).getName();
-
-                    /*
-                    // get trafffic for link i -> j as router1Name => router2Name
-                    List<Object> iToj = reporter.getTraffic(router1Name, router2Name);
-
-                    // get trafffic for link j -> i as router2Name => router1Name
-                    List<Object> jToi = reporter.getTraffic(router2Name, router1Name);
-
-                    String name = linkNames.get(makePair(i,j));
-
-                    //s.print("label = \"" + name + "\", ");
-
-                    if (iToj != null) {
-                        s.print(" headlabel = \"" + iToj.get(2) + "/" + iToj.get(8) + "\", ");
-                    }
-
-                    if (jToi != null) {
-                        s.print(" taillabel = \"" + jToi.get(2) + "/" + jToi.get(8) + "\", ");
-                    }
-                    */
-
-                    // get trafffic for link i -> j as router1Name => router2Name
-                    List<Object> iToj = reporter.getTraffic(router1Name, router2Name);
-
-                    if (iToj != null) {
-                        int traffic = (Integer)iToj.get(1) + (Integer)iToj.get(7);
-
-                        s.print("label = \"" + traffic + "\", ");
-
-                        // link colour
-                        s.print("color = \"");
-                    
-                        if (traffic < 1000) {
-                            s.print("black");
-                        } else if (traffic >= 1000 && traffic < 3000) {
-                            s.print("blue");
-                        } else if (traffic >= 3000 && traffic < 5000) {
-                            s.print("green");
-                        } else if (traffic >= 5000 && traffic < 7000) {
-                            s.print("yellow");
-                        } else if (traffic >= 7000 && traffic < 10000) {
-                            s.print("orange");
-                        } else if (traffic >= 10000) {
-                            s.print("red");
-
-                        }
-
-                        s.print("\", ");
-
-                        if (traffic >= 3000 && traffic < 7000) {
-                            s.print(" style=\"setlinewidth(2)\", ");
-                        } else if (traffic >= 7000 && traffic < 20000) {
-                            s.print(" style=\"setlinewidth(3)\", ");
-                        } else if (traffic >= 20000) {
-                            s.print(" style=\"setlinewidth(4)\", ");
-                        } else {
-                        }
-                    }
-
-                    s.println(" ];");
-                }
-            }
-        }
-        s.println("}");
-       
     }
     
      /** Output a network */
@@ -1613,6 +1361,12 @@ public class GlobalController implements ComponentController {
 
     }
 
+    /**
+     * Get the Reporter of the monitoring data
+     */
+    public NetIFStatsReporter getReporter() {
+        return reporter;
+    }
 
     /** Output traffic */
     void outputTraffic (OutputType o, long t, PrintStream p) {
@@ -1834,14 +1588,6 @@ public class GlobalController implements ComponentController {
     }
     
     /**
-     * Get the ManagementConsole this ComponentController interacts with.
-     */
-    public ManagementConsole getManagementConsole() {
-        return console_;
-    }
-
-
-    /**
      * An alive message has been received from the host specified
      * in LocalHostInfo.
      */
@@ -1882,9 +1628,49 @@ public class GlobalController implements ComponentController {
         }
     }
 
+
+    /**
+     * Get the simulation start time.
+     * This is the time the simulation actually started.
+     */
+    public long getSimulationStartTime() {
+        return simulationStartTime;
+    }
+
+    /**
+     * Get the simulation current time.
+     * This is the current time within the simulation.
+     */
+    public long getSimulationCurrentTime() {
+        return simulationTime;
+    }
+
+    /**
+     * Get the time of the current event
+     */
+    public long getEventTime() {
+        return eventTime;
+    }
+
+
+    /**
+     * Get the ManagementConsole this ComponentController interacts with.
+     */
+    public ManagementConsole getManagementConsole() {
+        return console_;
+    }
+
+
     /**Accessor function for maxRouterId_*/
     public int getMaxRouterId() {
         return maxRouterId_;
+    }
+
+    /**
+     * Get the APController
+     */
+    public APController getAPController() {
+        return APController_;
     }
 
      

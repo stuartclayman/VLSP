@@ -39,7 +39,7 @@ public class LocalCheckCommand extends LocalCommand {
             error("Cannot find host info for LOCAL_CHECK_COMMAND "+e.getMessage());
             return false;
         }
-        managementConsole.contactFromGlobal(gc);
+        controller.aliveMessage(gc);
 
         return true;
     }

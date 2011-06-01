@@ -39,7 +39,7 @@ public class EndRouterCommand extends LocalCommand {
             return false;
         }
         
-        if (managementConsole.endRouter(lhi)) {
+        if (controller.endRouter(lhi)) {
             success("ROUTER ENDED "+lhi);
             return true;
         }

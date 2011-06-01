@@ -21,11 +21,13 @@ public class NewRouterCommand extends LocalCommand {
      */
     public boolean evaluate(String req) {
         String []args= req.split(" ");
-        if (args.length != 4) {
-            error("Expected four arguments for New Router Command");
+        if (args.length != 4 && args.length != 5) {
+            error("Expected four or five arguments for New Router Command: NEW_ROUTER id mcrpPort r2rPort [name].");
             return false;
         }
         int rId,port1,port2;
+        String name = null;
+
         try {
             rId= Integer.parseInt(args[1]);
             port1= Integer.parseInt(args[2]);
@@ -35,8 +37,13 @@ public class NewRouterCommand extends LocalCommand {
             return false;
         }
 
+        if (args.length == 5) {
+            // there is a name too
+            name = args[4];
+        }
 
-        String routerName = managementConsole.requestNewRouter(rId,port1,port2);
+        String routerName = controller.requestNewRouter(rId,port1,port2, name);
+
         if (routerName != null) {
             success(routerName);  // WAS success("NEW ROUTER STARTED");
             return true;
