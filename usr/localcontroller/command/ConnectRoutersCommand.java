@@ -22,20 +22,37 @@ public class ConnectRoutersCommand extends LocalCommand {
      */
     public boolean evaluate(String req) {
         String []args= req.split(" ");
-        if (args.length != 3) {
-            error("Expected three arguments for Connect Routers Command");
+        if (args.length != 4 && args.length !=5) {
+            error("Expected four or five arguments for Connect Routers Command");
             return false;
         }
+
         LocalHostInfo r1= null,r2= null;
+        int weight;
+
         try {
             r1= new LocalHostInfo(args[1]);
             r2= new LocalHostInfo(args[2]);
+            weight= Integer.parseInt(args[3]);
+
+        } catch (NumberFormatException nfe) {
+            error ("BAD weight for link: "+nfe.getMessage());
+            return false;
 
         } catch (Exception e) {
             error ("CANNOT DECODE HOST INFO FOR CONNECT ROUTER COMMAND"+e.getMessage());
             return false;
         }
-        String connectionName = controller.connectRouters(r1,r2);
+
+        String name = null;
+        if (args.length == 5) {
+            // there is a name too
+            name = args[4];
+        }
+
+
+        String connectionName = controller.connectRouters(r1,r2, weight, name);
+
         if (connectionName != null) {
             success(connectionName); // WAS success("ROUTERS CONNECTED "+r1+" "+r2);
             return true;

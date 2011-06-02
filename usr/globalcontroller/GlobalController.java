@@ -397,16 +397,55 @@ public class GlobalController implements ComponentController {
             }
             else if (type == SimEvent.EVENT_START_LINK) {
                 int router1= 0, router2= 0;
-                Pair<?,?> pair= (Pair<?,?>)e.getData();
-                router1= (Integer)pair.getFirst();
-                router2= (Integer)pair.getSecond();
-                startLink(time,router1, router2);
+
+                Object data = e.getData();
+
+                if (data instanceof Pair) {
+                    // there is just a Pair
+                    Pair<?,?> pair= (Pair<?,?>)data;
+                    router1= (Integer)pair.getFirst();
+                    router2= (Integer)pair.getSecond();
+                    startLink(time,router1, router2, 1, null);
+
+                } else {
+                    // there is an Array of Objects
+                    Object[] array = (Object[])data;
+
+                    if (array.length == 1) {
+                        // there is just a Pair
+                        Pair<?,?> pair= (Pair<?,?>)array[0];
+                        router1= (Integer)pair.getFirst();
+                        router2= (Integer)pair.getSecond();
+                        startLink(time,router1, router2, 1, null);
+
+                    } else if (array.length == 2) {
+                        // there is a Pair and a weight
+                        Pair<?,?> pair= (Pair<?,?>)array[0];
+                        router1= (Integer)pair.getFirst();
+                        router2= (Integer)pair.getSecond();
+
+                        int weight = (Integer)array[1];
+                        startLink(time,router1, router2, weight, null);
+                    } else if (array.length == 3) {
+                        // there is a Pair, a weight, and a name
+                        Pair<?,?> pair= (Pair<?,?>)array[0];
+                        router1= (Integer)pair.getFirst();
+                        router2= (Integer)pair.getSecond();
+
+                        int weight = (Integer)array[1];
+                        String linkName = (String)array[2];
+                        startLink(time,router1, router2, weight, linkName);
+                    }
+
+                }
             }
+
             else if (type == SimEvent.EVENT_END_LINK) {
                 int router1= 0, router2= 0;
                 Pair<?,?> pair= (Pair<?,?>)e.getData();
                 router1= (Integer)pair.getFirst();
                 router2= (Integer)pair.getSecond();
+
                 endLink(time,router1, router2);
             }
             else if (type == SimEvent.EVENT_AP_CONTROLLER) {
@@ -443,6 +482,7 @@ public class GlobalController implements ComponentController {
             lastEventLength = eventEnd - eventBegin;
 
         } catch (ClassCastException ex) {
+            ex.printStackTrace();
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event "+type+" had wrong object");
             shutDown();
             return;
@@ -559,11 +599,14 @@ public class GlobalController implements ComponentController {
         PortPool pp= portPools_.get(local);
         String routerName;
         try {
+            // find 2 ports
             port = pp.findPort(2);
             
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Creating router " + id);
+
             // create the new router and get it's name
             routerName = lci.newRouter(id, port, port+1, name);
+
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerName);
         }
         catch (MCRPException e) { 
@@ -710,7 +753,7 @@ public class GlobalController implements ComponentController {
     }
     
     /** Event to link two routers */
-    private void startLink(long time, int router1Id, int router2Id) {
+    private void startLink(long time, int router1Id, int router2Id, int weight, String name) {
         //Logger.getLogger("log").logln(USR.ERROR, "Start link "+router1Id+" "+router2Id);
         
         int index= routerList_.indexOf(router1Id);
@@ -719,6 +762,7 @@ public class GlobalController implements ComponentController {
         index= routerList_.indexOf(router2Id);
         if (index == -1)
             return;  // Cannot start link as router 2 dead already
+
         // check if this link already exists
         int [] outForRouter1 = getOutLinks(router1Id);
         
@@ -729,16 +773,20 @@ public class GlobalController implements ComponentController {
                 break;
             }
         }
-        if (gotIt) {
-            // we already have this link
+
+        if (gotIt) {             // we already have this link
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Link already exists: "+router1Id + " -> " + router2Id);
+
         } else {
             if (options_.isSimulation()) {
                 startSimulationLink(router1Id, router2Id);       
             } else {
-                startVirtualLink(router1Id, router2Id);
+                startVirtualLink(router1Id, router2Id, weight, name);
             }
+
+            // register inside GlobalController
             registerLink(router1Id, router2Id);
+            // Tell APController about link
             APController_.addLink(time, router1Id,router2Id);
         }
     }
@@ -748,8 +796,11 @@ public class GlobalController implements ComponentController {
     
     }
         
-    /** Send commands to start virtual link */
-    private void startVirtualLink(int router1Id, int router2Id) {
+    /** 
+     * Send commands to start virtual link
+     * Args are: router1 ID, router2 ID, the weight for the link, a name for the link
+     */
+    private void startVirtualLink(int router1Id, int router2Id, int weight, String name) {
         
         BasicRouterInfo br1,br2;
         LocalControllerInfo lc;
@@ -779,7 +830,8 @@ public class GlobalController implements ComponentController {
         for (i=0; i < MAX_TRIES; i++) {
             try {
                 String connectionName = lci.connectRouters(br1.getHost(), br1.getManagementPort(),
-               br2.getHost(), br2.getManagementPort());
+                                                           br2.getHost(), br2.getManagementPort(),
+                                                           weight, name);
 
                 // add Pair<router1Id, router2Id> -> connectionName to linkNames
                 linkNames.put(makePair(router1Id, router2Id), connectionName);
@@ -1886,7 +1938,7 @@ public class GlobalController implements ComponentController {
             int i= (int)Math.floor( Math.random()*nRouters);
             int dest= routerList_.get(i);
             if (dest != gid) {
-                startLink(time,gid,dest);   
+                startLink(time,gid,dest, 1, null);   
                 break;
             }
         }
@@ -1947,7 +1999,7 @@ public class GlobalController implements ComponentController {
                 }
                 // Make a new link to connect network
                 //System.err.println("Link "+l1+" is "+visited[l1]+" "+l2+" is "+visited[l2]);
-                startLink(time,l1,l2);
+                startLink(time,l1,l2, 1, null);
                 toVisitCtr++;
                 toVisit[0]= l2;
             }
@@ -2021,7 +2073,7 @@ public class GlobalController implements ComponentController {
                 }
                 // Make a new link to connect network
                 //System.err.println("Link "+l1+" is "+visited[l1]+" "+l2+" is "+visited[l2]);
-                startLink(time,l1,l2);
+                startLink(time,l1,l2, 1, null);
                 toVisitCtr++;
                 toVisit[0]= l2;
             }

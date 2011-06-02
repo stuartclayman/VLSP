@@ -68,6 +68,7 @@ public class LocalControllerInteractor extends MCRPInteractor
 
     /**
      * Ask the LocalController to start a new router.
+     * Name is optional.
      */
     public String newRouter(int routerId, int port1, int port2, String name) 
         throws IOException, MCRPException  {
@@ -84,11 +85,19 @@ public class LocalControllerInteractor extends MCRPInteractor
         return response.get(0)[1];
     }
 
-    /** Ask the Local Controller to connect routers */
-    public String connectRouters(String host1, int port1, 
-      String host2, int port2)throws IOException, MCRPException {
+    /**
+     * Ask the Local Controller to connect routers 
+     * Name is optional.
+     */
+    public String connectRouters(String host1, int port1, String host2, int port2, int weight, String name) throws IOException, MCRPException {
         String toSend = MCRP.CONNECT_ROUTERS.CMD+" "+host1+":"+port1+" "+
-          host2+":"+port2;
+            host2+":"+port2 +" " + weight;
+
+
+        if (name != null) {
+            toSend += " " + name;
+        }
+
         MCRPResponse response = interact(toSend);
         expect(MCRP.CONNECT_ROUTERS.CODE);
 

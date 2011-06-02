@@ -123,14 +123,55 @@ public class ScriptEngine implements EventEngine {
                 }
             }
             else if (type.equals("START_LINK")) {
-               if (args.length < 4) {
+               if (args.length < 4 || args.length > 6) {
                    throw new Exception ("START_LINK requires two router ids "+ s);
+               } else if (args.length == 4) {
+                   // time START_LINK r1 r2
+                   Integer l1= Integer.parseInt(args[2].trim());
+                   Integer l2= Integer.parseInt(args[3].trim());
+                   Pair<Integer,Integer> pair= new Pair <Integer,Integer>(l1,l2);
+
+                   Object[] result = new Object[1];
+                   result[0] = pair;
+
+                   // return an Object[] of size 1
+                   return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+
+               } else if (args.length == 5) {
+                   // time START_LINK r1 r2 weight
+
+                   Integer l1= Integer.parseInt(args[2].trim());
+                   Integer l2= Integer.parseInt(args[3].trim());
+                   Pair<Integer,Integer> pair= new Pair <Integer,Integer>(l1,l2);
+
+                   Integer weight = Integer.parseInt(args[4].trim());
+
+                   Object[] result = new Object[2];
+                   result[0] = pair;
+                   result[1] = weight;
+
+                   // return an Object[] of size 1
+                   return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+
+               } else  if (args.length == 6) {
+                   // time START_LINK r1 r2 weight name
+                   Integer l1= Integer.parseInt(args[2].trim());
+                   Integer l2= Integer.parseInt(args[3].trim());
+                   Pair<Integer,Integer> pair= new Pair <Integer,Integer>(l1,l2);
+
+                   Integer weight = Integer.parseInt(args[4].trim());
+
+                   // Construct return result
+                   Object[] result = new Object[3];
+                   result[0] = pair;
+                   result[1] = weight;
+                   result[2] = args[5].trim();
+
+                   // return an Object[] of size 1
+                   return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+
                }
-               Integer l1= Integer.parseInt(args[2].trim());
-               Integer l2= Integer.parseInt(args[3].trim());
-               Pair<Integer,Integer> pair= new Pair
-                   <Integer,Integer>(l1,l2);
-               return new SimEvent(SimEvent.EVENT_START_LINK,time,pair);
+
             }
             else if (type.equals("END_ROUTER")) {
                 if (args.length != 3) 

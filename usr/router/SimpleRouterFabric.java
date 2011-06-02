@@ -599,6 +599,8 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
 
             if (port.equals(RouterPort.EMPTY)) {
                 continue;
+            } else if (Integer.toString(port.getNetIF().getRemoteRouterAddress().asInteger()).equals(name)) {
+                return port.getNetIF();
             } else if (port.getNetIF().getRemoteRouterName().equals(name)) {
                 return port.getNetIF();
             } else if (port.getNetIF().getName().equals(name)) {

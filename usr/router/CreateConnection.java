@@ -22,9 +22,16 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
     /**
      * Create a new connection.
+     * CREATE_CONNECTION ip_addr/port - create a new network connection
+     * with weight of 1, and a constructed name
      * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
-     * interface to a router on the address ip_addr/port with a 
-     * connection weight of connection_weight
+     * connection to a router on the address ip_addr/port with a 
+     * connection weight of connection_weight and a constructed name
+     * CREATE_CONNECTION ip_addr/port connection_weight connection_name - 
+     * create a new network
+     * connection to a router on the address ip_addr/port with a 
+     * connection weight of connection_weight and a name
+     * of connection_name
      */
     public CreateConnection(RouterController controller, Request request) {
         this.controller = controller;
@@ -40,7 +47,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         SocketChannel channel = request.channel;
                
         String[] parts = value.split(" ");
-        if (parts.length != 3 && parts.length != 2) {
+        if (parts.length !=4 && parts.length != 3 && parts.length != 2) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection command: " + request);
             respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION wrong no of args");
             return;
@@ -81,6 +88,13 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             }
         } else {
             weight = 1;
+        }
+
+        String connectionName = null;
+
+        // if we have a 4rd arg
+        if (parts.length == 4) {
+            connectionName = parts[3];
         }
 
         // if we get here all the args seem OK
@@ -143,7 +157,13 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         Socket socket = null;
         NetIF netIF = null;
         InetSocketAddress refAddr;
-        String latestConnectionId = "/" + controller.getName() + "/Connection-" + controller.getConnectionCount();
+        String latestConnectionName = null;
+
+        if (connectionName == null || connectionName.equals("")) {
+            latestConnectionName = "/" + controller.getName() + "/Connection-" + controller.getConnectionCount();
+        } else {
+            latestConnectionName = connectionName;
+        }
 
         try {
 	    // make a connection to a remote router
@@ -151,7 +171,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             netIF = new TCPNetIF(src,controller.getListener());
 
             // set its name
-            netIF.setName(latestConnectionId);
+            netIF.setName(latestConnectionName);
             // set its weight
             netIF.setWeight(weight);
 
@@ -238,7 +258,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                 // send INCOMING_CONNECTION command
 
                 try {
-                    interactor.incomingConnection(latestConnectionId, controller.getName(), controller.getAddress(), weight, socket.getLocalPort());
+                    interactor.incomingConnection(latestConnectionName, controller.getName(), controller.getAddress(), weight, socket.getLocalPort());
 
                     // connection setup ok
                     interactionOK = true;
@@ -282,7 +302,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         // now plug the temporary netIF into Router
         RouterPort port = controller.plugTemporaryNetIFIntoPort(netIF);
 
-        respond(MCRP.CREATE_CONNECTION.CODE + " " + latestConnectionId); // + " port" + port.getPortNo());
+        respond(MCRP.CREATE_CONNECTION.CODE + " " + latestConnectionName); // + " port" + port.getPortNo());
     }
 
     /**

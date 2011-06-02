@@ -320,12 +320,43 @@ public class RouterInteractor extends MCRPInteractor {
     /**
      * Create a new router-to-router data connection to another router.
      * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
+     * interface to a router on the address ip_addr/port
+     * @return the name of the created connection, e.g. /Router-28/Connection-1
+     */
+    public String createConnection(String address) throws IOException, MCRPException {
+        String toSend = MCRP.CREATE_CONNECTION.CMD + " " + address; 
+	MCRPResponse response = interact(toSend);
+	expect(MCRP.CREATE_CONNECTION.CODE);
+
+        // return the connection name
+	return response.get(0)[1];
+    }
+    
+    /**
+     * Create a new router-to-router data connection to another router.
+     * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
      * interface to a router on the address ip_addr/port with a 
      * connection weight of connection_weight
      * @return the name of the created connection, e.g. /Router-28/Connection-1
      */
     public String createConnection(String address, int weight) throws IOException, MCRPException {
         String toSend = MCRP.CREATE_CONNECTION.CMD + " " + address + " " + weight; 
+	MCRPResponse response = interact(toSend);
+	expect(MCRP.CREATE_CONNECTION.CODE);
+
+        // return the connection name
+	return response.get(0)[1];
+    }
+    
+    /**
+     * Create a new router-to-router data connection to another router.
+     * CREATE_CONNECTION ip_addr/port connection_weight connection_name - create a new network
+     * interface to a router on the address ip_addr/port with a 
+     * connection weight of connection_weight and a name of connection_name
+     * @return the name of the created connection, i.e. connection_name
+     */
+    public String createConnection(String address, int weight, String name) throws IOException, MCRPException {
+        String toSend = MCRP.CREATE_CONNECTION.CMD + " " + address + " " + weight + " " + name;
 	MCRPResponse response = interact(toSend);
 	expect(MCRP.CREATE_CONNECTION.CODE);
 

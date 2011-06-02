@@ -382,7 +382,7 @@ public class LocalController implements ComponentController {
      * Connect two Routers on two specified hosts.
      * @return the name of the connection, on success, or null, on failure.
      */
-    public String connectRouters(LocalHostInfo r1, LocalHostInfo r2) {
+    public String connectRouters(LocalHostInfo r1, LocalHostInfo r2, int weight, String name) {
         Logger.getLogger("log").logln(USR.STDOUT,leadin() + "Got connect request for routers");
 
         RouterInteractor ri= findRouterInteractor(r1.getPort());
@@ -394,7 +394,13 @@ public class LocalController implements ComponentController {
                 String address= r2.getName()+":"+r2.getPort();
 
                 // Create a connection
-                String connectionName = ri.createConnection(address,1);
+                String connectionName = null;
+
+                if (name == null) {
+                    connectionName = ri.createConnection(address, weight);
+                } else {
+                    connectionName = ri.createConnection(address, weight, name);
+                }
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Connection from Router: " + r1 + " to Router: " + r2 + " is " + connectionName);
 
@@ -488,7 +494,7 @@ public class LocalController implements ComponentController {
         if (ri == null)
             return false;
         try {
-            ri.endLink("Router-"+r2);
+            ri.endLink(Integer.toString(r2));
         } 
         catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error shutting down router");
