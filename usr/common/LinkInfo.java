@@ -11,7 +11,7 @@ public class LinkInfo {
     /**
      * Construct a LinkInfo.
      */
-    public LinkInfo(Pair routers, String name, int weight) {
+    public LinkInfo(Pair<Integer, Integer> routers, String name, int weight) {
         endPoints = routers;
         linkName = name;
         this.weight = weight;
