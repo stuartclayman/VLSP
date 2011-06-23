@@ -11,7 +11,7 @@ public class BasicRouterInfo {
     private long startTime_;
     private LocalControllerInfo controller_;
     private int managementPort_;
-    private int routingPort_;
+    private int router2routerPort_;
     private int routerId_;
     // the name of the router
     private String name;
@@ -24,7 +24,7 @@ public class BasicRouterInfo {
         startTime_= time;
         controller_= lc;
         managementPort_= port1;
-        routingPort_= port2;
+        router2routerPort_= port2;
         routerId_ = id;
     }
     
@@ -37,7 +37,7 @@ public class BasicRouterInfo {
     }
     
     public int getRoutingPort() {
-        return routingPort_;
+        return router2routerPort_;
     }
     
     public LocalControllerInfo getLocalControllerInfo() {
@@ -61,6 +61,29 @@ public class BasicRouterInfo {
     public void setName(String name) {
         this.name = name;
     }
+
+    /**
+     * Check if this is equal to another BasicRouterInfo
+     */
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof BasicRouterInfo) {
+            BasicRouterInfo other = (BasicRouterInfo)obj;
+
+            if (other.routerId_ == this.routerId_ &&
+                other.managementPort_ == this.managementPort_ && 
+                other.router2routerPort_ == this.router2routerPort_) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      * To string

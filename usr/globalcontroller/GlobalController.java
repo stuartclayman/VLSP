@@ -50,7 +50,7 @@ public class GlobalController implements ComponentController {
     private ArrayList <Integer> routerList_= null;   // List of integers which
 										// contains the numbers of nodes present
 
-    private HashMap<Pair<Integer,Integer>, String> linkNames = null; // A map of (routerID, routerID) links to link names
+    private HashMap<Pair<Integer,Integer>, LinkInfo> linkInfo = null; // A map of (routerID, routerID) links to LinkInfo objects
 				
     private HashMap <LocalControllerInfo, LocalControllerInteractor> interactorMap_= null;
 		// Map connections LocalControllerInfo for given LCs to the appropriate interactors
@@ -169,7 +169,7 @@ public class GlobalController implements ComponentController {
       outLinks_= new ArrayList<int []> ();
       linkCosts_= new ArrayList<int []> ();
       routerList_= new ArrayList<Integer>();
-      linkNames = new HashMap<Pair<Integer,Integer>, String>();
+      linkInfo = new HashMap<Pair<Integer,Integer>, LinkInfo>();
       options_= new ControlOptions(xmlFile_);
       routerOptions_= options_.getRouterOptions();
       waitCounter_= new Object();
@@ -392,7 +392,25 @@ public class GlobalController implements ComponentController {
                 startRouter(time, name);
             }
             else if (type == SimEvent.EVENT_END_ROUTER) {
-                int routerNo= (Integer)e.getData();
+                Object arg = e.getData();
+                int routerNo;
+
+                if (arg instanceof Integer) {
+                    routerNo = (Integer)arg;
+                } else {
+                    // arg is String, we need to look up the router IDs
+                    String routerName = (String)arg;
+                    BasicRouterInfo rInfo = findRouterInfo(routerName);
+
+                    if (rInfo == null) {
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + routerName +" in END_ROUTER at time " + time);
+                        shutDown();
+                    }
+
+                    routerNo = rInfo.getId();
+
+                }
+
                 endRouter(time,routerNo);
             }
             else if (type == SimEvent.EVENT_START_LINK) {
@@ -409,29 +427,49 @@ public class GlobalController implements ComponentController {
 
                 } else {
                     // there is an Array of Objects
+                    // this probably comes from a Script
                     Object[] array = (Object[])data;
+
+                    // Process the link info
+                    Pair<?,?> pair= (Pair<?,?>)array[0];
+
+                    // process router spec
+                    if (pair.getFirst() instanceof Integer && pair.getSecond() instanceof Integer) {
+                        // there are 2 router ID's
+                        router1= (Integer)pair.getFirst();
+                        router2= (Integer)pair.getSecond();
+                    } else {
+                        // we need to look up the router IDs
+                        String router1Name = (String)pair.getFirst();
+                        String router2Name = (String)pair.getSecond();
+
+                        BasicRouterInfo r1Info = findRouterInfo(router1Name);
+                        BasicRouterInfo r2Info = findRouterInfo(router2Name);
+
+                        if (r1Info == null) {
+                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router1Name +" in START_LINK at time " + time);
+                            shutDown();
+                        }
+
+                        if (r2Info == null) {
+                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router2Name +" in START_LINK at time " + time);
+                            shutDown();
+                        }
+
+                        router1 = r1Info.getId();
+                        router2 = r2Info.getId();
+                    }
 
                     if (array.length == 1) {
                         // there is just a Pair
-                        Pair<?,?> pair= (Pair<?,?>)array[0];
-                        router1= (Integer)pair.getFirst();
-                        router2= (Integer)pair.getSecond();
                         startLink(time,router1, router2, 1, null);
 
                     } else if (array.length == 2) {
                         // there is a Pair and a weight
-                        Pair<?,?> pair= (Pair<?,?>)array[0];
-                        router1= (Integer)pair.getFirst();
-                        router2= (Integer)pair.getSecond();
-
                         int weight = (Integer)array[1];
                         startLink(time,router1, router2, weight, null);
                     } else if (array.length == 3) {
                         // there is a Pair, a weight, and a name
-                        Pair<?,?> pair= (Pair<?,?>)array[0];
-                        router1= (Integer)pair.getFirst();
-                        router2= (Integer)pair.getSecond();
-
                         int weight = (Integer)array[1];
                         String linkName = (String)array[2];
                         startLink(time,router1, router2, weight, linkName);
@@ -443,8 +481,34 @@ public class GlobalController implements ComponentController {
             else if (type == SimEvent.EVENT_END_LINK) {
                 int router1= 0, router2= 0;
                 Pair<?,?> pair= (Pair<?,?>)e.getData();
-                router1= (Integer)pair.getFirst();
-                router2= (Integer)pair.getSecond();
+
+                // process router spec
+                if (pair.getFirst() instanceof Integer && pair.getSecond() instanceof Integer) {
+                    // there are 2 router ID's
+                    router1= (Integer)pair.getFirst();
+                    router2= (Integer)pair.getSecond();
+                } else {
+                    // we need to look up the router IDs
+                    String router1Name = (String)pair.getFirst();
+                    String router2Name = (String)pair.getSecond();
+
+                    BasicRouterInfo r1Info = findRouterInfo(router1Name);
+                    BasicRouterInfo r2Info = findRouterInfo(router2Name);
+
+                    if (r1Info == null) {
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router1Name +" in END_LINK at time " + time);
+                        shutDown();
+                    }
+
+                    if (r2Info == null) {
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router2Name +" in END_LINK at time " + time);
+                        shutDown();
+                    }
+
+                    router1 = r1Info.getId();
+                    router2 = r2Info.getId();
+                }
+
 
                 endLink(time,router1, router2);
             }
@@ -458,7 +522,27 @@ public class GlobalController implements ComponentController {
                 String[] eventArgs = (String[])e.getData();
                 Scanner sc = new Scanner(eventArgs[0]);
 
-                int routerID = sc.nextInt();
+                int routerID;
+                
+                // process router spec
+                if (sc.hasNextInt()) {
+                    // arg is int
+                    routerID = sc.nextInt();
+
+                } else {
+                    // arg is String, we need to look up the router IDs
+                    String routerName = eventArgs[0].trim();
+                    BasicRouterInfo rInfo = findRouterInfo(routerName);
+
+                    if (rInfo == null) {
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + routerName +" in ON_ROUTER at time " + time);
+                        shutDown();
+                    }
+
+                    routerID = rInfo.getId();
+
+                }
+
                 String className = eventArgs[1];
 
                 // eliminate router_id and className
@@ -708,6 +792,22 @@ public class GlobalController implements ComponentController {
     }
 
     /**
+     * Find some router info, given a router name
+     */
+    public BasicRouterInfo findRouterInfo(String name) {
+        // skip through all the BasicRouterInfo objects
+        for (BasicRouterInfo info : (Collection<BasicRouterInfo>)routerIdMap_.values()) {
+            if (info.getName().equals(name)) {
+                // we found a match
+                return info;
+            }
+        }
+
+        // we got here and found nothing
+        return null;
+    }
+
+    /**
      * List all RouterInfo.
      */
     public Collection<BasicRouterInfo> getAllRouterInfo() {
@@ -834,7 +934,9 @@ public class GlobalController implements ComponentController {
                                                            weight, name);
 
                 // add Pair<router1Id, router2Id> -> connectionName to linkNames
-                linkNames.put(makePair(router1Id, router2Id), connectionName);
+                Pair<Integer, Integer> endPoints = makePair(router1Id, router2Id);
+
+                linkInfo.put(endPoints, new LinkInfo(endPoints, connectionName, weight));
                
                Logger.getLogger("log").logln(USR.STDOUT, leadin() + br1 + " -> " + br2 + " = " + connectionName);
                break;
@@ -1002,10 +1104,11 @@ public class GlobalController implements ComponentController {
         int i;
         for (i= 0; i < MAX_TRIES; i++) {
           try {
+              // TODO:  work out link name, and pass that to LocalControllerInteractor
             lci.endLink(br1.getHost(),br1.getManagementPort(),rId2);
        
             // remove Pair<router1Id, router2Id> -> connectionName to linkNames
-            linkNames.remove(makePair(rId1, rId2));
+            linkInfo.remove(makePair(rId1, rId2));
                
 
             break;

@@ -1,13 +1,12 @@
-/**
-  * LocalHostInfo contains basic info about one host in the system
-  * It deals with finding out IP addresses, ports and so on
-import usr.logging.*;
-*/
-
 package usr.common;
+
 import java.net.InetAddress;
 
 
+/**
+ * LocalHostInfo contains basic info about one host in the system
+ * It deals with finding out IP addresses, ports and so on
+ */
 public class LocalHostInfo  {
     private String hostName_;      // Name of host -- should be resolvable
     private int port_;          // Port host listens on
@@ -106,4 +105,28 @@ public class LocalHostInfo  {
     public String toString() {
         return hostName_ + ":" + port_;
     }
+
+
+    /**
+     * Check if this is equal to another LocalHostInfo
+     */
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof LocalHostInfo) {
+            LocalHostInfo other = (LocalHostInfo)obj;
+
+            if (other.ipAddress_ == this.ipAddress_ &&
+                other.port_ == this.port_) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+
 }

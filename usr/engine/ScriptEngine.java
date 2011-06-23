@@ -82,6 +82,8 @@ public class ScriptEngine implements EventEngine {
     private SimEvent parseEventLine(String s)
     {
 
+        //System.err.println("ScriptEngine: input line: " + s);
+
         // first we remove the comments
         String noComments = s.replaceFirst("//.*", "").trim();
 
@@ -90,10 +92,13 @@ public class ScriptEngine implements EventEngine {
         }
 
         // now process
-        String []args= noComments.split(" ");
+        String []args= noComments.split("\\s+");
         if (args.length < 2)
             return null;
         try {
+            //System.err.println("ScriptEngine: process args: " + Arrays.asList(args));
+                       
+
             // get the time
             // eith absolute as 12000 or relative +2000
             int time = 0;
@@ -125,78 +130,122 @@ public class ScriptEngine implements EventEngine {
             else if (type.equals("START_LINK")) {
                if (args.length < 4 || args.length > 6) {
                    throw new Exception ("START_LINK requires two router ids "+ s);
-               } else if (args.length == 4) {
-                   // time START_LINK r1 r2
-                   Integer l1= Integer.parseInt(args[2].trim());
-                   Integer l2= Integer.parseInt(args[3].trim());
-                   Pair<Integer,Integer> pair= new Pair <Integer,Integer>(l1,l2);
+               } else {
+                   // process links
+                   Pair<?,?> pair = null;
 
-                   Object[] result = new Object[1];
-                   result[0] = pair;
+                   String arg2 = args[2].trim();
+                   String arg3 = args[3].trim();
 
-                   // return an Object[] of size 1
-                   return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+                   Scanner arg2Scanner = new Scanner(arg2);
+                   Scanner arg3Scanner = new Scanner(arg3);
 
-               } else if (args.length == 5) {
-                   // time START_LINK r1 r2 weight
+                   if (arg2Scanner.hasNextInt() && arg3Scanner.hasNextInt()) {
+                       // both args are ints
+                       int l1 = arg2Scanner.nextInt();
+                       int l2 = arg3Scanner.nextInt();
+                       pair = new Pair <Integer,Integer>(l1,l2);
 
-                   Integer l1= Integer.parseInt(args[2].trim());
-                   Integer l2= Integer.parseInt(args[3].trim());
-                   Pair<Integer,Integer> pair= new Pair <Integer,Integer>(l1,l2);
+                   } else {
+                       // they are not both ints
+                       pair = new Pair<String, String>(arg2, arg3);
 
-                   Integer weight = Integer.parseInt(args[4].trim());
+                   }
 
-                   Object[] result = new Object[2];
-                   result[0] = pair;
-                   result[1] = weight;
+                   // now get extra args
+                   if (args.length == 4) {
+                       // time START_LINK r1 r2
+                       Object[] result = new Object[1];
+                       result[0] = pair;
 
-                   // return an Object[] of size 1
-                   return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+                       // return an Object[] of size 1
+                       return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
 
-               } else  if (args.length == 6) {
-                   // time START_LINK r1 r2 weight name
-                   Integer l1= Integer.parseInt(args[2].trim());
-                   Integer l2= Integer.parseInt(args[3].trim());
-                   Pair<Integer,Integer> pair= new Pair <Integer,Integer>(l1,l2);
+                   } else if (args.length == 5) {
+                       // time START_LINK r1 r2 weight
+                       Integer weight = Integer.parseInt(args[4].trim());
 
-                   Integer weight = Integer.parseInt(args[4].trim());
+                       Object[] result = new Object[2];
+                       result[0] = pair;
+                       result[1] = weight;
 
-                   // Construct return result
-                   Object[] result = new Object[3];
-                   result[0] = pair;
-                   result[1] = weight;
-                   result[2] = args[5].trim();
+                       // return an Object[] of size 1
+                       return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
 
-                   // return an Object[] of size 1
-                   return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+                   } else  if (args.length == 6) {
+                       // time START_LINK r1 r2 weight name
+                       Integer weight = Integer.parseInt(args[4].trim());
 
+                       // Construct return result
+                       Object[] result = new Object[3];
+                       result[0] = pair;
+                       result[1] = weight;
+                       result[2] = args[5].trim();
+
+                       // return an Object[] of size 1
+                       return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+
+                   }
                }
 
             }
             else if (type.equals("END_ROUTER")) {
-                if (args.length != 3) 
+                if (args.length != 3) {
                    throw new Exception("END_ROUTER requires router id "+s);
-                Integer r= Integer.parseInt(args[2].trim());
-                return new SimEvent(SimEvent.EVENT_END_ROUTER,time,r);
+                } else {
+                    String arg2 = args[2].trim();
+
+                    Scanner arg2Scanner = new Scanner(arg2);
+
+                    if (arg2Scanner.hasNextInt()) {
+                       // arg is int
+                       int r = arg2Scanner.nextInt();
+                       return new SimEvent(SimEvent.EVENT_END_ROUTER,time,r);
+
+                    } else {
+                        // arg is String
+                       return new SimEvent(SimEvent.EVENT_END_ROUTER,time,arg2);
+                    }
+                }
+
             }
             else if (type.equals("END_LINK")) {
-                if (args.length != 4) 
+                if (args.length != 4) {
                     throw new Exception ("END_LINK requires 2 router ids "+ s);
-                Integer r1= Integer.parseInt(args[2].trim());
-                Integer r2= Integer.parseInt(args[3].trim());
-    
-                Pair <Integer,Integer> link= new Pair<Integer,Integer>(r1,r2);
-                return new SimEvent(SimEvent.EVENT_END_LINK,time,link);
+                } else {
+                   // process links
+                   Pair<?,?> pair = null;
+
+                   String arg2 = args[2].trim();
+                   String arg3 = args[3].trim();
+
+                   Scanner arg2Scanner = new Scanner(arg2);
+                   Scanner arg3Scanner = new Scanner(arg3);
+
+                   if (arg2Scanner.hasNextInt() && arg3Scanner.hasNextInt()) {
+                       // both args are ints
+                       int l1 = arg2Scanner.nextInt();
+                       int l2 = arg3Scanner.nextInt();
+                       pair = new Pair <Integer,Integer>(l1,l2);
+
+                   } else {
+                       // they are not both ints
+                       pair = new Pair<String, String>(arg2, arg3);
+
+                   }
+
+                    return new SimEvent(SimEvent.EVENT_END_LINK,time, pair);
+                }
+
             }
             else if (type.equals("END_SIMULATION")) {
                 return new SimEvent(SimEvent.EVENT_END_SIMULATION, time, null);
             }
+
             else if (type.equals("ON_ROUTER")) {
                 if (args.length < 4) {
                     throw new Exception ("ON_ROUTER requires router_id AND className, plus optional args");
                 } else {
-                    // check router ID
-                    Integer r1= Integer.parseInt(args[2].trim());
 
                     // eliminate time and ON_ROUTER
                     String[] cmdArgs = new String[args.length-2];
