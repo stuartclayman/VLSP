@@ -36,20 +36,26 @@ public class ProbabilisticEventEngine implements EventEngine {
         parseXMLFile(parms);
     }
     
+        /** Start up and shut down events */
+    public void startStopEvents(EventScheduler s, GlobalController g)
+    {
+        // simulation start
+        SimEvent e;
+        e = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
+        s.addEvent(e);
+        // simulation end
+        e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null,this);
+        s.addEvent(e);
+
+    }
     /** Initial events to add to schedule */
     public void initialEvents(EventScheduler s, GlobalController g)
     {
         // simulation start
         SimEvent e;
-        e = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null);
+        e = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
         s.addEvent(e);
-        // Add first node
-        long time= (int)(nodeCreateDist_.getVariate()*1000);
-        e = new SimEvent(SimEvent.EVENT_START_ROUTER, time, null);
-        s.addEvent(e);
-        // simulation end
-        e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null);
-        s.addEvent(e);
+
 
     }
     
@@ -80,7 +86,7 @@ public class ProbabilisticEventEngine implements EventEngine {
         //  Schedule new node
         time= (long)(nodeCreateDist_.getVariate()*1000);
         //Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
-        e1= new SimEvent(SimEvent.EVENT_START_ROUTER, now+time, null);
+        e1= new SimEvent(SimEvent.EVENT_START_ROUTER, now+time, null, this);
         s.addEvent(e1);
         if (g.getRouterList().indexOf(routerId) == -1) {
             //System.err.println("Router did not start -- adding no links");
@@ -90,7 +96,7 @@ public class ProbabilisticEventEngine implements EventEngine {
         // Schedule node death if this will happen
         if (nodeDeathDist_ != null) {
             time= (long)(nodeDeathDist_.getVariate()*1000);
-            e1= new SimEvent(SimEvent.EVENT_END_ROUTER, now+time, new Integer(routerId));
+            e1= new SimEvent(SimEvent.EVENT_END_ROUTER, now+time, new Integer(routerId), this);
             s.addEvent(e1);
         }
         // Schedule links
@@ -118,7 +124,7 @@ public class ProbabilisticEventEngine implements EventEngine {
                     if (index < 0 || j == nodes.size() - 1) {
                         nodes.remove(j);
                         e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
-                              new Pair<Integer,Integer>(l, routerId));
+                              new Pair<Integer,Integer>(l, routerId),this);
                         s.addEvent(e1);
                         break;
                     }
@@ -129,7 +135,7 @@ public class ProbabilisticEventEngine implements EventEngine {
                 //Logger.getLogger("log").logln(USR.ERROR, "Picked "+newLink);
                 nodes.remove(index);
                  e1= new SimEvent(SimEvent.EVENT_START_LINK,now, 
-                new Pair<Integer,Integer>(newLink,routerId));
+                new Pair<Integer,Integer>(newLink,routerId),this);
                 s.addEvent(e1);
             }
         }

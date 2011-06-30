@@ -1,11 +1,13 @@
 package usr.globalcontroller;
 
 import usr.logging.*;
+import usr.engine.*;
 
 public class SimEvent {
     private int eventType_;
     private Object eventData_;
     private long eventTime_;
+    private EventEngine engine_;
     
     public static final int EVENT_END_SIMULATION= 1;
     public static final int EVENT_START_SIMULATION= 2;
@@ -20,11 +22,12 @@ public class SimEvent {
     
     /** Create event -- note that time is time since start of 
        event schedule  */
-    public SimEvent(int type, long time, Object data) 
+    public SimEvent(int type, long time, Object data, EventEngine engine) 
     {
         eventType_= type;
         eventTime_= time;
         eventData_= data;
+	engine_= engine;
     }
 
     public long getTime() {
@@ -39,6 +42,26 @@ public class SimEvent {
         return eventData_;
     }
 
+    /** Use engines or global controller to get actions which should
+     * follow this event*/
+     
+    public void followEvent(EventScheduler s, GlobalController g, Object o) {
+	if (engine_ == null) 
+	   g.gcFollowEvent(this, o);
+	else 
+	   engine_.followEvent(this, s,g,o);
+    }
+    
+    /** Use engines or global controller to get actions which should
+     * preceed this event*/
+     
+    public void preceedEvent(EventScheduler s, GlobalController g) {
+	if (engine_ == null) 
+	   g.gcPreceedEvent(this);
+	else 
+	   engine_.preceedEvent(this,s,g);
+    }
+    
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(eventTime_);

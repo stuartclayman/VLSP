@@ -44,13 +44,13 @@ public class ControlOptions {
     private int maxLag_= 1000000;  // Maximum lag tolerable in simulation in millisec
     private String routerOptionsString_= ""; //
     private RouterOptions routerOptions_= null;
-    EventEngine engine_;   // Engine used to create new events for sim
+    private ArrayList <EventEngine> engines_= null;   // Engines used to create new events for sim
 
     private ArrayList <OutputType> outputs_= null;
 
     /** init function sets up basic information */
     public void init () {
-      
+      engines_= new ArrayList <EventEngine>();
       localControllers_= new ArrayList<LocalControllerInfo>();
       outputs_= new ArrayList <OutputType>();
       remoteLoginCommand_ = "/usr/bin/ssh";
@@ -99,7 +99,7 @@ public class ControlOptions {
             NodeList gcs= doc.getElementsByTagName("GlobalController");
             processGlobalController(gcs);
             NodeList eng= doc.getElementsByTagName("EventEngine");
-            processEventEngine(eng);
+            processEventEngines(eng);
             NodeList ro= doc.getElementsByTagName("RouterOptions");
             processRouterOptions(ro);
             NodeList o= doc.getElementsByTagName("Output");
@@ -339,14 +339,22 @@ public class ControlOptions {
 
 
     /**
-        Process tags which specify local controllers
-    */
-    private void processEventEngine(NodeList eng) throws SAXException {
-      if (eng.getLength() != 1) {
+        Process tags which specify Event engines */
+	
+    private void processEventEngines(NodeList eng) throws SAXException {
+      if (eng.getLength() == 0) {
           throw new SAXException
-            ("Must be exactly one EventEngine tag in control file");
+            ("Must be at least one EventEngine tag in control file");
       }
-      Node n= eng.item(0);
+      while (eng.getLength() != 0) {
+	  engines_.add(processEventEngine(eng.item(0)));
+      }
+   }    
+   
+   /** process tags for a single event engine*/
+   private EventEngine processEventEngine(Node n) throws SAXException 
+   {
+      EventEngine eng;
       String engine="";
       int endtime= 0;
       String parms="";
@@ -374,23 +382,22 @@ public class ControlOptions {
         } 
         n.getParentNode().removeChild(n);
       if (engine.equals("Empty")) {
-          engine_= new EmptyEventEngine(endtime,parms);
-          return;
+          eng= new EmptyEventEngine(endtime,parms);
+          return eng;
       }
       if (engine.equals("Test")) {
-          engine_= new TestEventEngine(endtime,parms);
-          return;
+          eng= new TestEventEngine(endtime,parms);
+          return eng;
       }
       if (engine.equals("Probabilistic")) {
-          engine_= new ProbabilisticEventEngine(endtime,parms);
-          return;
+          eng= new ProbabilisticEventEngine(endtime,parms);
+          return eng;
       }
       if (engine.equals("Script")) {
-          engine_= new ScriptEngine(endtime,parms);
-          return;
+          eng= new ScriptEngine(endtime,parms);
+          return eng;
       }
       throw new SAXException("Could not find engine type "+engine);
-      
     
     }
     
@@ -584,51 +591,18 @@ public class ControlOptions {
     /** Initialise event list */
     public void initialEvents(EventScheduler s, GlobalController g)
     {
-        engine_.initialEvents(s,g);
+        engines_.get(0).startStopEvents(s,g);
+	for (EventEngine eng: engines_) {
+	   eng.initialEvents(s,g);
+	}
         SimEvent e= new SimEvent(SimEvent.EVENT_AP_CONTROLLER, 
-            routerOptions_.getControllerConsiderTime(),null);
+            routerOptions_.getControllerConsiderTime(),null,null);
         s.addEvent(e);
         for (OutputType o: outputs_) {
             if (o.getTimeType() == OutputType.AT_TIME || o.getTimeType() == 
               OutputType.AT_INTERVAL) {
-                e= new SimEvent(SimEvent.EVENT_OUTPUT,o.getTime(), o);
+                e= new SimEvent(SimEvent.EVENT_OUTPUT,o.getTime(), o,null);
                 s.addEvent(e); 
-            }
-        }
-    }
-    
-    /** Add or remove events following a simulation event */
-    public void preceedEvent(SimEvent e, EventScheduler s, GlobalController g)
-     {
-        engine_.preceedEvent(e,s,g);
-     }
-    /** Add or remove events following a simulation event -- object allows
-    global controller to pass extra parameters related to event if necessary*/
-    public void followEvent(SimEvent e, EventScheduler s, GlobalController g,
-      Object o)
-    {
-        engine_.followEvent(e,s,g,o);
-        long time= e.getTime();
-        if (connectedNetwork_) {
-            if (e.getType() == SimEvent.EVENT_END_ROUTER) {
-                g.connectNetwork(time);
-            } else if (e.getType() == SimEvent.EVENT_END_LINK) {
-                int router1= 0, router2= 0;
-                Pair<?,?> pair= (Pair<?,?>)e.getData();
-                router1= (Integer)pair.getFirst();
-                router2= (Integer)pair.getSecond();
-                g.connectNetwork(time,router1, router2);
-            }
-        } else if (!allowIsolatedNodes_) {
-            if (e.getType() == SimEvent.EVENT_END_ROUTER) {
-                g.checkIsolated(time);
-            } else if (e.getType() == SimEvent.EVENT_END_LINK) {
-                int router1= 0, router2= 0;
-                Pair<?,?> pair= (Pair<?,?>)e.getData();
-                router1= (Integer)pair.getFirst();
-                router2= (Integer)pair.getSecond();
-                g.checkIsolated(time,router1);
-                g.checkIsolated(time,router2);
             }
         }
     }
@@ -641,6 +615,7 @@ public class ControlOptions {
     public int getMaxLag() {
         return maxLag_;
     }
+    
 }
 
 

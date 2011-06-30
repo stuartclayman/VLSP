@@ -27,19 +27,26 @@ public class ScriptEngine implements EventEngine {
     /** Initial events to add to schedule */
     public void initialEvents(EventScheduler s, GlobalController g)
     {
-                // simulation start
-        SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null);
-        s.addEvent(e0);
+
         for (SimEvent e: events_) {
             s.addEvent(e);
         }
-        // simulation end
-        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null);
-        s.addEvent(e);
-        
+
         
     }
    
+    public void startStopEvents(EventScheduler s, GlobalController g)
+    {
+        // simulation start
+        SimEvent e;
+        e = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
+        s.addEvent(e);
+        // simulation end
+        e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null,this);
+        s.addEvent(e);
+
+    }
+
     
     /** Add or remove events following a simulation event */
     public void preceedEvent(SimEvent e, EventScheduler s,  GlobalController g) 
@@ -119,10 +126,10 @@ public class ScriptEngine implements EventEngine {
 
             if (type.equals("START_ROUTER")) {
                 if (args.length == 2) {
-                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time,null);
+                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time,null,this);
                 } else if (args.length == 3) {
                     String name = args[2].trim();
-                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time, name);
+                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time, name,this);
                 } else {
                     throw new Exception("START_ROUTER requires router id or no arg "+ s + " => " + noComments + " args.length = " + args.length);
                 }
@@ -159,7 +166,7 @@ public class ScriptEngine implements EventEngine {
                        result[0] = pair;
 
                        // return an Object[] of size 1
-                       return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+                       return new SimEvent(SimEvent.EVENT_START_LINK,time,result,this);
 
                    } else if (args.length == 5) {
                        // time START_LINK r1 r2 weight
@@ -170,7 +177,7 @@ public class ScriptEngine implements EventEngine {
                        result[1] = weight;
 
                        // return an Object[] of size 1
-                       return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+                       return new SimEvent(SimEvent.EVENT_START_LINK,time,result,this);
 
                    } else  if (args.length == 6) {
                        // time START_LINK r1 r2 weight name
@@ -183,7 +190,7 @@ public class ScriptEngine implements EventEngine {
                        result[2] = args[5].trim();
 
                        // return an Object[] of size 1
-                       return new SimEvent(SimEvent.EVENT_START_LINK,time,result);
+                       return new SimEvent(SimEvent.EVENT_START_LINK,time,result,this);
 
                    }
                }
@@ -200,11 +207,11 @@ public class ScriptEngine implements EventEngine {
                     if (arg2Scanner.hasNextInt()) {
                        // arg is int
                        int r = arg2Scanner.nextInt();
-                       return new SimEvent(SimEvent.EVENT_END_ROUTER,time,r);
+                       return new SimEvent(SimEvent.EVENT_END_ROUTER,time,r,this);
 
                     } else {
                         // arg is String
-                       return new SimEvent(SimEvent.EVENT_END_ROUTER,time,arg2);
+                       return new SimEvent(SimEvent.EVENT_END_ROUTER,time,arg2,this);
                     }
                 }
 
@@ -234,12 +241,12 @@ public class ScriptEngine implements EventEngine {
 
                    }
 
-                    return new SimEvent(SimEvent.EVENT_END_LINK,time, pair);
+                    return new SimEvent(SimEvent.EVENT_END_LINK,time, pair,this);
                 }
 
             }
             else if (type.equals("END_SIMULATION")) {
-                return new SimEvent(SimEvent.EVENT_END_SIMULATION, time, null);
+                return new SimEvent(SimEvent.EVENT_END_SIMULATION, time, null,this);
             }
 
             else if (type.equals("ON_ROUTER")) {
@@ -254,7 +261,7 @@ public class ScriptEngine implements EventEngine {
                         cmdArgs[a-2] = args[a];
                     }
 
-                    return new SimEvent(SimEvent.EVENT_ON_ROUTER, time, cmdArgs);
+                    return new SimEvent(SimEvent.EVENT_ON_ROUTER, time, cmdArgs,this);
                 }
             }
             throw new Exception("Unrecognised event in script line "+s);

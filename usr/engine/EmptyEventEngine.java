@@ -16,15 +16,21 @@ public class EmptyEventEngine implements EventEngine {
     }
     
     /** Initial events to add to schedule */
-    public void initialEvents(EventScheduler s, GlobalController g)
+    public void startStopEvents(EventScheduler s, GlobalController g)
     {
         // simulation start
-        SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null);
+        SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
         s.addEvent(e0);
 
         // simulation end
-        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null);
+        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null,this);
         s.addEvent(e);
+
+    }
+    
+        /** Initial events to add to schedule */
+    public void initialEvents(EventScheduler s, GlobalController g)
+    {
 
     }
     

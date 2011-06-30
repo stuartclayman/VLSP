@@ -16,29 +16,37 @@ public class TestEventEngine implements EventEngine {
         timeToEnd_= time*1000;
     }
     
+            /** Start up and shut down events */
+    public void startStopEvents(EventScheduler s, GlobalController g)
+    {
+        // simulation start
+        SimEvent e;
+        e = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
+        s.addEvent(e);
+        // simulation end
+        e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null,this);
+        s.addEvent(e);
+
+    }
+    
     /** Initial events to add to schedule */
     public void initialEvents(EventScheduler s, GlobalController g)
     {
-                // simulation start
-        SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null);
-        s.addEvent(e0);
 
-        // simulation end
-        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null);
-        s.addEvent(e);
+
         SimEvent e2= new SimEvent(SimEvent.EVENT_START_ROUTER, 
-                                      250,null);
+                                      250,null,this);
         
         s.addEvent(e2);                              
         e2= new SimEvent(SimEvent.EVENT_START_ROUTER, 
                                       250,
-                                      null);
+                                      null,this);
         s.addEvent(e2);
-        e2= new SimEvent(SimEvent.EVENT_START_LINK, 250, new Pair<Integer,Integer>(1,2));
+        e2= new SimEvent(SimEvent.EVENT_START_LINK, 250, new Pair<Integer,Integer>(1,2),this);
         s.addEvent(e2);
-        e2= new SimEvent(SimEvent.EVENT_END_LINK, 300, new Pair<Integer,Integer>(1,2));
+        e2= new SimEvent(SimEvent.EVENT_END_LINK, 300, new Pair<Integer,Integer>(1,2),this);
         s.addEvent(e2);
-        e2= new SimEvent(SimEvent.EVENT_END_ROUTER, 301,2);
+        e2= new SimEvent(SimEvent.EVENT_END_ROUTER, 301,2,this);
         s.addEvent(e2);
        /* int mr= 3;
         for (int i= 0; i < mr; i++) {
