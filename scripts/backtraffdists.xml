@@ -1,0 +1,23 @@
+<BackgroundTrafficEngine>
+  <TrafficArriveDist>
+     <ProbElement>
+        <Type>Exponential</Type>
+	<Weight>1.0</Weight>
+	<Parameter>20.0</Parameter>
+     </ProbElement>
+  </TrafficArriveDist>
+  <TrafficLengthDist>
+     <ProbElement>
+        <Type>Exponential</Type>
+	<Weight>1.0</Weight>
+	<Parameter>20.0</Parameter>
+     </ProbElement>
+  </TrafficLengthDist>
+  <TrafficSpeedDist>
+     <ProbElement>
+        <Type>Exponential</Type>
+	<Weight>1.0</Weight>
+	<Parameter>20.0</Parameter>
+     </ProbElement>
+  </TrafficSpeedDist>
+</BackgroundTrafficEngine>

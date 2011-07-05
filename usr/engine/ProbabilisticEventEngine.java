@@ -21,7 +21,7 @@ import java.util.*;
 This engine uses probability distribtions to add events into the 
 event library
 */
-public class ProbabilisticEventEngine implements EventEngine {
+public class ProbabilisticEventEngine  implements EventEngine  {
     int timeToEnd_;   // Time to end of simulation (ms)
     ProbDistribution nodeCreateDist_= null;   //  Distribution for creating nodes
     ProbDistribution nodeDeathDist_= null;    // Distribution of node lifetimes
@@ -30,7 +30,7 @@ public class ProbabilisticEventEngine implements EventEngine {
     private boolean preferentialAttachment_= false; // If true links are chosen using P.A.     
 
     /** Contructor from Parameter string */
-    public ProbabilisticEventEngine(int time, String parms) 
+    public ProbabilisticEventEngine(int time, String parms) throws EventEngineException
     {
         timeToEnd_= time*1000;
         parseXMLFile(parms);
@@ -142,7 +142,7 @@ public class ProbabilisticEventEngine implements EventEngine {
     }
     
     /** Parse the XML to get probability distribution information*/
-    private void parseXMLFile(String fName) 
+    private void parseXMLFile(String fName) throws EventEngineException
     {
         try { 
         DocumentBuilderFactory docBuilderFactory = 
@@ -190,22 +190,18 @@ public class ProbabilisticEventEngine implements EventEngine {
         }
           
     } catch (java.io.FileNotFoundException e) {
-          Logger.getLogger("log").logln(USR.ERROR, "Cannot find file "+fName);
-          System.exit(-1);
+          throw new EventEngineException("Parsing ProbabilisticEventEngine: Cannot find file "+fName);
       }catch (SAXParseException err) {
-          System.err.println ("** Parsing error" + ", line " 
+          throw new EventEngineException ("Parsing ProbabilisticEventEngine: error" + ", line " 
              + err.getLineNumber () + ", uri " + err.getSystemId ());
-          Logger.getLogger("log").logln(USR.ERROR, " " + err.getMessage ());
-          System.exit(-1);
 
       }catch (SAXException e) {
-          Logger.getLogger("log").logln(USR.ERROR, "Exception in SAX XML parser.");
-          Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-          System.exit(-1);
+          throw new EventEngineException(
+	  "Parsing ProbabilisticEventEngine: Exception in SAX XML parser"+ e.getMessage());
+
           
       }catch (Throwable t) {
-          t.printStackTrace ();
-          System.exit(-1);
+          throw new EventEngineException("Parsing ProbabilisticEventEngine: "+t.getMessage());
       }
     }
     

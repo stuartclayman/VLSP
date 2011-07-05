@@ -14,7 +14,7 @@ import usr.engine.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
 import usr.output.OutputType;
-
+import java.lang.reflect.Constructor;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
@@ -22,6 +22,7 @@ import org.xml.sax.SAXParseException;
 import usr.engine.*;
 import usr.common.*;
 import usr.router.RouterOptions;
+import java.lang.reflect.InvocationTargetException;
 
 
 public class ControlOptions {
@@ -381,23 +382,61 @@ public class ControlOptions {
                 
         } 
         n.getParentNode().removeChild(n);
-      if (engine.equals("Empty")) {
-          eng= new EmptyEventEngine(endtime,parms);
-          return eng;
+      
+      //Legacy for old scripts
+      try {
+	if (engine.equals("Empty")) {
+	    eng= new EmptyEventEngine(endtime,parms);
+	    return eng;
+	}
+	if (engine.equals("Test")) {
+	    eng= new TestEventEngine(endtime,parms);
+	    return eng;
+	}
+	if (engine.equals("Probabilistic")) {
+	    eng= new ProbabilisticEventEngine(endtime,parms);
+	    return eng;
+	}
+	if (engine.equals("Script")) {
+	    eng= new ScriptEngine(endtime,parms);
+	    return eng;
+	}
+      } catch (EventEngineException e) {
+	throw new SAXException ("Cannot construct event engine "+engine+" "+e.getMessage());
       }
-      if (engine.equals("Test")) {
-          eng= new TestEventEngine(endtime,parms);
-          return eng;
+      Class <?> engClass= null;
+      try {
+	 engClass= Class.forName(engine);
+	 boolean impEng= false;
+	 for (Class e: engClass.getInterfaces()) {
+	    if (e.equals(Class.forName("usr.engine.EventEngine"))) {
+	      impEng= true;
+	      break;
+	    }
+	 }
+	 if (impEng == false) {
+	    throw new Exception ("Class name not instance of EventEngine");
+	 }
+      } catch (Exception e) {
+	 throw new SAXException("Could not find engine type "+engine);
       }
-      if (engine.equals("Probabilistic")) {
-          eng= new ProbabilisticEventEngine(endtime,parms);
-          return eng;
+      try {
+	 Class[] args= new Class[2];
+	 args[0]= int.class;
+	 args[1]= String.class;
+	 Constructor <?> c= engClass.getConstructor(args);
+	 Object[] arglist= new Object[2];
+	 arglist[0]= endtime;
+	 arglist[1]= parms;
+	 eng= (EventEngine)c.newInstance(arglist);
+	 return eng;
+      } catch (InvocationTargetException e) {
+	Throwable t= e.getTargetException();
+	throw new SAXException("Could not construct engine "+engine+"\n Error message:"+t.getMessage());
+      } catch (Exception e) {
+	throw new SAXException("Could not construct engine "+engine+"\n Error message:"+e.getMessage());
       }
-      if (engine.equals("Script")) {
-          eng= new ScriptEngine(endtime,parms);
-          return eng;
-      }
-      throw new SAXException("Could not find engine type "+engine);
+      
     
     }
     

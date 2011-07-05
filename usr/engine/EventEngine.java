@@ -7,7 +7,8 @@ import usr.globalcontroller.*;
 import usr.logging.*;
 
 public interface EventEngine {
-
+  
+    
     /** Initial events to add to schedule */
     public void startStopEvents(EventScheduler s, GlobalController g);
     
