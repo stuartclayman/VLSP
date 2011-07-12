@@ -15,6 +15,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException; 
 import usr.common.*;
 import usr.net.*;
+import usr.protocol.Protocol;
 
 
 public class RouterOptions {
@@ -54,7 +55,6 @@ public class RouterOptions {
     String errorFileName_= ""; // output file name for error stream
     boolean errorFileAddName_= false; // Add suffix to output file    
 
-    private Class <? extends Datagram> defaultDatagram_= null; // Class for default datagrams
         
     /** Constructor for router Options */
     
@@ -70,11 +70,7 @@ public class RouterOptions {
    
     /** init function sets up defaults and basic information */
     void init () {
-		try {
-		  defaultDatagram_ = Class.forName("usr.net.GIDDatagram").asSubclass(Datagram.class);
-	  } catch (ClassNotFoundException e) {
-      }
-
+	
     }
     
     public void setOptionsFromFile(String fName) throws java.io.FileNotFoundException,
@@ -227,9 +223,12 @@ public class RouterOptions {
         }
         String dgtype="";
         try {
+		   Class <? extends Datagram> defaultDatagram;
 		   dgtype = ReadXMLUtils.parseSingleString(rp, "DatagramType","RoutingParameters",true);
 		   ReadXMLUtils.removeNode(rp,"DatagramType","RoutingParameters");
-		   defaultDatagram_=  Class.forName(dgtype).asSubclass(Datagram.class);
+		   defaultDatagram=  Class.forName(dgtype).asSubclass(Datagram.class);
+		   DatagramFactory.setClassForProtocol(dgtype, Protocol.DATA);
+		   DatagramFactory.setClassForProtocol(dgtype, Protocol.CONTROL);
 		} catch (ClassNotFoundException e) {
 			throw new SAXException("Unable to parse class name "+dgtype+" in Routing options");
 		} catch (SAXException e) {
@@ -572,14 +571,7 @@ public class RouterOptions {
         return errorFileAddName_;
     }
     
-     /** 
-     * return class of default datagram
-     */
-    
-    public Class getDefaultDatagram() {
-		return defaultDatagram_;
-	}
-    
+
     /**
      * Create the String to print out before a message
      */
