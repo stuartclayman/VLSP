@@ -14,6 +14,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException; 
 import usr.common.*;
+import usr.net.*;
 
 
 public class RouterOptions {
@@ -52,7 +53,9 @@ public class RouterOptions {
     boolean outputFileAddName_= false; // Add suffix to output file
     String errorFileName_= ""; // output file name for error stream
     boolean errorFileAddName_= false; // Add suffix to output file    
-    
+
+    private Class <? extends Datagram> defaultDatagram_= null; // Class for default datagrams
+        
     /** Constructor for router Options */
     
     public RouterOptions (Router router) {
@@ -67,6 +70,11 @@ public class RouterOptions {
    
     /** init function sets up defaults and basic information */
     void init () {
+		try {
+		  defaultDatagram_ = Class.forName("usr.net.GIDDatagram").asSubclass(Datagram.class);
+	  } catch (ClassNotFoundException e) {
+      }
+
     }
     
     public void setOptionsFromFile(String fName) throws java.io.FileNotFoundException,
@@ -217,6 +225,22 @@ public class RouterOptions {
         } catch (XMLNoTagException e) {
            
         }
+        String dgtype="";
+        try {
+		   dgtype = ReadXMLUtils.parseSingleString(rp, "DatagramType","RoutingParameters",true);
+		   ReadXMLUtils.removeNode(rp,"DatagramType","RoutingParameters");
+		   defaultDatagram_=  Class.forName(dgtype).asSubclass(Datagram.class);
+		} catch (ClassNotFoundException e) {
+			throw new SAXException("Unable to parse class name "+dgtype+" in Routing options");
+		} catch (SAXException e) {
+            throw new SAXException("Unable to parse class name "+dgtype+" in Routing options"+e.getMessage());
+        } catch (ClassCastException e) {
+			throw new SAXException("Class name "+dgtype+" must be sub type of Datagram in Routing options");
+		}catch (XMLNoTagException e) {
+           
+        }
+		
+		
       
         try {
            int n= ReadXMLUtils.parseSingleInt(rp, "MaxCheckTime","RoutingParameters",true);
@@ -547,6 +571,14 @@ public class RouterOptions {
     public boolean getErrorFileAddName() {
         return errorFileAddName_;
     }
+    
+     /** 
+     * return class of default datagram
+     */
+    
+    public Class getDefaultDatagram() {
+		return defaultDatagram_;
+	}
     
     /**
      * Create the String to print out before a message

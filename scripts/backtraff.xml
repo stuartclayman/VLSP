@@ -5,7 +5,7 @@
      <ConnectedNetwork>true</ConnectedNetwork>
   </GlobalController>
   <LocalController>
-     <Name>gormenghast</Name>
+     <Name>localhost</Name>
      <Port>10000</Port>
      <LowPort>11001</LowPort>
      <HighPort>12000</HighPort>
@@ -14,7 +14,7 @@
   <EventEngine>
      <Name>usr.engine.ProbabilisticEventEngine</Name>
      <EndTime>36</EndTime>
-     <Parameters>probdists.xml</Parameters>
+     <Parameters>scripts/probdistslow_noPA.xml</Parameters>
   </EventEngine>
   <EventEngine>
      <Name>usr.engine.BackgroundTrafficEngine</Name>
@@ -22,7 +22,7 @@
      <Parameters>scripts/backtraffdists.xml</Parameters>
   </EventEngine>
   <RouterOptions>
-      routeroptions.xml
+      scripts/routeroptions.xml
   </RouterOptions>
       <Output>
         <File>out.net</File>

@@ -57,7 +57,6 @@ public class ControlOptions {
       remoteLoginCommand_ = "/usr/bin/ssh";
       remoteLoginFlags_ = "-n";
       Properties prop = System.getProperties();
-      
       remoteStartController_ = 
         "java -cp "+prop.getProperty("java.class.path", null)+" usr.localcontroller.LocalController";
       routerOptions_= new RouterOptions(null);
@@ -569,6 +568,8 @@ public class ControlOptions {
     public int noControllers() {
       return localControllers_.size();
     }
+    
+
     
     /** Accessor function returns the i th controller 
     */
