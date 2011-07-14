@@ -17,7 +17,9 @@ public class IPV4Address extends Size4 implements Address, Serializable {
      */
     public IPV4Address(String hostname) throws UnknownHostException {
         addr = InetAddress.getByName(hostname);
-        bytes = addr.getAddress();
+        byte[] inetbytes = addr.getAddress();
+        // copy bytes in
+        System.arraycopy(inetbytes, 0, bytes, 0, 4);
     }
 
     /**
@@ -25,7 +27,8 @@ public class IPV4Address extends Size4 implements Address, Serializable {
      */
     public IPV4Address(byte[] addr)  throws UnknownHostException {
         if (addr.length == 4) {
-            bytes = addr;
+            // copy bytes in
+            System.arraycopy(addr, 0, bytes, 0, 4);
             this.addr = InetAddress.getByAddress(bytes);
         } else {
             throw new UnknownHostException("InetAddress: wrong length. Expected 4, got " + addr.length);
@@ -41,20 +44,6 @@ public class IPV4Address extends Size4 implements Address, Serializable {
         buf.putInt(addr);
     }
 
-    /**
-     * Get IPV4Address as a byte[]
-     */
-    public byte[] asByteArray() {
-        return bytes;
-    }
-
-    /**
-     * Get the size in bytes of an instantiation of an IPV4Address.
-     */
-    public int size() {
-        return 4;
-    }
-    
     /**
      * Get IPV4Address as an InetAddress
      */
@@ -72,7 +61,15 @@ public class IPV4Address extends Size4 implements Address, Serializable {
     }
 
     /**
-     * Compare this IPV4Address to another one
+     * Address in transmittable form
+     */
+    public String asTransmitForm() {
+        return numericToTextFormat(bytes);
+    }
+
+
+    /**
+     * Compare this Address to another one
      */
     public int compareTo(Object other) { 
         int val1 = this.asInteger();
@@ -104,14 +101,6 @@ public class IPV4Address extends Size4 implements Address, Serializable {
      */
     public String toString() {
         return numericToTextFormat(bytes);
-    }
-
-    /**
-     * Convert.
-     */
-    static String numericToTextFormat(byte[] src)
-    {
-        return (src[0] & 0xff) + "." + (src[1] & 0xff) + "." + (src[2] & 0xff) + "." + (src[3] & 0xff);
     }
 
 }

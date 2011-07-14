@@ -3,6 +3,7 @@ package usr.router;
 import usr.logging.*;
 import usr.net.Datagram;
 import usr.net.Address;
+import usr.net.AddressFactory;
 import usr.net.DatagramFactory;
 import usr.protocol.Protocol;
 import java.util.List;
@@ -56,15 +57,7 @@ public class Router {
     public Router(int port, String name) {
         initRouter(port, port+1);
 
-
         setName(name);
-        try {
-          int gid= Integer.parseInt(name);
-          setGlobalID(gid);
-          
-        } catch (Exception e) {
-          System.err.println("Router expected integer as name for GID");
-        }
     }
 
     /**
@@ -90,12 +83,6 @@ public class Router {
         initRouter(mPort, r2rPort);
 
         setName(name);
-        try {
-          int gid= Integer.parseInt(name);
-          setGlobalID(gid);
-        } catch (Exception e) {
-        
-        }
     }
     
  
@@ -230,22 +217,7 @@ public class Router {
         return controller.setAddress(addr);
     }
 
-    /**
-     * Get the global ID of this Router.
-     */
-    int getGlobalID() {
-        return controller.getGlobalID();
-    }
-
-    /**
-     * Set the globalID of this Router.
-     */
-    boolean setGlobalID(int id) {
-        return controller.setGlobalID(id);
-    }
-    
     /** get listener */
-    
     public NetIFListener getListener() {
         return fabric;
     }

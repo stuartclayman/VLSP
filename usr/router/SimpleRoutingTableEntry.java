@@ -26,10 +26,10 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
              ("Byte array received to construct routing table too short");
         }
         ByteBuffer bytes= ByteBuffer.wrap(tableEntry);
-        address_= new GIDAddress(bytes.getInt(0));
+        address_ = AddressFactory.newAddress(bytes.getInt(0));
         cost_ = bytes.getInt(4);
-			  inter_= inter;
-			  //System.err.println("NEW ENTRY CREATED "+toString());
+        inter_= inter;
+        //System.err.println("NEW ENTRY CREATED "+toString());
     }
 
 

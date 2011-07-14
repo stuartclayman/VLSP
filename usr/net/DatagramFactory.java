@@ -18,17 +18,13 @@ public class DatagramFactory {
     // indexed by Protocol number
     private static ArrayList<DatagramFactoryInfo> list = new ArrayList<DatagramFactoryInfo>();
 
+    /** Set the default TTL to be used by new packets */
+    static int initialTTL_= 64;
+
     // class initiation code
     static {
-        setClassForProtocol("usr.net.GIDDatagram", Protocol.DATA);
-        setClassForProtocol("usr.net.GIDDatagram", Protocol.CONTROL);
-    }
-
-    /** Set the default Initial TTL for each datagram type */
-    public static void setInitialTTL(int ttl) 
-    {
-        GIDDatagram.setInitialTTL(ttl);
-        IPV4Datagram.setInitialTTL(ttl);
+        setClassForProtocol("usr.net.Size4Datagram", Protocol.DATA);
+        setClassForProtocol("usr.net.Size4Datagram", Protocol.CONTROL);
     }
 
     /**
@@ -68,6 +64,7 @@ public class DatagramFactory {
                 return dg;
             } else {
                 Datagram dg =  (Datagram)dfi.cons1.newInstance(payload);            
+                dg.setTTL(initialTTL_);
                 dg.setProtocol(protocol);
                 return dg;
             }
@@ -107,6 +104,12 @@ public class DatagramFactory {
         } else {
             list.set(protocol, dfi);
         }
+    }
+
+    /** Set the default Initial TTL for each datagram type */
+    public static void setInitialTTL(int ttl) 
+    {
+        initialTTL_ = ttl;
     }
 
         

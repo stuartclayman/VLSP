@@ -4,7 +4,7 @@ import usr.protocol.MCRP;
 import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import usr.router.NetIF;
-import usr.net.GIDAddress;
+import usr.net.AddressFactory;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.net.*;
@@ -59,6 +59,7 @@ public class IncomingConnectionCommand extends RouterCommand {
             }
 
             // get remote address
+            /*
             scanner = new Scanner(remoteRouterID);
             int remoteAddr;
 
@@ -68,7 +69,9 @@ public class IncomingConnectionCommand extends RouterCommand {
                 error(getName() + " invalid value for routerID");
                 return true;
             }
+            */
 
+            String remoteAddr = remoteRouterID;
 
             // get connection weight
             scanner = new Scanner(weightStr);
@@ -104,7 +107,7 @@ public class IncomingConnectionCommand extends RouterCommand {
                 netIF.setAddress(controller.getAddress()); 
                 // set remote router
                 netIF.setRemoteRouterName(remoteRouterName);
-                netIF.setRemoteRouterAddress(new GIDAddress(remoteAddr));
+                netIF.setRemoteRouterAddress(AddressFactory.newAddress(remoteAddr));
                         
                 // now plug netIF into Router
                 controller.plugTemporaryNetIFIntoPort(netIF);

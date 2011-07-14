@@ -10,7 +10,7 @@ import usr.protocol.Protocol;
  * An application for Ping 
  */
 public class Ping implements Application {
-    int gid_= 0;
+    Address address = null;
     boolean running_= false;
     DatagramSocket socket_= null;
 
@@ -31,7 +31,7 @@ public class Ping implements Application {
             return new ApplicationResponse(false, leadin()+"PING COMMAND REQUIRES ROUTER ADDRESS AS ARGUMENT");
         }
         try {
-            gid_= Integer.parseInt(argv[0]);
+            address = AddressFactory.newAddress(argv[0]);
             return new ApplicationResponse(true, "");
         }
         catch (Exception e) {
@@ -63,7 +63,7 @@ public class Ping implements Application {
         try {
             socket_ = new DatagramSocket();
             
-            GIDAddress dst= new GIDAddress(gid_); 
+            Address dst= address;
             // and we want to connect to port 0 (router fabric)
             socket_.connect(dst, 0);
 

@@ -419,7 +419,7 @@ public class TCPNetIF implements NetIF, Runnable {
         ByteBuffer buffer = ByteBuffer.allocate(1);
         String c= "C";
         buffer.put(c.getBytes());
-        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer); // WAS new IPV4Datagram(buffer);
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
          ByteBuffer b= ((DatagramPatch)datagram).toByteBuffer();
         datagram.setDstAddress(remoteRouterAddress);
         try {

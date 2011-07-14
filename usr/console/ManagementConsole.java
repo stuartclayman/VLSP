@@ -2,7 +2,6 @@ package usr.console;
 
 import usr.net.Address;
 import usr.logging.*;
-import usr.net.IPV4Address;
 import java.util.*;
 import java.util.concurrent.*;
 import java.io.*;

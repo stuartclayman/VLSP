@@ -256,7 +256,7 @@ public class ConnectionOverTCP implements Connection {
             bufferStartData_+= packetLen;
             ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
             // get an empty Datagram
-            Datagram dg = DatagramFactory.newDatagram();  // WAS new IPV4Datagram();
+            Datagram dg = DatagramFactory.newDatagram();
             // and fill in contents
             // not just the payload, but all headers too
             ((DatagramPatch)dg).fromByteBuffer(newBB);

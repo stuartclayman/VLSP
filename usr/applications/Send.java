@@ -3,7 +3,6 @@ package usr.applications;
 import usr.net.*;
 import usr.logging.*;
 import java.nio.ByteBuffer;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
 /**
@@ -31,9 +30,9 @@ public class Send implements Application {
         if (args.length == 3) {
             // try address
             try {
-                addr = new GIDAddress(args[0]);
+                addr = AddressFactory.newAddress(args[0]);
 
-            } catch (UnknownHostException uhe) {
+            } catch (Exception e) {
                 return new ApplicationResponse(false, "UnknownHost " + args[0]);
             }
 

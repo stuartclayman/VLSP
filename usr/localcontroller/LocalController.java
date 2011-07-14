@@ -1,6 +1,6 @@
 package usr.localcontroller;
 
-import usr.net.GIDAddress;
+import usr.net.AddressFactory;
 import java.lang.*;
 import java.io.*;
 import usr.logging.*;
@@ -326,7 +326,7 @@ public class LocalController implements ComponentController {
         // tell the router its new name and config if available
         try {
             interactor.setName(routerName);
-            interactor.setRouterAddress(new GIDAddress(routerId));
+            interactor.setRouterAddress(AddressFactory.newAddress(routerId));
 
             if (routerConfigString_ != "") {
                 interactor.setConfigString(routerConfigString_);

@@ -39,8 +39,6 @@ public class GIDAddress extends Size4 implements Address, Serializable {
      */
     public GIDAddress(int addr) {
         globalAddress = addr;
-        //Logger.getLogger("log").logln(USR.STDOUT, "SET GLOBAL ADDRESS "+addr);
-
         // convert int to byte[] 
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         buf.putInt(addr);
@@ -52,22 +50,16 @@ public class GIDAddress extends Size4 implements Address, Serializable {
      */
     public GIDAddress(byte[] addr)  throws UnsupportedOperationException {
         if (addr.length == 4) {
-            bytes = addr;
+            // copy bytes in
+            System.arraycopy(addr, 0, bytes, 0, 4);
 
             // convert byte[] to int
-            ByteBuffer buf = ByteBuffer.wrap(addr);
+            ByteBuffer buf = ByteBuffer.wrap(bytes);
             globalAddress = buf.getInt();
 
         } else {
             throw new UnsupportedOperationException("GIDAddress: wrong length. Expected 4, got " + addr.length);
         }
-    }
-
-    /**
-     * Get GIDAddress as a byte[]
-     */
-    public byte[] asByteArray() {
-        return bytes;
     }
 
     /** 
@@ -77,13 +69,6 @@ public class GIDAddress extends Size4 implements Address, Serializable {
         return globalAddress;
     }
 
-
-    /**
-     * Get the size in bytes of an instantiation of an GIDAddress.
-     */
-    public int size() {
-        return 4;
-    }
 
     /**
      * Get GIDAddress as an InetAddress
@@ -97,7 +82,15 @@ public class GIDAddress extends Size4 implements Address, Serializable {
     }
 
     /**
-     * Compare this IPV4Address to another one
+     * Address in transmittable form
+     */
+    public String asTransmitForm() {
+        return Integer.toString(globalAddress);
+    }
+        
+
+    /**
+     * Compare this Address to another one
      */
     public int compareTo(Object other) { 
         int val1 = this.asInteger();
@@ -129,14 +122,6 @@ public class GIDAddress extends Size4 implements Address, Serializable {
      */
     public String toString() {
         return "@("+globalAddress + ")";
-    }
-
-    /**
-     * Convert.
-     */
-    static String numericToTextFormat(byte[] src)
-    {
-        return (src[0] & 0xff) + "." + (src[1] & 0xff) + "." + (src[2] & 0xff) + "." + (src[3] & 0xff);
     }
 
 

@@ -1,7 +1,8 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
-import usr.net.GIDAddress;
+import usr.net.Address;
+import usr.net.AddressFactory;
 import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import java.io.IOException;
@@ -27,21 +28,16 @@ public class SetRouterAddressCommand extends RouterCommand {
     public boolean evaluate(String req) {
         String idStr = req.substring(MCRP.SET_ROUTER_ADDRESS.CMD.length()).trim();
 
-        Scanner scanner = new Scanner(idStr);
-
         boolean result;
 
-        if (scanner.hasNextInt()) {
-            int id = scanner.nextInt();
-            boolean idSet = controller.setAddress(new GIDAddress(id));
+        Address addr = AddressFactory.newAddress(idStr);
 
-            if (idSet) {
-                result = success("" + id);
-            } else {
-                result = error("Cannot set Global Address after communication");
-            }
+        boolean idSet = controller.setAddress(addr);
+
+        if (idSet) {
+            result = success("" + idSet);
         } else {
-            result = error("Cannot set Global Address with value " + idStr);
+            result = error("Cannot set Global Address after communication");
         }
 
         if (!result) {

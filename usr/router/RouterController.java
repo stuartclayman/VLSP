@@ -115,7 +115,7 @@ public class RouterController implements ComponentController, Runnable {
 
         name = "Router-" + mPort + "-" + r2rPort;
         
-        myAddress = new GIDAddress(name.hashCode());
+        myAddress = AddressFactory.newAddress(name.hashCode());
         this.managementConsolePort = mPort;
         // delegate listening of commands to a ManagementConsole object
         management = new RouterManagementConsole(this, mPort);
@@ -158,23 +158,6 @@ public class RouterController implements ComponentController, Runnable {
         } else {
             return false;
         }
-    }
-
-    /**
-     * Get the global ID of this RouterController.
-     */
-    int getGlobalID() {
-        return myAddress.asInteger();
-    }
-
-    /**
-     * Set the global ID of this RouterController.
-     * This can only be done before the Router has started to
-     * communicate with other elements.
-     * @return false if the ID cannot be set
-     */
-    boolean setGlobalID(int id) {
-        return setAddress(new GIDAddress(id));
     }
 
     /**

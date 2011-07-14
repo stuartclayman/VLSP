@@ -3,10 +3,7 @@ package usr.test;
 import usr.router.Router;
 import usr.logging.*;
 import usr.router.AppSocket;
-import usr.net.GIDAddress;
-import usr.net.IPV4Address;
-import usr.net.Datagram;
-import usr.net.GIDDatagram;
+import usr.net.*;
 import java.util.Scanner;
 
 /**
@@ -23,6 +20,8 @@ public class RouterApp1S {
 
     public RouterApp1S() {
         try {
+            AddressFactory.setClassForAddress("usr.net.IPV4Address");
+
             int port = 18191;
             int r2r = 18192;
 

@@ -3,7 +3,7 @@ package usr.interactor;
 import usr.protocol.MCRP;
 import usr.logging.*;
 import usr.net.Address;
-import usr.net.GIDAddress;
+import usr.net.AddressFactory;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -74,7 +74,7 @@ public class RouterInteractor extends MCRPInteractor {
     }
 
     /**
-     * Get the global address of the router.
+     * Get the address of the router.
      */
     public Address getRouterAddress() throws IOException, MCRPException {
 	MCRPResponse response = interact(MCRP.GET_ROUTER_ADDRESS.CMD);
@@ -82,20 +82,9 @@ public class RouterInteractor extends MCRPInteractor {
 
         String value = response.get(0)[1];
 
-        Address addr = new GIDAddress(value);
+        Address addr = AddressFactory.newAddress(value);
 
         return addr;
-        /*
-        Scanner scanner = new Scanner(value);
-
-        if (scanner.hasNextInt()) {
-            int id = scanner.nextInt();
-
-            return id;
-        } else {
-            return -1;
-        }
-        */
     }
 
 
@@ -104,7 +93,7 @@ public class RouterInteractor extends MCRPInteractor {
      * @param addr the address of the router
      */
     public MCRPInteractor setRouterAddress(Address addr) throws IOException, MCRPException {
-        int id = addr.asInteger();
+        String id = addr.asTransmitForm();
         String toSend = MCRP.SET_ROUTER_ADDRESS.CMD + " " + id;
 	interact(toSend);
 	expect(MCRP.SET_ROUTER_ADDRESS.CODE);
@@ -175,11 +164,10 @@ public class RouterInteractor extends MCRPInteractor {
      * Set the address of a port on the router.
      * Need to specify the address type and address value.
      * @param port the port name
-     * @param type the type of the address
      * @param addr the value for the address
      */
     public MCRPInteractor setPortAddress(String port, String type, String addr) throws IOException, MCRPException {
-        String toSend = MCRP.SET_PORT_ADDRESS.CMD + " " + port + " " + type + " " + addr; 
+        String toSend = MCRP.SET_PORT_ADDRESS.CMD + " " + port + " " + addr; 
 	interact(toSend);
 	expect(MCRP.SET_PORT_ADDRESS.CODE);
 	return this;
@@ -221,7 +209,7 @@ public class RouterInteractor extends MCRPInteractor {
      * @param port the port number
      */
     public MCRPInteractor incomingConnection(String connectionID, String name, Address addr, int weight, int port) throws IOException, MCRPException {
-        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + addr.asInteger() + " " + weight  + " " + port; 
+        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + addr.asTransmitForm() + " " + weight  + " " + port; 
 	interact(toSend);
 	expect(MCRP.INCOMING_CONNECTION.CODE);
 	return this;

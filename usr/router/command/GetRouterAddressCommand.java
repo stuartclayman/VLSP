@@ -23,8 +23,8 @@ public class GetRouterAddressCommand extends RouterCommand {
      */
     public boolean evaluate(String req) {
         Address a = controller.getAddress();
-        int id= a.asInteger();
-        boolean result = success("" + id);
+
+        boolean result = success(a.asTransmitForm());
 
         if (!result) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + " GET_ROUTER_ADDRESS response failed");

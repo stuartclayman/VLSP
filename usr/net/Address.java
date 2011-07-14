@@ -23,4 +23,10 @@ public interface Address extends Comparable {
      * Get an Address as an InetAddress
      */
     public InetAddress asInetAddress();
+
+    /**
+     * Get an Address in a transmittable form
+     * which can be reconstructed directed from this format.
+     */
+    public String asTransmitForm();
 } 

@@ -13,8 +13,8 @@ import java.net.UnknownHostException;
 
 /**
  * The SET_PORT_ADDRESS command.
- * SET_PORT_ADDRESS port type address
- * SET_PORT_ADDRESS port0 IPV4 192.168.1.53
+ * SET_PORT_ADDRESS port  address
+ * SET_PORT_ADDRESS port0 192.168.1.53
  */
 public class SetPortAddressCommand extends RouterCommand {
     /**
@@ -33,11 +33,10 @@ public class SetPortAddressCommand extends RouterCommand {
         String rest = req.substring(MCRP.SET_PORT_ADDRESS.CMD.length()).trim();
         String[] parts = rest.split(" ");
                     
-        if (parts.length == 3) {
+        if (parts.length == 2) {
 
             String routerPortName = parts[0];
-            String type = parts[1];
-            String addr = parts[2];
+            String addr = parts[1];
             Address address = null;
                         
             // find port
@@ -58,25 +57,10 @@ public class SetPortAddressCommand extends RouterCommand {
             }
 
             // instantiate the address
-            if (type.toUpperCase().equals("IPV4")) {
-                try {
-                    address = new IPV4Address(addr);
-                } catch (UnknownHostException uhe) {
-                    error(getName() + " UnknownHostException " + addr);
-                }
-
-            } else if (type.toUpperCase().equals("GID")) {
-                Scanner addrScan = new Scanner(addr);
-
-                if (addrScan.hasNextInt()) {
-                    int gid = addrScan.nextInt();
-                    address = new GIDAddress(gid);
-                } else {
-                    error(getName() + " Illegal GID address " + addr);
-                }
-
-            } else {
-                error(getName() + " unknown address type " + type);
+            try {
+                address = AddressFactory.newAddress(addr);
+            } catch (Exception e) {
+                error(getName() + " address error " + e);
             }
 
             // set address on netIF in port

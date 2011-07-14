@@ -668,7 +668,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
     /** Ping command received */
     public boolean ping (int id) {
-        GIDAddress dst= new GIDAddress(id);   
+        Address dst = AddressFactory.newAddress(id);
         byte[] buffer= new byte[1];
         buffer[0]='P';
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
@@ -722,8 +722,7 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
     
     /** Echo command received */
     public boolean echo (int id, int port) {
-    
-        GIDAddress dst= new GIDAddress(id);
+        Address dst = AddressFactory.newAddress(id);
         int dstPort= port;
         byte []buffer= new byte[1];
         buffer[0]= 'E';

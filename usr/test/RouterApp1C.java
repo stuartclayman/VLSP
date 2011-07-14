@@ -24,6 +24,8 @@ public class RouterApp1C {
      */
     public RouterApp1C(String remHost, int remPort) {
         try {
+            AddressFactory.setClassForAddress("usr.net.IPV4Address");
+
             int port = 18181;
             int r2r = 18182;
 
