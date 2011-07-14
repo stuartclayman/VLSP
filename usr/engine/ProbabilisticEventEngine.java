@@ -51,10 +51,11 @@ public class ProbabilisticEventEngine  implements EventEngine  {
     /** Initial events to add to schedule */
     public void initialEvents(EventScheduler s, GlobalController g)
     {
-        // simulation start
-        SimEvent e;
-        e = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
-        s.addEvent(e);
+        // Start initial router
+        long time= (long)(nodeCreateDist_.getVariate()*1000);
+        //Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
+        SimEvent e1= new SimEvent(SimEvent.EVENT_START_ROUTER, time, null, this);
+        s.addEvent(e1);
 
 
     }
@@ -62,7 +63,7 @@ public class ProbabilisticEventEngine  implements EventEngine  {
     /** Add or remove events following a simulation event */
     public void preceedEvent(SimEvent e, EventScheduler s,  GlobalController g) 
     {
-
+        
     }
     
     /** Add or remove events following a simulation event */

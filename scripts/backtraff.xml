@@ -16,11 +16,6 @@
      <EndTime>36</EndTime>
      <Parameters>scripts/probdistslow_noPA.xml</Parameters>
   </EventEngine>
-  <EventEngine>
-     <Name>usr.engine.BackgroundTrafficEngine</Name>
-     <EndTime>36</EndTime>
-     <Parameters>scripts/backtraffdists.xml</Parameters>
-  </EventEngine>
   <RouterOptions>
       scripts/routeroptions.xml
   </RouterOptions>

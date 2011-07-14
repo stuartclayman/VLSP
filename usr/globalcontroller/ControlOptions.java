@@ -631,20 +631,20 @@ public class ControlOptions {
     /** Initialise event list */
     public void initialEvents(EventScheduler s, GlobalController g)
     {
-        engines_.get(0).startStopEvents(s,g);
-	for (EventEngine eng: engines_) {
-	   eng.initialEvents(s,g);
-	}
-        SimEvent e= new SimEvent(SimEvent.EVENT_AP_CONTROLLER, 
-            routerOptions_.getControllerConsiderTime(),null,null);
-        s.addEvent(e);
-        for (OutputType o: outputs_) {
-            if (o.getTimeType() == OutputType.AT_TIME || o.getTimeType() == 
-              OutputType.AT_INTERVAL) {
-                e= new SimEvent(SimEvent.EVENT_OUTPUT,o.getTime(), o,null);
-                s.addEvent(e); 
-            }
+      engines_.get(0).startStopEvents(s,g);
+      for (EventEngine eng: engines_) {
+        eng.initialEvents(s,g);
+      }
+      SimEvent e= new SimEvent(SimEvent.EVENT_AP_CONTROLLER, 
+        routerOptions_.getControllerConsiderTime(),null,null);
+      s.addEvent(e);
+      for (OutputType o: outputs_) {
+        if (o.getTimeType() == OutputType.AT_TIME || o.getTimeType() == 
+        OutputType.AT_INTERVAL) {
+          e= new SimEvent(SimEvent.EVENT_OUTPUT,o.getTime(), o,null);
+          s.addEvent(e); 
         }
+      }
     }
     
     public String getRouterOptionsString() {
