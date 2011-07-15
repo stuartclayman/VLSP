@@ -9,6 +9,7 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 import usr.common.*;
+import usr.engine.*;
 import java.util.concurrent.*;
 import usr.interactor.*;
 import usr.APcontroller.*;
@@ -519,43 +520,13 @@ public class GlobalController implements ComponentController {
                 produceOutput(time,(OutputType)(e.getData()));
             } 
             else if (type == SimEvent.EVENT_ON_ROUTER) {
-                String[] eventArgs = (String[])e.getData();
-                Scanner sc = new Scanner(eventArgs[0]);
+                runRouterEvent(time,e);
 
-                int routerID;
+            } else if (type == SimEvent.EVENT_NEW_TRAFFIC_CONNECTION) {
+                // Create a new traffic connection
+               createTrafficConnection(time,e);
                 
-                // process router spec
-                if (sc.hasNextInt()) {
-                    // arg is int
-                    routerID = sc.nextInt();
-
-                } else {
-                    // arg is String, we need to look up the router IDs
-                    String routerName = eventArgs[0].trim();
-                    BasicRouterInfo rInfo = findRouterInfo(routerName);
-
-                    if (rInfo == null) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + routerName +" in ON_ROUTER at time " + time);
-                        shutDown();
-                    }
-
-                    routerID = rInfo.getId();
-
-                }
-
-                String className = eventArgs[1];
-
-                // eliminate router_id and className
-                String[] cmdArgs = new String[eventArgs.length-2];
-
-                for (int a=2; a < eventArgs.length; a++) {
-                    cmdArgs[a-2] = eventArgs[a];
-                }
-                
-                // call onRouter with correct args
-                onRouter(routerID, className, cmdArgs);
-
-            } 
+            }
             else {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unexected event type "
                   +type+" shutting down!");
@@ -1323,6 +1294,7 @@ public class GlobalController implements ComponentController {
         }
     }
     
+  
     /** Output a network */
     private void outputNetwork(long time, PrintStream s, OutputType o) {
         //System.err.println("APS are "+APController_.getAPList());
@@ -1432,6 +1404,84 @@ public class GlobalController implements ComponentController {
         }
         //  Make request for stats
         requestRouterStats();
+    }
+    
+    private void runRouterEvent(long time, SimEvent e) 
+    {
+      String[] eventArgs = (String[])e.getData();
+                Scanner sc = new Scanner(eventArgs[0]);
+
+                int routerID;
+                
+                // process router spec
+                if (sc.hasNextInt()) {
+                    // arg is int
+                    routerID = sc.nextInt();
+
+                } else {
+                    // arg is String, we need to look up the router IDs
+                    String routerName = eventArgs[0].trim();
+                    BasicRouterInfo rInfo = findRouterInfo(routerName);
+
+                    if (rInfo == null) {
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + routerName +" in ON_ROUTER at time " + time);
+                        shutDown();
+                    }
+
+                    routerID = rInfo.getId();
+
+                }
+
+                String className = eventArgs[1];
+
+                // eliminate router_id and className
+                String[] cmdArgs = new String[eventArgs.length-2];
+
+                for (int a=2; a < eventArgs.length; a++) {
+                    cmdArgs[a-2] = eventArgs[a];
+                }
+                
+                // call onRouter with correct args
+                onRouter(routerID, className, cmdArgs);
+    }
+    
+    /** Create a connection to send/receive data between two sites */
+    private void createTrafficConnection(long time, SimEvent e)
+    {
+      if (options_.isSimulation()) {
+        Logger.getLogger("log").logln(USR.ERROR,"Traffic options not available in simulation");
+        return;
+      }
+      int nRouters= getNoRouters();
+      if (nRouters < 2)
+        return;
+      int from; 
+      int to;
+      BackgroundTrafficEngine eng= (BackgroundTrafficEngine)e.getEngine();
+      if (eng == null) {
+        Logger.getLogger("log").logln(USR.ERROR,"Need background traffic engine to gen traffic");
+        bailOut();
+      }
+      if (eng.preferEmptyNodes() == true) {
+        Logger.getLogger("log").logln(USR.ERROR,"Not written engine to prefer empty nodes");
+        bailOut();
+      }
+      from= (int)Math.floor(Math.random()*nRouters);
+      to= (int)Math.floor(Math.random()*(nRouters-1));
+      if (to == from)
+        to= nRouters-1;
+      String []fromArgs= new String[3];
+      String []toArgs= new String[2];
+      String port= ((Integer)eng.getReceivePort(to)).toString();
+      String bytes= ((Integer)eng.getBytes()).toString();
+      String rate= ((Double)eng.getRate()).toString();
+      fromArgs[0]= port;
+      toArgs[0]= port;
+      fromArgs[1]= bytes;
+      toArgs[1]= bytes;
+      fromArgs[2]= rate;
+      onRouter(routerList_.get(to),"usr.application.Recv",toArgs);  
+      onRouter(routerList_.get(from),"usr.application.Transfer",fromArgs); 
     }
     
     /** Receiver router traffic -- if it completes a set then output it */

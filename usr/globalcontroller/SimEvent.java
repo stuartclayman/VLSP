@@ -18,6 +18,7 @@ public class SimEvent {
     public static final int EVENT_AP_CONTROLLER= 7;
     public static final int EVENT_OUTPUT= 8;
     public static final int EVENT_ON_ROUTER = 9;
+    public static final int EVENT_NEW_TRAFFIC_CONNECTION= 10;
     
     
     /** Create event -- note that time is time since start of 
@@ -40,6 +41,11 @@ public class SimEvent {
     
     public Object getData() {
         return eventData_;
+    }
+
+    /** Accessor function for engine associated with event*/
+    public EventEngine getEngine() {
+      return engine_;
     }
 
     /** Use engines or global controller to get actions which should

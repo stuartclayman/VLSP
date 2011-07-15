@@ -58,7 +58,7 @@ public class BackgroundTrafficEngine implements EventEngine  {
         /** Initial events to add to schedule */
     public void initialEvents(EventScheduler s, GlobalController g)
     {
-	
+      startNewConnection(0, s, g);
     }
     
     /** Add or remove events following a simulation event */
@@ -71,7 +71,54 @@ public class BackgroundTrafficEngine implements EventEngine  {
     public void followEvent(SimEvent e, EventScheduler s,  GlobalController g,
         Object o)
     {
+      startNewConnection(e.getTime(), s,g);
+    }
     
+    /** Start new connection between nodes at a given time */
+    private void startNewConnection(long currTime, EventScheduler s,  
+      GlobalController g)
+    {
+      double scale= 1.0;
+      
+      if (scaleWithNetwork_) {
+        int noRouters= g.getNoRouters();
+        if (noRouters > 1)
+          scale= 1.0/noRouters;
+      }
+      long time= (long)(trafficArriveDist_.getVariate()*1000*scale);
+      System.out.println("Trying to add new event at time "+time);
+      if (currTime+time > timeToEnd_)
+        return;
+      SimEvent e= new SimEvent(SimEvent.EVENT_NEW_TRAFFIC_CONNECTION, 
+        time, null, this);
+      s.addEvent(e);
+      System.out.println("Adding new event at time "+time);
+        
+    }
+    
+    /** Will empty nodes be connected to more frequently*/
+    public boolean preferEmptyNodes()
+    {
+      return preferEmptyNodes_;
+    }
+
+    /** rate at which to transfer bytes/sec*/
+    public double getRate()
+    {
+      return 1.5;
+    }
+
+
+    /** Return a free port on which to listen for a given router Id*/
+    public int getReceivePort(int rId)
+    {
+      return 80;
+    }
+
+    /** number of bytes to transfer*/
+    public int getBytes() 
+    {
+      return 10000;
     }
 
     /** Parse the XML to get probability distribution information*/
