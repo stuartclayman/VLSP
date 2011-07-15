@@ -63,19 +63,26 @@ public class LocalControllerInteractor extends MCRPInteractor
      * As the LocalController to start a new router.
      */
     public String newRouter(int routerId, int port) throws IOException, MCRPException  {
-        return newRouter(routerId,port,port+1, null);
+        return newRouter(routerId,port,port+1, null, null);
     }
 
     /**
      * Ask the LocalController to start a new router.
      * Name is optional.
      */
-    public String newRouter(int routerId, int port1, int port2, String name) 
+    public String newRouter(int routerId, int port1, int port2, String address, String name) 
         throws IOException, MCRPException  {
         String toSend = MCRP.NEW_ROUTER.CMD+" "+routerId+ " " + port1 + " " + port2;
 
-        if (name != null) {
-            toSend += " " + name;
+        // check for address
+        if (address != null) {
+            toSend += " " + address;
+
+            // and name
+            if (name != null) {
+                toSend += " " + name;
+            }
+
         }
 
         MCRPResponse response = interact(toSend);
@@ -126,8 +133,8 @@ public class LocalControllerInteractor extends MCRPInteractor
     }
 
   /** Ask the Local Controller to end a link */
-    public MCRPInteractor endLink(String host1, int port1, int rId)throws IOException, MCRPException {
-        String toSend = MCRP.END_LINK.CMD+" "+host1+":"+port1+" "+rId;
+    public MCRPInteractor endLink(String host1, int port1, String address)throws IOException, MCRPException {
+        String toSend = MCRP.END_LINK.CMD+" "+host1+":"+port1+" "+address;
         interact(toSend);
         expect(MCRP.END_LINK.CODE);
         return this;

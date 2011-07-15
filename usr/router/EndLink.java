@@ -13,17 +13,15 @@ import java.nio.channels.SocketChannel;
 
 
 /**
- * A EndLink ends connection between two links
+ * A EndLink ends connection between two routers
  */
 public class EndLink extends ChannelResponder implements Runnable {
     RouterController controller;
     Request request;
 
     /**
-     * Create a new connection.
-     * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
-     * interface to a router on the address ip_addr/port with a 
-     * connection weight of connection_weight
+     * End a link / connection.
+     * END_LINK remote_addr
      */
     public EndLink(RouterController controller, Request request) {
         this.controller = controller;
@@ -44,6 +42,7 @@ public class EndLink extends ChannelResponder implements Runnable {
             respond(MCRP.END_LINK.ERROR + " END_LINK wrong no of args");
             return;
         }
+
         String rId= parts[1];
         
         NetIF netif= controller.findNetIF(rId);

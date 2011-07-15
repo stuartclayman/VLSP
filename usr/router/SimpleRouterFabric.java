@@ -599,16 +599,28 @@ public class SimpleRouterFabric implements RouterFabric, NetIFListener,
 
             if (port.equals(RouterPort.EMPTY)) {
                 continue;
-            } else if (Integer.toString(port.getNetIF().getRemoteRouterAddress().asInteger()).equals(name)) {
-                return port.getNetIF();
-            } else if (port.getNetIF().getRemoteRouterName().equals(name)) {
-                return port.getNetIF();
-            } else if (port.getNetIF().getName().equals(name)) {
-                return port.getNetIF();
+                //} else if (Integer.toString(port.getNetIF().getRemoteRouterAddress().asInteger()).equals(name)) {
             } else {
-                ;
+
+                /*
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "findNetIF " +
+                                              " getRemoteRouterAddress = " + port.getNetIF().getRemoteRouterAddress() +
+                                              " getRemoteRouterName = " + port.getNetIF().getRemoteRouterName() +
+                                              " getName = " + port.getNetIF().getName() +
+                                              "\n"); */
+
+                if (port.getNetIF().getRemoteRouterAddress().asTransmitForm().equals(name)) {
+                    return port.getNetIF();
+                } else if (port.getNetIF().getRemoteRouterName().equals(name)) {
+                    return port.getNetIF();
+                } else if (port.getNetIF().getName().equals(name)) {
+                    return port.getNetIF();
+                } else {
+                    ;
+                }
             }
         }
+
         return null;
       }
     }

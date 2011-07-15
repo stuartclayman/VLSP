@@ -28,16 +28,16 @@ public class EndLinkCommand extends LocalCommand {
             return false;
         }
         LocalHostInfo r1;
-        int r2;
+        String r2Addr;
         try {
             r1= new LocalHostInfo(args[1]);
-            r2= Integer.parseInt(args[2]);
+            r2Addr = args[2];
         } catch (Exception e) {
             error ("CANNOT PARSE HOST INFO FOR END_LINK"+e.getMessage());
             return false;
         }  
-        if (controller.endLink(r1,r2)) {
-            success("LINK ENDED FROM"+r1+" to Id "+r2);
+        if (controller.endLink(r1,r2Addr)) {
+            success("LINK ENDED FROM"+r1+" to Id "+r2Addr);
             return true;
         }
         error("CANNOT END LINK");

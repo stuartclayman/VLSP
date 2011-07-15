@@ -382,6 +382,7 @@ public class GlobalController implements ComponentController {
         int type= e.getType();
         try {
             long time= e.getTime();
+
             if (type == SimEvent.EVENT_START_SIMULATION) {
                 startSimulation(time);
             }
@@ -389,8 +390,25 @@ public class GlobalController implements ComponentController {
                 endSimulation(time);
             }
             else if (type == SimEvent.EVENT_START_ROUTER) {
-                String name = (String)e.getData();
-                startRouter(time, name);
+                Object data = e.getData();
+
+                if (data instanceof Pair) {
+                    // there is just a Pair
+                    Pair<?,?> pair= (Pair<?,?>)data;
+                    String address = (String)pair.getFirst();
+                    String name = (String)pair.getSecond();
+
+                    // with specified address and name
+                    startRouter(time, address, name);
+
+                } else if (data instanceof String) {
+                    String name = (String)e.getData();
+                    // no address, has name
+                    startRouter(time, null, name);
+                } else {
+                    // no address, no name
+                    startRouter(time, null, null);
+                }
             }
             else if (type == SimEvent.EVENT_END_ROUTER) {
                 Object arg = e.getData();
@@ -400,11 +418,11 @@ public class GlobalController implements ComponentController {
                     routerNo = (Integer)arg;
                 } else {
                     // arg is String, we need to look up the router IDs
-                    String routerName = (String)arg;
-                    BasicRouterInfo rInfo = findRouterInfo(routerName);
+                    String routerAddress = (String)arg;
+                    BasicRouterInfo rInfo = findRouterInfo(routerAddress);
 
                     if (rInfo == null) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + routerName +" in END_ROUTER at time " + time);
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + routerAddress +" in END_ROUTER at time " + time);
                         shutDown();
                     }
 
@@ -441,19 +459,19 @@ public class GlobalController implements ComponentController {
                         router2= (Integer)pair.getSecond();
                     } else {
                         // we need to look up the router IDs
-                        String router1Name = (String)pair.getFirst();
-                        String router2Name = (String)pair.getSecond();
+                        String router1Address = (String)pair.getFirst();
+                        String router2Address = (String)pair.getSecond();
 
-                        BasicRouterInfo r1Info = findRouterInfo(router1Name);
-                        BasicRouterInfo r2Info = findRouterInfo(router2Name);
+                        BasicRouterInfo r1Info = findRouterInfo(router1Address);
+                        BasicRouterInfo r2Info = findRouterInfo(router2Address);
 
                         if (r1Info == null) {
-                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router1Name +" in START_LINK at time " + time);
+                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router1Address +" in START_LINK at time " + time);
                             shutDown();
                         }
 
                         if (r2Info == null) {
-                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router2Name +" in START_LINK at time " + time);
+                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router2Address +" in START_LINK at time " + time);
                             shutDown();
                         }
 
@@ -490,19 +508,19 @@ public class GlobalController implements ComponentController {
                     router2= (Integer)pair.getSecond();
                 } else {
                     // we need to look up the router IDs
-                    String router1Name = (String)pair.getFirst();
-                    String router2Name = (String)pair.getSecond();
+                    String router1Address = (String)pair.getFirst();
+                    String router2Address = (String)pair.getSecond();
 
-                    BasicRouterInfo r1Info = findRouterInfo(router1Name);
-                    BasicRouterInfo r2Info = findRouterInfo(router2Name);
+                    BasicRouterInfo r1Info = findRouterInfo(router1Address);
+                    BasicRouterInfo r2Info = findRouterInfo(router2Address);
 
                     if (r1Info == null) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router1Name +" in END_LINK at time " + time);
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router1Address +" in END_LINK at time " + time);
                         shutDown();
                     }
 
                     if (r2Info == null) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router2Name +" in END_LINK at time " + time);
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router2Address +" in END_LINK at time " + time);
                         shutDown();
                     }
 
@@ -580,7 +598,7 @@ public class GlobalController implements ComponentController {
     }
     
     /** Event to start a router */
-    private void startRouter(long time, String name) {
+    private void startRouter(long time, String address, String name) {
         maxRouterId_++;
         int rId= maxRouterId_;
         outLinks_.add(new int [0]);
@@ -589,14 +607,14 @@ public class GlobalController implements ComponentController {
         APController_.addNode(time, rId);
         if (!options_.isSimulation()) {
             //System.err.println("Trying to start");
-            if (startVirtualRouter(maxRouterId_,name ) == false) {
+            if (startVirtualRouter(maxRouterId_, address, name ) == false) {
               //  System.err.println("Did not start");
                 unregisterRouter(rId);
             }
         }
     }
     
-    private boolean startVirtualRouter(int id, String name) 
+    private boolean startVirtualRouter(int id, String address, String name) 
     {
         // Find least used local controller
 
@@ -630,7 +648,7 @@ public class GlobalController implements ComponentController {
         int MAX_TRIES= 5;
         for (int i= 0; i < MAX_TRIES; i++) {
             try {
-                if (tryRouterStart(id, name, leastUsed, lci)) { 
+                if (tryRouterStart(id, address, name, leastUsed, lci)) { 
                     //System.err.println("Started");
                     return true;
                 }
@@ -648,7 +666,7 @@ public class GlobalController implements ComponentController {
     }
     
     /** Make one attempt to start a router */
-    boolean tryRouterStart (int id, String name, LocalControllerInfo local, LocalControllerInteractor lci) 
+    boolean tryRouterStart (int id, String address, String name, LocalControllerInfo local, LocalControllerInteractor lci) 
         throws IOException {
         int port= 0;
         PortPool pp= portPools_.get(local);
@@ -660,7 +678,7 @@ public class GlobalController implements ComponentController {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Creating router " + id);
 
             // create the new router and get it's name
-            routerName = lci.newRouter(id, port, port+1, name);
+            routerName = lci.newRouter(id, port, port+1, address, name);
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerName);
         }
@@ -674,6 +692,7 @@ public class GlobalController implements ComponentController {
         
         BasicRouterInfo br= new BasicRouterInfo(id,simulationTime,local,port);
         br.setName(routerName);
+        br.setAddress(address);
         // keep a handle on this router
         routerIdMap_.put(id,br);
         return true;
@@ -763,12 +782,12 @@ public class GlobalController implements ComponentController {
     }
 
     /**
-     * Find some router info, given a router name
+     * Find some router info, given a router address
      */
-    public BasicRouterInfo findRouterInfo(String name) {
+    public BasicRouterInfo findRouterInfo(String address) {
         // skip through all the BasicRouterInfo objects
         for (BasicRouterInfo info : (Collection<BasicRouterInfo>)routerIdMap_.values()) {
-            if (info.getName().equals(name)) {
+            if (info.getAddress().equals(address)) {
                 // we found a match
                 return info;
             }
@@ -1076,13 +1095,13 @@ public class GlobalController implements ComponentController {
         for (i= 0; i < MAX_TRIES; i++) {
           try {
               // TODO:  work out link name, and pass that to LocalControllerInteractor
-            lci.endLink(br1.getHost(),br1.getManagementPort(),rId2);
+              lci.endLink(br1.getHost(), br1.getManagementPort(), br2.getAddress()); // rId2);
        
-            // remove Pair<router1Id, router2Id> -> connectionName to linkNames
-            linkInfo.remove(makePair(rId1, rId2));
+              // remove Pair<router1Id, router2Id> -> connectionName to linkNames
+              linkInfo.remove(makePair(rId1, rId2));
                
 
-            break;
+              break;
           } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down link "+
               br1.getHost()+":"+br1.getManagementPort()+" " +

@@ -127,9 +127,17 @@ public class ScriptEngine implements EventEngine {
             if (type.equals("START_ROUTER")) {
                 if (args.length == 2) {
                     return new SimEvent(SimEvent.EVENT_START_ROUTER, time,null,this);
+
                 } else if (args.length == 3) {
-                    String name = args[2].trim();
-                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time, name,this);
+                    String address = args[2].trim();
+                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time, address,this);
+                } else if (args.length == 4) {
+                    String address = args[2].trim();
+                    String name = args[3].trim();
+
+                    Pair<String,String> pair = new Pair<String, String>(address, name);
+
+                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time, pair,this);
                 } else {
                     throw new Exception("START_ROUTER requires router id or no arg "+ s + " => " + noComments + " args.length = " + args.length);
                 }

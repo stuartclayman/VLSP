@@ -13,6 +13,8 @@ public class BasicRouterInfo {
     private int managementPort_;
     private int router2routerPort_;
     private int routerId_;
+    // the address of the router
+    private String address;
     // the name of the router
     private String name;
     
@@ -46,6 +48,20 @@ public class BasicRouterInfo {
     
     public String getHost() {
         return controller_.getName();
+    }
+
+    /**
+     * Get the address of the router.
+     */
+    public String getAddress() {
+        return address;
+    }
+
+    /**
+     * Set the address of the router.
+     */
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     /**

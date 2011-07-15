@@ -24,6 +24,7 @@ public class AddressFactory {
     // class initiation code
     static {
         setClassForAddress("usr.net.GIDAddress");
+        //setClassForAddress("usr.test.DomainAddress");
     }
 
     /**

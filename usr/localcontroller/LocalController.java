@@ -1,5 +1,6 @@
 package usr.localcontroller;
 
+import usr.net.Address;
 import usr.net.AddressFactory;
 import java.lang.*;
 import java.io.*;
@@ -222,11 +223,18 @@ public class LocalController implements ComponentController {
      * Received start new router command
      * @return the name of the router, on success, or null, on failure.     
      */
-    public String requestNewRouter (int routerId, int port1, int port2, String name) 
+    public String requestNewRouter (int routerId, int port1, int port2, String address, String name) 
     
     {
 
         String routerName;
+        Address routerAddress;
+
+        if (address == null) {
+            routerAddress = AddressFactory.newAddress(routerId);
+        } else {
+            routerAddress = AddressFactory.newAddress(address);
+        }
 
         if (name == null) {
             routerName = "Router-" + routerId;
@@ -326,7 +334,7 @@ public class LocalController implements ComponentController {
         // tell the router its new name and config if available
         try {
             interactor.setName(routerName);
-            interactor.setRouterAddress(AddressFactory.newAddress(routerId));
+            interactor.setRouterAddress(routerAddress);
 
             if (routerConfigString_ != "") {
                 interactor.setConfigString(routerConfigString_);
@@ -487,17 +495,17 @@ public class LocalController implements ComponentController {
     }
     
     /** Local controller receives request to end a router */
-    public boolean endLink(LocalHostInfo r1, int r2) {
+    public boolean endLink(LocalHostInfo r1, String r2Addr) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
-                                      "Got terminate request for link from"+r1+" to Id "+r2);
+                                      "Got terminate request for link from"+r1+" to "+r2Addr);
         RouterInteractor ri= findRouterInteractor(r1.getPort());
         if (ri == null)
             return false;
         try {
-            ri.endLink(Integer.toString(r2));
+            ri.endLink(r2Addr);
         } 
         catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error shutting down router");
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error endLink from " + r1+" to "+r2Addr);
             Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
             return false;
         }
