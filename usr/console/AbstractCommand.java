@@ -28,9 +28,9 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
      * Construct a Command given a name, a success code, an error code.
      */
     protected AbstractCommand(String name, int succCode, int errCode) {
-        successCode = succCode;
-        errorCode = errCode;
-        this.name = name;
+	successCode = succCode;
+	errorCode = errCode;
+	this.name = name;
     }
 
     /**
@@ -43,28 +43,28 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
      * Get the name of command as a string.
      */
     public String getName() {
-        return name;
+	return name;
     }
 
     /**
      * Set the name
      */
     protected void setName(String n) {
-        name = n;
+	name = n;
     }
 
     /**
      * Get the return code on success.
      */
     public int getSuccessCode() {
-        return successCode;
+	return successCode;
     }
 
     /**
      * Get the return code on error.
      */
     public int getErrorCode() {
-        return errorCode;
+	return errorCode;
     }
 
     /**
@@ -77,14 +77,14 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
      * Returns false if it cannot send the response.
      */
     protected boolean success(String s) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getSuccessCode());
-        sb.append(" ");
-        sb.append(s);
-        String resp = sb.toString();
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "<<< RESPONSE: " + resp);
+	StringBuilder sb = new StringBuilder();
+	sb.append(getSuccessCode());
+	sb.append(" ");
+	sb.append(s);
+	String resp = sb.toString();
+	Logger.getLogger("log").logln(USR.STDOUT, leadin() + "<<< RESPONSE: " + resp);
 
-        return respond(resp);
+	return respond(resp);
     }
 
     /**
@@ -92,14 +92,14 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
      * Returns false if it cannot send the response.
      */
     protected boolean error(String s) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getErrorCode());
-        sb.append(" ");
-        sb.append(s);
-        String resp = sb.toString();
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "<<< RESPONSE: " + resp);
+	StringBuilder sb = new StringBuilder();
+	sb.append(getErrorCode());
+	sb.append(" ");
+	sb.append(s);
+	String resp = sb.toString();
+	Logger.getLogger("log").logln(USR.ERROR, leadin() + "<<< RESPONSE: " + resp);
 
-        return respond(resp);
+	return respond(resp);
     }
 
     /**
@@ -107,14 +107,14 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
      * Returns false if it cannot send the response.
      */
     protected boolean list(String s) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getSuccessCode());
-        sb.append("-");
-        sb.append(s);
-        String resp = sb.toString();
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "<<< ITEM: " + resp);
+	StringBuilder sb = new StringBuilder();
+	sb.append(getSuccessCode());
+	sb.append("-");
+	sb.append(s);
+	String resp = sb.toString();
+	Logger.getLogger("log").logln(USR.STDOUT, leadin() + "<<< ITEM: " + resp);
 
-        return respond(resp);
+	return respond(resp);
     }
 
 
@@ -122,22 +122,22 @@ public abstract class AbstractCommand extends ChannelResponder implements Comman
      * Hash code
      */
     public int hashCode() {
-        return name.hashCode();
+	return name.hashCode();
     }
 
     /**
      * Create the String to print out before a message
      */
     protected String leadin() {
-        final String MC = "MC: ";
-        ManagementConsole mc = getManagementConsole();
-        ComponentController controller = mc.getComponentController();
+	final String MC = "MC: ";
+	ManagementConsole mc = getManagementConsole();
+	ComponentController controller = mc.getComponentController();
 
-        if (controller == null) {
-            return MC;
-        } else {
-            return controller.getName() + " " + MC;
-        }
+	if (controller == null) {
+	    return MC;
+	} else {
+	    return controller.getName() + " " + MC;
+	}
 
     }
 

@@ -14,19 +14,19 @@ public class RouterConfigCommand extends LocalCommand {
      * Construct a LocalCheckCommand.
      */
     public RouterConfigCommand() {
-        super(MCRP.ROUTER_CONFIG.CMD, MCRP.ROUTER_CONFIG.CODE,
-           MCRP.ROUTER_CONFIG.ERROR);
+	super(MCRP.ROUTER_CONFIG.CMD, MCRP.ROUTER_CONFIG.CODE,
+	      MCRP.ROUTER_CONFIG.ERROR);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        
-        String rest = req.substring(MCRP.ROUTER_CONFIG.CMD.length()).trim();
-        controller.setRouterOptions(rest);
-        success("Router Config String received");
-        return true;
+
+	String rest = req.substring(MCRP.ROUTER_CONFIG.CMD.length()).trim();
+	controller.setRouterOptions(rest);
+	success("Router Config String received");
+	return true;
     }
 
 }

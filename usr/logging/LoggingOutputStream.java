@@ -23,7 +23,7 @@ public class LoggingOutputStream extends OutputStream {
 
     /**
      * The mask for messages from this OutputStream.
-     */ 
+     */
     BitMask mask = null;
 
     /**
@@ -32,17 +32,17 @@ public class LoggingOutputStream extends OutputStream {
     public LoggingOutputStream(Logger logger) {
 	this(logger, new BitMask());
     }
-	
+
     /**
      * Create a LoggingOutputStream using a specified logger
      * and BitMask mask.
      */
     public LoggingOutputStream(Logger logger, BitMask m) {
-        buffer = new ByteArrayOutputStream();
-        theLogger = logger;
+	buffer = new ByteArrayOutputStream();
+	theLogger = logger;
 	mask = m;
     }
-	
+
     /**
      * The write method needed for an OutputStream.
      */
@@ -54,8 +54,8 @@ public class LoggingOutputStream extends OutputStream {
      * Flush this OutputStream.
      */
     public void flush() throws IOException {
-        doLogging(buffer.toString());
-        buffer.reset();
+	doLogging(buffer.toString());
+	buffer.reset();
     }
 
     /**
@@ -64,11 +64,11 @@ public class LoggingOutputStream extends OutputStream {
      * can decide to log using a LogInput object.
      */
     public void doLogging(String s) {
-        if (theLogger == null) {
+	if (theLogger == null) {
 	    return;
-        } else {
+	} else {
 	    theLogger.log(mask, s);
-        }
+	}
     }
 
     /**

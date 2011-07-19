@@ -21,53 +21,53 @@ public class GetSocketStatsCommand extends RouterCommand {
      * Construct a GetSocketStatsCommand.
      */
     public GetSocketStatsCommand() {
-        super(MCRP.GET_SOCKET_STATS.CMD, MCRP.GET_SOCKET_STATS.CODE, MCRP.ERROR.CODE);
+	super(MCRP.GET_SOCKET_STATS.CMD, MCRP.GET_SOCKET_STATS.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        List<RouterPort> ports = controller.listPorts();
-        int count = 0;
+	List<RouterPort> ports = controller.listPorts();
+	int count = 0;
 
-        // get local NetIF
-        NetIF netIF = controller.getLocalNetIF();
-        if (netIF == null) {
-            boolean result= success("END 0");
-            return result;
-        }
+	// get local NetIF
+	NetIF netIF = controller.getLocalNetIF();
+	if (netIF == null) {
+	    boolean result= success("END 0");
+	    return result;
+	}
 
-        // double check it is an AppSocketMux
-        if (netIF instanceof AppSocketMux) {
-            // get stats for sockets
-            Map<Integer, NetStats> socketStats =  ((AppSocketMux)netIF).getSocketStats();
+	// double check it is an AppSocketMux
+	if (netIF instanceof AppSocketMux) {
+	    // get stats for sockets
+	    Map<Integer, NetStats> socketStats =  ((AppSocketMux)netIF).getSocketStats();
 
-            // now list the stats, one line per socket
-            for (int port : socketStats.keySet()) {
-                NetStats stats = socketStats.get(port);
-                if (stats == null)
-                    continue;
+	    // now list the stats, one line per socket
+	    for (int port : socketStats.keySet()) {
+		NetStats stats = socketStats.get(port);
+		if (stats == null)
+		    continue;
 
-                // put out netif name
-                String statsString = port + " " + stats.toString();
+		// put out netif name
+		String statsString = port + " " + stats.toString();
 
-                list(statsString);
-                count++;
+		list(statsString);
+		count++;
 
-            }
+	    }
 
-        }
+	}
 
 
-        
-        boolean result = success("END " + count);
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "LIST_CONNECTIONS response failed");
-        }
+	boolean result = success("END " + count);
 
-        return result;
+	if (!result) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "LIST_CONNECTIONS response failed");
+	}
+
+	return result;
 
     }
 

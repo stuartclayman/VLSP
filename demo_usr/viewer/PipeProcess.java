@@ -16,24 +16,24 @@ class PipeProcess extends ProcessWrapper {
      * A ProcessWrapper wraps a Process with a name.
      */
     public PipeProcess(Process proc) {
-        super(proc, "pipe-"+proc.hashCode());
-        builder = new StringBuilder();
+	super(proc, "pipe-"+proc.hashCode());
+	builder = new StringBuilder();
     }
 
     /**
      * Print out some input.
      */
     public void print(String label, String line) {
-        // could check if label is 'stderr' or 'stdout'
-        // and do different things
-        if (label.equals("stderr")) {
-            System.err.println("PipeProcess: stderr " + line);
-        } else {
-            // it's stdout
-            //System.err.println("PipeProcess: stdout " + line);
-            builder.append(line);
-            builder.append("\n");
-        }
+	// could check if label is 'stderr' or 'stdout'
+	// and do different things
+	if (label.equals("stderr")) {
+	    System.err.println("PipeProcess: stderr " + line);
+	} else {
+	    // it's stdout
+	    //System.err.println("PipeProcess: stdout " + line);
+	    builder.append(line);
+	    builder.append("\n");
+	}
     }
 
     /**
@@ -42,12 +42,12 @@ class PipeProcess extends ProcessWrapper {
      * Or set null, if error
      */
     public void eof() {
-        System.err.println("PipeProcess: EOF");
-        if (error) {
-            pipeData = null;
-        } else {
-            pipeData = builder.toString();
-        }
+	System.err.println("PipeProcess: EOF");
+	if (error) {
+	    pipeData = null;
+	} else {
+	    pipeData = builder.toString();
+	}
     }
 
 
@@ -55,24 +55,24 @@ class PipeProcess extends ProcessWrapper {
      * There has been an IO error
      */
     public void ioerror(String label, IOException ioe) {
-        System.err.println("PipeProcess: " + label + " Got IOException " + ioe);
-        error = true;
-        pipeData = null;
-        //stop();
+	System.err.println("PipeProcess: " + label + " Got IOException " + ioe);
+	error = true;
+	pipeData = null;
+	//stop();
     }
 
     /**
      * Get process ID
      */
     public int getPID() {
-        try {
-            Process process = getProcess();
-            Field field = process.getClass().getDeclaredField("pid");
-            field.setAccessible(true);
-            return field.getInt(process);
-        }   catch (Exception e) {
-            return 0;
-        }
+	try {
+	    Process process = getProcess();
+	    Field field = process.getClass().getDeclaredField("pid");
+	    field.setAccessible(true);
+	    return field.getInt(process);
+	}   catch (Exception e) {
+	    return 0;
+	}
     }
 
 
@@ -82,16 +82,16 @@ class PipeProcess extends ProcessWrapper {
      * Returns null if an error has occured.
      */
     public String getData() {
-        if (error) {
-            return null;
-        } else {
+	if (error) {
+	    return null;
+	} else {
 
-            if (pipeData == null) {
-                return null;
-            } else {
-                return pipeData;
-            }
-        }
+	    if (pipeData == null) {
+		return null;
+	    } else {
+		return pipeData;
+	    }
+	}
     }
 
 
@@ -99,17 +99,17 @@ class PipeProcess extends ProcessWrapper {
      * Stop the process wrapper.
      */
     public void stop() {
-        try {
-            super.stop();
+	try {
+	    super.stop();
 
-            iThread.join();
-            eThread.join();
+	    iThread.join();
+	    eThread.join();
 
-        } catch (Exception e) {
-        }
+	} catch (Exception e) {
+	}
     }
-       
+
     protected void destroy() {
     }
-       
+
 }

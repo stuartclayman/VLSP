@@ -36,79 +36,79 @@ public class Router {
 
     // Stream for output
     FileOutputStream outputStream_= null;
-  
+
     /**
      * Construct a Router listening on a specified port for the
-     * management console and on port+1 for the Router to Router 
+     * management console and on port+1 for the Router to Router
      * connections.
      * @param port the port for the management console
      */
     public Router(int port) {
-        initRouter(port, port+1);
+	initRouter(port, port+1);
     }
 
     /**
      * Construct a Router listening on a specified port for the
-     * management console and on port+1 for the Router to Router 
+     * management console and on port+1 for the Router to Router
      * connections, plus a given name.
      * @param port the port for the management console
      * @param name the name of the router
      */
     public Router(int port, String name) {
-        initRouter(port, port+1);
+	initRouter(port, port+1);
 
-        setName(name);
+	setName(name);
     }
 
     /**
      * Construct a Router listening on a specified port for the
-     * management console and on a specified for the Router to Router 
+     * management console and on a specified for the Router to Router
      * connections.
      * @param mPort the port for the management console
      * @param r2rPort the port for Router to Router connections
      */
     public Router(int mPort, int r2rPort) {
-        initRouter(mPort, r2rPort);
+	initRouter(mPort, r2rPort);
     }
 
     /**
      * Construct a Router listening on a specified port for the
-     * management console and on a specified for the Router to Router 
+     * management console and on a specified for the Router to Router
      * connections, plus a given name.
      * @param mPort the port for the management console
      * @param r2rPort the port for Router to Router connections
      * @param name the name of the router
      */
     public Router(int mPort, int r2rPort, String name ) {
-        initRouter(mPort, r2rPort);
+	initRouter(mPort, r2rPort);
 
-        setName(name);
+	setName(name);
     }
-    
- 
+
+
     /** Common initialisation section for all constructors */
-    void initRouter(int port1, int port2) 
-    
-    { 
-        
-        // allocate a new logger
-        Logger logger = Logger.getLogger("log");
-        // tell it to output to stdout
-        // and tell it what to pick up
-        // it will actually output things where the log has bit 
-        // USR.STDOUT set
-        logger.addOutput(System.out, new BitMask(USR.STDOUT));
-        // tell it to output to stderr
-        // and tell it what to pick up
-        // it will actually output things where the log has bit
-        // USR.ERROR set
-        logger.addOutput(System.err, new BitMask(USR.ERROR));
-        
-        options_= new RouterOptions(this);
- 
-        controller = new RouterController(this, options_, port1, port2);
-        fabric = new SimpleRouterFabric(this, options_);
-        RouterDirectory.register(this);
+    void initRouter(int port1, int port2)
+
+    {
+
+	// allocate a new logger
+	Logger logger = Logger.getLogger("log");
+	// tell it to output to stdout
+	// and tell it what to pick up
+	// it will actually output things where the log has bit
+	// USR.STDOUT set
+	logger.addOutput(System.out, new BitMask(USR.STDOUT));
+	// tell it to output to stderr
+	// and tell it what to pick up
+	// it will actually output things where the log has bit
+	// USR.ERROR set
+	logger.addOutput(System.err, new BitMask(USR.ERROR));
+
+	options_= new RouterOptions(this);
+
+	controller = new RouterController(this, options_, port1, port2);
+	fabric = new SimpleRouterFabric(this, options_);
+	RouterDirectory.register(this);
 
     }
 
@@ -116,79 +116,79 @@ public class Router {
      * Start the router
      */
     public boolean start() {
-        if (!isActive) {
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
+	if (!isActive) {
+	    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
-            boolean fabricStart = fabric.start();
-            boolean controllerStart = controller.start();
+	    boolean fabricStart = fabric.start();
+	    boolean controllerStart = controller.start();
 
-            appSocketMux = new AppSocketMux(controller);
-            appSocketMux.start();
-      
-            isActive = true;
+	    appSocketMux = new AppSocketMux(controller);
+	    appSocketMux.start();
 
-            return controllerStart && fabricStart;
-        } else {
-            return false;
-        }
+	    isActive = true;
+
+	    return controllerStart && fabricStart;
+	} else {
+	    return false;
+	}
     }
 
     /**
      * Stop the router --- called from internal threads such as management console
      */
     public boolean stop() {
-        if (isActive) {
-            isActive = false;
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
-            controller.stop();
-            appSocketMux.stop(); 
-            fabric.stop();
-            
-            try {
-                if (outputStream_ != null) {
-                    outputStream_.close();
-                }
-            } catch (java.io.IOException ex) {
-            }
-            return true;
-        } else {
-            return false;
-        }
+	if (isActive) {
+	    isActive = false;
+	    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
+	    controller.stop();
+	    appSocketMux.stop();
+	    fabric.stop();
+
+	    try {
+		if (outputStream_ != null) {
+		    outputStream_.close();
+		}
+	    } catch (java.io.IOException ex) {
+	    }
+	    return true;
+	} else {
+	    return false;
+	}
     }
 
     /**
      * Is the router active
      */
     public boolean isActive() {
-        return isActive;
+	return isActive;
     }
 
     /**
      * Get the controller.
      */
     public RouterController getRouterController() {
-        return controller;
+	return controller;
     }
 
     /**
      * Get the fabric.
      */
     public RouterFabric getRouterFabric() {
-        return fabric;
+	return fabric;
     }
 
     /**
      * Get the AppSockMux this talks to.
      */
     AppSocketMux getAppSocketMux() {
-        return appSocketMux;
+	return appSocketMux;
     }
 
     /**
      * Get the name of this Router.
      */
     public String getName() {
-        return controller.name;
+	return controller.name;
     }
 
     /**
@@ -198,7 +198,7 @@ public class Router {
      * @return false if the name cannot be set
      */
     public boolean setName(String name) {
-        return controller.setName(name);
+	return controller.setName(name);
     }
 
     /**
@@ -206,7 +206,7 @@ public class Router {
      * This is a special feature where the router itself has its own address.
      */
     public Address getAddress() {
-        return controller.getAddress();
+	return controller.getAddress();
     }
 
     /**
@@ -214,19 +214,19 @@ public class Router {
      * This is a special feature where the router itself has its own address.
      */
     public boolean setAddress(Address addr) {
-        return controller.setAddress(addr);
+	return controller.setAddress(addr);
     }
 
     /** get listener */
     public NetIFListener getListener() {
-        return fabric;
+	return fabric;
     }
 
-    /** 
+    /**
      * Get the routing table
      */
     public RoutingTable getRoutingTable() {
-        return fabric.getRoutingTable();
+	return fabric.getRoutingTable();
     }
 
 
@@ -234,227 +234,227 @@ public class Router {
      * Plug in a NetIF to the Router.
      */
     public RouterPort plugInNetIF(NetIF netIF) {
-        return fabric.addNetIF(netIF);
+	return fabric.addNetIF(netIF);
     }
 
-        /** Try to ping router with a given id */
+    /** Try to ping router with a given id */
     public boolean ping(Address addr){
-        return fabric.ping(addr);
+	return fabric.ping(addr);
     }
 
 
     /** Try to echo to a router with a given id */
     public boolean echo(Address addr){
-        return fabric.echo(addr);
+	return fabric.echo(addr);
     }
 
     /**
      * Find a NetIF by name.
      */
     public NetIF findNetIF(String name) {
-        return fabric.findNetIF(name);
+	return fabric.findNetIF(name);
     }
 
     /**
      * Get the local NetIF that has the sockets.
      */
     public NetIF getLocalNetIF() {
-        return fabric.getLocalNetIF();
+	return fabric.getLocalNetIF();
     }
 
     /**
      * Get port N.
      */
     public RouterPort getPort(int p) {
-        return fabric.getPort(p);
+	return fabric.getPort(p);
     }
 
     /**
      * Get a list of all the ports with Network Interfaces.
      */
     public List<RouterPort> listPorts() {
-        return fabric.listPorts();
+	return fabric.listPorts();
     }
 
     /**
      * Close port.
      */
     public void closePort(RouterPort port) {
-        fabric.closePort(port);
+	fabric.closePort(port);
     }
 
-    
+
 
 
     /** Remove a network interface from the router */
     public void removeNetIF(NetIF n) {
-       fabric.removeNetIF(n);
+	fabric.removeNetIF(n);
     }
 
-    
-        /** Read a string containing router options */
-    public boolean readOptionsString(String str) 
+
+    /** Read a string containing router options */
+    public boolean readOptionsString(String str)
     {
-        Logger logger= Logger.getLogger("log");
-        try { 
-            //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO PARSE STRING "+str);
-            options_.setOptionsFromString(str);
-            
-        } catch (Exception e) {
-            logger.logln(USR.ERROR, "Cannot parse options string");
-            logger.logln(USR.ERROR, e.getMessage());
-            return false;
-        }
+	Logger logger= Logger.getLogger("log");
+	try {
+	    //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO PARSE STRING "+str);
+	    options_.setOptionsFromString(str);
 
-        String fileName= options_.getOutputFile(); 
-        if (!fileName.equals("")) { 
-            if (options_.getOutputFileAddName()) {
-                fileName+= "_"+leadinFname();
-            }
-            File output= new File(fileName);
-            try {
-                outputStream_ = new FileOutputStream(output);
-                PrintWriter pw = new PrintWriter(outputStream_,true);
-                logger.removeOutput(System.out);
-                logger.addOutput(pw, new BitMask(USR.STDOUT));
-            } catch (Exception e) {
-                System.err.println("Cannot output to file");
-                System.exit(-1);
-            }
-        }
+	} catch (Exception e) {
+	    logger.logln(USR.ERROR, "Cannot parse options string");
+	    logger.logln(USR.ERROR, e.getMessage());
+	    return false;
+	}
 
-        String errorName= options_.getErrorFile();
-        if (!errorName.equals("")) { 
-            if (options_.getOutputFileAddName()) {
-                errorName+= "_"+leadinFname();
-            }
-            File output= new File(fileName);
-            try {
-                FileOutputStream fos = new FileOutputStream(output);
-                PrintWriter pw = new PrintWriter(fos,true);
-                logger.removeOutput(System.err);
-                logger.addOutput(pw, new BitMask(USR.ERROR));
-            } catch (Exception e) {
-                System.err.println("Cannot output to file");
-                System.exit(-1);
-            }
-        }
-        return true;
+	String fileName= options_.getOutputFile();
+	if (!fileName.equals("")) {
+	    if (options_.getOutputFileAddName()) {
+		fileName+= "_"+leadinFname();
+	    }
+	    File output= new File(fileName);
+	    try {
+		outputStream_ = new FileOutputStream(output);
+		PrintWriter pw = new PrintWriter(outputStream_,true);
+		logger.removeOutput(System.out);
+		logger.addOutput(pw, new BitMask(USR.STDOUT));
+	    } catch (Exception e) {
+		System.err.println("Cannot output to file");
+		System.exit(-1);
+	    }
+	}
+
+	String errorName= options_.getErrorFile();
+	if (!errorName.equals("")) {
+	    if (options_.getOutputFileAddName()) {
+		errorName+= "_"+leadinFname();
+	    }
+	    File output= new File(fileName);
+	    try {
+		FileOutputStream fos = new FileOutputStream(output);
+		PrintWriter pw = new PrintWriter(fos,true);
+		logger.removeOutput(System.err);
+		logger.addOutput(pw, new BitMask(USR.ERROR));
+	    } catch (Exception e) {
+		System.err.println("Cannot output to file");
+		System.exit(-1);
+	    }
+	}
+	return true;
     }
-    
+
     public List<NetIF> listNetIF() {
-        return fabric.listNetIF();
+	return fabric.listNetIF();
     }
-   
+
     /** Read a file containing router options */
-    
+
     public boolean readOptionsFile(String fName)
     {
-        Logger logger= Logger.getLogger("log");
-        try { 
-            options_.setOptionsFromFile(fName);
-            
-        } catch (Exception e) {
-            logger.logln(USR.ERROR, "Cannot parse options file");
-            logger.logln(USR.ERROR, e.getMessage());
-            
-            return false;
-        }   
-        String fileName= options_.getOutputFile(); 
-             if (!fileName.equals("")) { 
-         if (options_.getOutputFileAddName()) {
-            fileName+= "_"+leadinFname();
-         }
-         File output= new File(fileName);
-         try {
-          FileOutputStream fos = new FileOutputStream(output,true);
-          PrintWriter pw = new PrintWriter(fos,true);
-          logger.removeOutput(System.out);
-          logger.addOutput(pw, new BitMask(USR.STDOUT));
-        } catch (Exception e) {
-          System.err.println("Cannot output to file");
-            System.exit(-1);
-        }
-      }
-      String errorName= options_.getErrorFile();
-      if (!errorName.equals("")) { 
-         if (options_.getOutputFileAddName()) {
-            errorName+= "_"+leadinFname();
-         }
-         File output= new File(fileName);
-         try {
-          FileOutputStream fos = new FileOutputStream(output,true);
-          PrintWriter pw = new PrintWriter(fos,true);
-          logger.removeOutput(System.err);
-          logger.addOutput(pw, new BitMask(USR.ERROR));
-        } catch (Exception e) {
-          System.err.println("Cannot output to file");
-            System.exit(-1);
-        }
-      }
-      return true;
+	Logger logger= Logger.getLogger("log");
+	try {
+	    options_.setOptionsFromFile(fName);
+
+	} catch (Exception e) {
+	    logger.logln(USR.ERROR, "Cannot parse options file");
+	    logger.logln(USR.ERROR, e.getMessage());
+
+	    return false;
+	}
+	String fileName= options_.getOutputFile();
+	if (!fileName.equals("")) {
+	    if (options_.getOutputFileAddName()) {
+		fileName+= "_"+leadinFname();
+	    }
+	    File output= new File(fileName);
+	    try {
+		FileOutputStream fos = new FileOutputStream(output,true);
+		PrintWriter pw = new PrintWriter(fos,true);
+		logger.removeOutput(System.out);
+		logger.addOutput(pw, new BitMask(USR.STDOUT));
+	    } catch (Exception e) {
+		System.err.println("Cannot output to file");
+		System.exit(-1);
+	    }
+	}
+	String errorName= options_.getErrorFile();
+	if (!errorName.equals("")) {
+	    if (options_.getOutputFileAddName()) {
+		errorName+= "_"+leadinFname();
+	    }
+	    File output= new File(fileName);
+	    try {
+		FileOutputStream fos = new FileOutputStream(output,true);
+		PrintWriter pw = new PrintWriter(fos,true);
+		logger.removeOutput(System.err);
+		logger.addOutput(pw, new BitMask(USR.ERROR));
+	    } catch (Exception e) {
+		System.err.println("Cannot output to file");
+		System.exit(-1);
+	    }
+	}
+	return true;
     }
 
     public static void main(String[] args) {
-        Router router = null;
-        if (args.length == 1) {
-            int mPort = 0;
-            Scanner sc = new Scanner(args[0]);
-            mPort = sc.nextInt();
-            router = new Router(mPort, "Router-" + mPort + "-" + (mPort+1));
-        } else if (args.length == 2) {
-            int mPort = 0;
-            int r2rPort = 0;
-            Scanner sc = new Scanner(args[0]);
-            mPort = sc.nextInt();
-            sc = new Scanner(args[1]);
-            r2rPort = sc.nextInt();
-            router = new Router(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
-        } else if (args.length == 3) {
-            int mPort = 0;
-            int r2rPort = 0;
-            Scanner sc = new Scanner(args[0]);
-            mPort = sc.nextInt();
-            sc = new Scanner(args[1]);
-            r2rPort = sc.nextInt();
-            String name = args[2];
+	Router router = null;
+	if (args.length == 1) {
+	    int mPort = 0;
+	    Scanner sc = new Scanner(args[0]);
+	    mPort = sc.nextInt();
+	    router = new Router(mPort, "Router-" + mPort + "-" + (mPort+1));
+	} else if (args.length == 2) {
+	    int mPort = 0;
+	    int r2rPort = 0;
+	    Scanner sc = new Scanner(args[0]);
+	    mPort = sc.nextInt();
+	    sc = new Scanner(args[1]);
+	    r2rPort = sc.nextInt();
+	    router = new Router(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
+	} else if (args.length == 3) {
+	    int mPort = 0;
+	    int r2rPort = 0;
+	    Scanner sc = new Scanner(args[0]);
+	    mPort = sc.nextInt();
+	    sc = new Scanner(args[1]);
+	    r2rPort = sc.nextInt();
+	    String name = args[2];
 
-            router = new Router(mPort, r2rPort, name);
-        } 
-        
-        else {
-            help();
-        }
+	    router = new Router(mPort, r2rPort, name);
+	}
 
-        // start
-        if (router.start()) {
-        } else {
-            router.stop();
-        }
+	else {
+	    help();
+	}
+
+	// start
+	if (router.start()) {
+	} else {
+	    router.stop();
+	}
 
     }
 
 
     private static void help() {
-        Logger.getLogger("log").logln(USR.ERROR, "Test1 [mgt_port [r2r_port]]");
-        System.exit(1);
+	Logger.getLogger("log").logln(USR.ERROR, "Test1 [mgt_port [r2r_port]]");
+	System.exit(1);
     }
 
     static {
-        Runtime.getRuntime().addShutdownHook(new TidyUp());
+	Runtime.getRuntime().addShutdownHook(new TidyUp());
     }
-    
+
     String leadinFname() {
-        return "R_"+getName();
+	return "R_"+getName();
     }
 
     /**
      * Create the String to print out before a message
      */
     String leadin() {
-        final String R = "R: ";
+	final String R = "R: ";
 
-        return getName() + " " + R;
+	return getName() + " " + R;
     }
 
 }
@@ -464,13 +464,13 @@ class TidyUp extends Thread {
     }
 
     public void run() {
-        Router router = RouterDirectory.getRouter();
-        if (router == null)
-            return;
+	Router router = RouterDirectory.getRouter();
+	if (router == null)
+	    return;
 
-        if (router.isActive()) {
-            router.stop();
-        }
+	if (router.isActive()) {
+	    router.stop();
+	}
     }
 }
 

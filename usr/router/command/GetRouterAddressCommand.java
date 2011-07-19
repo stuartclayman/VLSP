@@ -15,22 +15,22 @@ public class GetRouterAddressCommand extends RouterCommand {
      * Construct a GetRouterAddressCommand
      */
     public GetRouterAddressCommand() {
-        super(MCRP.GET_ROUTER_ADDRESS.CMD, MCRP.GET_ROUTER_ADDRESS.CODE, MCRP.ERROR.CODE);
+	super(MCRP.GET_ROUTER_ADDRESS.CMD, MCRP.GET_ROUTER_ADDRESS.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        Address a = controller.getAddress();
+	Address a = controller.getAddress();
 
-        boolean result = success(a.asTransmitForm());
+	boolean result = success(a.asTransmitForm());
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " GET_ROUTER_ADDRESS response failed");
-        }
+	if (!result) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + " GET_ROUTER_ADDRESS response failed");
+	}
 
-        return result;
+	return result;
     }
 
 }

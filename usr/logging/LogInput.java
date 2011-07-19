@@ -12,5 +12,5 @@ public interface LogInput {
      */
     public String logView();
 }
-	
+
 

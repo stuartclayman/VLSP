@@ -18,15 +18,15 @@ public class RouterOKCommand extends RouterCommand {
      * Constructor
      */
     public RouterOKCommand() {
-        super(MCRP.ROUTER_OK.CMD, MCRP.ROUTER_OK.CODE, MCRP.ERROR.ERROR);
+	super(MCRP.ROUTER_OK.CMD, MCRP.ROUTER_OK.CODE, MCRP.ERROR.ERROR);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        success("OK");
-        return true;
+	success("OK");
+	return true;
     }
 
 }

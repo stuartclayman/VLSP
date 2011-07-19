@@ -59,7 +59,7 @@ public class InfoConsumer implements Reporter {
      * Start the InfoConsumer.
      */
     public void start() {
-        System.err.println("InfoConsumer: start");
+	System.err.println("InfoConsumer: start");
 
 	try {
 	    // create a TimeIndexFactory
@@ -87,9 +87,9 @@ public class InfoConsumer implements Reporter {
 
 	System.err.println("InfoConsumer connect to " + inputDataAddress);
 
-        DataPlane inputDataPlane = new USRDataPlaneConsumerWithNames(inputDataAddress);
+	DataPlane inputDataPlane = new USRDataPlaneConsumerWithNames(inputDataAddress);
 
-        dataDomain.setDataPlane(inputDataPlane);
+	dataDomain.setDataPlane(inputDataPlane);
 
 	dataDomain.connect();
 
@@ -166,29 +166,29 @@ public class InfoConsumer implements Reporter {
      * -n name (default: "info-consumer")
      */
     public static void main(String[] args) {
-        // Set up Router
-        try {
-            int port = 18191;
-            int r2r = 18192;
+	// Set up Router
+	try {
+	    int port = 18191;
+	    int r2r = 18192;
 
-            Router router = new Router(port, r2r, "Router-3");
+	    Router router = new Router(port, r2r, "Router-3");
 
-            // set ID
-            router.setAddress(new GIDAddress(3));
+	    // set ID
+	    router.setAddress(new GIDAddress(3));
 
-            // start
-            if (router.start()) {
-            } else {
-                throw new Exception("Router failed to start");
-            }
+	    // start
+	    if (router.start()) {
+	    } else {
+		throw new Exception("Router failed to start");
+	    }
 
-        
-        } catch (Exception e) {
-            System.err.println("SimpleConsumer exception: " + e);
-            e.printStackTrace();
-            System.exit(2);
-        }
-            
+
+	} catch (Exception e) {
+	    System.err.println("SimpleConsumer exception: " + e);
+	    e.printStackTrace();
+	    System.exit(2);
+	}
+
 
 	// allocate an InfoConsumer
 	InfoConsumer infoConsumer = new InfoConsumer();
@@ -213,11 +213,11 @@ public class InfoConsumer implements Reporter {
 		    String[] parts = argValue.split("/");
 		    Scanner sc = new Scanner(parts[0]);
 		    int addr = sc.nextInt();
-                    sc = new Scanner(parts[1]);
+		    sc = new Scanner(parts[1]);
 		    int port = sc.nextInt();
-                    Address gidAddr = new GIDAddress(addr);
+		    Address gidAddr = new GIDAddress(addr);
 
-                    SocketAddress newInputAddr = new SocketAddress(gidAddr, port);
+		    SocketAddress newInputAddr = new SocketAddress(gidAddr, port);
 		    infoConsumer.setInputAddress(newInputAddr);
 		    break;
 		}
@@ -246,7 +246,7 @@ public class InfoConsumer implements Reporter {
 		    System.err.println("InfoConsumer: unknown option " + option);
 		    break;
 		}
-		
+
 	    }
 	}
 
@@ -260,12 +260,12 @@ public class InfoConsumer implements Reporter {
      */
     class DataConsumer extends AbstractDataConsumer  {
 
-        /**
-         * Construct a BasicConsumer.
-         */
-        public DataConsumer(InfoConsumer info) {
-            addReporter(info);
-        }
+	/**
+	 * Construct a BasicConsumer.
+	 */
+	public DataConsumer(InfoConsumer info) {
+	    addReporter(info);
+	}
 
     }
 

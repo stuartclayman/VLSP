@@ -18,43 +18,43 @@ public class ListConnectionsCommand extends RouterCommand {
      * Construct a ListConnectionsCommand.
      */
     public ListConnectionsCommand() {
-        super(MCRP.LIST_CONNECTIONS.CMD, MCRP.LIST_CONNECTIONS.CODE, MCRP.ERROR.CODE);
+	super(MCRP.LIST_CONNECTIONS.CMD, MCRP.LIST_CONNECTIONS.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        List<RouterPort> ports = controller.listPorts();
-        int count = 0;
-        for (RouterPort rp : ports) {
-            if (rp.equals(RouterPort.EMPTY)) {
-                continue;
-            } else {
-                NetIF netIF = rp.getNetIF();
-                Address address = netIF.getAddress();
-                Address remoteAddress = netIF.getRemoteRouterAddress();
+	List<RouterPort> ports = controller.listPorts();
+	int count = 0;
+	for (RouterPort rp : ports) {
+	    if (rp.equals(RouterPort.EMPTY)) {
+		continue;
+	    } else {
+		NetIF netIF = rp.getNetIF();
+		Address address = netIF.getAddress();
+		Address remoteAddress = netIF.getRemoteRouterAddress();
 
-                String portString = "port" + rp.getPortNo() + " " + 
-                    netIF.getName() + " W(" + netIF.getWeight() + ") = " +
-                    controller.getName() + " " + 
-                    (address == null ? "No_Address" : address) +
-                    " => " + netIF.getRemoteRouterName() + " " +
-                    (remoteAddress == null ? "No_Remote_Address" : remoteAddress);
+		String portString = "port" + rp.getPortNo() + " " +
+		                    netIF.getName() + " W(" + netIF.getWeight() + ") = " +
+		                    controller.getName() + " " +
+		                    (address == null ? "No_Address" : address) +
+		                    " => " + netIF.getRemoteRouterName() + " " +
+		                    (remoteAddress == null ? "No_Remote_Address" : remoteAddress);
 
 
-                list(portString);
-                count++;
-            }               
-        }             
+		list(portString);
+		count++;
+	    }
+	}
 
-        boolean result = success("END " + count);
+	boolean result = success("END " + count);
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "LIST_CONNECTIONS response failed");
-        }
+	if (!result) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "LIST_CONNECTIONS response failed");
+	}
 
-        return result;
+	return result;
 
     }
 

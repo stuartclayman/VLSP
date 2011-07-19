@@ -73,14 +73,14 @@ public interface NetIF extends DatagramDevice {
      */
     public NetStats getStats();
 
-     /* Close a NetIF
+    /* Close a NetIF
      */
     public void close();
 
     /** Is this a local interface */
     public boolean isLocal();
 
-  /**
+    /**
      * Is closed.
      */
     public boolean isClosed();
@@ -88,5 +88,5 @@ public interface NetIF extends DatagramDevice {
 
     /** Remote close received */
     public void remoteClose();
-        
+
 }

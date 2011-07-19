@@ -134,27 +134,27 @@ public class USRReceiver implements Runnable {
 	    // receive from socket
 	    packet = socket.receive();
 
-            if (packet == null) {
-                // we hit EOF
+	    if (packet == null) {
+		// we hit EOF
 
-                return false;
-            } else {
+		return false;
+	    } else {
 
-                /* System.out.println("USRReceiver Received " + packet.getLength() +
-                   " bytes from "+ packet.getAddress() + 
-                   "/" + packet.getPort()); 
-                */
+		/* System.out.println("USRReceiver Received " + packet.getLength() +
+		   " bytes from "+ packet.getAddress() +
+		   "/" + packet.getPort());
+		 */
 
-                // get an input stream over the data bytes of the packet
-                byte [] payload = packet.getPayload();
-                ByteArrayInputStream theBytes = new ByteArrayInputStream(payload, 0, payload.length);
+		// get an input stream over the data bytes of the packet
+		byte [] payload = packet.getPayload();
+		ByteArrayInputStream theBytes = new ByteArrayInputStream(payload, 0, payload.length);
 
-                byteStream = theBytes;
-                srcAddr = packet.getSrcAddress();
-                length = packet.getTotalLength();
+		byteStream = theBytes;
+		srcAddr = packet.getSrcAddress();
+		length = packet.getTotalLength();
 
-                return true;
-            }
+		return true;
+	    }
 	} catch (Exception e) {
 	    // something went wrong
 	    lastException = e;
@@ -188,15 +188,15 @@ public class USRReceiver implements Runnable {
 	    } else {
 		// the receive() failed
 		// first, we try to find the exception in lastException
-                // if it is null then we reached EOF
-                if (lastException == null) {
-                    receiver.eof();
-                } else {
-                    receiver.error(lastException);
-                }
+		// if it is null then we reached EOF
+		if (lastException == null) {
+		    receiver.eof();
+		} else {
+		    receiver.error(lastException);
+		}
 	    }
 	}
     }
-	    
+
 
 }

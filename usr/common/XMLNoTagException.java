@@ -4,7 +4,7 @@ package usr.common;
 
 /**
  * An XMLNoTagException is thrown if parsing XML where
- a tag is optional and it is not present
+   a tag is optional and it is not present
  */
 public class XMLNoTagException extends Exception {
     /**

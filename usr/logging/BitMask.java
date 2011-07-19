@@ -10,21 +10,21 @@ import usr.logging.*;
  * On the other hand it can only be 32 bits.
  */
 public class BitMask implements Cloneable {
-    // a mask can be 32 bits 
+    // a mask can be 32 bits
     int actual;
 
     /**
      * Construct a new BitMask with value of 0
      */
     public BitMask() {
-        actual = 0;
+	actual = 0;
     }
 
     /**
      * Construct a BitMask from an integer
      */
     public BitMask(int m) {
-        actual = m;
+	actual = m;
     }
 
     /**
@@ -34,17 +34,17 @@ public class BitMask implements Cloneable {
      * corresponding bit in the mask argument also had the value true.
      */
     public BitMask and(BitMask mask) {
-        return new BitMask(this.actual & mask.actual);
+	return new BitMask(this.actual & mask.actual);
     }
 
     /**
      * Performs a logical OR of this mask with the argument mask.
      * A new mask is returned so that a bit in it has the value
      * true if and only if it either already had the value true or the
-     * corresponding bit in the mask argument has the value true.  
+     * corresponding bit in the mask argument has the value true.
      */
     public BitMask or(BitMask mask) {
-        return new BitMask(this.actual | mask.actual);
+	return new BitMask(this.actual | mask.actual);
     }
 
     /**
@@ -56,7 +56,7 @@ public class BitMask implements Cloneable {
      * and the corresponding bit in the argument has the value true.
      */
     public BitMask xor(BitMask mask) {
-        return new BitMask(this.actual ^ mask.actual);
+	return new BitMask(this.actual ^ mask.actual);
     }
 
 
@@ -65,8 +65,8 @@ public class BitMask implements Cloneable {
      * Returns this BitMask.
      */
     public BitMask set(int bitIndex) {
-        actual |= (1 << bitIndex);
-        return this;
+	actual |= (1 << bitIndex);
+	return this;
     }
 
     /**
@@ -74,8 +74,8 @@ public class BitMask implements Cloneable {
      * Returns this BitMask.
      */
     public BitMask unset(int bitIndex) {
-        actual &= (1 << bitIndex);
-        return this;
+	actual &= (1 << bitIndex);
+	return this;
     }
 
     /**
@@ -83,12 +83,12 @@ public class BitMask implements Cloneable {
      * Returns true if it is, false otherwise.
      */
     public boolean isSet(int bitIndex) {
-        if ((actual & (1 << bitIndex)) == 0) {
-            // bit not set
-            return false;
-        } else {
-            return true;
-        }
+	if ((actual & (1 << bitIndex)) == 0) {
+	    // bit not set
+	    return false;
+	} else {
+	    return true;
+	}
     }
 
     /**
@@ -96,8 +96,8 @@ public class BitMask implements Cloneable {
      * Returns this BitMask.
      */
     public BitMask clear() {
-        actual = 0;
-        return this;
+	actual = 0;
+	return this;
     }
 
     /**
@@ -106,7 +106,7 @@ public class BitMask implements Cloneable {
      * Returns true if it is, false otherwise.
      */
     public boolean isClear() {
-        return (actual == 0);
+	return (actual == 0);
     }
 
     /**
@@ -114,8 +114,8 @@ public class BitMask implements Cloneable {
      * Returns this BitMask.
      */
     public BitMask invert() {
-        actual = ~actual;
-        return this;
+	actual = ~actual;
+	return this;
     }
 
     /**
@@ -124,50 +124,50 @@ public class BitMask implements Cloneable {
      * the same bits set to true as this mask.
      */
     public Object clone() {
-        return new BitMask(actual);
+	return new BitMask(actual);
     }
 
     /**
      * Equals
      */
     public boolean equals(Object obj) {
-        if (obj instanceof BitMask) {
-            if (actual == ((BitMask)obj).actual) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+	if (obj instanceof BitMask) {
+	    if (actual == ((BitMask)obj).actual) {
+		return true;
+	    } else {
+		return false;
+	    }
+	} else {
+	    return false;
+	}
     }
 
     /**
      * Hash Code.
      */
     public int hashCode() {
-        // actual is unique enough
-        return actual;
+	// actual is unique enough
+	return actual;
     }
 
 
     /**
-     * To String 
+     * To String
      */
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+	StringBuilder builder = new StringBuilder();
 
-        for (int b=31; b>=0; b--) {
-            if ((actual & (1 << b)) == 0) {
-                // bit is not set
-                builder.append('0');
-            } else {
-                builder.append('1');
-            }
-        }
+	for (int b=31; b>=0; b--) {
+	    if ((actual & (1 << b)) == 0) {
+		// bit is not set
+		builder.append('0');
+	    } else {
+		builder.append('1');
+	    }
+	}
 
-        return builder.toString();
-            
+	return builder.toString();
+
     }
 
 }

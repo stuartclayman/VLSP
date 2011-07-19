@@ -14,18 +14,18 @@ public abstract class ChannelResponder {
     SocketChannel channel;
 
     /**
-     * Get the SocketChannel this command 
+     * Get the SocketChannel this command
      * is a handler for.
      */
     public SocketChannel getChannel() {
-        return channel;
+	return channel;
     }
 
     /**
-     * Set the SocketChannel this command 
+     * Set the SocketChannel this command
      */
     public void setChannel(SocketChannel ch) {
-        channel = ch;
+	channel = ch;
     }
 
     /**
@@ -33,38 +33,38 @@ public abstract class ChannelResponder {
      * Returns false if it cannot send the response down the channel.
      */
     public boolean respond(String message) {
-        message = message.concat("\n");
-        //System.err.println("Responding");
-        try {
-            return writeBytesToChannel(ByteBuffer.wrap(message.getBytes()));
-        } catch (IOException ioe) {
-              Logger.getLogger("log").logln(USR.ERROR, 
-              "Channel responder found an error writing to socket channel");
-              Logger.getLogger("log").logln(USR.ERROR,"Channel responder message was "+ioe.getMessage());
-            return false;
-        }
+	message = message.concat("\n");
+	//System.err.println("Responding");
+	try {
+	    return writeBytesToChannel(ByteBuffer.wrap(message.getBytes()));
+	} catch (IOException ioe) {
+	    Logger.getLogger("log").logln(USR.ERROR,
+	                                  "Channel responder found an error writing to socket channel");
+	    Logger.getLogger("log").logln(USR.ERROR,"Channel responder message was "+ioe.getMessage());
+	    return false;
+	}
     }
 
     public boolean writeBytesToChannel(ByteBuffer bb) throws IOException {
-        int len= channel.write(bb);
-        if (len < 0)
-            return false;
-        while (bb.remaining()>0){  
-            /*
-            // Here to be cautious
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-            }
-            */
+	int len= channel.write(bb);
+	if (len < 0)
+	    return false;
+	while (bb.remaining()>0) {
+	    /*
+	       // Here to be cautious
+	       try {
+	        Thread.sleep(10);
+	       } catch (InterruptedException e) {
+	       }
+	     */
 
 
-            len= channel.write(bb);          
-            if (len < 0) {
-                return false; 
-            }
-        }
-        return true;
+	    len= channel.write(bb);
+	    if (len < 0) {
+		return false;
+	    }
+	}
+	return true;
     }
 
 }

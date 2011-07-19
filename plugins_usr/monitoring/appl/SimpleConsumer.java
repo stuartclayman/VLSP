@@ -34,12 +34,12 @@ public class SimpleConsumer implements Application {
      * Init.
      */
     public ApplicationResponse init(String[] args) {
-        if (args.length == 1) {
+	if (args.length == 1) {
 	    Scanner sc = new Scanner(args[0]);
-            dataPort = sc.nextInt();
-            return new ApplicationResponse(true, "");
+	    dataPort = sc.nextInt();
+	    return new ApplicationResponse(true, "");
 	} else {
-            return new ApplicationResponse(false, "usage: SimpleConsumer port");
+	    return new ApplicationResponse(false, "usage: SimpleConsumer port");
 	}
     }
 
@@ -47,43 +47,43 @@ public class SimpleConsumer implements Application {
      * Start.
      */
     public ApplicationResponse start() {
-        try {
-            // set up a BasicConsumer
-            consumer = new BasicConsumer();
+	try {
+	    // set up a BasicConsumer
+	    consumer = new BasicConsumer();
 
-            // set up multicast address for data
-            SocketAddress address = new SocketAddress(dataPort);
+	    // set up multicast address for data
+	    SocketAddress address = new SocketAddress(dataPort);
 
-            // set up data plane
-            consumer.setDataPlane(new USRDataPlaneConsumerWithNames(address));
+	    // set up data plane
+	    consumer.setDataPlane(new USRDataPlaneConsumerWithNames(address));
 
-            consumer.connect();
+	    consumer.connect();
 
-            return new ApplicationResponse(true, "");
-        } catch (Exception e) {
-            return new ApplicationResponse(false, e.getMessage());
-        }
+	    return new ApplicationResponse(true, "");
+	} catch (Exception e) {
+	    return new ApplicationResponse(false, e.getMessage());
+	}
     }
 
     /**
      * Stop.
      */
     public ApplicationResponse stop() {
-        consumer.disconnect();
+	consumer.disconnect();
 
-        synchronized (this) {
-            notifyAll();
-        }
+	synchronized (this) {
+	    notifyAll();
+	}
 
-        return new ApplicationResponse(true, "");
+	return new ApplicationResponse(true, "");
     }
 
     public void run() {
-        try {
-            synchronized (this) {
-                wait();
-            }
-        } catch (InterruptedException ie) {
-        }
+	try {
+	    synchronized (this) {
+		wait();
+	    }
+	} catch (InterruptedException ie) {
+	}
     }
 }

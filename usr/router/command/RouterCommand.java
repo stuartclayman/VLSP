@@ -19,23 +19,23 @@ public abstract class RouterCommand extends AbstractCommand {
      * Construct a Command given a name, a success code, an error code.
      */
     RouterCommand(String name, int succCode, int errCode) {
-        super(name, succCode, errCode);
+	super(name, succCode, errCode);
     }
 
     /**
      * Get the ManagementConsole this is a command for.
      */
     public ManagementConsole getManagementConsole() {
-        return managementConsole;
+	return managementConsole;
     }
 
     /**
      * Set the ManagementConsole this is a command for.
      */
     public void setManagementConsole(ManagementConsole mc) {
-        managementConsole = (RouterManagementConsole)mc;
-        controller = (RouterController)managementConsole.getComponentController();
+	managementConsole = (RouterManagementConsole)mc;
+	controller = (RouterController)managementConsole.getComponentController();
     }
-                
+
 
 }

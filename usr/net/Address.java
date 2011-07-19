@@ -29,4 +29,4 @@ public interface Address extends Comparable {
      * which can be reconstructed directed from this format.
      */
     public String asTransmitForm();
-} 
+}

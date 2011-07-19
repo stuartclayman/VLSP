@@ -29,57 +29,57 @@ public class TCPEndPointSrc implements TCPEndPoint {
      * A TCPEndPointSrc needs a host and port for the TCPEndPointDst.
      */
     public TCPEndPointSrc(String host, int port) throws UnknownHostException, IOException {
-        this.host = host;
-        this.port = port;
-        isConnected = false;
+	this.host = host;
+	this.port = port;
+	isConnected = false;
 
-        channel = SocketChannel.open();
+	channel = SocketChannel.open();
     }
 
     /**
      * Connect
      */
     public boolean connect() throws IOException {
-        if (isConnected) {
-            throw new IOException("Cannot connect again to: " + socket);
-        } else {
-            socket = channel.socket();
-            socket.connect(new InetSocketAddress(host, port));
-            isConnected = true;
-            return true;
-        }
+	if (isConnected) {
+	    throw new IOException("Cannot connect again to: " + socket);
+	} else {
+	    socket = channel.socket();
+	    socket.connect(new InetSocketAddress(host, port));
+	    isConnected = true;
+	    return true;
+	}
     }
 
     /**
      * Get the remote host.
      */
     public String getHostName() {
-        return host;
+	return host;
     }
 
     /**
      * Get the port no.
      */
     public int getPort() {
-        return port;
+	return port;
     }
 
     /**
      * Get the Socket.
      */
     public Socket getSocket() {
-        return socket;
+	return socket;
     }
 
     /**
      * TO String
      */
     public String toString() {
-        if (socket == null) {
-            return  host + ":" + port + " ? ";
-        } else {
-            return  host + ":" + port + " -> ";
-        }
+	if (socket == null) {
+	    return host + ":" + port + " ? ";
+	} else {
+	    return host + ":" + port + " -> ";
+	}
     }
-    
+
 }

@@ -14,17 +14,17 @@ public class ShutDownCommand extends GlobalCommand {
      * Construct a ShutDownCommand
      */
     public ShutDownCommand() {
-        super(MCRP.SHUT_DOWN.CMD, MCRP.SHUT_DOWN.CODE, 
-          MCRP.ERROR.CODE);
+	super(MCRP.SHUT_DOWN.CMD, MCRP.SHUT_DOWN.CODE,
+	      MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        controller.shutDownCommand();
-        success("Shut Down Sent to Local Controller -- will be processed next in queue");
-        return true;
+	controller.shutDownCommand();
+	success("Shut Down Sent to Local Controller -- will be processed next in queue");
+	return true;
     }
 
 }

@@ -61,15 +61,15 @@ public class AggPoint implements Application {
     // The extraction function, which takes an individual Measurements
     // and returns the data to be stored by the Collector
     // In this case it is the value returned by Measurement::getValues()
-    // which is an ArrayList<ProbeValue> 
+    // which is an ArrayList<ProbeValue>
     Extractor onlyProbeValues = new Extractor() {
-	    public Serializable extract(Measurement m) {
-		//Serializable object = (Serializable)m.getValues();
-		Serializable object = (Serializable)m;
-		Logger.getLogger("log").logln(USR.APP_EXTRA, "Collected: " + object);
-		return object;
-	    }
-	};
+	public Serializable extract(Measurement m) {
+	    //Serializable object = (Serializable)m.getValues();
+	    Serializable object = (Serializable)m;
+	    Logger.getLogger("log").logln(USR.APP_EXTRA, "Collected: " + object);
+	    return object;
+	}
+    };
 
 
     /*
@@ -80,13 +80,13 @@ public class AggPoint implements Application {
     // In this case it takes an ArrayList<ProbeValue> and
     // returns value of first one, which is a Number
     Chooser firstValue = new Chooser() {
-	    public ChooserResult choose(Object obj) {
-		Measurement m = (Measurement)obj;
-		//ArrayList<ProbeValue> list = (ArrayList<ProbeValue>)obj;
-		List<ProbeValue> list = m.getValues();
-		return new NumberCR((Number)list.get(0).getValue());
-	    }
-	};
+	public ChooserResult choose(Object obj) {
+	    Measurement m = (Measurement)obj;
+	    //ArrayList<ProbeValue> list = (ArrayList<ProbeValue>)obj;
+	    List<ProbeValue> list = m.getValues();
+	    return new NumberCR((Number)list.get(0).getValue());
+	}
+    };
 
 
     /*
@@ -102,216 +102,216 @@ public class AggPoint implements Application {
 
     // The average function.
     AggregateFn average = new AggregateFn() {
-	    public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
-		Collection<Number> list = convert(coll);
-		Aggregate aggregate = new Aggregate();		
-		Number number =  aggregate.average(list);
-		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: average = " + number);
+	public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
+	    Collection<Number> list = convert(coll);
+	    Aggregate aggregate = new Aggregate();
+	    Number number =  aggregate.average(list);
+	    Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: average = " + number);
 
-		// now create a Measurement as the result
+	    // now create a Measurement as the result
 
-		try {
-		    // field 0 is the avg
-		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
-		    
-		    // create a list of ProbeValue
-		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
-		    pvList.add((ProbeValue)pv0);
+	    try {
+		// field 0 is the avg
+		DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
-		    // Construct the Measurement
-		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-average", pvList);
+		// create a list of ProbeValue
+		ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+		pvList.add((ProbeValue)pv0);
 
-		    // return it
-		    return m;
-		} catch (Exception e) {
-		    return null;
-		}
-		    
+		// Construct the Measurement
+		AggregatorMeasurement m = new AggregatorMeasurement("aggregated-average", pvList);
 
+		// return it
+		return m;
+	    } catch (Exception e) {
+		return null;
 	    }
-	};
+
+
+	}
+    };
 
 
     // The variance function.
     AggregateFn variance = new AggregateFn() {
-	    public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
-		Collection<Number> list = convert(coll);
-		Aggregate aggregate = new Aggregate();		
-		Number number =  aggregate.variance(list);
-		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: variance = " + number);
-		// now create a Measurement as the result
+	public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
+	    Collection<Number> list = convert(coll);
+	    Aggregate aggregate = new Aggregate();
+	    Number number =  aggregate.variance(list);
+	    Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: variance = " + number);
+	    // now create a Measurement as the result
 
-		try {
-		    // field 0 is the avg
-		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
-		    
-		    // create a list of ProbeValue
-		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
-		    pvList.add((ProbeValue)pv0);
+	    try {
+		// field 0 is the avg
+		DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
-		    // Construct the Measurement
-		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-variance", pvList);
+		// create a list of ProbeValue
+		ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+		pvList.add((ProbeValue)pv0);
 
-		    // return it
-		    return m;
-		} catch (Exception e) {
-		    return null;
-		}
-		    
+		// Construct the Measurement
+		AggregatorMeasurement m = new AggregatorMeasurement("aggregated-variance", pvList);
+
+		// return it
+		return m;
+	    } catch (Exception e) {
+		return null;
 	    }
-	};
+
+	}
+    };
 
 
     // The standard deviation function.
     AggregateFn sd = new AggregateFn() {
-	    public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
-		Collection<Number> list = convert(coll);
-		Aggregate aggregate = new Aggregate();		
-		Number number =  aggregate.sd(list);
-		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: sd = " + number);
+	public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
+	    Collection<Number> list = convert(coll);
+	    Aggregate aggregate = new Aggregate();
+	    Number number =  aggregate.sd(list);
+	    Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: sd = " + number);
 
-		// now create a Measurement as the result
+	    // now create a Measurement as the result
 
-		try {
-		    // field 0 is the avg
-		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
-		    
-		    // create a list of ProbeValue
-		    ArrayList <ProbeValue>pvList = new ArrayList <ProbeValue>();
-		    pvList.add((ProbeValue)pv0);
+	    try {
+		// field 0 is the avg
+		DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
-		    // Construct the Measurement
-		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-sd", pvList);
+		// create a list of ProbeValue
+		ArrayList <ProbeValue>pvList = new ArrayList <ProbeValue>();
+		pvList.add((ProbeValue)pv0);
 
-		    // return it
-		    return m;
-		} catch (Exception e) {
-		    return null;
-		}
+		// Construct the Measurement
+		AggregatorMeasurement m = new AggregatorMeasurement("aggregated-sd", pvList);
+
+		// return it
+		return m;
+	    } catch (Exception e) {
+		return null;
 	    }
-	};
+	}
+    };
 
 
     // The length function.
     AggregateFn length = new AggregateFn() {
-	    public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
-		Collection<Number> list = convert(coll);
-		Aggregate aggregate = new Aggregate();		
-		Number number =  aggregate.length(list);
-		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: length = " + number);
+	public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
+	    Collection<Number> list = convert(coll);
+	    Aggregate aggregate = new Aggregate();
+	    Number number =  aggregate.length(list);
+	    Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: length = " + number);
 
-		// now create a Measurement as the result
+	    // now create a Measurement as the result
 
-		try {
-		    // field 0 is the avg
-		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
-		    
-		    // create a list of ProbeValue
-		    ArrayList <ProbeValue>pvList = new ArrayList<ProbeValue>();
-		    pvList.add((ProbeValue)pv0);
+	    try {
+		// field 0 is the avg
+		DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
-		    // Construct the Measurement
-		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-length", pvList);
+		// create a list of ProbeValue
+		ArrayList <ProbeValue>pvList = new ArrayList<ProbeValue>();
+		pvList.add((ProbeValue)pv0);
 
-		    // return it
-		    return m;
-		} catch (Exception e) {
-		    return null;
-		}
+		// Construct the Measurement
+		AggregatorMeasurement m = new AggregatorMeasurement("aggregated-length", pvList);
+
+		// return it
+		return m;
+	    } catch (Exception e) {
+		return null;
 	    }
-	};
+	}
+    };
 
     // The sum function.
     AggregateFn sum = new AggregateFn() {
-	    public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
-		Collection<Number> list = convert(coll);
-		Aggregate aggregate = new Aggregate();		
-		Number number =  aggregate.sum(list);
-		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: sum = " + number);
+	public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
+	    Collection<Number> list = convert(coll);
+	    Aggregate aggregate = new Aggregate();
+	    Number number =  aggregate.sum(list);
+	    Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: sum = " + number);
 
-		// now create a Measurement as the result
+	    // now create a Measurement as the result
 
-		try {
-		    // field 0 is the avg
-		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
-		    
-		    // create a list of ProbeValue
-		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
-		    pvList.add((ProbeValue)pv0);
+	    try {
+		// field 0 is the avg
+		DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
-		    // Construct the Measurement
-		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-sum", pvList);
+		// create a list of ProbeValue
+		ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+		pvList.add((ProbeValue)pv0);
 
-		    // return it
-		    return m;
-		} catch (Exception e) {
-		    return null;
-		}
-		    
+		// Construct the Measurement
+		AggregatorMeasurement m = new AggregatorMeasurement("aggregated-sum", pvList);
+
+		// return it
+		return m;
+	    } catch (Exception e) {
+		return null;
 	    }
-	};
+
+	}
+    };
 
 
     // The min function.
     AggregateFn min = new AggregateFn() {
-	    public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
-		Collection<Number> list = convert(coll);
-		Aggregate aggregate = new Aggregate();		
-		Number number =  aggregate.min(list);
-		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: min = " + number);
+	public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
+	    Collection<Number> list = convert(coll);
+	    Aggregate aggregate = new Aggregate();
+	    Number number =  aggregate.min(list);
+	    Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: min = " + number);
 
-		// now create a Measurement as the result
+	    // now create a Measurement as the result
 
-		try {
-		    // field 0 is the avg
-		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
-		    
-		    // create a list of ProbeValue
-		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue> ();
-		    pvList.add((ProbeValue)pv0);
+	    try {
+		// field 0 is the avg
+		DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
-		    // Construct the Measurement
-		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-min", pvList);
+		// create a list of ProbeValue
+		ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue> ();
+		pvList.add((ProbeValue)pv0);
 
-		    // return it
-		    return m;
-		} catch (Exception e) {
-		    return null;
-		}
-		    
+		// Construct the Measurement
+		AggregatorMeasurement m = new AggregatorMeasurement("aggregated-min", pvList);
+
+		// return it
+		return m;
+	    } catch (Exception e) {
+		return null;
 	    }
-	};
+
+	}
+    };
 
 
     // The max function.
     AggregateFn max = new AggregateFn() {
-	    public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
-		Collection<Number> list = convert(coll);
-		Aggregate aggregate = new Aggregate();		
-		Number number =  aggregate.max(list);
-		Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: max = " + number);
+	public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
+	    Collection<Number> list = convert(coll);
+	    Aggregate aggregate = new Aggregate();
+	    Number number =  aggregate.max(list);
+	    Logger.getLogger("log").logln(USR.APP_EXTRA, "Aggregation: max = " + number);
 
-		// now create a Measurement as the result
+	    // now create a Measurement as the result
 
-		try {
-		    // field 0 is the avg
-		    DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
-		    
-		    // create a list of ProbeValue
-		    ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue> ();
-		    pvList.add((ProbeValue)pv0);
+	    try {
+		// field 0 is the avg
+		DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
-		    // Construct the Measurement
-		    AggregatorMeasurement m = new AggregatorMeasurement("aggregated-max", pvList);
+		// create a list of ProbeValue
+		ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue> ();
+		pvList.add((ProbeValue)pv0);
 
-		    // return it
-		    return m;
-		} catch (Exception e) {
-		    return null;
-		}
-		    
+		// Construct the Measurement
+		AggregatorMeasurement m = new AggregatorMeasurement("aggregated-max", pvList);
+
+		// return it
+		return m;
+	    } catch (Exception e) {
+		return null;
 	    }
-	};
+
+	}
+    };
 
 
     AggregateFn actualAggregateFn = null;
@@ -332,111 +332,111 @@ public class AggPoint implements Application {
     // Filter which always returns the value
     // i.e. no filtering
     Filter always = new Filter() {
-	    public boolean filter(Forwarder forwarder, AggregatorMeasurement m) {
-		return true;
-	    }
-	};
+	public boolean filter(Forwarder forwarder, AggregatorMeasurement m) {
+	    return true;
+	}
+    };
 
     // Filter only returns value if it is different by 5%
     Filter filter5pcTolerance = new Filter() {
-	    public boolean filter(Forwarder forwarder, AggregatorMeasurement m) {
-		AggregatorMeasurement oldValue = forwarder.getOldValue();
+	public boolean filter(Forwarder forwarder, AggregatorMeasurement m) {
+	    AggregatorMeasurement oldValue = forwarder.getOldValue();
 
-		if (oldValue == null) {
-		    return true;
-		}
-
-		// get the first field of m
-		Double mVal = (Double)m.getValues().get(0).getValue();
-		// get the first field of oldValue
-		Double oVal = (Double)oldValue.getValues().get(0).getValue();
-
-		if (oVal == 0.0)
-			return mVal != 0.0;
-		double percent = mVal / oVal;
-
-	//	Logger.getLogger("log").logln(USR.APP_EXTRA, "Filter: " + mVal + "/" + oVal + " = " +
-	//			   percent);
-
-
-		// test for 5% tolerance -  0.95 -> 1.05
-		if (0.95 < percent && percent < 1.05) {
-		    // values too similar
-		    return false;
-		} else {
-		    return true;
-		}
+	    if (oldValue == null) {
+		return true;
 	    }
-	};
+
+	    // get the first field of m
+	    Double mVal = (Double)m.getValues().get(0).getValue();
+	    // get the first field of oldValue
+	    Double oVal = (Double)oldValue.getValues().get(0).getValue();
+
+	    if (oVal == 0.0)
+		return mVal != 0.0;
+	    double percent = mVal / oVal;
+
+	    //	Logger.getLogger("log").logln(USR.APP_EXTRA, "Filter: " + mVal + "/" + oVal + " = " +
+	    //			   percent);
+
+
+	    // test for 5% tolerance -  0.95 -> 1.05
+	    if (0.95 < percent && percent < 1.05) {
+		// values too similar
+		return false;
+	    } else {
+		return true;
+	    }
+	}
+    };
 
     // Filter only returns value if it is different by 2%
     Filter filter2pcTolerance = new Filter() {
-	    public boolean filter(Forwarder forwarder, AggregatorMeasurement m) {
-		AggregatorMeasurement oldValue = forwarder.getOldValue();
+	public boolean filter(Forwarder forwarder, AggregatorMeasurement m) {
+	    AggregatorMeasurement oldValue = forwarder.getOldValue();
 
-		if (oldValue == null) {
-		    return true;
-		}
-
-		// get the first field of m
-		Double mVal = (Double)m.getValues().get(0).getValue();
-		// get the first field of oldValue
-		Double oVal = (Double)oldValue.getValues().get(0).getValue();
-		if (oVal == 0.0)
-			return mVal != 0.0;
-		double percent = mVal / oVal;
-
-		//System.out.println("Filter: " + mVal + "/" + oVal + " = " +
-		//		   percent);
-
-
-		float lower = oVal.floatValue() * 0.98f;
-		float upper = oVal.floatValue() * 1.02f;
-
-		//System.out.println("Filter: " + mVal + "/" + oVal + " = " +
-		//		   ((1 - percent) * 100) + " lower = " + lower +
-		//		   " upper = " + upper);
-
-		// test for 2% tolerance -  0.98 -> 1.02
-		if (0.98 < percent && percent < 1.02) {
-		    // values too similar
-		    return false;
-		} else {
-		    return true;
-		}
+	    if (oldValue == null) {
+		return true;
 	    }
-	};
+
+	    // get the first field of m
+	    Double mVal = (Double)m.getValues().get(0).getValue();
+	    // get the first field of oldValue
+	    Double oVal = (Double)oldValue.getValues().get(0).getValue();
+	    if (oVal == 0.0)
+		return mVal != 0.0;
+	    double percent = mVal / oVal;
+
+	    //System.out.println("Filter: " + mVal + "/" + oVal + " = " +
+	    //		   percent);
+
+
+	    float lower = oVal.floatValue() * 0.98f;
+	    float upper = oVal.floatValue() * 1.02f;
+
+	    //System.out.println("Filter: " + mVal + "/" + oVal + " = " +
+	    //		   ((1 - percent) * 100) + " lower = " + lower +
+	    //		   " upper = " + upper);
+
+	    // test for 2% tolerance -  0.98 -> 1.02
+	    if (0.98 < percent && percent < 1.02) {
+		// values too similar
+		return false;
+	    } else {
+		return true;
+	    }
+	}
+    };
 
     // Filter only returns value if it is different by 10%
     Filter filter10pcTolerance = new Filter() {
-	    public boolean filter(Forwarder forwarder, AggregatorMeasurement m) {
-		AggregatorMeasurement oldValue = forwarder.getOldValue();
+	public boolean filter(Forwarder forwarder, AggregatorMeasurement m) {
+	    AggregatorMeasurement oldValue = forwarder.getOldValue();
 
-		if (oldValue == null) {
-		    return true;
-		}
-
-		// get the first field of m
-		Double mVal = (Double)m.getValues().get(0).getValue();
-		// get the first field of oldValue
-		Double oVal = (Double)oldValue.getValues().get(0).getValue();
-		if (oVal == 0.0)
-			return mVal != 0.0;
-		double percent = mVal / oVal;
-
-		//System.out.println("Filter: " + mVal + "/" + oVal + " = " +
-		//		   percent);
-
-
-		// test for 10% tolerance -  0.90 -> 1.10
-		if (0.90 < percent && percent < 1.10) {
-		    // values too similar
-		    return false;
-		} else {
-		    return true;
-		}
+	    if (oldValue == null) {
+		return true;
 	    }
-	};
+
+	    // get the first field of m
+	    Double mVal = (Double)m.getValues().get(0).getValue();
+	    // get the first field of oldValue
+	    Double oVal = (Double)oldValue.getValues().get(0).getValue();
+	    if (oVal == 0.0)
+		return mVal != 0.0;
+	    double percent = mVal / oVal;
+
+	    //System.out.println("Filter: " + mVal + "/" + oVal + " = " +
+	    //		   percent);
+
+
+	    // test for 10% tolerance -  0.90 -> 1.10
+	    if (0.90 < percent && percent < 1.10) {
+		// values too similar
+		return false;
+	    } else {
+		return true;
+	    }
+	}
+    };
 
     // set default filter to pass every value
     Filter actualFilter = always;
@@ -452,7 +452,7 @@ public class AggPoint implements Application {
     // Set sleep time to be 30 seconds
     Timing.Regular sleepTime = new SleepSeconds(30);
 
-    // The selection of data to get, 
+    // The selection of data to get,
     // Get last 30 seconds of collected data, as per sleepTime
     Second backN = new Second(sleepTime.getSeconds(), TimeDirection.BACKWARD);
     // From Position.END_OF_INDEX, back 30 seconds
@@ -466,11 +466,11 @@ public class AggPoint implements Application {
      */
     public AggPoint() {
     }
-	
+
     /**
      * init
      * Args are:
-     * -i input address 
+     * -i input address
      * -o output address
      * -a aggregatefn,  [average, variance, sd, length, sum, min, max] (NO default)
      * -f filter, [always, 2%, 5%, 10%]  (default: always)
@@ -499,11 +499,11 @@ public class AggPoint implements Application {
 		    String[] parts = argValue.split("/");
 		    Scanner sc = new Scanner(parts[0]);
 		    int addr = sc.nextInt();
-                    sc = new Scanner(parts[1]);
+		    sc = new Scanner(parts[1]);
 		    int port = sc.nextInt();
-                    Address gidAddr = new GIDAddress(addr);
+		    Address gidAddr = new GIDAddress(addr);
 
-                    SocketAddress newInputAddr = new SocketAddress(gidAddr, port);
+		    SocketAddress newInputAddr = new SocketAddress(gidAddr, port);
 		    setInputAddress(newInputAddr);
 		    break;
 		}
@@ -512,9 +512,9 @@ public class AggPoint implements Application {
 		    String[] parts = argValue.split("/");
 		    Scanner sc = new Scanner(parts[0]);
 		    int addr = sc.nextInt();
-                    sc = new Scanner(parts[1]);
+		    sc = new Scanner(parts[1]);
 		    int port = sc.nextInt();
-                    Address gidAddr = new GIDAddress(addr);
+		    Address gidAddr = new GIDAddress(addr);
 		    SocketAddress newOutputAddr = new SocketAddress(gidAddr, port);
 		    setOutputAddress(newOutputAddr);
 		    break;
@@ -580,7 +580,7 @@ public class AggPoint implements Application {
 		    Logger.getLogger("log").logln(USR.ERROR, "AggPoint: unknown option " + option);
 		    break;
 		}
-		
+
 	    }
 	}
 
@@ -599,68 +599,68 @@ public class AggPoint implements Application {
 	    return new ApplicationResponse(false, "No Aggregation Fn has been set");
 	}
 
-        // check inputDataAddress
-        if (inputDataAddress == null) {
+	// check inputDataAddress
+	if (inputDataAddress == null) {
 	    return new ApplicationResponse(false, "No Input Address has been set");
-        }
+	}
 
-        // check outputDataAddress
-        // don;t check - allow for no forwarding
-        //if (outputDataAddress == null) {
-        // return new ApplicationResponse(false, "No Output Address has been set");
-        //}
+	// check outputDataAddress
+	// don;t check - allow for no forwarding
+	//if (outputDataAddress == null) {
+	// return new ApplicationResponse(false, "No Output Address has been set");
+	//}
 
-        return new ApplicationResponse(true, "");
-   }
+	return new ApplicationResponse(true, "");
+    }
 
     /**
      * Start the aggpoint
      */
     public ApplicationResponse start() {
-        Logger.getLogger("log").logln(USR.STDOUT, "AggPoint: input = " + inputDataAddress);
+	Logger.getLogger("log").logln(USR.STDOUT, "AggPoint: input = " + inputDataAddress);
 
-        // set up data plane
-        DataPlane inputDataPlane = new USRDataPlaneConsumerWithNames(inputDataAddress);
+	// set up data plane
+	DataPlane inputDataPlane = new USRDataPlaneConsumerWithNames(inputDataAddress);
 
-        Logger.getLogger("log").logln(USR.STDOUT, "AggPoint: output = " + outputDataAddress);
+	Logger.getLogger("log").logln(USR.STDOUT, "AggPoint: output = " + outputDataAddress);
 
-        // set up data plane
-        // might be null if there is no forwarding required
-        DataPlane outputDataPlane = null;
-        if (outputDataAddress != null) {
-            outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
-        }
+	// set up data plane
+	// might be null if there is no forwarding required
+	DataPlane outputDataPlane = null;
+	if (outputDataAddress != null) {
+	    outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
+	}
 
 	// Allocate the AggregationPoint
 	aggPoint = new AggregationPoint(inputDataPlane,
-					outputDataPlane,
-					name,
-					collectorPath,
-					onlyProbeValues,
-					firstValue,
-					actualFilter,
-					sleepTime,
-					interval,
-					actualAggregateFn,
-					probeAttributes);
+	                                outputDataPlane,
+	                                name,
+	                                collectorPath,
+	                                onlyProbeValues,
+	                                firstValue,
+	                                actualFilter,
+	                                sleepTime,
+	                                interval,
+	                                actualAggregateFn,
+	                                probeAttributes);
 
 	// and activate it.
 	aggPoint.activateControl();
 
-        return new ApplicationResponse(true, "");
+	return new ApplicationResponse(true, "");
     }
 
     /**
      * Stop
      */
     public ApplicationResponse stop() {
-        aggPoint.deactivateControl();
+	aggPoint.deactivateControl();
 
-        synchronized (this) {
-            notifyAll();
-        }
+	synchronized (this) {
+	    notifyAll();
+	}
 
-        return new ApplicationResponse(true, "");
+	return new ApplicationResponse(true, "");
 
     }
 
@@ -668,14 +668,14 @@ public class AggPoint implements Application {
      * Run
      */
     public void run() {
-        // A AggPoint already runs in itws own thread
-        // so this one can wait and do nothing.
-        try {
-            synchronized (this) {
-                wait();
-            }
-        } catch (InterruptedException ie) {
-        }
+	// A AggPoint already runs in itws own thread
+	// so this one can wait and do nothing.
+	try {
+	    synchronized (this) {
+		wait();
+	    }
+	} catch (InterruptedException ie) {
+	}
     }
 
 
@@ -729,7 +729,7 @@ public class AggPoint implements Application {
 	// Set sleep time to be slTimeseconds
 	sleepTime = new SleepSeconds(slTime);
 
-	// The selection of data to get, 
+	// The selection of data to get,
 	// Get last N seconds of collected data, as per sleepTime
 	Second backN = new Second(sleepTime.getSeconds(), TimeDirection.BACKWARD);
 	// From Position.END_OF_INDEX, back 30 seconds
@@ -858,14 +858,14 @@ public class AggPoint implements Application {
     public List<ProbeAttribute> getProbeAttributes() {
 	return probeAttributes;
     }
-    
+
     /**
      * Set the ProbeAttributes
      */
     public void setProbeAttributes(List<ProbeAttribute> list) {
 	probeAttributes = list;
     }
-    
+
     /*
      * Support functions for AggregateFn
      */

@@ -33,7 +33,7 @@ public interface RouterFabric extends NetIFListener {
      */
     public List<RouterPort> listPorts();
 
-    /** 
+    /**
      * Get a list of all connected Network Interfaces
      */
     public List<NetIF> listNetIF();
@@ -60,14 +60,14 @@ public interface RouterFabric extends NetIFListener {
      * Stop the RouterController.
      */
     public boolean stop();
-    
+
     /** List Routing table */
-    
+
     public RoutingTable getRoutingTable();
-    
+
     /** Ping a given id -- expect a response */
     public boolean ping(Address addr);
-    
+
     /** Echo -- send datagram to id */
     public boolean echo(Address addr);
 }

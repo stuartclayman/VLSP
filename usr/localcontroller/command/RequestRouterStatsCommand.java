@@ -20,21 +20,21 @@ public class RequestRouterStatsCommand extends LocalCommand {
      * Construct a GetRouterStatsCommand.
      */
     public RequestRouterStatsCommand() {
-        super(MCRP.REQUEST_ROUTER_STATS.CMD, MCRP.REQUEST_ROUTER_STATS.CODE, MCRP.ERROR.ERROR);
+	super(MCRP.REQUEST_ROUTER_STATS.CMD, MCRP.REQUEST_ROUTER_STATS.CODE, MCRP.ERROR.ERROR);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        if (controller.getGlobalControllerInteractor() == null) {
-            error("RequestRouterStatsCommand: No global controller present");
-            return false;
-        }
+	if (controller.getGlobalControllerInteractor() == null) {
+	    error("RequestRouterStatsCommand: No global controller present");
+	    return false;
+	}
 
-        success("REQUEST FOR STATS RECEIVED");
-        List<String> list= controller.getRouterStats();
-        return controller.sendRouterStats(list);
+	success("REQUEST FOR STATS RECEIVED");
+	List<String> list= controller.getRouterStats();
+	return controller.sendRouterStats(list);
     }
 
 }

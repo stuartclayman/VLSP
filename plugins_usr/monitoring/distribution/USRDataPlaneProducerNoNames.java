@@ -30,7 +30,7 @@ public class USRDataPlaneProducerNoNames extends AbstractUSRDataPlaneProducer im
      * Construct a USRDataPlaneProducerNoNames
      */
     public USRDataPlaneProducerNoNames(SocketAddress addr) {
-        super(addr);
+	super(addr);
     }
 
     /**
@@ -40,7 +40,7 @@ public class USRDataPlaneProducerNoNames extends AbstractUSRDataPlaneProducer im
      * | data source id (long) | msg type (int) | seq no (int) | payload   |
      * +-------------------------------------------------------------------+
      */
-    public int transmit(DataPlaneMessage dsp) throws Exception { 
+    public int transmit(DataPlaneMessage dsp) throws Exception {
 	// convert DataPlaneMessage into a ByteArrayOutputStream
 	// then transmit it
 
@@ -50,7 +50,7 @@ public class USRDataPlaneProducerNoNames extends AbstractUSRDataPlaneProducer im
 	    DataOutput dataOutput = new XDRDataOutputStream(byteStream);
 
 	    // write the DataSource id
-            ID dataSourceID = dsp.getDataSource().getID();
+	    ID dataSourceID = dsp.getDataSource().getID();
 	    dataOutput.writeLong(dataSourceID.getMostSignificantBits());
 	    dataOutput.writeLong(dataSourceID.getLeastSignificantBits());
 

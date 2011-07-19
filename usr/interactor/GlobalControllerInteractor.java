@@ -8,7 +8,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.*;
 import java.util.List;
-import java.util.ArrayList; 
+import java.util.ArrayList;
 
 /**
  * This class implements the MCRP protocol and acts as a client
@@ -35,7 +35,7 @@ public class GlobalControllerInteractor extends MCRPInteractor
     public GlobalControllerInteractor(InetAddress addr, int port) throws UnknownHostException, IOException  {
 	initialize(addr, port);
     }
-    
+
     /**
      * Constructor for a MCRP connection
      * to the ManagementConsole of a GlobalController.
@@ -44,17 +44,17 @@ public class GlobalControllerInteractor extends MCRPInteractor
     public GlobalControllerInteractor(LocalHostInfo lh) throws UnknownHostException, IOException  {
 	initialize(lh.getIp(), lh.getPort());
     }
-    
+
     /* Calls for ManagementConsole */
 
     /**
      * Responds to the GlobalController.
      */
     public MCRPInteractor respondToGlobalController(LocalHostInfo lc) throws IOException, MCRPException {
-      String command= MCRP.OK_LOCAL_CONTROLLER.CMD+" "+lc.getName()+" "+ lc.getPort();
-	    interact(command);
-	    expect(MCRP.OK_LOCAL_CONTROLLER.CODE);
-	    return this;
+	String command= MCRP.OK_LOCAL_CONTROLLER.CMD+" "+lc.getName()+" "+ lc.getPort();
+	interact(command);
+	expect(MCRP.OK_LOCAL_CONTROLLER.CODE);
+	return this;
     }
 
 
@@ -62,31 +62,31 @@ public class GlobalControllerInteractor extends MCRPInteractor
      * Sends collected router stats to the global controller
      */
     public MCRPInteractor sendRouterStats(String stats) throws IOException, MCRPException {
-     
-      String command= MCRP.SEND_ROUTER_STATS.CMD+" "+stats;
-      interact(command);
-	    expect(MCRP.SEND_ROUTER_STATS.CODE);
-	    return this;
-    } 
+
+	String command= MCRP.SEND_ROUTER_STATS.CMD+" "+stats;
+	interact(command);
+	expect(MCRP.SEND_ROUTER_STATS.CODE);
+	return this;
+    }
 
     /**
      * Quit talking to the router
      * Close a connection to the ManagementConsole of the router.
      */
     public MCRPInteractor quit() throws IOException, MCRPException {
-	    interact(MCRP.QUIT.CMD);
-	    expect(MCRP.QUIT.CODE);
-	    return this;
+	interact(MCRP.QUIT.CMD);
+	expect(MCRP.QUIT.CODE);
+	return this;
     }
-    
+
     /** Send a message to a local controller informing it about a routers
-    status as an aggregation point */
+       status as an aggregation point */
     public MCRPInteractor reportAP(int GID, int AP) throws IOException, MCRPException {
-        String toSend = MCRP.REPORT_AP.CMD + " " + GID + " " +AP;
-       
-        interact(toSend);
-        expect(MCRP.REPORT_AP.CODE);
-        return this;
+	String toSend = MCRP.REPORT_AP.CMD + " " + GID + " " +AP;
+
+	interact(toSend);
+	expect(MCRP.REPORT_AP.CODE);
+	return this;
     }
 
 
@@ -94,13 +94,13 @@ public class GlobalControllerInteractor extends MCRPInteractor
      * Get the networkGraph as a String representation.
      */
     public String networkGraph(String arg) throws IOException, MCRPException {
-        String toSend = MCRP.NETWORK_GRAPH.CMD + " " + arg;
-        
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.NETWORK_GRAPH.CODE);
+	String toSend = MCRP.NETWORK_GRAPH.CMD + " " + arg;
 
-        // return the graph
-        return response.get(0)[1];
+	MCRPResponse response = interact(toSend);
+	expect(MCRP.NETWORK_GRAPH.CODE);
+
+	// return the graph
+	return response.get(0)[1];
     }
 
 

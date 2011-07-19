@@ -6,7 +6,7 @@ import usr.logging.*;
 import java.util.EventListener;
 
 /**
- * An MCRPEventListener is a tagging interface for listeners 
+ * An MCRPEventListener is a tagging interface for listeners
  * of MCRPEvents.
  * Java says that all event listener interfaces must extend
  * EventListener.

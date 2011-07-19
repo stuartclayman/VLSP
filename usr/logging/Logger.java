@@ -48,25 +48,25 @@ public class Logger implements Logging {
      * otherwise it is created first.
      */
     public static Logger getLogger(String name) {
-        Logger logger = loggerMap.get(name);
+	Logger logger = loggerMap.get(name);
 
-        if (logger == null) {
-            // we don't know this Logger
-            // so create it
-            logger = new Logger(name);
-            // and put it in the map
-            loggerMap.put(name, logger);
-        }
+	if (logger == null) {
+	    // we don't know this Logger
+	    // so create it
+	    logger = new Logger(name);
+	    // and put it in the map
+	    loggerMap.put(name, logger);
+	}
 
-        return logger;        
+	return logger;
     }
 
     /**
      * Construct a Logger object.
      */
     public Logger(String name) {
-        this.name = name;
-        outputs = new HashMap<Object,BitMask>();
+	this.name = name;
+	outputs = new HashMap<Object,BitMask>();
     }
 
     /**
@@ -88,7 +88,7 @@ public class Logger implements Logging {
      * Log using a LogInput object.
      */
     public void log(BitMask mask, LogInput obj) {
-        doLog(mask, obj, false);
+	doLog(mask, obj, false);
     }
 
     /**
@@ -110,7 +110,7 @@ public class Logger implements Logging {
      * Log using a LogInput object.
      */
     public void log(int mask, LogInput obj) {
-        doLog(new BitMask(mask), obj, false);
+	doLog(new BitMask(mask), obj, false);
     }
 
     /**
@@ -133,8 +133,8 @@ public class Logger implements Logging {
      * Add output to a ByteChannel.
      */
     public Logger addOutput(ByteChannel ch) {
-        addOutputLog(ch, new BitMask());
-        return this;
+	addOutputLog(ch, new BitMask());
+	return this;
     }
 
 
@@ -166,8 +166,8 @@ public class Logger implements Logging {
      * Add output to a ByteChannel.
      */
     public Logger addOutput(ByteChannel ch, BitMask mask) {
-        addOutputLog(ch, mask);
-        return this;
+	addOutputLog(ch, mask);
+	return this;
     }
 
 
@@ -184,7 +184,7 @@ public class Logger implements Logging {
      */
     public Logger removeOutput(PrintWriter w) {
 	removeOutputLog(w);
-        return this;
+	return this;
     }
 
     /**
@@ -192,7 +192,7 @@ public class Logger implements Logging {
      */
     public Logger removeOutput(PrintStream s){
 	removeOutputLog(s);
-        return this;
+	return this;
     }
 
 
@@ -201,7 +201,7 @@ public class Logger implements Logging {
      */
     public Logger removeOutput(LogOutput eo) {
 	removeOutputLog(eo);
-        return this;
+	return this;
     }
 
     /**
@@ -223,11 +223,11 @@ public class Logger implements Logging {
 	    return this;
 	} else {
 	    outputs.put(output, mask);
-            return this;
+	    return this;
 	}
     }
 
-	
+
 
     /**
      * Add an output to the outputs map.
@@ -258,92 +258,92 @@ public class Logger implements Logging {
     private void doLog(BitMask mask, Object message, boolean trailingNL) {
 	if (outputs == null) {
 	    return;
-        }
+	}
 
 	Iterator outputI = outputs.keySet().iterator();
 
 	while (outputI.hasNext()) {
 	    Object anOutput = outputI.next();
 
-            // get mask for output
+	    // get mask for output
 	    BitMask aMask = (BitMask)outputs.get(anOutput);
 
-            // check if we need to send to it
+	    // check if we need to send to it
 	    BitMask acceptMask = aMask.and(mask);
 
 	    // if the result has more than 0 bits set then
 	    // the current output will accept the current message
-	    if (! (acceptMask.isClear())) { // empty
+	    if (!(acceptMask.isClear())) {  // empty
 		dispatch(message, anOutput, trailingNL);
-           }
-        }
+	    }
+	}
     }
 
     /**
      * Dispatch a message to an output object.
      * @param message the message, either a String or a LogInput
-     * @param anOutput the output object, 
+     * @param anOutput the output object,
      */
     private void dispatch(Object message, Object anOutput, boolean trailingNL) {
 	// if output is a LogOutput pass on the message
-        // as it knows how to deal with it
+	// as it knows how to deal with it
 	if (anOutput instanceof LogOutput) {
 	    if (message instanceof LogInput) {
 		((LogOutput)anOutput).process((LogInput)message);
 	    } else {
-                if (trailingNL) {
-                    String msg = (String)message;
-                    ((LogOutput)anOutput).process(msg + "\n");
-                } else {
-                    ((LogOutput)anOutput).process(((String)message));
-                }
+		if (trailingNL) {
+		    String msg = (String)message;
+		    ((LogOutput)anOutput).process(msg + "\n");
+		} else {
+		    ((LogOutput)anOutput).process(((String)message));
+		}
 	    }
 
 	} else if (anOutput instanceof PrintWriter) {
 	    if (message instanceof LogInput) {
 		((PrintWriter)anOutput).print(((LogInput)message).logView());
 	    } else {
-                if (trailingNL) {
-                    ((PrintWriter)anOutput).println((String)message);
-                } else {
-                    ((PrintWriter)anOutput).print((String)message);
-                }
+		if (trailingNL) {
+		    ((PrintWriter)anOutput).println((String)message);
+		} else {
+		    ((PrintWriter)anOutput).print((String)message);
+		}
 	    }
 
 	} else if (anOutput instanceof PrintStream) {
 	    if (message instanceof LogInput) {
 		((PrintStream)anOutput).print(((LogInput)message).logView());
 	    } else {
-                if (trailingNL) {
-                    ((PrintStream)anOutput).println((String)message);
-                } else {
-                    ((PrintStream)anOutput).print((String)message);
-                }
+		if (trailingNL) {
+		    ((PrintStream)anOutput).println((String)message);
+		} else {
+		    ((PrintStream)anOutput).print((String)message);
+		}
 	    }
 
 	} else if (anOutput instanceof ByteChannel) {
-            try {
-                if (message instanceof LogInput) {
-                    String msg = ((LogInput)message).logView();
-                    ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
-                    ((ByteChannel)anOutput).write(buffer);
-                } else {
-                    if (trailingNL) {
-                        String msg = ((String)message) + "\n";
-                        ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
-                        ((ByteChannel)anOutput).write(buffer);
-                    } else {
-                        String msg = (String)message;
-                        ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
-                        ((ByteChannel)anOutput).write(buffer);
-                    }
-                }
-            } catch (IOException ioe) {
-            }
+	    try {
+		if (message instanceof LogInput) {
+		    String msg = ((LogInput)message).logView();
+		    ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
+		    ((ByteChannel)anOutput).write(buffer);
+		} else {
+		    if (trailingNL) {
+			String msg = ((String)message) + "\n";
+			ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
+			((ByteChannel)anOutput).write(buffer);
+		    } else {
+			String msg = (String)message;
+			ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
+			((ByteChannel)anOutput).write(buffer);
+		    }
+		}
+	    } catch (IOException ioe) {
+	    }
 	} else {
 	    ;
 	}
     }
-		  
-		 
+
+
 }

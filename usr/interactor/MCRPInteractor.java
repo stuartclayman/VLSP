@@ -36,7 +36,7 @@ public abstract class MCRPInteractor {
     // The handler for socket input.
     // It runs in a separate Thread
     // and does callbacks to this object
-    // to inform about what is happening 
+    // to inform about what is happening
     // on the input.
     InputHandler inputHandler = null;
 
@@ -55,7 +55,7 @@ public abstract class MCRPInteractor {
 
     // debug
     public static boolean debug = false;
-	
+
 
 
 
@@ -68,12 +68,12 @@ public abstract class MCRPInteractor {
      * @param port the port the server is listening on
      */
     protected void initialize(InetAddress addr, int port) throws UnknownHostException, IOException  {
-        port_= port;
+	port_= port;
 	// set the fsm to FSM_READY
 	fsm = FSMState.FSM_READY;
 
 	// open the socket
-	socket = new Socket(addr, port); 
+	socket = new Socket(addr, port);
 
 	// get the input
 	input = new InputStreamReader(socket.getInputStream());
@@ -87,12 +87,12 @@ public abstract class MCRPInteractor {
     /**
      * Terminate this MCRPInteractor
      */
-  /*  public void terminate() {
-        //Logger.getLogger("log").logln(USR.STDOUT, getClass().getName() + ": terminate");
-        if (inputHandler != null) {
-            inputHandler.stop();
-        }
-    }*/
+    /*  public void terminate() {
+          //Logger.getLogger("log").logln(USR.STDOUT, getClass().getName() + ": terminate");
+          if (inputHandler != null) {
+              inputHandler.stop();
+          }
+       }*/
 
 
     /* Methods for managing event listeners. */
@@ -104,7 +104,7 @@ public abstract class MCRPInteractor {
     public void addMCRPEventListener(MCRPEventListener l) {
 	eventListeners.add(l);
     }
-      
+
     /**
      * Remove an event listener.
      * @param l an object that implements MCRPEventListener
@@ -112,7 +112,7 @@ public abstract class MCRPInteractor {
     public void removeMCRPEventListener(MCRPEventListener l) {
 	eventListeners.remove(l);
     }
-      
+
 
     /**
      * Get the number of listeners.
@@ -156,7 +156,7 @@ public abstract class MCRPInteractor {
 
 	notifyAll();
     }
-     
+
     /**
      * The callback for the SocketInputHandler, with an event.
      * The response is converted into an event object.
@@ -168,32 +168,32 @@ public abstract class MCRPInteractor {
 
 	MCRPEvent event;
 
-       // System.out.println(getClass().getName() + ": got event " + code);
+	// System.out.println(getClass().getName() + ": got event " + code);
 
 	if (code.equals("700")) {
-            String connectionName = response.get(0)[1];
-            // LINK_DIED event
+	    String connectionName = response.get(0)[1];
+	    // LINK_DIED event
 	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.LINK_DIED, connectionName);
 
-        } else if (code.equals("701")) {
-            String connectionName = response.get(0)[1];
-            // LINK_RESTARTED event
+	} else if (code.equals("701")) {
+	    String connectionName = response.get(0)[1];
+	    // LINK_RESTARTED event
 	    event = new MCRPEvent(this, MCRPEvent.MCRPEventType.LINK_RESTARTED, connectionName);
 
 	} else if (code.equals("702")) {
-            // now we convert the replies in the response
-            // into a list of connections
+	    // now we convert the replies in the response
+	    // into a list of connections
 
-            // get no of netifs
-            int routerReplies = response.getReplies() - 1;
+	    // get no of netifs
+	    int routerReplies = response.getReplies() - 1;
 
-            // create a list for the names
-            List<String> stats = new ArrayList<String>();
+	    // create a list for the names
+	    List<String> stats = new ArrayList<String>();
 
-            for (int r=0; r < routerReplies; r++) {
-                // pick out the r-th connection
-                stats.add(response.get(r)[1]);
-            }
+	    for (int r=0; r < routerReplies; r++) {
+		// pick out the r-th connection
+		stats.add(response.get(r)[1]);
+	    }
 
 
 	    // ROUTER_STATS event
@@ -213,7 +213,7 @@ public abstract class MCRPInteractor {
 	}
 
     }
-     
+
     /**
      * The callback for the InputHandler saying EOF.
      */
@@ -239,15 +239,15 @@ public abstract class MCRPInteractor {
 	    socket = null;
 	}
     }
-     
+
     /**
-     * The callback from the InputHandler saying there 
+     * The callback from the InputHandler saying there
      * has been an exception.
      */
     protected synchronized void gotException(Exception e) {
 	// we got an Exception notification from the SocketInputHandler
 	// set the fsm to the end state.
-        Logger.getLogger("log").logln(USR.STDOUT, getClass().getName() + ": gotException " + e);
+	Logger.getLogger("log").logln(USR.STDOUT, getClass().getName() + ": gotException " + e);
 
 	fsm = FSMState.FSM_END;
 
@@ -270,7 +270,7 @@ public abstract class MCRPInteractor {
 	    notifyAll();
 	}
     }
-     
+
     /**
      * Interact with the server.
      * This sends a string and waits for a response.
@@ -289,17 +289,17 @@ public abstract class MCRPInteractor {
 	    fsm = FSMState.FSM_WAITING;
 
 	    // sit and wait for a response
-	   
-            try {
-                wait(5000);
-            } catch (InterruptedException ie) {
-                Logger.getLogger("log").logln(USR.ERROR, "MCRP Interactor Got InterruptedException " + ie);
+
+	    try {
+		wait(5000);
+	    } catch (InterruptedException ie) {
+		Logger.getLogger("log").logln(USR.ERROR, "MCRP Interactor Got InterruptedException " + ie);
 	    }
 
 	    if (fsm == FSMState.FSM_WAITING) {
-	        Logger.getLogger("log").logln(USR.ERROR,"MCRP Interactor Got timeout: command was:"+str);
-	        fsm= FSMState.FSM_READY;
-	        throw new MCRPException("MCRPInteractor: wait timeout: ");
+		Logger.getLogger("log").logln(USR.ERROR,"MCRP Interactor Got timeout: command was:"+str);
+		fsm= FSMState.FSM_READY;
+		throw new MCRPException("MCRPInteractor: wait timeout: ");
 	    }
 
 	    // we got here because there was a notifyAll.
@@ -345,16 +345,16 @@ public abstract class MCRPInteractor {
 	    System.out.print(">> " + str);
 	    System.out.print(" ");
 	}
-  //System.err.print(">>" + str+"\n");
-  if (str.indexOf("\n") != -1) {
-      System.err.println("Cannot send console messages with \\n character");
-  }
+	//System.err.print(">>" + str+"\n");
+	if (str.indexOf("\n") != -1) {
+	    System.err.println("Cannot send console messages with \\n character");
+	}
 	output.print(str);
 	output.print("\n");
 	output.flush();
 	if (output.checkError()) {
 	    System.err.println("Error in writing to stream in MCRPInteractor");
-	}   
+	}
     }
 
     /**
@@ -363,7 +363,7 @@ public abstract class MCRPInteractor {
      * @param expected the response code we expect.
      */
     protected void expect(int expected) throws MCRPException {
-        expect(Integer.toString(expected));
+	expect(Integer.toString(expected));
     }
 
     /**
@@ -380,15 +380,15 @@ public abstract class MCRPInteractor {
 	} else {
 	    String message = lastResponse.get(lastResponse.getReplies() - 1)[1];
 	    // we got a different code from the expected one
-	    throw new MCRPException("Expected return code: " + expected + 
-				    " Got: " + actual +
-				    " Message is: " + message);
+	    throw new MCRPException("Expected return code: " + expected +
+	                            " Got: " + actual +
+	                            " Message is: " + message);
 	}
 
     }
-    
+
     public int getPort() {
-        return port_;
+	return port_;
     }
 
 
@@ -396,9 +396,9 @@ public abstract class MCRPInteractor {
      * The states of the FSM
      */
     enum FSMState {
-        FSM_WAITING,   // waiting for a response
-        FSM_READY,     // ready to accept a request
-        FSM_END        // we have reached the end state, the connection is closed
+	FSM_WAITING,   // waiting for a response
+	FSM_READY,     // ready to accept a request
+	FSM_END        // we have reached the end state, the connection is closed
     }
 
 }

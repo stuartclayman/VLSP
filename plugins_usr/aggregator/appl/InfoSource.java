@@ -85,111 +85,119 @@ public class InfoSource implements Application {
     // Filter which always returns the value
     // i.e. no filtering
     ProbeFilter always = new ProbeFilter() {
-	    public String getName() { return "always"; }
+	public String getName() {
+	    return "always";
+	}
 
-	    public boolean filter(Probe p, Measurement m) {
-		return true;
-	    }
-	};
+	public boolean filter(Probe p, Measurement m) {
+	    return true;
+	}
+    };
 
     // Filter only returns value if the 0th field value is different by 2%
     ProbeFilter filter2pcTolerance = new ProbeFilter() {
-	    public String getName() { return "field0-2%-filter"; }
+	public String getName() {
+	    return "field0-2%-filter";
+	}
 
-	    public boolean filter(Probe p, Measurement m) {
-		List<ProbeValue> list = m.getValues();
-		Number n =  (Number)list.get(0).getValue();
+	public boolean filter(Probe p, Measurement m) {
+	    List<ProbeValue> list = m.getValues();
+	    Number n =  (Number)list.get(0).getValue();
 
-		Number oldValue = new Float(0);
-		Measurement oldM;
-		if ((oldM = p.getLastMeasurement()) != null) {
-		    oldValue = (Number)oldM.getValues().get(0).getValue();
-		}
-                if (oldValue.floatValue() == 0.0)
-                    return n.floatValue() != 0.0;
-		float percent = n.floatValue() / oldValue.floatValue();
-
-		//Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
-		//		   percent);
-
-		// test for 2% tolerance -  0.98 -> 1.02
-		if (0.98 < percent && percent < 1.02) {
-		    // values too similar
-		    //Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
-		    return false;
-		} else {
-		   // Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
-		    return true;
-		}
+	    Number oldValue = new Float(0);
+	    Measurement oldM;
+	    if ((oldM = p.getLastMeasurement()) != null) {
+		oldValue = (Number)oldM.getValues().get(0).getValue();
 	    }
-	};
+	    if (oldValue.floatValue() == 0.0)
+		return n.floatValue() != 0.0;
+	    float percent = n.floatValue() / oldValue.floatValue();
+
+	    //Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
+	    //		   percent);
+
+	    // test for 2% tolerance -  0.98 -> 1.02
+	    if (0.98 < percent && percent < 1.02) {
+		// values too similar
+		//Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
+		return false;
+	    } else {
+		// Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
+		return true;
+	    }
+	}
+    };
 
     // Filter only returns value if the 0th field value is different by 5%
     ProbeFilter filter5pcTolerance = new ProbeFilter() {
-	    public String getName() { return "field0-5%-filter"; }
+	public String getName() {
+	    return "field0-5%-filter";
+	}
 
-	    public boolean filter(Probe p, Measurement m) {
-		List<ProbeValue> list = m.getValues();
-		Number n =  (Number)list.get(0).getValue();
+	public boolean filter(Probe p, Measurement m) {
+	    List<ProbeValue> list = m.getValues();
+	    Number n =  (Number)list.get(0).getValue();
 
-		Number oldValue = new Float(0);
-		Measurement oldM;
-		if ((oldM = p.getLastMeasurement()) != null) {
-		    oldValue = (Number)oldM.getValues().get(0).getValue();
-		}
-		if (oldValue.floatValue() == 0.0)
-                    return n.floatValue() != 0.0;
-		float percent = n.floatValue() / oldValue.floatValue();
-
-		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
-				   percent);
-
-		// test for 5% tolerance -  0.95 -> 1.05
-		if (0.95 < percent && percent < 1.05) {
-		    // values too similar
-		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
-		    return false;
-		} else {
-		    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
-		    return true;
-		}
+	    Number oldValue = new Float(0);
+	    Measurement oldM;
+	    if ((oldM = p.getLastMeasurement()) != null) {
+		oldValue = (Number)oldM.getValues().get(0).getValue();
 	    }
-	};
+	    if (oldValue.floatValue() == 0.0)
+		return n.floatValue() != 0.0;
+	    float percent = n.floatValue() / oldValue.floatValue();
+
+	    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
+	                                  percent);
+
+	    // test for 5% tolerance -  0.95 -> 1.05
+	    if (0.95 < percent && percent < 1.05) {
+		// values too similar
+		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
+		return false;
+	    } else {
+		Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
+		return true;
+	    }
+	}
+    };
 
     // Filter only returns value if the 0th field value is different by 10%
     ProbeFilter filter10pcTolerance = new ProbeFilter() {
-	    public String getName() { return "field0-10%-filter"; }
+	public String getName() {
+	    return "field0-10%-filter";
+	}
 
-	    public boolean filter(Probe p, Measurement m) {
-		List<ProbeValue> list = m.getValues();
-		Number n =  (Number)list.get(0).getValue();
+	public boolean filter(Probe p, Measurement m) {
+	    List<ProbeValue> list = m.getValues();
+	    Number n =  (Number)list.get(0).getValue();
 
-		Number oldValue = new Float(0);
-		Measurement oldM;
-		if ((oldM = p.getLastMeasurement()) != null) {
-		    oldValue = (Number)oldM.getValues().get(0).getValue();
-		}
-		if (oldValue.floatValue() == 0.0)
-                    return n.floatValue() != 0.0;
-
-		float percent = n.floatValue() / oldValue.floatValue();
-
-	//	Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
-	//			   percent);
-
-		// test for 10% tolerance -  0.90 -> 1.10
-		if (0.90 < percent && percent < 1.10) {
-		    // values too similar
-		//    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
-		    return false;
-		} else {
-		//    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
-		    return true;
-		}
+	    Number oldValue = new Float(0);
+	    Measurement oldM;
+	    if ((oldM = p.getLastMeasurement()) != null) {
+		oldValue = (Number)oldM.getValues().get(0).getValue();
 	    }
-	};
+	    if (oldValue.floatValue() == 0.0)
+		return n.floatValue() != 0.0;
 
-    // no default filter 
+	    float percent = n.floatValue() / oldValue.floatValue();
+
+	    //	Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: " + n + "/" + oldValue + " = " +
+	    //			   percent);
+
+	    // test for 10% tolerance -  0.90 -> 1.10
+	    if (0.90 < percent && percent < 1.10) {
+		// values too similar
+		//    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: filtered " + n);
+		return false;
+	    } else {
+		//    Logger.getLogger("log").logln(USR.STDOUT, "ProbeFilter: reported " + n);
+		return true;
+	    }
+	}
+    };
+
+    // no default filter
     ProbeFilter actualFilter = null;
 
 
@@ -233,9 +241,9 @@ public class InfoSource implements Application {
 		    String[] parts = argValue.split("/");
 		    Scanner sc = new Scanner(parts[0]);
 		    int addr = sc.nextInt();
-                    sc = new Scanner(parts[1]);
+		    sc = new Scanner(parts[1]);
 		    int port = sc.nextInt();
-                    Address gidAddr = new GIDAddress(addr);
+		    Address gidAddr = new GIDAddress(addr);
 		    SocketAddress newOutputAddr = new SocketAddress(gidAddr, port);
 		    setOutputAddress(newOutputAddr);
 		    break;
@@ -311,29 +319,29 @@ public class InfoSource implements Application {
 		    Logger.getLogger("log").logln(USR.ERROR, "InfoSource: unknown option " + option);
 		    break;
 		}
-		
+
 	    }
 	}
 
-        // check actual probe
-        if (probe == null) {
-            return new ApplicationResponse(false, "No Probe has been set");
-        }
+	// check actual probe
+	if (probe == null) {
+	    return new ApplicationResponse(false, "No Probe has been set");
+	}
 
-        // check outputDataAddress
-        if (outputDataAddress == null) {
+	// check outputDataAddress
+	if (outputDataAddress == null) {
 	    return new ApplicationResponse(false, "No Output Address has been set");
-        }
+	}
 
 
-        return new ApplicationResponse(true, "");
+	return new ApplicationResponse(true, "");
     }
 
     /**
      * Start
      */
     public ApplicationResponse start() {
-        //Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: top of start");
+	//Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: top of start");
 	try {
 	    // create a TimeIndexFactory
 	    TimeIndexFactory factory = new TimeIndexFactory();
@@ -343,74 +351,74 @@ public class InfoSource implements Application {
 
 	    // create forwardIndex
 	    realName = name+"-log";
-            dataIndexPath = new File(collectorPath, realName);
+	    dataIndexPath = new File(collectorPath, realName);
 	    indexProperties.setProperty("indexpath",  dataIndexPath.getPath());
 
-            // try and append to an existing index
-            dataIndex = factory.append(indexProperties);
+	    // try and append to an existing index
+	    dataIndex = factory.append(indexProperties);
 
-            // if it does not exist
-            if (dataIndex == null) {
-                Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: about to create index: " +  realName);
+	    // if it does not exist
+	    if (dataIndex == null) {
+		Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: about to create index: " +  realName);
 
-                // create it
-                indexProperties.setProperty("name", realName);
+		// create it
+		indexProperties.setProperty("name", realName);
 
-                dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
+		dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
 
-                Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: created index: " +  realName);
+		Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: created index: " +  realName);
 
-            } else {
-                dataIndex.activate();
-                Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: appending to: " +  realName);
-            }
+	    } else {
+		dataIndex.activate();
+		Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: appending to: " +  realName);
+	    }
 
-            dataIndex.setAutoCommit(true);
+	    dataIndex.setAutoCommit(true);
 
 
 	} catch (TimeIndexException tie) {
-            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: TimeIndex setup failed in start");
+	    Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: TimeIndex setup failed in start");
 	    //tie.printStackTrace();
-	    return new ApplicationResponse(false, "Cannot create TimeIndex " + dataIndexPath) ;
+	    return new ApplicationResponse(false, "Cannot create TimeIndex " + dataIndexPath);
 	}
 
-        //Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: TimeIndex setup in start");
+	//Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: TimeIndex setup in start");
 
 
-        try {
-            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource connect to " + outputDataAddress);
+	try {
+	    Logger.getLogger("log").logln(USR.STDOUT, "InfoSource connect to " + outputDataAddress);
 
-            //Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: about to setup data source: " +  name);
-            DataPlane outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
+	    //Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: about to setup data source: " +  name);
+	    DataPlane outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
 
-            dataSource = new InfoDataSource(dataIndex);
-            dataSource.setName(name);
+	    dataSource = new InfoDataSource(dataIndex);
+	    dataSource.setName(name);
 
-            // set up DataPlane
-            dataSource.setDataPlane(outputDataPlane);
+	    // set up DataPlane
+	    dataSource.setDataPlane(outputDataPlane);
 
-            // and connect
-            dataSource.connect();
+	    // and connect
+	    dataSource.connect();
 
-            // set up probe
-            probe.setDataRate(new EveryNSeconds(sleepTime));
+	    // set up probe
+	    probe.setDataRate(new EveryNSeconds(sleepTime));
 
-            if (actualFilter != null) {
-                // turn on filter
-                probe.setProbeFilter(actualFilter);
-                probe.turnOnFiltering();
-            }
+	    if (actualFilter != null) {
+		// turn on filter
+		probe.setProbeFilter(actualFilter);
+		probe.turnOnFiltering();
+	    }
 
-            // turn on probe
-            dataSource.addProbe(probe);  // this does registerProbe and activateProbe
-            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: setup data source: " +  name);
+	    // turn on probe
+	    dataSource.addProbe(probe);  // this does registerProbe and activateProbe
+	    Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: setup data source: " +  name);
 
-            return new ApplicationResponse(true, "");
-        } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: data source setup failed in start");
+	    return new ApplicationResponse(true, "");
+	} catch (Exception e) {
+	    Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: data source setup failed in start");
 	    //e.printStackTrace();
-            return new ApplicationResponse(false, e.getMessage());
-        }
+	    return new ApplicationResponse(false, e.getMessage());
+	}
     }
 
 
@@ -418,99 +426,99 @@ public class InfoSource implements Application {
      * Stop
      */
     public ApplicationResponse stop() {
-        synchronized(closing_) {
-            if (closing_) {
-                Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: stop already called");
-                return new ApplicationResponse(false, "Stop already called for InfoSource");
-            }
+	synchronized (closing_) {
+	    if (closing_) {
+		Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: stop already called");
+		return new ApplicationResponse(false, "Stop already called for InfoSource");
+	    }
 
-            closing_= true;
+	    closing_= true;
 
-            // we might stop while the Application is in the inInitialDelay stage
-            if (inInitialDelay) {
-                // so interrupt the sleep
-                Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: about to interrupt initial delay");
-                myThread.interrupt();
-            }
-            
-            dataSource.disconnect();
+	    // we might stop while the Application is in the inInitialDelay stage
+	    if (inInitialDelay) {
+		// so interrupt the sleep
+		Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: about to interrupt initial delay");
+		myThread.interrupt();
+	    }
 
-            if (dataSource.isProbeOn(probe)) {
-                dataSource.turnOffProbe(probe);
-            }
+	    dataSource.disconnect();
 
-            dataSource.removeProbe(probe);
-        
+	    if (dataSource.isProbeOn(probe)) {
+		dataSource.turnOffProbe(probe);
+	    }
 
-            try {
-                dataIndex.close();
+	    dataSource.removeProbe(probe);
 
-                Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: TimeIndex closed in stop");
-                return new ApplicationResponse(true, "");
 
-            } catch (TimeIndexException tie) {
-                Logger.getLogger("log").logln(USR.STDOUT, "Cannot close index " + dataIndex + " because " + tie.getMessage());
-                //tie.printStackTrace();
+	    try {
+		dataIndex.close();
 
-                return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath) ;
+		Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: TimeIndex closed in stop");
+		return new ApplicationResponse(true, "");
 
-            } finally {
-                synchronized (this) {
-                    notifyAll();
-                }
+	    } catch (TimeIndexException tie) {
+		Logger.getLogger("log").logln(USR.STDOUT, "Cannot close index " + dataIndex + " because " + tie.getMessage());
+		//tie.printStackTrace();
 
-            }
-        }
+		return new ApplicationResponse(false, "Cannot close TimeIndex " + dataIndexPath);
+
+	    } finally {
+		synchronized (this) {
+		    notifyAll();
+		}
+
+	    }
+	}
     }
 
     /**
      * Run
      */
     public void run() {
-        // we might stop while the Application is in the 
-        // initial delay stage, so we have to label this situation
-        myThread = Thread.currentThread();
-        inInitialDelay = true;
+	// we might stop while the Application is in the
+	// initial delay stage, so we have to label this situation
+	myThread = Thread.currentThread();
+	inInitialDelay = true;
 
-        if (closing_) {
-            // stop was called before we got here
-            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: stop called at top of run()");
-            return;
-        }
+	if (closing_) {
+	    // stop was called before we got here
+	    Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: stop called at top of run()");
+	    return;
+	}
 
-        try {
-            //Logger.getLogger("log").logln(USR.STDOUT, "SLEEP  " + getInitialDelay() + " seconds");
-            Thread.sleep(getInitialDelay() * 1000);
-        } catch (InterruptedException ie) {
-            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: initial delay interrupted");
-            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: End of run()");
-            return;
-        }
+	try {
+	    //Logger.getLogger("log").logln(USR.STDOUT, "SLEEP  " + getInitialDelay() + " seconds");
+	    Thread.sleep(getInitialDelay() * 1000);
+	} catch (InterruptedException ie) {
+	    Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: initial delay interrupted");
+	    Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: End of run()");
+	    return;
+	}
 
-        inInitialDelay = false;
+	inInitialDelay = false;
 
-        if (closing_) {
-            // stop was called before we got here
-            Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: stop called after sleeping in run()");
-            return;
-        }
+	if (closing_) {
+	    // stop was called before we got here
+	    Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: stop called after sleeping in run()");
+	    return;
+	}
 
-        Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: turn on Probe: " + probe.getName());
+	Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: turn on Probe: " + probe.getName());
 
-        dataSource.turnOnProbe(probe);
+	dataSource.turnOnProbe(probe);
 
-        // A DataSource already runs in itws own thread
-        // so this one can wait and do nothing.
-        if (!closing_) {
-            try {
-                synchronized (this) {
-                    wait();
-                }
-            } catch (InterruptedException ie) {
-            }
-        }
+	// A DataSource already runs in itws own thread
+	// so this one can wait and do nothing.
+	if (!closing_) {
+	    try {
+		synchronized (this) {
+		    wait();
+		}
+	    } catch (InterruptedException ie) {
+	    }
+	}
 
-        Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: End of run()");
+	Logger.getLogger("log").logln(USR.STDOUT, "InfoSource: End of run()");
     }
 
 
@@ -630,7 +638,7 @@ public class InfoSource implements Application {
 	    break;
 	}
     }
-     
+
     /**
      * Get the current Filter
      */
@@ -691,26 +699,26 @@ public class InfoSource implements Application {
 		// but it is better to store a ConsumerMeasurement
 		// as it deserializes better
 		ConsumerMeasurement cm = new ConsumerMeasurement(m.getSequenceNo(),
-                                                                 m.getProbeID(),
-								 m.getType(),
-								 m.getTimestamp().value(),
-								 m.getDeltaTime().value(),
-								 m.getServiceID(),
-								 m.getGroupID(),
-								 m.getValues());
+		                                                 m.getProbeID(),
+		                                                 m.getType(),
+		                                                 m.getTimestamp().value(),
+		                                                 m.getDeltaTime().value(),
+		                                                 m.getServiceID(),
+		                                                 m.getGroupID(),
+		                                                 m.getValues());
 
 		Serializable object = (Serializable)cm;
 
-                if (! dataIndex.isClosed() && dataIndex.isActivated()) {
-                    dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
-                } else {
-                    Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName() + " because it is closed");
-                }
+		if (!dataIndex.isClosed() && dataIndex.isActivated()) {
+		    dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
+		} else {
+		    Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName() + " because it is closed");
+		}
 
-                return result;
+		return result;
 	    } catch (TimeIndexException tie) {
 		Logger.getLogger("log").logln(USR.ERROR, "Can't add data to time index log " + dataIndex.getName() + " because of exception " + tie.getMessage());
-                return result;
+		return result;
 	    }
 	}
 

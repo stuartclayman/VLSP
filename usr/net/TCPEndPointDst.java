@@ -26,43 +26,43 @@ public class TCPEndPointDst implements TCPEndPoint {
      * A TCPEndPointDst needs a port to listen on.
      */
     public TCPEndPointDst(ServerSocket serverSocket) throws UnknownHostException, IOException {
-        this.serverSocket = serverSocket;
-        this.port = serverSocket.getLocalPort();
-        isConnected = false;
+	this.serverSocket = serverSocket;
+	this.port = serverSocket.getLocalPort();
+	isConnected = false;
     }
 
     /**
      * Connect
      */
     public boolean connect() throws IOException {
-        if (isConnected) {
-            throw new IOException("Cannot connect again to: " + socket);
-        } else {
-            socket = serverSocket.accept();
-            isConnected = true;
-            return true;
-        }
+	if (isConnected) {
+	    throw new IOException("Cannot connect again to: " + socket);
+	} else {
+	    socket = serverSocket.accept();
+	    isConnected = true;
+	    return true;
+	}
     }
 
     /**
      * Get the remote host.
      */
     public String getHostName() {
-        return socket.getInetAddress().toString();
+	return socket.getInetAddress().toString();
     }
 
     /**
      * Get the port no.
      */
     public int getPort() {
-        return port;
+	return port;
     }
 
     /**
      * Get the Socket.
      */
     public Socket getSocket() {
-        return socket;
+	return socket;
     }
 
 
@@ -70,10 +70,10 @@ public class TCPEndPointDst implements TCPEndPoint {
      * TO String
      */
     public String toString() {
-        if (socket == null) {
-            return " @ " + serverSocket.getInetAddress().getHostName() + ":" + port;
-        } else {
-            return " -> " + serverSocket.getInetAddress().getHostName() + ":" + port;            
-        }
+	if (socket == null) {
+	    return " @ " + serverSocket.getInetAddress().getHostName() + ":" + port;
+	} else {
+	    return " -> " + serverSocket.getInetAddress().getHostName() + ":" + port;
+	}
     }
 }

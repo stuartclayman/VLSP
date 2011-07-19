@@ -21,65 +21,65 @@ public class SetPortWeightCommand extends RouterCommand {
      * Construct a SetPortWeightCommand.
      */
     public SetPortWeightCommand() {
-        super(MCRP.SET_PORT_WEIGHT.CMD, MCRP.SET_PORT_WEIGHT.CODE, MCRP.SET_PORT_WEIGHT.ERROR);
+	super(MCRP.SET_PORT_WEIGHT.CMD, MCRP.SET_PORT_WEIGHT.CODE, MCRP.SET_PORT_WEIGHT.ERROR);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        boolean result = true;
+	boolean result = true;
 
-        String rest = req.substring(MCRP.SET_PORT_WEIGHT.CMD.length()).trim();
-        String[] parts = rest.split(" ");
-                    
-        if (parts.length == 2) {
+	String rest = req.substring(MCRP.SET_PORT_WEIGHT.CMD.length()).trim();
+	String[] parts = rest.split(" ");
 
-            String routerPortName = parts[0];
-            String weightStr = parts[1];
-                        
-            // find port
-            String portNo;
+	if (parts.length == 2) {
 
-            if (routerPortName.startsWith("port")) {
-                portNo = routerPortName.substring(4);
-            } else {
-                portNo = routerPortName;
-            }
+	    String routerPortName = parts[0];
+	    String weightStr = parts[1];
 
-            Scanner scanner = new Scanner(portNo);
-            int p = scanner.nextInt();
-            RouterPort routerPort = controller.getPort(p);
+	    // find port
+	    String portNo;
 
-            if (routerPort == null || routerPort == RouterPort.EMPTY) {
-                error(getName() + " invalid port " + routerPortName);
-            }
+	    if (routerPortName.startsWith("port")) {
+		portNo = routerPortName.substring(4);
+	    } else {
+		portNo = routerPortName;
+	    }
 
-            // instantiate the weight
-            int weight = Integer.MIN_VALUE;
-            try {
-                weight = Integer.parseInt(weightStr);
-            } catch (NumberFormatException nfe) {
-                error(getName() + " weight is not a number " + weightStr);
-            }
+	    Scanner scanner = new Scanner(portNo);
+	    int p = scanner.nextInt();
+	    RouterPort routerPort = controller.getPort(p);
 
-            // set weight on netIF in port
-            if (weight != Integer.MIN_VALUE) {
-                NetIF netIF = routerPort.getNetIF();
-                netIF.setWeight(weight);
+	    if (routerPort == null || routerPort == RouterPort.EMPTY) {
+		error(getName() + " invalid port " + routerPortName);
+	    }
 
-                result = success(routerPortName);
-            }
+	    // instantiate the weight
+	    int weight = Integer.MIN_VALUE;
+	    try {
+		weight = Integer.parseInt(weightStr);
+	    } catch (NumberFormatException nfe) {
+		error(getName() + " weight is not a number " + weightStr);
+	    }
 
-        } else {
-            error(getName() + " wrong no of args ");
-        }
+	    // set weight on netIF in port
+	    if (weight != Integer.MIN_VALUE) {
+		NetIF netIF = routerPort.getNetIF();
+		netIF.setWeight(weight);
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " failed");
-        }
+		result = success(routerPortName);
+	    }
 
-        return result;
+	} else {
+	    error(getName() + " wrong no of args ");
+	}
+
+	if (!result) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " failed");
+	}
+
+	return result;
     }
 
 }

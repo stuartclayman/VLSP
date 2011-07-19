@@ -23,14 +23,14 @@ public class LinuxMem extends AbstractProbe implements Probe  {
      */
     public LinuxMem(String name) {
 	setName(name);
-        setDataRate(new Rational(360, 1));
+	setDataRate(new Rational(360, 1));
 
-        // allocate a MemoryDev
-        memDev = new MemoryDev();
+	// allocate a MemoryDev
+	memDev = new MemoryDev();
 
 
-        // add a probe attribute
-        addProbeAttribute(new DefaultProbeAttribute(0, "reallyused", ProbeAttributeType.FLOAT, "percent"));
+	// add a probe attribute
+	addProbeAttribute(new DefaultProbeAttribute(0, "reallyused", ProbeAttributeType.FLOAT, "percent"));
     }
 
 
@@ -53,16 +53,16 @@ public class LinuxMem extends AbstractProbe implements Probe  {
 		int used = memTotal - memFree;
 		int reallyUsed = used - (cached + buffers);
 
-		// now collect up the results	
+		// now collect up the results
 		list.add(new DefaultProbeValue(0, (float)used));
-	    
-		ProbeMeasurement m = new ProducerMeasurement(this, list, "LinuxMem");	
 
-                //System.out.println("LinuxMem => " + m);
-                
-                return m;
+		ProbeMeasurement m = new ProducerMeasurement(this, list, "LinuxMem");
+
+		//System.out.println("LinuxMem => " + m);
+
+		return m;
 	    } catch (Exception e) {
-                e.printStackTrace();
+		e.printStackTrace();
 		return null;
 	    }
 	} else {

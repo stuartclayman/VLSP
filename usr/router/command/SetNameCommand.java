@@ -16,29 +16,29 @@ public class SetNameCommand extends RouterCommand {
      * Construct a SetNameCommand.
      */
     public SetNameCommand() {
-        super(MCRP.SET_NAME.CMD, MCRP.SET_NAME.CODE, MCRP.ERROR.CODE);
+	super(MCRP.SET_NAME.CMD, MCRP.SET_NAME.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        String name = req.substring(MCRP.SET_NAME.CMD.length()).trim();
-        boolean nameSet = controller.setName(name);
+	String name = req.substring(MCRP.SET_NAME.CMD.length()).trim();
+	boolean nameSet = controller.setName(name);
 
-        boolean result;
+	boolean result;
 
-        if (nameSet) {
-            result = success(name);
-        } else {
-            result = error("Cannot set name after communication");
-        }
+	if (nameSet) {
+	    result = success(name);
+	} else {
+	    result = error("Cannot set name after communication");
+	}
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " response failed");
-        }
+	if (!result) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " response failed");
+	}
 
-        return result;
+	return result;
     }
 
 }

@@ -23,35 +23,35 @@ public class UDPEndPointDst implements UDPEndPoint {
      * A UDPEndPointDst needs a port to listen on.
      */
     public UDPEndPointDst(DatagramSocket socket) throws UnknownHostException, IOException {
-        this.socket = socket;
-        this.port = socket.getLocalPort();
-        isConnected = false;
+	this.socket = socket;
+	this.port = socket.getLocalPort();
+	isConnected = false;
     }
 
     /**
      * Connect
      */
     public boolean connect() throws IOException {
-        if (isConnected) {
-            throw new IOException("Cannot connect again to: " + socket);
-        } else {
-            isConnected = true;
-            return true;
-        }
+	if (isConnected) {
+	    throw new IOException("Cannot connect again to: " + socket);
+	} else {
+	    isConnected = true;
+	    return true;
+	}
     }
 
     /**
      * Get the port no.
      */
     public int getPort() {
-        return port;
+	return port;
     }
 
     /**
      * Get the Socket.
      */
     public DatagramSocket getSocket() {
-        return socket;
+	return socket;
     }
 
 
@@ -59,10 +59,10 @@ public class UDPEndPointDst implements UDPEndPoint {
      * TO String
      */
     public String toString() {
-        if (socket == null) {
-            return " @ " + socket.getInetAddress().getHostName() + ":" + port;
-        } else {
-            return " -> " + socket.getInetAddress().getHostName() + ":" + port;            
-        }
+	if (socket == null) {
+	    return " @ " + socket.getInetAddress().getHostName() + ":" + port;
+	} else {
+	    return " -> " + socket.getInetAddress().getHostName() + ":" + port;
+	}
     }
 }

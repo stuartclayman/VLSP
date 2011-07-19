@@ -16,35 +16,35 @@ public class GlobalControllerManagementConsole extends AbstractManagementConsole
 
     private GlobalController globalController_;
     public GlobalControllerManagementConsole(GlobalController gc, int port) {
-       
-       globalController_= gc;
-       initialise(port);
+
+	globalController_= gc;
+	initialise(port);
     }
 
     public ComponentController getComponentController() {
-       return globalController_;
+	return globalController_;
     }
 
     public BlockingQueue<Request> addRequest(Request q) {
-        // call superclass addRequest
-        BlockingQueue<Request> rq = super.addRequest(q);
-        // notify the GlobalController
-        globalController_.wakeWait();
+	// call superclass addRequest
+	BlockingQueue<Request> rq = super.addRequest(q);
+	// notify the GlobalController
+	globalController_.wakeWait();
 
-        return rq;
+	return rq;
     }
 
     public void registerCommands() {
-      
-        register(new UnknownCommand());
-        register(new LocalOKCommand());
-        register(new QuitCommand());
-        register(new ShutDownCommand());
-        register(new NetworkGraphCommand());
-        register(new ReportAPCommand());
-        register(new OnRouterCommand());
-        register(new GetRouterStatsCommand());
-        register(new SendRouterStatsCommand());
+
+	register(new UnknownCommand());
+	register(new LocalOKCommand());
+	register(new QuitCommand());
+	register(new ShutDownCommand());
+	register(new NetworkGraphCommand());
+	register(new ReportAPCommand());
+	register(new OnRouterCommand());
+	register(new GetRouterStatsCommand());
+	register(new SendRouterStatsCommand());
     }
-    
+
 }

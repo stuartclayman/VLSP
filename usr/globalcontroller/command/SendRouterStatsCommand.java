@@ -20,18 +20,18 @@ public class SendRouterStatsCommand extends GlobalCommand  {
      * Construct a GetRouterStatsCommand.
      */
     public SendRouterStatsCommand() {
-        super(MCRP.SEND_ROUTER_STATS.CMD, MCRP.SEND_ROUTER_STATS.CODE, 111);
+	super(MCRP.SEND_ROUTER_STATS.CMD, MCRP.SEND_ROUTER_STATS.CODE, 111);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        //request = req;
-        //System.err.println("RECEIVED STATS FROM "+leadin()+" "+req);
-        String rest = req.substring(MCRP.SEND_ROUTER_STATS.CMD.length()).trim();
-        controller.receiveRouterStats(rest);
-        return success("STATS RECEIVED");
+	//request = req;
+	//System.err.println("RECEIVED STATS FROM "+leadin()+" "+req);
+	String rest = req.substring(MCRP.SEND_ROUTER_STATS.CMD.length()).trim();
+	controller.receiveRouterStats(rest);
+	return success("STATS RECEIVED");
     }
 }
 

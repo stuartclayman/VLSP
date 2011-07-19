@@ -17,34 +17,34 @@ import usr.common.BasicRouterInfo;
 public class LocalControllerManagementConsole extends AbstractManagementConsole implements Runnable {
 
     public LocalController localController_;
-    
+
     public LocalControllerManagementConsole(LocalController lc, int port) {
-       
-       localController_= lc;
-       initialise(port);
+
+	localController_= lc;
+	initialise(port);
     }
 
     public ComponentController getComponentController() {
-       return localController_;
+	return localController_;
     }
 
     public void registerCommands() {
-        register(new UnknownCommand());
-        register(new LocalCheckCommand());
-        register(new ShutDownCommand());
-        register(new QuitCommand());
-        register(new NewRouterCommand());
-        register(new ConnectRoutersCommand());
-        register(new EndRouterCommand());
-        register(new EndLinkCommand());
-        register(new RouterConfigCommand());
-        register(new SetAPCommand());
-        register(new ReportAPCommand());
-        register(new OnRouterCommand());
-        register(new GetRouterStatsCommand());
-        register(new RequestRouterStatsCommand());
-        register(new MonitoringStartCommand());
-        register(new MonitoringStopCommand());
+	register(new UnknownCommand());
+	register(new LocalCheckCommand());
+	register(new ShutDownCommand());
+	register(new QuitCommand());
+	register(new NewRouterCommand());
+	register(new ConnectRoutersCommand());
+	register(new EndRouterCommand());
+	register(new EndLinkCommand());
+	register(new RouterConfigCommand());
+	register(new SetAPCommand());
+	register(new ReportAPCommand());
+	register(new OnRouterCommand());
+	register(new GetRouterStatsCommand());
+	register(new RequestRouterStatsCommand());
+	register(new MonitoringStartCommand());
+	register(new MonitoringStopCommand());
     }
-        
+
 }

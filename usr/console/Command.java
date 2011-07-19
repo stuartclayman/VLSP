@@ -31,13 +31,13 @@ public interface Command {
     public int getErrorCode();
 
     /**
-     * Get the SocketChannel this command 
+     * Get the SocketChannel this command
      * is a handler for.
      */
     public SocketChannel getChannel();
 
     /**
-     * Set the SocketChannel this command 
+     * Set the SocketChannel this command
      */
     public void setChannel(SocketChannel ch);
 

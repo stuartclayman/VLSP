@@ -14,22 +14,22 @@ public class GetNameCommand extends RouterCommand {
      * Construct a GetNameCommand.
      */
     public GetNameCommand() {
-        super(MCRP.GET_NAME.CMD, MCRP.GET_NAME.CODE, MCRP.ERROR.CODE);
+	super(MCRP.GET_NAME.CMD, MCRP.GET_NAME.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        String name = controller.getName();
-        
-        boolean result = success(name);
+	String name = controller.getName();
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " response failed");
-        }
+	boolean result = success(name);
 
-        return result;
+	if (!result) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " response failed");
+	}
+
+	return result;
     }
 
 }

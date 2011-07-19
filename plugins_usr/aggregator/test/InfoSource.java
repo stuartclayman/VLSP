@@ -75,107 +75,115 @@ public class InfoSource {
     // Filter which always returns the value
     // i.e. no filtering
     ProbeFilter always = new ProbeFilter() {
-	    public String getName() { return "always"; }
+	public String getName() {
+	    return "always";
+	}
 
-	    public boolean filter(Probe p, Measurement m) {
-		return true;
-	    }
-	};
+	public boolean filter(Probe p, Measurement m) {
+	    return true;
+	}
+    };
 
     // Filter only returns value if the 0th field value is different by 2%
     ProbeFilter filter2pcTolerance = new ProbeFilter() {
-	    public String getName() { return "field0-2%-filter"; }
+	public String getName() {
+	    return "field0-2%-filter";
+	}
 
-	    public boolean filter(Probe p, Measurement m) {
-		List<ProbeValue> list = m.getValues();
-		Number n =  (Number)list.get(0).getValue();
+	public boolean filter(Probe p, Measurement m) {
+	    List<ProbeValue> list = m.getValues();
+	    Number n =  (Number)list.get(0).getValue();
 
-		Number oldValue = new Float(0);
-		Measurement oldM;
-		if ((oldM = p.getLastMeasurement()) != null) {
-		    oldValue = (Number)oldM.getValues().get(0).getValue();
-		}
-
-		float percent = n.floatValue() / oldValue.floatValue();
-
-		System.out.println("ProbeFilter: " + n + "/" + oldValue + " = " +
-				   percent);
-
-		// test for 2% tolerance -  0.98 -> 1.02
-		if (0.98 < percent && percent < 1.02) {
-		    // values too similar
-		    System.out.println("ProbeFilter: filtered " + n);
-		    return false;
-		} else {
-		    System.out.println("ProbeFilter: reported " + n);
-		    return true;
-		}
+	    Number oldValue = new Float(0);
+	    Measurement oldM;
+	    if ((oldM = p.getLastMeasurement()) != null) {
+		oldValue = (Number)oldM.getValues().get(0).getValue();
 	    }
-	};
+
+	    float percent = n.floatValue() / oldValue.floatValue();
+
+	    System.out.println("ProbeFilter: " + n + "/" + oldValue + " = " +
+	                       percent);
+
+	    // test for 2% tolerance -  0.98 -> 1.02
+	    if (0.98 < percent && percent < 1.02) {
+		// values too similar
+		System.out.println("ProbeFilter: filtered " + n);
+		return false;
+	    } else {
+		System.out.println("ProbeFilter: reported " + n);
+		return true;
+	    }
+	}
+    };
 
     // Filter only returns value if the 0th field value is different by 5%
     ProbeFilter filter5pcTolerance = new ProbeFilter() {
-	    public String getName() { return "field0-5%-filter"; }
+	public String getName() {
+	    return "field0-5%-filter";
+	}
 
-	    public boolean filter(Probe p, Measurement m) {
-		List<ProbeValue> list = m.getValues();
-		Number n =  (Number)list.get(0).getValue();
+	public boolean filter(Probe p, Measurement m) {
+	    List<ProbeValue> list = m.getValues();
+	    Number n =  (Number)list.get(0).getValue();
 
-		Number oldValue = new Float(0);
-		Measurement oldM;
-		if ((oldM = p.getLastMeasurement()) != null) {
-		    oldValue = (Number)oldM.getValues().get(0).getValue();
-		}
-
-		float percent = n.floatValue() / oldValue.floatValue();
-
-		System.out.println("ProbeFilter: " + n + "/" + oldValue + " = " +
-				   percent);
-
-		// test for 5% tolerance -  0.95 -> 1.05
-		if (0.95 < percent && percent < 1.05) {
-		    // values too similar
-		    System.out.println("ProbeFilter: filtered " + n);
-		    return false;
-		} else {
-		    System.out.println("ProbeFilter: reported " + n);
-		    return true;
-		}
+	    Number oldValue = new Float(0);
+	    Measurement oldM;
+	    if ((oldM = p.getLastMeasurement()) != null) {
+		oldValue = (Number)oldM.getValues().get(0).getValue();
 	    }
-	};
+
+	    float percent = n.floatValue() / oldValue.floatValue();
+
+	    System.out.println("ProbeFilter: " + n + "/" + oldValue + " = " +
+	                       percent);
+
+	    // test for 5% tolerance -  0.95 -> 1.05
+	    if (0.95 < percent && percent < 1.05) {
+		// values too similar
+		System.out.println("ProbeFilter: filtered " + n);
+		return false;
+	    } else {
+		System.out.println("ProbeFilter: reported " + n);
+		return true;
+	    }
+	}
+    };
 
     // Filter only returns value if the 0th field value is different by 10%
     ProbeFilter filter10pcTolerance = new ProbeFilter() {
-	    public String getName() { return "field0-10%-filter"; }
+	public String getName() {
+	    return "field0-10%-filter";
+	}
 
-	    public boolean filter(Probe p, Measurement m) {
-		List<ProbeValue> list = m.getValues();
-		Number n =  (Number)list.get(0).getValue();
+	public boolean filter(Probe p, Measurement m) {
+	    List<ProbeValue> list = m.getValues();
+	    Number n =  (Number)list.get(0).getValue();
 
-		Number oldValue = new Float(0);
-		Measurement oldM;
-		if ((oldM = p.getLastMeasurement()) != null) {
-		    oldValue = (Number)oldM.getValues().get(0).getValue();
-		}
-
-		float percent = n.floatValue() / oldValue.floatValue();
-
-		System.out.println("ProbeFilter: " + n + "/" + oldValue + " = " +
-				   percent);
-
-		// test for 10% tolerance -  0.90 -> 1.10
-		if (0.90 < percent && percent < 1.10) {
-		    // values too similar
-		    System.out.println("ProbeFilter: filtered " + n);
-		    return false;
-		} else {
-		    System.out.println("ProbeFilter: reported " + n);
-		    return true;
-		}
+	    Number oldValue = new Float(0);
+	    Measurement oldM;
+	    if ((oldM = p.getLastMeasurement()) != null) {
+		oldValue = (Number)oldM.getValues().get(0).getValue();
 	    }
-	};
 
-    // no default filter 
+	    float percent = n.floatValue() / oldValue.floatValue();
+
+	    System.out.println("ProbeFilter: " + n + "/" + oldValue + " = " +
+	                       percent);
+
+	    // test for 10% tolerance -  0.90 -> 1.10
+	    if (0.90 < percent && percent < 1.10) {
+		// values too similar
+		System.out.println("ProbeFilter: filtered " + n);
+		return false;
+	    } else {
+		System.out.println("ProbeFilter: reported " + n);
+		return true;
+	    }
+	}
+    };
+
+    // no default filter
     ProbeFilter actualFilter = null;
 
 
@@ -213,16 +221,16 @@ public class InfoSource {
 
 	System.err.println("InfoSource connect to " + outputDataAddress);
 
-        DataPlane outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
+	DataPlane outputDataPlane = new USRDataPlaneProducerWithNames(outputDataAddress);
 
 	dataSource = new InfoDataSource(dataIndex);
 	dataSource.setName(name);
 
 	// set up DataPlane
-        dataSource.setDataPlane(outputDataPlane);
+	dataSource.setDataPlane(outputDataPlane);
 
-        // and connect
-        dataSource.connect();
+	// and connect
+	dataSource.connect();
 
 	// set up probe
 	probe.setDataRate(new EveryNSeconds(sleepTime));
@@ -333,7 +341,7 @@ public class InfoSource {
 	    break;
 	}
     }
-     
+
     /**
      * Get the current Filter
      */
@@ -380,43 +388,43 @@ public class InfoSource {
      * -n name (default: "info-source")
      */
     public static void main(String[] args) {
-        // the host that has the Router at addr
-        String remHost = "localhost";
-        int remPort = 19191;
+	// the host that has the Router at addr
+	String remHost = "localhost";
+	int remPort = 19191;
 
-        // Set up Router
-        // And connect to Router @(2)
-        try {
-            int port = 18181;
-            int r2r = 18182;
+	// Set up Router
+	// And connect to Router @(2)
+	try {
+	    int port = 18181;
+	    int r2r = 18182;
 
-            Router router = new Router(port, r2r, "Router-1");
+	    Router router = new Router(port, r2r, "Router-1");
 
-            // start
-            if (router.start()) {
-            } else {
-                throw new Exception("Router failed to start");
-            }
+	    // start
+	    if (router.start()) {
+	    } else {
+		throw new Exception("Router failed to start");
+	    }
 
-            // set up id
-            router.setAddress(new GIDAddress(1));
+	    // set up id
+	    router.setAddress(new GIDAddress(1));
 
-            // connnect to the other router
-            // first we tal kto my own ManagementConsole
-            RouterInteractor selfInteractor = new RouterInteractor("localhost", port);
+	    // connnect to the other router
+	    // first we tal kto my own ManagementConsole
+	    RouterInteractor selfInteractor = new RouterInteractor("localhost", port);
 
-            // then set up Router-to-Router data connection
-            selfInteractor.createConnection(remHost + ":" + remPort, 20);
+	    // then set up Router-to-Router data connection
+	    selfInteractor.createConnection(remHost + ":" + remPort, 20);
 
-            // and stop talking to the ManagementConsole
-            selfInteractor.quit();
+	    // and stop talking to the ManagementConsole
+	    selfInteractor.quit();
 
 
-        } catch (Exception e) {
-            System.err.println("Cannot interact with router at " + remHost + ":" + remPort);
-            System.exit(1);
-        }
-            
+	} catch (Exception e) {
+	    System.err.println("Cannot interact with router at " + remHost + ":" + remPort);
+	    System.exit(1);
+	}
+
 
 	// allocate an InfoSource
 	InfoSource infoSource = new InfoSource();
@@ -441,9 +449,9 @@ public class InfoSource {
 		    String[] parts = argValue.split("/");
 		    Scanner sc = new Scanner(parts[0]);
 		    int addr = sc.nextInt();
-                    sc = new Scanner(parts[1]);
+		    sc = new Scanner(parts[1]);
 		    int port = sc.nextInt();
-                    Address gidAddr = new GIDAddress(addr);
+		    Address gidAddr = new GIDAddress(addr);
 		    SocketAddress newOutputAddr = new SocketAddress(gidAddr, port);
 		    infoSource.setOutputAddress(newOutputAddr);
 		    break;
@@ -509,7 +517,7 @@ public class InfoSource {
 		    System.err.println("InfoSource: unknown option " + option);
 		    break;
 		}
-		
+
 	    }
 	}
 
@@ -543,20 +551,20 @@ public class InfoSource {
 		// but it is better to store a ConsumerMeasurement
 		// as it deserializes better
 		ConsumerMeasurement cm = new ConsumerMeasurement(m.getSequenceNo(),
-                                                                 m.getProbeID(),
-								 m.getType(),
-								 m.getTimestamp().value(),
-								 m.getDeltaTime().value(),
-								 m.getServiceID(),
-								 m.getGroupID(),
-								 m.getValues());
+		                                                 m.getProbeID(),
+		                                                 m.getType(),
+		                                                 m.getTimestamp().value(),
+		                                                 m.getDeltaTime().value(),
+		                                                 m.getServiceID(),
+		                                                 m.getGroupID(),
+		                                                 m.getValues());
 
 		Serializable object = (Serializable)cm;
 		dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
-                return result;
+		return result;
 	    } catch (TimeIndexException tie) {
 		System.err.println("Can't add data to time index log " + dataIndex.getName());
-                return result;
+		return result;
 	    }
 	}
 

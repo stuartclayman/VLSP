@@ -23,7 +23,7 @@ public class ColouredNetworkVisualization implements Visualization {
      * Set the GlobalController this Visualization gets data from.
      */
     public void setGlobalController(GlobalController gc) {
-        this.gc = gc;
+	this.gc = gc;
     }
 
     /**
@@ -31,228 +31,228 @@ public class ColouredNetworkVisualization implements Visualization {
      */
     public void visualize(PrintStream s) {
 
-        HashMap<String, ArrayList<BasicRouterInfo>>routerLocations = new HashMap<String, ArrayList<BasicRouterInfo>>();
+	HashMap<String, ArrayList<BasicRouterInfo>>routerLocations = new HashMap<String, ArrayList<BasicRouterInfo>>();
 
-        // work out which router is where
-        for (BasicRouterInfo routerInfo : gc.getAllRouterInfo()) {
-            String host = routerInfo.getHost();
+	// work out which router is where
+	for (BasicRouterInfo routerInfo : gc.getAllRouterInfo()) {
+	    String host = routerInfo.getHost();
 
-            if (routerLocations.containsKey(host)) { // we've seen this host
-                ArrayList<BasicRouterInfo> list = routerLocations.get(host);
-                list.add(routerInfo);
-            } else {                                 //  it's a new host
-                ArrayList<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
-                list.add(routerInfo);
+	    if (routerLocations.containsKey(host)) { // we've seen this host
+		ArrayList<BasicRouterInfo> list = routerLocations.get(host);
+		list.add(routerInfo);
+	    } else {                                 //  it's a new host
+		ArrayList<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
+		list.add(routerInfo);
 
-                routerLocations.put(host, list);
-            }
-        }
+		routerLocations.put(host, list);
+	    }
+	}
 
-        // now visit each host and output the routers
-        s.println("graph gg {");
+	// now visit each host and output the routers
+	s.println("graph gg {");
 
-        s.println("    K=1;");
-        s.println("    ratio=0.7;");
-        s.println("    maxiter=2;");
-        s.println("    labelloc=t;");
-        //s.println("    rank=source;");
+	s.println("    K=1;");
+	s.println("    ratio=0.7;");
+	s.println("    maxiter=2;");
+	s.println("    labelloc=t;");
+	//s.println("    rank=source;");
 
-        // set root node, if using twopi
-        int noAPs = gc.getAPController().getNoAPs();
-        int noRouters = gc.getRouterCount();
+	// set root node, if using twopi
+	int noAPs = gc.getAPController().getNoAPs();
+	int noRouters = gc.getRouterCount();
 
-        if (noAPs > 0) {
-            int first = gc.getAPController().getAPList().get(0);
-            s.println("    root=" + first +";");
-        }
+	if (noAPs > 0) {
+	    int first = gc.getAPController().getAPList().get(0);
+	    s.println("    root=" + first +";");
+	}
 
-        // set attributes for subgraphs
-        s.println("    graph [");
-        s.println("      splines=true,");
-        s.println("      rankdir = \"TB\",");
-        //s.println("      ranksep = 1.2,");
-        s.println("      style=\"setlinewidth(2)\",");
-        s.println("      center=true,");
-        s.println("      overlap=false,");
-        s.println("      fontname=\"Helvetica\", fontsize=16, fontcolor=red");
-        s.println("    ];");
+	// set attributes for subgraphs
+	s.println("    graph [");
+	s.println("      splines=true,");
+	s.println("      rankdir = \"TB\",");
+	//s.println("      ranksep = 1.2,");
+	s.println("      style=\"setlinewidth(2)\",");
+	s.println("      center=true,");
+	s.println("      overlap=false,");
+	s.println("      fontname=\"Helvetica\", fontsize=16, fontcolor=red");
+	s.println("    ];");
 
-        // set attributes for nodes
-        s.println("    node [style=filled, fillcolor=\"white\", fontname=\"Helvetica\"];");
+	// set attributes for nodes
+	s.println("    node [style=filled, fillcolor=\"white\", fontname=\"Helvetica\"];");
 
-        // set attributes for edges
-        s.println("    edge [ fontname=\"Helvetica\", fontsize=12 ];");
+	// set attributes for edges
+	s.println("    edge [ fontname=\"Helvetica\", fontsize=12 ];");
 
-        // the label of the graph
-        s.print("    label=" + "\"snapshot:");
-        s.print(" time=");
-        long t = gc.getSimulationCurrentTime()-gc.getSimulationStartTime();
-        int totalSecs = (int)t / 1000;
-        int millis = (int)t % 1000;
-        int hundreths = millis / 10;
-        int minutes = totalSecs / 60;
-        int secs = totalSecs % 60;
-        s.printf("%02d:%02d:%02d", minutes, secs, hundreths);
-        s.print(" hosts=" + routerLocations.keySet().size());
-        s.print(" routers=" + noRouters);
-        s.print(" links=" + gc.getLinkCount());
-        s.println("\";");
+	// the label of the graph
+	s.print("    label=" + "\"snapshot:");
+	s.print(" time=");
+	long t = gc.getSimulationCurrentTime()-gc.getSimulationStartTime();
+	int totalSecs = (int)t / 1000;
+	int millis = (int)t % 1000;
+	int hundreths = millis / 10;
+	int minutes = totalSecs / 60;
+	int secs = totalSecs % 60;
+	s.printf("%02d:%02d:%02d", minutes, secs, hundreths);
+	s.print(" hosts=" + routerLocations.keySet().size());
+	s.print(" routers=" + noRouters);
+	s.print(" links=" + gc.getLinkCount());
+	s.println("\";");
 
-        // visit each host
-        for (String host : routerLocations.keySet()) {
-            List<BasicRouterInfo> routersOnHost = routerLocations.get(host);
+	// visit each host
+	for (String host : routerLocations.keySet()) {
+	    List<BasicRouterInfo> routersOnHost = routerLocations.get(host);
 
-            s.println("    subgraph cluster_" + host + " {");
-            s.print("\tlabel=\"" + host + " routers=" + routersOnHost.size() +"\";");
-            s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"0.0, 0.0, 0.97\"];");
-            s.println("\tnode [ shape=ellipse, style=rounded, nodesep=2.0 ];");
+	    s.println("    subgraph cluster_" + host + " {");
+	    s.print("\tlabel=\"" + host + " routers=" + routersOnHost.size() +"\";");
+	    s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"0.0, 0.0, 0.97\"];");
+	    s.println("\tnode [ shape=ellipse, style=rounded, nodesep=2.0 ];");
 
-            // now get routers for this host
-            for (BasicRouterInfo routerInfo : routersOnHost) {
-                // get a router
-                int r = routerInfo.getId();
+	    // now get routers for this host
+	    for (BasicRouterInfo routerInfo : routersOnHost) {
+		// get a router
+		int r = routerInfo.getId();
 
-                // get the AggPoint for this router
-                int ap= gc.getAPController().getAP(r);
+		// get the AggPoint for this router
+		int ap= gc.getAPController().getAP(r);
 
-                // get position of AggPoint in AggPoint list
-                int position = gc.getAPController().getAPList().indexOf(ap);
+		// get position of AggPoint in AggPoint list
+		int position = gc.getAPController().getAPList().indexOf(ap);
 
-                // work out the hue for the colour of the router
-                float hue = 1.0f;
+		// work out the hue for the colour of the router
+		float hue = 1.0f;
 
-                if (position == -1) {
-                    hue = 1.0f;
-                } else if (position % 2 == 0) { // even
-                    hue = ((float)position / 2) + 1;
-                } else {
-                    hue = (((float)position -1) / 2) + 5 + 1;
-                }
+		if (position == -1) {
+		    hue = 1.0f;
+		} else if (position % 2 == 0) { // even
+		    hue = ((float)position / 2) + 1;
+		} else {
+		    hue = (((float)position -1) / 2) + 5 + 1;
+		}
 
-                hue = hue / 10;
+		hue = hue / 10;
 
-                // output the router
-                
-                if (ap == r) { // router is also an Agg point
-                    float sat = 0.6f;
-                    float value = 0.6f;
+		// output the router
 
-                    s.print("\t" + r +" [ shape=diamond, label=\"" + routerInfo.getName() + "\""); 
-                    s.print(", style=\"filled,rounded\"" + ", fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
+		if (ap == r) { // router is also an Agg point
+		    float sat = 0.6f;
+		    float value = 0.6f;
 
-                } else {  // router is not an Agg point
-                    s.print("\t" + r +" [ label=\"" + routerInfo.getName() + "\"");
-                    
-                    if (ap == 0) {                    // router has NO nominated AggPoint
-                        float huew = 0f;
-                        float sat = 0f;
-                        float value = 1f;
+		    s.print("\t" + r +" [ shape=diamond, label=\"" + routerInfo.getName() + "\"");
+		    s.print(", style=\"filled,rounded\"" + ", fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
 
-                        s.print(", style=filled, " + " fillcolor=\"" + huew + "," + sat + "," + value + "\"");  // h,s,v
+		} else {  // router is not an Agg point
+		    s.print("\t" + r +" [ label=\"" + routerInfo.getName() + "\"");
 
-                    } else {                      // router has a nominated AggPoint
+		    if (ap == 0) {                    // router has NO nominated AggPoint
+			float huew = 0f;
+			float sat = 0f;
+			float value = 1f;
 
-                        float sat = 0f;
-                        float value = 0f;
+			s.print(", style=filled, " + " fillcolor=\"" + huew + "," + sat + "," + value + "\"");  // h,s,v
 
-                        // is the router directly connected to its AggPoint
-                        if (gc.isConnected(r, ap)) {
-                            value = 0.85f;
-                            sat = 0.5f;
-                        } else {
-                            value = 0.95f;
-                            sat = 0.2f;
-                        }
+		    } else {                      // router has a nominated AggPoint
 
+			float sat = 0f;
+			float value = 0f;
 
-                        s.print(", style=filled, " + " fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
-                    }
-                }
-
-                s.println(" ];");
-            }
-
-            s.println("    }");
-        }
-        
-        // visit all the edges
-        for (int i: gc.getRouterList()) {
-            for (int j: gc.getOutLinks(i)) {
-                if (i < j)  {
-                    s.print(i+ " -- "+j);
+			// is the router directly connected to its AggPoint
+			if (gc.isConnected(r, ap)) {
+			    value = 0.85f;
+			    sat = 0.5f;
+			} else {
+			    value = 0.95f;
+			    sat = 0.2f;
+			}
 
 
-                    s.print(" [ ");
+			s.print(", style=filled, " + " fillcolor=\"" + hue + "," + sat + "," + value + "\"");  // h,s,v
+		    }
+		}
 
-                    String router1Name = gc.findRouterInfo(i).getName();
-                    String router2Name = gc.findRouterInfo(j).getName();
+		s.println(" ];");
+	    }
 
-                    /*
-                    // get trafffic for link i -> j as router1Name => router2Name
-                    List<Object> iToj = reporter.getTraffic(router1Name, router2Name);
+	    s.println("    }");
+	}
 
-                    // get trafffic for link j -> i as router2Name => router1Name
-                    List<Object> jToi = reporter.getTraffic(router2Name, router1Name);
+	// visit all the edges
+	for (int i : gc.getRouterList()) {
+	    for (int j : gc.getOutLinks(i)) {
+		if (i < j)  {
+		    s.print(i+ " -- "+j);
 
-                    String name = linkNames.get(makePair(i,j));
 
-                    //s.print("label = \"" + name + "\", ");
+		    s.print(" [ ");
 
-                    if (iToj != null) {
-                    s.print(" headlabel = \"" + iToj.get(2) + "/" + iToj.get(8) + "\", ");
-                    }
+		    String router1Name = gc.findRouterInfo(i).getName();
+		    String router2Name = gc.findRouterInfo(j).getName();
 
-                    if (jToi != null) {
-                    s.print(" taillabel = \"" + jToi.get(2) + "/" + jToi.get(8) + "\", ");
-                    }
-                    */
+		    /*
+		       // get trafffic for link i -> j as router1Name => router2Name
+		       List<Object> iToj = reporter.getTraffic(router1Name, router2Name);
 
-                    // get trafffic for link i -> j as router1Name => router2Name
-                    List<Object> iToj = gc.getReporter().getTraffic(router1Name, router2Name);
+		       // get trafffic for link j -> i as router2Name => router1Name
+		       List<Object> jToi = reporter.getTraffic(router2Name, router1Name);
 
-                    if (iToj != null) {
-                        int traffic = (Integer)iToj.get(1) + (Integer)iToj.get(7);
+		       String name = linkNames.get(makePair(i,j));
 
-                        s.print("label = \"" + traffic + "\", ");
+		       //s.print("label = \"" + name + "\", ");
 
-                        // link colour
-                        s.print("color = \"");
-                    
-                        if (traffic < 1000) {
-                            s.print("black");
-                        } else if (traffic >= 1000 && traffic < 3000) {
-                            s.print("blue");
-                        } else if (traffic >= 3000 && traffic < 5000) {
-                            s.print("green");
-                        } else if (traffic >= 5000 && traffic < 7000) {
-                            s.print("yellow");
-                        } else if (traffic >= 7000 && traffic < 10000) {
-                            s.print("orange");
-                        } else if (traffic >= 10000) {
-                            s.print("red");
+		       if (iToj != null) {
+		       s.print(" headlabel = \"" + iToj.get(2) + "/" + iToj.get(8) + "\", ");
+		       }
 
-                        }
+		       if (jToi != null) {
+		       s.print(" taillabel = \"" + jToi.get(2) + "/" + jToi.get(8) + "\", ");
+		       }
+		     */
 
-                        s.print("\", ");
+		    // get trafffic for link i -> j as router1Name => router2Name
+		    List<Object> iToj = gc.getReporter().getTraffic(router1Name, router2Name);
 
-                        if (traffic >= 3000 && traffic < 7000) {
-                            s.print(" style=\"setlinewidth(2)\", ");
-                        } else if (traffic >= 7000 && traffic < 20000) {
-                            s.print(" style=\"setlinewidth(3)\", ");
-                        } else if (traffic >= 20000) {
-                            s.print(" style=\"setlinewidth(4)\", ");
-                        } else {
-                        }
-                    }
+		    if (iToj != null) {
+			int traffic = (Integer)iToj.get(1) + (Integer)iToj.get(7);
 
-                    s.println(" ];");
-                }
-            }
-        }
-        s.println("}");
-    
+			s.print("label = \"" + traffic + "\", ");
 
-        s.close();
+			// link colour
+			s.print("color = \"");
+
+			if (traffic < 1000) {
+			    s.print("black");
+			} else if (traffic >= 1000 && traffic < 3000) {
+			    s.print("blue");
+			} else if (traffic >= 3000 && traffic < 5000) {
+			    s.print("green");
+			} else if (traffic >= 5000 && traffic < 7000) {
+			    s.print("yellow");
+			} else if (traffic >= 7000 && traffic < 10000) {
+			    s.print("orange");
+			} else if (traffic >= 10000) {
+			    s.print("red");
+
+			}
+
+			s.print("\", ");
+
+			if (traffic >= 3000 && traffic < 7000) {
+			    s.print(" style=\"setlinewidth(2)\", ");
+			} else if (traffic >= 7000 && traffic < 20000) {
+			    s.print(" style=\"setlinewidth(3)\", ");
+			} else if (traffic >= 20000) {
+			    s.print(" style=\"setlinewidth(4)\", ");
+			} else {
+			}
+		    }
+
+		    s.println(" ];");
+		}
+	    }
+	}
+	s.println("}");
+
+
+	s.close();
 
     }
 }

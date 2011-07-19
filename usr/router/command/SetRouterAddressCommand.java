@@ -19,32 +19,32 @@ public class SetRouterAddressCommand extends RouterCommand {
      * Construct a SetRouterAddressCommand
      */
     public SetRouterAddressCommand() {
-        super(MCRP.SET_ROUTER_ADDRESS.CMD, MCRP.SET_ROUTER_ADDRESS.CODE, MCRP.ERROR.CODE);
+	super(MCRP.SET_ROUTER_ADDRESS.CMD, MCRP.SET_ROUTER_ADDRESS.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        String idStr = req.substring(MCRP.SET_ROUTER_ADDRESS.CMD.length()).trim();
+	String idStr = req.substring(MCRP.SET_ROUTER_ADDRESS.CMD.length()).trim();
 
-        boolean result;
+	boolean result;
 
-        Address addr = AddressFactory.newAddress(idStr);
+	Address addr = AddressFactory.newAddress(idStr);
 
-        boolean idSet = controller.setAddress(addr);
+	boolean idSet = controller.setAddress(addr);
 
-        if (idSet) {
-            result = success("" + idSet);
-        } else {
-            result = error("Cannot set Global Address after communication");
-        }
+	if (idSet) {
+	    result = success("" + idSet);
+	} else {
+	    result = error("Cannot set Global Address after communication");
+	}
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " response failed");
-        }
+	if (!result) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " response failed");
+	}
 
-        return result;
+	return result;
     }
 
 }

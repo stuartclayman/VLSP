@@ -36,7 +36,7 @@ public interface Datagram {
      * Set the TTL
      */
     public Datagram setTTL(int ttl);
-    
+
     /**
      * Get the protocol
      */
@@ -73,7 +73,7 @@ public interface Datagram {
     public int getSrcPort();
 
     /**
-     * Set the src port 
+     * Set the src port
      */
     public Datagram setSrcPort(int port);
 
@@ -83,10 +83,10 @@ public interface Datagram {
     public int getDstPort();
 
     /**
-     * Set the dst port 
+     * Set the dst port
      */
     public Datagram setDstPort(int port);
-  
+
     /** Reduce TTL and return true if packet still valid */
     public boolean TTLReduce();
 

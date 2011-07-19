@@ -25,297 +25,297 @@ public class CreateConnection extends ChannelResponder implements Runnable {
      * CREATE_CONNECTION ip_addr/port - create a new network connection
      * with weight of 1, and a constructed name
      * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
-     * connection to a router on the address ip_addr/port with a 
+     * connection to a router on the address ip_addr/port with a
      * connection weight of connection_weight and a constructed name
-     * CREATE_CONNECTION ip_addr/port connection_weight connection_name - 
+     * CREATE_CONNECTION ip_addr/port connection_weight connection_name -
      * create a new network
-     * connection to a router on the address ip_addr/port with a 
+     * connection to a router on the address ip_addr/port with a
      * connection weight of connection_weight and a name
      * of connection_name
      */
     public CreateConnection(RouterController controller, Request request) {
-        this.controller = controller;
-        this.request = request;
-        setChannel(request.channel);
-        
+	this.controller = controller;
+	this.request = request;
+	setChannel(request.channel);
+
 
     }
 
     public void run() {
-        // process the request
-        String value = request.value;
-        SocketChannel channel = request.channel;
-               
-        String[] parts = value.split(" ");
-        if (parts.length !=4 && parts.length != 3 && parts.length != 2) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection command: " + request);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION wrong no of args");
-            return;
-        }
+	// process the request
+	String value = request.value;
+	SocketChannel channel = request.channel;
 
-        // check ip addr spec
-        String[] ipParts = parts[1].split(":");
-        if (ipParts.length != 2) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection ip address: " + request);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid address " + parts[1]);
-            return;
-        }
+	String[] parts = value.split(" ");
+	if (parts.length !=4 && parts.length != 3 && parts.length != 2) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection command: " + request);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION wrong no of args");
+	    return;
+	}
 
-        // process host and port
-        String host = ipParts[0];
-        Scanner sc = new Scanner(ipParts[1]);
-        int portNumber;
+	// check ip addr spec
+	String[] ipParts = parts[1].split(":");
+	if (ipParts.length != 2) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection ip address: " + request);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid address " + parts[1]);
+	    return;
+	}
 
-        try {
-            portNumber = sc.nextInt();
-        } catch (Exception e) {
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid port " + ipParts[1]);
-            return;
-        }
+	// process host and port
+	String host = ipParts[0];
+	Scanner sc = new Scanner(ipParts[1]);
+	int portNumber;
 
-        int weight;
+	try {
+	    portNumber = sc.nextInt();
+	} catch (Exception e) {
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid port " + ipParts[1]);
+	    return;
+	}
 
-        // if we have a 3rd arg
-        if (parts.length == 3) {
-            // get weight/distance factor
-            sc = new Scanner(parts[2]);
+	int weight;
 
-            try {
-                weight = sc.nextInt();
-            }  catch (Exception e) {
-                respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid weight " + parts[2]);
-                return;
-            }
-        } else {
-            weight = 1;
-        }
+	// if we have a 3rd arg
+	if (parts.length == 3) {
+	    // get weight/distance factor
+	    sc = new Scanner(parts[2]);
 
-        String connectionName = null;
+	    try {
+		weight = sc.nextInt();
+	    }  catch (Exception e) {
+		respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid weight " + parts[2]);
+		return;
+	    }
+	} else {
+	    weight = 1;
+	}
 
-        // if we have a 4rd arg
-        if (parts.length == 4) {
-            connectionName = parts[3];
-        }
+	String connectionName = null;
 
-        // if we get here all the args seem OK
+	// if we have a 4rd arg
+	if (parts.length == 4) {
+	    connectionName = parts[3];
+	}
 
-        /*
-         * Connect to management port of remote router.
-         */
+	// if we get here all the args seem OK
 
-        // Create a RouterInteractor to the remote Router
-        RouterInteractor interactor = null;
-        String routerResponse;
+	/*
+	 * Connect to management port of remote router.
+	 */
 
-
-        try {
-            interactor = new RouterInteractor(InetAddress.getByName(host), portNumber);
-
-        } catch (UnknownHostException uhe) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
-            return;
-        } catch (IOException ioexc) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot connect to " + host + " on port " + portNumber + " -> " + ioexc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
-            return;
-        }
+	// Create a RouterInteractor to the remote Router
+	RouterInteractor interactor = null;
+	String routerResponse;
 
 
+	try {
+	    interactor = new RouterInteractor(InetAddress.getByName(host), portNumber);
+
+	} catch (UnknownHostException uhe) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
+	    return;
+	} catch (IOException ioexc) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot connect to " + host + " on port " + portNumber + " -> " + ioexc);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
+	    return;
+	}
 
 
-        // at this point we have a connection to 
-        // the managementSocket of the remote router
-
-        try {
-            routerResponse = interactor.getConnectionPort();
-        } catch (IOException ioexc) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
-            return;
-        } catch (MCRPException mcrpe) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + mcrpe);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
-            return;
-        }
-
-        // Ok now we need to find the port the remote router
-        // listens to for connections
-        Scanner scanner = new Scanner(routerResponse);
-
-        // now get connection port
-        int connectionPort = scanner.nextInt();
-
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "createConnection: connectionPort at " + host + " is " + connectionPort);
 
 
-        /*
-         * Now connect to connections port of remote router.
-         */
+	// at this point we have a connection to
+	// the managementSocket of the remote router
 
-        // make a socket connection for the router - to - router path
-        Socket socket = null;
-        NetIF netIF = null;
-        InetSocketAddress refAddr;
-        String latestConnectionName = null;
+	try {
+	    routerResponse = interactor.getConnectionPort();
+	} catch (IOException ioexc) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
+	    return;
+	} catch (MCRPException mcrpe) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + mcrpe);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
+	    return;
+	}
 
-        if (connectionName == null || connectionName.equals("")) {
-            latestConnectionName = "/" + controller.getName() + "/Connection-" + controller.getConnectionCount();
-        } else {
-            latestConnectionName = connectionName;
-        }
+	// Ok now we need to find the port the remote router
+	// listens to for connections
+	Scanner scanner = new Scanner(routerResponse);
 
-        try {
+	// now get connection port
+	int connectionPort = scanner.nextInt();
+
+	Logger.getLogger("log").logln(USR.STDOUT, leadin() + "createConnection: connectionPort at " + host + " is " + connectionPort);
+
+
+	/*
+	 * Now connect to connections port of remote router.
+	 */
+
+	// make a socket connection for the router - to - router path
+	Socket socket = null;
+	NetIF netIF = null;
+	InetSocketAddress refAddr;
+	String latestConnectionName = null;
+
+	if (connectionName == null || connectionName.equals("")) {
+	    latestConnectionName = "/" + controller.getName() + "/Connection-" + controller.getConnectionCount();
+	} else {
+	    latestConnectionName = connectionName;
+	}
+
+	try {
 	    // make a connection to a remote router
-            TCPEndPointSrc src = new TCPEndPointSrc(host, connectionPort);
-            netIF = new TCPNetIF(src,controller.getListener());
+	    TCPEndPointSrc src = new TCPEndPointSrc(host, connectionPort);
+	    netIF = new TCPNetIF(src,controller.getListener());
 
-            // set its name
-            netIF.setName(latestConnectionName);
-            // set its weight
-            netIF.setWeight(weight);
+	    // set its name
+	    netIF.setName(latestConnectionName);
+	    // set its weight
+	    netIF.setWeight(weight);
 
-            // set its Address
-            netIF.setAddress(controller.getAddress());
-            
-            netIF.connect();
+	    // set its Address
+	    netIF.setAddress(controller.getAddress());
 
-            // get socket so we can determine the Inet Address
-            socket = src.getSocket();
+	    netIF.connect();
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "connection socket: " + socket);
+	    // get socket so we can determine the Inet Address
+	    socket = src.getSocket();
 
-
-            
-            refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
-
-            // set its ID
-            netIF.setID(refAddr.hashCode());
-
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
+	    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "connection socket: " + socket);
 
 
-        } catch (UnknownHostException uhe) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
-            return;
-        } catch (IOException ioexc) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot connect to " + host + " on port " + connectionPort + " -> " + ioexc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + connectionPort);
-            return;
-        }
 
-        /*
-         * Tell the remote router abput this connection
-         */
+	    refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
 
-        /*
-         * Get name of remote router
-         */
+	    // set its ID
+	    netIF.setID(refAddr.hashCode());
 
-        String remoteRouterName;
-        Address remoteRouterAddress;
+	    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
 
-        try {
-        // now get router name
-            remoteRouterName = interactor.getName();
-            remoteRouterAddress = interactor.getRouterAddress();
-        } catch (IOException ioexc) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
-            return;
-        } catch (MCRPException mcrpe) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + mcrpe);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
-            return;
-        }
 
-        // set the remoteRouterName
-        netIF.setRemoteRouterName(remoteRouterName);
-        netIF.setRemoteRouterAddress(remoteRouterAddress);
+	} catch (UnknownHostException uhe) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
+	    return;
+	} catch (IOException ioexc) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot connect to " + host + " on port " + connectionPort + " -> " + ioexc);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + connectionPort);
+	    return;
+	}
 
-        /*
-         * Save the netIF temporarily
-         */
-        controller.registerTemporaryNetIF(netIF);
+	/*
+	 * Tell the remote router abput this connection
+	 */
 
-        
-        /*
-         * Interact with remote router
-         */
-        try {
-            boolean interactionOK = false;
+	/*
+	 * Get name of remote router
+	 */
 
-            // attempt this 3 times
-            int attempts;
-            for (attempts=0; attempts < 3; attempts++) {
-                // we sleep a bit between each try
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ie) {
-                    Logger.getLogger("log").logln(USR.ERROR, "CC: SLEEP");
-                }
-                // send INCOMING_CONNECTION command
+	String remoteRouterName;
+	Address remoteRouterAddress;
 
-                try {
-                    interactor.incomingConnection(latestConnectionName, controller.getName(), controller.getAddress(), weight, socket.getLocalPort());
+	try {
+	    // now get router name
+	    remoteRouterName = interactor.getName();
+	    remoteRouterAddress = interactor.getRouterAddress();
+	} catch (IOException ioexc) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
+	    return;
+	} catch (MCRPException mcrpe) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + mcrpe);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
+	    return;
+	}
 
-                    // connection setup ok
-                    interactionOK = true;
-                    break;
-                } catch (Exception e) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " + attempts);
-                }
+	// set the remoteRouterName
+	netIF.setRemoteRouterName(remoteRouterName);
+	netIF.setRemoteRouterAddress(remoteRouterAddress);
 
-            }
+	/*
+	 * Save the netIF temporarily
+	 */
+	controller.registerTemporaryNetIF(netIF);
 
-            if (interactionOK) {
-                // everything ok
-            } else {
-                // connection setup failed
-                respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
-                return;
-            }
 
-        } catch (Exception exc) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
-            return;
-        }
+	/*
+	 * Interact with remote router
+	 */
+	try {
+	    boolean interactionOK = false;
 
-        /*
-         * Close connection to management port of remote router.
-         */
-        try { 
-            interactor.quit();
+	    // attempt this 3 times
+	    int attempts;
+	    for (attempts=0; attempts < 3; attempts++) {
+		// we sleep a bit between each try
+		try {
+		    Thread.sleep(100);
+		} catch (InterruptedException ie) {
+		    Logger.getLogger("log").logln(USR.ERROR, "CC: SLEEP");
+		}
+		// send INCOMING_CONNECTION command
 
-            // close connection to management connection of remote router
+		try {
+		    interactor.incomingConnection(latestConnectionName, controller.getName(), controller.getAddress(), weight, socket.getLocalPort());
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed = " + host);
+		    // connection setup ok
+		    interactionOK = true;
+		    break;
+		} catch (Exception e) {
+		    Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " + attempts);
+		}
 
-        } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot quit with host: " + host);
-            return;
-        }
+	    }
 
-        // now plug the temporary netIF into Router
-        RouterPort port = controller.plugTemporaryNetIFIntoPort(netIF);
+	    if (interactionOK) {
+		// everything ok
+	    } else {
+		// connection setup failed
+		respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
+		return;
+	    }
 
-        respond(MCRP.CREATE_CONNECTION.CODE + " " + latestConnectionName); // + " port" + port.getPortNo());
+	} catch (Exception exc) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
+	    return;
+	}
+
+	/*
+	 * Close connection to management port of remote router.
+	 */
+	try {
+	    interactor.quit();
+
+	    // close connection to management connection of remote router
+
+	    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed = " + host);
+
+	} catch (Exception e) {
+	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e);
+	    respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot quit with host: " + host);
+	    return;
+	}
+
+	// now plug the temporary netIF into Router
+	RouterPort port = controller.plugTemporaryNetIFIntoPort(netIF);
+
+	respond(MCRP.CREATE_CONNECTION.CODE + " " + latestConnectionName); // + " port" + port.getPortNo());
     }
 
     /**
      * Create the String to print out before a message
      */
     String leadin() {
-        final String CC = "CC: ";
+	final String CC = "CC: ";
 
-        if (controller == null) {
-            return CC;
-        } else {
-            return controller.getName() + " " + CC;
-        }
+	if (controller == null) {
+	    return CC;
+	} else {
+	    return controller.getName() + " " + CC;
+	}
 
     }
 

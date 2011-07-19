@@ -20,37 +20,37 @@ public class DatagramSocket {
      * Create a DatagramSocket bound to a a free port.
      */
     public DatagramSocket() throws SocketException {
-        Router router = RouterDirectory.getRouter();
-        AppSocket appSocket = new AppSocket(router);
+	Router router = RouterDirectory.getRouter();
+	AppSocket appSocket = new AppSocket(router);
 
-        socketImpl = appSocket;
+	socketImpl = appSocket;
     }
 
     /**
      * Create a DatagramSocket bound to a port.
      */
     public DatagramSocket(int port) throws SocketException {
-        Router router = RouterDirectory.getRouter();
-        AppSocket appSocket = new AppSocket(router, port);
+	Router router = RouterDirectory.getRouter();
+	AppSocket appSocket = new AppSocket(router, port);
 
-        socketImpl = appSocket;
+	socketImpl = appSocket;
     }
 
     /**
      * Create a DatagramSocket connected to a specified remote Address and port.
      */
     public DatagramSocket(Address addr, int port) throws SocketException {
-        Router router = RouterDirectory.getRouter();
-        AppSocket appSocket = new AppSocket(router, addr, port);
+	Router router = RouterDirectory.getRouter();
+	AppSocket appSocket = new AppSocket(router, addr, port);
 
-        socketImpl = appSocket;
+	socketImpl = appSocket;
     }
 
     /**
      * Binds this DatagramSocket to a port.
      */
     public void bind(int port) throws SocketException {
-        socketImpl.bind(port);
+	socketImpl.bind(port);
     }
 
 
@@ -61,7 +61,7 @@ public class DatagramSocket {
      * connected.
      */
     public void connect(SocketAddress sockaddr)  {
-        socketImpl.connect(sockaddr);
+	socketImpl.connect(sockaddr);
     }
 
     /**
@@ -71,23 +71,23 @@ public class DatagramSocket {
      * connected.
      */
     public void connect(Address address, int port)  {
-        socketImpl.connect(address, port);
+	socketImpl.connect(address, port);
     }
 
-    /** 
-     * Returns the remote port for this socket. 
+    /**
+     * Returns the remote port for this socket.
      * Returns -1 if the socket is not connected.
-     */ 
+     */
     public int getPort() {
-        return socketImpl.getPort();
+	return socketImpl.getPort();
     }
 
-    /** 
-     * Returns the address to which this socket is connected. 
-     * Returns null if the socket is not connected. 
-     */ 
+    /**
+     * Returns the address to which this socket is connected.
+     * Returns null if the socket is not connected.
+     */
     public Address getRemoteAddress() {
-        return socketImpl.getRemoteAddress();
+	return socketImpl.getRemoteAddress();
     }
 
     /**
@@ -95,7 +95,7 @@ public class DatagramSocket {
      * @return true if the socket succesfuly connected to a server
      */
     public boolean isConnected() {
-        return socketImpl.isConnected();
+	return socketImpl.isConnected();
     }
 
     /**
@@ -103,7 +103,7 @@ public class DatagramSocket {
      * @return true if the socket succesfuly bound to an address
      */
     public boolean isBound() {
-        return socketImpl.isBound();
+	return socketImpl.isBound();
     }
 
     /**
@@ -111,49 +111,49 @@ public class DatagramSocket {
      * @return true if the socket is closed.
      */
     public boolean isClosed() {
-        return socketImpl.isClosed();
+	return socketImpl.isClosed();
     }
 
-    /** 
+    /**
      * Returns the local port for this socket
      * to which this socket is bound.
-     */ 
+     */
     public int getLocalPort() {
-        return socketImpl.getLocalPort();
+	return socketImpl.getLocalPort();
     }
 
     /**
-     * Returns the address of the endpoint this socket is bound to, 
+     * Returns the address of the endpoint this socket is bound to,
      * or null if it is not bound yet. */
     public Address getLocalAddress() {
-        return socketImpl.getLocalAddress();
+	return socketImpl.getLocalAddress();
     }
 
     /**
-     * Send a datagram from this socket. 
+     * Send a datagram from this socket.
      * The Datagram includes information indicating the data to be sent,
-     * its length, the address of the remote router, and the port number 
+     * its length, the address of the remote router, and the port number
      * on the remote router.
      */
     public void send(Datagram dg) throws SocketException, NoRouteToHostException {
-        socketImpl.send(dg);
+	socketImpl.send(dg);
     }
 
     /**
-     * Receives a datagram from this socket. When this method returns, the 
+     * Receives a datagram from this socket. When this method returns, the
      * Datagram is filled with the data received. The datagram also contains
      * the sender's  address, and the port number on the sender's machine.
      * This method blocks until a datagram is received.
      */
     public Datagram receive() {
-        return socketImpl.receive();
+	return socketImpl.receive();
     }
 
     /**
      * Close this socket.
      */
     public void close() {
-        socketImpl.close();
+	socketImpl.close();
     }
 
     /**
@@ -161,14 +161,14 @@ public class DatagramSocket {
      * This does nothing if the socket is not connected.
      */
     public void disconnect() {
-        socketImpl.disconnect();
+	socketImpl.disconnect();
     }
 
     /**
      * toString.
      */
     public String toString() {
-        return socketImpl.toString();
+	return socketImpl.toString();
     }
 
 }

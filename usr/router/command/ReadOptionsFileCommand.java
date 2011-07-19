@@ -19,28 +19,28 @@ public class ReadOptionsFileCommand extends RouterCommand {
      * Construct a GetAddressCommand.
      */
     public ReadOptionsFileCommand() {
-        super(MCRP.READ_OPTIONS_FILE.CMD, MCRP.READ_OPTIONS_FILE.CODE,
-           MCRP.READ_OPTIONS_FILE.ERROR);
+	super(MCRP.READ_OPTIONS_FILE.CMD, MCRP.READ_OPTIONS_FILE.CODE,
+	      MCRP.READ_OPTIONS_FILE.ERROR);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        boolean result = true;
+	boolean result = true;
 
-        String[] args= req.split(" ");
-                    
-        if (args.length != 2) {
-            error("READ_OPTIONS_FILE requires two arguments");
-            return false;
-        }
-        if(controller.readOptionsFile(args[1].trim())) {
-            success("Read Options File");
-            return true;
-        }
-        error ("Cannot read options file");
-        return true;
+	String[] args= req.split(" ");
+
+	if (args.length != 2) {
+	    error("READ_OPTIONS_FILE requires two arguments");
+	    return false;
+	}
+	if(controller.readOptionsFile(args[1].trim())) {
+	    success("Read Options File");
+	    return true;
+	}
+	error ("Cannot read options file");
+	return true;
     }
 
 }

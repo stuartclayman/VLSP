@@ -1,7 +1,7 @@
 package usr.protocol;
 
 /**
-import usr.logging.*;
+   import usr.logging.*;
  * Marker for a protocol.
  */
 public interface Protocol {

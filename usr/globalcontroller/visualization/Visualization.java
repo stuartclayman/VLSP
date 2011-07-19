@@ -20,4 +20,4 @@ public interface Visualization {
     public void visualize(PrintStream s);
 }
 
- 
+

@@ -54,7 +54,7 @@ public abstract class AbstractUSRDataPlaneConsumer implements DataPlane, Measure
 		USRReceiver rr = new USRReceiver(this, address);
 
 		rr.listen();
-		
+
 		udpReceiver = rr;
 
 		return true;
@@ -75,18 +75,18 @@ public abstract class AbstractUSRDataPlaneConsumer implements DataPlane, Measure
      * Dicconnect from a delivery mechansim.
      */
     public boolean disconnect() {
-        if (udpReceiver != null) {
-            try {
-                udpReceiver.end();
-                udpReceiver = null;
-                return true;
-            } catch (IOException ieo) {
-                udpReceiver = null;
-                return false;
-            }
-        } else {
-            return false;
-        }
+	if (udpReceiver != null) {
+	    try {
+		udpReceiver.end();
+		udpReceiver = null;
+		return true;
+	    } catch (IOException ieo) {
+		udpReceiver = null;
+		return false;
+	    }
+	} else {
+	    return false;
+	}
     }
 
     /**
@@ -115,7 +115,7 @@ public abstract class AbstractUSRDataPlaneConsumer implements DataPlane, Measure
      * | data source id (long) | msg type (int) | seq no (int) | payload   |
      * +-------------------------------------------------------------------+
      */
-    public abstract void received(ByteArrayInputStream bis, MetaData metaData) throws  IOException, TypeException;
+    public abstract void received(ByteArrayInputStream bis, MetaData metaData) throws IOException, TypeException;
     /**
      * This method is called just after there has been an error
      * in received from some underlying transport.
@@ -128,7 +128,7 @@ public abstract class AbstractUSRDataPlaneConsumer implements DataPlane, Measure
      * in received from some underlying transport.
      */
     public void eof() {
-        disconnect();
+	disconnect();
     }
 
 

@@ -9,7 +9,7 @@ import java.util.Scanner;
 import java.net.InetSocketAddress;
 
 /**
- * The MONITORING_STOP command stops monitoring 
+ * The MONITORING_STOP command stops monitoring
  * MONITORING_STOP
  */
 public class MonitoringStopCommand extends LocalCommand {
@@ -17,17 +17,17 @@ public class MonitoringStopCommand extends LocalCommand {
      * Construct a MonitoringStopCommand
      */
     public MonitoringStopCommand() {
-        super(MCRP.MONITORING_STOP.CMD, MCRP.MONITORING_STOP.CODE, MCRP.ERROR.CODE);
+	super(MCRP.MONITORING_STOP.CMD, MCRP.MONITORING_STOP.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        controller.stopMonitoring();
+	controller.stopMonitoring();
 
-        boolean result = success("Monitoring Stopped");
+	boolean result = success("Monitoring Stopped");
 
-        return result;
+	return result;
     }
 }

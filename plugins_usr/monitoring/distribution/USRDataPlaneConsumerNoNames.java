@@ -26,7 +26,7 @@ public class USRDataPlaneConsumerNoNames extends AbstractUSRDataPlaneConsumer im
      * Construct a USRDataPlaneConsumerNoNames.
      */
     public USRDataPlaneConsumerNoNames(SocketAddress addr) {
-        super(addr);
+	super(addr);
     }
 
 
@@ -39,7 +39,7 @@ public class USRDataPlaneConsumerNoNames extends AbstractUSRDataPlaneConsumer im
      * | data source id (2 X long) | msg type (int) | seq no (int) | payload |
      * +---------------------------------------------------------------------+
      */
-    public void received(ByteArrayInputStream bis, MetaData metaData) throws  IOException, TypeException {
+    public void received(ByteArrayInputStream bis, MetaData metaData) throws IOException, TypeException {
 
 	//System.out.println("DC: Received " + metaData);
 
@@ -50,8 +50,8 @@ public class USRDataPlaneConsumerNoNames extends AbstractUSRDataPlaneConsumer im
 
 	    // get the DataSource id
 	    // get the DataSource id
-            long dataSourceIDMSB = dataIn.readLong();
-            long dataSourceIDLSB = dataIn.readLong();
+	    long dataSourceIDMSB = dataIn.readLong();
+	    long dataSourceIDLSB = dataIn.readLong();
 	    ID dataSourceID = new ID(dataSourceIDMSB, dataSourceIDLSB);
 
 	    // check message type
@@ -113,7 +113,7 @@ public class USRDataPlaneConsumerNoNames extends AbstractUSRDataPlaneConsumer im
 		    ((ConsumerMeasurementWithMetaData)measurement).setTransmissionMetaData(metaData);
 		}
 
-		
+
 		//System.err.println("DC: datainputstream left = " + dataIn.available());
 		// report the measurement
 		report(measurement);
@@ -127,7 +127,7 @@ public class USRDataPlaneConsumerNoNames extends AbstractUSRDataPlaneConsumer im
 	    throw ioe;
 	} catch (Exception e) {
 	    System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
-            throw new TypeException(e.getMessage());
+	    throw new TypeException(e.getMessage());
 	}
     }
 

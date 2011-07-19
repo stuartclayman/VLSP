@@ -23,17 +23,17 @@ public class LinuxCPU extends AbstractProbe implements Probe  {
      */
     public LinuxCPU(String name) {
 	setName(name);
-        setDataRate(new Rational(360, 1));
+	setDataRate(new Rational(360, 1));
 
-        // allocate cpuDev
-        cpuDev = new CPUDev();
+	// allocate cpuDev
+	cpuDev = new CPUDev();
 
 	// read data, but calculate nothing
 	cpuDev.read(false);
 
 
-        // add a probe attribute
-        addProbeAttribute(new DefaultProbeAttribute(0, "usage", ProbeAttributeType.FLOAT, "percent"));
+	// add a probe attribute
+	addProbeAttribute(new DefaultProbeAttribute(0, "usage", ProbeAttributeType.FLOAT, "percent"));
     }
 
 
@@ -47,37 +47,37 @@ public class LinuxCPU extends AbstractProbe implements Probe  {
 	// read the data
 	if (cpuDev.read(true)) {
 	    try {
-                int cpuCount = cpuDev.getCPUCount();
-                float idleTotal = 0.0f;
+		int cpuCount = cpuDev.getCPUCount();
+		float idleTotal = 0.0f;
 
-                // get amount for idleness
-                for (int c=0; c<cpuCount; c++) {
-                    float f = (float)cpuDev.getDeltaValue("cpu" + c  + "-idle");
-                    System.out.print(c + "=" + f + ", ");
-                    idleTotal += f;
-                }
-                System.out.println();
+		// get amount for idleness
+		for (int c=0; c<cpuCount; c++) {
+		    float f = (float)cpuDev.getDeltaValue("cpu" + c  + "-idle");
+		    System.out.print(c + "=" + f + ", ");
+		    idleTotal += f;
+		}
+		System.out.println();
 
-                // we now have total idleness, over N cpus.
-                // But, usage = 100% - idleness
+		// we now have total idleness, over N cpus.
+		// But, usage = 100% - idleness
 
-                float usage = 100 - (idleTotal / cpuCount);
+		float usage = 100 - (idleTotal / cpuCount);
 
-                if (usage < 0) {
-                    usage = 0;
-                }
+		if (usage < 0) {
+		    usage = 0;
+		}
 
 
-                list.add(new DefaultProbeValue(0, usage));
+		list.add(new DefaultProbeValue(0, usage));
 
-	    
-		ProbeMeasurement m = new ProducerMeasurement(this, list, "LinuxCPU");	
 
-                //System.out.println("LinuxCPU => " + m);
-                
-                return m;
+		ProbeMeasurement m = new ProducerMeasurement(this, list, "LinuxCPU");
+
+		//System.out.println("LinuxCPU => " + m);
+
+		return m;
 	    } catch (Exception e) {
-                e.printStackTrace();
+		e.printStackTrace();
 		return null;
 	    }
 	} else {

@@ -31,7 +31,7 @@ public class USRTransmitter {
     SocketAddress dstAddr;
 
     /*
-     * A Datagram being transmitted 
+     * A Datagram being transmitted
      */
     Datagram packet;
 
@@ -88,11 +88,11 @@ public class USRTransmitter {
      */
     public int transmit(ByteArrayOutputStream byteStream, int id) throws IOException {
 	// set up the Datagram
-        byte[] payload = byteStream.toByteArray();
+	byte[] payload = byteStream.toByteArray();
 
-        ByteBuffer buffer = ByteBuffer.wrap(payload);
+	ByteBuffer buffer = ByteBuffer.wrap(payload);
 
-        packet = DatagramFactory.newDatagram(buffer);
+	packet = DatagramFactory.newDatagram(buffer);
 
 	// now send it
 	socket.send(packet);

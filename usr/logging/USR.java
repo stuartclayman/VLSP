@@ -17,11 +17,11 @@ public class USR {
 
     // general error
     public static int ERROR = 1 << 1;
-    
+
     // default output file
     public static int DEFAULT_FILE = 1 << 2;
 
-    // extra 
+    // extra
     public static int EXTRA = 1 << 3;
 
     // for Apps
@@ -30,5 +30,5 @@ public class USR {
     // extra for Apps
     public static int APP_EXTRA = 1 << 3;
 
-    
+
 }

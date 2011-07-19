@@ -41,7 +41,7 @@ public abstract class AbstractUSRDataPlaneProducer implements DataPlane, DataSou
     /**
      * Connect to a delivery mechansim.
      */
-     public boolean connect() {
+    public boolean connect() {
 	try {
 	    // only connect if we're not already connected
 	    if (udpTransmitter == null) {
@@ -49,7 +49,7 @@ public abstract class AbstractUSRDataPlaneProducer implements DataPlane, DataSou
 		USRTransmitter tt = new USRTransmitter(this, address);
 
 		tt.connect();
-		
+
 		udpTransmitter = tt;
 
 		return true;
@@ -70,18 +70,18 @@ public abstract class AbstractUSRDataPlaneProducer implements DataPlane, DataSou
      * Disconnect from a delivery mechansim.
      */
     public boolean disconnect() {
-        if (udpTransmitter != null) {
-            try {
-                udpTransmitter.end();
-                udpTransmitter = null;
-                return true;
-            } catch (IOException ieo) {
-                udpTransmitter = null;
-                return false;
-            }
-        } else {
-            return false;
-        }
+	if (udpTransmitter != null) {
+	    try {
+		udpTransmitter.end();
+		udpTransmitter = null;
+		return true;
+	    } catch (IOException ieo) {
+		udpTransmitter = null;
+		return false;
+	    }
+	} else {
+	    return false;
+	}
     }
 
     /**
