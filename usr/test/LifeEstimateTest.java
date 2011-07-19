@@ -1,6 +1,7 @@
 package usr.test;
 
-import usr.common.*;
+import rgc.xmlparse.*;
+import rgc.probdistributions.*;
 import usr.logging.*;
 import java.util.*;
 
@@ -50,7 +51,7 @@ public class LifeEstimateTest {
 		  throw new SAXException("Base tag should be LifeEstimateTest");
 	      }
 	      NodeList td= doc.getElementsByTagName("TestDist");
-	      dist= ReadXMLUtils.parseProbDist(td,"TestDist");
+	      dist= ProbDistribution.parseProbDist(td,"TestDist");
 	      if (dist == null) {
 		  throw new SAXException ("Must specify TestDist");
 	      }} catch (java.io.FileNotFoundException e) {
@@ -83,7 +84,11 @@ public class LifeEstimateTest {
 	double tot= 0;
 	int maxL= 0;
 	for (i= 0; i < noTests; i++) {
-	    lifeSpans[i]= Math.max(1,(int)(dist.getVariate()*1000));
+	    try {
+		lifeSpans[i]= Math.max(1,(int)(dist.getVariate()*1000));
+	    } catch (Exception x) {
+		System.err.println ("getVariate error");
+	    }
 	    //   System.err.println("Life is "+lifeSpans[i]);
 	    maxL= Math.max(maxL,lifeSpans[i]);
 
@@ -126,7 +131,13 @@ public class LifeEstimateTest {
 	for (i= 1; i < noPoints; i++) {
 
 	    int x= (int)dx;
-	    double actual= (1000.0*dist.getCondExp((double)x/1000.0));
+	    double actual;
+	    try {
+		actual = (1000.0*dist.getCondExp((double)x/1000.0));
+	    } catch (Exception exe) {
+		System.err.println("getCondExp threw error");
+		actual = 0.0;
+	    }
 	    double lifeest= e.getKMLifeEst(x)-x;
 	    double tailest= e.getKMTailLifeEst(x)-x;
 

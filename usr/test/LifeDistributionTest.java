@@ -1,6 +1,7 @@
 package usr.test;
 
-import usr.common.*;
+import rgc.xmlparse.*;
+import rgc.probdistributions.*;
 import usr.logging.*;
 import java.util.*;
 
@@ -50,7 +51,7 @@ public class LifeDistributionTest {
 		  throw new SAXException("Base tag should be LifeEstimateTest");
 	      }
 	      NodeList td= doc.getElementsByTagName("TestDist");
-	      dist= ReadXMLUtils.parseProbDist(td,"TestDist");
+	      dist= ProbDistribution.parseProbDist(td,"TestDist");
 	      if (dist == null) {
 		  throw new SAXException ("Must specify TestDist");
 	      }} catch (java.io.FileNotFoundException e) {
@@ -84,7 +85,11 @@ public class LifeDistributionTest {
 	double tot= 0;
 	int maxL= 0;
 	for (i= 0; i < noTests; i++) {
-	    lifeSpans[i]= Math.max(1,(int)(dist.getVariate()*1000));
+	    try {
+		lifeSpans[i]= Math.max(1,(int)(dist.getVariate()*1000));
+	    } catch (Exception x) {
+		System.err.println("getVariate threw error");
+	    }
 	    //   System.err.println("Life is "+lifeSpans[i]);
 	    maxL= Math.max(maxL,lifeSpans[i]);
 
@@ -124,8 +129,12 @@ public class LifeDistributionTest {
 	for (i= 1; i < noPoints; i++) {
 
 	    int x= (int)dx;
-	    System.out.println(x/1000.0+" "+e.getKMProb(x)+" "+
+	    try {
+		System.out.println(x/1000.0+" "+e.getKMProb(x)+" "+
 	                       e.getKMTailProb(x)+" "+(1.0 - dist.getCumulativeDistribution((double)x/1000)));
+	    } catch (Throwable t) {
+		System.err.println("Prob dist threw error");
+	    }
 	    dx*= xmult;
 	}
 

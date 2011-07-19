@@ -4,8 +4,10 @@
 package usr.engine;
 
 import usr.globalcontroller.*;
-import usr.common.*;
+import rgc.xmlparse.*;
+import rgc.probdistributions.*;
 import usr.logging.*;
+import usr.common.Pair;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -52,7 +54,17 @@ public class ProbabilisticEventEngine  implements EventEngine  {
     public void initialEvents(EventScheduler s, GlobalController g)
     {
 	// Start initial router
-	long time= (long)(nodeCreateDist_.getVariate()*1000);
+	long time;
+
+	//  Schedule new node
+	try {
+	    time= (long)(nodeCreateDist_.getVariate()*1000);
+	}
+	catch (ProbException x) {
+	     Logger.getLogger("log").logln(USR.ERROR, 
+		    leadin()+" Error generating trafficArriveDist variate");
+	     time= 0;
+	}
 	//Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
 	SimEvent e1= new SimEvent(SimEvent.EVENT_START_ROUTER, time, null, this);
 	s.addEvent(e1);
@@ -85,7 +97,14 @@ public class ProbabilisticEventEngine  implements EventEngine  {
 	long time;
 
 	//  Schedule new node
-	time= (long)(nodeCreateDist_.getVariate()*1000);
+	try {
+	    time= (long)(nodeCreateDist_.getVariate()*1000);
+	}
+	catch (ProbException x) {
+	     Logger.getLogger("log").logln(USR.ERROR, 
+		    leadin()+" Error generating trafficArriveDist variate");
+	     time= 0;
+	}
 	//Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
 	e1= new SimEvent(SimEvent.EVENT_START_ROUTER, now+time, null, this);
 	s.addEvent(e1);
@@ -96,12 +115,26 @@ public class ProbabilisticEventEngine  implements EventEngine  {
 
 	// Schedule node death if this will happen
 	if (nodeDeathDist_ != null) {
-	    time= (long)(nodeDeathDist_.getVariate()*1000);
+	    try {
+		time= (long)(nodeDeathDist_.getVariate()*1000);
+	    } catch (ProbException x) {
+		Logger.getLogger("log").logln(USR.ERROR, 
+		    leadin()+" Error generating nodeDeathDist variate");
+	        time= 0;
+	    }
+	    
 	    e1= new SimEvent(SimEvent.EVENT_END_ROUTER, now+time, new Integer(routerId), this);
 	    s.addEvent(e1);
 	}
 	// Schedule links
-	int noLinks= linkCreateDist_.getIntVariate();
+	int noLinks= 1;
+	try {
+	    noLinks= linkCreateDist_.getIntVariate();
+        } catch (ProbException x) {
+	    Logger.getLogger("log").logln(USR.ERROR, 
+		    leadin()+" Error generating linkCreateDist variate");
+
+	}
 	ArrayList <Integer>nodes= new ArrayList<Integer>(g.getRouterList());
 	nodes.remove(nodes.indexOf(routerId));
 	int [] outlinks= g.getOutLinks(routerId);
@@ -158,20 +191,20 @@ public class ProbabilisticEventEngine  implements EventEngine  {
 		throw new SAXException("Base tag should be ProbabilisticEngine");
 	    }
 	    NodeList nbd= doc.getElementsByTagName("NodeBirthDist");
-	    nodeCreateDist_= ReadXMLUtils.parseProbDist(nbd,"NodeBirthDist");
+	    nodeCreateDist_= ProbDistribution.parseProbDist(nbd,"NodeBirthDist");
 	    if (nodeCreateDist_ == null) {
 		throw new SAXException ("Must specific NodeBirthDist");
 	    }
 	    NodeList lcd= doc.getElementsByTagName("LinkCreateDist");
-	    linkCreateDist_= ReadXMLUtils.parseProbDist(lcd,"LinkCreateDist");
+	    linkCreateDist_=  ProbDistribution.parseProbDist(lcd,"LinkCreateDist");
 	    if (linkCreateDist_ == null) {
 		throw new SAXException ("Must specific LinkCreateDist");
 	    }
 	    NodeList ndd= doc.getElementsByTagName("NodeDeathDist");
-	    nodeDeathDist_= ReadXMLUtils.parseProbDist(ndd,"NodeDeathDist");
+	    nodeDeathDist_=  ProbDistribution.parseProbDist(ndd,"NodeDeathDist");
 	    NodeList ldd= doc.getElementsByTagName("LinkDeathDist");
 
-	    linkDeathDist_= ReadXMLUtils.parseProbDist(ldd,"LinkDeathDist");
+	    linkDeathDist_= ProbDistribution.parseProbDist(ldd,"LinkDeathDist");
 	    try {
 
 		NodeList misc= doc.getElementsByTagName("Parameters");
@@ -204,6 +237,14 @@ public class ProbabilisticEventEngine  implements EventEngine  {
 	}catch (Throwable t) {
 	    throw new EventEngineException("Parsing ProbabilisticEventEngine: "+t.getMessage());
 	}
+    }
+    
+    /**
+     * Header for errors
+     */
+     
+    private String leadin() {
+	return new String ("ProbabilisticTrafficEngine:");
     }
 
 }

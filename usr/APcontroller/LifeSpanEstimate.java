@@ -6,8 +6,8 @@ import usr.router.Router;
 import usr.globalcontroller.GlobalController;
 import usr.router.RouterOptions;
 import usr.common.Pair;
-import usr.common.MathFunctions;
-import usr.common.ProbElement;
+import rgc.mathfunctions.*;
+import rgc.probdistributions.*;
 /** Produces estimates of life spans given information about node births
    and deaths*/
 
@@ -235,9 +235,9 @@ public class LifeSpanEstimate {
 
     /** Return the lognormal probability for a fitted tail */
     public double getTailProb(int t) {
-	double rawProb= (1.0 -usr.common.ProbElement.logNormalDist(t,mu_,sigma_));
+	double rawProb= (1.0 -ProbElement.logNormalDist(t,mu_,sigma_));
 	double fact= getKMProb(T_)/
-	             (1.0 -usr.common.ProbElement.logNormalDist(T_,mu_,sigma_));
+	             (1.0 -ProbElement.logNormalDist(T_,mu_,sigma_));
 	return rawProb*fact;
 
     }

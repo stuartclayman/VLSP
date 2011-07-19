@@ -4,7 +4,8 @@
 package usr.engine;
 
 import usr.globalcontroller.*;
-import usr.common.*;
+import rgc.xmlparse.*;
+import rgc.probdistributions.*;
 import usr.logging.*;
 
 import org.w3c.dom.Document;
@@ -85,15 +86,19 @@ public class BackgroundTrafficEngine implements EventEngine  {
 	    if (noRouters > 1)
 		scale= 1.0/noRouters;
 	}
-	long time= (long)(trafficArriveDist_.getVariate()*1000*scale);
-	System.out.println("Trying to add new event at time "+time);
+	long time= 0;
+	try {
+	    time= (long)(trafficArriveDist_.getVariate()*1000*scale);
+	} catch (ProbException e) {
+	     Logger.getLogger("log").logln(USR.ERROR, 
+		    leadin()+" Error generating trafficArriveDist variate");
+	     time= 0;
+	}
 	if (currTime+time > timeToEnd_)
 	    return;
 	SimEvent e= new SimEvent(SimEvent.EVENT_NEW_TRAFFIC_CONNECTION,
 	                         time, null, this);
 	s.addEvent(e);
-	System.out.println("Adding new event at time "+time);
-
     }
 
     /** Will empty nodes be connected to more frequently*/
@@ -141,17 +146,17 @@ public class BackgroundTrafficEngine implements EventEngine  {
 		throw new SAXException("Base tag should be BackgroundTrafficEngine");
 	    }
 	    NodeList n= doc.getElementsByTagName("TrafficArriveDist");
-	    trafficArriveDist_= ReadXMLUtils.parseProbDist(n,"TrafficArriveDist");
+	    trafficArriveDist_= ProbDistribution.parseProbDist(n,"TrafficArriveDist");
 	    if (trafficArriveDist_ == null) {
 		throw new SAXException ("Must specific TrafficArriveDist");
 	    }
 	    n= doc.getElementsByTagName("TrafficLengthDist");
-	    trafficLengthDist_= ReadXMLUtils.parseProbDist(n,"TrafficLengthDist");
+	    trafficLengthDist_= ProbDistribution.parseProbDist(n,"TrafficLengthDist");
 	    if (trafficLengthDist_ == null) {
 		throw new SAXException ("Must specific TrafficLengthDist");
 	    }
 	    n= doc.getElementsByTagName("TrafficArriveDist");
-	    trafficSpeedDist_= ReadXMLUtils.parseProbDist(n,"TrafficSpeedDist");
+	    trafficSpeedDist_= ProbDistribution.parseProbDist(n,"TrafficSpeedDist");
 	    if (trafficSpeedDist_ == null) {
 		throw new SAXException ("Must specific TrafficSpeedDist");
 	    }
@@ -167,6 +172,14 @@ public class BackgroundTrafficEngine implements EventEngine  {
 	}catch (Throwable t) {
 	    throw new EventEngineException("Parsing ProbabilisticEventEngine: "+t.getMessage());
 	}
+    }
+    
+    /**
+     * Header for errors
+     */
+     
+    private String leadin() {
+	return new String ("BackgroundTrafficEngine:");
     }
 
 }

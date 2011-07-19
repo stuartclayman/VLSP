@@ -1,6 +1,7 @@
 package usr.test;
 
-import usr.common.*;
+
+import rgc.probdistributions.*;
 import usr.logging.*;
 
 
@@ -12,7 +13,7 @@ import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import java.io.*;
-import usr.common.MathFunctions;
+import rgc.mathfunctions.MathFunctions;
 
 public class VariateTest {
     public static void main(String[] args) {
@@ -37,7 +38,7 @@ public class VariateTest {
 		  throw new SAXException("Base tag should be VariateTest");
 	      }
 	      NodeList td= doc.getElementsByTagName("TestDist");
-	      dist= ReadXMLUtils.parseProbDist(td,"TestDist");
+	      dist= ProbDistribution.parseProbDist(td,"TestDist");
 	      if (dist == null) {
 		  throw new SAXException ("Must specific TestDist");
 	      }} catch (java.io.FileNotFoundException e) {
@@ -62,7 +63,11 @@ public class VariateTest {
 
 	noTests= Integer.parseInt(args[1]);
 	for (i= 0; i < noTests; i++) {
-	    System.out.println(dist.getVariate());
+	    try {
+	        System.out.println(dist.getVariate());
+	    } catch (Exception exc) {
+		System.out.println("ERror in getVariate");
+	    }
 	}
     }
 
