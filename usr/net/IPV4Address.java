@@ -38,10 +38,11 @@ public class IPV4Address extends Size4 implements Address, Serializable {
     /**
      * Create an IPV4Address from an int
      */
-    public IPV4Address(int addr) {
+    public IPV4Address(int addr) throws UnknownHostException {
          // convert int to byte[] 
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         buf.putInt(addr);
+        this.addr = InetAddress.getByAddress(bytes);
     }
 
     /**

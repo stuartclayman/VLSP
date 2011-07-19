@@ -66,8 +66,8 @@ public interface RouterFabric extends NetIFListener {
     public RoutingTable getRoutingTable();
     
     /** Ping a given id -- expect a response */
-    public boolean ping(int id);
+    public boolean ping(Address addr);
     
     /** Echo -- send datagram to id */
-    public boolean echo(int id);
+    public boolean echo(Address addr);
 }

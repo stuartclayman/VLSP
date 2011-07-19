@@ -238,14 +238,14 @@ public class Router {
     }
 
         /** Try to ping router with a given id */
-    public boolean ping(int id){
-        return fabric.ping(id);
+    public boolean ping(Address addr){
+        return fabric.ping(addr);
     }
 
 
     /** Try to echo to a router with a given id */
-    public boolean echo(int id){
-        return fabric.echo(id);
+    public boolean echo(Address addr){
+        return fabric.echo(addr);
     }
 
     /**

@@ -19,12 +19,12 @@ public class AddressFactory {
     static Constructor<? extends Address> consS;
 
     // Name of  class
-    static String className;
+    static String className = null;
 
     // class initiation code
     static {
         setClassForAddress("usr.net.GIDAddress");
-        //setClassForAddress("usr.test.DomainAddress");
+        //setClassForAddress("usr.net.DomainAddress");
     }
 
     /**
@@ -70,6 +70,12 @@ public class AddressFactory {
         }
     }
 
+    /**
+     * Get the current class for an Address.
+     */
+    public static String getClassForAddress() {
+        return className;
+    }
 
     /**
      * Set up the class for an Address
@@ -77,6 +83,8 @@ public class AddressFactory {
     public static void setClassForAddress(String name) {
         try {
             className = name;
+
+            //System.err.println("AddressFactory: setClassForAddress " + className);
 
             // get Class object
             Class<?> c = (Class<?>)Class.forName(className);

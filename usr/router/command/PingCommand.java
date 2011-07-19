@@ -2,44 +2,44 @@ package usr.router.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.router.RouterManagementConsole;
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
+import usr.net.AddressFactory;
+import usr.net.Address;
+
 
 /**
- * The GET_NAME command.
+ * The PING command.
  */
 public class PingCommand extends RouterCommand {
     /**
      * Construct a GetNameCommand.
      */
     public PingCommand() {
-        super(MCRP.PING.CMD, MCRP.PING.CODE, 
-          MCRP.PING.CODE);
+        super(MCRP.PING.CMD, MCRP.PING.CODE, MCRP.PING.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        int id;
+        Address addr;
         try {
             String [] args= req.split(" ");
             if (args.length != 2) {
-                error("REQUIRE NUMERIC ID");
+                error("REQUIRE ADDRESS");
                 return false;
             }
-            id= Integer.parseInt(args[1]);
-        } catch (Exception e)
-        { 
-            error ("CANNOT PARSE INTEGER");
+
+            addr = AddressFactory.newAddress(args[1].trim());
+        } catch (Exception e) { 
+            error ("CANNOT PARSE ADDRESS");
             return false;
         }
-        if (controller.ping(id)) {
-            success("PING SENT TO "+ id);
+
+        if (controller.ping(addr)) {
+            success("PING SENT TO "+ addr);
             return true;
         } 
-        error ("No route to router "+id);
+        error ("No route to router "+addr);
         return false;
     }
 

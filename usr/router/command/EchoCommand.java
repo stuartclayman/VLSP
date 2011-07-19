@@ -2,12 +2,12 @@ package usr.router.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.router.RouterManagementConsole;
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
+import usr.net.AddressFactory;
+import usr.net.Address;
+
 
 /**
- * The GET_NAME command.
+ * The ECHO command.
  */
 public class EchoCommand extends RouterCommand {
     /**
@@ -22,24 +22,25 @@ public class EchoCommand extends RouterCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-        int id;
+        Address addr;
         try {
             String [] args= req.split(" ");
             if (args.length != 2) {
-                error("REQUIRE NUMERIC ID");
+                error("REQUIRE NUMERIC ADDRESS");
                 return false;
             }
-            id= Integer.parseInt(args[1]);
+
+            addr = AddressFactory.newAddress(args[1].trim());
         } catch (Exception e)
         { 
-            error ("CANNOT PARSE INTEGER");
+            error ("CANNOT PARSE ADDRESS");
             return false;
         }
-        if (controller.echo(id)) {
-            success("ECHO SENT TO "+ id);
+        if (controller.echo(addr)) {
+            success("ECHO SENT TO "+ addr);
             return true;
         } 
-        error ("No route to router "+id);
+        error ("No route to router "+addr);
         return false;
     }
 

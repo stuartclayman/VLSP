@@ -333,12 +333,12 @@ public class LocalController implements ComponentController {
 
         // tell the router its new name and config if available
         try {
-            interactor.setName(routerName);
-            interactor.setRouterAddress(routerAddress);
-
             if (routerConfigString_ != "") {
                 interactor.setConfigString(routerConfigString_);
             }
+
+            interactor.setName(routerName);
+            interactor.setRouterAddress(routerAddress);
 
             // tell the router to start some monitoring
             if (latticeMonitoring) {

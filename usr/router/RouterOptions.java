@@ -117,15 +117,16 @@ public class RouterOptions {
             throw new SAXException("Base tag should be RouterOptions");
         }
         
+        NodeList rps= doc.getElementsByTagName("RoutingParameters");
+        if (rps != null) {
+            processRoutingParameters(rps);
+        }
+
         NodeList out= doc.getElementsByTagName("Output");
         if (out != null) {
             processOutputParameters(out);
         }
         
-        NodeList rps= doc.getElementsByTagName("RoutingParameters");
-        if (rps != null) {
-            processRoutingParameters(rps);
-        }
         NodeList apm= doc.getElementsByTagName("APManager");
         if (apm != null) {
             processAPM(apm);
@@ -213,68 +214,95 @@ public class RouterOptions {
             return;
         Node rp= rps.item(0);
         try {
-           int n= ReadXMLUtils.parseSingleInt(rp, "TrafficStatTime","RoutingParameters",true);
-           trafficStatTime_= n;
-           ReadXMLUtils.removeNode(rp,"TrafficStatTime","RoutingParameters");
+            int n= ReadXMLUtils.parseSingleInt(rp, "TrafficStatTime","RoutingParameters",true);
+            trafficStatTime_= n;
+            ReadXMLUtils.removeNode(rp,"TrafficStatTime","RoutingParameters");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
            
         }
+
+        // Process DatagramType
         String dgtype="";
         try {
-		   Class <? extends Datagram> defaultDatagram;
-		   dgtype = ReadXMLUtils.parseSingleString(rp, "DatagramType","RoutingParameters",true);
-		   ReadXMLUtils.removeNode(rp,"DatagramType","RoutingParameters");
-		   defaultDatagram=  Class.forName(dgtype).asSubclass(Datagram.class);
-		   DatagramFactory.setClassForProtocol(dgtype, Protocol.DATA);
-		   DatagramFactory.setClassForProtocol(dgtype, Protocol.CONTROL);
-		} catch (ClassNotFoundException e) {
-			throw new SAXException("Unable to parse class name "+dgtype+" in Routing options");
-		} catch (SAXException e) {
+            Class <? extends Datagram> defaultDatagram;
+            dgtype = ReadXMLUtils.parseSingleString(rp, "DatagramType","RoutingParameters",true);
+            ReadXMLUtils.removeNode(rp,"DatagramType","RoutingParameters");
+            defaultDatagram=  Class.forName(dgtype).asSubclass(Datagram.class);
+            DatagramFactory.setClassForProtocol(dgtype, Protocol.DATA);
+            DatagramFactory.setClassForProtocol(dgtype, Protocol.CONTROL);
+        } catch (ClassNotFoundException e) {
+            throw new SAXException("Unable to parse class name "+dgtype+" in Routing options");
+        } catch (SAXException e) {
             throw new SAXException("Unable to parse class name "+dgtype+" in Routing options"+e.getMessage());
         } catch (ClassCastException e) {
-			throw new SAXException("Class name "+dgtype+" must be sub type of Datagram in Routing options");
-		}catch (XMLNoTagException e) {
+            throw new SAXException("Class name "+dgtype+" must be sub type of Datagram in Routing options");
+        }catch (XMLNoTagException e) {
+           
+        }
+		
+		
+        // Process AddressType
+        String addrtype="";
+        try {
+            String existing = AddressFactory.getClassForAddress();
+
+            Class <? extends Address> addressClass;
+            addrtype = ReadXMLUtils.parseSingleString(rp, "AddressType","RoutingParameters",true);
+            ReadXMLUtils.removeNode(rp,"AddressType","RoutingParameters");
+            addressClass =  Class.forName(addrtype).asSubclass(Address.class);
+
+            if (existing == null ||  ! existing.equals(addrtype)) {
+                AddressFactory.setClassForAddress(addrtype);
+            }
+
+        } catch (ClassNotFoundException e) {
+            throw new SAXException("Unable to parse class name "+addrtype+" in Routing options");
+        } catch (SAXException e) {
+            throw new SAXException("Unable to parse class name "+addrtype+" in Routing options"+e.getMessage());
+        } catch (ClassCastException e) {
+            throw new SAXException("Class name "+addrtype+" must be sub type of Address in Routing options");
+        }catch (XMLNoTagException e) {
            
         }
 		
 		
       
         try {
-           int n= ReadXMLUtils.parseSingleInt(rp, "MaxCheckTime","RoutingParameters",true);
-           maxCheckTime_= n;
-           ReadXMLUtils.removeNode(rp,"MaxCheckTime","RoutingParameters");
+            int n= ReadXMLUtils.parseSingleInt(rp, "MaxCheckTime","RoutingParameters",true);
+            maxCheckTime_= n;
+            ReadXMLUtils.removeNode(rp,"MaxCheckTime","RoutingParameters");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
            
         }
         try {
-           int n= ReadXMLUtils.parseSingleInt(rp, "MinNetIFUpdateTime","RoutingParameters",true);
-           minNetIFUpdateTime_= n;
-           ReadXMLUtils.removeNode(rp,"MinNetIFUpdateTime","RoutingParameters");
+            int n= ReadXMLUtils.parseSingleInt(rp, "MinNetIFUpdateTime","RoutingParameters",true);
+            minNetIFUpdateTime_= n;
+            ReadXMLUtils.removeNode(rp,"MinNetIFUpdateTime","RoutingParameters");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
            
         }
         try {
-           int n= ReadXMLUtils.parseSingleInt(rp, "MaxNetIFUpdateTime","RoutingParameters",true);
-           maxNetIFUpdateTime_= n;
-          ReadXMLUtils.removeNode(rp,"MaxNetIFUpdateTime","RoutingParameters");
+            int n= ReadXMLUtils.parseSingleInt(rp, "MaxNetIFUpdateTime","RoutingParameters",true);
+            maxNetIFUpdateTime_= n;
+            ReadXMLUtils.removeNode(rp,"MaxNetIFUpdateTime","RoutingParameters");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
            
         } 
-         try {
-           int n= ReadXMLUtils.parseSingleInt(rp, "MaxDist","RoutingParameters",true);
-           maxDist_= n;
-           if (n != 0) {
+        try {
+            int n= ReadXMLUtils.parseSingleInt(rp, "MaxDist","RoutingParameters",true);
+            maxDist_= n;
+            if (n != 0) {
                 DatagramFactory.setInitialTTL(n);
-           }
-          ReadXMLUtils.removeNode(rp,"MaxDist","RoutingParameters");
+            }
+            ReadXMLUtils.removeNode(rp,"MaxDist","RoutingParameters");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {

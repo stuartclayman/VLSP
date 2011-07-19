@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 public class SimpleRoutingTableEntry implements RoutingTableEntry {
     private Address address_;
     private int cost_;
+    // NetIF of null is a local interface
     NetIF inter_;
 
     SimpleRoutingTableEntry(Address addr, int cost, NetIF inter) {
@@ -25,9 +26,22 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
             throw new Exception
              ("Byte array received to construct routing table too short");
         }
-        ByteBuffer bytes= ByteBuffer.wrap(tableEntry);
-        address_ = AddressFactory.newAddress(bytes.getInt(0));
-        cost_ = bytes.getInt(4);
+        ByteBuffer wrapper = ByteBuffer.wrap(tableEntry);
+
+        // get correct no of bytes for an address
+        int totalLength = tableEntry.length;
+        int costStart = totalLength - 4;
+
+        //System.err.println("SimpleRoutingTableEntry: tableEntry size = " + totalLength);
+        
+        // suck out the address
+        byte[] addr = new byte[costStart];
+        wrapper.get(addr);
+        address_ = AddressFactory.newAddress(addr);
+
+        // now get the cost
+        wrapper.position(costStart);
+        cost_ = wrapper.getInt();
         inter_= inter;
         //System.err.println("NEW ENTRY CREATED "+toString());
     }
@@ -60,27 +74,43 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
      * Get an Address as String representation of an Integer
      */
     String addressAsString(Address addr) {
+        /*
         int id = addr.asInteger();
         return Integer.toString(id);
+        */
+        return addr.asTransmitForm();
+    }
+
+    /**
+     * The size in bytes of a RoutingTableEntry.
+     */
+    public int size() {
+        // the size of the address, plus 4 for the cost
+        return address_.asByteArray().length + 4;
     }
         
+    /**
+     * Transform as SimpleRoutingTableEntry into a byte[]
+     */
     public byte [] toBytes() {
-        byte []bytes= new byte[8];
+        byte []bytes= new byte[size()];
         ByteBuffer b= ByteBuffer.wrap(bytes);
-        b.putInt(0,address_.asInteger());
-        b.putInt(4,cost_);
+        // copy in the address
+        b.put(address_.asByteArray());
+        b.putInt(cost_);
         return bytes;
     }        
         
     /** Entry represented as string */ 
     public String toString() {
-        String entry;
+        String entry ="[ ";
         if (inter_ == null) {
-            entry= addressAsString(address_) + " " + cost_+ " nullIF";
+            entry += addressAsString(address_) + " " + cost_+ " nullIF";
         } else {
-            entry= addressAsString(address_) + " " + cost_ + " IF: " + 
-            inter_;
+            entry += addressAsString(address_) + " " + cost_ + " IF: " + inter_.getName();
         }
+
+        entry += " ]";
         //Logger.getLogger("log").logln(USR.ERROR, "ENTRY: "+entry);
         return entry;
     }

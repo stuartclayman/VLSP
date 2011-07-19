@@ -440,4 +440,15 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
     }
 
+
+    /**
+     * To String
+     */
+    public String toString() {
+        return "( src: " + getSrcAddress() + "/" + getSrcPort() + 
+            " dst: " + getDstAddress() + "/" + getDstPort() + 
+            " len: " + getTotalLength() + " proto: " + getProtocol() +
+            " ttl: " + getTTL() + " payload: " + (getTotalLength() - HEADER_SIZE - CHECKSUM_SIZE) +
+            " )";
+    }
 }

@@ -33,5 +33,8 @@ public abstract class Size4 implements Address {
     }
 
 
+    public int hashCode() {
+        return asInteger();
+    }
 
 }

@@ -116,6 +116,7 @@ public class RouterController implements ComponentController, Runnable {
         name = "Router-" + mPort + "-" + r2rPort;
         
         myAddress = AddressFactory.newAddress(name.hashCode());
+
         this.managementConsolePort = mPort;
         // delegate listening of commands to a ManagementConsole object
         management = new RouterManagementConsole(this, mPort);
@@ -461,15 +462,15 @@ public class RouterController implements ComponentController, Runnable {
         
     }
 
-    /** Try to ping router with a given id */
-    public boolean ping(int id){
-        return router.ping(id);
+    /** Try to ping router with a given Address */
+    public boolean ping(Address addr){
+        return router.ping(addr);
     }
 
 
-    /** Try to echo to a router with a given id */
-    public boolean echo(int id){
-        return router.echo(id);
+    /** Try to echo to a router with a given Address */
+    public boolean echo(Address addr){
+        return router.echo(addr);
     }
     
     /**

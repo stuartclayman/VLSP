@@ -96,9 +96,8 @@ public class TCPNetIF implements NetIF, Runnable {
 
     /** Run method loops and grabs input from connection to queue in
        fabricDevice */
- 	  public void run() 
-	  {
-	      Datagram datagram= null;
+    public void run() {
+        Datagram datagram= null;
       	while (running_) {
       	    if (eof) {
       	        runWait_= new Object();
@@ -113,8 +112,8 @@ public class TCPNetIF implements NetIF, Runnable {
                 datagram = connection.readDatagram();
             } catch (Exception ioe) {
                 Logger.getLogger("log").logln(USR.ERROR, 
-                "TCPNetIF readDatagram error " + connection + 
-                " IOException " + ioe);
+                                              "TCPNetIF readDatagram error " + connection + 
+                                              " IOException " + ioe);
                 ioe.printStackTrace();
             } 
             if (datagram == null) {
@@ -298,6 +297,8 @@ public class TCPNetIF implements NetIF, Runnable {
         boolean sent= false;
         try {
             sent= connection.sendDatagram(dg);
+
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " TCPNetIF " + name + " sent " + dg);
         } catch (IOException e) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + " failure in connection.send "+address+"->"+remoteRouterAddress);
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + e.getMessage());

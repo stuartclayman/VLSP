@@ -11,6 +11,11 @@ public interface RoutingTableEntry {
 
     public int getCost();
 
+    /**
+     * The size, in bytes, of a RoutingTableEntry.
+     */
+    public int size();
+
     public String toString();
 
 }

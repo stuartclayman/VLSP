@@ -385,6 +385,7 @@ public class FabricDevice implements FabricDeviceInterface {
             try {  
                 return f.addToOutQueue(dh, waitObj);
             } catch (java.net.NoRouteToHostException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoRouteToHostException for transferDatagram " + dh.datagram);
                 return false;
             } catch (usr.net.InterfaceBlockedException ex) {
                 synchronized(waitObj) {
