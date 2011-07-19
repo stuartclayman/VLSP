@@ -12,19 +12,19 @@ public class EmptyEventEngine implements EventEngine {
     /** Contructor from Parameter string */
     public EmptyEventEngine(int time, String parms)
     {
-	timeToEnd_= time*1000;
+        timeToEnd_= time*1000;
     }
 
     /** Initial events to add to schedule */
     public void startStopEvents(EventScheduler s, GlobalController g)
     {
-	// simulation start
-	SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
-	s.addEvent(e0);
+        // simulation start
+        SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
+        s.addEvent(e0);
 
-	// simulation end
-	SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null,this);
-	s.addEvent(e);
+        // simulation end
+        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null,this);
+        s.addEvent(e);
 
     }
 

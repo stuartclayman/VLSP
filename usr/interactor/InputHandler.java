@@ -33,12 +33,12 @@ public class InputHandler implements Runnable {
      * Construct an InputHandler
      */
     protected InputHandler(MCRPInteractor mcrp, Reader inp) {
-	this.mcrp = mcrp;
-	this.input = new BufferedReader(inp);
+        this.mcrp = mcrp;
+        this.input = new BufferedReader(inp);
 
-	myThread = new Thread(this, mcrp.getClass().getName() + "-" + "InputHandler-" + hashCode());
-	running = true;
-	myThread.start();
+        myThread = new Thread(this, mcrp.getClass().getName() + "-" + "InputHandler-" + hashCode());
+        running = true;
+        myThread.start();
     }
 
     /**
@@ -48,48 +48,48 @@ public class InputHandler implements Runnable {
      * an event.
      */
     public void run() {
-	// sit in a loop and grab input
-	while (running) {
-	    try {
-		MCRPResponse response = grabAnswer();
+        // sit in a loop and grab input
+        while (running) {
+            try {
+                MCRPResponse response = grabAnswer();
 
-		// System.err.println("MCRPInputHandler: got " + response.getCode());
+                // System.err.println("MCRPInputHandler: got " + response.getCode());
 
-		// check the response
-		if (response == null) {
-		    // the socket input is at EOF
-		    // no need to carry on
-		    running = false;
+                // check the response
+                if (response == null) {
+                    // the socket input is at EOF
+                    // no need to carry on
+                    running = false;
 
-		    mcrp.gotEOF();
-		} else {
-		    // got a valid response
-		    if (response.isEvent()) {
-			mcrp.gotEvent(response);
-		    } else {
-			mcrp.gotResponse(response);
-		    }
-		}
-	    } catch (Exception e) {
-		running = false;
-		mcrp.gotException(e);
-	    }
-	}
+                    mcrp.gotEOF();
+                } else {
+                    // got a valid response
+                    if (response.isEvent()) {
+                        mcrp.gotEvent(response);
+                    } else {
+                        mcrp.gotResponse(response);
+                    }
+                }
+            } catch (Exception e) {
+                running = false;
+                mcrp.gotException(e);
+            }
+        }
     }
 
     /**
      * Stop the input handler
      */
     public void stop() {
-	running = false;
-	myThread.interrupt();
+        running = false;
+        myThread.interrupt();
 
-	// wait for myself
-	try {
-	    myThread.join();
-	} catch (InterruptedException ie) {
-	    // Logger.getLogger("log").logln(USR.ERROR, "InputHandler: stop - InterruptedException for myThread join on " + myThread);
-	}
+        // wait for myself
+        try {
+            myThread.join();
+        } catch (InterruptedException ie) {
+            // Logger.getLogger("log").logln(USR.ERROR, "InputHandler: stop - InterruptedException for myThread join on " + myThread);
+        }
 
     }
 
@@ -109,136 +109,136 @@ public class InputHandler implements Runnable {
      * @return a MCRPResponse object, or null at EOF
      */
     private MCRPResponse grabAnswer() throws IOException, MCRPException {
-	MCRPResponse response = new MCRPResponse();
+        MCRPResponse response = new MCRPResponse();
 
-	// does the response look like a stream.
-	boolean isStreamResponse = false;
+        // does the response look like a stream.
+        boolean isStreamResponse = false;
 
-	// Have we finished reading the stream
-	boolean isStreamFinished = false;
+        // Have we finished reading the stream
+        boolean isStreamFinished = false;
 
-	// The actual stream
-	StringBuilder builder = null;
+        // The actual stream
+        StringBuilder builder = null;
 
-	// check input
-	if (input == null) {
-	    // there is no input
-	    throw new EOFException("MCRPResponse: input unexpected closed");
-	}
+        // check input
+        if (input == null) {
+            // there is no input
+            throw new EOFException("MCRPResponse: input unexpected closed");
+        }
 
-	// final reply
-	boolean finalReply = false;
+        // final reply
+        boolean finalReply = false;
 
-	// read a line
-	String line = null;
+        // read a line
+        String line = null;
 
-	// loop around getting all message id tagged replies
-	do {
-	    // read a line
-	    line = input.readLine();
-
-
-	    if (line == null) {
-		// the input is at EOF
-		return null;
-	    }
-
-	    // check to see if the line starts with [0-9][0-9][0-9]
-	    if (line.matches("^[0-9][0-9][0-9].*")) {
-		if (isStreamResponse) {
-		    // this is just a line of data in the stream
-		    //System.err.println("MCRPInputHandler: line of data: " + line);
-		} else {
-		    // this is the final response code
-		    // and is what happens most of the time
-		    //System.err.println("MCRPInputHandler: normal response: " + line);
-		}
-	    } else {
-		if (isStreamResponse) {
-		    // it does not match [0-9][0-9][0-9]
-		    // and we're in a stream response
-		    // so it is kust a line of data
-		    //System.err.println("MCRPInputHandler: line of data: " + line);
-		} else {
-		    // it does not match [0-9][0-9][0-9]
-		    // therefore it must be the first line of a stream response
-		    // so we set up the variables
-		    isStreamResponse = true;
-		    isStreamFinished = false;
-		    builder = new StringBuilder();
-
-		    //System.err.println("MCRPInputHandler: setup StreamResponse: " + line);
-		}
-	    }
+        // loop around getting all message id tagged replies
+        do {
+            // read a line
+            line = input.readLine();
 
 
-	    // if we are doing stream response
-	    // then read lines until we hit dot (.)
-	    if (isStreamResponse && !isStreamFinished) {
-		if (line.equals(".")) {
-		    isStreamFinished = true;
-		    continue;
-		} else {
-		    builder.append(line);
-		    builder.append("\n");
-		    continue;
-		}
-	    }
+            if (line == null) {
+                // the input is at EOF
+                return null;
+            }
+
+            // check to see if the line starts with [0-9][0-9][0-9]
+            if (line.matches("^[0-9][0-9][0-9].*")) {
+                if (isStreamResponse) {
+                    // this is just a line of data in the stream
+                    //System.err.println("MCRPInputHandler: line of data: " + line);
+                } else {
+                    // this is the final response code
+                    // and is what happens most of the time
+                    //System.err.println("MCRPInputHandler: normal response: " + line);
+                }
+            } else {
+                if (isStreamResponse) {
+                    // it does not match [0-9][0-9][0-9]
+                    // and we're in a stream response
+                    // so it is kust a line of data
+                    //System.err.println("MCRPInputHandler: line of data: " + line);
+                } else {
+                    // it does not match [0-9][0-9][0-9]
+                    // therefore it must be the first line of a stream response
+                    // so we set up the variables
+                    isStreamResponse = true;
+                    isStreamFinished = false;
+                    builder = new StringBuilder();
+
+                    //System.err.println("MCRPInputHandler: setup StreamResponse: " + line);
+                }
+            }
+
+
+            // if we are doing stream response
+            // then read lines until we hit dot (.)
+            if (isStreamResponse && !isStreamFinished) {
+                if (line.equals(".")) {
+                    isStreamFinished = true;
+                    continue;
+                } else {
+                    builder.append(line);
+                    builder.append("\n");
+                    continue;
+                }
+            }
 
 
 
-	    // find the first space
-	    int spacePos = line.indexOf(' ');
+            // find the first space
+            int spacePos = line.indexOf(' ');
 
-	    if (spacePos == 3) {
-		if (isStreamResponse) {
-		    // send the stream back
+            if (spacePos == 3) {
+                if (isStreamResponse) {
+                    // send the stream back
 
-		    // The parts
-		    String[] parts  = new String[2];
-		    parts[0] = line.substring(0, spacePos);
-		    parts[1] = builder.toString();
+                    // The parts
+                    String[] parts  = new String[2];
+                    parts[0] = line.substring(0, spacePos);
+                    parts[1] = builder.toString();
 
-		    response.add(parts);
+                    response.add(parts);
 
-		} else {
-		    // it's a normal response
-		    // e.g. 218 OK VOLUME SET
+                } else {
+                    // it's a normal response
+                    // e.g. 218 OK VOLUME SET
 
-		    // The parts
-		    String[] parts  = new String[2];
-		    parts[0] = line.substring(0, spacePos);
-		    parts[1] = line.substring(spacePos+1);
+                    // The parts
+                    String[] parts  = new String[2];
+                    parts[0] = line.substring(0, spacePos);
+                    parts[1] = line.substring(spacePos+1);
 
-		    response.add(parts);
-		}
+                    response.add(parts);
+                }
 
-		finalReply = true;
+                finalReply = true;
 
-		//   Logger.getLogger("log").logln(USR.ERROR, "MCRPInputHandler: response add " + line);
+                //   Logger.getLogger("log").logln(USR.ERROR, "MCRPInputHandler: response add " + line);
 
-		break;
+                break;
 
-	    } else {
-		// it's a message id tagged response
-		// e.g. 225-4
-		int dashPos = line.indexOf('-');
+            } else {
+                // it's a message id tagged response
+                // e.g. 225-4
+                int dashPos = line.indexOf('-');
 
-		// The parts
-		String[] parts  = new String[2];
+                // The parts
+                String[] parts  = new String[2];
 
-		parts[0] = line.substring(0, dashPos);
-		parts[1] = line.substring(dashPos+1);
-
-
-		response.add(parts);
-
-	    }
-
-	} while (!finalReply);
+                parts[0] = line.substring(0, dashPos);
+                parts[1] = line.substring(dashPos+1);
 
 
-	return response;
+                response.add(parts);
+
+            }
+
+        } while (!finalReply);
+
+
+        return response;
 
     }
 

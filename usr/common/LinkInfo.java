@@ -12,30 +12,30 @@ public class LinkInfo {
      * Construct a LinkInfo.
      */
     public LinkInfo(Pair<Integer, Integer> routers, String name, int weight) {
-	endPoints = routers;
-	linkName = name;
-	this.weight = weight;
+        endPoints = routers;
+        linkName = name;
+        this.weight = weight;
     }
 
     /**
      * Get the end point pair
      */
     public Pair<Integer, Integer> getEndPoints() {
-	return endPoints;
+        return endPoints;
     }
 
     /**
      * Get the link name
      */
     public String getLinkName() {
-	return linkName;
+        return linkName;
     }
 
     /**
      * Get the link weight
      */
     public int getLinkWeight() {
-	return weight;
+        return weight;
     }
 
 

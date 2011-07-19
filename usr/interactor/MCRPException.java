@@ -11,20 +11,20 @@ public class MCRPException extends Exception {
      * Construct a MCRPException
      */
     public MCRPException() {
-	super();
+        super();
     }
 
     /**
      * Construct a MCRPException with a message
      */
     public MCRPException(String s) {
-	super(s);
+        super(s);
     }
 
     /**
      * Construct a MCRPException with a throwable
      */
     public MCRPException(Throwable t) {
-	super(t);
+        super(t);
     }
 }

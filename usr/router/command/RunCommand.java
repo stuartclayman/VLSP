@@ -15,7 +15,7 @@ public class RunCommand extends RouterCommand {
      * Construct a RunCommand.
      */
     public RunCommand() {
-	super(MCRP.RUN.CMD, MCRP.RUN.CODE, MCRP.ERROR.CODE);
+        super(MCRP.RUN.CMD, MCRP.RUN.CODE, MCRP.ERROR.CODE);
     }
 
     /**
@@ -23,21 +23,21 @@ public class RunCommand extends RouterCommand {
      */
     public boolean evaluate(String req) {
 
-	String rest = req.substring(MCRP.RUN.CMD.length()).trim();
-	if (rest == "") {
-	    error("RUN Must supply command name and args");
-	    return false;
-	}
+        String rest = req.substring(MCRP.RUN.CMD.length()).trim();
+        if (rest == "") {
+            error("RUN Must supply command name and args");
+            return false;
+        }
 
-	ApplicationResponse response = controller.runCommand(rest);
+        ApplicationResponse response = controller.runCommand(rest);
 
-	if (response.isSuccess()) {
-	    success(response.getMessage());
-	    return true;
-	} else {
-	    error(response.getMessage() + " for " + rest);
-	    return false;
-	}
+        if (response.isSuccess()) {
+            success(response.getMessage());
+            return true;
+        } else {
+            error(response.getMessage() + " for " + rest);
+            return false;
+        }
     }
 
 }

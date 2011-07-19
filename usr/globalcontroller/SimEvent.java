@@ -25,93 +25,93 @@ public class SimEvent {
        event schedule  */
     public SimEvent(int type, long time, Object data, EventEngine engine)
     {
-	eventType_= type;
-	eventTime_= time;
-	eventData_= data;
-	engine_= engine;
+        eventType_= type;
+        eventTime_= time;
+        eventData_= data;
+        engine_= engine;
     }
 
     public long getTime() {
-	return eventTime_;
+        return eventTime_;
     }
 
     public int getType() {
-	return eventType_;
+        return eventType_;
     }
 
     public Object getData() {
-	return eventData_;
+        return eventData_;
     }
 
     /** Accessor function for engine associated with event*/
     public EventEngine getEngine() {
-	return engine_;
+        return engine_;
     }
 
     /** Use engines or global controller to get actions which should
      * follow this event*/
 
     public void followEvent(EventScheduler s, GlobalController g, Object o) {
-	if (engine_ == null)
-	    g.gcFollowEvent(this, o);
-	else
-	    engine_.followEvent(this, s,g,o);
+        if (engine_ == null)
+            g.gcFollowEvent(this, o);
+        else
+            engine_.followEvent(this, s,g,o);
     }
 
     /** Use engines or global controller to get actions which should
      * preceed this event*/
 
     public void preceedEvent(EventScheduler s, GlobalController g) {
-	if (engine_ == null)
-	    g.gcPreceedEvent(this);
-	else
-	    engine_.preceedEvent(this,s,g);
+        if (engine_ == null)
+            g.gcPreceedEvent(this);
+        else
+            engine_.preceedEvent(this,s,g);
     }
 
     public String toString() {
-	StringBuilder builder = new StringBuilder();
-	builder.append(eventTime_);
-	builder.append(" ");
+        StringBuilder builder = new StringBuilder();
+        builder.append(eventTime_);
+        builder.append(" ");
 
-	switch (eventType_) {
-	case EVENT_END_SIMULATION:
-	    builder.append("EVENT_END_SIMULATION");
-	    break;
-	case EVENT_START_SIMULATION:
-	    builder.append("EVENT_START_SIMULATION");
-	    break;
-	case EVENT_START_ROUTER:
-	    builder.append("EVENT_START_ROUTER");
-	    break;
-	case EVENT_END_ROUTER:
-	    builder.append("EVENT_END_ROUTER");
-	    break;
-	case EVENT_START_LINK:
-	    builder.append("EVENT_START_LINK");
-	    break;
-	case EVENT_END_LINK:
-	    builder.append("EVENT_END_LINK");
-	    break;
-	case EVENT_AP_CONTROLLER:
-	    builder.append("EVENT_AP_CONTROLLER");
-	    break;
-	case EVENT_OUTPUT:
-	    builder.append("EVENT_OUTPUT");
-	    break;
-	case EVENT_ON_ROUTER:
-	    builder.append("EVENT_ON_ROUTER");
-	    break;
-	}
-	if (eventData_ != null) {
-	    builder.append(" ");
-	    if (eventType_ == EVENT_ON_ROUTER) {
-		String[] cmdArgs = (String[])eventData_;
-		builder.append(java.util.Arrays.asList(cmdArgs));
-	    } else {
-		builder.append(eventData_);
-	    }
-	}
+        switch (eventType_) {
+        case EVENT_END_SIMULATION:
+            builder.append("EVENT_END_SIMULATION");
+            break;
+        case EVENT_START_SIMULATION:
+            builder.append("EVENT_START_SIMULATION");
+            break;
+        case EVENT_START_ROUTER:
+            builder.append("EVENT_START_ROUTER");
+            break;
+        case EVENT_END_ROUTER:
+            builder.append("EVENT_END_ROUTER");
+            break;
+        case EVENT_START_LINK:
+            builder.append("EVENT_START_LINK");
+            break;
+        case EVENT_END_LINK:
+            builder.append("EVENT_END_LINK");
+            break;
+        case EVENT_AP_CONTROLLER:
+            builder.append("EVENT_AP_CONTROLLER");
+            break;
+        case EVENT_OUTPUT:
+            builder.append("EVENT_OUTPUT");
+            break;
+        case EVENT_ON_ROUTER:
+            builder.append("EVENT_ON_ROUTER");
+            break;
+        }
+        if (eventData_ != null) {
+            builder.append(" ");
+            if (eventType_ == EVENT_ON_ROUTER) {
+                String[] cmdArgs = (String[])eventData_;
+                builder.append(java.util.Arrays.asList(cmdArgs));
+            } else {
+                builder.append(eventData_);
+            }
+        }
 
-	return builder.toString();
+        return builder.toString();
     }
 }

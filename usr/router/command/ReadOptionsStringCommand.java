@@ -19,26 +19,26 @@ public class ReadOptionsStringCommand extends RouterCommand {
      * Construct a GetAddressCommand.
      */
     public ReadOptionsStringCommand() {
-	super(MCRP.READ_OPTIONS_STRING.CMD, MCRP.READ_OPTIONS_STRING.CODE,
-	      MCRP.READ_OPTIONS_STRING.ERROR);
+        super(MCRP.READ_OPTIONS_STRING.CMD, MCRP.READ_OPTIONS_STRING.CODE,
+              MCRP.READ_OPTIONS_STRING.ERROR);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-	boolean result = true;
+        boolean result = true;
 
-	String rest = req.substring(MCRP.READ_OPTIONS_STRING.CMD.length()).trim();
-	// Logger.getLogger("log").logln(USR.ERROR, "RECEIVED STRING");
-	// Logger.getLogger("log").logln(USR.ERROR, rest);
+        String rest = req.substring(MCRP.READ_OPTIONS_STRING.CMD.length()).trim();
+        // Logger.getLogger("log").logln(USR.ERROR, "RECEIVED STRING");
+        // Logger.getLogger("log").logln(USR.ERROR, rest);
 
-	if (controller.readOptionsString(rest)) {
-	    success("Translated Options String");
-	    return true;
-	}
-	error ("Cannot translate XML Options String");
-	return false;
+        if (controller.readOptionsString(rest)) {
+            success("Translated Options String");
+            return true;
+        }
+        error ("Cannot translate XML Options String");
+        return false;
     }
 
 }

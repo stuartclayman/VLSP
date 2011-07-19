@@ -11,11 +11,11 @@ public class Request {
     public final String value;
 
     public Request(SocketChannel ch, String str) {
-	channel = ch;
-	value = str;
+        channel = ch;
+        value = str;
     }
 
     public String toString() {
-	return value + " @ " + channel;
+        return value + " @ " + channel;
     }
 }

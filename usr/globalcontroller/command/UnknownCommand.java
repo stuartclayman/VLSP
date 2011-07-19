@@ -13,20 +13,20 @@ public class UnknownCommand extends GlobalCommand {
      * Construct a UnknownCommand
      */
     public UnknownCommand() {
-	super("__UNKNOWN__", MCRP.ERROR.CODE, MCRP.ERROR.CODE);
+        super("__UNKNOWN__", MCRP.ERROR.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-	boolean result = error("UNKNOWN " + req);
+        boolean result = error("UNKNOWN " + req);
 
-	if (!result) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "UNKNOWN failed");
-	}
+        if (!result) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "UNKNOWN failed");
+        }
 
-	return result;
+        return result;
     }
 
 }

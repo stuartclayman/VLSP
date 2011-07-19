@@ -12,28 +12,28 @@ public class IPV4Datagram extends Size4Datagram implements Datagram, DatagramPat
      * Construct a IPV4Datagram given a payload.
      */
     IPV4Datagram(ByteBuffer payload) {
-	super(payload);
+        super(payload);
     }
 
     /**
      * Construct a IPV4Datagram given a payload.
      */
     IPV4Datagram(byte[] payload) {
-	super(payload);
+        super(payload);
     }
 
     /**
      * Construct a IPV4Datagram given a payload and a destination address
      */
     IPV4Datagram(ByteBuffer payload, Address address) {
-	super(payload, address);
+        super(payload, address);
     }
 
     /**
      * Construct a IPV4Datagram given a payload and a destination address
      */
     IPV4Datagram(byte[] payload, Address address) {
-	super(payload, address);
+        super(payload, address);
     }
 
     /**
@@ -41,7 +41,7 @@ public class IPV4Datagram extends Size4Datagram implements Datagram, DatagramPat
      * and a destination port.
      */
     IPV4Datagram(ByteBuffer payload, Address address, int port) {
-	super(payload, address, port);
+        super(payload, address, port);
     }
 
     /**
@@ -49,45 +49,45 @@ public class IPV4Datagram extends Size4Datagram implements Datagram, DatagramPat
      * and a destination port.
      */
     IPV4Datagram(byte[] payload, Address address, int port) {
-	super(payload, address, port);
+        super(payload, address, port);
     }
 
     IPV4Datagram() {
-	super();
+        super();
     }
 
     /**
      * Get src address.
      */
     public Address getSrcAddress() {
-	// get 4 bytes for address
-	byte[] address = new byte[4];
-	fullDatagram.position(10);
-	fullDatagram.get(address, 0, 4);
-	if (emptyAddress(address))
-	    return null;
-	try {
-	    return new IPV4Address(address);
-	} catch (UnknownHostException uhe) {
-	    return null;
-	}
+        // get 4 bytes for address
+        byte[] address = new byte[4];
+        fullDatagram.position(10);
+        fullDatagram.get(address, 0, 4);
+        if (emptyAddress(address))
+            return null;
+        try {
+            return new IPV4Address(address);
+        } catch (UnknownHostException uhe) {
+            return null;
+        }
     }
 
     /**
      * Get dst address.
      */
     public Address getDstAddress() {
-	// get 4 bytes for address
-	byte[] address = new byte[4];
-	fullDatagram.position(14);
-	fullDatagram.get(address, 0, 4);
-	if (emptyAddress(address))
-	    return null;
-	try {
-	    return new IPV4Address(address);
-	} catch (UnknownHostException uhe) {
-	    return null;
-	}
+        // get 4 bytes for address
+        byte[] address = new byte[4];
+        fullDatagram.position(14);
+        fullDatagram.get(address, 0, 4);
+        if (emptyAddress(address))
+            return null;
+        try {
+            return new IPV4Address(address);
+        } catch (UnknownHostException uhe) {
+            return null;
+        }
     }
 
 }

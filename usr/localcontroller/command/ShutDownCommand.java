@@ -13,16 +13,16 @@ public class ShutDownCommand extends LocalCommand {
      * Construct a ShutDownCommand.
      */
     public ShutDownCommand() {
-	super(MCRP.SHUT_DOWN.CMD, MCRP.SHUT_DOWN.CODE, MCRP.ERROR.CODE);
+        super(MCRP.SHUT_DOWN.CMD, MCRP.SHUT_DOWN.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-	controller.shutDown();
-	success("SHUTDOWN");
-	return true;
+        controller.shutDown();
+        success("SHUTDOWN");
+        return true;
     }
 
 }

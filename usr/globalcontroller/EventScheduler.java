@@ -11,17 +11,17 @@ public class EventScheduler {
 
 
     public EventScheduler() {
-	schedule_= new ArrayList <SimEvent>();
+        schedule_= new ArrayList <SimEvent>();
 
     }
 
     /** Return first event from schedule
      */
     public SimEvent getFirstEvent() {
-	if (schedule_.size() == 0) {
-	    return null;
-	}
-	return schedule_.remove(0);
+        if (schedule_.size() == 0) {
+            return null;
+        }
+        return schedule_.remove(0);
     }
 
     /*
@@ -36,14 +36,14 @@ public class EventScheduler {
     /** Adds an event to the schedule in time order
      */
     public void addEvent(SimEvent e) {
-	long time= e.getTime();
-	for (int i= 0; i < schedule_.size(); i++) {
-	    if (schedule_.get(i).getTime() > time) {  // Add at given
-		schedule_.add(i,e);         // position in list
-		return;
-	    }
-	}
-	schedule_.add(e);       // Add at end of list
+        long time= e.getTime();
+        for (int i= 0; i < schedule_.size(); i++) {
+            if (schedule_.get(i).getTime() > time) {  // Add at given
+                schedule_.add(i,e);         // position in list
+                return;
+            }
+        }
+        schedule_.add(e);       // Add at end of list
     }
 }
 

@@ -14,35 +14,35 @@ public class RouterPort {
      * Construct a RouterPort, with a specied no.
      */
     public RouterPort(int no, NetIF netIF) {
-	portNo = no;
-	this.netIF = netIF;
+        portNo = no;
+        this.netIF = netIF;
     }
 
     /**
      * Get the port no
      */
     public int getPortNo() {
-	return portNo;
+        return portNo;
     }
 
     /**
      * Get the NetIF in this port.
      */
     public NetIF getNetIF() {
-	return netIF;
+        return netIF;
     }
 
     /**
      * Get name
      */
     public String getName() {
-	return "port" + portNo + " " + netIF;
+        return "port" + portNo + " " + netIF;
     }
 
     /**
      * To String
      */
     public String toString() {
-	return getName() + ": " + netIF;
+        return getName() + ": " + netIF;
     }
 }

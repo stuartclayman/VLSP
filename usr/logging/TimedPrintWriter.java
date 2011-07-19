@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
  */
 public class TimedPrintWriter extends PrintWriter {
     public TimedPrintWriter(FileOutputStream fos, boolean flush) {
-	super(fos, flush);
+        super(fos, flush);
     }
 
     /**
@@ -18,7 +18,7 @@ public class TimedPrintWriter extends PrintWriter {
      * as though it invokes print(String) and then println().
      */
     public void println(String x) {
-	super.println(x);
+        super.println(x);
     }
 
 }

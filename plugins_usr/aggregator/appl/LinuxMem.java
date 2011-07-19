@@ -22,15 +22,15 @@ public class LinuxMem extends AbstractProbe implements Probe  {
      * Construct a LinuxMem probe
      */
     public LinuxMem(String name) {
-	setName(name);
-	setDataRate(new Rational(360, 1));
+        setName(name);
+        setDataRate(new Rational(360, 1));
 
-	// allocate a MemoryDev
-	memDev = new MemoryDev();
+        // allocate a MemoryDev
+        memDev = new MemoryDev();
 
 
-	// add a probe attribute
-	addProbeAttribute(new DefaultProbeAttribute(0, "reallyused", ProbeAttributeType.FLOAT, "percent"));
+        // add a probe attribute
+        addProbeAttribute(new DefaultProbeAttribute(0, "reallyused", ProbeAttributeType.FLOAT, "percent"));
     }
 
 
@@ -38,37 +38,37 @@ public class LinuxMem extends AbstractProbe implements Probe  {
      * Collect a measurement.
      */
     public ProbeMeasurement collect() {
-	// create a list for the result
-	ArrayList<ProbeValue> list = new ArrayList<ProbeValue>(1);
+        // create a list for the result
+        ArrayList<ProbeValue> list = new ArrayList<ProbeValue>(1);
 
-	// read the data
-	if (memDev.read()) {
-	    // the relevant data will be in the values map
-	    try {
-		int memTotal = memDev.getCurrentValue("MemTotal");
-		int memFree = memDev.getCurrentValue("MemFree");
-		int cached = memDev.getCurrentValue("Cached");
-		int buffers = memDev.getCurrentValue("Buffers");
+        // read the data
+        if (memDev.read()) {
+            // the relevant data will be in the values map
+            try {
+                int memTotal = memDev.getCurrentValue("MemTotal");
+                int memFree = memDev.getCurrentValue("MemFree");
+                int cached = memDev.getCurrentValue("Cached");
+                int buffers = memDev.getCurrentValue("Buffers");
 
-		int used = memTotal - memFree;
-		int reallyUsed = used - (cached + buffers);
+                int used = memTotal - memFree;
+                int reallyUsed = used - (cached + buffers);
 
-		// now collect up the results
-		list.add(new DefaultProbeValue(0, (float)used));
+                // now collect up the results
+                list.add(new DefaultProbeValue(0, (float)used));
 
-		ProbeMeasurement m = new ProducerMeasurement(this, list, "LinuxMem");
+                ProbeMeasurement m = new ProducerMeasurement(this, list, "LinuxMem");
 
-		//System.out.println("LinuxMem => " + m);
+                //System.out.println("LinuxMem => " + m);
 
-		return m;
-	    } catch (Exception e) {
-		e.printStackTrace();
-		return null;
-	    }
-	} else {
-	    System.err.println("Failed to read from /proc/stat");
-	    return null;
-	}
+                return m;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            System.err.println("Failed to read from /proc/stat");
+            return null;
+        }
 
 
     }

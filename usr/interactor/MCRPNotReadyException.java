@@ -12,20 +12,20 @@ public class MCRPNotReadyException extends MCRPException {
      * Construct a MCRPNotReadyException
      */
     public MCRPNotReadyException() {
-	super();
+        super();
     }
 
     /**
      * Construct a MCRPNotReadyException with a message
      */
     public MCRPNotReadyException(String s) {
-	super(s);
+        super(s);
     }
 
     /**
      * Construct a MCRPNotReadyException with a throwable
      */
     public MCRPNotReadyException(Throwable t) {
-	super(t);
+        super(t);
     }
 }

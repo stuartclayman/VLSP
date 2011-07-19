@@ -16,7 +16,7 @@ public class AppStopCommand extends RouterCommand {
      * Construct a AppStopCommand
      */
     public AppStopCommand() {
-	super(MCRP.APP_STOP.CMD, MCRP.APP_STOP.CODE, MCRP.ERROR.CODE);
+        super(MCRP.APP_STOP.CMD, MCRP.APP_STOP.CODE, MCRP.ERROR.CODE);
     }
 
     /**
@@ -24,22 +24,22 @@ public class AppStopCommand extends RouterCommand {
      */
     public boolean evaluate(String req) {
 
-	String rest = req.substring(MCRP.APP_STOP.CMD.length()).trim();
+        String rest = req.substring(MCRP.APP_STOP.CMD.length()).trim();
 
-	if (rest.equals("")) {
-	    error("APP_STOP needs application name");
-	    return false;
-	} else {
+        if (rest.equals("")) {
+            error("APP_STOP needs application name");
+            return false;
+        } else {
 
-	    ApplicationResponse response = controller.appStop(rest);
+            ApplicationResponse response = controller.appStop(rest);
 
-	    if (response.isSuccess()) {
-		success(response.getMessage());
-		return true;
-	    } else {
-		error(response.getMessage() + " for " + rest);
-		return false;
-	    }
-	}
+            if (response.isSuccess()) {
+                success(response.getMessage());
+                return true;
+            } else {
+                error(response.getMessage() + " for " + rest);
+                return false;
+            }
+        }
     }
 }

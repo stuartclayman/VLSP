@@ -59,48 +59,48 @@ DatagramDevice {
      * Construct a SimpleRouterFabric.
      */
     public SimpleRouterFabric(Router r, RouterOptions opt) {
-	router = r;
-	options_= opt;
-	table_= new SimpleRoutingTable();
-	int limit = 32;
-	ports = new ArrayList<RouterPort>(limit);
-	for (int p=0; p < limit; p++) {
-	    setupPort(p);
-	}
+        router = r;
+        options_= opt;
+        table_= new SimpleRoutingTable();
+        int limit = 32;
+        ports = new ArrayList<RouterPort>(limit);
+        for (int p=0; p < limit; p++) {
+            setupPort(p);
+        }
 
-	address_= r.getAddress();
+        address_= r.getAddress();
 
-	localNetIF = null;
-	name_= router.getName();
-	routableAddresses_= new HashMap<Address,Integer>();
+        localNetIF = null;
+        name_= router.getName();
+        routableAddresses_= new HashMap<Address,Integer>();
 
-	lastTableUpdateTime_= new HashMap <NetIF, Long>();
-	nextTableUpdateTime_= new HashMap <NetIF, Long>();
-	datagramQueue_= new LinkedBlockingQueue<DatagramHandle>();
+        lastTableUpdateTime_= new HashMap <NetIF, Long>();
+        nextTableUpdateTime_= new HashMap <NetIF, Long>();
+        datagramQueue_= new LinkedBlockingQueue<DatagramHandle>();
     }
 
     /**
      * Start me up.
      */
     public boolean start() {
-	table_.setListener(this);
+        table_.setListener(this);
 
-	Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
-	// fabric device -- no queueing
-	fabricDevice_= new FabricDevice(this, this);
-	// Need an out queue to prevent "in->triggers out" style lockups
-	//fabricDevice_.setOutQueueDiscipline(FabricDevice.QUEUE_DROPPING);
-	//fabricDevice_.setOutQueueLength(0);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
+        // fabric device -- no queueing
+        fabricDevice_= new FabricDevice(this, this);
+        // Need an out queue to prevent "in->triggers out" style lockups
+        //fabricDevice_.setOutQueueDiscipline(FabricDevice.QUEUE_DROPPING);
+        //fabricDevice_.setOutQueueLength(0);
 
-	fabricDevice_.setName("RouterControl");
-	fabricDevice_.start();
-	running = true;
+        fabricDevice_.setName("RouterControl");
+        fabricDevice_.start();
+        running = true;
 
-	// start RoutingTableTransmitter
-	routingTableTransmitter = new RoutingTableTransmitter(this);
-	routingTableTransmitter.start();
+        // start RoutingTableTransmitter
+        routingTableTransmitter = new RoutingTableTransmitter(this);
+        routingTableTransmitter.start();
 
-	return true;
+        return true;
     }
 
 
@@ -108,116 +108,116 @@ DatagramDevice {
      * Stop the RouterFabric.
      */
     public boolean stop() {
-	Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router fabric stop");
-	// stop RoutingTableTransmitter thread
-	routingTableTransmitter.terminate();
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router fabric stop");
+        // stop RoutingTableTransmitter thread
+        routingTableTransmitter.terminate();
 
-	//Logger.getLogger("log").logln(USR.ERROR, "Closing ports");
-	// close fabric ports
-	closePorts();
-	fabricDevice_.stop();
+        //Logger.getLogger("log").logln(USR.ERROR, "Closing ports");
+        // close fabric ports
+        closePorts();
+        fabricDevice_.stop();
 
-	return true;
+        return true;
     }
 
     /** Send routing table to all other interfaces apart from inter*/
     void sendToOtherInterfaces(NetIF inter)
 
     {
-	synchronized (ports) {
-	    List <NetIF> l= listNetIF();
+        synchronized (ports) {
+            List <NetIF> l= listNetIF();
 
-	    if (l == null)  {
-		return;
-	    }
-	    for (NetIF i : l) {
-		if (i == null)
-		    continue;
-		if (i.isLocal() == false && !i.equals(inter)) {
-		    queueRoutingRequest(i);
-		}
-	    }
-	}
+            if (l == null)  {
+                return;
+            }
+            for (NetIF i : l) {
+                if (i == null)
+                    continue;
+                if (i.isLocal() == false && !i.equals(inter)) {
+                    queueRoutingRequest(i);
+                }
+            }
+        }
     }
 
     /**
      * Get the local NetIF that has the sockets.
      */
     public NetIF getLocalNetIF() {
-	return localNetIF;
+        return localNetIF;
     }
 
     /**
      * Get port N.
      */
     public RouterPort getPort(int p) {
-	return ports.get(p);
+        return ports.get(p);
     }
 
     /**
      * Get a list of all the ports with Network Interfaces.
      */
     public List<RouterPort> listPorts() {
-	return ports;
+        return ports;
     }
 
     /**
      * Close ports.
      */
     public void closePorts() {
-	//Logger.getLogger("log").logln(USR.ERROR, "Local NetIF close");
-	closeLocalNetIF();
+        //Logger.getLogger("log").logln(USR.ERROR, "Local NetIF close");
+        closeLocalNetIF();
 
-	//Logger.getLogger("log").logln(USR.ERROR, "Closing ports");
-	for (int i= 0; i < ports.size(); i++) {
-	    // Logger.getLogger("log").logln(USR.ERROR, "Closing port "+i);
-	    RouterPort port= ports.get(i);
-	    if (port == null)
-		continue;
-	    closePort(port);
-	    int pno= port.getPortNo();
-	    if (pno >= 0)
-		resetPort(port.getPortNo());
-	}
+        //Logger.getLogger("log").logln(USR.ERROR, "Closing ports");
+        for (int i= 0; i < ports.size(); i++) {
+            // Logger.getLogger("log").logln(USR.ERROR, "Closing port "+i);
+            RouterPort port= ports.get(i);
+            if (port == null)
+                continue;
+            closePort(port);
+            int pno= port.getPortNo();
+            if (pno >= 0)
+                resetPort(port.getPortNo());
+        }
 
     }
 
     void closeLocalNetIF() {
-	synchronized (localNetIF) {
-	    if (localNetIF != null) {
-		//Logger.getLogger("log").logln(USR.ERROR, "TRYING TO CLOSE LOCALNETIF");
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + localNetIF + " stats = " + localNetIF.getStats());
+        synchronized (localNetIF) {
+            if (localNetIF != null) {
+                //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO CLOSE LOCALNETIF");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + localNetIF + " stats = " + localNetIF.getStats());
 
-		localNetIF.close();
-		//Logger.getLogger("log").logln(USR.ERROR, "IT'S SHUT");
-	    }
+                localNetIF.close();
+                //Logger.getLogger("log").logln(USR.ERROR, "IT'S SHUT");
+            }
 
-	    localNetIF= null;
-	}
+            localNetIF= null;
+        }
     }
 
     /**
      * Close port.
      */
     public void closePort(RouterPort port) {
-	if (port.equals(RouterPort.EMPTY)) {
-	    // nothing to do
-	} else {
-	    //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closing port " + port);
+        if (port.equals(RouterPort.EMPTY)) {
+            // nothing to do
+        } else {
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closing port " + port);
 
-	    NetIF netIF = port.getNetIF();
+            NetIF netIF = port.getNetIF();
 
-	    if (!netIF.isClosed()) {
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + netIF + " stats = " + netIF.getStats());
+            if (!netIF.isClosed()) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + netIF + " stats = " + netIF.getStats());
 
-		netIF.close();
+                netIF.close();
 
-		//Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed port " + port);
-	    } else {
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "ALREADY closed port " + port);
-	    }
-	    //Logger.getLogger("log").logln(USR.ERROR, "DONE");
-	}
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed port " + port);
+            } else {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "ALREADY closed port " + port);
+            }
+            //Logger.getLogger("log").logln(USR.ERROR, "DONE");
+        }
     }
 
 
@@ -225,42 +225,42 @@ DatagramDevice {
      * Close port.
      */
     public void remoteClosePort(RouterPort port) {
-	if (port.equals(RouterPort.EMPTY)) {
-	    // nothing to do
-	} else {
-	    //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closing port " + port);
+        if (port.equals(RouterPort.EMPTY)) {
+            // nothing to do
+        } else {
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closing port " + port);
 
-	    NetIF netIF = port.getNetIF();
+            NetIF netIF = port.getNetIF();
 
-	    if (!netIF.isClosed()) {
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + netIF + " stats = " + netIF.getStats());
+            if (!netIF.isClosed()) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + netIF + " stats = " + netIF.getStats());
 
-		netIF.remoteClose();
+                netIF.remoteClose();
 
-		//Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed port " + port);
-	    } else {
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "ALREADY closed port " + port);
-	    }
-	    //Logger.getLogger("log").logln(USR.ERROR, "DONE");
-	}
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed port " + port);
+            } else {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "ALREADY closed port " + port);
+            }
+            //Logger.getLogger("log").logln(USR.ERROR, "DONE");
+        }
     }
 
     /** Is this datagram for us */
     public boolean ourAddress(Address addr)
     {
-	//Logger.getLogger("log").logln(USR.STDOUT, "DATAGRAM WITH NULL ADDRESS");
-	if (addr == null )
-	    return true;
-	if (address_ == null)
-	    return false;
+        //Logger.getLogger("log").logln(USR.STDOUT, "DATAGRAM WITH NULL ADDRESS");
+        if (addr == null )
+            return true;
+        if (address_ == null)
+            return false;
 
-	if (addr.equals(address_))
-	    return true;
+        if (addr.equals(address_))
+            return true;
 
 
-	Object obj = routableAddresses_.get(addr);
+        Object obj = routableAddresses_.get(addr);
 
-	return (obj != null);
+        return (obj != null);
     }
 
 
@@ -274,59 +274,59 @@ DatagramDevice {
        unroutable or datagram is for router
      */
     public DatagramDevice getRoute(Datagram dg) throws NoRouteToHostException {
-	Address addr= dg.getDstAddress();
+        Address addr= dg.getDstAddress();
 
-	/* if (dg.getProtocol() == Protocol.CONTROL) {
-	    System.err.println("Got CONTROL "+ dg.getDstAddress()+" "+ dg.getDstPort() + " vs "+address_);
-	   }*/
+        /* if (dg.getProtocol() == Protocol.CONTROL) {
+            System.err.println("Got CONTROL "+ dg.getDstAddress()+" "+ dg.getDstPort() + " vs "+address_);
+           }*/
 
-	if (ourAddress(addr)) {
-	    if (dg.getDstPort() == 0) {
-		return this;
-	    } else {
-		if (localNetIF == null) {
-		    throw new NoRouteToHostException();
-		}
-		return localNetIF;
-	    }
-	}
+        if (ourAddress(addr)) {
+            if (dg.getDstPort() == 0) {
+                return this;
+            } else {
+                if (localNetIF == null) {
+                    throw new NoRouteToHostException();
+                }
+                return localNetIF;
+            }
+        }
 
-	NetIF netif= table_.getInterface(addr);
-	if (netif != null) {
-	    return netif;
-	}
-	//System.err.println("null");
-	throw new NoRouteToHostException();
+        NetIF netif= table_.getInterface(addr);
+        if (netif != null) {
+            return netif;
+        }
+        //System.err.println("null");
+        throw new NoRouteToHostException();
     }
 
 
     /** Get the Fabric Device which this packet should be sent to */
     public FabricDevice getRouteFabric(Datagram dg) throws NoRouteToHostException {
 
-	if (ourAddress(dg.getDstAddress())) {
-	    if (dg.getDstPort() == 0 || dg.getProtocol() == Protocol.CONTROL) {
-		return fabricDevice_;
-	    }
-	    else {
-		if (localNetIF == null) { // possible only during shutdown
-		    throw new NoRouteToHostException();
-		}
-		return localNetIF.getFabricDevice();
-	    }
-	}
+        if (ourAddress(dg.getDstAddress())) {
+            if (dg.getDstPort() == 0 || dg.getProtocol() == Protocol.CONTROL) {
+                return fabricDevice_;
+            }
+            else {
+                if (localNetIF == null) { // possible only during shutdown
+                    throw new NoRouteToHostException();
+                }
+                return localNetIF.getFabricDevice();
+            }
+        }
 
-	DatagramDevice inter= getRoute(dg);
-	if (inter == null) {
-	    throw new NoRouteToHostException();
+        DatagramDevice inter= getRoute(dg);
+        if (inter == null) {
+            throw new NoRouteToHostException();
 
-	}
-	FabricDevice f= inter.getFabricDevice();
-	if (f == null) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin() +
-	                                  "Cannot find fabric device for interface"+inter);
-	    throw new NoRouteToHostException();
-	}
-	return f;
+        }
+        FabricDevice f= inter.getFabricDevice();
+        if (f == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() +
+                                          "Cannot find fabric device for interface"+inter);
+            throw new NoRouteToHostException();
+        }
+        return f;
     }
 
 
@@ -334,63 +334,63 @@ DatagramDevice {
     /** Return a TTL expired datagram unless this is a TTL expired datagram */
     public void TTLDrop(Datagram dg)
     {
-	// Can't return datagram with no source
-	if (ourAddress(dg.getSrcAddress()))
-	    return;
+        // Can't return datagram with no source
+        if (ourAddress(dg.getSrcAddress()))
+            return;
 
-	// Don't return TTL expired datagram.
-	if (dg.getProtocol() == Protocol.CONTROL) {
-	    byte [] payload= dg.getPayload();
-	    if (payload.length > 0 && (char)payload[0] == 'X')
-		return;
-	}
-	// OK -- send TTL expired datagram
-	Address dst= dg.getSrcAddress();
-	byte[] buffer = new byte[1];
-	buffer[0]='X';
-	Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+        // Don't return TTL expired datagram.
+        if (dg.getProtocol() == Protocol.CONTROL) {
+            byte [] payload= dg.getPayload();
+            if (payload.length > 0 && (char)payload[0] == 'X')
+                return;
+        }
+        // OK -- send TTL expired datagram
+        Address dst= dg.getSrcAddress();
+        byte[] buffer = new byte[1];
+        buffer[0]='X';
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
 
-	datagram.setDstAddress(dst);
-	sendDatagram(datagram);
+        datagram.setDstAddress(dst);
+        sendDatagram(datagram);
     }
 
     /** NetIF wants to send a routing Request */
     void queueRoutingRequest(NetIF netIF) {
-	long now= System.currentTimeMillis();
-	Long last= lastTableUpdateTime_.get(netIF);
-	Long curr= nextTableUpdateTime_.get(netIF);
-	if (last == null || curr == null) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin()+netIF+" not in nextTableTime");
-	    return;
-	}
-	Long next= last + options_.getMinNetIFUpdateTime();
+        long now= System.currentTimeMillis();
+        Long last= lastTableUpdateTime_.get(netIF);
+        Long curr= nextTableUpdateTime_.get(netIF);
+        if (last == null || curr == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+netIF+" not in nextTableTime");
+            return;
+        }
+        Long next= last + options_.getMinNetIFUpdateTime();
 
-	if (next >= curr) // Already updating at this time or earlier
-	    return;
-	nextTableUpdateTime_.put(netIF,next);
-	if (next <= now) {
-	    routingTableTransmitter.informNewData();
-	}
+        if (next >= curr) // Already updating at this time or earlier
+            return;
+        nextTableUpdateTime_.put(netIF,next);
+        if (next <= now) {
+            routingTableTransmitter.informNewData();
+        }
 
     }
 
     /** Datagram which has arrived is ours */
     public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
 
-	//Logger.getLogger("log").logln(USR.STDOUT, leadin() + " receiveOurDatagram ");
-	if (running == false) {  // If we're not running simply pretend to have received it
-	    return true;
-	}
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " receiveOurDatagram ");
+        if (running == false) {  // If we're not running simply pretend to have received it
+            return true;
+        }
 
-	if (datagram.getProtocol() == Protocol.CONTROL) {
-	    processControlDatagram(datagram, device);
-	} else if (datagram.getProtocol() == Protocol.DATA) {
-	    processOrdinaryDatagram(datagram, device);
-	} else {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "datagram protocol"+
-	                                  datagram.getProtocol());
-	}
-	return true;
+        if (datagram.getProtocol() == Protocol.CONTROL) {
+            processControlDatagram(datagram, device);
+        } else if (datagram.getProtocol() == Protocol.DATA) {
+            processOrdinaryDatagram(datagram, device);
+        } else {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "datagram protocol"+
+                                          datagram.getProtocol());
+        }
+        return true;
     }
 
 
@@ -401,13 +401,13 @@ DatagramDevice {
      */
     void  processOrdinaryDatagram(Datagram datagram, DatagramDevice device) {
 
-	Logger.getLogger("log").logln(USR.ERROR, leadin() + " Fabric received ordinary datagram from "  + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
-	byte [] payl= datagram.getPayload();
-	Logger.getLogger("log").logln(USR.ERROR, leadin() + "Length "+ payl.length + " Contents "+payl.toString());
-	if (payl.length > 0) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "First char is "+(char)payl[0]);
-	}
-	return;
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + " Fabric received ordinary datagram from "  + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" + datagram.getDstPort());
+        byte [] payl= datagram.getPayload();
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Length "+ payl.length + " Contents "+payl.toString());
+        if (payl.length > 0) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "First char is "+(char)payl[0]);
+        }
+        return;
     }
 
     /**
@@ -415,85 +415,85 @@ DatagramDevice {
      * NetIF is the original NetIF that the datagram was received on.
      */
     boolean  processControlDatagram(Datagram dg,DatagramDevice device) {
-	//Logger.getLogger("log").logln(USR.STDOUT, leadin() + " processControlDatagram " + dg + " from " + device);
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " processControlDatagram " + dg + " from " + device);
 
-	NetIF netif= null;
-	if (device != null && device.getClass().equals(TCPNetIF.class )) {
-	    netif= (TCPNetIF)device;
-	}
-	// forward datagram if there is a local NetIF and port is not zero
-	if (localNetIF != null && dg.getDstPort() != 0) {
-	    //localNetIF.forwardDatagram(dg);
-	    Logger.getLogger("log").logln(USR.ERROR,
-	                                  leadin()+"TODO FORWARD DATAGRAM to ASM");
-	    return true;
-	}
-	byte[] payload = dg.getPayload();
-	if (payload.length == 0) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin()+"GOT LENGTH ZERO DATAGRAM");
-	    return true;
-	}
-	byte controlChar= payload[0];
+        NetIF netif= null;
+        if (device != null && device.getClass().equals(TCPNetIF.class )) {
+            netif= (TCPNetIF)device;
+        }
+        // forward datagram if there is a local NetIF and port is not zero
+        if (localNetIF != null && dg.getDstPort() != 0) {
+            //localNetIF.forwardDatagram(dg);
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin()+"TODO FORWARD DATAGRAM to ASM");
+            return true;
+        }
+        byte[] payload = dg.getPayload();
+        if (payload.length == 0) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"GOT LENGTH ZERO DATAGRAM");
+            return true;
+        }
+        byte controlChar= payload[0];
 
-	if (controlChar == 'C') {
-	    if (netif != null) {
-		remoteRemoveNetIF(netif);
-	    } else {
-		String className= "null";
-		String name= "null";
-		if (device != null) {
-		    name= device.getName();
-		    className= device.getClass().getName();
-		}
-		Logger.getLogger("log").logln(USR.ERROR, leadin()+
-		                              "Remote close on object which is not NetIF" + " " +className + " " +
-		                              name);
+        if (controlChar == 'C') {
+            if (netif != null) {
+                remoteRemoveNetIF(netif);
+            } else {
+                String className= "null";
+                String name= "null";
+                if (device != null) {
+                    name= device.getName();
+                    className= device.getClass().getName();
+                }
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                                              "Remote close on object which is not NetIF" + " " +className + " " +
+                                              name);
 
-	    }
-	    return true;
-	}
-	if (controlChar == 'T') {
-	    if (netif == null) {
-		Logger.getLogger("log").logln(USR.ERROR, leadin()+
-		                              "Received routing table from object not NetIF");
-		if (device != null) {
-		    Logger.getLogger("log").logln(USR.ERROR, leadin()+
-		                                  "Sending device "+device.getName()+" "+device.getClass());
+            }
+            return true;
+        }
+        if (controlChar == 'T') {
+            if (netif == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                                              "Received routing table from object not NetIF");
+                if (device != null) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                                                  "Sending device "+device.getName()+" "+device.getClass());
 
-		}
+                }
 
-		SimpleRoutingTable t= null;
-		try {
-		    t= new SimpleRoutingTable(payload,netif);
-		} catch (Exception e) {
-		}
-		Logger.getLogger("log").logln(USR.ERROR, leadin()+t);
-	    } else {
-		receiveRoutingTable(payload,netif);
-	    }
-	    return true;
-	}
+                SimpleRoutingTable t= null;
+                try {
+                    t= new SimpleRoutingTable(payload,netif);
+                } catch (Exception e) {
+                }
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+t);
+            } else {
+                receiveRoutingTable(payload,netif);
+            }
+            return true;
+        }
 
-	if (controlChar == 'X') {
-	    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Received TTL expired from "+dg.getSrcAddress()
-	                                  +":"+dg.getSrcPort());
-	    return true;
-	}
-	if (controlChar == 'E') {
-	    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Received echo from "+dg.getSrcAddress()
-	                                  +":"+dg.getSrcPort()+ " to "+dg.getDstAddress()+":"+
-	                                  dg.getDstPort());
-	    return true;
-	}
-	if (controlChar == 'P') {
-	    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Received ping from "+dg.getSrcAddress()
-	                                  +":"+dg.getSrcPort());
-	    return pingResponse(dg);
-	}
-	Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Received unknown control packet type "+
-	                              (char)controlChar);
+        if (controlChar == 'X') {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Received TTL expired from "+dg.getSrcAddress()
+                                          +":"+dg.getSrcPort());
+            return true;
+        }
+        if (controlChar == 'E') {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Received echo from "+dg.getSrcAddress()
+                                          +":"+dg.getSrcPort()+ " to "+dg.getDstAddress()+":"+
+                                          dg.getDstPort());
+            return true;
+        }
+        if (controlChar == 'P') {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Received ping from "+dg.getSrcAddress()
+                                          +":"+dg.getSrcPort());
+            return pingResponse(dg);
+        }
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Received unknown control packet type "+
+                                      (char)controlChar);
 
-	return false;
+        return false;
 
     }
 
@@ -501,39 +501,39 @@ DatagramDevice {
     boolean pingResponse(Datagram dg)
     {
 
-	Address dst= dg.getSrcAddress();
-	int port= dg.getSrcPort();
-	int dstPort= dg.getSrcPort();
-	Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Responding to ping with echo to "+dst+
-	                              ":"+dstPort);
+        Address dst= dg.getSrcAddress();
+        int port= dg.getSrcPort();
+        int dstPort= dg.getSrcPort();
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Responding to ping with echo to "+dst+
+                                      ":"+dstPort);
 
-	return echo(dst,port);
+        return echo(dst,port);
     }
 
     /** Routing table received via netIF */
     void receiveRoutingTable(byte [] bytes, NetIF netIF)
     {
-	//Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Received routing table from " + netIF);
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Received routing table from " + netIF);
 
-	SimpleRoutingTable t;
-	try {
-	    t= new SimpleRoutingTable(bytes,netIF);
-	} catch (Exception e) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin()+"Received unreadable routing table");
-	    Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-	    return;
-	}
-	//Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " merging routing table received on "+netIF);
-	boolean merged= false;
-	synchronized (table_) {
-	    merged = table_.mergeTables(t,netIF, options_);
-	}
+        SimpleRoutingTable t;
+        try {
+            t= new SimpleRoutingTable(bytes,netIF);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Received unreadable routing table");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+            return;
+        }
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " merging routing table received on "+netIF);
+        boolean merged= false;
+        synchronized (table_) {
+            merged = table_.mergeTables(t,netIF, options_);
+        }
 
-	//Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " merged routing table received on "+netIF);
-	if (merged) {
-	    //Logger.getLogger("log").logln(USR.STDOUT, "Send to other interfaces");
-	    sendToOtherInterfaces(netIF);
-	}
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " merged routing table received on "+netIF);
+        if (merged) {
+            //Logger.getLogger("log").logln(USR.STDOUT, "Send to other interfaces");
+            sendToOtherInterfaces(netIF);
+        }
     }
 
 
@@ -545,18 +545,18 @@ DatagramDevice {
      * Setup a port
      */
     void setupPort(int p) {
-	synchronized (ports) {
-	    ports.add(p, RouterPort.EMPTY);
-	}
+        synchronized (ports) {
+            ports.add(p, RouterPort.EMPTY);
+        }
     }
 
     /**
      * Reset a port
      */
     void resetPort(int p) {
-	synchronized (ports) {
-	    ports.set(p, RouterPort.EMPTY);
-	}
+        synchronized (ports) {
+            ports.set(p, RouterPort.EMPTY);
+        }
     }
 
 
@@ -564,7 +564,7 @@ DatagramDevice {
      * Return the routing table
      */
     public RoutingTable getRoutingTable() {
-	return table_;
+        return table_;
     }
 
     /**
@@ -573,22 +573,22 @@ DatagramDevice {
      * @return null if a NetIF is not found.
      */
     RouterPort findNetIF(NetIF netIF) {
-	synchronized (ports) {
-	    int limit = ports.size();
-	    for (int p = 0; p < limit; p++) {
-		RouterPort port = ports.get(p);
+        synchronized (ports) {
+            int limit = ports.size();
+            for (int p = 0; p < limit; p++) {
+                RouterPort port = ports.get(p);
 
-		if (port.equals(RouterPort.EMPTY)) {
-		    continue;
-		} else if (port.getNetIF().equals(netIF)) {
-		    return port;
-		} else {
-		    ;
-		}
-	    }
+                if (port.equals(RouterPort.EMPTY)) {
+                    continue;
+                } else if (port.getNetIF().equals(netIF)) {
+                    return port;
+                } else {
+                    ;
+                }
+            }
 
-	    return null;
-	}
+            return null;
+        }
     }
 
     /** Find the netIF which connects to a given end host
@@ -596,66 +596,66 @@ DatagramDevice {
        @return null if none exists*/
 
     public NetIF findNetIF(String name) {
-	synchronized (ports) {
-	    int limit = ports.size();
-	    for (int p = 0; p < limit; p++) {
-		RouterPort port = ports.get(p);
+        synchronized (ports) {
+            int limit = ports.size();
+            for (int p = 0; p < limit; p++) {
+                RouterPort port = ports.get(p);
 
-		if (port.equals(RouterPort.EMPTY)) {
-		    continue;
+                if (port.equals(RouterPort.EMPTY)) {
+                    continue;
 
-		} else {
+                } else {
 
-		    /*
-		       Logger.getLogger("log").logln(USR.ERROR, leadin() + "findNetIF " +
-		                                  " getRemoteRouterAddress = " + port.getNetIF().getRemoteRouterAddress() +
-		                                  " getRemoteRouterName = " + port.getNetIF().getRemoteRouterName() +
-		                                  " getName = " + port.getNetIF().getName() +
-		                                  "\n");
-		     */
+                    /*
+                       Logger.getLogger("log").logln(USR.ERROR, leadin() + "findNetIF " +
+                                                  " getRemoteRouterAddress = " + port.getNetIF().getRemoteRouterAddress() +
+                                                  " getRemoteRouterName = " + port.getNetIF().getRemoteRouterName() +
+                                                  " getName = " + port.getNetIF().getName() +
+                                                  "\n");
+                     */
 
-		    if (port.getNetIF().getRemoteRouterAddress().asTransmitForm().equals(name)) {
-			return port.getNetIF();
-		    } else if (port.getNetIF().getRemoteRouterName().equals(name)) {
-			return port.getNetIF();
-		    } else if (port.getNetIF().getName().equals(name)) {
-			return port.getNetIF();
-		    } else {
-			;
-		    }
-		}
-	    }
+                    if (port.getNetIF().getRemoteRouterAddress().asTransmitForm().equals(name)) {
+                        return port.getNetIF();
+                    } else if (port.getNetIF().getRemoteRouterName().equals(name)) {
+                        return port.getNetIF();
+                    } else if (port.getNetIF().getName().equals(name)) {
+                        return port.getNetIF();
+                    } else {
+                        ;
+                    }
+                }
+            }
 
-	    return null;
-	}
+            return null;
+        }
     }
 
     /**
      */
     public void setNetIFListener(NetIFListener l) {
-	Logger.getLogger("log").logln(USR.ERROR, leadin() + "Call to setNETIFListener illegal");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Call to setNETIFListener illegal");
     }
 
     public NetIFListener getNetIFListener() {
-	return this;
+        return this;
     }
 
     /**
      * Get a list of all connected Network Interfaces
      */
     public List<NetIF> listNetIF() {
-	ArrayList<NetIF> list = new ArrayList<NetIF>();
-	int limit = ports.size();
-	for (int p = 0; p < limit; p++) {
-	    RouterPort port = ports.get(p);
+        ArrayList<NetIF> list = new ArrayList<NetIF>();
+        int limit = ports.size();
+        for (int p = 0; p < limit; p++) {
+            RouterPort port = ports.get(p);
 
-	    if (port.equals(RouterPort.EMPTY)) {
-		continue;
-	    }
-	    list.add(port.getNetIF());
-	}
+            if (port.equals(RouterPort.EMPTY)) {
+                continue;
+            }
+            list.add(port.getNetIF());
+        }
 
-	return list;
+        return list;
     }
 
     /**
@@ -663,146 +663,146 @@ DatagramDevice {
      * Start at port 0 and work way up.
      */
     int findNextFreePort() {
-	synchronized (ports) {
-	    int limit = ports.size();
-	    for (int p = 0; p < limit; p++) {
-		if (ports.get(p).equals(RouterPort.EMPTY)) {
-		    return p;
-		}
-	    }
+        synchronized (ports) {
+            int limit = ports.size();
+            for (int p = 0; p < limit; p++) {
+                if (ports.get(p).equals(RouterPort.EMPTY)) {
+                    return p;
+                }
+            }
 
-	    // if we get here the ports are all full
-	    // so make more
-	    ports.ensureCapacity(limit + 8);
-	    for (int p = limit; p < (limit + 8); p++) {
-		setupPort(p);
-	    }
+            // if we get here the ports are all full
+            // so make more
+            ports.ensureCapacity(limit + 8);
+            for (int p = limit; p < (limit + 8); p++) {
+                setupPort(p);
+            }
 
-	    return limit;
+            return limit;
 
-	}
+        }
     }
 
     /** Ping command received */
     public boolean ping (Address dst) {
-	//Address dst = AddressFactory.newAddress(id);
-	byte[] buffer= new byte[1];
-	buffer[0]='P';
-	Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
-	datagram.setDstAddress(dst);
-	sendDatagram(datagram);
+        //Address dst = AddressFactory.newAddress(id);
+        byte[] buffer= new byte[1];
+        buffer[0]='P';
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+        datagram.setDstAddress(dst);
+        sendDatagram(datagram);
 
-	return true;
+        return true;
     }
 
     public Address getAddress() {
-	return address_;
+        return address_;
     }
 
     public void setAddress(Address a) {
-	address_= a;
+        address_= a;
     }
 
 
     public String getName() {
-	return name_;
+        return name_;
     }
 
     public void setName(String n) {
-	name_= n;
+        name_= n;
     }
 
     public FabricDevice getFabricDevice() {
-	return fabricDevice_;
+        return fabricDevice_;
     }
 
     public boolean sendDatagram(Datagram dg)
     {
-	dg.setSrcAddress(router.getAddress());
-	return enqueueDatagram(dg);
+        dg.setSrcAddress(router.getAddress());
+        return enqueueDatagram(dg);
     }
 
     public boolean enqueueDatagram(Datagram dg)
     {
-	try {
-	    return fabricDevice_.addToInQueue(dg, this);
-	} catch (NoRouteToHostException e) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoRouteToHostException for enqueueDatagram " + dg);
-	}
-	return false;
+        try {
+            return fabricDevice_.addToInQueue(dg, this);
+        } catch (NoRouteToHostException e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoRouteToHostException for enqueueDatagram " + dg);
+        }
+        return false;
     }
 
     /** Echo command received */
     public boolean echo (Address addr) {
-	return echo(addr, 0);
+        return echo(addr, 0);
     }
 
     /** Echo command received */
     public boolean echo (Address dst, int port) {
-	//Address dst = AddressFactory.newAddress(id);
-	int dstPort= port;
-	byte [] buffer= new byte[1];
-	buffer[0]= 'E';
-	Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+        //Address dst = AddressFactory.newAddress(id);
+        int dstPort= port;
+        byte [] buffer= new byte[1];
+        buffer[0]= 'E';
+        Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
 
-	datagram.setDstAddress(dst);
-	datagram.setDstPort(dstPort);
-	sendDatagram(datagram);
-	return true;
+        datagram.setDstAddress(dst);
+        datagram.setDstPort(dstPort);
+        sendDatagram(datagram);
+        return true;
     }
 
     /**
      * Add a Network Interface to this Router.
      */
     public RouterPort addNetIF(NetIF netIF) {
-	synchronized (ports) {
-	    Address address = netIF.getAddress();
-	    Address remoteAddress = netIF.getRemoteRouterAddress();
-	    // add this address into the routableAddresses set
-	    addRoutableAddress(address);
-	    // is this actually the local NetIF
-	    boolean localPort= netIF.isLocal();
-	    // bind NetIF into a port
-	    RouterPort rp= null;
+        synchronized (ports) {
+            Address address = netIF.getAddress();
+            Address remoteAddress = netIF.getRemoteRouterAddress();
+            // add this address into the routableAddresses set
+            addRoutableAddress(address);
+            // is this actually the local NetIF
+            boolean localPort= netIF.isLocal();
+            // bind NetIF into a port
+            RouterPort rp= null;
 
 
-	    // it is the local port
-	    if (localPort) {
-		if (localNetIF != null) {
-		    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Attempt to create second local multiplex port");
-		}
-		localNetIF= netIF;
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "added localNetIF: " + localNetIF.getName());
-		return null;
-	    }
+            // it is the local port
+            if (localPort) {
+                if (localNetIF != null) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Attempt to create second local multiplex port");
+                }
+                localNetIF= netIF;
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "added localNetIF: " + localNetIF.getName());
+                return null;
+            }
 
-	    if (!localPort) {
-		if (address.equals(remoteAddress)) {
-		    Logger.getLogger("log").logln(USR.ERROR, leadin() +
-		                                  "netIF has same remote and local address");
-		    return null;
-		}
-		int nextFree = findNextFreePort();
-		rp = new RouterPort(nextFree, netIF);
-		ports.set(nextFree, rp);
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
-	    }
+            if (!localPort) {
+                if (address.equals(remoteAddress)) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() +
+                                                  "netIF has same remote and local address");
+                    return null;
+                }
+                int nextFree = findNextFreePort();
+                rp = new RouterPort(nextFree, netIF);
+                ports.set(nextFree, rp);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
+            }
 
-	    // sort out when to send routing tables to this NetIF
-	    Long next= System.currentTimeMillis();
-	    lastTableUpdateTime_.put(netIF,new Long(0));
-	    nextTableUpdateTime_.put(netIF,next);
-	    queueRoutingRequest(netIF);
+            // sort out when to send routing tables to this NetIF
+            Long next= System.currentTimeMillis();
+            lastTableUpdateTime_.put(netIF,new Long(0));
+            nextTableUpdateTime_.put(netIF,next);
+            queueRoutingRequest(netIF);
 
-	    synchronized (table_) {
+            synchronized (table_) {
 
-		if (table_.addNetIF(netIF, options_)) {
-		    sendToOtherInterfaces(netIF);
+                if (table_.addNetIF(netIF, options_)) {
+                    sendToOtherInterfaces(netIF);
 
-		}
-	    }
-	    return rp;
-	}
+                }
+            }
+            return rp;
+        }
     }
 
     /**
@@ -810,9 +810,9 @@ DatagramDevice {
      * synchronized to prevent multiple calls
      */
     public boolean removeNetIF(NetIF netIF) {
-	synchronized (ports) {
-	    return doRemove(netIF, false);
-	}
+        synchronized (ports) {
+            return doRemove(netIF, false);
+        }
     }
 
     /**
@@ -820,54 +820,54 @@ DatagramDevice {
      * synchronized to prevent multiple calls
      */
     public boolean remoteRemoveNetIF(NetIF netIF) {
-	synchronized (ports) {
-	    return doRemove(netIF, true);
-	}
+        synchronized (ports) {
+            return doRemove(netIF, true);
+        }
     }
 
     /** Do work for remote or normal remove -- onyl difference is in
        sending control close */
     public boolean doRemove(NetIF netIF, boolean remote) {
-	Address address = netIF.getAddress();
-	// remove this address from the routableAddresses set
+        Address address = netIF.getAddress();
+        // remove this address from the routableAddresses set
 
 
-	// it is the local port
-	if (netIF.isLocal()) {
-	    removeRoutableAddress(address);
-	    closeLocalNetIF();
-	    return true;
-	}
+        // it is the local port
+        if (netIF.isLocal()) {
+            removeRoutableAddress(address);
+            closeLocalNetIF();
+            return true;
+        }
 
-	// check Ports
-	RouterPort port = findNetIF(netIF);
+        // check Ports
+        RouterPort port = findNetIF(netIF);
 
-	if (port != null) {
-	    // disconnect netIF from port
+        if (port != null) {
+            // disconnect netIF from port
 
-	    removeRoutableAddress(address);
-	    // Remove table update times
-	    lastTableUpdateTime_.remove(netIF);
-	    nextTableUpdateTime_.remove(netIF);
-	    if (remote) {
-		remoteClosePort(port);
-	    } else {
-		closePort(port);
-	    }
-	    resetPort(port.getPortNo());
-	    synchronized (table_) {
-		if (table_.removeNetIF(netIF)) {
-		    sendToOtherInterfaces(netIF);
-		}
-	    }
-	    routingTableTransmitter.informNewData();
-	    return true;
-	} else {
-	    Logger.getLogger("log").logln(USR.STDOUT, leadin()+netIF+
-	                                  " second attempt to remove");
-	    // didn't find netIF in any RouterPort
-	    return false;
-	}
+            removeRoutableAddress(address);
+            // Remove table update times
+            lastTableUpdateTime_.remove(netIF);
+            nextTableUpdateTime_.remove(netIF);
+            if (remote) {
+                remoteClosePort(port);
+            } else {
+                closePort(port);
+            }
+            resetPort(port.getPortNo());
+            synchronized (table_) {
+                if (table_.removeNetIF(netIF)) {
+                    sendToOtherInterfaces(netIF);
+                }
+            }
+            routingTableTransmitter.informNewData();
+            return true;
+        } else {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+netIF+
+                                          " second attempt to remove");
+            // didn't find netIF in any RouterPort
+            return false;
+        }
     }
 
 
@@ -875,38 +875,38 @@ DatagramDevice {
 
     /** Track routable addresses for this router */
     void addRoutableAddress(Address a) {
-	synchronized (routableAddresses_) {
-	    Integer aCount= routableAddresses_.get(a);
-	    if (aCount == null) {
-		routableAddresses_.put(a,1);
-	    } else {
-		routableAddresses_.put(a,(aCount+1));
-	    }
-	}
+        synchronized (routableAddresses_) {
+            Integer aCount= routableAddresses_.get(a);
+            if (aCount == null) {
+                routableAddresses_.put(a,1);
+            } else {
+                routableAddresses_.put(a,(aCount+1));
+            }
+        }
     }
 
     void removeRoutableAddress(Address a) {
-	synchronized (routableAddresses_) {
-	    Integer aCount= routableAddresses_.get(a);
-	    if (aCount == null) {
-		Logger.getLogger("log").logln(USR.ERROR, leadin() +
-		                              "Request to remove address "+a+" not on routable list");
-		return;
-	    }
-	    if (aCount == 1) {
-		routableAddresses_.remove(a);
-	    } else {
-		routableAddresses_.put(a,aCount-1);
-	    }
-	}
+        synchronized (routableAddresses_) {
+            Integer aCount= routableAddresses_.get(a);
+            if (aCount == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() +
+                                              "Request to remove address "+a+" not on routable list");
+                return;
+            }
+            if (aCount == 1) {
+                routableAddresses_.remove(a);
+            } else {
+                routableAddresses_.put(a,aCount-1);
+            }
+        }
     }
 
     public void closedDevice(DatagramDevice dd) {
-	if (dd instanceof NetIF) {
-	    remoteRemoveNetIF((NetIF)dd);
-	    return;
-	}
-	Logger.getLogger("log").logln(USR.ERROR, leadin()+dd+" Datagram device reports as broken");
+        if (dd instanceof NetIF) {
+            remoteRemoveNetIF((NetIF)dd);
+            return;
+        }
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+dd+" Datagram device reports as broken");
     }
 
 
@@ -916,10 +916,10 @@ DatagramDevice {
      * Create the String to print out before a message
      */
     String leadin() {
-	final String RF = "SRF: ";
-	RouterController controller = router.getRouterController();
+        final String RF = "SRF: ";
+        RouterController controller = router.getRouterController();
 
-	return controller.getName() + " " + RF;
+        return controller.getName() + " " + RF;
     }
 
     /**
@@ -927,13 +927,13 @@ DatagramDevice {
      * It holds a Datagram and the NetIF it came from.
      */
     class DatagramHandle {
-	public final Datagram datagram;
-	public final NetIF netIF;
+        public final Datagram datagram;
+        public final NetIF netIF;
 
-	DatagramHandle(Datagram dg, NetIF n) {
-	    datagram = dg;
-	    netIF = n;
-	}
+        DatagramHandle(Datagram dg, NetIF n) {
+            datagram = dg;
+            netIF = n;
+        }
     }
 
 
@@ -941,193 +941,193 @@ DatagramDevice {
      * A Thread that sends out the Routing Table
      */
     class RoutingTableTransmitter extends Thread {
-	// The Fabric
-	SimpleRouterFabric fabric;
+        // The Fabric
+        SimpleRouterFabric fabric;
 
-	// is running
-	boolean running = false;
-
-
-	Object waitObj_= null;
-	/**
-	 * Constructor
-	 */
-	public RoutingTableTransmitter(SimpleRouterFabric srf) {
-	    fabric = srf;
-	    waitObj_= new Object();
-
-	    setName("RoutingTableTransmitter-" + fabric.hashCode());
-	}
+        // is running
+        boolean running = false;
 
 
-	/**
-	 * The main thread loop.
-	 * It occasionally checks to see if it needs to
-	 * send a routing table.
-	 */
-	public void run() {
-	    running = true;
+        Object waitObj_= null;
+        /**
+         * Constructor
+         */
+        public RoutingTableTransmitter(SimpleRouterFabric srf) {
+            fabric = srf;
+            waitObj_= new Object();
 
-	    long nextUpdateTime;
-
-	    //Logger.getLogger("log").logln(USR.ERROR, leadin() + "RoutingTableTransmitter Running");
-
-	    while (running) {
-
-		long now=  System.currentTimeMillis();
-
-		// dont need to do this every time, but how
-		nextUpdateTime = calcNextTableSendTime();
-
-		//Logger.getLogger("log").logln(USR.ERROR, leadin() + "run TIME: "+now + " nextUpdateTime: " + nextUpdateTime + " diff: " + (nextUpdateTime - now));
-
-		if (nextUpdateTime <= now) {
-		    //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Sending table");
-
-		    sendNextTable();
-		    continue;
-		}
-
-		//Logger.getLogger("log").logln(USR.ERROR, leadin() + "Waiting Until: "+ nextUpdateTime);
-		//Logger.getLogger("log").logln(USR.ERROR, leadin() + "run Waiting For: "+ ((float)(nextUpdateTime-now))/1000);
-		//Logger.getLogger("log").logln(USR.ERROR, "Time now "+ now);
-
-		if (running) {
-		    waitUntil(nextUpdateTime);
-		}
-
-		//Logger.getLogger("log").logln(USR.ERROR, "Running is "+running);
-	    }
+            setName("RoutingTableTransmitter-" + fabric.hashCode());
+        }
 
 
-	    //theEnd();
-	}
+        /**
+         * The main thread loop.
+         * It occasionally checks to see if it needs to
+         * send a routing table.
+         */
+        public void run() {
+            running = true;
+
+            long nextUpdateTime;
+
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "RoutingTableTransmitter Running");
+
+            while (running) {
+
+                long now=  System.currentTimeMillis();
+
+                // dont need to do this every time, but how
+                nextUpdateTime = calcNextTableSendTime();
+
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run TIME: "+now + " nextUpdateTime: " + nextUpdateTime + " diff: " + (nextUpdateTime - now));
+
+                if (nextUpdateTime <= now) {
+                    //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Sending table");
+
+                    sendNextTable();
+                    continue;
+                }
+
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Waiting Until: "+ nextUpdateTime);
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "run Waiting For: "+ ((float)(nextUpdateTime-now))/1000);
+                //Logger.getLogger("log").logln(USR.ERROR, "Time now "+ now);
+
+                if (running) {
+                    waitUntil(nextUpdateTime);
+                }
+
+                //Logger.getLogger("log").logln(USR.ERROR, "Running is "+running);
+            }
 
 
-
-	/** Calculate when the next table send event is */
-	long calcNextTableSendTime() {
-	    synchronized (nextTableUpdateTime_) {
-		long now= System.currentTimeMillis();
-		long nextUpdateTime= now+options_.getMaxCheckTime();
-		nextUpdateIF_= null;
-		for (NetIF n : listNetIF()) {
-		    if (n.isLocal())
-			continue;
-		    Long next= nextTableUpdateTime_.get(n);
-		    if (next == null) {
-			//for whatever reason this is not in table -- add it
-			nextTableUpdateTime_.put(n,nextUpdateTime);
-			continue;
-		    }
-		    //Logger.getLogger("log").logln(USR.ERROR, "Considering update from "+n+" at time "+next);
-		    if (next < nextUpdateTime) {
-			//Logger.getLogger("log").logln(USR.ERROR, "Next update interface is now "+n);
-			nextUpdateTime= next;
-			nextUpdateIF_= n;
-		    }
-		}
-		//Logger.getLogger("log").logln(USR.ERROR, "Next event at "+nextUpdateTime+" from "+nextUpdateIF_);
-		return nextUpdateTime;
-	    }
-	}
-
-
-	/**
-	 * Notify
-	 */
-	public void informNewData() {
-	    synchronized (waitObj_) {
-		waitObj_.notify();
-	    }
-
-	}
-
-
-	/**
-	 * Wait until a specified absolute time is milliseconds.
-	 */
-	void waitUntil(long time){
-	    //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
-	    long now = System.currentTimeMillis();
-
-	    if (time <= now)
-		return;
-	    try {
-		long timeout = time - now + 1;
-
-		synchronized (waitObj_) {
-
-		    waitObj_.wait(timeout);
-
-		}
-
-	    } catch(InterruptedException e) {
-	    }
-	}
-
-
-	/** Now send a routing table */
-	void sendNextTable() {
-
-	    //Logger.getLogger("log").log(USR.EXTRA, "T");
-	    NetIF inter = nextUpdateIF_;
-
-	    if (inter == null) {
-		Logger.getLogger("log").logln(USR.ERROR, leadin() + "No table to send");
-
-		return;
-	    }
-	    synchronized (inter) {
-		long now= System.currentTimeMillis();
-
-		byte[] table;
-		synchronized (table_) {
-		    table= table_.toBytes();
-		}
-
-
-		if (table[0] != 'T') {
-		    Logger.getLogger("log").logln(USR.ERROR, leadin()+"Routing table does not start with 'T'");
-		    throw new Error("Bad Routing Table");
-		}
-
-		//Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table size " + table.length + " -> " + table_ + " for interface "+ inter);
-
-
-		Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, table);
-		datagram.setDstAddress(inter.getRemoteRouterAddress());
-		sendDatagram(datagram);
-
-		lastTableUpdateTime_.put(inter,now);
-		nextTableUpdateTime_.put(inter,now+options_.getMaxNetIFUpdateTime());
-		//Logger.getLogger("log").logln(USR.ERROR, "Next table update time"+nextUpdateTime_);
-	    }
-	}
+            //theEnd();
+        }
 
 
 
+        /** Calculate when the next table send event is */
+        long calcNextTableSendTime() {
+            synchronized (nextTableUpdateTime_) {
+                long now= System.currentTimeMillis();
+                long nextUpdateTime= now+options_.getMaxCheckTime();
+                nextUpdateIF_= null;
+                for (NetIF n : listNetIF()) {
+                    if (n.isLocal())
+                        continue;
+                    Long next= nextTableUpdateTime_.get(n);
+                    if (next == null) {
+                        //for whatever reason this is not in table -- add it
+                        nextTableUpdateTime_.put(n,nextUpdateTime);
+                        continue;
+                    }
+                    //Logger.getLogger("log").logln(USR.ERROR, "Considering update from "+n+" at time "+next);
+                    if (next < nextUpdateTime) {
+                        //Logger.getLogger("log").logln(USR.ERROR, "Next update interface is now "+n);
+                        nextUpdateTime= next;
+                        nextUpdateIF_= n;
+                    }
+                }
+                //Logger.getLogger("log").logln(USR.ERROR, "Next event at "+nextUpdateTime+" from "+nextUpdateIF_);
+                return nextUpdateTime;
+            }
+        }
 
-	/**
-	 * Stop the RoutingTableTransmitter
-	 */
-	public void terminate() {
-	    try {
-		running = false;
 
-		this.interrupt();
-	    } catch (Exception e) {
-		//Logger.getLogger("log").logln(USR.ERROR, "RoutingTableTransmitter: Exception in terminate() " + e);
-	    }
-	}
+        /**
+         * Notify
+         */
+        public void informNewData() {
+            synchronized (waitObj_) {
+                waitObj_.notify();
+            }
 
-	String leadin() {
-	    final String RF = "SRF.RTT ";
+        }
 
-	    RouterController controller = fabric.router.getRouterController();
 
-	    return controller.getName() + " " + RF;
-	}
+        /**
+         * Wait until a specified absolute time is milliseconds.
+         */
+        void waitUntil(long time){
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Wait until " + time);
+            long now = System.currentTimeMillis();
+
+            if (time <= now)
+                return;
+            try {
+                long timeout = time - now + 1;
+
+                synchronized (waitObj_) {
+
+                    waitObj_.wait(timeout);
+
+                }
+
+            } catch(InterruptedException e) {
+            }
+        }
+
+
+        /** Now send a routing table */
+        void sendNextTable() {
+
+            //Logger.getLogger("log").log(USR.EXTRA, "T");
+            NetIF inter = nextUpdateIF_;
+
+            if (inter == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "No table to send");
+
+                return;
+            }
+            synchronized (inter) {
+                long now= System.currentTimeMillis();
+
+                byte[] table;
+                synchronized (table_) {
+                    table= table_.toBytes();
+                }
+
+
+                if (table[0] != 'T') {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin()+"Routing table does not start with 'T'");
+                    throw new Error("Bad Routing Table");
+                }
+
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin() + now+" sending table size " + table.length + " -> " + table_ + " for interface "+ inter);
+
+
+                Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, table);
+                datagram.setDstAddress(inter.getRemoteRouterAddress());
+                sendDatagram(datagram);
+
+                lastTableUpdateTime_.put(inter,now);
+                nextTableUpdateTime_.put(inter,now+options_.getMaxNetIFUpdateTime());
+                //Logger.getLogger("log").logln(USR.ERROR, "Next table update time"+nextUpdateTime_);
+            }
+        }
+
+
+
+
+        /**
+         * Stop the RoutingTableTransmitter
+         */
+        public void terminate() {
+            try {
+                running = false;
+
+                this.interrupt();
+            } catch (Exception e) {
+                //Logger.getLogger("log").logln(USR.ERROR, "RoutingTableTransmitter: Exception in terminate() " + e);
+            }
+        }
+
+        String leadin() {
+            final String RF = "SRF.RTT ";
+
+            RouterController controller = fabric.router.getRouterController();
+
+            return controller.getName() + " " + RF;
+        }
 
     }
 

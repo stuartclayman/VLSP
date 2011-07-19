@@ -60,12 +60,12 @@ public interface ManagementConsole extends Runnable {
      * The state that the FSM of the ManagementConsole might get to.
      */
     enum FSMState {
-	STATE0,                  // state 0
-	START,                   // the ManagementConsole is starting
-	STOP,                    // the ManagementConsole is stopping
-	SELECTING,               // the ManagementConsole is in a select()
-	CONNECTING,              // the ManagementConsole is seetting up a new connection
-	PROCESSING               // the ManagementConsole is processing a command
+        STATE0,                  // state 0
+        START,                   // the ManagementConsole is starting
+        STOP,                    // the ManagementConsole is stopping
+        SELECTING,               // the ManagementConsole is in a select()
+        CONNECTING,              // the ManagementConsole is seetting up a new connection
+        PROCESSING               // the ManagementConsole is processing a command
     }
 
 }

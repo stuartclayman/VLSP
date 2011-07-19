@@ -42,65 +42,65 @@ public class StubServer2 implements NetIFListener {
 
 
     public StubServer2(int listenPort) throws IOException {
-	normal = new BitMask();
-	normal.set(1);
-	error = new BitMask();
-	error.set(2);
+        normal = new BitMask();
+        normal.set(1);
+        error = new BitMask();
+        error.set(2);
 
-	// allocate a new logger
-	logger = new Logger("log");
-	// tell it to output to stdout
-	// and tell it what to pick up
-	// it will actually output things where the log has bit 1 set
-	logger.addOutput(System.out, normal);
-	// tell it to output to stderr
-	// and tell it what to pick up
-	// it will actually output things where the log has bit 2 set
-	logger.addOutput(System.err, error);
-	datagramQueue_= new  LinkedBlockingQueue<Datagram> ();
+        // allocate a new logger
+        logger = new Logger("log");
+        // tell it to output to stdout
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 1 set
+        logger.addOutput(System.out, normal);
+        // tell it to output to stderr
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 2 set
+        logger.addOutput(System.err, error);
+        datagramQueue_= new  LinkedBlockingQueue<Datagram> ();
 
 
 
-	// initialise the socket
-	try {
-	    channel = ServerSocketChannel.open();
-	    serverSocket = channel.socket();
-	    serverSocket.bind(new InetSocketAddress(listenPort));
+        // initialise the socket
+        try {
+            channel = ServerSocketChannel.open();
+            serverSocket = channel.socket();
+            serverSocket.bind(new InetSocketAddress(listenPort));
 
-	    TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
+            TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
 
-	    netIF = new TCPNetIF(dst,this);
-	    netIF.connect();
-	    logger.log(error, "StubServer: Listening on port: " + listenPort + "\n");
-	} catch (IOException ioe) {
-	    logger.log(error, "StubServer: Cannot listen on port: " + listenPort + "\n");
-	    throw ioe;
-	}
+            netIF = new TCPNetIF(dst,this);
+            netIF.connect();
+            logger.log(error, "StubServer: Listening on port: " + listenPort + "\n");
+        } catch (IOException ioe) {
+            logger.log(error, "StubServer: Cannot listen on port: " + listenPort + "\n");
+            throw ioe;
+        }
     }
 
     /**
      * Can route a Datagram
      */
     public NetIF getRoute(Datagram d) {
-	return null;
+        return null;
     }
 
     /**
      * Fake interface
      */
     public FabricDevice getRouteFabric(Datagram d) throws NoRouteToHostException {
-	throw new NoRouteToHostException();
+        throw new NoRouteToHostException();
     }
 
     /** Accept all traffic*/
     public boolean ourAddress(Address a) {
-	return true;
+        return true;
     }
 
     public synchronized boolean datagramArrived(NetIF netIF, Datagram datagram) {
-	datagramQueue_.add(datagram);
-	notifyAll();
-	return true;
+        datagramQueue_.add(datagram);
+        notifyAll();
+        return true;
     }
 
 
@@ -119,93 +119,93 @@ public class StubServer2 implements NetIFListener {
      * Read stuff
      */
     void readALot() throws IOException {
-	Datagram datagram;
+        Datagram datagram;
 
-	Timer timer = new Timer();
-	TimerTask task = new TimerTask() {
-
-
-	    public void run() {
-		if (running) {
-		    diffs = count - lastTimeCount;
-		    Logger.getLogger("log").logln(USR.ERROR, "Task count: " + count + " diff: "  + diffs);
-		    lastTimeCount = count;
-		}
-	    }
-
-	    public boolean cancel() {
-		logger.log(error, "cancel @ " + count);
-		if (running) {
-		    running = false;
-		}
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
 
 
-		return running;
-	    }
+            public void run() {
+                if (running) {
+                    diffs = count - lastTimeCount;
+                    Logger.getLogger("log").logln(USR.ERROR, "Task count: " + count + " diff: "  + diffs);
+                    lastTimeCount = count;
+                }
+            }
 
-	    public long scheduledExecutionTime() {
-		logger.log(error, "scheduledExecutionTime:");
-		return 0;
-	    }
-	};
+            public boolean cancel() {
+                logger.log(error, "cancel @ " + count);
+                if (running) {
+                    running = false;
+                }
 
-	timer.schedule(task, 1000, 1000);
 
-	long t0 = System.currentTimeMillis();
-	synchronized (this) {
-	    while (running || datagramQueue_.size() > 0) {
-		// check if Protocol.CONTROL
-		datagram= datagramQueue_.poll();
-		if (datagram == null) {
-		    try {
-			wait();
-		    } catch (java.lang.InterruptedException e) {
+                return running;
+            }
 
-		    }
+            public long scheduledExecutionTime() {
+                logger.log(error, "scheduledExecutionTime:");
+                return 0;
+            }
+        };
 
-		    continue;
-		}
-		if (datagram.getProtocol() == Protocol.CONTROL) {
-		    Logger.getLogger("log").logln(USR.STDOUT, "Got control packet");
-		    break;
-		}
+        timer.schedule(task, 1000, 1000);
 
-		logger.log(normal, count + ". ");
-		logger.log(normal,
-		           "HL: " + datagram.getHeaderLength() +
-		           " TL: " + datagram.getTotalLength() +
-		           " From: " + datagram.getSrcAddress() +
-		           " To: " + datagram.getDstAddress() +
-		           ". ");
-		byte[] payload = datagram.getPayload();
+        long t0 = System.currentTimeMillis();
+        synchronized (this) {
+            while (running || datagramQueue_.size() > 0) {
+                // check if Protocol.CONTROL
+                datagram= datagramQueue_.poll();
+                if (datagram == null) {
+                    try {
+                        wait();
+                    } catch (java.lang.InterruptedException e) {
 
-		if (payload == null) {
-		    logger.log(normal, "No payload");
-		} else {
-		    logger.log(normal, new String(payload));
-		}
-		logger.log(normal, "\n");
+                    }
 
-		count++;
-	    }
-	}
-	long t1 = System.currentTimeMillis();
+                    continue;
+                }
+                if (datagram.getProtocol() == Protocol.CONTROL) {
+                    Logger.getLogger("log").logln(USR.STDOUT, "Got control packet");
+                    break;
+                }
 
-	long elapsed = t1 - t0;
-	int secs = (int) elapsed / 1000;
-	int millis = (int) elapsed % 1000;
+                logger.log(normal, count + ". ");
+                logger.log(normal,
+                           "HL: " + datagram.getHeaderLength() +
+                           " TL: " + datagram.getTotalLength() +
+                           " From: " + datagram.getSrcAddress() +
+                           " To: " + datagram.getDstAddress() +
+                           ". ");
+                byte[] payload = datagram.getPayload();
 
-	NumberFormat millisFormat = new DecimalFormat("000");
-	logger.log(error, "elapsed[" + count + "] = " + secs + ":" + millisFormat.format(millis) + "\n");
+                if (payload == null) {
+                    logger.log(normal, "No payload");
+                } else {
+                    logger.log(normal, new String(payload));
+                }
+                logger.log(normal, "\n");
 
-	timer.cancel();
+                count++;
+            }
+        }
+        long t1 = System.currentTimeMillis();
 
-	netIF.close();
+        long elapsed = t1 - t0;
+        int secs = (int) elapsed / 1000;
+        int millis = (int) elapsed % 1000;
+
+        NumberFormat millisFormat = new DecimalFormat("000");
+        logger.log(error, "elapsed[" + count + "] = " + secs + ":" + millisFormat.format(millis) + "\n");
+
+        timer.cancel();
+
+        netIF.close();
     }
 
     public static void main(String[] args) throws IOException {
-	StubServer2 server = new StubServer2(PORT_NUMBER);
+        StubServer2 server = new StubServer2(PORT_NUMBER);
 
-	server.readALot();
+        server.readALot();
     }
 }

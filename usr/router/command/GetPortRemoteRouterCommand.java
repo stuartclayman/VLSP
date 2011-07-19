@@ -21,58 +21,58 @@ public class GetPortRemoteRouterCommand extends RouterCommand {
      * Construct a GetPortRemoteRouterCommand
      */
     public GetPortRemoteRouterCommand() {
-	super(MCRP.GET_PORT_REMOTE_ROUTER.CMD, MCRP.GET_PORT_REMOTE_ROUTER.CODE, MCRP.GET_PORT_REMOTE_ROUTER.ERROR);
+        super(MCRP.GET_PORT_REMOTE_ROUTER.CMD, MCRP.GET_PORT_REMOTE_ROUTER.CODE, MCRP.GET_PORT_REMOTE_ROUTER.ERROR);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-	boolean result = true;
+        boolean result = true;
 
-	String rest = req.substring(MCRP.GET_PORT_REMOTE_ROUTER.CMD.length()).trim();
-	String[] parts = rest.split(" ");
+        String rest = req.substring(MCRP.GET_PORT_REMOTE_ROUTER.CMD.length()).trim();
+        String[] parts = rest.split(" ");
 
-	if (parts.length == 1) {
+        if (parts.length == 1) {
 
-	    String routerPortName = parts[0];
+            String routerPortName = parts[0];
 
-	    // find port
-	    String portNo;
+            // find port
+            String portNo;
 
-	    if (routerPortName.startsWith("port")) {
-		portNo = routerPortName.substring(4);
-	    } else {
-		portNo = routerPortName;
-	    }
+            if (routerPortName.startsWith("port")) {
+                portNo = routerPortName.substring(4);
+            } else {
+                portNo = routerPortName;
+            }
 
-	    Scanner scanner = new Scanner(portNo);
-	    int p = scanner.nextInt();
-	    RouterPort routerPort = controller.getPort(p);
+            Scanner scanner = new Scanner(portNo);
+            int p = scanner.nextInt();
+            RouterPort routerPort = controller.getPort(p);
 
-	    if (routerPort == null || routerPort == RouterPort.EMPTY) {
-		error(getName() + " invalid port " + routerPortName);
-	    }
+            if (routerPort == null || routerPort == RouterPort.EMPTY) {
+                error(getName() + " invalid port " + routerPortName);
+            }
 
-	    // get name on netIF in port
-	    NetIF netIF = routerPort.getNetIF();
-	    String name = netIF.getRemoteRouterName();
+            // get name on netIF in port
+            NetIF netIF = routerPort.getNetIF();
+            String name = netIF.getRemoteRouterName();
 
-	    if (name != null) {
-		result = success(name.toString());
-	    } else {
-		result = success("");
-	    }
+            if (name != null) {
+                result = success(name.toString());
+            } else {
+                result = success("");
+            }
 
-	} else {
-	    error(getName() + " wrong no of args ");
-	}
+        } else {
+            error(getName() + " wrong no of args ");
+        }
 
-	if (!result) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " failed");
-	}
+        if (!result) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " failed");
+        }
 
-	return result;
+        return result;
     }
 
 }

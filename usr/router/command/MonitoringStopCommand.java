@@ -17,17 +17,17 @@ public class MonitoringStopCommand extends RouterCommand {
      * Construct a MonitoringStopCommand
      */
     public MonitoringStopCommand() {
-	super(MCRP.MONITORING_STOP.CMD, MCRP.MONITORING_STOP.CODE, MCRP.ERROR.CODE);
+        super(MCRP.MONITORING_STOP.CMD, MCRP.MONITORING_STOP.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-	controller.stopMonitoring();
+        controller.stopMonitoring();
 
-	boolean result = success("Monitoring Stopped");
+        boolean result = success("Monitoring Stopped");
 
-	return result;
+        return result;
     }
 }

@@ -18,15 +18,15 @@ public class ApplicationResponse {
      * Construct an ApplicationResponse
      */
     public ApplicationResponse(boolean b, String s) {
-	result = b;
-	msg = s;
+        result = b;
+        msg = s;
     }
 
     /**
      * Is the response a success.
      */
     public boolean isSuccess() {
-	return result;
+        return result;
     }
 
 
@@ -34,6 +34,6 @@ public class ApplicationResponse {
      * Get the message.
      */
     public String getMessage() {
-	return msg;
+        return msg;
     }
 }

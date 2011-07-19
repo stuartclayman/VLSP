@@ -14,105 +14,105 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     NetIF inter_;
 
     SimpleRoutingTableEntry(Address addr, int cost, NetIF inter) {
-	address_= addr;
-	cost_= cost;
-	inter_= inter;
+        address_= addr;
+        cost_= cost;
+        inter_= inter;
     }
 
     SimpleRoutingTableEntry(byte [] tableEntry, NetIF inter)
     throws Exception
     {
-	if (tableEntry.length < 8) {
-	    throw new Exception
-	        ("Byte array received to construct routing table too short");
-	}
-	ByteBuffer wrapper = ByteBuffer.wrap(tableEntry);
+        if (tableEntry.length < 8) {
+            throw new Exception
+                ("Byte array received to construct routing table too short");
+        }
+        ByteBuffer wrapper = ByteBuffer.wrap(tableEntry);
 
-	// get correct no of bytes for an address
-	int totalLength = tableEntry.length;
-	int costStart = totalLength - 4;
+        // get correct no of bytes for an address
+        int totalLength = tableEntry.length;
+        int costStart = totalLength - 4;
 
-	//System.err.println("SimpleRoutingTableEntry: tableEntry size = " + totalLength);
+        //System.err.println("SimpleRoutingTableEntry: tableEntry size = " + totalLength);
 
-	// suck out the address
-	byte[] addr = new byte[costStart];
-	wrapper.get(addr);
-	address_ = AddressFactory.newAddress(addr);
+        // suck out the address
+        byte[] addr = new byte[costStart];
+        wrapper.get(addr);
+        address_ = AddressFactory.newAddress(addr);
 
-	// now get the cost
-	wrapper.position(costStart);
-	cost_ = wrapper.getInt();
-	inter_= inter;
-	//System.err.println("NEW ENTRY CREATED "+toString());
+        // now get the cost
+        wrapper.position(costStart);
+        cost_ = wrapper.getInt();
+        inter_= inter;
+        //System.err.println("NEW ENTRY CREATED "+toString());
     }
 
 
 
     public Address getAddress() {
-	return address_;
+        return address_;
     }
 
     public NetIF getNetIF() {
-	return inter_;
+        return inter_;
     }
 
     /** Setter function for network interface */
     public void setNetIF(NetIF i) {
-	inter_= i;
+        inter_= i;
     }
 
     public int getCost() {
-	return cost_;
+        return cost_;
     }
 
     void setCost(int cost)
     {
-	cost_= cost;
+        cost_= cost;
     }
 
     /**
      * Get an Address as String representation of an Integer
      */
     String addressAsString(Address addr) {
-	/*
-	   int id = addr.asInteger();
-	   return Integer.toString(id);
-	 */
-	return addr.asTransmitForm();
+        /*
+           int id = addr.asInteger();
+           return Integer.toString(id);
+         */
+        return addr.asTransmitForm();
     }
 
     /**
      * The size in bytes of a RoutingTableEntry.
      */
     public int size() {
-	// the size of the address, plus 4 for the cost
-	return address_.asByteArray().length + 4;
+        // the size of the address, plus 4 for the cost
+        return address_.asByteArray().length + 4;
     }
 
     /**
      * Transform as SimpleRoutingTableEntry into a byte[]
      */
     public byte [] toBytes() {
-	byte [] bytes= new byte[size()];
-	ByteBuffer b= ByteBuffer.wrap(bytes);
-	// copy in the address
-	b.put(address_.asByteArray());
-	b.putInt(cost_);
-	return bytes;
+        byte [] bytes= new byte[size()];
+        ByteBuffer b= ByteBuffer.wrap(bytes);
+        // copy in the address
+        b.put(address_.asByteArray());
+        b.putInt(cost_);
+        return bytes;
     }
 
     /** Entry represented as string */
     public String toString() {
-	String entry ="[ ";
-	if (inter_ == null) {
-	    entry += addressAsString(address_) + " " + cost_+ " nullIF";
-	} else {
-	    entry += addressAsString(address_) + " " + cost_ + " IF: " + inter_.getName();
-	}
+        String entry ="[ ";
+        if (inter_ == null) {
+            entry += addressAsString(address_) + " " + cost_+ " nullIF";
+        } else {
+            entry += addressAsString(address_) + " " + cost_ + " IF: " + inter_.getName();
+        }
 
-	entry += " ]";
-	//Logger.getLogger("log").logln(USR.ERROR, "ENTRY: "+entry);
-	return entry;
+        entry += " ]";
+        //Logger.getLogger("log").logln(USR.ERROR, "ENTRY: "+entry);
+        return entry;
     }
 
 }

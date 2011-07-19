@@ -20,79 +20,79 @@ public class GetRouterStatsCommand extends GlobalCommand implements Callable<Boo
      * Construct a GetRouterStatsCommand.
      */
     public GetRouterStatsCommand() {
-	super(MCRP.GET_ROUTER_STATS.CMD, MCRP.GET_ROUTER_STATS.CODE, MCRP.ERROR.ERROR);
+        super(MCRP.GET_ROUTER_STATS.CMD, MCRP.GET_ROUTER_STATS.CODE, MCRP.ERROR.ERROR);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-	request = req;
+        request = req;
 
-	// create an Executor pool
-	ExecutorService pool = Executors.newCachedThreadPool();
+        // create an Executor pool
+        ExecutorService pool = Executors.newCachedThreadPool();
 
-	// run GET_ROUTER_STATS collection in separate thread
-	Future<Boolean> future = pool.submit(this);
+        // run GET_ROUTER_STATS collection in separate thread
+        Future<Boolean> future = pool.submit(this);
 
-	// wait for result
-	boolean result = false;
+        // wait for result
+        boolean result = false;
 
-	try {
-	    result = future.get(); // use future
-	} catch (ExecutionException ex) {
-	    error("GetRouterStatsCommand: ExecutionException " + ex);
-	} catch (InterruptedException ie) {
-	    error("GetRouterStatsCommand: InterruptedException " + ie);
-	}
+        try {
+            result = future.get(); // use future
+        } catch (ExecutionException ex) {
+            error("GetRouterStatsCommand: ExecutionException " + ex);
+        } catch (InterruptedException ie) {
+            error("GetRouterStatsCommand: InterruptedException " + ie);
+        }
 
-	// shutdown pool
-	pool.shutdown();
+        // shutdown pool
+        pool.shutdown();
 
-	return result;
+        return result;
     }
 
     public Boolean call() {
-	// the result list
-	List<String> list;
+        // the result list
+        List<String> list;
 
-	// get arg for specified router
-	String [] args= request.split(" ");
+        // get arg for specified router
+        String [] args= request.split(" ");
 
-	if (args.length == 1) {
-	    // no args so get data for all routers
+        if (args.length == 1) {
+            // no args so get data for all routers
 
-	    // Get controller to do the work
-	    // and get stats for the router
-	    list = controller.getRouterStats();
+            // Get controller to do the work
+            // and get stats for the router
+            list = controller.getRouterStats();
 
-	    if (list == null) {
-		// no routers
-		error("No routers on this GlobalController");
-		return true;
-	    }
+            if (list == null) {
+                // no routers
+                error("No routers on this GlobalController");
+                return true;
+            }
 
-	} else {
-	    error("Expected GET_ROUTER_STATS");
-	    return false;
-	}
+        } else {
+            error("Expected GET_ROUTER_STATS");
+            return false;
+        }
 
 
 
-	// now return the list
-	int size = list.size();
+        // now return the list
+        int size = list.size();
 
-	for (String stat : list) {
-	    list(stat);
-	}
+        for (String stat : list) {
+            list(stat);
+        }
 
-	boolean result = success("END " + size);
+        boolean result = success("END " + size);
 
-	if (!result) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "GET_ROUTER_STATS response failed");
-	}
+        if (!result) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "GET_ROUTER_STATS response failed");
+        }
 
-	return result;
+        return result;
 
     }
 }

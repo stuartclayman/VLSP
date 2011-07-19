@@ -99,7 +99,7 @@ public class RouterController implements ComponentController, Runnable {
      * The Router to Router connections listens on port + 1.
      */
     public RouterController(Router router,  RouterOptions o, int port) {
-	this(router, o, port, port + 1);
+        this(router, o, port, port + 1);
     }
 
     /**
@@ -110,32 +110,32 @@ public class RouterController implements ComponentController, Runnable {
     public RouterController(Router router, RouterOptions o,
                             int mPort, int r2rPort) {
 
-	options_= o;
-	this.router = router;
+        options_= o;
+        this.router = router;
 
-	name = "Router-" + mPort + "-" + r2rPort;
+        name = "Router-" + mPort + "-" + r2rPort;
 
-	myAddress = AddressFactory.newAddress(name.hashCode());
+        myAddress = AddressFactory.newAddress(name.hashCode());
 
-	this.managementConsolePort = mPort;
-	// delegate listening of commands to a ManagementConsole object
-	management = new RouterManagementConsole(this, mPort);
-	newConnectionPort = r2rPort;
-	// delegate listening for new connections to RouterConnections object
-	connections = new RouterConnections(this, r2rPort);
-	connectionCount = 0;
-	// a map of NetIFs
-	tempNetIFMap = new HashMap<Integer, NetIF>();
-	// Set up info for AP management
-	//System.out.println("Construct AP Controller");
-	apController_= ConstructAPController.constructAPController
-	                   (options_);
-	apInfo_= apController_.newAPInfo();
+        this.managementConsolePort = mPort;
+        // delegate listening of commands to a ManagementConsole object
+        management = new RouterManagementConsole(this, mPort);
+        newConnectionPort = r2rPort;
+        // delegate listening for new connections to RouterConnections object
+        connections = new RouterConnections(this, r2rPort);
+        connectionCount = 0;
+        // a map of NetIFs
+        tempNetIFMap = new HashMap<Integer, NetIF>();
+        // Set up info for AP management
+        //System.out.println("Construct AP Controller");
+        apController_= ConstructAPController.constructAPController
+                           (options_);
+        apInfo_= apController_.newAPInfo();
 
-	// setup DataSource
-	dataSource = new BasicDataSource(name + ".dataSource");
-	// and probe
-	probe = new NetIFStatsProbe(this);
+        // setup DataSource
+        dataSource = new BasicDataSource(name + ".dataSource");
+        // and probe
+        probe = new NetIFStatsProbe(this);
 
     }
 
@@ -143,7 +143,7 @@ public class RouterController implements ComponentController, Runnable {
      * Get the name of this RouterController.
      */
     public String getName() {
-	return name;
+        return name;
     }
 
     /**
@@ -153,12 +153,12 @@ public class RouterController implements ComponentController, Runnable {
      * @return false if the name cannot be set
      */
     public boolean setName(String name) {
-	if (connectionCount == 0) {
-	    this.name = name;
-	    return true;
-	} else {
-	    return false;
-	}
+        if (connectionCount == 0) {
+            this.name = name;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -166,7 +166,7 @@ public class RouterController implements ComponentController, Runnable {
      * This is a special featrue for where the router has its own address.
      */
     public Address getAddress() {
-	return myAddress;
+        return myAddress;
     }
 
     /**
@@ -174,113 +174,113 @@ public class RouterController implements ComponentController, Runnable {
      * This is a special feature where the router itself has its own address.
      */
     public boolean setAddress(Address addr) {
-	if (connectionCount == 0) {
-	    myAddress = addr;
-	    return true;
-	} else {
-	    return false;
-	}
+        if (connectionCount == 0) {
+            myAddress = addr;
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
     /** The address for the router can be set only if it has
        not been set before and the router has no connections*/
     public boolean canSetAddress() {
-	if (addressSet_ == true)
-	    return false;
-	if (connectionCount > 0)
-	    return false;
-	return true;
+        if (addressSet_ == true)
+            return false;
+        if (connectionCount > 0)
+            return false;
+        return true;
     }
 
     /**
      * Get the no of connections that have been made.
      */
     public int getConnectionCount() {
-	return connectionCount;
+        return connectionCount;
     }
 
     /**
      * Get the port for the ManagementConsole.
      */
     public int getManagementConsolePort() {
-	return managementConsolePort;
+        return managementConsolePort;
     }
 
     /**
      * Get the port for the connection port
      */
     public int getConnectionPort() {
-	return newConnectionPort;
+        return newConnectionPort;
     }
 
     /**
      * Get the ManagementConsole.
      */
     public ManagementConsole getManagementConsole() {
-	return management;
+        return management;
     }
 
     /**
      * Start me up.
      */
     public boolean start() {
-	Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
-	// start my own thread
-	myThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
-	running = true;
-	myThread.start();
+        // start my own thread
+        myThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
+        running = true;
+        myThread.start();
 
-	// start router to router connections listener
-	boolean startedC = connections.start();
+        // start router to router connections listener
+        boolean startedC = connections.start();
 
-	// start management console listener
-	boolean startedL = management.start();
+        // start management console listener
+        boolean startedL = management.start();
 
-	return startedL && startedC;
+        return startedL && startedC;
     }
 
     /**
      * Stop the RouterController.
      */
     public boolean stop() {
-	Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
-	// stop applications
-	stopApplications();
+        // stop applications
+        stopApplications();
 
-	// stop the dataSource and associated probe
-	if (dataSource.isConnected()) {
-	    probe.lastMeasurement();
-	    stopMonitoring();
-	}
+        // stop the dataSource and associated probe
+        if (dataSource.isConnected()) {
+            probe.lastMeasurement();
+            stopMonitoring();
+        }
 
-	// stop the management console listener
-	//System.err.println("Management stop");
-	boolean stoppedL = management.stop();
-	//System.err.println("Connection stop");
-	// stop the router to router connections
-	boolean stoppedC = connections.stop();
+        // stop the management console listener
+        //System.err.println("Management stop");
+        boolean stoppedL = management.stop();
+        //System.err.println("Connection stop");
+        // stop the router to router connections
+        boolean stoppedC = connections.stop();
 
-	// stop my own thread
-	running = false;
+        // stop my own thread
+        running = false;
 
-	myThread.interrupt();
+        myThread.interrupt();
 
-	// wait for myself
-	try {
-	    myThread.join();
-	} catch (InterruptedException ie) {
-	    // Logger.getLogger("log").logln(USR.ERROR, "RouterController: stop - InterruptedException for myThread join on " + myThread);
-	}
+        // wait for myself
+        try {
+            myThread.join();
+        } catch (InterruptedException ie) {
+            // Logger.getLogger("log").logln(USR.ERROR, "RouterController: stop - InterruptedException for myThread join on " + myThread);
+        }
 
-	return stoppedL && stoppedC;
+        return stoppedL && stoppedC;
     }
 
     /** Shut down the router from internal message from console -- pass the message up to the router object */
     public void shutDown() {
-	router.stop();
+        router.stop();
     }
 
 
@@ -295,68 +295,68 @@ public class RouterController implements ComponentController, Runnable {
      *
      */
     public void run() {
-	// get a handle on the Listener Queue
-	BlockingQueue<Request> queue = management.queue();
+        // get a handle on the Listener Queue
+        BlockingQueue<Request> queue = management.queue();
 
-	// create an Executor pool
-	ExecutorService pool = Executors.newCachedThreadPool();  // WAS newFixedThreadPool(3);
-	long now= System.currentTimeMillis();
-	long next= now + options_.getRouterConsiderTime();
-	boolean shutDown= false;
-	while (running) {
-	    try {
-		now= System.currentTimeMillis();
-		if (now >= next) {
-		    next+= options_.getRouterConsiderTime();
-		    apController_.routerUpdate(this);
-		}
-		// we check the RouterListener queue for commands
-		Request nextRequest = queue.poll(next-now,TimeUnit.MILLISECONDS);
-		if (nextRequest == null)
-		    continue;
-		String value = nextRequest.value;
+        // create an Executor pool
+        ExecutorService pool = Executors.newCachedThreadPool();  // WAS newFixedThreadPool(3);
+        long now= System.currentTimeMillis();
+        long next= now + options_.getRouterConsiderTime();
+        boolean shutDown= false;
+        while (running) {
+            try {
+                now= System.currentTimeMillis();
+                if (now >= next) {
+                    next+= options_.getRouterConsiderTime();
+                    apController_.routerUpdate(this);
+                }
+                // we check the RouterListener queue for commands
+                Request nextRequest = queue.poll(next-now,TimeUnit.MILLISECONDS);
+                if (nextRequest == null)
+                    continue;
+                String value = nextRequest.value;
 
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + " Controller processing nextRequest = " + nextRequest);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + " Controller processing nextRequest = " + nextRequest);
 
-		// now process the next request
-		if (value.startsWith("CREATE_CONNECTION")) {
-		    // incr connection count
-		    connectionCount++;
+                // now process the next request
+                if (value.startsWith("CREATE_CONNECTION")) {
+                    // incr connection count
+                    connectionCount++;
 
-		    pool.execute(new CreateConnection(this, nextRequest));
+                    pool.execute(new CreateConnection(this, nextRequest));
 
-		} else if (value.startsWith("END_LINK")) {
-		    // do not decrease connectionCount, it MUST only increase
-		    pool.execute(new EndLink(this,nextRequest));
+                } else if (value.startsWith("END_LINK")) {
+                    // do not decrease connectionCount, it MUST only increase
+                    pool.execute(new EndLink(this,nextRequest));
 
-		}
-		else {
-		    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown request " + nextRequest);
-		}
+                }
+                else {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown request " + nextRequest);
+                }
 
 
-	    } catch (InterruptedException ie) {
-		//Logger.getLogger("log").logln(USR.ERROR, leadin() + "BlockingQueue: interrupt " + ie);
-	    }
-	}
-	// System.err.println("Pool stop");
-	pool.shutdown();
+            } catch (InterruptedException ie) {
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "BlockingQueue: interrupt " + ie);
+            }
+        }
+        // System.err.println("Pool stop");
+        pool.shutdown();
     }
 
 
     /** Return a routing table as a string */
     public RoutingTable getRoutingTable() {
-	return router.getRoutingTable();
+        return router.getRoutingTable();
     }
 
     /**
      * Keep a handle on a NetIF created from INCOMING_CONNECTION
      */
     synchronized void registerTemporaryNetIF(NetIF netIF) {
-	int id = netIF.getID();
+        int id = netIF.getID();
 
-	Logger.getLogger("log").logln(USR.STDOUT, leadin() + "temporary addNetIF " + id + " for " + netIF);
-	tempNetIFMap.put(id, netIF);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "temporary addNetIF " + id + " for " + netIF);
+        tempNetIFMap.put(id, netIF);
 
     }
 
@@ -364,27 +364,27 @@ public class RouterController implements ComponentController, Runnable {
      * Find a NetIF by an id.
      */
     public synchronized NetIF getTemporaryNetIFByID(int id) {
-	//Logger.getLogger("log").logln(USR.ERROR, leadin() + "getNetIF " + id);
-	return tempNetIFMap.get(id);
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "getNetIF " + id);
+        return tempNetIFMap.get(id);
     }
 
     /**
      * List all the temporary connections held by the Controller
      */
     synchronized Collection<NetIF> listTempNetIF() {
-	return tempNetIFMap.values();
+        return tempNetIFMap.values();
     }
 
     /**
      * Plug a NetIF into the RouterFabric
      */
     public RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
-	RouterPort rp = router.plugInNetIF(netIF);
-	//Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
+        RouterPort rp = router.plugInNetIF(netIF);
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
 
-	tempNetIFMap.remove(netIF.getID());
+        tempNetIFMap.remove(netIF.getID());
 
-	return rp;
+        return rp;
     }
 
     /**
@@ -393,18 +393,18 @@ public class RouterController implements ComponentController, Runnable {
      * It returns app_name ~= /Router-1/App/class.blah.Blah/1
      */
     public synchronized ApplicationResponse appStart(String commandstr) {
-	String[] split= commandstr.split(" ");
+        String[] split= commandstr.split(" ");
 
-	if (split.length == 0)  {
-	    return new ApplicationResponse(false, "appStart needs application class name");
-	} else {
-	    String className = split[0].trim();
+        if (split.length == 0)  {
+            return new ApplicationResponse(false, "appStart needs application class name");
+        } else {
+            String className = split[0].trim();
 
-	    String rest = commandstr.substring(className.length()).trim();
-	    String[] args= rest.split(" ");
+            String rest = commandstr.substring(className.length()).trim();
+            String[] args= rest.split(" ");
 
-	    return ApplicationManager.startApp(className, args);
-	}
+            return ApplicationManager.startApp(className, args);
+        }
     }
 
     /**
@@ -412,14 +412,14 @@ public class RouterController implements ComponentController, Runnable {
      * It takes an app name
      */
     public synchronized ApplicationResponse appStop(String commandstr) {
-	String [] split= commandstr.split(" ");
-	if (split.length == 0) {
-	    return new ApplicationResponse(false, "appStop needs application name");
-	} else {
-	    String appName = split[0].trim();
+        String [] split= commandstr.split(" ");
+        if (split.length == 0) {
+            return new ApplicationResponse(false, "appStop needs application name");
+        } else {
+            String appName = split[0].trim();
 
-	    return ApplicationManager.stopApp(appName);
-	}
+            return ApplicationManager.stopApp(appName);
+        }
     }
 
     /**
@@ -427,164 +427,164 @@ public class RouterController implements ComponentController, Runnable {
      * It takes an app name
      */
     public Collection<ApplicationHandle> appList() {
-	return ApplicationManager.listApps();
+        return ApplicationManager.listApps();
     }
 
     /** Stop running applications if any */
     void stopApplications () {
-	ApplicationManager.stopAll();
+        ApplicationManager.stopAll();
     }
 
 
     /** Access the listener */
     public NetIFListener getListener() {
-	return router.getListener();
+        return router.getListener();
     }
 
     /** run a particular command on a router*/
     public ApplicationResponse runCommand(String commandstr) {
-	String [] split= commandstr.split(" ");
-	if (split.length == 0)
-	    return new ApplicationResponse(false, "No command specified");
+        String [] split= commandstr.split(" ");
+        if (split.length == 0)
+            return new ApplicationResponse(false, "No command specified");
 
-	String command= split[0].trim();
-	String rest = commandstr.substring(command.length()).trim();
+        String command= split[0].trim();
+        String rest = commandstr.substring(command.length()).trim();
 
-	ApplicationResponse response;
+        ApplicationResponse response;
 
-	if (command.equals("PING")) {
-	    response = appStart("usr.applications.Ping " + rest);
-	} else {
-	    return new ApplicationResponse(false, "Unknown command " + command);
-	}
+        if (command.equals("PING")) {
+            response = appStart("usr.applications.Ping " + rest);
+        } else {
+            return new ApplicationResponse(false, "Unknown command " + command);
+        }
 
-	return response;
+        return response;
 
     }
 
     /** Try to ping router with a given Address */
     public boolean ping(Address addr){
-	return router.ping(addr);
+        return router.ping(addr);
     }
 
 
     /** Try to echo to a router with a given Address */
     public boolean echo(Address addr){
-	return router.echo(addr);
+        return router.echo(addr);
     }
 
     /**
      * Get the local NetIF that has the sockets.
      */
     public NetIF getLocalNetIF() {
-	return router.getLocalNetIF();
+        return router.getLocalNetIF();
     }
 
     /**
      * Get port N.
      */
     public RouterPort getPort(int p) {
-	return router.getPort(p);
+        return router.getPort(p);
     }
 
     /**
      * Get a list of all the ports with Network Interfaces.
      */
     public List<RouterPort> listPorts() {
-	return router.listPorts();
+        return router.listPorts();
     }
 
     /** Return the netIF associated with a certain router name
      */
     public NetIF findNetIF(String rName) {
-	NetIF net= router.findNetIF(rName);
-	if (net == null) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin()+" cannot find connection to "+ rName);
-	}
-	return net;
+        NetIF net= router.findNetIF(rName);
+        if (net == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+" cannot find connection to "+ rName);
+        }
+        return net;
     }
 
     /** Remove a NetIF */
     public void removeNetIF(NetIF n) {
-	router.removeNetIF(n);
+        router.removeNetIF(n);
     }
 
     /** Read a string containing router options */
     public boolean readOptionsString(String str)
     {
-	return router.readOptionsString(str);
+        return router.readOptionsString(str);
     }
 
     /** Read a file containing router options */
 
     public boolean readOptionsFile(String fName)
     {
-	return router.readOptionsFile(fName);
+        return router.readOptionsFile(fName);
     }
 
     /** Set the aggregation point for this router */
     public synchronized void setAP(int gid, int ap)
 
     {
-	if (ap == ap_)    // No change to AP
-	    return;
+        if (ap == ap_)    // No change to AP
+            return;
 
-	if (monGenName_ != null) { // stop previous monitoring generator
-	    //System.err.println("APP STOP");
-	    appStop(monGenName_);
+        if (monGenName_ != null) { // stop previous monitoring generator
+            //System.err.println("APP STOP");
+            appStop(monGenName_);
 
-	}
+        }
 
-	if (gid == ap) {  // If this is becoming an AP then start an AP
-	    startAP(ap);
-	} else if (ap_ == gid) { // If this WAS an AP and is no longer then stop an AP
-	    stopAP();
-	}
-	ap_= ap;
+        if (gid == ap) {  // If this is becoming an AP then start an AP
+            startAP(ap);
+        } else if (ap_ == gid) { // If this WAS an AP and is no longer then stop an AP
+            stopAP();
+        }
+        ap_= ap;
 
-	// Now start an info source pointing at the new AP.
-	String command= new String("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-	                           "/3000 -t 1 -d 3");
-	command+= (" -p "+options_.getMonType());    // What type of data do we monitor
-	command+= (" -n info-source-"+gid+"-"+isCount_);  // Make source name unique
-	if (options_.getAPFilter() != null) {
-	    command+= (" -f "+options_.getAPFilter());             // Filter output
-	}
-	if (options_.getAPOutputPath() != null) {
-	    command+= " -l "+ options_.getAPOutputPath();
-	}
-	ApplicationResponse resp= appStart(command);
-	// WAS "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
-	isCount_++;
-	monGenName_= resp.getMessage();
-	//System.err.println("NEW NAME "+monGenName_);
-	Logger.getLogger("log").logln(USR.STDOUT,leadin()+" now has aggregation point "+ap);
+        // Now start an info source pointing at the new AP.
+        String command= new String("plugins_usr.aggregator.appl.InfoSource -o "+ap+
+                                   "/3000 -t 1 -d 3");
+        command+= (" -p "+options_.getMonType());    // What type of data do we monitor
+        command+= (" -n info-source-"+gid+"-"+isCount_);  // Make source name unique
+        if (options_.getAPFilter() != null) {
+            command+= (" -f "+options_.getAPFilter());             // Filter output
+        }
+        if (options_.getAPOutputPath() != null) {
+            command+= " -l "+ options_.getAPOutputPath();
+        }
+        ApplicationResponse resp= appStart(command);
+        // WAS "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
+        isCount_++;
+        monGenName_= resp.getMessage();
+        //System.err.println("NEW NAME "+monGenName_);
+        Logger.getLogger("log").logln(USR.STDOUT,leadin()+" now has aggregation point "+ap);
 
     }
 
     /** This node starts as an AP */
     public void startAP(int gid) {
-	synchronized (this) {
-	    System.out.println(leadin()+" has become an AP");
-	    String command= new String("plugins_usr.aggregator.appl.AggPoint -i 0/3000 -t 5 -a average");
-	    command+= (" -n agg-point-"+gid+"-"+apCount_);
-	    if (options_.getAPOutputPath() != null) {
-		command+= " -l "+ options_.getAPOutputPath();
-	    }
-	    ApplicationResponse resp= appStart(command);
-	    // WAS " -t 5 -a average -n agg-point-"+gid+"-"+apCount_);
-	    apCount_++;
-	    apName_= resp.getMessage();
-	}
+        synchronized (this) {
+            System.out.println(leadin()+" has become an AP");
+            String command= new String("plugins_usr.aggregator.appl.AggPoint -i 0/3000 -t 5 -a average");
+            command+= (" -n agg-point-"+gid+"-"+apCount_);
+            if (options_.getAPOutputPath() != null) {
+                command+= " -l "+ options_.getAPOutputPath();
+            }
+            ApplicationResponse resp= appStart(command);
+            // WAS " -t 5 -a average -n agg-point-"+gid+"-"+apCount_);
+            apCount_++;
+            apName_= resp.getMessage();
+        }
     }
 
     /** This node stops as an AP*/
     public void stopAP() {
-	synchronized (this) {
-	    System.out.println(leadin()+" has stopped being an AP");
-	    appStop(apName_);
-	    apName_ = null;
-	}
+        synchronized (this) {
+            System.out.println(leadin()+" has stopped being an AP");
+            appStop(apName_);
+            apName_ = null;
+        }
     }
 
 
@@ -599,29 +599,29 @@ public class RouterController implements ComponentController, Runnable {
      * sets the initial gap between transmits at every 'when' seconds.
      */
     public synchronized void startMonitoring(InetSocketAddress addr, int when) {
-	// check to see if the monitoring is already connected and running
-	if (dataSource.isConnected()) {
-	    // if it is, stop it first
-	    stopMonitoring();
-	}
+        // check to see if the monitoring is already connected and running
+        if (dataSource.isConnected()) {
+            // if it is, stop it first
+            stopMonitoring();
+        }
 
-	// set up DataPlane
-	DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
-	dataSource.setDataPlane(outputDataPlane);
+        // set up DataPlane
+        DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
+        dataSource.setDataPlane(outputDataPlane);
 
-	// set up probe
-	probe.setName(getName() + ".netIFStatsProbe");
-	probe.setDataRate(new EveryNSeconds(when));
+        // set up probe
+        probe.setName(getName() + ".netIFStatsProbe");
+        probe.setDataRate(new EveryNSeconds(when));
 
-	// turn on probe
-	dataSource.addProbe(probe);  // this does registerProbe and activateProbe
+        // turn on probe
+        dataSource.addProbe(probe);  // this does registerProbe and activateProbe
 
-	// and connect
-	dataSource.connect();
+        // and connect
+        dataSource.connect();
 
-	Logger.getLogger("log").logln(USR.STDOUT, leadin() + "setup data source: " +  dataSource.getName() + " with probe " + probe.getName());
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "setup data source: " +  dataSource.getName() + " with probe " + probe.getName());
 
-	dataSource.turnOnProbe(probe);
+        dataSource.turnOnProbe(probe);
 
     }
 
@@ -629,31 +629,31 @@ public class RouterController implements ComponentController, Runnable {
      * Pause monitoring
      */
     public synchronized void pauseMonitoring() {
-	if (dataSource.isProbeOn(probe)) {
-	    dataSource.turnOffProbe(probe);
-	}
+        if (dataSource.isProbeOn(probe)) {
+            dataSource.turnOffProbe(probe);
+        }
     }
 
     /**
      * Resume monitoring
      */
     public synchronized void resumeMonitoring() {
-	if (!dataSource.isProbeOn(probe)) {
-	    dataSource.turnOnProbe(probe);
-	}
+        if (!dataSource.isProbeOn(probe)) {
+            dataSource.turnOnProbe(probe);
+        }
     }
 
     /**
      * Stop monitoring.
      */
     public synchronized void stopMonitoring() {
-	if (dataSource.isConnected()) {
-	    pauseMonitoring();
+        if (dataSource.isConnected()) {
+            pauseMonitoring();
 
-	    dataSource.removeProbe(probe);
+            dataSource.removeProbe(probe);
 
-	    dataSource.disconnect();
-	}
+            dataSource.disconnect();
+        }
 
     }
 
@@ -661,9 +661,9 @@ public class RouterController implements ComponentController, Runnable {
      * Create the String to print out before a message
      */
     String leadin() {
-	final String RC = "RC: ";
+        final String RC = "RC: ";
 
-	return getName() + " " + RC;
+        return getName() + " " + RC;
     }
 
 

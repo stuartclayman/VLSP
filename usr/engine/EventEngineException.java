@@ -4,10 +4,10 @@ package usr.engine;
 public class EventEngineException extends Exception
 {
     public EventEngineException() {
-	super();
+        super();
     }
 
     public EventEngineException(String message) {
-	super(message);
+        super(message);
     }
 }

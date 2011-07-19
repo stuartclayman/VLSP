@@ -11,20 +11,20 @@ public class MCRPNoConnectionException extends MCRPException {
      * Construct a MCRPNoConnectionException
      */
     public MCRPNoConnectionException() {
-	super();
+        super();
     }
 
     /**
      * Construct a MCRPNoConnectionException with a message
      */
     public MCRPNoConnectionException(String s) {
-	super(s);
+        super(s);
     }
 
     /**
      * Construct a MCRPNoConnectionException with a throwable
      */
     public MCRPNoConnectionException(Throwable t) {
-	super(t);
+        super(t);
     }
 }

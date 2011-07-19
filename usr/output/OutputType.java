@@ -30,143 +30,143 @@ public class OutputType {
 
     /** Accessor for output type */
     public int getType() {
-	return outputType_;
+        return outputType_;
     }
 
     /** Set type from string*/
     public void setType(String t) throws java.lang.IllegalArgumentException {
 
-	if (t.equals("Network")) {
-	    outputType_= OUTPUT_NETWORK;
-	    return;
-	}
-	if (t.equals("Summary")) {
-	    outputType_= OUTPUT_SUMMARY;
-	    return;
-	}
-	if (t.equals("Traffic")) {
-	    outputType_= OUTPUT_TRAFFIC;
-	    return;
-	}
-	throw new java.lang.IllegalArgumentException("Cannot parse Type "+t);
+        if (t.equals("Network")) {
+            outputType_= OUTPUT_NETWORK;
+            return;
+        }
+        if (t.equals("Summary")) {
+            outputType_= OUTPUT_SUMMARY;
+            return;
+        }
+        if (t.equals("Traffic")) {
+            outputType_= OUTPUT_TRAFFIC;
+            return;
+        }
+        throw new java.lang.IllegalArgumentException("Cannot parse Type "+t);
     }
 
     /** Accessor for output time type */
     public int getTimeType() {
-	return outputTimeType_;
+        return outputTimeType_;
     }
 
     /** Set time type from string*/
     public void setTimeType(String tt) throws java.lang.IllegalArgumentException {
-	if (tt.equals("Start")) {
-	    outputTimeType_= AT_START;
-	    return;
-	}
-	if (tt.equals("End")) {
-	    outputTimeType_= AT_END;
-	    return;
-	}
-	if (tt.equals("Interval")) {
-	    outputTimeType_= AT_INTERVAL;
-	    return;
-	}
-	if (tt.equals("Time")) {
-	    outputTimeType_= AT_TIME;
-	    return;
-	}
-	throw new java.lang.IllegalArgumentException("Cannot parse Time Type "+tt);
+        if (tt.equals("Start")) {
+            outputTimeType_= AT_START;
+            return;
+        }
+        if (tt.equals("End")) {
+            outputTimeType_= AT_END;
+            return;
+        }
+        if (tt.equals("Interval")) {
+            outputTimeType_= AT_INTERVAL;
+            return;
+        }
+        if (tt.equals("Time")) {
+            outputTimeType_= AT_TIME;
+            return;
+        }
+        throw new java.lang.IllegalArgumentException("Cannot parse Time Type "+tt);
     }
 
     /** Clear output file at start of run */
     public boolean clearOutputFile() {
-	return clear_;
+        return clear_;
     }
 
     /** Accessor for time parameter */
     public int getTime() {
-	return outputTime_;
+        return outputTime_;
     }
 
     /** Setter for time */
     public void setTime(int t) {
-	outputTime_= t;
+        outputTime_= t;
     }
 
     /** Accessor for file name */
     public String getFileName ()
     {
-	return fileName_;
+        return fileName_;
     }
 
     /** Set file name */
     public void setFileName (String name)
     {
-	fileName_= name;
+        fileName_= name;
     }
 
 
     /** Setter function for string parameter */
     public void setParameter(String parm)
     {
-	parameter_= parm;
+        parameter_= parm;
     }
     /** Accessor function for string parameter*/
     public String getParameter()
     {
-	return parameter_;
+        return parameter_;
     }
 
 
     /** Is this the first time output produced by this type*/
     public boolean isFirst() {
-	return firstOutput_;
+        return firstOutput_;
     }
 
     /** Set whether this is first time output produced by this type*/
     public void setFirst(boolean f) {
-	firstOutput_= f;
+        firstOutput_= f;
     }
 
     /**
      * To String
      */
     public String toString() {
-	StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
 
-	switch (outputTimeType_) {
-	case OUTPUT_NETWORK:
-	    builder.append("OUTPUT_NETWORK");
-	    break;
-	case OUTPUT_SUMMARY:
-	    builder.append("OUTPUT_SUMMARY");
-	    break;
-	default:
-	    break;
-	}
+        switch (outputTimeType_) {
+        case OUTPUT_NETWORK:
+            builder.append("OUTPUT_NETWORK");
+            break;
+        case OUTPUT_SUMMARY:
+            builder.append("OUTPUT_SUMMARY");
+            break;
+        default:
+            break;
+        }
 
-	builder.append(" ");
+        builder.append(" ");
 
-	switch (outputTimeType_) {
-	case AT_START:
-	    builder.append("AT_START");
-	    break;
-	case AT_END:
-	    builder.append("AT_END");
-	    break;
-	case AT_INTERVAL:
-	    builder.append("AT_INTERVAL");
-	    break;
-	case AT_TIME:
-	    builder.append("AT_TIME");
-	    break;
-	default:
-	    break;
-	}
+        switch (outputTimeType_) {
+        case AT_START:
+            builder.append("AT_START");
+            break;
+        case AT_END:
+            builder.append("AT_END");
+            break;
+        case AT_INTERVAL:
+            builder.append("AT_INTERVAL");
+            break;
+        case AT_TIME:
+            builder.append("AT_TIME");
+            break;
+        default:
+            break;
+        }
 
-	builder.append(" ");
-	builder.append(outputTime_);
-	builder.append(" "+parameter_);
-	return builder.toString();
+        builder.append(" ");
+        builder.append(outputTime_);
+        builder.append(" "+parameter_);
+        return builder.toString();
     }
 
 }

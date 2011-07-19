@@ -13,17 +13,17 @@ public class QuitCommand extends GlobalCommand {
      * Construct a QuitCommand.
      */
     public QuitCommand() {
-	super(MCRP.QUIT.CMD, MCRP.QUIT.CODE, MCRP.ERROR.CODE);
+        super(MCRP.QUIT.CMD, MCRP.QUIT.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(String req) {
-	success("BYE");
-	managementConsole.endConnection(getChannel());
+        success("BYE");
+        managementConsole.endConnection(getChannel());
 
-	return true;
+        return true;
     }
 
 }

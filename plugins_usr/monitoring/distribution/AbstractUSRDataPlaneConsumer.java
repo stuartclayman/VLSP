@@ -38,36 +38,36 @@ public abstract class AbstractUSRDataPlaneConsumer implements DataPlane, Measure
      * Construct a AbstractUSRDataPlaneConsumer.
      */
     public AbstractUSRDataPlaneConsumer(SocketAddress addr) {
-	// sending address
-	address = addr;
+        // sending address
+        address = addr;
 
-	seqNoMap = new HashMap<ID, Integer>();
+        seqNoMap = new HashMap<ID, Integer>();
     }
 
     /**
      * Connect to a delivery mechansim.
      */
     public boolean connect() {
-	try {
-	    // only connect if we're not already connected
-	    if (udpReceiver == null) {
-		USRReceiver rr = new USRReceiver(this, address);
+        try {
+            // only connect if we're not already connected
+            if (udpReceiver == null) {
+                USRReceiver rr = new USRReceiver(this, address);
 
-		rr.listen();
+                rr.listen();
 
-		udpReceiver = rr;
+                udpReceiver = rr;
 
-		return true;
-	    } else {
-		return true;
-	    }
+                return true;
+            } else {
+                return true;
+            }
 
-	} catch (IOException ioe) {
-	    // Current implementation will be to do a stack trace
-	    ioe.printStackTrace();
+        } catch (IOException ioe) {
+            // Current implementation will be to do a stack trace
+            ioe.printStackTrace();
 
-	    return false;
-	}
+            return false;
+        }
 
     }
 
@@ -75,34 +75,34 @@ public abstract class AbstractUSRDataPlaneConsumer implements DataPlane, Measure
      * Dicconnect from a delivery mechansim.
      */
     public boolean disconnect() {
-	if (udpReceiver != null) {
-	    try {
-		udpReceiver.end();
-		udpReceiver = null;
-		return true;
-	    } catch (IOException ieo) {
-		udpReceiver = null;
-		return false;
-	    }
-	} else {
-	    return false;
-	}
+        if (udpReceiver != null) {
+            try {
+                udpReceiver.end();
+                udpReceiver = null;
+                return true;
+            } catch (IOException ieo) {
+                udpReceiver = null;
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
      * Announce that the plane is up and running
      */
     public boolean announce() {
-	// do nothing currenty
-	return true;
+        // do nothing currenty
+        return true;
     }
 
     /**
      * Un-announce that the plane is up and running
      */
     public boolean dennounce() {
-	// do nothing currenty
-	return true;
+        // do nothing currenty
+        return true;
     }
 
 
@@ -128,22 +128,22 @@ public abstract class AbstractUSRDataPlaneConsumer implements DataPlane, Measure
      * in received from some underlying transport.
      */
     public void eof() {
-	disconnect();
+        disconnect();
     }
 
 
     public void error(Exception e) {
-	System.err.println("DataConsumer: notified of error " + e.getMessage());
-	System.err.println("Stack Trace:");
-	e.printStackTrace(System.err);
+        System.err.println("DataConsumer: notified of error " + e.getMessage());
+        System.err.println("Stack Trace:");
+        e.printStackTrace(System.err);
     }
 
     /**
      * Send a message.
      */
     public int sendData(DataPlaneMessage dpm) throws Exception {
-	// currenty do nothing
-	return -1;
+        // currenty do nothing
+        return -1;
     }
 
     /**
@@ -151,25 +151,25 @@ public abstract class AbstractUSRDataPlaneConsumer implements DataPlane, Measure
      * has been sent to the underlying transport.
      */
     public boolean sentData(int id) {
-	return false;
+        return false;
     }
 
     /**
      * Receiver of a measurment, with an extra object that has context info
      */
     public Measurement report(Measurement m) {
-	//System.err.println("USRDataPlaneConsumer: got " + m);
-	measurementReceiver.report(m);
-	return m;
+        //System.err.println("USRDataPlaneConsumer: got " + m);
+        measurementReceiver.report(m);
+        return m;
     }
 
     /**
      * Set the object that will recieve the measurements.
      */
     public Object setMeasurementReceiver(MeasurementReceiver mr) {
-	Object old = measurementReceiver;
-	measurementReceiver = mr;
-	return old;
+        Object old = measurementReceiver;
+        measurementReceiver = mr;
+        return old;
     }
 
 

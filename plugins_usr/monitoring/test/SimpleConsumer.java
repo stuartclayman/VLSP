@@ -25,59 +25,59 @@ public class SimpleConsumer {
      * Construct a SimpleConsumer using USR
      */
     public SimpleConsumer(int dataPort) {
-	// set up a BasicConsumer
-	consumer = new BasicConsumer();
+        // set up a BasicConsumer
+        consumer = new BasicConsumer();
 
-	// set up multicast address for data
-	SocketAddress address = new SocketAddress(dataPort);
+        // set up multicast address for data
+        SocketAddress address = new SocketAddress(dataPort);
 
-	// set up data plane
-	consumer.setDataPlane(new USRDataPlaneConsumerWithNames(address));
+        // set up data plane
+        consumer.setDataPlane(new USRDataPlaneConsumerWithNames(address));
 
-	consumer.connect();
+        consumer.connect();
 
     }
 
     public static void main(String [] args) {
-	int appPort = 2299;
+        int appPort = 2299;
 
-	if (args.length == 0) {
-	} else if (args.length == 1) {
-	    Scanner sc = new Scanner(args[0]);
-	    appPort = sc.nextInt();
-	} else {
-	    System.err.println("usage: SimpleConsumer port");
-	    System.exit(1);
-	}
+        if (args.length == 0) {
+        } else if (args.length == 1) {
+            Scanner sc = new Scanner(args[0]);
+            appPort = sc.nextInt();
+        } else {
+            System.err.println("usage: SimpleConsumer port");
+            System.exit(1);
+        }
 
-	// Set up Router
-	try {
-	    int port = 18191;
-	    int r2r = 18192;
+        // Set up Router
+        try {
+            int port = 18191;
+            int r2r = 18192;
 
-	    Router router = new Router(port, r2r, "Router-2");
+            Router router = new Router(port, r2r, "Router-2");
 
-	    // set ID
-	    router.setAddress(new GIDAddress(2));
+            // set ID
+            router.setAddress(new GIDAddress(2));
 
-	    // start
-	    if (router.start()) {
-	    } else {
-		throw new Exception("Router failed to start");
-	    }
-
-
-	} catch (Exception e) {
-	    System.err.println("SimpleConsumer exception: " + e);
-	    e.printStackTrace();
-	    System.exit(2);
-	}
+            // start
+            if (router.start()) {
+            } else {
+                throw new Exception("Router failed to start");
+            }
 
 
-	// Set up Consumer on AppSocket 2299
-	new SimpleConsumer(appPort);
+        } catch (Exception e) {
+            System.err.println("SimpleConsumer exception: " + e);
+            e.printStackTrace();
+            System.exit(2);
+        }
 
-	System.err.println("SimpleConsumer listening on " + "localnet" + "/" + appPort);
+
+        // Set up Consumer on AppSocket 2299
+        new SimpleConsumer(appPort);
+
+        System.err.println("SimpleConsumer listening on " + "localnet" + "/" + appPort);
 
     }
 

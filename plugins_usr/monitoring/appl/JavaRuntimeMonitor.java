@@ -44,63 +44,63 @@ public class JavaRuntimeMonitor implements Application {
      * Init.
      */
     public ApplicationResponse init(String[] args) {
-	if (args.length == 2) {
-	    Scanner sc = new Scanner(args[0]);
-	    addr = new GIDAddress(sc.nextInt());
+        if (args.length == 2) {
+            Scanner sc = new Scanner(args[0]);
+            addr = new GIDAddress(sc.nextInt());
 
-	    sc = new Scanner(args[1]);
-	    dataPort = sc.nextInt();
+            sc = new Scanner(args[1]);
+            dataPort = sc.nextInt();
 
-	    return new ApplicationResponse(true, "");
+            return new ApplicationResponse(true, "");
 
-	} else {
-	    return new ApplicationResponse(false, "usage: JavaRuntimeMonitor GID-address port");
-	}
+        } else {
+            return new ApplicationResponse(false, "usage: JavaRuntimeMonitor GID-address port");
+        }
     }
 
     /**
      * Start.
      */
     public ApplicationResponse start() {
-	try {
-	    // set up data source
-	    ds = new BasicDataSource();
+        try {
+            // set up data source
+            ds = new BasicDataSource();
 
-	    // set up socket address for data
-	    SocketAddress address = new SocketAddress(addr, dataPort);
+            // set up socket address for data
+            SocketAddress address = new SocketAddress(addr, dataPort);
 
-	    // set up data plane
-	    ds.setDataPlane(new USRDataPlaneProducerWithNames(address));
+            // set up data plane
+            ds.setDataPlane(new USRDataPlaneProducerWithNames(address));
 
-	    ds.connect();
+            ds.connect();
 
-	    // set up probe
-	    p = new JavaMemoryProbe("localhost" + ".javaMemory");
-	    p.setDataRate(new EveryNSeconds(5));
+            // set up probe
+            p = new JavaMemoryProbe("localhost" + ".javaMemory");
+            p.setDataRate(new EveryNSeconds(5));
 
-	    ds.addProbe(p);
-	    ds.turnOnProbe(p);
+            ds.addProbe(p);
+            ds.turnOnProbe(p);
 
-	    return new ApplicationResponse(true, "");
-	} catch (Exception e) {
-	    return new ApplicationResponse(false, e.getMessage());
-	}
+            return new ApplicationResponse(true, "");
+        } catch (Exception e) {
+            return new ApplicationResponse(false, e.getMessage());
+        }
     }
 
     /**
      * Stop.
      */
     public ApplicationResponse stop() {
-	ds.deactivateProbe(p);
-	ds.removeProbe(p);
+        ds.deactivateProbe(p);
+        ds.removeProbe(p);
 
-	ds.disconnect();
+        ds.disconnect();
 
-	synchronized (this) {
-	    notifyAll();
-	}
+        synchronized (this) {
+            notifyAll();
+        }
 
-	return new ApplicationResponse(true, "");
+        return new ApplicationResponse(true, "");
 
     }
 
@@ -108,14 +108,14 @@ public class JavaRuntimeMonitor implements Application {
      * Run
      */
     public void run() {
-	// A DataSource already runs in itws own thread
-	// so this one can wait and do nothing.
-	try {
-	    synchronized (this) {
-		wait();
-	    }
-	} catch (InterruptedException ie) {
-	}
+        // A DataSource already runs in itws own thread
+        // so this one can wait and do nothing.
+        try {
+            synchronized (this) {
+                wait();
+            }
+        } catch (InterruptedException ie) {
+        }
     }
 
 }

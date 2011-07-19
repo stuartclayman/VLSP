@@ -32,37 +32,37 @@ public class RouterConnections implements Runnable {
      * Construct a RouterConnections, given a specific port.
      */
     public RouterConnections(RouterController cont, int port) {
-	controller = cont;
-	this.port = port;
+        controller = cont;
+        this.port = port;
     }
 
     /**
      * Start the connections listening.
      */
     public boolean start() {
-	// initialise the socket
-	try {
-	    // WAS: serverSocket = new ServerSocket(port);
-	    channel = ServerSocketChannel.open();
-	    //channel.configureBlocking(true);
-	    serverSocket = channel.socket();
-	    serverSocket.bind(new InetSocketAddress(port));
+        // initialise the socket
+        try {
+            // WAS: serverSocket = new ServerSocket(port);
+            channel = ServerSocketChannel.open();
+            //channel.configureBlocking(true);
+            serverSocket = channel.socket();
+            serverSocket.bind(new InetSocketAddress(port));
 
-	    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Listening on port: " + port);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Listening on port: " + port);
 
-	    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Ready to accept on " + serverSocket);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Ready to accept on " + serverSocket);
 
 
-	    myThread = new Thread(this, "RouterConnections" + hashCode());
-	    running = true;
-	    myThread.start();
+            myThread = new Thread(this, "RouterConnections" + hashCode());
+            running = true;
+            myThread.start();
 
-	    return true;
-	}
-	catch (IOException ioe) {
-	    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot listen on port: " + port);
-	    return false;
-	}
+            return true;
+        }
+        catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot listen on port: " + port);
+            return false;
+        }
 
     }
 
@@ -70,15 +70,15 @@ public class RouterConnections implements Runnable {
      * Stop the listener.
      */
     public boolean stop() {
-	try {
-	    running = false;
-	    myThread.interrupt();
+        try {
+            running = false;
+            myThread.interrupt();
 
-	    return true;
+            return true;
 
-	} catch (Exception e) {
-	    return false;
-	}
+        } catch (Exception e) {
+            return false;
+        }
 
     }
 
@@ -86,38 +86,38 @@ public class RouterConnections implements Runnable {
      * The main thread loop.
      */
     public void run() {
-	while (running) {
-	    try {
-		TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
-		NetIF netIF = new TCPNetIF(dst,controller.getListener());
-		netIF.setName("Temp NetIF");
-		netIF.connect();
+        while (running) {
+            try {
+                TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
+                NetIF netIF = new TCPNetIF(dst,controller.getListener());
+                netIF.setName("Temp NetIF");
+                netIF.connect();
 
-		Socket local = dst.getSocket();
+                Socket local = dst.getSocket();
 
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Did accept on: " + serverSocket);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Did accept on: " + serverSocket);
 
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "newConnection: " + dst.getSocket());
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "newConnection: " + dst.getSocket());
 
-		InetSocketAddress refAddr = new InetSocketAddress(local.getInetAddress(), local.getPort());
+                InetSocketAddress refAddr = new InetSocketAddress(local.getInetAddress(), local.getPort());
 
-		Logger.getLogger("log").logln(USR.STDOUT, "RouterConnections  => " + refAddr + " # " + refAddr.hashCode());
+                Logger.getLogger("log").logln(USR.STDOUT, "RouterConnections  => " + refAddr + " # " + refAddr.hashCode());
 
 
-		netIF.setID(refAddr.hashCode());
+                netIF.setID(refAddr.hashCode());
 
-		Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
 
-		controller.registerTemporaryNetIF(netIF);
+                controller.registerTemporaryNetIF(netIF);
 
-	    } catch (IOException ioe) {
-		// only print if running, not when stopping
-		if (running) {
-		    Logger.getLogger("log").logln(USR.ERROR, leadin() + "accept failed");
-		}
-	    }
+            } catch (IOException ioe) {
+                // only print if running, not when stopping
+                if (running) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "accept failed");
+                }
+            }
 
-	}
+        }
 
     }
 
@@ -125,13 +125,13 @@ public class RouterConnections implements Runnable {
      * Create the String to print out before a message
      */
     String leadin() {
-	final String R2R = "R2R: ";
+        final String R2R = "R2R: ";
 
-	if (controller == null) {
-	    return R2R;
-	} else {
-	    return controller.getName() + " " + R2R;
-	}
+        if (controller == null) {
+            return R2R;
+        } else {
+            return controller.getName() + " " + R2R;
+        }
 
     }
 

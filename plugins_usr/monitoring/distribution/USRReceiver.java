@@ -80,13 +80,13 @@ public class USRReceiver implements Runnable {
      * Construct a receiver for a particular address
      */
     public USRReceiver(Receiving receiver, SocketAddress ipAddr) throws IOException {
-	address = ipAddr;
+        address = ipAddr;
 
-	this.receiver = receiver;
-	this.dstAddr = ipAddr.getAddress();
-	this.port = ipAddr.getPort();
+        this.receiver = receiver;
+        this.dstAddr = ipAddr.getAddress();
+        this.port = ipAddr.getPort();
 
-	setUpSocket();
+        setUpSocket();
     }
 
     /**
@@ -94,7 +94,7 @@ public class USRReceiver implements Runnable {
      * and also a pre-prepared DatagramPacket.
      */
     void setUpSocket() throws IOException {
-	socket = new DatagramSocket(port);
+        socket = new DatagramSocket(port);
     }
 
     /**
@@ -102,13 +102,13 @@ public class USRReceiver implements Runnable {
      * and start listening
      */
     public void listen()  throws IOException {
-	// already bind to the address
-	//socket.bind(address);
+        // already bind to the address
+        //socket.bind(address);
 
-	// start the thread
-	myThread = new Thread(this);
+        // start the thread
+        myThread = new Thread(this);
 
-	myThread.start();
+        myThread.start();
     }
 
     /**
@@ -116,86 +116,86 @@ public class USRReceiver implements Runnable {
      * and stop listening
      */
     public void end()  throws IOException {
-	// stop the thread
-	threadRunning = false;
+        // stop the thread
+        threadRunning = false;
 
-	// disconnect
-	socket.disconnect();
+        // disconnect
+        socket.disconnect();
     }
 
     /**
      * Receive a  message from the multicast address.
      */
     protected boolean receive() {
-	try {
-	    // clear lastException
-	    lastException = null;
+        try {
+            // clear lastException
+            lastException = null;
 
-	    // receive from socket
-	    packet = socket.receive();
+            // receive from socket
+            packet = socket.receive();
 
-	    if (packet == null) {
-		// we hit EOF
+            if (packet == null) {
+                // we hit EOF
 
-		return false;
-	    } else {
+                return false;
+            } else {
 
-		/* System.out.println("USRReceiver Received " + packet.getLength() +
-		   " bytes from "+ packet.getAddress() +
-		   "/" + packet.getPort());
-		 */
+                /* System.out.println("USRReceiver Received " + packet.getLength() +
+                   " bytes from "+ packet.getAddress() +
+                   "/" + packet.getPort());
+                 */
 
-		// get an input stream over the data bytes of the packet
-		byte [] payload = packet.getPayload();
-		ByteArrayInputStream theBytes = new ByteArrayInputStream(payload, 0, payload.length);
+                // get an input stream over the data bytes of the packet
+                byte [] payload = packet.getPayload();
+                ByteArrayInputStream theBytes = new ByteArrayInputStream(payload, 0, payload.length);
 
-		byteStream = theBytes;
-		srcAddr = packet.getSrcAddress();
-		length = packet.getTotalLength();
+                byteStream = theBytes;
+                srcAddr = packet.getSrcAddress();
+                length = packet.getTotalLength();
 
-		return true;
-	    }
-	} catch (Exception e) {
-	    // something went wrong
-	    lastException = e;
-	    return false;
-	}
+                return true;
+            }
+        } catch (Exception e) {
+            // something went wrong
+            lastException = e;
+            return false;
+        }
     }
 
     /**
      * The Runnable body
      */
     public void run() {
-	// if we get here the thread must be running
-	threadRunning = true;
+        // if we get here the thread must be running
+        threadRunning = true;
 
-	while (threadRunning) {
+        while (threadRunning) {
 
-	    if (receive()) {
-		// construct the transmission meta data
-		USRTransmissionMetaData metaData = new USRTransmissionMetaData(length, srcAddr, dstAddr);
+            if (receive()) {
+                // construct the transmission meta data
+                USRTransmissionMetaData metaData = new USRTransmissionMetaData(length, srcAddr, dstAddr);
 
 
-		// now notify the receiver with the message
-		// and the address it came in on
-		try {
-		    receiver.received(byteStream, metaData);
-		} catch (IOException ioe) {
-		    receiver.error(ioe);
-		} catch (TypeException te) {
-		    receiver.error(te);
-		}
-	    } else {
-		// the receive() failed
-		// first, we try to find the exception in lastException
-		// if it is null then we reached EOF
-		if (lastException == null) {
-		    receiver.eof();
-		} else {
-		    receiver.error(lastException);
-		}
-	    }
-	}
+                // now notify the receiver with the message
+                // and the address it came in on
+                try {
+                    receiver.received(byteStream, metaData);
+                } catch (IOException ioe) {
+                    receiver.error(ioe);
+                } catch (TypeException te) {
+                    receiver.error(te);
+                }
+            } else {
+                // the receive() failed
+                // first, we try to find the exception in lastException
+                // if it is null then we reached EOF
+                if (lastException == null) {
+                    receiver.eof();
+                } else {
+                    receiver.error(lastException);
+                }
+            }
+        }
     }
 
 

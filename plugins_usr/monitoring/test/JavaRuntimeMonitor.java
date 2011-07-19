@@ -30,90 +30,90 @@ public class JavaRuntimeMonitor {
      * Construct a JavaRuntimeMonitor
      */
     public JavaRuntimeMonitor(Address addr, int dataPort) {
-	// set up data source
-	ds = new BasicDataSource();
+        // set up data source
+        ds = new BasicDataSource();
 
-	// set up socket address for data
-	SocketAddress address = new SocketAddress(addr, dataPort);
+        // set up socket address for data
+        SocketAddress address = new SocketAddress(addr, dataPort);
 
-	// set up data plane
-	ds.setDataPlane(new USRDataPlaneProducerWithNames(address));
+        // set up data plane
+        ds.setDataPlane(new USRDataPlaneProducerWithNames(address));
 
-	ds.connect();
+        ds.connect();
     }
 
     private void turnOnProbe(Probe p) {
-	ds.addProbe(p);
-	ds.turnOnProbe(p);
+        ds.addProbe(p);
+        ds.turnOnProbe(p);
     }
 
     private void turnOffProbe(Probe p) {
-	ds.deactivateProbe(p);
-	ds.removeProbe(p);
+        ds.deactivateProbe(p);
+        ds.removeProbe(p);
     }
 
     public static void main(String [] args) {
-	Address addr = new GIDAddress(2);
-	int appPort = 2299;
+        Address addr = new GIDAddress(2);
+        int appPort = 2299;
 
-	// the host that has the Router at addr
-	String remHost = "localhost";
-	int remPort = 18191;
+        // the host that has the Router at addr
+        String remHost = "localhost";
+        int remPort = 18191;
 
-	if (args.length == 0) {
-	    // use existing settings
-	} else if (args.length == 2) {
-	    Scanner sc = new Scanner(args[0]);
-	    addr = new GIDAddress(sc.nextInt());
+        if (args.length == 0) {
+            // use existing settings
+        } else if (args.length == 2) {
+            Scanner sc = new Scanner(args[0]);
+            addr = new GIDAddress(sc.nextInt());
 
-	    sc = new Scanner(args[1]);
-	    appPort = sc.nextInt();
+            sc = new Scanner(args[1]);
+            appPort = sc.nextInt();
 
-	} else {
-	    System.err.println("JavaRuntimeMonitor GID-address port");
-	    System.exit(1);
-	}
+        } else {
+            System.err.println("JavaRuntimeMonitor GID-address port");
+            System.exit(1);
+        }
 
-	// Set up Router
-	// And connect to Router @(2)
-	try {
-	    int port = 18181;
-	    int r2r = 18182;
+        // Set up Router
+        // And connect to Router @(2)
+        try {
+            int port = 18181;
+            int r2r = 18182;
 
-	    Router router = new Router(port, r2r, "Router-1");
+            Router router = new Router(port, r2r, "Router-1");
 
-	    // start
-	    if (router.start()) {
-	    } else {
-		throw new Exception("Router failed to start");
-	    }
+            // start
+            if (router.start()) {
+            } else {
+                throw new Exception("Router failed to start");
+            }
 
-	    // set up id
-	    router.setAddress(new GIDAddress(1));
+            // set up id
+            router.setAddress(new GIDAddress(1));
 
-	    // connnect to the other router
-	    // first we tal kto my own ManagementConsole
-	    RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);
+            // connnect to the other router
+            // first we tal kto my own ManagementConsole
+            RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);
 
-	    // then set up Router-to-Router data connection
-	    selfInteractor.createConnection(remHost + ":" + remPort, 20);
+            // then set up Router-to-Router data connection
+            selfInteractor.createConnection(remHost + ":" + remPort, 20);
 
-	    // and stop talking to the ManagementConsole
-	    selfInteractor.quit();
+            // and stop talking to the ManagementConsole
+            selfInteractor.quit();
 
 
-	} catch (Exception e) {
-	    System.err.println("Cannot interact with router at " + remHost + ":" + remPort);
-	    System.exit(1);
-	}
+        } catch (Exception e) {
+            System.err.println("Cannot interact with router at " + remHost + ":" + remPort);
+            System.exit(1);
+        }
 
-	// we got a hostname
-	JavaRuntimeMonitor hostMon = new JavaRuntimeMonitor(addr, appPort);
+        // we got a hostname
+        JavaRuntimeMonitor hostMon = new JavaRuntimeMonitor(addr, appPort);
 
-	//Probe javaProbe = new JavaMemoryProbe("localhost" + ".javaMemory");
-	Probe javaProbe = new InfraProbe("uk.ac.ucl.ee.Service1", "localhost");
-	javaProbe.setDataRate(new EveryNSeconds(5));
-	hostMon.turnOnProbe(javaProbe);
+        //Probe javaProbe = new JavaMemoryProbe("localhost" + ".javaMemory");
+        Probe javaProbe = new InfraProbe("uk.ac.ucl.ee.Service1", "localhost");
+        javaProbe.setDataRate(new EveryNSeconds(5));
+        hostMon.turnOnProbe(javaProbe);
 
     }
 

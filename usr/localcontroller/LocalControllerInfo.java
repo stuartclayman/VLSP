@@ -15,55 +15,55 @@ public class LocalControllerInfo extends LocalHostInfo {
 
     public LocalControllerInfo(String hostName, int port) throws java.net.UnknownHostException
     {
-	super(hostName,port);
+        super(hostName,port);
     }
 
     public LocalControllerInfo(java.net.InetAddress ip, int port)  throws java.net.UnknownHostException
     {
-	super(ip,port);
+        super(ip,port);
     }
 
     public LocalControllerInfo(int port)  throws java.net.UnknownHostException
     {
-	super(port);
+        super(port);
     }
 
     public int getMaxRouters() {
-	return maxRouters_;
+        return maxRouters_;
     }
 
     public void addRouter() {
-	currRouters_++;
+        currRouters_++;
     }
 
     public void delRouter() {
-	currRouters_--;
+        currRouters_--;
     }
 
     public double getUsage() {
-	double usage= (double)currRouters_/maxRouters_;
-	//   System.err.println("Port "+getPort()+ " R "+currRouters_+" max "+maxRouters_);
-	return usage;
+        double usage= (double)currRouters_/maxRouters_;
+        //   System.err.println("Port "+getPort()+ " R "+currRouters_+" max "+maxRouters_);
+        return usage;
     }
 
     public void setMaxRouters(int maxR) {
-	maxRouters_= maxR;
+        maxRouters_= maxR;
     }
 
     public void setRemoteLoginUser(String u) {
-	remoteLoginUser_= u;
+        remoteLoginUser_= u;
     }
 
     public String getRemoteLoginUser() {
-	return remoteLoginUser_;
+        return remoteLoginUser_;
     }
 
     public void setRemoteStartController(String s) {
-	remoteStartController_= s;
+        remoteStartController_= s;
     }
 
     public String getRemoteStartController() {
-	return remoteStartController_;
+        return remoteStartController_;
     }
 
 }

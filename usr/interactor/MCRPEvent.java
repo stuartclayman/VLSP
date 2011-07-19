@@ -22,29 +22,29 @@ public class MCRPEvent extends EventObject {
      * Construct an MCRPEvent given a source object.
      */
     public MCRPEvent(Object source, MCRPEventType type,  Object obj) {
-	super(source);
-	this.type = type;
-	this.obj = obj;
+        super(source);
+        this.type = type;
+        this.obj = obj;
     }
 
     /**
      * Get the event type.
      */
     public MCRPEventType getType() {
-	return type;
+        return type;
     }
 
     /**
      * Get the object
      */
     public Object getObject() {
-	return obj;
+        return obj;
     }
 
     /**
      * MCRPEvent to String.
      */
     public String toString() {
-	return "MCRPEvent " + type +  " with: " + obj;
+        return "MCRPEvent " + type +  " with: " + obj;
     }
 }

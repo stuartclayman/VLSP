@@ -30,7 +30,7 @@ public class LoggingOutputStream extends OutputStream {
      * Create a LoggingOutputStream using a specified logger.
      */
     public LoggingOutputStream(Logger logger) {
-	this(logger, new BitMask());
+        this(logger, new BitMask());
     }
 
     /**
@@ -38,24 +38,24 @@ public class LoggingOutputStream extends OutputStream {
      * and BitMask mask.
      */
     public LoggingOutputStream(Logger logger, BitMask m) {
-	buffer = new ByteArrayOutputStream();
-	theLogger = logger;
-	mask = m;
+        buffer = new ByteArrayOutputStream();
+        theLogger = logger;
+        mask = m;
     }
 
     /**
      * The write method needed for an OutputStream.
      */
     public void write(int b) throws IOException {
-	buffer.write(b);
+        buffer.write(b);
     }
 
     /**
      * Flush this OutputStream.
      */
     public void flush() throws IOException {
-	doLogging(buffer.toString());
-	buffer.reset();
+        doLogging(buffer.toString());
+        buffer.reset();
     }
 
     /**
@@ -64,39 +64,39 @@ public class LoggingOutputStream extends OutputStream {
      * can decide to log using a LogInput object.
      */
     public void doLogging(String s) {
-	if (theLogger == null) {
-	    return;
-	} else {
-	    theLogger.log(mask, s);
-	}
+        if (theLogger == null) {
+            return;
+        } else {
+            theLogger.log(mask, s);
+        }
     }
 
     /**
      * Set the mask for this LoggingOutputStream.
      */
     public void setMask(BitMask m) {
-	mask = m;
+        mask = m;
     }
 
     /**
      * Get the mask for this LoggingOutputStream.
      */
     public BitMask getMask() {
-	return mask;
+        return mask;
     }
 
     /**
      * Set the logger for this LoggingOutputStream.
      */
     public void setLogger(Logger l) {
-	theLogger = l;
+        theLogger = l;
     }
 
     /**
      * Get the logger for this LoggingOutputStream.
      */
     public Logger getLogger() {
-	return theLogger;
+        return theLogger;
     }
 
 }

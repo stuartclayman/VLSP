@@ -14,14 +14,14 @@ public abstract class Size4 implements Address {
      * Get the size in bytes of an instantiation of an Size4 Address.
      */
     public int size() {
-	return 4;
+        return 4;
     }
 
     /**
      * Get Size4 Address as a byte[]
      */
     public byte[] asByteArray() {
-	return bytes;
+        return bytes;
     }
 
     /**
@@ -29,12 +29,12 @@ public abstract class Size4 implements Address {
      */
     static String numericToTextFormat(byte[] src)
     {
-	return (src[0] & 0xff) + "." + (src[1] & 0xff) + "." + (src[2] & 0xff) + "." + (src[3] & 0xff);
+        return (src[0] & 0xff) + "." + (src[1] & 0xff) + "." + (src[2] & 0xff) + "." + (src[3] & 0xff);
     }
 
 
     public int hashCode() {
-	return asInteger();
+        return asInteger();
     }
 
 }

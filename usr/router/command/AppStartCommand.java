@@ -16,7 +16,7 @@ public class AppStartCommand extends RouterCommand {
      * Construct a AppStartCommand
      */
     public AppStartCommand() {
-	super(MCRP.APP_START.CMD, MCRP.APP_START.CODE, MCRP.ERROR.CODE);
+        super(MCRP.APP_START.CMD, MCRP.APP_START.CODE, MCRP.ERROR.CODE);
     }
 
     /**
@@ -24,23 +24,23 @@ public class AppStartCommand extends RouterCommand {
      */
     public boolean evaluate(String req) {
 
-	String rest = req.substring(MCRP.APP_START.CMD.length()).trim();
+        String rest = req.substring(MCRP.APP_START.CMD.length()).trim();
 
-	if (rest.equals("")) {
-	    error("APP_START needs application class name");
-	    return false;
-	} else {
+        if (rest.equals("")) {
+            error("APP_START needs application class name");
+            return false;
+        } else {
 
-	    ApplicationResponse response = controller.appStart(rest);
+            ApplicationResponse response = controller.appStart(rest);
 
-	    if (response.isSuccess()) {
-		success(response.getMessage());
-		return true;
-	    } else {
-		error(response.getMessage() + " for " + rest);
-		return false;
-	    }
-	}
+            if (response.isSuccess()) {
+                success(response.getMessage());
+                return true;
+            } else {
+                error(response.getMessage() + " for " + rest);
+                return false;
+            }
+        }
     }
 
 }

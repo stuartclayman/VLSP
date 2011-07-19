@@ -28,78 +28,78 @@ public class Recv implements Application {
      * Recv port
      */
     public ApplicationResponse init(String[] args) {
-	if (args.length == 1) {
-	    // try port
-	    Scanner scanner = new Scanner(args[0]);
-	    if (scanner.hasNextInt()) {
-		port = scanner.nextInt();
-	    } else {
-		return new ApplicationResponse(false, "Bad port " + args[1]);
-	    }
+        if (args.length == 1) {
+            // try port
+            Scanner scanner = new Scanner(args[0]);
+            if (scanner.hasNextInt()) {
+                port = scanner.nextInt();
+            } else {
+                return new ApplicationResponse(false, "Bad port " + args[1]);
+            }
 
-	    return new ApplicationResponse(true, "");
+            return new ApplicationResponse(true, "");
 
-	} else {
-	    return new ApplicationResponse(false, "Usage: Recv port");
-	}
+        } else {
+            return new ApplicationResponse(false, "Usage: Recv port");
+        }
     }
 
     /** Start application with argument  */
     public ApplicationResponse start() {
-	try {
-	    // set up socket
-	    socket = new DatagramSocket();
+        try {
+            // set up socket
+            socket = new DatagramSocket();
 
-	    socket.bind(port);
+            socket.bind(port);
 
-	    // Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket.getLocalPort());
+            // Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket.getLocalPort());
 
-	} catch (Exception e) {
-	    Logger.getLogger("log").logln(USR.ERROR, "Cannot open socket " + e.getMessage());
-	    return new ApplicationResponse(false,  "Cannot open socket " + e.getMessage());
-	}
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot open socket " + e.getMessage());
+            return new ApplicationResponse(false,  "Cannot open socket " + e.getMessage());
+        }
 
-	running = true;
+        running = true;
 
-	return new ApplicationResponse(true, "");
+        return new ApplicationResponse(true, "");
     }
 
     /** Implement graceful shut down */
     public ApplicationResponse stop() {
-	running = false;
+        running = false;
 
-	if (socket != null) {
-	    socket.close();
+        if (socket != null) {
+            socket.close();
 
-	    Logger.getLogger("log").logln(USR.STDOUT, "Recv stop");
-	}
+            Logger.getLogger("log").logln(USR.STDOUT, "Recv stop");
+        }
 
-	return new ApplicationResponse(true, "");
+        return new ApplicationResponse(true, "");
     }
 
     /** Run the ping application */
     public void run()  {
-	Datagram datagram;
+        Datagram datagram;
 
-	while ((datagram = socket.receive()) != null) {
+        while ((datagram = socket.receive()) != null) {
 
-	    Logger.getLogger("log").log(USR.STDOUT, count + ". ");
-	    Logger.getLogger("log").log(USR.STDOUT, "HL: " + datagram.getHeaderLength() +
-	                                " TL: " + datagram.getTotalLength() +
-	                                " From: " + datagram.getSrcAddress() +
-	                                " To: " + datagram.getDstAddress() +
-	                                ". ");
-	    byte[] payload = datagram.getPayload();
+            Logger.getLogger("log").log(USR.STDOUT, count + ". ");
+            Logger.getLogger("log").log(USR.STDOUT, "HL: " + datagram.getHeaderLength() +
+                                        " TL: " + datagram.getTotalLength() +
+                                        " From: " + datagram.getSrcAddress() +
+                                        " To: " + datagram.getDstAddress() +
+                                        ". ");
+            byte[] payload = datagram.getPayload();
 
-	    if (payload == null) {
-		Logger.getLogger("log").log(USR.STDOUT, "No payload");
-	    } else {
-		Logger.getLogger("log").log(USR.STDOUT, new String(payload));
-	    }
-	    Logger.getLogger("log").log(USR.STDOUT, "\n");
+            if (payload == null) {
+                Logger.getLogger("log").log(USR.STDOUT, "No payload");
+            } else {
+                Logger.getLogger("log").log(USR.STDOUT, new String(payload));
+            }
+            Logger.getLogger("log").log(USR.STDOUT, "\n");
 
-	    count++;
-	}
+            count++;
+        }
 
 
     }

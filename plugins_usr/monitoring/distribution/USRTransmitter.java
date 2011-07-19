@@ -49,13 +49,13 @@ public class USRTransmitter {
      * Construct a transmitter for a particular GID SocketAddress
      */
     public USRTransmitter(Transmitting transmitting, SocketAddress dstAddr) throws IOException {
-	this.dstAddr = dstAddr;
+        this.dstAddr = dstAddr;
 
-	this.transmitting = transmitting;
-	this.address = dstAddr.getAddress();
-	this.port = dstAddr.getPort();
+        this.transmitting = transmitting;
+        this.address = dstAddr.getAddress();
+        this.port = dstAddr.getPort();
 
-	setUpSocket();
+        setUpSocket();
     }
 
     /**
@@ -63,15 +63,15 @@ public class USRTransmitter {
      * and also a pre-prepared Datagrapacket.
      */
     void setUpSocket() throws IOException {
-	socket = new DatagramSocket();
+        socket = new DatagramSocket();
     }
 
     /**
      * Connect to the remote address now
      */
     public void connect()  throws IOException {
-	// connect to the remote USR socket
-	socket.connect(dstAddr);
+        // connect to the remote USR socket
+        socket.connect(dstAddr);
 
     }
 
@@ -79,31 +79,31 @@ public class USRTransmitter {
      * End the connection to the remote address now
      */
     public void end()  throws IOException {
-	// disconnect now
-	socket.disconnect();
+        // disconnect now
+        socket.disconnect();
     }
 
     /**
      * Send a message to USR address,  with a given id.
      */
     public int transmit(ByteArrayOutputStream byteStream, int id) throws IOException {
-	// set up the Datagram
-	byte[] payload = byteStream.toByteArray();
+        // set up the Datagram
+        byte[] payload = byteStream.toByteArray();
 
-	ByteBuffer buffer = ByteBuffer.wrap(payload);
+        ByteBuffer buffer = ByteBuffer.wrap(payload);
 
-	packet = DatagramFactory.newDatagram(buffer);
+        packet = DatagramFactory.newDatagram(buffer);
 
-	// now send it
-	socket.send(packet);
+        // now send it
+        socket.send(packet);
 
-	//System.err.println("trans: " + id + " = " + byteStream.size());
+        //System.err.println("trans: " + id + " = " + byteStream.size());
 
-	// notify the transmitting object
-	if (transmitting != null) {
-	    transmitting.transmitted(id);
-	}
+        // notify the transmitting object
+        if (transmitting != null) {
+            transmitting.transmitted(id);
+        }
 
-	return byteStream.size();
+        return byteStream.size();
     }
 }

@@ -39,7 +39,7 @@ public class Viewer {
      * It connects to a GlobalController on port 8888 of localhost
      */
     public Viewer()  {
-	this("localhost", 8888);
+        this("localhost", 8888);
     }
 
     /**
@@ -47,7 +47,7 @@ public class Viewer {
      * It connects to a GlobalController on port 8888 of a specified host
      */
     public Viewer(String host) {
-	this(host, 8888);
+        this(host, 8888);
     }
 
     /**
@@ -55,12 +55,12 @@ public class Viewer {
      * It connects to a GlobalController on the specified port of a host.
      */
     public Viewer(String host, int port) {
-	this.host = host;
-	this.port = port;
+        this.host = host;
+        this.port = port;
 
-	destDir = createTempDirectory();
+        destDir = createTempDirectory();
 
-	System.err.println("Viewer: tmp dir = " + destDir);
+        System.err.println("Viewer: tmp dir = " + destDir);
 
     }
 
@@ -68,133 +68,133 @@ public class Viewer {
      * Connect to the GlobalController
      */
     boolean connect() throws UnknownHostException {
-	try {
-	    interactor = new GlobalControllerInteractor(host, port);
+        try {
+            interactor = new GlobalControllerInteractor(host, port);
 
-	    return true;
-	} catch (UnknownHostException uke) {
-	    throw uke;
-	} catch (IOException ioe) {
-	    return false;
-	}
+            return true;
+        } catch (UnknownHostException uke) {
+            throw uke;
+        } catch (IOException ioe) {
+            return false;
+        }
     }
 
     /**
      * Get the nth snapshot of the data
      */
     public String getSnapshot(String n) {
-	if (n == null) {
-	    return getGraphData(destDir, "xdot", ""+count);
-	} else {
-	    return getGraphData(destDir, "xdot", n);
-	}
+        if (n == null) {
+            return getGraphData(destDir, "xdot", ""+count);
+        } else {
+            return getGraphData(destDir, "xdot", n);
+        }
     }
 
     /**
      * Get the current snapshot of the data
      */
     public String getData() {
-	return xdot;
+        return xdot;
     }
 
     /**
      * Get the current snapshot number.
      */
     public int getSnapshotNumber() {
-	return count;
+        return count;
     }
 
     /**
      * Collect data from the GlobalController.
      */
     protected void collectData() {
-	String graph = null;
-	PipeProcess process;
+        String graph = null;
+        PipeProcess process;
 
-	while (true) {
+        while (true) {
 
-	    /*
-	     * Send a version of the network is graphviz dot
-	     * format to 'dot' and get a version back as xdot.
-	     */
-	    try {
-		// get a view of the network as a graph
-		graph = interactor.networkGraph("dot");
+            /*
+             * Send a version of the network is graphviz dot
+             * format to 'dot' and get a version back as xdot.
+             */
+            try {
+                // get a view of the network as a graph
+                graph = interactor.networkGraph("dot");
 
-		saveGraphData(destDir, "dot", Integer.toString(count), graph);
+                saveGraphData(destDir, "dot", Integer.toString(count), graph);
 
-		String processData = null;
+                String processData = null;
 
-		do {
-		    // start dot down a pipe
-		    process = startDot();
+                do {
+                    // start dot down a pipe
+                    process = startDot();
 
-		    // now get dot to process the view
-		    processData = sendDataToProcess(process, graph);
+                    // now get dot to process the view
+                    processData = sendDataToProcess(process, graph);
 
-		    if (processData == null) {
-			System.err.println("Viewer: pipe error - restarting pipe");
-			process.stop();
-		    }
+                    if (processData == null) {
+                        System.err.println("Viewer: pipe error - restarting pipe");
+                        process.stop();
+                    }
 
-		} while (processData == null);
+                } while (processData == null);
 
-		// save data in xdot
-		xdot = processData;
+                // save data in xdot
+                xdot = processData;
 
-		// save the data in a file
-		saveGraphData(destDir, "xdot", Integer.toString(count), xdot);
+                // save the data in a file
+                saveGraphData(destDir, "xdot", Integer.toString(count), xdot);
 
-		// incr count
-		count++;
+                // incr count
+                count++;
 
-	    } catch (IOException ioe) {
-		System.err.println("Viewer error: " + ioe);
-	    } catch (MCRPException me) {
-		System.err.println("Viewer error: " + me);
+            } catch (IOException ioe) {
+                System.err.println("Viewer error: " + ioe);
+            } catch (MCRPException me) {
+                System.err.println("Viewer error: " + me);
 
-		// if the GlobalController has gone away
-		// then hang around indefinitely to drive the UI
-		if (me instanceof usr.interactor.MCRPNoConnectionException) {
-		    synchronized (this) {
-			try {
-			    System.err.println("Waiting.....");
-			    wait();
-			} catch (InterruptedException ie) {
-			}
-		    }
-		}
-	    }
+                // if the GlobalController has gone away
+                // then hang around indefinitely to drive the UI
+                if (me instanceof usr.interactor.MCRPNoConnectionException) {
+                    synchronized (this) {
+                        try {
+                            System.err.println("Waiting.....");
+                            wait();
+                        } catch (InterruptedException ie) {
+                        }
+                    }
+                }
+            }
 
-	    try {
-		Thread.sleep(timeout);
-	    } catch (InterruptedException ie) {
-	    }
+            try {
+                Thread.sleep(timeout);
+            } catch (InterruptedException ie) {
+            }
 
-	}
+        }
     }
 
     /**
      * Save some data in a file
      */
     protected boolean saveGraphData(File destDir, String extention, String count, String data) {
-	try {
-	    File file = new File(destDir, "graph-" + count + "." + extention);
+        try {
+            File file = new File(destDir, "graph-" + count + "." + extention);
 
-	    System.err.println("Viewer: save to " + file);
+            System.err.println("Viewer: save to " + file);
 
-	    FileOutputStream output = new FileOutputStream(file);
-	    BufferedOutputStream bos = new BufferedOutputStream(output);
-	    PrintStream ps = new PrintStream(bos);
+            FileOutputStream output = new FileOutputStream(file);
+            BufferedOutputStream bos = new BufferedOutputStream(output);
+            PrintStream ps = new PrintStream(bos);
 
-	    ps.print(data);
-	    ps.flush();
-	    ps.close();
+            ps.print(data);
+            ps.flush();
+            ps.close();
 
-	    return true;
-	} catch (IOException ioe) {
-	    return false;
-	}
+            return true;
+        } catch (IOException ioe) {
+            return false;
+        }
     }
 
 
@@ -202,33 +202,33 @@ public class Viewer {
      * Get some data in a file
      */
     protected String getGraphData(File destDir, String extention, String count) {
-	try {
-	    File file = new File(destDir, "graph-" + count + "." + extention);
+        try {
+            File file = new File(destDir, "graph-" + count + "." + extention);
 
-	    System.err.println("Viewer: read from " + file);
+            System.err.println("Viewer: read from " + file);
 
 
-	    FileInputStream input = new FileInputStream(file);
-	    BufferedInputStream bis = new BufferedInputStream(input);
+            FileInputStream input = new FileInputStream(file);
+            BufferedInputStream bis = new BufferedInputStream(input);
 
-	    StringBuilder builder = new StringBuilder();
-	    int ch;
+            StringBuilder builder = new StringBuilder();
+            int ch;
 
-	    while ((ch = bis.read()) != -1) {
-		builder.append((char)ch);
-	    }
+            while ((ch = bis.read()) != -1) {
+                builder.append((char)ch);
+            }
 
-	    bis.close();
+            bis.close();
 
-	    String result =  builder.toString();
+            String result =  builder.toString();
 
-	    System.err.println("result = " + result.length());
+            System.err.println("result = " + result.length());
 
-	    return result;
+            return result;
 
-	} catch (IOException ioe) {
-	    return "";
-	}
+        } catch (IOException ioe) {
+            return "";
+        }
     }
 
 
@@ -237,91 +237,91 @@ public class Viewer {
      * Start dot down the end of a pipe.
      */
     protected PipeProcess startDot() throws IOException {
-	// create a subrocess
-	String [] processArgs = {"/usr/local/bin/dot", "-Txdot", "-K"+layout };
-	ProcessBuilder child = new ProcessBuilder(processArgs);
-	Process process = child.start();
+        // create a subrocess
+        String [] processArgs = {"/usr/local/bin/dot", "-Txdot", "-K"+layout };
+        ProcessBuilder child = new ProcessBuilder(processArgs);
+        Process process = child.start();
 
-	// get a wrapper on the process
-	return new PipeProcess(process);
+        // get a wrapper on the process
+        return new PipeProcess(process);
     }
 
     /**
      * Send some data to a process
      */
     protected String sendDataToProcess(PipeProcess pipe, String data) {
-	Process process = pipe.getProcess();
+        Process process = pipe.getProcess();
 
-	// send the data to the process
-	OutputStream output = process.getOutputStream();
-	PrintStream ps = new PrintStream(output);
+        // send the data to the process
+        OutputStream output = process.getOutputStream();
+        PrintStream ps = new PrintStream(output);
 
-	ps.print(data);
-	ps.flush();
-
-
-	// close the stdin to stop the process
-	ps.close();
+        ps.print(data);
+        ps.flush();
 
 
-	// wait for the process to actually end
-	try {
-	    process.waitFor();
-	} catch (InterruptedException ie) {
-	    System.err.println("Viewer: process wait for error: " + ie);
-	}
+        // close the stdin to stop the process
+        ps.close();
 
-	pipe.stop();
 
-	// and collect the output
-	String result =  pipe.getData();
+        // wait for the process to actually end
+        try {
+            process.waitFor();
+        } catch (InterruptedException ie) {
+            System.err.println("Viewer: process wait for error: " + ie);
+        }
 
-	if (result == null) {
-	    return null;
-	} else {
-	    System.err.println("Viewer: dot converted " + data.length() + " to " + result.length());
+        pipe.stop();
 
-	    return result;
-	}
+        // and collect the output
+        String result =  pipe.getData();
+
+        if (result == null) {
+            return null;
+        } else {
+            System.err.println("Viewer: dot converted " + data.length() + " to " + result.length());
+
+            return result;
+        }
     }
 
     /**
      * Create a temporary directory
      */
     protected File createTempDirectory() {
-	//String dir = System.getProperty("java.io.tmpdir");
-	String dir = "/tmp";
+        //String dir = System.getProperty("java.io.tmpdir");
+        String dir = "/tmp";
 
-	File dest = new File(dir, "Viewer-" + getPID());
+        File dest = new File(dir, "Viewer-" + getPID());
 
-	dest.mkdir();
+        dest.mkdir();
 
-	return dest;
+        return dest;
     }
 
     /**
      * Get the pid of this process
      */
     protected String getPID() {
-	String name = ManagementFactory.getRuntimeMXBean().getName();
+        String name = ManagementFactory.getRuntimeMXBean().getName();
 
-	String [] parts = name.split("@");
+        String [] parts = name.split("@");
 
-	return parts[0];
+        return parts[0];
     }
 
     /**
      * Set the layout
      */
     void setLayout(String l) {
-	layout = l;
+        layout = l;
     }
 
     /**
      * Set the timeout
      */
     void setTimeout(int t) {
-	timeout = t;
+        timeout = t;
     }
 
     /**
@@ -333,112 +333,112 @@ public class Viewer {
      * -h gc_host, (default: localhost)
      */
     public static void main(String[] args) {
-	String gcHost = "localhost";
-	int webPort = 8080;
-	String layout = "dot";
-	int timeout = 2000;
+        String gcHost = "localhost";
+        int webPort = 8080;
+        String layout = "dot";
+        int timeout = 2000;
 
-	Viewer viewer = null;
+        Viewer viewer = null;
 
-	WebServer webServer = null;
+        WebServer webServer = null;
 
-	// process args
-	int argc = args.length;
+        // process args
+        int argc = args.length;
 
-	for (int arg=0; arg < argc; arg++) {
-	    String thisArg = args[arg];
+        for (int arg=0; arg < argc; arg++) {
+            String thisArg = args[arg];
 
-	    // check if its a flag
-	    if (thisArg.charAt(0) == '-') {
-		// get option
-		char option = thisArg.charAt(1);
+            // check if its a flag
+            if (thisArg.charAt(0) == '-') {
+                // get option
+                char option = thisArg.charAt(1);
 
-		// gwet next arg
-		String argValue = args[++arg];
+                // gwet next arg
+                String argValue = args[++arg];
 
-		switch (option) {
+                switch (option) {
 
-		case 'l': {
-		    layout = argValue;
-		    break;
-		}
+                case 'l': {
+                    layout = argValue;
+                    break;
+                }
 
-		case 'h': {
-		    gcHost = argValue;
-		    break;
-		}
+                case 'h': {
+                    gcHost = argValue;
+                    break;
+                }
 
-		case 'p': {
-		    try {
-			webPort = Integer.parseInt(argValue);
-		    } catch (Exception e) {
-			System.err.println("Error: " + e);
-			System.exit(1);
-		    }
-		    break;
-		}
+                case 'p': {
+                    try {
+                        webPort = Integer.parseInt(argValue);
+                    } catch (Exception e) {
+                        System.err.println("Error: " + e);
+                        System.exit(1);
+                    }
+                    break;
+                }
 
-		case 't': {
-		    try {
-			int secs = Integer.parseInt(argValue);
-			timeout = secs * 1000;
-		    } catch (Exception e) {
-			System.err.println("Error: " + e);
-			System.exit(1);
-		    }
-		    break;
-		}
+                case 't': {
+                    try {
+                        int secs = Integer.parseInt(argValue);
+                        timeout = secs * 1000;
+                    } catch (Exception e) {
+                        System.err.println("Error: " + e);
+                        System.exit(1);
+                    }
+                    break;
+                }
 
-		default:
-		    System.err.println("Viewer: unknown option " + option);
-		    break;
+                default:
+                    System.err.println("Viewer: unknown option " + option);
+                    break;
 
-		}
-	    }
-	}
+                }
+            }
+        }
 
-	try {
-	    // start a web server
-	    webServer = new WebServer(webPort);
+        try {
+            // start a web server
+            webServer = new WebServer(webPort);
 
-	    // start a Viewer
-	    viewer = new Viewer(gcHost);
-	    // set the timeout
-	    viewer.setTimeout(timeout);
-	    // and set the layout
-	    viewer.setLayout(layout);
+            // start a Viewer
+            viewer = new Viewer(gcHost);
+            // set the timeout
+            viewer.setTimeout(timeout);
+            // and set the layout
+            viewer.setLayout(layout);
 
-	    // connect to the GlobalController
-	    boolean connected;
+            // connect to the GlobalController
+            boolean connected;
 
-	    System.err.print("Connecting to " + viewer.host + "/" + viewer.port + " ");
+            System.err.print("Connecting to " + viewer.host + "/" + viewer.port + " ");
 
-	    while (true) {
-		connected = viewer.connect();
+            while (true) {
+                connected = viewer.connect();
 
-		if (connected) {
-		    System.err.println();
-		    break;
-		} else {
-		    Thread.sleep(1000);
-		    System.err.print("+");
-		}
-	    }
+                if (connected) {
+                    System.err.println();
+                    break;
+                } else {
+                    Thread.sleep(1000);
+                    System.err.print("+");
+                }
+            }
 
-	    // tell the web server about the viewer
-	    webServer.setViewer(viewer);
+            // tell the web server about the viewer
+            webServer.setViewer(viewer);
 
-	    // now start collecting data
-	    viewer.collectData();
-	} catch (Exception e) {
-	    System.err.println("Viewer Exception: " + e);
-	    System.exit(1);
-	}
+            // now start collecting data
+            viewer.collectData();
+        } catch (Exception e) {
+            System.err.println("Viewer Exception: " + e);
+            System.exit(1);
+        }
     }
 
     private static void help() {
-	System.err.println("Viewer [-t timeout] [-l layout] [-p web_port] [-h gc_host]");
-	System.exit(1);
+        System.err.println("Viewer [-t timeout] [-l layout] [-p web_port] [-h gc_host]");
+        System.exit(1);
     }
 
 }

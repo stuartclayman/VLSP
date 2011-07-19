@@ -59,39 +59,39 @@ public class InfoConsumer implements Reporter {
      * Start the InfoConsumer.
      */
     public void start() {
-	System.err.println("InfoConsumer: start");
+        System.err.println("InfoConsumer: start");
 
-	try {
-	    // create a TimeIndexFactory
-	    TimeIndexFactory factory = new TimeIndexFactory();
-	    Properties indexProperties = new Properties();
+        try {
+            // create a TimeIndexFactory
+            TimeIndexFactory factory = new TimeIndexFactory();
+            Properties indexProperties = new Properties();
 
-	    String realName;
+            String realName;
 
-	    // create forwardIndex
-	    realName = name+"-log";
-	    File dataIndexPath = new File(collectorPath, realName);
-	    indexProperties.setProperty("indexpath",  dataIndexPath.getPath());
-	    indexProperties.setProperty("name", realName);
+            // create forwardIndex
+            realName = name+"-log";
+            File dataIndexPath = new File(collectorPath, realName);
+            indexProperties.setProperty("indexpath",  dataIndexPath.getPath());
+            indexProperties.setProperty("name", realName);
 
-	    dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
-	} catch (TimeIndexException tie) {
-	    tie.printStackTrace();
-	    throw new RuntimeException("Cannot create TimeIndex ");
-	}
+            dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
+        } catch (TimeIndexException tie) {
+            tie.printStackTrace();
+            throw new RuntimeException("Cannot create TimeIndex ");
+        }
 
 
-	// Set up the data listener
-	// this is the handler
-	dataDomain = new DataConsumer(this);
+        // Set up the data listener
+        // this is the handler
+        dataDomain = new DataConsumer(this);
 
-	System.err.println("InfoConsumer connect to " + inputDataAddress);
+        System.err.println("InfoConsumer connect to " + inputDataAddress);
 
-	DataPlane inputDataPlane = new USRDataPlaneConsumerWithNames(inputDataAddress);
+        DataPlane inputDataPlane = new USRDataPlaneConsumerWithNames(inputDataAddress);
 
-	dataDomain.setDataPlane(inputDataPlane);
+        dataDomain.setDataPlane(inputDataPlane);
 
-	dataDomain.connect();
+        dataDomain.connect();
 
     }
 
@@ -99,14 +99,14 @@ public class InfoConsumer implements Reporter {
      * Receiver of a measurment.
      */
     public void report(Measurement m) {
-	System.out.println(m);
+        System.out.println(m);
 
-	try {
-	    Serializable object = (Serializable)m;
-	    dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
-	} catch (TimeIndexException tie) {
-	    System.err.println("Can't add data to time index log " + dataIndex.getName());
-	}
+        try {
+            Serializable object = (Serializable)m;
+            dataIndex.addItem(new SerializableItem(object), new MillisecondTimestamp());
+        } catch (TimeIndexException tie) {
+            System.err.println("Can't add data to time index log " + dataIndex.getName());
+        }
     }
 
 
@@ -114,48 +114,48 @@ public class InfoConsumer implements Reporter {
      * Get the  address for inpput traffic.
      */
     public SocketAddress getInputAddress() {
-	return inputDataAddress;
+        return inputDataAddress;
     }
 
     /**
      * Set the  address for input traffic.
      */
     public SocketAddress setInputAddress(SocketAddress in) {
-	SocketAddress old = inputDataAddress;
-	inputDataAddress = in;
-	return old;
+        SocketAddress old = inputDataAddress;
+        inputDataAddress = in;
+        return old;
     }
 
     /**
      * Get the path where raw data is collected into.
      */
     public String getCollectionPath() {
-	return collectorPath;
+        return collectorPath;
     }
 
     /**
      * Set the path where raw data is collected into.
      */
     public String setCollectionPath(String path) {
-	String old = collectorPath;
-	collectorPath = path;
-	return old;
+        String old = collectorPath;
+        collectorPath = path;
+        return old;
     }
 
     /**
      * Get the name of the AggPoint.
      */
     public String getName() {
-	return name;
+        return name;
     }
 
     /**
      * Set the name of the AggPoint.
      */
     public String setName(String str) {
-	String old = name;
-	name = str;
-	return old;
+        String old = name;
+        name = str;
+        return old;
     }
 
     /**
@@ -166,92 +166,92 @@ public class InfoConsumer implements Reporter {
      * -n name (default: "info-consumer")
      */
     public static void main(String[] args) {
-	// Set up Router
-	try {
-	    int port = 18191;
-	    int r2r = 18192;
+        // Set up Router
+        try {
+            int port = 18191;
+            int r2r = 18192;
 
-	    Router router = new Router(port, r2r, "Router-3");
+            Router router = new Router(port, r2r, "Router-3");
 
-	    // set ID
-	    router.setAddress(new GIDAddress(3));
+            // set ID
+            router.setAddress(new GIDAddress(3));
 
-	    // start
-	    if (router.start()) {
-	    } else {
-		throw new Exception("Router failed to start");
-	    }
-
-
-	} catch (Exception e) {
-	    System.err.println("SimpleConsumer exception: " + e);
-	    e.printStackTrace();
-	    System.exit(2);
-	}
+            // start
+            if (router.start()) {
+            } else {
+                throw new Exception("Router failed to start");
+            }
 
 
-	// allocate an InfoConsumer
-	InfoConsumer infoConsumer = new InfoConsumer();
-
-	// process args
-	int argc = args.length;
-
-	for (int arg=0; arg < argc; arg++) {
-	    String thisArg = args[arg];
-
-	    // check if its a flag
-	    if (thisArg.charAt(0) == '-') {
-		// get option
-		char option = thisArg.charAt(1);
-
-		// gwet next arg
-		String argValue = args[++arg];
-
-		switch (option) {
-
-		case 'i': {
-		    String[] parts = argValue.split("/");
-		    Scanner sc = new Scanner(parts[0]);
-		    int addr = sc.nextInt();
-		    sc = new Scanner(parts[1]);
-		    int port = sc.nextInt();
-		    Address gidAddr = new GIDAddress(addr);
-
-		    SocketAddress newInputAddr = new SocketAddress(gidAddr, port);
-		    infoConsumer.setInputAddress(newInputAddr);
-		    break;
-		}
-
-		case 'l': {
-		    // assume a file name
-		    File potentialPath = new File(argValue);
-		    // check if directory part exists
-		    if (potentialPath.isDirectory() && potentialPath.canWrite()) {
-			infoConsumer.setCollectionPath(argValue);
-		    } else {
-			System.err.println("InfoConsumer: cannot write file in directory " + argValue);
-			System.exit(1);
-		    }
-		    break;
-		}
-
-		case 'n': {
-		    infoConsumer.setName(argValue);
-		    break;
-		}
+        } catch (Exception e) {
+            System.err.println("SimpleConsumer exception: " + e);
+            e.printStackTrace();
+            System.exit(2);
+        }
 
 
+        // allocate an InfoConsumer
+        InfoConsumer infoConsumer = new InfoConsumer();
 
-		default:
-		    System.err.println("InfoConsumer: unknown option " + option);
-		    break;
-		}
+        // process args
+        int argc = args.length;
 
-	    }
-	}
+        for (int arg=0; arg < argc; arg++) {
+            String thisArg = args[arg];
 
-	// start the info consumer
-	infoConsumer.start();
+            // check if its a flag
+            if (thisArg.charAt(0) == '-') {
+                // get option
+                char option = thisArg.charAt(1);
+
+                // gwet next arg
+                String argValue = args[++arg];
+
+                switch (option) {
+
+                case 'i': {
+                    String[] parts = argValue.split("/");
+                    Scanner sc = new Scanner(parts[0]);
+                    int addr = sc.nextInt();
+                    sc = new Scanner(parts[1]);
+                    int port = sc.nextInt();
+                    Address gidAddr = new GIDAddress(addr);
+
+                    SocketAddress newInputAddr = new SocketAddress(gidAddr, port);
+                    infoConsumer.setInputAddress(newInputAddr);
+                    break;
+                }
+
+                case 'l': {
+                    // assume a file name
+                    File potentialPath = new File(argValue);
+                    // check if directory part exists
+                    if (potentialPath.isDirectory() && potentialPath.canWrite()) {
+                        infoConsumer.setCollectionPath(argValue);
+                    } else {
+                        System.err.println("InfoConsumer: cannot write file in directory " + argValue);
+                        System.exit(1);
+                    }
+                    break;
+                }
+
+                case 'n': {
+                    infoConsumer.setName(argValue);
+                    break;
+                }
+
+
+
+                default:
+                    System.err.println("InfoConsumer: unknown option " + option);
+                    break;
+                }
+
+            }
+        }
+
+        // start the info consumer
+        infoConsumer.start();
 
     }
 
@@ -260,12 +260,12 @@ public class InfoConsumer implements Reporter {
      */
     class DataConsumer extends AbstractDataConsumer  {
 
-	/**
-	 * Construct a BasicConsumer.
-	 */
-	public DataConsumer(InfoConsumer info) {
-	    addReporter(info);
-	}
+        /**
+         * Construct a BasicConsumer.
+         */
+        public DataConsumer(InfoConsumer info) {
+            addReporter(info);
+        }
 
     }
 

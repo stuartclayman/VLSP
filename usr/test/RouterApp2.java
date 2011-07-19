@@ -27,34 +27,34 @@ public class RouterApp2 {
      * Construct a RouterApp2
      */
     public RouterApp2() {
-	try {
-	    int port = 18181;
-	    int r2r = 18182;
+        try {
+            int port = 18181;
+            int r2r = 18182;
 
-	    router = new Router(port, r2r, "Router-1");
+            router = new Router(port, r2r, "Router-1");
 
-	    // start
-	    if (router.start()) {
-	    } else {
-		router.stop();
-	    }
+            // start
+            if (router.start()) {
+            } else {
+                router.stop();
+            }
 
-	    // set up id
-	    router.setAddress(new GIDAddress(1));
+            // set up id
+            router.setAddress(new GIDAddress(1));
 
-	    // now set up an AppSocket to receive
-	    recvSocket = new AppSocket(router, 5555);
+            // now set up an AppSocket to receive
+            recvSocket = new AppSocket(router, 5555);
 
-	    // now set up an AppSocket to send
-	    sendSocket = new AppSocket(router);
+            // now set up an AppSocket to send
+            sendSocket = new AppSocket(router);
 
-	    // and we want to connect to address 1 : port 5555
-	    sendSocket.connect(new GIDAddress(1), 5555);
+            // and we want to connect to address 1 : port 5555
+            sendSocket.connect(new GIDAddress(1), 5555);
 
-	} catch (Exception e) {
-	    Logger.getLogger("log").logln(USR.ERROR, "RouterApp2 exception: " + e);
-	    e.printStackTrace();
-	}
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, "RouterApp2 exception: " + e);
+            e.printStackTrace();
+        }
 
     }
 
@@ -63,45 +63,45 @@ public class RouterApp2 {
      * Write stuff
      */
     void writeALot(int count) {
-	Datagram datagram = null;
+        Datagram datagram = null;
 
-	for (int i = 0; i < count; i++) {
-	    String line = "line " + i;
-	    ByteBuffer buffer = ByteBuffer.allocate(line.length());
-	    buffer.put(line.getBytes());
+        for (int i = 0; i < count; i++) {
+            String line = "line " + i;
+            ByteBuffer buffer = ByteBuffer.allocate(line.length());
+            buffer.put(line.getBytes());
 
-	    datagram = DatagramFactory.newDatagram(buffer);
+            datagram = DatagramFactory.newDatagram(buffer);
 
 
-	    try {
-		sendSocket.send(datagram);
-		//Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
-	    } catch (SocketException se) {
-		return;
-	    }
-	}
+            try {
+                sendSocket.send(datagram);
+                //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
+            } catch (SocketException se) {
+                return;
+            }
+        }
     }
 
     void end() {
-	router.stop();
+        router.stop();
     }
 
     public static void main(String[] args) {
-	int count = 10;
+        int count = 10;
 
-	if (args.length == 1) {
-	    // get no of writes
-	    Scanner scanner = new Scanner(args[0]);
+        if (args.length == 1) {
+            // get no of writes
+            Scanner scanner = new Scanner(args[0]);
 
-	    count = scanner.nextInt();
-	}
+            count = scanner.nextInt();
+        }
 
 
-	RouterApp2 app2 = new RouterApp2();
+        RouterApp2 app2 = new RouterApp2();
 
-	app2.writeALot(count);
+        app2.writeALot(count);
 
-	app2.end();
+        app2.end();
     }
 
 

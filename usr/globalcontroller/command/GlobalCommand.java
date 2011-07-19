@@ -19,7 +19,7 @@ public abstract class GlobalCommand extends AbstractCommand {
      * Construct a Command given a name, a success code, an error code.
      */
     GlobalCommand(String name, int succCode, int errCode) {
-	super(name, succCode, errCode);
+        super(name, succCode, errCode);
     }
 
 
@@ -27,15 +27,15 @@ public abstract class GlobalCommand extends AbstractCommand {
      * Get the ManagementConsole this is a command for.
      */
     public ManagementConsole getManagementConsole() {
-	return managementConsole;
+        return managementConsole;
     }
 
     /**
      * Set the ManagementConsole this is a command for.
      */
     public void setManagementConsole(ManagementConsole mc) {
-	managementConsole = (GlobalControllerManagementConsole)mc;
-	controller = (GlobalController)managementConsole.getComponentController();
+        managementConsole = (GlobalControllerManagementConsole)mc;
+        controller = (GlobalController)managementConsole.getComponentController();
     }
 
 }

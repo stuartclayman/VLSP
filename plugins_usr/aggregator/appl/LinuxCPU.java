@@ -22,18 +22,18 @@ public class LinuxCPU extends AbstractProbe implements Probe  {
      * Construct a LinuxCPU probe
      */
     public LinuxCPU(String name) {
-	setName(name);
-	setDataRate(new Rational(360, 1));
+        setName(name);
+        setDataRate(new Rational(360, 1));
 
-	// allocate cpuDev
-	cpuDev = new CPUDev();
+        // allocate cpuDev
+        cpuDev = new CPUDev();
 
-	// read data, but calculate nothing
-	cpuDev.read(false);
+        // read data, but calculate nothing
+        cpuDev.read(false);
 
 
-	// add a probe attribute
-	addProbeAttribute(new DefaultProbeAttribute(0, "usage", ProbeAttributeType.FLOAT, "percent"));
+        // add a probe attribute
+        addProbeAttribute(new DefaultProbeAttribute(0, "usage", ProbeAttributeType.FLOAT, "percent"));
     }
 
 
@@ -41,49 +41,49 @@ public class LinuxCPU extends AbstractProbe implements Probe  {
      * Collect a measurement.
      */
     public ProbeMeasurement collect() {
-	// create a list for the result
-	ArrayList<ProbeValue> list = new ArrayList<ProbeValue>(1);
+        // create a list for the result
+        ArrayList<ProbeValue> list = new ArrayList<ProbeValue>(1);
 
-	// read the data
-	if (cpuDev.read(true)) {
-	    try {
-		int cpuCount = cpuDev.getCPUCount();
-		float idleTotal = 0.0f;
+        // read the data
+        if (cpuDev.read(true)) {
+            try {
+                int cpuCount = cpuDev.getCPUCount();
+                float idleTotal = 0.0f;
 
-		// get amount for idleness
-		for (int c=0; c<cpuCount; c++) {
-		    float f = (float)cpuDev.getDeltaValue("cpu" + c  + "-idle");
-		    System.out.print(c + "=" + f + ", ");
-		    idleTotal += f;
-		}
-		System.out.println();
+                // get amount for idleness
+                for (int c=0; c<cpuCount; c++) {
+                    float f = (float)cpuDev.getDeltaValue("cpu" + c  + "-idle");
+                    System.out.print(c + "=" + f + ", ");
+                    idleTotal += f;
+                }
+                System.out.println();
 
-		// we now have total idleness, over N cpus.
-		// But, usage = 100% - idleness
+                // we now have total idleness, over N cpus.
+                // But, usage = 100% - idleness
 
-		float usage = 100 - (idleTotal / cpuCount);
+                float usage = 100 - (idleTotal / cpuCount);
 
-		if (usage < 0) {
-		    usage = 0;
-		}
-
-
-		list.add(new DefaultProbeValue(0, usage));
+                if (usage < 0) {
+                    usage = 0;
+                }
 
 
-		ProbeMeasurement m = new ProducerMeasurement(this, list, "LinuxCPU");
+                list.add(new DefaultProbeValue(0, usage));
 
-		//System.out.println("LinuxCPU => " + m);
 
-		return m;
-	    } catch (Exception e) {
-		e.printStackTrace();
-		return null;
-	    }
-	} else {
-	    System.err.println("Failed to read from /proc/stat");
-	    return null;
-	}
+                ProbeMeasurement m = new ProducerMeasurement(this, list, "LinuxCPU");
+
+                //System.out.println("LinuxCPU => " + m);
+
+                return m;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            System.err.println("Failed to read from /proc/stat");
+            return null;
+        }
     }
 
 }

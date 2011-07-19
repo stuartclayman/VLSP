@@ -33,8 +33,8 @@ public abstract class AbstractUSRDataPlaneProducer implements DataPlane, DataSou
      * Construct an AbstractUSRDataPlaneProducer.
      */
     public AbstractUSRDataPlaneProducer(SocketAddress addr) {
-	// sending address
-	address = addr;
+        // sending address
+        address = addr;
     }
 
 
@@ -42,27 +42,27 @@ public abstract class AbstractUSRDataPlaneProducer implements DataPlane, DataSou
      * Connect to a delivery mechansim.
      */
     public boolean connect() {
-	try {
-	    // only connect if we're not already connected
-	    if (udpTransmitter == null) {
-		// Now connect to the IP address
-		USRTransmitter tt = new USRTransmitter(this, address);
+        try {
+            // only connect if we're not already connected
+            if (udpTransmitter == null) {
+                // Now connect to the IP address
+                USRTransmitter tt = new USRTransmitter(this, address);
 
-		tt.connect();
+                tt.connect();
 
-		udpTransmitter = tt;
+                udpTransmitter = tt;
 
-		return true;
-	    } else {
-		return true;
-	    }
+                return true;
+            } else {
+                return true;
+            }
 
-	} catch (IOException ioe) {
-	    // Current implementation will be to do a stack trace
-	    ioe.printStackTrace();
+        } catch (IOException ioe) {
+            // Current implementation will be to do a stack trace
+            ioe.printStackTrace();
 
-	    return false;
-	}
+            return false;
+        }
 
     }
 
@@ -70,34 +70,34 @@ public abstract class AbstractUSRDataPlaneProducer implements DataPlane, DataSou
      * Disconnect from a delivery mechansim.
      */
     public boolean disconnect() {
-	if (udpTransmitter != null) {
-	    try {
-		udpTransmitter.end();
-		udpTransmitter = null;
-		return true;
-	    } catch (IOException ieo) {
-		udpTransmitter = null;
-		return false;
-	    }
-	} else {
-	    return false;
-	}
+        if (udpTransmitter != null) {
+            try {
+                udpTransmitter.end();
+                udpTransmitter = null;
+                return true;
+            } catch (IOException ieo) {
+                udpTransmitter = null;
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
      * Announce that the plane is up and running
      */
     public boolean announce() {
-	// do nothing currenty
-	return true;
+        // do nothing currenty
+        return true;
     }
 
     /**
      * Un-announce that the plane is up and running
      */
     public boolean dennounce() {
-	// do nothing currenty
-	return true;
+        // do nothing currenty
+        return true;
     }
 
     /**
@@ -115,15 +115,15 @@ public abstract class AbstractUSRDataPlaneProducer implements DataPlane, DataSou
      * has been sent to the underlying transport.
      */
     public boolean transmitted(int id) {
-	sentData(id);
-	return true;
+        sentData(id);
+        return true;
     }
 
     /**
      * Send a message.
      */
     public int sendData(DataPlaneMessage dpm) throws Exception {
-	return transmit(dpm);
+        return transmit(dpm);
     }
 
     /**
@@ -131,30 +131,30 @@ public abstract class AbstractUSRDataPlaneProducer implements DataPlane, DataSou
      * has been sent to the underlying transport.
      */
     public boolean sentData(int id) {
-	return true;
+        return true;
     }
 
     /**
      * Receiver of a measurment, with an extra object that has context info
      */
     public Measurement report(Measurement m) {
-	// currently do nothing
-	return null;
+        // currently do nothing
+        return null;
     }
 
     /**
      * Get the DataSourceDelegate this is a delegate for.
      */
     public DataSourceDelegate getDataSourceDelegate() {
-	return dataSourceDelegate;
+        return dataSourceDelegate;
     }
 
     /**
      * Set the DataSourceDelegate this is a delegate for.
      */
     public DataSourceDelegate setDataSourceDelegate(DataSourceDelegate ds) {
-	dataSourceDelegate = ds;
-	return ds;
+        dataSourceDelegate = ds;
+        return ds;
     }
 
 }

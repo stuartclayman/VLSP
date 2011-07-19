@@ -19,7 +19,7 @@ public class SetAPCommand extends LocalCommand {
      * Construct a SetAddressCommand.
      */
     public SetAPCommand() {
-	super(MCRP.SET_AP.CMD, MCRP.SET_AP.CODE, MCRP.SET_AP.ERROR);
+        super(MCRP.SET_AP.CMD, MCRP.SET_AP.CODE, MCRP.SET_AP.ERROR);
     }
 
     /**
@@ -27,27 +27,27 @@ public class SetAPCommand extends LocalCommand {
      */
     public boolean evaluate(String req) {
 
-	String[] parts = req.split(" ");
+        String[] parts = req.split(" ");
 
-	if (parts.length != 3) {
-	    error ("SET_AP command requires GID and AP GID");
-	    return false;
-	}
-	int GID;
-	int AP;
-	try {
-	    GID= Integer.parseInt(parts[1]);
-	    AP= Integer.parseInt(parts[2]);
-	} catch (Exception e) {
-	    error ("SET_AP command requires GID and AP GID");
-	    return false;
-	}
-	if (controller.setAP(GID, AP)) {
-	    success(GID+" has set AP to "+AP);
-	    return true;
-	}
-	error ("Incorrect GID number "+GID);
-	return false;
+        if (parts.length != 3) {
+            error ("SET_AP command requires GID and AP GID");
+            return false;
+        }
+        int GID;
+        int AP;
+        try {
+            GID= Integer.parseInt(parts[1]);
+            AP= Integer.parseInt(parts[2]);
+        } catch (Exception e) {
+            error ("SET_AP command requires GID and AP GID");
+            return false;
+        }
+        if (controller.setAP(GID, AP)) {
+            success(GID+" has set AP to "+AP);
+            return true;
+        }
+        error ("Incorrect GID number "+GID);
+        return false;
     }
 
 }

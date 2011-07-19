@@ -23,43 +23,43 @@ public class RouterApp1C {
      * Construct a RouterApp1C
      */
     public RouterApp1C(String remHost, int remPort) {
-	try {
-	    AddressFactory.setClassForAddress("usr.net.IPV4Address");
+        try {
+            AddressFactory.setClassForAddress("usr.net.IPV4Address");
 
-	    int port = 18181;
-	    int r2r = 18182;
+            int port = 18181;
+            int r2r = 18182;
 
-	    router = new Router(port, r2r, "Router-1");
+            router = new Router(port, r2r, "Router-1");
 
-	    // start
-	    if (router.start()) {
-	    } else {
-		router.stop();
-	    }
+            // start
+            if (router.start()) {
+            } else {
+                router.stop();
+            }
 
-	    // set up id
-	    router.setAddress(new IPV4Address("192.168.7.1"));  // WAS new GIDAddress(1));
+            // set up id
+            router.setAddress(new IPV4Address("192.168.7.1"));  // WAS new GIDAddress(1));
 
-	    // connnect to the other router
-	    // first we tal kto my own ManagementConsole
-	    RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);
+            // connnect to the other router
+            // first we tal kto my own ManagementConsole
+            RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);
 
-	    // then set up Router-to-Router data connection
-	    selfInteractor.createConnection(remHost + ":" + remPort, 20);
+            // then set up Router-to-Router data connection
+            selfInteractor.createConnection(remHost + ":" + remPort, 20);
 
-	    // and stop talking to the ManagementConsole
-	    selfInteractor.quit();
+            // and stop talking to the ManagementConsole
+            selfInteractor.quit();
 
-	    // now set up an AppSocket to send
-	    socket = new AppSocket(router);
+            // now set up an AppSocket to send
+            socket = new AppSocket(router);
 
-	    // and we want to connect to address 2 : port 3000
-	    socket.connect(  new IPV4Address("192.168.7.2") /* new GIDAddress(2)  */, 3000);
+            // and we want to connect to address 2 : port 3000
+            socket.connect(  new IPV4Address("192.168.7.2") /* new GIDAddress(2)  */, 3000);
 
-	} catch (Exception e) {
-	    Logger.getLogger("log").logln(USR.ERROR, "RouterApp1C exception: " + e);
-	    e.printStackTrace();
-	}
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, "RouterApp1C exception: " + e);
+            e.printStackTrace();
+        }
 
     }
 
@@ -68,62 +68,62 @@ public class RouterApp1C {
      * Write stuff
      */
     void writeALot(int count) {
-	Datagram datagram = null;
+        Datagram datagram = null;
 
-	try {
-	    Thread.sleep(500);
-	} catch (InterruptedException ie) {
-	}
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ie) {
+        }
 
-	for (int i = 0; i < count; i++) {
-	    String line = "line " + i;
-	    ByteBuffer buffer = ByteBuffer.allocate(line.length());
-	    buffer.put(line.getBytes());
+        for (int i = 0; i < count; i++) {
+            String line = "line " + i;
+            ByteBuffer buffer = ByteBuffer.allocate(line.length());
+            buffer.put(line.getBytes());
 
-	    datagram = DatagramFactory.newDatagram(buffer);
+            datagram = DatagramFactory.newDatagram(buffer);
 
 
-	    try {
-		socket.send(datagram);
-	    } catch (SocketException se) {
-		//Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
-	    }
+            try {
+                socket.send(datagram);
+            } catch (SocketException se) {
+                //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
+            }
 
-	}
+        }
 
-	Logger.getLogger("log").logln(USR.STDOUT, "ending....");
+        Logger.getLogger("log").logln(USR.STDOUT, "ending....");
 
-	socket.close();
+        socket.close();
 
-	end();
+        end();
     }
 
     void end() {
-	router.stop();
+        router.stop();
     }
 
     public static void main(String[] args) {
-	String host = "localhost";
-	int count = 10;
+        String host = "localhost";
+        int count = 10;
 
-	if (args.length == 1) {
-	    // get no of writes
-	    Scanner scanner = new Scanner(args[0]);
+        if (args.length == 1) {
+            // get no of writes
+            Scanner scanner = new Scanner(args[0]);
 
-	    count = scanner.nextInt();
-	} else if (args.length == 2) {
-	    host = args[0];
+            count = scanner.nextInt();
+        } else if (args.length == 2) {
+            host = args[0];
 
-	    // get no of writes
-	    Scanner scanner = new Scanner(args[1]);
+            // get no of writes
+            Scanner scanner = new Scanner(args[1]);
 
-	    count = scanner.nextInt();
-	}
+            count = scanner.nextInt();
+        }
 
 
-	RouterApp1C app1c = new RouterApp1C(host, 18191);
+        RouterApp1C app1c = new RouterApp1C(host, 18191);
 
-	app1c.writeALot(count);
+        app1c.writeALot(count);
 
     }
 

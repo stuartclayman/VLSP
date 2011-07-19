@@ -19,7 +19,7 @@ public class SetAPCommand extends RouterCommand {
      * Construct a SetAddressCommand.
      */
     public SetAPCommand() {
-	super(MCRP.SET_AP.CMD, MCRP.SET_AP.CODE, MCRP.SET_AP.ERROR);
+        super(MCRP.SET_AP.CMD, MCRP.SET_AP.CODE, MCRP.SET_AP.ERROR);
     }
 
     /**
@@ -27,24 +27,24 @@ public class SetAPCommand extends RouterCommand {
      */
     public boolean evaluate(String req) {
 
-	String[] parts = req.split(" ");
+        String[] parts = req.split(" ");
 
-	if (parts.length != 3) {
-	    error ("SET_AP command requires GID and AP GID");
-	    return false;
-	}
-	int GID;
-	int AP;
-	try {
-	    GID= Integer.parseInt(parts[1]);
-	    AP= Integer.parseInt(parts[2]);
-	} catch (Exception e) {
-	    error ("SET_AP command requires GID and AP GID");
-	    return false;
-	}
-	success(GID+" has set AP to "+AP);
-	controller.setAP(GID, AP);
-	return true;
+        if (parts.length != 3) {
+            error ("SET_AP command requires GID and AP GID");
+            return false;
+        }
+        int GID;
+        int AP;
+        try {
+            GID= Integer.parseInt(parts[1]);
+            AP= Integer.parseInt(parts[2]);
+        } catch (Exception e) {
+            error ("SET_AP command requires GID and AP GID");
+            return false;
+        }
+        success(GID+" has set AP to "+AP);
+        controller.setAP(GID, AP);
+        return true;
     }
 
 }

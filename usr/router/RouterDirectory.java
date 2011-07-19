@@ -20,22 +20,22 @@ public class RouterDirectory {
      * Get the Router.
      */
     public synchronized static Router getRouter() {
-	return theInstance;
+        return theInstance;
     }
 
     /**
      * Set the instance.
      */
     static synchronized void setInstance(Router r) {
-	theInstance = r;
+        theInstance = r;
     }
 
     /**
      * Register a Router.
      */
     static synchronized void register(Router r) {
-	routerList.add(r);
-	setInstance(r);
+        routerList.add(r);
+        setInstance(r);
     }
 
 }

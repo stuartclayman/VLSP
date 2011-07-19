@@ -14,8 +14,8 @@ public class SocketAddress {
      * Construct a SocketAddress from an address and a port.
      */
     public SocketAddress(Address addr, int port) {
-	this.address = addr;
-	this.port = port;
+        this.address = addr;
+        this.port = port;
     }
 
     /**
@@ -23,47 +23,47 @@ public class SocketAddress {
      * Often used in receivers.
      */
     public SocketAddress(int port) {
-	this.address = null;
-	this.port = port;
+        this.address = null;
+        this.port = port;
     }
 
     /**
      * Get the Address
      */
     public Address getAddress() {
-	return address;
+        return address;
     }
 
     /**
      * Get the port
      */
     public int getPort() {
-	return port;
+        return port;
     }
 
     /**
      * Equals
      */
     public boolean equals(Object obj) {
-	if (obj instanceof SocketAddress) {
-	    SocketAddress sockaddr = (SocketAddress)obj;
+        if (obj instanceof SocketAddress) {
+            SocketAddress sockaddr = (SocketAddress)obj;
 
-	    if (sockaddr.getAddress().equals(getAddress()) &&
-	        sockaddr.getPort() == getPort()) {
-		return true;
-	    } else {
-		return false;
-	    }
-	} else {
-	    return false;
-	}
+            if (sockaddr.getAddress().equals(getAddress()) &&
+                sockaddr.getPort() == getPort()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
      * To String
      */
     public String toString() {
-	return address + ":" + port;
+        return address + ":" + port;
     }
 
 

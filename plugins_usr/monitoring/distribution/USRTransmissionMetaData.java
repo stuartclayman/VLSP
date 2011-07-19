@@ -22,15 +22,15 @@ public class USRTransmissionMetaData implements MetaData, Serializable {
      * Construct a USRTransmissionMetaData object.
      */
     public USRTransmissionMetaData(int l, Address sia, Address dia) {
-	length = l;
-	srcIPAddr = sia;
-	dstIPAddr = dia;
+        length = l;
+        srcIPAddr = sia;
+        dstIPAddr = dia;
     }
 
     /**
      * USRTransmissionMetaData to string.
      */
     public String toString() {
-	return dstIPAddr + ": "  + srcIPAddr + " => " + length;
+        return dstIPAddr + ": "  + srcIPAddr + " => " + length;
     }
 }

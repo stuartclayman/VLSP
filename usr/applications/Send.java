@@ -27,94 +27,94 @@ public class Send implements Application {
      * Send address port count
      */
     public ApplicationResponse init(String[] args) {
-	if (args.length == 3) {
-	    // try address
-	    try {
-		addr = AddressFactory.newAddress(args[0]);
+        if (args.length == 3) {
+            // try address
+            try {
+                addr = AddressFactory.newAddress(args[0]);
 
-	    } catch (Exception e) {
-		return new ApplicationResponse(false, "UnknownHost " + args[0]);
-	    }
+            } catch (Exception e) {
+                return new ApplicationResponse(false, "UnknownHost " + args[0]);
+            }
 
-	    // try port
-	    Scanner scanner = new Scanner(args[1]);
-	    if (scanner.hasNextInt()) {
-		port = scanner.nextInt();
-	    } else {
-		return new ApplicationResponse(false, "Bad port " + args[1]);
-	    }
+            // try port
+            Scanner scanner = new Scanner(args[1]);
+            if (scanner.hasNextInt()) {
+                port = scanner.nextInt();
+            } else {
+                return new ApplicationResponse(false, "Bad port " + args[1]);
+            }
 
-	    // try count
-	    scanner = new Scanner(args[2]);
-	    if (scanner.hasNextInt()) {
-		count = scanner.nextInt();
-	    } else {
-		return new ApplicationResponse(false, "Bad count " + args[2]);
-	    }
+            // try count
+            scanner = new Scanner(args[2]);
+            if (scanner.hasNextInt()) {
+                count = scanner.nextInt();
+            } else {
+                return new ApplicationResponse(false, "Bad count " + args[2]);
+            }
 
-	    System.err.print("Send addr: " + addr + " port: " + port + " count: " + count);
+            System.err.print("Send addr: " + addr + " port: " + port + " count: " + count);
 
 
-	    return new ApplicationResponse(true, "");
+            return new ApplicationResponse(true, "");
 
-	} else {
-	    return new ApplicationResponse(false, "Usage: Send address port count");
-	}
+        } else {
+            return new ApplicationResponse(false, "Usage: Send address port count");
+        }
     }
 
     /** Start application with argument  */
     public ApplicationResponse start() {
-	try {
-	    // set up socket
-	    socket = new DatagramSocket();
+        try {
+            // set up socket
+            socket = new DatagramSocket();
 
-	    socket.connect(addr, port);
+            socket.connect(addr, port);
 
-	    // Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket.getLocalPort());
+            // Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket.getLocalPort());
 
-	} catch (Exception e) {
-	    Logger.getLogger("log").logln(USR.ERROR, "Cannot open socket " + e.getMessage());
-	    return new ApplicationResponse(false,  "Cannot open socket " + e.getMessage());
-	}
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot open socket " + e.getMessage());
+            return new ApplicationResponse(false,  "Cannot open socket " + e.getMessage());
+        }
 
-	running = true;
+        running = true;
 
-	return new ApplicationResponse(true, "");
+        return new ApplicationResponse(true, "");
     }
 
     /** Implement graceful shut down */
     public ApplicationResponse stop() {
-	running = false;
+        running = false;
 
-	if (socket != null) {
-	    socket.close();
+        if (socket != null) {
+            socket.close();
 
-	    Logger.getLogger("log").logln(USR.STDOUT, "Send stop");
-	}
+            Logger.getLogger("log").logln(USR.STDOUT, "Send stop");
+        }
 
-	return new ApplicationResponse(true, "");
+        return new ApplicationResponse(true, "");
     }
 
     /** Run the ping application */
     public void run()  {
-	Datagram datagram = null;
+        Datagram datagram = null;
 
-	for (int i = 0; i < count; i++) {
-	    String line = "line " + i;
-	    ByteBuffer buffer = ByteBuffer.allocate(line.length());
-	    buffer.put(line.getBytes());
+        for (int i = 0; i < count; i++) {
+            String line = "line " + i;
+            ByteBuffer buffer = ByteBuffer.allocate(line.length());
+            buffer.put(line.getBytes());
 
-	    datagram = DatagramFactory.newDatagram(buffer);
+            datagram = DatagramFactory.newDatagram(buffer);
 
-	    try {
-		socket.send(datagram);
-	    } catch (Exception e) {
-		Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " + datagram + " with " + new String(datagram.getPayload()));
-	    }
+            try {
+                socket.send(datagram);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " + datagram + " with " + new String(datagram.getPayload()));
+            }
 
-	}
+        }
 
-	Logger.getLogger("log").logln(USR.STDOUT, "Send: end of run()");
+        Logger.getLogger("log").logln(USR.STDOUT, "Send: end of run()");
 
 
     }
