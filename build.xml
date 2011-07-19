@@ -95,6 +95,13 @@
      </javadoc>
   </target>
 
+    <target name="clean" description="Delete class files and docs dir.">
+        <delete>
+            <fileset dir="${basedir}" includes="**/*.class"/>
+        </delete>
+        <delete dir="${api}" />
+    </target>
+
   <!-- ALL -->
   <target name="all" depends="dist, javadoc">
   </target>
@@ -108,7 +115,8 @@
      <echo message="   target : "/>     
      <echo message="            build : Build Application"/>     
      <echo message="            dist  : Build Application + Archive (JAR)"/>     
-     <echo message="            javadoc  : Build Application + Javadoc"/>     
+     <echo message="            javadoc  : Build Application + Javadoc"/>    
+     <echo message="            clean : Remove docs and .class files"/>      
      <echo message="            all   : Build Application + Archive + JavaDoc"/>       
   </target>
        
