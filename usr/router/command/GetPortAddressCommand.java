@@ -52,12 +52,14 @@ public class GetPortAddressCommand extends RouterCommand {
 
             if (routerPort == null || routerPort == RouterPort.EMPTY) {
                 error(getName() + " invalid port " + routerPortName);
+                return false;
             }
 
             // get address on netIF in port
             NetIF netIF = routerPort.getNetIF();
-            Address address = netIF.getAddress();
 
+            Address address = netIF.getAddress();
+                                                     
             if (address != null) {
                 result = success(address.toString());
             } else {

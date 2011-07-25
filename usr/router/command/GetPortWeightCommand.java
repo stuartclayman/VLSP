@@ -52,6 +52,7 @@ public class GetPortWeightCommand extends RouterCommand {
 
             if (routerPort == null || routerPort == RouterPort.EMPTY) {
                 error(getName() + " invalid port " + routerPortName);
+                return false;
             }
 
             // get weight on netIF in port

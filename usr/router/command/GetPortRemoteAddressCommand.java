@@ -52,6 +52,7 @@ public class GetPortRemoteAddressCommand extends RouterCommand {
 
             if (routerPort == null || routerPort == RouterPort.EMPTY) {
                 error(getName() + " invalid port " + routerPortName);
+                return false;
             }
 
             // get name on netIF in port

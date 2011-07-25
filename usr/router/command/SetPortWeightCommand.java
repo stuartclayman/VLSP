@@ -53,6 +53,7 @@ public class SetPortWeightCommand extends RouterCommand {
 
             if (routerPort == null || routerPort == RouterPort.EMPTY) {
                 error(getName() + " invalid port " + routerPortName);
+                return false;
             }
 
             // instantiate the weight
@@ -61,6 +62,7 @@ public class SetPortWeightCommand extends RouterCommand {
                 weight = Integer.parseInt(weightStr);
             } catch (NumberFormatException nfe) {
                 error(getName() + " weight is not a number " + weightStr);
+                return false;
             }
 
             // set weight on netIF in port

@@ -54,6 +54,7 @@ public class SetPortAddressCommand extends RouterCommand {
 
             if (routerPort == null || routerPort == RouterPort.EMPTY) {
                 error(getName() + " invalid port " + routerPortName);
+                return false;
             }
 
             // instantiate the address
@@ -61,6 +62,7 @@ public class SetPortAddressCommand extends RouterCommand {
                 address = AddressFactory.newAddress(addr);
             } catch (Exception e) {
                 error(getName() + " address error " + e);
+                return false;
             }
 
             // set address on netIF in port
