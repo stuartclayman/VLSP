@@ -5,12 +5,12 @@ import usr.logging.*;
 import java.net.UnknownHostException;
 
 /**
- * An abstract Foundation class for Datagrams that use Size4 addresses.
+ * An abstract Foundation class for Datagrams that use Size16 addresses.
  */
-class Size4Datagram implements Datagram, DatagramPatch {
-    // The full datagram is 24 bytes plus the payload
-    // as an  Address is 4 bytes long
-    final static int HEADER_SIZE = 24;
+class Size16Datagram implements Datagram, DatagramPatch {
+    // The full datagram is 48 bytes plus the payload
+    // as an  Address is 16 bytes long
+    final static int HEADER_SIZE = 48;
     final static int CHECKSUM_SIZE = 4;
 
     // USRD       - 0 / 4
@@ -19,15 +19,14 @@ class Size4Datagram implements Datagram, DatagramPatch {
     // flags      - 7 / 1
     // ttl        - 8 / 1
     // protocol   - 9 / 1
-    // src addr   - 10 / 4
-    // dst addr   - 14 / 4
-    // spare      - 18 / 1
-    // spare      - 19 / 1
-    // src port   - 20 / 2
-    // dst port   - 22 / 2
-    // payload    - 24 / N
-    // checksum   - 24 + N / 4
-
+    // src addr   - 10 / 16
+    // dst addr   - 26 / 16
+    // spare      - 42 / 1
+    // spare      - 43 / 1
+    // src port   - 44 / 2
+    // dst port   - 46 / 2
+    // payload    - 48 / N
+    // checksum   - 48 + N / 4
 
     // The full datagram contents
     ByteBuffer fullDatagram;
@@ -41,9 +40,9 @@ class Size4Datagram implements Datagram, DatagramPatch {
     static int initialTTL_= 64; // TTL used for new
 
     /**
-     * Construct a Size4Datagram given a payload.
+     * Construct a Size16Datagram given a payload.
      */
-    Size4Datagram(ByteBuffer payload) {
+    Size16Datagram(ByteBuffer payload) {
         payload.rewind();
         int payloadSize = payload.limit();
         //Logger.getLogger("log").logln(USR.ERROR, "PAYLOAD SIZE "+payloadSize);
@@ -53,16 +52,16 @@ class Size4Datagram implements Datagram, DatagramPatch {
     }
 
     /**
-     * Construct a Size4Datagram given a payload.
+     * Construct a Size16Datagram given a payload.
      */
-    Size4Datagram(byte[] payload) {
+    Size16Datagram(byte[] payload) {
         this(ByteBuffer.wrap(payload));
     }
 
     /**
-     * Construct a Size4Datagram given a payload and a destination address
+     * Construct a Size16Datagram given a payload and a destination address
      */
-    Size4Datagram(ByteBuffer payload, Address address) {
+    Size16Datagram(ByteBuffer payload, Address address) {
         payload.rewind();
         dstAddr = address;
 
@@ -74,17 +73,17 @@ class Size4Datagram implements Datagram, DatagramPatch {
     }
 
     /**
-     * Construct a Size4Datagram given a payload and a destination address
+     * Construct a Size16Datagram given a payload and a destination address
      */
-    Size4Datagram(byte[] payload, Address address) {
+    Size16Datagram(byte[] payload, Address address) {
         this(ByteBuffer.wrap(payload), address);
     }
 
     /**
-     * Construct a Size4Datagram given a payload, a destination address,
+     * Construct a Size16Datagram given a payload, a destination address,
      * and a destination port.
      */
-    Size4Datagram(ByteBuffer payload, Address address, int port) {
+    Size16Datagram(ByteBuffer payload, Address address, int port) {
         payload.rewind();
         dstAddr = address;
         dstPort = port;
@@ -97,14 +96,14 @@ class Size4Datagram implements Datagram, DatagramPatch {
     }
 
     /**
-     * Construct a Size4Datagram given a payload, a destination address,
+     * Construct a Size16Datagram given a payload, a destination address,
      * and a destination port.
      */
-    Size4Datagram(byte[] payload, Address address, int port) {
+    Size16Datagram(byte[] payload, Address address, int port) {
         this(ByteBuffer.wrap(payload), address, port);
     }
 
-    Size4Datagram() {
+    Size16Datagram() {
     }
 
 
@@ -113,7 +112,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
      */
     public byte getHeaderLength() {
         // return HEADER_SIZE;
-        return fullDatagram.get(4);
+        return fullDatagram.get(4); 
     }
 
     /**
@@ -179,9 +178,9 @@ class Size4Datagram implements Datagram, DatagramPatch {
      */
     public Address getSrcAddress() {
         // get 4 bytes for address
-        byte[] address = new byte[4];
+        byte[] address = new byte[16];
         fullDatagram.position(10);
-        fullDatagram.get(address, 0, 4);
+        fullDatagram.get(address, 0, 16);
 
         if (emptyAddress(address)) {
             return null;
@@ -195,16 +194,16 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * Set the src address
      */
     public Datagram setSrcAddress(Address addr) {
-        if (addr != null && !(addr instanceof Size4)) {
-            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in Size4Datagram");
+        if (addr != null && !(addr instanceof Size16)) {
+            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in Size16Datagram");
         }
 
         // put src addr
         fullDatagram.position(10);
         if (addr == null) {
-            fullDatagram.put(Size4.EMPTY, 0, 4);
+            fullDatagram.put(Size16.EMPTY, 0, 16);
         } else {
-            fullDatagram.put(addr.asByteArray(), 0, 4);
+            fullDatagram.put(addr.asByteArray(), 0, 16);
         }
 
         return this;
@@ -215,9 +214,9 @@ class Size4Datagram implements Datagram, DatagramPatch {
      */
     public Address getDstAddress() {
         // get 4 bytes for address
-        byte[] address = new byte[4];
-        fullDatagram.position(14);
-        fullDatagram.get(address, 0, 4);
+        byte[] address = new byte[16];
+        fullDatagram.position(26);
+        fullDatagram.get(address, 0, 16);
 
         if (emptyAddress(address)) {
             return null;
@@ -231,19 +230,19 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * Set the dst address
      */
     public Datagram setDstAddress(Address addr) {
-        if (addr != null && !(addr instanceof Size4)) {
-            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in Size4Datagram");
+        if (addr != null && !(addr instanceof Size16)) {
+            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in Size16Datagram");
         }
 
         dstAddr = addr;
-        fullDatagram.position(14);
+        fullDatagram.position(26);
 
         // put dst addr
         // to be filled in later
         if (addr == null) {
-            fullDatagram.put(Size4.EMPTY, 0, 4);
+            fullDatagram.put(Size16.EMPTY, 0, 16);
         } else {
-            fullDatagram.put(dstAddr.asByteArray(), 0, 4);
+            fullDatagram.put(dstAddr.asByteArray(), 0, 16);
         }
 
         return this;
@@ -251,8 +250,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
     boolean emptyAddress(byte [] address)
     {
-        for (int i= 0; i < 4; i++) {
-            if (address[i] != Size4.EMPTY[i])
+        for (int i= 0; i < 16; i++) {
+            if (address[i] != Size16.EMPTY[i])
                 return false;
         }
         return true;
@@ -263,7 +262,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * Get src port.
      */
     public int getSrcPort() {
-        int p = (int)fullDatagram.getShort(20);
+        int p = (int)fullDatagram.getShort(44);
         // convert signed to unsigned
         if (p < 0) {
             return p + 65536;
@@ -276,7 +275,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * Set the src port
      */
     public Datagram setSrcPort(int p) {
-        fullDatagram.putShort(20, (short)p);
+        fullDatagram.putShort(44, (short)p);
 
         return this;
     }
@@ -285,7 +284,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * Get dst port.
      */
     public int getDstPort() {
-        int p = (int)fullDatagram.getShort(22);
+        int p = (int)fullDatagram.getShort(46);
         // convert signed to unsigned
         if (p < 0) {
             return p + 65536;
@@ -299,7 +298,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
      */
     public Datagram setDstPort(int p) {
         dstPort = p;
-        fullDatagram.putShort(22, (short)dstPort);
+        fullDatagram.putShort(46, (short)dstPort);
 
         return this;
     }
@@ -336,7 +335,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
         int headerLen = getHeaderLength();
         int totalLen = getTotalLength();
 
-        // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram getPayload: headerLen = " + headerLen + " totalLen = " + totalLen);
+        // Logger.getLogger("log").logln(USR.ERROR, "Size16Datagram getPayload: headerLen = " + headerLen + " totalLen = " + totalLen);
 
         fullDatagram.position(headerLen);
 
@@ -346,7 +345,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
         //ByteBuffer payload =  ByteBuffer.wrap(payloadBytes);
 
-        // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram getPayload: payload = " + payload.position() + " < " + payload.limit() + " < " + payload.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "Size16Datagram getPayload: payload = " + payload.position() + " < " + payload.limit() + " < " + payload.capacity());
 
         return payloadBytes;
 
@@ -382,7 +381,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
     public boolean fromByteBuffer(ByteBuffer b) {
         fullDatagram = b;
 
-        // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "Size16Datagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
         return true;
     }
@@ -414,32 +413,32 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
         // put src addr
         fullDatagram.position(10);
-        fullDatagram.put(Size4.EMPTY, 0, 4);
+        fullDatagram.put(Size16.EMPTY, 0, 16);
 
         // put dst addr
         // to be filled in later
-        fullDatagram.position(14);
+        fullDatagram.position(26);
         if (dstAddr == null) {
-            fullDatagram.put(Size4.EMPTY, 0, 4);
+            fullDatagram.put(Size16.EMPTY, 0, 16);
         } else {
-            fullDatagram.put(dstAddr.asByteArray(), 0, 4);
+            fullDatagram.put(dstAddr.asByteArray(), 0, 16);
         }
 
         // 2 spare bytes
-        fullDatagram.put(18, (byte)0);
-        fullDatagram.put(19, (byte)0);
+        fullDatagram.put(42, (byte)0);
+        fullDatagram.put(43, (byte)0);
 
         // put src port
-        fullDatagram.putShort(20, (short)0);
+        fullDatagram.putShort(44, (short)0);
 
         // put dst port
         // to be filled in later
-        fullDatagram.putShort(22, (short)dstPort);
+        fullDatagram.putShort(46, (short)dstPort);
 
         /*
          * copy in payload
          */
-        fullDatagram.position(24);
+        fullDatagram.position(48);
         payload.rewind();
         // Logger.getLogger("log").logln(USR.ERROR, "payload size = " + payload.limit());
 
@@ -451,7 +450,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
         fullDatagram.rewind();
 
-        // Logger.getLogger("log").logln(USR.ERROR, "Size4Address fillDatagram: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "Size16Address fillDatagram: fullDatagram = " + fullDatagram.position() + " < " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
     }
 

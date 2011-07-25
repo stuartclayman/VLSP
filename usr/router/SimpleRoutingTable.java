@@ -125,9 +125,11 @@ public class SimpleRoutingTable implements RoutingTable {
             return null;
         }
         SimpleRoutingTableEntry e= table_.get(addr);
-        if (e == null)
+        if (e == null) {
             return null;
-        return e.getNetIF();
+        } else {
+            return e.getNetIF();
+        }
     }
 
     /** A new network interface arrives -- add to

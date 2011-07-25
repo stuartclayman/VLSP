@@ -69,6 +69,8 @@ public class DatagramFactory {
                 return dg;
             }
         } catch (Exception e) {
+            e.printStackTrace();
+            Logger.getLogger("log").logln(USR.ERROR, "DatagramFactory: Exception: " + e);
             throw new Error("DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: " + dfi.className + " for protocol " + protocol);
         }
 
@@ -97,6 +99,8 @@ public class DatagramFactory {
      * Set up the class for a protocol
      */
     public static void setClassForProtocol(String className, int protocol) {
+        //System.err.println("DatagramFactory: setClassForProtocol " + className + " " + protocol);
+
         DatagramFactoryInfo dfi = new DatagramFactoryInfo(className);
 
         if (list.size() <= protocol || list.get(protocol) == null) {

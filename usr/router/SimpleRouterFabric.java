@@ -274,6 +274,9 @@ DatagramDevice {
        unroutable or datagram is for router
      */
     public DatagramDevice getRoute(Datagram dg) throws NoRouteToHostException {
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "getRoute() for " + dg);
+
+
         Address addr= dg.getDstAddress();
 
         /* if (dg.getProtocol() == Protocol.CONTROL) {
@@ -605,20 +608,27 @@ DatagramDevice {
                     continue;
 
                 } else {
-
                     /*
-                       Logger.getLogger("log").logln(USR.ERROR, leadin() + "findNetIF " +
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "findNetIF " + name +
                                                   " getRemoteRouterAddress = " + port.getNetIF().getRemoteRouterAddress() +
                                                   " getRemoteRouterName = " + port.getNetIF().getRemoteRouterName() +
                                                   " getName = " + port.getNetIF().getName() +
                                                   "\n");
-                     */
+                    */
+
+                    Address addr = AddressFactory.newAddress(name);
 
                     if (port.getNetIF().getRemoteRouterAddress().asTransmitForm().equals(name)) {
+                        // try by string form
+                        return port.getNetIF();
+                    } else if (port.getNetIF().getRemoteRouterAddress().equals(addr)) {
+                        // try by addr
                         return port.getNetIF();
                     } else if (port.getNetIF().getRemoteRouterName().equals(name)) {
+                        // try by router name
                         return port.getNetIF();
                     } else if (port.getNetIF().getName().equals(name)) {
+                        // try by NetIF name
                         return port.getNetIF();
                     } else {
                         ;
@@ -727,6 +737,7 @@ DatagramDevice {
         try {
             return fabricDevice_.addToInQueue(dg, this);
         } catch (NoRouteToHostException e) {
+            e.printStackTrace();
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoRouteToHostException for enqueueDatagram " + dg);
         }
         return false;
@@ -755,6 +766,9 @@ DatagramDevice {
      * Add a Network Interface to this Router.
      */
     public RouterPort addNetIF(NetIF netIF) {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "addNetIF NetIF: " + netIF.getName() + " " + getAddress() );
+
+        try {
         synchronized (ports) {
             Address address = netIF.getAddress();
             Address remoteAddress = netIF.getRemoteRouterAddress();
@@ -765,14 +779,13 @@ DatagramDevice {
             // bind NetIF into a port
             RouterPort rp= null;
 
-
             // it is the local port
             if (localPort) {
                 if (localNetIF != null) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Attempt to create second local multiplex port");
                 }
                 localNetIF= netIF;
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "added localNetIF: " + localNetIF.getName());
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "added localNetIF: " + localNetIF.getName() + " " + localNetIF.getAddress());
                 return null;
             }
 
@@ -802,6 +815,11 @@ DatagramDevice {
                 }
             }
             return rp;
+        }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

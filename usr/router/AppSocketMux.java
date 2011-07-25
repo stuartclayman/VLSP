@@ -96,6 +96,8 @@ public class AppSocketMux implements NetIF {
             boolean connected = connect();
             return connected;
         } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " AppSocketMux not started");
+            e.printStackTrace();
             running = false;
             return false;
         }

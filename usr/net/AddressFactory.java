@@ -25,6 +25,7 @@ public class AddressFactory {
     static {
         setClassForAddress("usr.net.GIDAddress");
         //setClassForAddress("usr.net.DomainAddress");
+        //setClassForAddress("usr.test.IPV6Address");
     }
 
     /**
@@ -35,6 +36,7 @@ public class AddressFactory {
             Address address =  (Address)consI.newInstance(addr);
             return address;
         } catch (Exception e) {
+            e.printStackTrace();
             Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + e);
             throw new Error("AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: " + className);
 

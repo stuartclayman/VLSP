@@ -233,7 +233,7 @@ public class RouterOptions {
             DatagramFactory.setClassForProtocol(dgtype, Protocol.DATA);
             DatagramFactory.setClassForProtocol(dgtype, Protocol.CONTROL);
         } catch (ClassNotFoundException e) {
-            throw new SAXException("Unable to parse class name "+dgtype+" in Routing options");
+            throw new SAXException("Class not found for class name "+dgtype+" in Routing options");
         } catch (SAXException e) {
             throw new SAXException("Unable to parse class name "+dgtype+" in Routing options"+e.getMessage());
         } catch (ClassCastException e) {
@@ -258,7 +258,7 @@ public class RouterOptions {
             }
 
         } catch (ClassNotFoundException e) {
-            throw new SAXException("Unable to parse class name "+addrtype+" in Routing options");
+            throw new SAXException("Class not found for class name "+addrtype+" in Routing options");
         } catch (SAXException e) {
             throw new SAXException("Unable to parse class name "+addrtype+" in Routing options"+e.getMessage());
         } catch (ClassCastException e) {
