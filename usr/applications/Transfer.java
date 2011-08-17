@@ -28,6 +28,21 @@ public class Transfer implements Application {
      * Send address port count
      */
     public ApplicationResponse init(String[] args) {
+        if (args.length != 4) {
+            return new ApplicationResponse(false,"Need arguments addr port, bytes, rate");
+        }
+        try {
+            addr_= AddressFactory.newAddress(args[0]);
+            port_= new Integer(args[1]);
+            bytes_= new Integer(args[2]);
+            rate_= new Integer(args[3]);
+            if (port_ <= 0 || bytes_ <= 0 || rate_ < 0) {
+                return new ApplicationResponse
+                  (false,"Need +ve numerical arguments port, bytes, rate");
+            }
+        } catch (java.lang.NumberFormatException e) {
+            return new ApplicationResponse(false,"Need numerical arguments port, bytes, rate");
+        }
         return new ApplicationResponse(true,"");
     }
 
@@ -67,11 +82,20 @@ public class Transfer implements Application {
     /** Run the ping application */
     public void run()  {
         Datagram datagram = null;
-        int count= 6;
-        for (int i = 0; i < count; i++) {
-            String line = "line " + i;
-            ByteBuffer buffer = ByteBuffer.allocate(line.length());
-            buffer.put(line.getBytes());
+        int MTU= 1500;
+        byte []blank= new byte[MTU];
+        for (int i= 0; i< MTU; i++) {
+            blank[i]= 0;
+        }
+        long interval= rate_*1000/MTU;
+        long nextSendTime= System.currentTimeMillis();
+        while (bytes_ > 0 && running) {
+            int packetLen= MTU;
+            if (packetLen > bytes_)
+                packetLen= bytes_;
+            
+            ByteBuffer buffer = ByteBuffer.allocate(packetLen);
+            buffer.put(blank,0,packetLen);
 
             datagram = DatagramFactory.newDatagram(buffer);
 
@@ -80,6 +104,17 @@ public class Transfer implements Application {
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " + datagram + " with " + new String(datagram.getPayload()));
             }
+            bytes_-= packetLen;
+            long delay= System.currentTimeMillis()-nextSendTime;
+            if (delay > 0) {
+                try {
+                    synchronized (this) {
+                        this.wait(delay);
+                    }
+                } catch (InterruptedException e) {
+                }
+            }  
+            nextSendTime+= interval;
 
         }
 

@@ -1499,8 +1499,8 @@ public class GlobalController implements ComponentController {
         fromArgs[1]= bytes;
         toArgs[1]= bytes;
         fromArgs[2]= rate;
-        onRouter(routerList_.get(to),"usr.application.Recv",toArgs);
-        onRouter(routerList_.get(from),"usr.application.Transfer",fromArgs);
+        onRouter(routerList_.get(to),"usr.applications.Receive",toArgs);
+        onRouter(routerList_.get(from),"usr.applications.Transfer",fromArgs);
     }
 
     /** Receiver router traffic -- if it completes a set then output it */

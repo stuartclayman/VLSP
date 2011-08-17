@@ -44,7 +44,7 @@ public class Receive implements Application {
             return new ApplicationResponse(true, "");
 
         } else {
-            return new ApplicationResponse(false, "Usage: Recv port bytes");
+            return new ApplicationResponse(false, "Usage: Receive port bytes");
         }
     }
 
@@ -86,21 +86,6 @@ public class Receive implements Application {
         Datagram datagram;
 
         while ((datagram = socket.receive()) != null) {
-
-            Logger.getLogger("log").log(USR.STDOUT, count_ + ". ");
-            Logger.getLogger("log").log(USR.STDOUT, "HL: " + datagram.getHeaderLength() +
-                                        " TL: " + datagram.getTotalLength() +
-                                        " From: " + datagram.getSrcAddress() +
-                                        " To: " + datagram.getDstAddress() +
-                                        ". ");
-            byte[] payload = datagram.getPayload();
-
-            if (payload == null) {
-                Logger.getLogger("log").log(USR.STDOUT, "No payload");
-            } else {
-                Logger.getLogger("log").log(USR.STDOUT, new String(payload));
-            }
-            Logger.getLogger("log").log(USR.STDOUT, "\n");
 
             count_+=(datagram.getTotalLength()-datagram.getHeaderLength());
             if (count_ >= bytes_) {
