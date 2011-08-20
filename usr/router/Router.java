@@ -85,6 +85,22 @@ public class Router {
         setName(name);
     }
 
+    /**
+     * Construct a Router listening on a specified port for the
+     * management console and on a specified for the Router to Router
+     * connections, plus a given name.
+     * @param mPort the port for the management console
+     * @param r2rPort the port for Router to Router connections
+     * @param name the name of the router
+     * @param address the Address of the Router
+     */
+    public Router(int mPort, int r2rPort, String name, Address address) {
+        initRouter(mPort, r2rPort);
+
+        setName(name);
+        setAddress(address);
+    }
+
 
     /** Common initialisation section for all constructors */
     void initRouter(int port1, int port2)
@@ -420,6 +436,17 @@ public class Router {
             String name = args[2];
 
             router = new Router(mPort, r2rPort, name);
+        } else if (args.length == 4) {
+            int mPort = 0;
+            int r2rPort = 0;
+            Scanner sc = new Scanner(args[0]);
+            mPort = sc.nextInt();
+            sc = new Scanner(args[1]);
+            r2rPort = sc.nextInt();
+            String name = args[2];
+            Address addr = AddressFactory.newAddress(args[3]);
+
+            router = new Router(mPort, r2rPort, name, addr);
         }
 
         else {
