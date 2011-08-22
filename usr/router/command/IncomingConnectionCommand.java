@@ -5,6 +5,7 @@ import usr.logging.*;
 import usr.router.RouterManagementConsole;
 import usr.router.NetIF;
 import usr.net.AddressFactory;
+import usr.net.Address;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.net.*;
@@ -107,7 +108,15 @@ public class IncomingConnectionCommand extends RouterCommand {
                 netIF.setAddress(controller.getAddress());
                 // set remote router
                 netIF.setRemoteRouterName(remoteRouterName);
-                netIF.setRemoteRouterAddress(AddressFactory.newAddress(remoteAddr));
+                Address addr= null;
+                try {
+                  addr= AddressFactory.newAddress(remoteAddr);
+                } catch (java.net.UnknownHostException e) {
+                  Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " failed");
+                  result= error("Cannot construct address from "+remoteAddr);
+                  return result;
+                }
+                netIF.setRemoteRouterAddress(addr);
 
                 // now plug netIF into Router
                 controller.plugTemporaryNetIFIntoPort(netIF);

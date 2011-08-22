@@ -616,7 +616,12 @@ DatagramDevice {
                                                   "\n");
                     */
 
-                    Address addr = AddressFactory.newAddress(name);
+                    Address addr = null;
+                    try {
+                      addr= AddressFactory.newAddress(name);
+                    } catch (java.net.UnknownHostException e) {
+                       Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot create address from "+name);
+                    }
 
                     if (port.getNetIF().getRemoteRouterAddress().asTransmitForm().equals(name)) {
                         // try by string form

@@ -31,17 +31,25 @@ public class AddressFactory {
     /**
      * Return an Address, given an int
      */
-    public static Address newAddress(int addr) {
+    public static Address newAddress(int addr) throws java.net.UnknownHostException {
+      Exception finalE= null;
         try {
             Address address =  (Address)consI.newInstance(addr);
             return address;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+          Throwable e2= e.getTargetException();
+          if (e2 instanceof java.net.UnknownHostException) {
+            throw (java.net.UnknownHostException)e2;
+          }
+          System.err.println (e2.getClass());
+          finalE= new Exception(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + e);
-            throw new Error("AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: " + className);
-
+          finalE= e;
         }
-    }
+        finalE.printStackTrace();
+        Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + finalE);
+        throw new Error("AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: " + className);
+       }
 
     /**
      * Return an Address, given a byte[]
@@ -60,16 +68,25 @@ public class AddressFactory {
     /**
      * Return an Address, given a String
      */
-    public static Address newAddress(String addr) {
+    public static Address newAddress(String addr) throws java.net.UnknownHostException  {
+         Exception finalE= null;
         try {
             Address address =  (Address)consS.newInstance(addr);
             return address;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+          Throwable e2= e.getTargetException();
+          if (e2 instanceof java.net.UnknownHostException) {
+            throw (java.net.UnknownHostException)e2;
+          }
+          System.err.println (e2.getClass());
+          finalE= new Exception(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + e);
-            throw new Error("AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: " + className);
-
+          finalE= e;
         }
+        finalE.printStackTrace();
+        Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + finalE);
+        throw new Error("AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: " + className);
+    
     }
 
     /**

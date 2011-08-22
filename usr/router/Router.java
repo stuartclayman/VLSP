@@ -444,7 +444,13 @@ public class Router {
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
             String name = args[2];
-            Address addr = AddressFactory.newAddress(args[3]);
+            Address addr= null;
+            try {
+              addr = AddressFactory.newAddress(args[3]);
+            } catch (java.net.UnknownHostException e) {
+              System.err.println("Cannot construct address from "+args[3]);
+              help();
+            }
 
             router = new Router(mPort, r2rPort, name, addr);
         }

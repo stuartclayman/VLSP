@@ -228,12 +228,19 @@ public class LocalController implements ComponentController {
     {
 
         String routerName;
-        Address routerAddress;
-
-        if (address == null) {
+        Address routerAddress= null;
+        try {
+          if (address == null) {
+          
             routerAddress = AddressFactory.newAddress(routerId);
-        } else {
+          
+          } else {
+
             routerAddress = AddressFactory.newAddress(address);
+          }
+        } catch (java.net.UnknownHostException e) {
+          Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot construct address for router");
+          return null;
         }
 
         if (name == null) {

@@ -42,6 +42,8 @@ public class Transfer implements Application {
             }
         } catch (java.lang.NumberFormatException e) {
             return new ApplicationResponse(false,"Need numerical arguments port, bytes, rate");
+        } catch (java.net.UnknownHostException e) {
+            return new ApplicationResponse(false,"Cannot construct address from "+args[0]);
         }
         return new ApplicationResponse(true,"");
     }

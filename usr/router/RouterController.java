@@ -115,7 +115,12 @@ public class RouterController implements ComponentController, Runnable {
 
         name = "Router-" + mPort + "-" + r2rPort;
 
-        myAddress = AddressFactory.newAddress(name.hashCode());
+        try {
+            myAddress = AddressFactory.newAddress(name.hashCode());
+        } catch (java.net.UnknownHostException e) {
+            myAddress= null;
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot make address from "+ name.hashCode());
+        }
 
         this.managementConsolePort = mPort;
         // delegate listening of commands to a ManagementConsole object

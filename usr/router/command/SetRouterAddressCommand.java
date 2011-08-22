@@ -30,7 +30,13 @@ public class SetRouterAddressCommand extends RouterCommand {
 
         boolean result;
 
-        Address addr = AddressFactory.newAddress(idStr);
+        Address addr = null;
+        try {
+          addr= AddressFactory.newAddress(idStr);
+        } catch (java.net.UnknownHostException e) {
+          result= error("Cannot construct address from "+idStr);
+          return result;
+        }
 
         boolean idSet = controller.setAddress(addr);
 
