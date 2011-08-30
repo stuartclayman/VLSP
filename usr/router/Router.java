@@ -434,8 +434,16 @@ public class Router {
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
             String name = args[2];
-
-            router = new Router(mPort, r2rPort, name);
+            Address addr= null;
+            try {
+              addr = AddressFactory.newAddress(args[2]);
+            } catch (java.net.UnknownHostException e) {
+            }
+            if (addr == null) {
+                router = new Router(mPort, r2rPort, name);
+            } else {
+                router = new Router(mPort, r2rPort, name, addr);
+            }
         } else if (args.length == 4) {
             int mPort = 0;
             int r2rPort = 0;

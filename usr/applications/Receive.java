@@ -68,16 +68,17 @@ public class Receive implements Application {
         return new ApplicationResponse(true, "");
     }
 
+    /** Do necessary things to close application */
+    private void closeDown() {
+        if (socket != null) {
+            socket.close();
+        } 
+    }
+
     /** Implement graceful shut down */
     public ApplicationResponse stop() {
         running = false;
-
-        if (socket != null) {
-            socket.close();
-
-            Logger.getLogger("log").logln(USR.STDOUT, "Recv stop");
-        }
-
+        closeDown();
         return new ApplicationResponse(true, "");
     }
 
@@ -90,10 +91,11 @@ public class Receive implements Application {
             count_+=(datagram.getTotalLength()-datagram.getHeaderLength());
             if (count_ >= bytes_) {
                 Logger.getLogger("log").log(USR.STDOUT,"Received all bytes on connection");
-                stop();
+                running= false;
+                break;
             }
         }
-
+        closeDown();
 
     }
 

@@ -12,7 +12,7 @@ public class Transfer implements Application {
     Address addr_ = null;  // Address to send to
     int port_ = 0;   // Port to send to
     int bytes_ = 0;   // Bytes to send
-    int rate_= 0;  // Rate in bytes per second
+    double rate_= 0;  // Rate in bytes per second
 
     boolean running = false;
     DatagramSocket socket = null;
@@ -35,7 +35,7 @@ public class Transfer implements Application {
             addr_= AddressFactory.newAddress(args[0]);
             port_= new Integer(args[1]);
             bytes_= new Integer(args[2]);
-            rate_= new Integer(args[3]);
+            rate_= new Double(args[3]);
             if (port_ <= 0 || bytes_ <= 0 || rate_ < 0) {
                 return new ApplicationResponse
                   (false,"Need +ve numerical arguments port, bytes, rate");
@@ -53,11 +53,8 @@ public class Transfer implements Application {
         try {
             // set up socket
             socket = new DatagramSocket();
-
             socket.connect(addr_, port_);
-
             // Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket.getLocalPort());
-
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "Cannot open socket " + e.getMessage());
             return new ApplicationResponse(false,  "Cannot open socket " + e.getMessage());
@@ -67,17 +64,18 @@ public class Transfer implements Application {
 
         return new ApplicationResponse(true, "");
     }
+    
+    private void closeDown()
+    {
+        if (socket != null) {
+            socket.close();
+        }
+    }
 
     /** Implement graceful shut down */
     public ApplicationResponse stop() {
         running = false;
-
-        if (socket != null) {
-            socket.close();
-
-            Logger.getLogger("log").logln(USR.STDOUT, "Send stop");
-        }
-
+        closeDown();
         return new ApplicationResponse(true, "");
     }
 
@@ -89,8 +87,9 @@ public class Transfer implements Application {
         for (int i= 0; i< MTU; i++) {
             blank[i]= 0;
         }
-        long interval= rate_*1000/MTU;
-        long nextSendTime= System.currentTimeMillis();
+        long interval= (long)(MTU*1000/rate_);
+        //System.err.println("Interval "+interval+ " rate "+rate_);
+        long nextSendTime= System.currentTimeMillis()+interval;
         while (bytes_ > 0 && running) {
             int packetLen= MTU;
             if (packetLen > bytes_)
@@ -104,10 +103,12 @@ public class Transfer implements Application {
             try {
                 socket.send(datagram);
             } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " + datagram + " with " + new String(datagram.getPayload()));
+                Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " 
+                + datagram + " with " + new String(datagram.getPayload()));
             }
             bytes_-= packetLen;
-            long delay= System.currentTimeMillis()-nextSendTime;
+            long delay= nextSendTime-System.currentTimeMillis();
+            //System.err.println("To send "+bytes_+ " delay "+delay);
             if (delay > 0) {
                 try {
                     synchronized (this) {
@@ -119,9 +120,7 @@ public class Transfer implements Application {
             nextSendTime+= interval;
 
         }
-
-        Logger.getLogger("log").logln(USR.STDOUT, "Send: end of run()");
-
+        closeDown();
 
     }
 
