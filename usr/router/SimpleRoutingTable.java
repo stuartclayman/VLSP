@@ -51,6 +51,10 @@ public class SimpleRoutingTable implements RoutingTable {
         } else {
             int count = wrapper.getShort();
             int entrySize = wrapper.getShort();
+            if (entrySize == 0) {
+                Logger.getLogger("log").logln(USR.ERROR, "Routing table has entrySize 0");
+                throw new Exception("SimpleRoutingTable: tried to construct a RoutingTable with invalid data");
+            }
 
             if ((bytes.length - 5) % entrySize != 0) {
                 Logger.getLogger("log").logln(USR.ERROR, "Received unusual routing table length "+ bytes.length);
@@ -369,6 +373,10 @@ public class SimpleRoutingTable implements RoutingTable {
         // create a byte[] big enough for
         // T entryCount entrySize all_the_entries_as_byte[]
         // 5 + (entrySize * no_of_entires)
+        if (entrySize == 0) { 
+            Logger.getLogger("log").logln(USR.ERROR, "SRT: entry size is zero!");
+            return null;
+        }
         byte [] bytes= new byte[5 + entrySize*count];
 
         ByteBuffer wrapper = ByteBuffer.wrap(bytes);

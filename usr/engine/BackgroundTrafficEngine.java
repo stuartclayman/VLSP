@@ -24,7 +24,7 @@ public class BackgroundTrafficEngine implements EventEngine  {
     ProbDistribution trafficLengthDist_= null;
     ProbDistribution trafficSpeedDist_= null;
     boolean scaleWithNetwork_= true;
-    boolean preferEmptyNodes_= true;
+    boolean preferEmptyNodes_= false;
 
     /** Contructor from Parameter string */
     public BackgroundTrafficEngine(int time, String parms) throws EventEngineException

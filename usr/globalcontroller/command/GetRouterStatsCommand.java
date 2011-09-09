@@ -64,7 +64,7 @@ public class GetRouterStatsCommand extends GlobalCommand implements Callable<Boo
 
             // Get controller to do the work
             // and get stats for the router
-            list = controller.getRouterStats();
+            list = controller.compileRouterStats();
 
             if (list == null) {
                 // no routers

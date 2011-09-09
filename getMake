@@ -1,1 +1,0 @@
-find . -name "*.java" -print | grep -v "package-info.java" | sed -e 's/.java/.java \\/g' | sed -e 's%\./%  %g' 

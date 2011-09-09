@@ -6,6 +6,7 @@ import usr.globalcontroller.*;
 import java.nio.channels.SocketChannel;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import usr.output.*;
 
 /**
  * A NetworkGraphCommand
@@ -41,7 +42,9 @@ public class NetworkGraphCommand extends GlobalCommand {
 
 
         // get the network in the PrintStream
-        controller.visualizeNetworkGraph(graphStyle, ps);
+        OutputNetwork on= new OutputNetwork();
+        
+        on.visualizeNetworkGraph(graphStyle, ps,controller);
 
         // convert the ByteArrayOutputStream to a String
         String theString = baos.toString();

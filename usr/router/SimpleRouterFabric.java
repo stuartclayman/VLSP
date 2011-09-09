@@ -354,7 +354,11 @@ DatagramDevice {
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
 
         datagram.setDstAddress(dst);
-        sendDatagram(datagram);
+        try {
+             sendDatagram(datagram);
+        } catch (NoRouteToHostException e) {
+             // Route lost, never mind
+        }
     }
 
     /** NetIF wants to send a routing Request */
@@ -705,7 +709,11 @@ DatagramDevice {
         buffer[0]='P';
         Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
         datagram.setDstAddress(dst);
-        sendDatagram(datagram);
+        try {
+              sendDatagram(datagram);
+        } catch (NoRouteToHostException e) {
+            return false;
+        }
 
         return true;
     }
@@ -731,21 +739,19 @@ DatagramDevice {
         return fabricDevice_;
     }
 
-    public boolean sendDatagram(Datagram dg)
+    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException
     {
         dg.setSrcAddress(router.getAddress());
         return enqueueDatagram(dg);
     }
 
-    public boolean enqueueDatagram(Datagram dg)
+    public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException
     {
         try {
             return fabricDevice_.addToInQueue(dg, this);
         } catch (NoRouteToHostException e) {
-            e.printStackTrace();
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoRouteToHostException for enqueueDatagram " + dg);
+            throw e;
         }
-        return false;
     }
 
     /** Echo command received */
@@ -763,7 +769,11 @@ DatagramDevice {
 
         datagram.setDstAddress(dst);
         datagram.setDstPort(dstPort);
-        sendDatagram(datagram);
+        try {
+              sendDatagram(datagram);
+        } catch (NoRouteToHostException e) {
+            return false;
+        }
         return true;
     }
 
@@ -1120,7 +1130,12 @@ DatagramDevice {
 
                 Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, table);
                 datagram.setDstAddress(inter.getRemoteRouterAddress());
-                sendDatagram(datagram);
+                try {
+                    sendDatagram(datagram);
+                } catch (NoRouteToHostException e) {
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Cannot send routing table datagram -- no route");
+
+                } 
 
                 lastTableUpdateTime_.put(inter,now);
                 nextTableUpdateTime_.put(inter,now+options_.getMaxNetIFUpdateTime());

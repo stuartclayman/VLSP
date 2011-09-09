@@ -2,6 +2,7 @@ package usr.output;
 
 import usr.globalcontroller.*;
 import usr.logging.*;
+import java.io.PrintStream;
 
 /** This class produces output from the simulation */
 
@@ -12,14 +13,10 @@ public class OutputType {
     public static final int AT_INTERVAL= 3;
     public static final int AT_END= 4;
 
-    public static final int OUTPUT_NETWORK= 1;
-    public static final int OUTPUT_SUMMARY= 2;
-    public static final int OUTPUT_TRAFFIC= 3;
-
     Logger mylog= null;
     private String fileName_="";
+    private OutputFunction outputType_= null;
     private boolean clear_= true;
-    private int outputType_ = 0;  // What output is required
     private int outputTimeType_ = 0;  // Repeated or at time?
     private int outputTime_= 0;   // Time parameter
     private boolean firstOutput_= true;
@@ -28,25 +25,31 @@ public class OutputType {
     public OutputType() {
     }
 
-    /** Accessor for output type */
-    public int getType() {
-        return outputType_;
-    }
-
     /** Set type from string*/
     public void setType(String t) throws java.lang.IllegalArgumentException {
 
+        //  These names are defined for legacy reasons -- please use
+        // class name in future
         if (t.equals("Network")) {
-            outputType_= OUTPUT_NETWORK;
+            outputType_= new OutputNetwork();
             return;
         }
         if (t.equals("Summary")) {
-            outputType_= OUTPUT_SUMMARY;
+            outputType_= new OutputSummary();
             return;
         }
         if (t.equals("Traffic")) {
-            outputType_= OUTPUT_TRAFFIC;
+            outputType_= new OutputTraffic();
             return;
+        }
+         try {
+            java.lang.Class <?> func;
+            func=  java.lang.Class.forName(t);
+        } catch (ClassCastException e) {
+            throw new java.lang.IllegalArgumentException("Class name "+t+" must be valid class name implementing OutputFunction");
+        }
+        catch (ClassNotFoundException e) {
+            throw new java.lang.IllegalArgumentException("Class name "+t+" must be valid class name implementing OutputFunction");
         }
         throw new java.lang.IllegalArgumentException("Cannot parse Type "+t);
     }
@@ -126,6 +129,11 @@ public class OutputType {
     public void setFirst(boolean f) {
         firstOutput_= f;
     }
+    
+    /** Create the required output */
+    public void makeOutput(long time, PrintStream s, GlobalController gc) {
+      outputType_.makeOutput(time, s, this, gc);
+    }
 
     /**
      * To String
@@ -133,16 +141,7 @@ public class OutputType {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        switch (outputTimeType_) {
-        case OUTPUT_NETWORK:
-            builder.append("OUTPUT_NETWORK");
-            break;
-        case OUTPUT_SUMMARY:
-            builder.append("OUTPUT_SUMMARY");
-            break;
-        default:
-            break;
-        }
+        builder.append(outputType_.toString());
 
         builder.append(" ");
 
@@ -168,5 +167,7 @@ public class OutputType {
         builder.append(" "+parameter_);
         return builder.toString();
     }
+
+
 
 }
