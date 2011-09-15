@@ -6,9 +6,16 @@ import java.io.PrintStream;
 import usr.globalcontroller.GlobalController;
 
 /** Class to output network stuff */
-class OutputTraffic implements OutputFunction {
+public class OutputTraffic implements OutputFunction {
   
+    /** In fact this only requests output -- actual output occurs later */
     public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
+        gc.checkTrafficOutputRequests(t, o);
+        
+    }
+    
+    
+    public void produceOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
         String routerStats= gc.getRouterStats();
         if (routerStats == null || routerStats.equals(""))
             return;

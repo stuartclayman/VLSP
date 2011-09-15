@@ -12,8 +12,8 @@ import usr.engine.*;
 import java.util.concurrent.*;
 import usr.interactor.*;
 import usr.APcontroller.*;
-import usr.router.RouterOptions;
-import usr.output.OutputType;
+import usr.router.*;
+import usr.output.*;
 import java.nio.channels.FileChannel;
 import eu.reservoir.monitoring.core.*;
 import eu.reservoir.monitoring.core.plane.DataPlane;
@@ -1308,30 +1308,6 @@ public class GlobalController implements ComponentController {
         }
     }
 
-
-    
-    /** Output traffic from the network -- this merely triggers a request rahter
-       than printing */
-    private void outputTraffic(OutputType o, long time) {
-        if (options_.isSimulation()) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() +
-                                          "Request for output of traffic makes sense only in context of emulation");
-            return;
-        }
-        if (trafficOutputRequests_ == null) {
-            trafficOutputRequests_= new ArrayList<OutputType>();
-            trafficOutputTime_= new ArrayList<Long>();
-        }
-        trafficOutputRequests_.add(o);
-        trafficOutputTime_.add(time);
-        /** If requests already sent then just add it to the output request queue
-           rather than sending a fruther request */
-        if (trafficOutputRequests_.size() > 1) {
-            return;
-        }
-        //  Make request for stats
-        requestRouterStats();
-    }
     
     public HashMap<String, int []> getTrafficLinkCounts() 
     {
@@ -1420,6 +1396,30 @@ public class GlobalController implements ComponentController {
         onRouter(fromRouter,"usr.applications.Transfer",fromArgs);
     }
 
+    /** When output for traffic is requested then queue requests for traffic from
+     * routers */
+    public void checkTrafficOutputRequests(long time, OutputType o)
+    {
+        if (options_.isSimulation()) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() +
+                                          "Request for output of traffic makes sense only in context of emulation");
+            return;
+        }
+        if (trafficOutputRequests_ == null) {
+            trafficOutputRequests_= new ArrayList<OutputType>();
+            trafficOutputTime_= new ArrayList<Long>();
+        }
+        trafficOutputRequests_.add(o);
+        trafficOutputTime_.add(time);
+        /** If requests already sent then just add it to the output request queue
+           rather than sending a fruther request */
+        if (trafficOutputRequests_.size() > 1) {
+            return;
+        }
+        //  Make request for stats
+        requestRouterStats();
+    }
+    
     /** Receiver router traffic -- if it completes a set then output it */
     public void receiveRouterStats(String stats)
     {
@@ -1445,7 +1445,8 @@ public class GlobalController implements ComponentController {
                                                   " for output "+e.getMessage());
                     return;
                 }
-                o.makeOutput(trafficOutputTime_.get(i),p, this);
+                OutputTraffic ot= (OutputTraffic)o.getOutputClass();
+                ot.produceOutput(trafficOutputTime_.get(i),p, o,this);
             }
             //    System.err.println("Requests done");
             trafficOutputRequests_= new ArrayList<OutputType>();

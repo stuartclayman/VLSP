@@ -130,11 +130,16 @@ public class OutputType {
         firstOutput_= f;
     }
     
+    /** Get output function */
+    public OutputFunction getOutputClass() {
+        return outputType_;
+    }
+    
     /** Create the required output */
     public void makeOutput(long time, PrintStream s, GlobalController gc) {
       outputType_.makeOutput(time, s, this, gc);
     }
-
+ 
     /**
      * To String
      */
