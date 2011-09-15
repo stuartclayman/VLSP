@@ -33,29 +33,29 @@ public class RouterApp1C {
 
             // start
             if (router.start()) {
+
+                // set up id
+                router.setAddress(new IPV4Address("192.168.7.1"));  // WAS new GIDAddress(1));
+
+                // connnect to the other router
+                // first we tal kto my own ManagementConsole
+                RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);
+
+                // then set up Router-to-Router data connection
+                selfInteractor.createConnection(remHost + ":" + remPort, 20);
+
+                // and stop talking to the ManagementConsole
+                selfInteractor.quit();
+
+                // now set up an AppSocket to send
+                socket = new AppSocket(router);
+
+                // and we want to connect to address 2 : port 3000
+                socket.connect(  new IPV4Address("192.168.7.2") /* new GIDAddress(2)  */, 3000);
+
             } else {
                 router.stop();
             }
-
-            // set up id
-            router.setAddress(new IPV4Address("192.168.7.1"));  // WAS new GIDAddress(1));
-
-            // connnect to the other router
-            // first we tal kto my own ManagementConsole
-            RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);
-
-            // then set up Router-to-Router data connection
-            selfInteractor.createConnection(remHost + ":" + remPort, 20);
-
-            // and stop talking to the ManagementConsole
-            selfInteractor.quit();
-
-            // now set up an AppSocket to send
-            socket = new AppSocket(router);
-
-            // and we want to connect to address 2 : port 3000
-            socket.connect(  new IPV4Address("192.168.7.2") /* new GIDAddress(2)  */, 3000);
-
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "RouterApp1C exception: " + e);
             e.printStackTrace();
@@ -68,6 +68,12 @@ public class RouterApp1C {
      * Write stuff
      */
     void writeALot(int count) {
+        // check if there is a socket
+        if (socket == null) {
+            return;
+        }
+
+
         Datagram datagram = null;
 
         try {

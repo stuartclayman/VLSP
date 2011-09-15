@@ -108,6 +108,7 @@ public class Send implements Application {
 
             try {
                 socket.send(datagram);
+
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " + datagram + " with " + new String(datagram.getPayload()));
             }

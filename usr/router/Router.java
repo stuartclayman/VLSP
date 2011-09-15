@@ -138,12 +138,24 @@ public class Router {
             boolean fabricStart = fabric.start();
             boolean controllerStart = controller.start();
 
-            appSocketMux = new AppSocketMux(controller);
-            appSocketMux.start();
+            // if the fabric and the controller started OK
+            if (fabricStart && controllerStart) {
 
-            isActive = true;
+                appSocketMux = new AppSocketMux(controller);
+                appSocketMux.start();
 
-            return controllerStart && fabricStart;
+                isActive = true;
+
+                return true;
+            } else {
+                // stop anything that started
+                fabric.stop();
+                
+                controller.stop();
+
+                return false;
+            }
+
         } else {
             return false;
         }
@@ -156,8 +168,9 @@ public class Router {
         if (isActive) {
             isActive = false;
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
-            controller.stop();
+
             appSocketMux.stop();
+            controller.stop();
             fabric.stop();
 
             try {

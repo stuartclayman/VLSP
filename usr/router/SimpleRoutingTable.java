@@ -139,7 +139,7 @@ public class SimpleRoutingTable implements RoutingTable {
     /** A new network interface arrives -- add to
        routing table if necessary return true if change was made */
     public synchronized boolean addNetIF(NetIF inter, RouterOptions options) {
-        //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
+        Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table before = " + this);
 
         Address a= inter.getAddress();
@@ -148,6 +148,7 @@ public class SimpleRoutingTable implements RoutingTable {
         // so we get the size of an Address
         if (table_.size() == 0) {
             addressSize = a.size();
+            Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: set addressSize = " + addressSize);
         }
 
         // see if the table is changed
@@ -160,6 +161,7 @@ public class SimpleRoutingTable implements RoutingTable {
             table_.put(a,e1);
             changed1= true;
             entrySize = e1.size();
+            Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: set entrySize = " + entrySize);
         }
 
         //System.err.println("New entry from router "+inter.getRemoteRouterAddress());
@@ -369,6 +371,10 @@ public class SimpleRoutingTable implements RoutingTable {
         Collection<SimpleRoutingTableEntry> rtes= getEntries();
         int count = rtes.size();
         //int entrySize = rtes.iterator().next().size();
+
+        if (entrySize == 0) {
+            throw new Error("SimpleRoutingTable: entrySize is 0");
+        }
 
         // create a byte[] big enough for
         // T entryCount entrySize all_the_entries_as_byte[]

@@ -63,7 +63,8 @@ public class FabricDevice implements FabricDeviceInterface {
                                           " cannot change queue after fabric start");
             return;
         }
-        if (discipline == QUEUE_BLOCKING || discipline == QUEUE_DROPPING ||
+        if (discipline == QUEUE_BLOCKING || 
+            discipline == QUEUE_DROPPING ||
             discipline == QUEUE_NOQUEUE) {
             inQueueDiscipline_= discipline;
         } else {
@@ -80,7 +81,8 @@ public class FabricDevice implements FabricDeviceInterface {
                                           " cannot change queue after fabric start");
             return;
         }
-        if (discipline == QUEUE_BLOCKING || discipline == QUEUE_DROPPING ||
+        if (discipline == QUEUE_BLOCKING || 
+            discipline == QUEUE_DROPPING ||
             discipline == QUEUE_NOQUEUE) {
             outQueueDiscipline_= discipline;
         } else {
@@ -244,7 +246,7 @@ public class FabricDevice implements FabricDeviceInterface {
                 }
                 catch (usr.net.InterfaceBlockedException e) {
                     try {
-                        waitHere.wait(100);
+                        waitHere.wait(500);
                     } catch (InterruptedException ie) {
                     }
 
@@ -283,27 +285,33 @@ public class FabricDevice implements FabricDeviceInterface {
             }
             inDroppedPacket(dg);
             return false;
-        }
-        // Queue the packet if possible
-        synchronized (inQueue_) {
-            if (inQueueLen_ == 0 || inQueue_.size() < inQueueLen_) {
-                inQueue_.offerLast(dh);
-                if (inQueue_.size() > maxInQueue_) {
-                    maxInQueue_= inQueue_.size();
-                    netStats_.setValue(NetStats.Stat.BiggestInQueue,maxInQueue_);
+        } else {
+            // QUEUE_BLOCKING || QUEUE_DROPPING
+
+            // Queue the packet if possible
+            synchronized (inQueue_) {
+                if (inQueueLen_ == 0 || inQueue_.size() < inQueueLen_) {
+                    inQueue_.offerLast(dh);
+                    if (inQueue_.size() > maxInQueue_) {
+                        maxInQueue_= inQueue_.size();
+                        netStats_.setValue(NetStats.Stat.BiggestInQueue,maxInQueue_);
+                    }
+                    return true;
                 }
+            }
+
+            // Datagram blocked
+            // So add it's waitObj to a queue of waiting senders
+            // It will be notified when the queue is ready
+            if (waitObj != null) {
+                inWaitQueue_.addLast(waitObj);
+                // Here we have not processed the datagram -- the user may resend later
+                throw new usr.net.InterfaceBlockedException();
+            } else {
+                inDroppedPacket(dg);
                 return true;
             }
         }
-
-
-        if (waitObj != null) {
-            inWaitQueue_.addLast(waitObj);
-            // Here we have not processed the datagram -- the user may resend later
-            throw new usr.net.InterfaceBlockedException();
-        }
-        inDroppedPacket(dg);
-        return true;
     }
 
     public NetStats getNetStats() {
@@ -344,25 +352,31 @@ public class FabricDevice implements FabricDeviceInterface {
             boolean processed= sendOutDatagram(dh);
             return true;
 
-        }
-        // Queue the packet if possible
-        synchronized (outQueue_) {
-            if (outQueueLen_ == 0 || outQueue_.size() < outQueueLen_) {
-                outQueue_.offerLast(dh);
-                if (outQueue_.size() > maxOutQueue_) {
-                    maxOutQueue_= outQueue_.size();
-                    netStats_.setValue(NetStats.Stat.BiggestOutQueue,maxOutQueue_);
+        } else {
+            // QUEUE_BLOCKING || QUEUE_DROPPING
+
+            // Queue the packet if possible
+            synchronized (outQueue_) {
+                if (outQueueLen_ == 0 || outQueue_.size() < outQueueLen_) {
+                    outQueue_.offerLast(dh);
+                    if (outQueue_.size() > maxOutQueue_) {
+                        maxOutQueue_= outQueue_.size();
+                        netStats_.setValue(NetStats.Stat.BiggestOutQueue,maxOutQueue_);
+                    }
+                    return true;
                 }
-                return true;
+            }
+
+            // Packet is blocked
+            // So add it's waitObj to a queue of waiting senders
+            // It will be notified when the queue is ready
+            if (waitObj != null && outIsBlocking()) {
+                outWaitQueue_.addLast(waitObj);
+                throw new InterfaceBlockedException();
+            } else {
+                return false;
             }
         }
-        // Packet is blocked
-        if (waitObj != null && outIsBlocking()) {
-            outWaitQueue_.addLast(waitObj);
-            throw new InterfaceBlockedException();
-        }
-
-        return false;
     }
 
     /** transfer datagram from in queue to out queue using no queue discipline
@@ -390,7 +404,8 @@ public class FabricDevice implements FabricDeviceInterface {
             } catch (usr.net.InterfaceBlockedException ex) {
                 synchronized (waitObj) {
                     try {
-                        waitObj.wait(100);
+                        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "transferDatagram WAIT 500");
+                        waitObj.wait(500);
                     } catch (InterruptedException e) {
                     }
                 }
@@ -480,8 +495,8 @@ class InQueueHandler implements Runnable {
 
         while (running_ || queue_.size() > 0) {
             // Consider waking next in line if we're a blocking queue
-            if (queue_.remainingCapacity() > 0 &&
-                inWaitQueue_ != null) {
+            // WAS if (queue_.remainingCapacity() > 0 && inWaitQueue_ != null) {
+            if (queue_.remainingCapacity() > 0 && inWaitQueue_ != null && inWaitQueue_.size() > 0) {
                 try {
                     wake= inWaitQueue_.removeFirst();
                     synchronized (wake) {
@@ -492,6 +507,7 @@ class InQueueHandler implements Runnable {
                 }
 
             }
+
             // Get a datagram from the queue
             DatagramHandle dh= null;
 
@@ -505,20 +521,33 @@ class InQueueHandler implements Runnable {
                 f= fabricDevice_.getRouteFabric(dh.datagram);
             } catch (NoRouteToHostException e) { //  Cannot route
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"Cannot route " + dh.datagram);
                 continue;
             }
-            while (true) {  // Attempt to send the datagram to the correct queue
+
+            // get object to block on
+            if (f.outIsBlocking()) {
+                blockWaitObj_= new Object();
+            } else {
+                blockWaitObj_= null;
+            }
+
+            // Attempt to send the datagram to the correct queue
+            int loop = 0;
+            long waitTimeOut = 0;
+
+            while (true) {  
                 boolean sent=false;
+                loop++;
                 try {
-                    if (f.outIsBlocking()) {
-                        blockWaitObj_= new Object();
-                    } else {
-                        blockWaitObj_= null;
-                    }
+                    // try and forward to out queue
                     sent= f.addToOutQueue(dh,blockWaitObj_);
+
                     if (sent) {
+                        // if it is sent
                         fabricDevice_.inSentPacket(dh.datagram);
                     } else {
+                        // it was dropped
                         fabricDevice_.inSentPacket(dh.datagram);
                         f.outDroppedPacket(dh.datagram);
                     }
@@ -530,18 +559,30 @@ class InQueueHandler implements Runnable {
                     if (f.outIsBlocking() == false) {
                         fabricDevice_.inDroppedPacket(dh.datagram);
                         break;
-                    }
-                    synchronized (blockWaitObj_) { // Blocking out queue -- wait
-                        try {
-                            blockWaitObj_.wait(100);
-                        } catch (InterruptedException e) {
+                    } else {
+                        // Blocking out queue -- wait
+                        synchronized (blockWaitObj_) { 
+                            try {
+                                //Logger.getLogger("log").logln(USR.ERROR, leadin()+"  run WAIT 500");
+                                /**
+                                 * TODO: work out why this timing is important.
+                                 * A number of 20 is too small, and causes multiple
+                                 * loop arounds.
+                                 * Putting wait() causes lockups.
+                                 */
+                                long t0 = System.currentTimeMillis();
+                                blockWaitObj_.wait(500);
+                                waitTimeOut = System.currentTimeMillis() - t0;
+                            } catch (InterruptedException e) {
 
+                            }
                         }
                     }
                 }
-
-
             }
+
+
+            //if (loop>1) Logger.getLogger("log").logln(USR.ERROR, leadin()+"  looped " + loop + " waitTimeOut = " + waitTimeOut);
 
 
         }
@@ -590,7 +631,8 @@ class OutQueueHandler implements Runnable {
         outThread_= Thread.currentThread();
         Object wake= null;
         while (outRunning_ || queue_.size() > 0 ) {
-            if (queue_.remainingCapacity() > 0 && outWaitQueue_ != null) {
+            // WAS if (queue_.remainingCapacity() > 0 && outWaitQueue_ != null) {
+            if (queue_.remainingCapacity() > 0 && outWaitQueue_ != null && outWaitQueue_.size() > 0) {
                 try {
                     wake= outWaitQueue_.removeFirst();
                     synchronized (wake) {
@@ -617,7 +659,8 @@ class OutQueueHandler implements Runnable {
                     break;
                 } catch (InterfaceBlockedException e) {
                     try {
-                        wait(50);
+                        //Logger.getLogger("log").logln(USR.ERROR, leadin()+" OutQueueHandler run WAIT 500");
+                        wait(500);
                     } catch (InterruptedException ex) {
                     }
                 }
@@ -657,3 +700,4 @@ class DatagramHandle {
         datagramDevice= d;
     }
 }
+

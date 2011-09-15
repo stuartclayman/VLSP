@@ -781,15 +781,18 @@ public class GlobalController implements ComponentController {
     }
 
     /**
-     * Find some router info, given a router address
+     * Find some router info, given a router address or a router name
      */
-    public BasicRouterInfo findRouterInfo(String address) {
+    public BasicRouterInfo findRouterInfo(String value) {
         // skip through all the BasicRouterInfo objects
         for (BasicRouterInfo info : (Collection<BasicRouterInfo>)routerIdMap_.values()) {
-            if (info.getAddress().equals(address)) {
+            if (info.getAddress().equals(value)) {
                 // we found a match
                 return info;
-            }
+            } else if (info.getName().equals(value)) {
+                // we found a match
+                return info;
+            } 
         }
 
         // we got here and found nothing

@@ -166,7 +166,9 @@ DatagramDevice {
      */
     public void closePorts() {
         //Logger.getLogger("log").logln(USR.ERROR, "Local NetIF close");
-        closeLocalNetIF();
+        if (localNetIF != null) {
+            closeLocalNetIF();
+        }
 
         //Logger.getLogger("log").logln(USR.ERROR, "Closing ports");
         for (int i= 0; i < ports.size(); i++) {
@@ -816,12 +818,6 @@ DatagramDevice {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "plugged NetIF: " + netIF + " into port " + nextFree);
             }
 
-            // sort out when to send routing tables to this NetIF
-            Long next= System.currentTimeMillis();
-            lastTableUpdateTime_.put(netIF,new Long(0));
-            nextTableUpdateTime_.put(netIF,next);
-            queueRoutingRequest(netIF);
-
             synchronized (table_) {
 
                 if (table_.addNetIF(netIF, options_)) {
@@ -829,6 +825,14 @@ DatagramDevice {
 
                 }
             }
+
+            // sort out when to send routing tables to this NetIF
+            Long next= System.currentTimeMillis();
+            lastTableUpdateTime_.put(netIF,new Long(0));
+            nextTableUpdateTime_.put(netIF,next);
+            queueRoutingRequest(netIF);
+
+
             return rp;
         }
 
@@ -1090,6 +1094,7 @@ DatagramDevice {
                 long timeout = time - now + 1;
 
                 synchronized (waitObj_) {
+                    //Logger.getLogger("log").logln(USR.ERROR, leadin()+" waitUntil WAIT " + timeout);
 
                     waitObj_.wait(timeout);
 

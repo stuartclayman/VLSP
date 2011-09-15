@@ -28,6 +28,9 @@ public class RecvDataRate implements Application {
     int lastTimeCount = 0;
     // no per second
     int diffs = 0;
+    // elaspsed time
+    long startTime = 0;
+    long lastTime = 0;
 
     /**
      * Constructor for RecvDataRate
@@ -78,7 +81,10 @@ public class RecvDataRate implements Application {
             public void run() {
                 if (running) {
                     diffs = count - lastTimeCount;
-                    Logger.getLogger("log").logln(USR.STDOUT, "Task count: " + count + " diff: "  + diffs);
+                    lastTime = System.currentTimeMillis();
+                    long elaspsedSecs = (lastTime - startTime)/1000;
+                    long elaspsedMS = (lastTime - startTime)%1000;
+                    Logger.getLogger("log").logln(USR.STDOUT, "Task count: " + count + " time:" + elaspsedSecs + "." + elaspsedMS + " diff: "  + diffs);
                     lastTimeCount = count;
                 }
             }
@@ -105,6 +111,7 @@ public class RecvDataRate implements Application {
             timer.schedule(timerTask, 1000, 1000);
         }
 
+        startTime = System.currentTimeMillis();
 
         running = true;
 

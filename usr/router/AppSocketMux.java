@@ -364,7 +364,7 @@ public class AppSocketMux implements NetIF {
             dg.setSrcAddress(getAddress());
             return enqueueDatagram(dg);
         } else {
-            return true;
+            return false;
         }
     }
 
