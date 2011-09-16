@@ -90,6 +90,21 @@ public class MultiRouter1C1S {
         }
     }
 
+    void end() {
+        try {
+            Thread.sleep(5000);
+
+            router1Interactor.quit();
+            router2Interactor.quit();
+
+            router1.shutDown();
+            router2.shutDown();
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, "MultiRouter1C1S exception: " + e);
+            e.printStackTrace();
+        }
+
+    }
 
     public static void main(String[] args) {
         MultiRouter1C1S mr = new MultiRouter1C1S();
@@ -97,5 +112,6 @@ public class MultiRouter1C1S {
         mr.setup();
         mr.connect();
         mr.go();
+        mr.end();
     }
 }
