@@ -2,7 +2,6 @@ package usr.test;
 
 import usr.router.Router;
 import usr.logging.*;
-import usr.router.AppSocket;
 import usr.net.*;
 import java.util.Scanner;
 
@@ -14,7 +13,7 @@ public class RouterApp1S {
     Router router = null;
 
     // the socket
-    AppSocket socket;
+    DatagramSocket socket;
 
     int count = 0;
 
@@ -29,15 +28,18 @@ public class RouterApp1S {
 
             // start
             if (router.start()) {
+                // set ID
+                router.setAddress(new IPV4Address("192.168.7.2")); // WAS new GIDAddress(2));
+
+                // set a thread context, so the DatagramSocket can find the router
+                router.addThreadContext(Thread.currentThread());
+
+                // now set up a socket to receive
+                socket = new DatagramSocket(3000);
+
             } else {
                 router.stop();
             }
-
-            // set ID
-            router.setAddress(new IPV4Address("192.168.7.2")); // WAS new GIDAddress(2));
-
-            // now set up an AppSocket to receive
-            socket = new AppSocket(router, 3000);
 
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "RouterApp1S exception: " + e);

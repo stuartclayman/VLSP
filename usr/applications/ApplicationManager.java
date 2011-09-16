@@ -15,13 +15,10 @@ import java.lang.reflect.InvocationTargetException;
  * applications.
  */
 public class ApplicationManager {
-    // A static instance
-    private final static ApplicationManager singleton = new ApplicationManager();
-    // The router
+    // The router this is an ApplicationManager for.
     Router router;
 
-    // A pool of Executors
-    //ThreadPoolExecutor pool;
+    // A pool 
     ApplicationThreadManager pool;
 
     // A map of all the Applications, name -> ApplicationHandle object
@@ -30,19 +27,54 @@ public class ApplicationManager {
     /**
      * ApplicationManager Constructor.
      */
-    public ApplicationManager() {
-        // create an Executor pool
-        //WAS pool =  new ApplicationThreadPoolExecutor(this);
+    public ApplicationManager(Router router) {
+        // create an pool
         pool = new ApplicationThreadManager(this);
 
         appMap = new HashMap<String, ApplicationHandle>();
-        router = RouterDirectory.getRouter();
+        this.router = router;
+    }
+
+    /**
+     * Static entry point to start an Application.
+     */
+    public synchronized ApplicationResponse startApp(String className, String[] args) {
+        // args should be class name + args for class
+
+        ApplicationResponse result = execute(className, args);
+
+        return result;
+    }
+
+    /**
+     * Static entry point to stop an Application.
+     * Application name is passed in.
+     */
+    public synchronized ApplicationResponse stopApp(String appName) {
+        return terminate(appName);
+    }
+
+    /**
+     * Static entry point to stop all Application.
+     * Application name is passed in.
+     */
+    public synchronized  void stopAll() {
+        //System.err.println("Stopping all apps");
+        shutdown();
+        //System.err.println("Stopped all apps");
+    }
+
+    /**
+     * Static entry point to list Applications.
+     */
+    public synchronized Collection<ApplicationHandle> listApps() {
+        return appMap.values();
     }
 
     /**
      * Execute an object with ClassName and args
      */
-    synchronized ApplicationResponse execute(String className, String[] args) {
+    private synchronized ApplicationResponse execute(String className, String[] args) {
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "execute: " + className + " args: " + Arrays.asList(args));
 
@@ -71,6 +103,9 @@ public class ApplicationManager {
             // set app name
             String appName = "/" + router.getName() + "/App/" + className + "/" + app.hashCode();
 
+            // set thread context info
+            router.addThreadContext(Thread.currentThread());
+
             // initialize it
             ApplicationResponse initR = app.init(args);
 
@@ -80,7 +115,7 @@ public class ApplicationManager {
             }
 
             // otherwise create an ApplicationHandle for the app
-            ApplicationHandle handle = new ApplicationHandle(appName, app);
+            ApplicationHandle handle = new ApplicationHandle(this, appName, app);
 
             // try and start the app
             ApplicationResponse startR;
@@ -140,7 +175,7 @@ public class ApplicationManager {
     /**
      * Stop an Application
      */
-    ApplicationResponse terminate(String appName) {
+    private ApplicationResponse terminate(String appName) {
         ApplicationHandle appH = appMap.get(appName);
         if (appH == null) {
             // no app with that name
@@ -154,12 +189,15 @@ public class ApplicationManager {
                     // wait for the thread to actually end
                     //pool.waitFor(appH);
 
+                    // unset thread context info
+                    router.removeThreadContext(Thread.currentThread());
+
                     // and remove from the app map
                     appMap.remove(appName);
 
                     return new ApplicationResponse(false, "Application called " + appName + " already stopped");
                 } else {
-
+                    // NOT ApplicationHandle.AppState.STOPPED
                     try {
 
                         Application app = appH.getApplication();
@@ -179,9 +217,16 @@ public class ApplicationManager {
                         } else if (appH.getState() == ApplicationHandle.AppState.APP_POST_RUN) {
                             // the app had already exited the run loop
                             //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Cleanup app after exiting run() " + appName);
+                            synchronized (app) {
+                                app.stop();
+                            }
+
                         }
 
                         appH.setState(ApplicationHandle.AppState.STOPPED);
+
+                        // unset thread context info
+                        router.removeThreadContext(Thread.currentThread());
 
                         // and remove from the app map
                         appMap.remove(appName);
@@ -198,7 +243,7 @@ public class ApplicationManager {
     /**
      * Shutdown the ApplicationManager
      */
-    synchronized void shutdown() {
+    private synchronized void shutdown() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "shutdown ");
 
         Collection<ApplicationHandle> apps = new java.util.LinkedList<ApplicationHandle>(appMap.values());
@@ -213,39 +258,10 @@ public class ApplicationManager {
     }
 
     /**
-     * Static entry point to start an Application.
+     * Get the Router this is an ApplicationManager for.
      */
-    public synchronized static ApplicationResponse startApp(String className, String[] args) {
-        // args should be class name + args for class
-
-        ApplicationResponse result = singleton.execute(className, args);
-
-        return result;
-    }
-
-    /**
-     * Static entry point to stop an Application.
-     * Application name is passed in.
-     */
-    public synchronized static ApplicationResponse stopApp(String appName) {
-        return singleton.terminate(appName);
-    }
-
-    /**
-     * Static entry point to stop all Application.
-     * Application name is passed in.
-     */
-    public synchronized static void stopAll() {
-        //System.err.println("Stopping all apps");
-        singleton.shutdown();
-        //System.err.println("Stopped all apps");
-    }
-
-    /**
-     * Static entry point to list Applications.
-     */
-    public synchronized static Collection<ApplicationHandle> listApps() {
-        return singleton.appMap.values();
+    public Router getRouter() {
+        return router;
     }
 
     String leadin() {

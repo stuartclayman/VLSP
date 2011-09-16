@@ -20,7 +20,13 @@ public class DatagramSocket {
      * Create a DatagramSocket bound to a a free port.
      */
     public DatagramSocket() throws SocketException {
-        Router router = RouterDirectory.getRouter();
+        //Router router = RouterDirectory.getRouter();
+        Router router = RouterDirectory.find(Thread.currentThread().getId());
+
+        if (router == null) {
+            throw new SocketException("Cannot find Router");
+        }
+
         AppSocket appSocket = new AppSocket(router);
 
         socketImpl = appSocket;
@@ -30,7 +36,13 @@ public class DatagramSocket {
      * Create a DatagramSocket bound to a port.
      */
     public DatagramSocket(int port) throws SocketException {
-        Router router = RouterDirectory.getRouter();
+        //Router router = RouterDirectory.getRouter();
+        Router router = RouterDirectory.find(Thread.currentThread().getId());
+
+        if (router == null) {
+            throw new SocketException("Cannot find Router");
+        }
+
         AppSocket appSocket = new AppSocket(router, port);
 
         socketImpl = appSocket;
@@ -40,7 +52,13 @@ public class DatagramSocket {
      * Create a DatagramSocket connected to a specified remote Address and port.
      */
     public DatagramSocket(Address addr, int port) throws SocketException {
-        Router router = RouterDirectory.getRouter();
+        //Router router = RouterDirectory.getRouter();
+        Router router = RouterDirectory.find(Thread.currentThread().getId());
+
+        if (router == null) {
+            throw new SocketException("Cannot find Router");
+        }
+
         AppSocket appSocket = new AppSocket(router, addr, port);
 
         socketImpl = appSocket;

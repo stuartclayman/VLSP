@@ -185,6 +185,10 @@ public class Router {
         }
     }
 
+    public void shutDown() {
+        stop();
+    }
+
     /**
      * Is the router active
      */
@@ -266,6 +270,20 @@ public class Router {
         return fabric.addNetIF(netIF);
     }
 
+    /**
+     * Get the port for the ManagementConsole.
+     */
+    public int getManagementConsolePort() {
+        return controller.getManagementConsolePort();
+    }
+
+    /**
+     * Get the port for the connection port
+     */
+    public int getConnectionPort() {
+        return controller.getConnectionPort();
+    }
+
     /** Try to ping router with a given id */
     public boolean ping(Address addr){
         return fabric.ping(addr);
@@ -312,6 +330,19 @@ public class Router {
         fabric.closePort(port);
     }
 
+    /**
+     * Add router thread context info.
+     */
+    public void addThreadContext(Thread thread) {
+        RouterDirectory.addThreadContext(thread.getId(), this);
+    }
+
+    /**
+     * Remove router thread context info.
+     */
+    public void removeThreadContext(Thread thread) {
+        RouterDirectory.removeThreadContext(thread.getId(), this);
+    }
 
 
 
@@ -518,12 +549,14 @@ class TidyUp extends Thread {
     }
 
     public void run() {
-        Router router = RouterDirectory.getRouter();
-        if (router == null)
-            return;
+        List<Router> routers = RouterDirectory.getRouterList();
+        for (Router router : routers) {
+            if (router == null)
+                continue;
 
-        if (router.isActive()) {
-            router.stop();
+            if (router.isActive()) {
+                router.stop();
+            }
         }
     }
 }

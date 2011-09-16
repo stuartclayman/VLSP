@@ -2,7 +2,6 @@ package usr.test;
 
 import usr.router.Router;
 import usr.logging.*;
-import usr.router.AppSocket;
 import usr.net.*;
 import usr.interactor.RouterInteractor;
 import java.util.Scanner;
@@ -17,7 +16,7 @@ public class RouterApp1C {
     Router router = null;
 
     // the socket
-    AppSocket socket;
+    DatagramSocket socket;
 
     /**
      * Construct a RouterApp1C
@@ -37,6 +36,9 @@ public class RouterApp1C {
                 // set up id
                 router.setAddress(new IPV4Address("192.168.7.1"));  // WAS new GIDAddress(1));
 
+                // set a thread context, so the DatagramSocket can find the router
+                router.addThreadContext(Thread.currentThread());
+
                 // connnect to the other router
                 // first we tal kto my own ManagementConsole
                 RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);
@@ -47,8 +49,8 @@ public class RouterApp1C {
                 // and stop talking to the ManagementConsole
                 selfInteractor.quit();
 
-                // now set up an AppSocket to send
-                socket = new AppSocket(router);
+                // now set up a socket to send
+                socket = new DatagramSocket();
 
                 // and we want to connect to address 2 : port 3000
                 socket.connect(  new IPV4Address("192.168.7.2") /* new GIDAddress(2)  */, 3000);

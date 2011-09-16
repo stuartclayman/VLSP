@@ -120,14 +120,14 @@ public class RecvDataRate implements Application {
 
     /** Implement graceful shut down */
     public ApplicationResponse stop() {
+        Logger.getLogger("log").logln(USR.STDOUT, "Recv stop");
+
         running = false;
 
         timer.cancel();
 
         if (socket != null) {
             socket.close();
-
-            Logger.getLogger("log").logln(USR.STDOUT, "Recv stop");
         }
 
         return new ApplicationResponse(true, "");

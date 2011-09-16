@@ -42,6 +42,8 @@ public class AppSocket {
     // The queue take thread
     Thread takeThread;
 
+    // The queue to take from
+    LinkedBlockingQueue<Datagram> queue;
 
     /**
      * Constructs an AppSocket and binds it to any available port
@@ -116,6 +118,12 @@ public class AppSocket {
         } else {
             throw new SocketException("Port not free: " + port);
         }
+
+        // this was in recieve()
+        // but don;t need it on every call
+        queue = appSockMux.getQueueForPort(localPort);
+
+
     }
 
     /**
@@ -246,9 +254,8 @@ public class AppSocket {
      * This method blocks until a datagram is received.
      */
     public Datagram receive() {
-        LinkedBlockingQueue<Datagram> queue = appSockMux.getQueueForPort(localPort);
+        takeThread = Thread.currentThread();  
         try {
-            takeThread = Thread.currentThread();
             return queue.take();
         } catch (InterruptedException ie) {
             //Logger.getLogger("log").logln(USR.ERROR, "AppSocket: queue take interrupted");

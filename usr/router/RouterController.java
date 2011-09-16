@@ -60,10 +60,6 @@ public class RouterController implements ComponentController, Runnable {
     // The Thread
     Thread myThread;
 
-    // Counts ensure that Info Source and Aggreg Points have unique names
-    int isCount_= 1;
-    int apCount_= 1;
-
     // are we running
     boolean running = false;
 
@@ -75,6 +71,14 @@ public class RouterController implements ComponentController, Runnable {
 
     // the no of connections
     int connectionCount;
+
+    // The ApplicationManager
+    ApplicationManager appManager;
+
+
+    // Counts ensure that Info Source and Aggreg Points have unique names
+    int isCount_= 1;
+    int apCount_= 1;
 
     // Information about the APcontroller
     APController apController_= null;
@@ -131,6 +135,10 @@ public class RouterController implements ComponentController, Runnable {
         connectionCount = 0;
         // a map of NetIFs
         tempNetIFMap = new HashMap<Integer, NetIF>();
+
+        // setup ApplicationManager
+        appManager = new ApplicationManager(router);
+
         // Set up info for AP management
         //System.out.println("Construct AP Controller");
         apController_= ConstructAPController.constructAPController
@@ -285,7 +293,7 @@ public class RouterController implements ComponentController, Runnable {
 
     /** Shut down the router from internal message from console -- pass the message up to the router object */
     public void shutDown() {
-        router.stop();
+        router.shutDown();
     }
 
 
@@ -408,7 +416,7 @@ public class RouterController implements ComponentController, Runnable {
             String rest = commandstr.substring(className.length()).trim();
             String[] args= rest.split(" ");
 
-            return ApplicationManager.startApp(className, args);
+            return appManager.startApp(className, args);
         }
     }
 
@@ -423,7 +431,7 @@ public class RouterController implements ComponentController, Runnable {
         } else {
             String appName = split[0].trim();
 
-            return ApplicationManager.stopApp(appName);
+            return appManager.stopApp(appName);
         }
     }
 
@@ -432,12 +440,12 @@ public class RouterController implements ComponentController, Runnable {
      * It takes an app name
      */
     public Collection<ApplicationHandle> appList() {
-        return ApplicationManager.listApps();
+        return appManager.listApps();
     }
 
     /** Stop running applications if any */
     void stopApplications () {
-        ApplicationManager.stopAll();
+        appManager.stopAll();
     }
 
 

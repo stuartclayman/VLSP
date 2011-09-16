@@ -20,12 +20,16 @@ public class ApplicationHandle implements Runnable {
     // The state
     AppState state;
 
+    // The ApplicationManager
+    ApplicationManager manager;
+
     /**
      * Construct an ApplicationHandle
      */
-    ApplicationHandle(String name, Application app) {
+    ApplicationHandle(ApplicationManager appMgr, String name, Application app) {
         this.name = name;
         this.app = app;
+        this.manager = appMgr;
         setState(AppState.APP_POST_INIT);
     }
 
@@ -80,6 +84,9 @@ public class ApplicationHandle implements Runnable {
     public void run() {
         Logger.getLogger("log").logln(USR.STDOUT, "ApplicationHandle: entering run: " + app);
 
+        // set thread context info
+        manager.getRouter().addThreadContext(Thread.currentThread());
+
         if (getState() == ApplicationHandle.AppState.RUNNING) {
             app.run();
         }
@@ -91,8 +98,11 @@ public class ApplicationHandle implements Runnable {
         // we need to stop it
         if (getState() == ApplicationHandle.AppState.RUNNING) {
             setState(ApplicationHandle.AppState.APP_POST_RUN);
-            ApplicationManager.stopApp(getName());
+            manager.stopApp(getName());
         }
+
+        // unset thread context info
+        manager.getRouter().removeThreadContext(Thread.currentThread());
 
     }
 
