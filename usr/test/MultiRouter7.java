@@ -89,7 +89,9 @@ public class MultiRouter7 {
         try {
             // listen on 4, 5, 7
             String[] argsRecv =  {"3000"};
-            Thread.sleep(6000);
+
+            // allow time for routing table propogation
+            Thread.sleep(7000);
 
             routerInteractors.get(4).appStart("usr.applications.RecvDataRate", argsRecv);
             Thread.sleep(100);
@@ -99,15 +101,15 @@ public class MultiRouter7 {
 
             // send on 1, 2, 6
             Thread.sleep(1000);
-            String[] args1 = {"192.168.7.4", "3000", "50000"};
+            String[] args1 = {"192.168.7.4", "3000", "250000"};
             routerInteractors.get(1).appStart("usr.applications.Send", args1);
 
             Thread.sleep(200);
-            String[] args2 = {"192.168.7.5", "3000", "50000"};
+            String[] args2 = {"192.168.7.5", "3000", "250000"};
             routerInteractors.get(2).appStart("usr.applications.Send", args2);
 
             Thread.sleep(200);
-            String[] args6 = {"192.168.7.7", "3000", "50000"};
+            String[] args6 = {"192.168.7.7", "3000", "250000"};
             routerInteractors.get(6).appStart("usr.applications.Send", args6);
 
         } catch (Exception e) {

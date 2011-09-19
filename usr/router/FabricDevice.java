@@ -7,7 +7,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.nio.ByteBuffer;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.*;
 
 /** A fabric device is a device with an Inbound and an outbound queue.
    Inboud is "towards fabric" and Outbound is "from fabric" -- see diagram
@@ -33,16 +33,16 @@ public class FabricDevice implements FabricDeviceInterface {
     int maxInQueue_ = 0;
     int maxOutQueue_= 0;
 
-    LinkedBlockingDeque <DatagramHandle> inQueue_= null;  // queue for inbound -- towards fabric
-    LinkedBlockingDeque <DatagramHandle> outQueue_= null;  // queue for outgoing -- away from fabric
+    BlockingDeque <DatagramHandle> inQueue_= null;  // queue for inbound -- towards fabric
+    BlockingDeque <DatagramHandle> outQueue_= null;  // queue for outgoing -- away from fabric
     DatagramDevice device_;
     InQueueHandler inQueueHandler_= null;
     OutQueueHandler outQueueHandler_= null;
     // counts
     NetStats netStats_= null;
 
-    LinkedBlockingDeque<Object> inWaitQueue_= null;  // Queue stores objects waiting for
-    LinkedBlockingDeque<Object> outWaitQueue_= null;  // notification from blocking queue
+    BlockingDeque<Waker> inWaitQueue_= null;  // Queue stores objects waiting for
+    BlockingDeque<Waker> outWaitQueue_= null;  // notification from blocking queue
 
     int inq=0;
     boolean started_= false;
@@ -141,9 +141,8 @@ public class FabricDevice implements FabricDeviceInterface {
             } else {
                 inQueue_= new LinkedBlockingDeque<DatagramHandle>(inQueueLen_);
             }
-            inWaitQueue_= new LinkedBlockingDeque<Object>();
-            inQueueHandler_ = new InQueueHandler(inQueueDiscipline_, inQueue_,
-                                                 inWaitQueue_,this);
+            inWaitQueue_= new LinkedBlockingDeque<Waker>();
+            inQueueHandler_ = new InQueueHandler(inQueueDiscipline_, inQueue_, this);
 
             inThread_= new Thread(inQueueHandler_,name_+"-inQueue");
             inThread_.start();
@@ -154,9 +153,8 @@ public class FabricDevice implements FabricDeviceInterface {
             } else {
                 outQueue_= new LinkedBlockingDeque<DatagramHandle>(outQueueLen_);
             }
-            outWaitQueue_= new LinkedBlockingDeque<Object>();
-            outQueueHandler_ = new OutQueueHandler(outQueueDiscipline_, outQueue_,
-                                                   outWaitQueue_, this);
+            outWaitQueue_= new LinkedBlockingDeque<Waker>();
+            outQueueHandler_ = new OutQueueHandler(outQueueDiscipline_, outQueue_, this);
             outThread_= new Thread(outQueueHandler_,name_+"-outQueue");
             outThread_.start();
         }
@@ -236,17 +234,17 @@ public class FabricDevice implements FabricDeviceInterface {
     public boolean blockingAddToInQueue(Datagram dg, DatagramDevice dd)
     throws NoRouteToHostException {
 
-        Object waitHere= new Object();
-        synchronized (waitHere) {
+        Waker waker = new Waker();
+        synchronized (waker) {
             while(true) {
 
                 try {
-                    boolean processed= addToInQueue(dg, dd,waitHere);
+                    boolean processed= addToInQueue(dg, dd, waker);
                     return processed;
                 }
                 catch (usr.net.InterfaceBlockedException e) {
                     try {
-                        waitHere.wait(500);
+                        waker.await(500);
                     } catch (InterruptedException ie) {
                     }
 
@@ -269,7 +267,7 @@ public class FabricDevice implements FabricDeviceInterface {
     }
 
     /** Add a datagram to the in queue -- true means sent to out queue, false means blocked */
-    public boolean addToInQueue(Datagram dg, DatagramDevice dd, Object waitObj)
+    public boolean addToInQueue(Datagram dg, DatagramDevice dd, Waker waitObj)
     throws NoRouteToHostException,  usr.net.InterfaceBlockedException {
 
         DatagramHandle dh= new DatagramHandle(dg,dd);
@@ -314,6 +312,26 @@ public class FabricDevice implements FabricDeviceInterface {
         }
     }
 
+    /**
+     * A callback from the InQueueHandler to say
+     * that the queue has some space.
+     */
+    protected void inQueueHasCapacity() {
+        Waker wake= null;
+
+            if (inWaitQueue_ != null && inWaitQueue_.size() > 0) {
+                try {
+                    wake= inWaitQueue_.removeFirst();
+                    // sclayman 19/9/2011 - I dont think we need the synchronized
+                    //synchronized (wake) {
+                    wake.signal();
+                    //}
+                }
+                catch (NoSuchElementException e) {
+                }
+            }
+    }
+
     public NetStats getNetStats() {
         return (NetStats)netStats_.clone();
     }
@@ -341,7 +359,7 @@ public class FabricDevice implements FabricDeviceInterface {
 
     /** Add a datagram to the out queue --
        true means added to out queue, false means rejected*/
-    public boolean addToOutQueue(DatagramHandle dh, Object waitObj)
+    public boolean addToOutQueue(DatagramHandle dh, Waker waitObj)
     throws NoRouteToHostException, InterfaceBlockedException {
 
         if (outQueueDiscipline_ == QUEUE_NOQUEUE) {
@@ -379,6 +397,26 @@ public class FabricDevice implements FabricDeviceInterface {
         }
     }
 
+    /**
+     * A callback from the OutQueueHandler to say
+     * that the queue has some space.
+     */
+    protected void outQueueHasCapacity() {
+        Waker wake= null;
+
+            if (outWaitQueue_ != null && outWaitQueue_.size() > 0) {
+                try {
+                    wake= outWaitQueue_.removeFirst();
+                    // sclayman 19/9/2011 - I dont think we need the synchronized
+                    //synchronized (wake) {
+                    wake.signal();
+                    //}
+                }
+                catch (NoSuchElementException e) {
+                }
+            }
+    }
+
     /** transfer datagram from in queue to out queue using no queue discipline
         add right now or drop
      */
@@ -394,18 +432,20 @@ public class FabricDevice implements FabricDeviceInterface {
         } catch (NoRouteToHostException e) {
             throw (e);
         }
-        Object waitObj= new Object();
+
+        Waker waker = new Waker();
+
         while (true) {
             try {
-                return f.addToOutQueue(dh, waitObj);
+                return f.addToOutQueue(dh, waker);
             } catch (java.net.NoRouteToHostException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoRouteToHostException for transferDatagram " + dh.datagram);
                 return false;
             } catch (usr.net.InterfaceBlockedException ex) {
-                synchronized (waitObj) {
+                synchronized (waker) {
                     try {
                         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "transferDatagram WAIT 500");
-                        waitObj.wait(500);
+                        waker.await(500);
                     } catch (InterruptedException e) {
                     }
                 }
@@ -468,20 +508,17 @@ public class FabricDevice implements FabricDeviceInterface {
 class InQueueHandler implements Runnable {
 
     int queueDiscipline_= 0;
-    LinkedBlockingDeque <DatagramHandle> queue_= null;
-    LinkedBlockingDeque<Object> inWaitQueue_= null;
+    BlockingQueue <DatagramHandle> queue_= null;
     FabricDevice fabricDevice_= null;
     Boolean running_ = false;
     Thread runThread_= null;
-    Object blockWaitObj_;  // This object is used to wait when a blocking queue is sent to
+    Waker blockWaitObj_;  // This object is used to wait when a blocking queue is sent to
     String name_;
 
     /** Constructor sets up */
-    InQueueHandler(int discipline, LinkedBlockingDeque<DatagramHandle> q,
-                   LinkedBlockingDeque<Object> wait, FabricDevice f) {
+    InQueueHandler(int discipline, BlockingQueue<DatagramHandle> q, FabricDevice f) {
         queueDiscipline_= discipline;
         queue_= q;
-        inWaitQueue_= wait;
         fabricDevice_= f;
         name_= f.getName();
 
@@ -491,21 +528,11 @@ class InQueueHandler implements Runnable {
         running_= true;
         runThread_= Thread.currentThread();
         int ct= 0;
-        Object wake= null;
 
         while (running_ || queue_.size() > 0) {
             // Consider waking next in line if we're a blocking queue
-            // WAS if (queue_.remainingCapacity() > 0 && inWaitQueue_ != null) {
-            if (queue_.remainingCapacity() > 0 && inWaitQueue_ != null && inWaitQueue_.size() > 0) {
-                try {
-                    wake= inWaitQueue_.removeFirst();
-                    synchronized (wake) {
-                        wake.notify();
-                    }
-                }
-                catch (NoSuchElementException e) {
-                }
-
+            if (queue_.remainingCapacity() > 0) {
+                fabricDevice_.inQueueHasCapacity();
             }
 
             // Get a datagram from the queue
@@ -521,13 +548,13 @@ class InQueueHandler implements Runnable {
                 f= fabricDevice_.getRouteFabric(dh.datagram);
             } catch (NoRouteToHostException e) { //  Cannot route
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+"Cannot route " + dh.datagram);
+                //Logger.getLogger("log").logln(USR.ERROR, leadin()+"Cannot route " + dh.datagram);
                 continue;
             }
 
             // get object to block on
             if (f.outIsBlocking()) {
-                blockWaitObj_= new Object();
+                blockWaitObj_= new Waker();
             } else {
                 blockWaitObj_= null;
             }
@@ -561,7 +588,8 @@ class InQueueHandler implements Runnable {
                         break;
                     } else {
                         // Blocking out queue -- wait
-                        synchronized (blockWaitObj_) { 
+                        // sclayman 19/9/2011 - I dont think we need the synchronized
+                        //synchronized (blockWaitObj_) { 
                             try {
                                 //Logger.getLogger("log").logln(USR.ERROR, leadin()+"  run WAIT 500");
                                 /**
@@ -571,12 +599,12 @@ class InQueueHandler implements Runnable {
                                  * Putting wait() causes lockups.
                                  */
                                 long t0 = System.currentTimeMillis();
-                                blockWaitObj_.wait(500);
+                                blockWaitObj_.await(500);
                                 waitTimeOut = System.currentTimeMillis() - t0;
                             } catch (InterruptedException e) {
 
                             }
-                        }
+                        //}
                     }
                 }
             }
@@ -609,19 +637,16 @@ class InQueueHandler implements Runnable {
 
 class OutQueueHandler implements Runnable {
     int queueDiscipline_= 0;
-    LinkedBlockingDeque <DatagramHandle> queue_;
     FabricDevice fabricDevice_= null;
     Boolean outRunning_= false;
     Thread outThread_= null;
     String name_= null;
-    LinkedBlockingDeque<Object> outWaitQueue_= null;
+    BlockingQueue<DatagramHandle> queue_;
 
-    OutQueueHandler(int discipline, LinkedBlockingDeque<DatagramHandle> q,
-                    LinkedBlockingDeque<Object> w, FabricDevice f) {
+    OutQueueHandler(int discipline, BlockingQueue<DatagramHandle> q, FabricDevice f) {
         queueDiscipline_= discipline;
         queue_= q;
         fabricDevice_= f;
-        outWaitQueue_= w;
         name_= f.getName();
     }
 
@@ -629,19 +654,13 @@ class OutQueueHandler implements Runnable {
     public void run() {
         outRunning_= true;
         outThread_= Thread.currentThread();
-        Object wake= null;
+
         while (outRunning_ || queue_.size() > 0 ) {
-            // WAS if (queue_.remainingCapacity() > 0 && outWaitQueue_ != null) {
-            if (queue_.remainingCapacity() > 0 && outWaitQueue_ != null && outWaitQueue_.size() > 0) {
-                try {
-                    wake= outWaitQueue_.removeFirst();
-                    synchronized (wake) {
-                        wake.notify();
-                    }
-                }
-                catch (NoSuchElementException e) {
-                }
+
+            if (queue_.remainingCapacity() > 0) {
+                fabricDevice_.outQueueHasCapacity();
             }
+
             DatagramHandle dh= null;
             try {
                 dh= queue_.take();
@@ -701,3 +720,55 @@ class DatagramHandle {
     }
 }
 
+/**
+ * A Wakeup Monitor.
+ */
+class Waker {
+    int waitCount = 0;
+    int notifyCount = 0;
+    boolean isWaiting = false;
+
+    public Waker() {
+    }
+    
+
+    /**
+     * Wait for some milliseconds.
+     */
+    public synchronized void await(long millisTimeout) throws InterruptedException {
+        if (notifyCount > waitCount) {
+            //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " notified waitCount: " + waitCount + " notifyCount: " + notifyCount);
+            return;
+        } else {
+
+            if (isWaiting) {
+                // already waiting - nothing to do
+                //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " already waiting");
+                return;
+            } else {
+                isWaiting = true;
+                waitCount++;
+
+                this.wait(millisTimeout);
+
+                isWaiting = false;
+            }
+        }
+    }
+
+
+    /**
+     * Signal with a notify
+     */
+    public synchronized void signal() {
+        notifyCount++;
+
+        if (isWaiting) {
+            this.notify();
+
+        } else {
+            // nothing to do
+        } 
+    }
+
+}

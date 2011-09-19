@@ -148,7 +148,7 @@ public class SimpleRoutingTable implements RoutingTable {
         // so we get the size of an Address
         if (table_.size() == 0) {
             addressSize = a.size();
-            Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: set addressSize = " + addressSize);
+            //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: set addressSize = " + addressSize);
         }
 
         // see if the table is changed
@@ -161,7 +161,7 @@ public class SimpleRoutingTable implements RoutingTable {
             table_.put(a,e1);
             changed1= true;
             entrySize = e1.size();
-            Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: set entrySize = " + entrySize);
+            //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: set entrySize = " + entrySize);
         }
 
         //System.err.println("New entry from router "+inter.getRemoteRouterAddress());

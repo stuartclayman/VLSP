@@ -35,7 +35,7 @@ public interface FabricDeviceInterface {
     /** Takes a datagram from a datagram device and either returns true
        (inserted) or false (dropped/blocked) -- if the queue is blocking
        a notify will be sent to waitObj when there is room in the queue*/
-    public boolean addToInQueue(Datagram dg, DatagramDevice dd, Object waitObj)
-    throws java.net.NoRouteToHostException, usr.net.InterfaceBlockedException;
+    //public boolean addToInQueue(Datagram dg, DatagramDevice dd, Object waitObj)
+    //throws java.net.NoRouteToHostException, usr.net.InterfaceBlockedException;
 
 }
