@@ -243,11 +243,7 @@ public class FabricDevice implements FabricDeviceInterface {
                     return processed;
                 }
                 catch (usr.net.InterfaceBlockedException e) {
-                    try {
-                        waker.await(500);
-                    } catch (InterruptedException ie) {
-                    }
-
+                    waker.await(250);
                 }
             }
         }
@@ -349,6 +345,26 @@ public class FabricDevice implements FabricDeviceInterface {
 
 
 
+    /** Add a datagram to the out queue -- blocking call, will continue to wait until
+        datagram is added */
+    public boolean blockingAddToOutQueue(DatagramHandle dh)
+    throws NoRouteToHostException {
+
+        Waker waker = new Waker();
+        synchronized (waker) {
+            while(true) {
+
+                try {
+                    boolean processed= addToOutQueue(dh, waker);
+                    return processed;
+                }
+                catch (usr.net.InterfaceBlockedException e) {
+                    waker.await(250);
+                }
+            }
+        }
+    }
+
     /** Add a datagram to the out queue -- return true if datagram
        added to out queue, false means rejected*/
     public boolean addToOutQueue(DatagramHandle dh) throws
@@ -443,11 +459,7 @@ public class FabricDevice implements FabricDeviceInterface {
                 return false;
             } catch (usr.net.InterfaceBlockedException ex) {
                 synchronized (waker) {
-                    try {
-                        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "transferDatagram WAIT 500");
-                        waker.await(500);
-                    } catch (InterruptedException e) {
-                    }
+                    waker.await(250);
                 }
             }
         }
@@ -472,6 +484,7 @@ public class FabricDevice implements FabricDeviceInterface {
     public void stop() {
 
         stopped_= true;
+
         if (inQueueHandler_ != null) {
             inQueueHandler_.stopThread();
         }
@@ -479,6 +492,16 @@ public class FabricDevice implements FabricDeviceInterface {
         if (outQueueHandler_ != null) {
             outQueueHandler_.stopThread();
         }
+
+        // wake up all inWaitQueue_ and outWaitQueue_
+        // so they do not lock
+        while (inWaitQueue_ != null && inWaitQueue_.size() > 0) {
+            inQueueHasCapacity();
+        }
+        while (outWaitQueue_ != null && outWaitQueue_.size() > 0) {
+            outQueueHasCapacity();
+        }
+
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" out queue stop");
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+" fabric device stop");
 
@@ -512,7 +535,6 @@ class InQueueHandler implements Runnable {
     FabricDevice fabricDevice_= null;
     Boolean running_ = false;
     Thread runThread_= null;
-    Waker blockWaitObj_;  // This object is used to wait when a blocking queue is sent to
     String name_;
 
     /** Constructor sets up */
@@ -543,6 +565,9 @@ class InQueueHandler implements Runnable {
             } catch (InterruptedException e) {
                 break;  // Interrupt should only occur when queue is zero
             }
+
+
+            // Process DatagramHandle
             FabricDevice f= null;
             try {
                 f= fabricDevice_.getRouteFabric(dh.datagram);
@@ -552,23 +577,19 @@ class InQueueHandler implements Runnable {
                 continue;
             }
 
-            // get object to block on
-            if (f.outIsBlocking()) {
-                blockWaitObj_= new Waker();
-            } else {
-                blockWaitObj_= null;
-            }
-
             // Attempt to send the datagram to the correct queue
             int loop = 0;
-            long waitTimeOut = 0;
 
             while (true) {  
                 boolean sent=false;
                 loop++;
                 try {
                     // try and forward to out queue
-                    sent= f.addToOutQueue(dh,blockWaitObj_);
+                    if (f.outIsBlocking()) {
+                        sent = f.blockingAddToOutQueue(dh);
+                    } else {
+                        sent= f.addToOutQueue(dh);
+                    }
 
                     if (sent) {
                         // if it is sent
@@ -583,35 +604,16 @@ class InQueueHandler implements Runnable {
                     fabricDevice_.inDroppedPacketNR(dh.datagram);
                     break;
                 } catch (InterfaceBlockedException ex) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "InQueueHandler run InterfaceBlockedException");
+
                     if (f.outIsBlocking() == false) {
                         fabricDevice_.inDroppedPacket(dh.datagram);
                         break;
                     } else {
-                        // Blocking out queue -- wait
-                        // sclayman 19/9/2011 - I dont think we need the synchronized
-                        //synchronized (blockWaitObj_) { 
-                            try {
-                                //Logger.getLogger("log").logln(USR.ERROR, leadin()+"  run WAIT 500");
-                                /**
-                                 * TODO: work out why this timing is important.
-                                 * A number of 20 is too small, and causes multiple
-                                 * loop arounds.
-                                 * Putting wait() causes lockups.
-                                 */
-                                long t0 = System.currentTimeMillis();
-                                blockWaitObj_.await(500);
-                                waitTimeOut = System.currentTimeMillis() - t0;
-                            } catch (InterruptedException e) {
 
-                            }
-                        //}
                     }
                 }
             }
-
-
-            //if (loop>1) Logger.getLogger("log").logln(USR.ERROR, leadin()+"  looped " + loop + " waitTimeOut = " + waitTimeOut);
-
 
         }
     }
@@ -667,6 +669,8 @@ class OutQueueHandler implements Runnable {
             } catch (InterruptedException e) {
                 continue;
             }
+
+            // process DatagramHandle
             if (dh.datagram.TTLReduce() == false) {
                 fabricDevice_.listener_.TTLDrop(dh.datagram);
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
@@ -678,9 +682,10 @@ class OutQueueHandler implements Runnable {
                     break;
                 } catch (InterfaceBlockedException e) {
                     try {
-                        //Logger.getLogger("log").logln(USR.ERROR, leadin()+" OutQueueHandler run WAIT 500");
+                        Logger.getLogger("log").logln(USR.ERROR, leadin()+" OutQueueHandler run WAIT 500");
                         wait(500);
                     } catch (InterruptedException ex) {
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "OutQueueHandler run wait Interrupted");
                     }
                 }
             }
@@ -727,6 +732,7 @@ class Waker {
     int waitCount = 0;
     int notifyCount = 0;
     boolean isWaiting = false;
+    long waitTimeOut = 0;
 
     public Waker() {
     }
@@ -735,9 +741,10 @@ class Waker {
     /**
      * Wait for some milliseconds.
      */
-    public synchronized void await(long millisTimeout) throws InterruptedException {
+    public synchronized void await(long millisTimeout) {
         if (notifyCount > waitCount) {
             //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " notified waitCount: " + waitCount + " notifyCount: " + notifyCount);
+            waitCount++;
             return;
         } else {
 
@@ -746,12 +753,24 @@ class Waker {
                 //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " already waiting");
                 return;
             } else {
-                isWaiting = true;
-                waitCount++;
+                try {
+                    isWaiting = true;
+                    waitCount++;
 
-                this.wait(millisTimeout);
+                    long t0 = System.currentTimeMillis();
 
-                isWaiting = false;
+                    this.wait(millisTimeout);
+
+                    waitTimeOut = System.currentTimeMillis() - t0;
+
+                    if (waitTimeOut > 200) {
+                        //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " waitTimeOut = " + waitTimeOut);    
+                    }
+                } catch (InterruptedException ie) {
+                    Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " interrupted");
+                } finally {
+                    isWaiting = false;
+                }
             }
         }
     }
