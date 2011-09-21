@@ -993,7 +993,7 @@ DatagramDevice {
             fabric = srf;
             waitObj_= new Object();
 
-            setName("RoutingTableTransmitter-" + fabric.hashCode());
+            setName("/" + fabric.getName() + "/RoutingTableTransmitter/" + fabric.hashCode());
         }
 
 

@@ -21,7 +21,7 @@ public class DatagramSocket {
      */
     public DatagramSocket() throws SocketException {
         //Router router = RouterDirectory.getRouter();
-        Router router = RouterDirectory.find(Thread.currentThread().getId());
+        Router router = RouterDirectory.find(Thread.currentThread().getThreadGroup());
 
         if (router == null) {
             throw new SocketException("Cannot find Router");
@@ -37,7 +37,7 @@ public class DatagramSocket {
      */
     public DatagramSocket(int port) throws SocketException {
         //Router router = RouterDirectory.getRouter();
-        Router router = RouterDirectory.find(Thread.currentThread().getId());
+        Router router = RouterDirectory.find(Thread.currentThread().getThreadGroup());
 
         if (router == null) {
             throw new SocketException("Cannot find Router");
@@ -53,7 +53,7 @@ public class DatagramSocket {
      */
     public DatagramSocket(Address addr, int port) throws SocketException {
         //Router router = RouterDirectory.getRouter();
-        Router router = RouterDirectory.find(Thread.currentThread().getId());
+        Router router = RouterDirectory.find(Thread.currentThread().getThreadGroup());
 
         if (router == null) {
             throw new SocketException("Cannot find Router");

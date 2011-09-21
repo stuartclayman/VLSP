@@ -34,6 +34,9 @@ public class Router {
     // Is the router active
     boolean isActive = false;
 
+    // A ThreadGroup for all subthreads of this router.
+    ThreadGroup threadGroup;
+
     // Stream for output
     FileOutputStream outputStream_= null;
 
@@ -44,7 +47,9 @@ public class Router {
      * @param port the port for the management console
      */
     public Router(int port) {
-        initRouter(port, port+1);
+        String name = "Router-" + port + "-" + (port+1);
+
+        initRouter(port, port+1, name);
     }
 
     /**
@@ -55,9 +60,7 @@ public class Router {
      * @param name the name of the router
      */
     public Router(int port, String name) {
-        initRouter(port, port+1);
-
-        setName(name);
+        initRouter(port, port+1, name);
     }
 
     /**
@@ -68,7 +71,9 @@ public class Router {
      * @param r2rPort the port for Router to Router connections
      */
     public Router(int mPort, int r2rPort) {
-        initRouter(mPort, r2rPort);
+        String name = "Router-" + mPort + "-" + r2rPort;
+
+        initRouter(mPort, r2rPort, name);
     }
 
     /**
@@ -80,9 +85,7 @@ public class Router {
      * @param name the name of the router
      */
     public Router(int mPort, int r2rPort, String name ) {
-        initRouter(mPort, r2rPort);
-
-        setName(name);
+        initRouter(mPort, r2rPort, name);
     }
 
     /**
@@ -95,15 +98,14 @@ public class Router {
      * @param address the Address of the Router
      */
     public Router(int mPort, int r2rPort, String name, Address address) {
-        initRouter(mPort, r2rPort);
+        initRouter(mPort, r2rPort, name);
 
-        setName(name);
         setAddress(address);
     }
 
 
     /** Common initialisation section for all constructors */
-    void initRouter(int port1, int port2)
+    void initRouter(int port1, int port2, String name)
 
     {
 
@@ -122,7 +124,10 @@ public class Router {
 
         options_= new RouterOptions(this);
 
-        controller = new RouterController(this, options_, port1, port2);
+        // Setup ThreadGroup
+        threadGroup = new ThreadGroup(name);
+
+        controller = new RouterController(this, options_, port1, port2, name);
         fabric = new SimpleRouterFabric(this, options_);
         RouterDirectory.register(this);
 
@@ -143,6 +148,8 @@ public class Router {
 
                 appSocketMux = new AppSocketMux(controller);
                 appSocketMux.start();
+
+                addThreadContext(threadGroup);
 
                 isActive = true;
 
@@ -169,6 +176,8 @@ public class Router {
             isActive = false;
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
+            removeThreadContext(threadGroup);
+
             appSocketMux.stop();
             controller.stop();
             fabric.stop();
@@ -194,6 +203,13 @@ public class Router {
      */
     public boolean isActive() {
         return isActive;
+    }
+
+    /**
+     * Get the Thread Group.
+     */
+    ThreadGroup getThreadGroup() {
+        return threadGroup;
     }
 
     /**
@@ -333,15 +349,15 @@ public class Router {
     /**
      * Add router thread context info.
      */
-    public void addThreadContext(Thread thread) {
-        RouterDirectory.addThreadContext(thread.getId(), this);
+    public void addThreadContext(ThreadGroup threadG) {
+        RouterDirectory.addThreadContext(threadG, this);
     }
 
     /**
      * Remove router thread context info.
      */
-    public void removeThreadContext(Thread thread) {
-        RouterDirectory.removeThreadContext(thread.getId(), this);
+    public void removeThreadContext(ThreadGroup threadG) {
+        RouterDirectory.removeThreadContext(threadG, this);
     }
 
 

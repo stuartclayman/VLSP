@@ -30,7 +30,7 @@ class ApplicationThreadManager {
     public void execute(ApplicationHandle appH) {
         // create a thread name
         synchronized (threads) {
-            String threadName =  appH.getApplication().getClass().getName() + "-" + threadCount;
+            String threadName =  "/" + appManager.getRouter().getName() + "/" + appH.getApplication().getClass().getName() + "/" + threadCount;
             // set the thread name in the ApplicationHandle
             appH.setThreadName(threadName);
 

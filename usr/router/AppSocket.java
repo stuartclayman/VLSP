@@ -285,9 +285,7 @@ public class AppSocket {
     public void close() {
         if (!isClosed) {
 
-            synchronized (appSockMux) {
-                appSockMux.removeAppSocket(this);
-            }
+            appSockMux.removeAppSocket(this);
 
             if (takeThread != null) {
                 takeThread.interrupt();

@@ -144,8 +144,8 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
             // FSM
             fsm = FSMState.START;
 
+            myThread = createThread();
 
-            myThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
             running = true;
             myThread.start();
 
@@ -264,6 +264,13 @@ public abstract class AbstractManagementConsole implements ManagementConsole, Ru
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "end");
 
+    }
+
+    /**
+     * Create a Thread for the ManagementConsole
+     */
+    public Thread createThread() {
+        return new Thread(this, "/" + getComponentController().getName() + "/" + this.getClass().getSimpleName() + "/" + hashCode());
     }
 
     /**

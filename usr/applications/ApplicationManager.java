@@ -103,9 +103,6 @@ public class ApplicationManager {
             // set app name
             String appName = "/" + router.getName() + "/App/" + className + "/" + app.hashCode();
 
-            // set thread context info
-            router.addThreadContext(Thread.currentThread());
-
             // initialize it
             ApplicationResponse initR = app.init(args);
 
@@ -189,9 +186,6 @@ public class ApplicationManager {
                     // wait for the thread to actually end
                     //pool.waitFor(appH);
 
-                    // unset thread context info
-                    router.removeThreadContext(Thread.currentThread());
-
                     // and remove from the app map
                     appMap.remove(appName);
 
@@ -224,9 +218,6 @@ public class ApplicationManager {
                         }
 
                         appH.setState(ApplicationHandle.AppState.STOPPED);
-
-                        // unset thread context info
-                        router.removeThreadContext(Thread.currentThread());
 
                         // and remove from the app map
                         appMap.remove(appName);

@@ -84,9 +84,6 @@ public class ApplicationHandle implements Runnable {
     public void run() {
         Logger.getLogger("log").logln(USR.STDOUT, "ApplicationHandle: entering run: " + app);
 
-        // set thread context info
-        manager.getRouter().addThreadContext(Thread.currentThread());
-
         if (getState() == ApplicationHandle.AppState.RUNNING) {
             app.run();
         }
@@ -100,9 +97,6 @@ public class ApplicationHandle implements Runnable {
             setState(ApplicationHandle.AppState.APP_POST_RUN);
             manager.stopApp(getName());
         }
-
-        // unset thread context info
-        manager.getRouter().removeThreadContext(Thread.currentThread());
 
     }
 

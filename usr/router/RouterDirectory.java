@@ -14,8 +14,8 @@ public class RouterDirectory {
     // the list of Routers
     private static List<Router> routerList = new ArrayList<Router>();
 
-    // a Map of thread id -> router
-    private static HashMap<Long, Router> threadToRouter = new HashMap<Long, Router>();
+    // a Map of thread group -> router
+    private static HashMap<ThreadGroup, Router> threadToRouter = new HashMap<ThreadGroup, Router>();
 
     /**
      * Register a Router.
@@ -32,28 +32,28 @@ public class RouterDirectory {
     }
 
     /**
-     * Add thread id -> Router mapping info
+     * Add thread group -> Router mapping info
      */
-    static synchronized void addThreadContext(Long threadID, Router r) {
-        System.err.println("Add thread " + threadID + " to " + r);
-        threadToRouter.put(threadID, r);
+    static synchronized void addThreadContext(ThreadGroup threadG, Router r) {
+        System.err.println("Add thread group " + threadG + " to " + r);
+        threadToRouter.put(threadG, r);
     }
 
     /**
-     * Remove thread id -> Router mapping info
+     * Remove thread group -> Router mapping info
      */
-    static synchronized void removeThreadContext(Long threadID, Router r) {
-        System.err.println("Remove thread " + threadID + " to " + r);
-        threadToRouter.remove(threadID);
+    static synchronized void removeThreadContext(ThreadGroup threadG, Router r) {
+        System.err.println("Remove thread group " + threadG + " to " + r);
+        threadToRouter.remove(threadG);
     }
 
     /**
-     * Find a router by thread id
+     * Find a router by thread group
      */
-    public static synchronized Router find(long id) {
-        System.err.print("Finding thread " + id);
+    public static synchronized Router find(ThreadGroup threadG) {
+        System.err.print("Finding thread group " + threadG);
 
-        Router r = threadToRouter.get(id);
+        Router r = threadToRouter.get(threadG);
 
         System.err.println(" found: " + r);
 

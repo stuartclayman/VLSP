@@ -144,7 +144,7 @@ public class FabricDevice implements FabricDeviceInterface {
             inWaitQueue_= new LinkedBlockingDeque<Waker>();
             inQueueHandler_ = new InQueueHandler(inQueueDiscipline_, inQueue_, this);
 
-            inThread_= new Thread(inQueueHandler_,name_+"-inQueue");
+            inThread_= new Thread(inQueueHandler_, "/" + listener_.getName() + "/" + name_+"/InQueue");
             inThread_.start();
         }
         if (outQueueDiscipline_ != QUEUE_NOQUEUE) {
@@ -155,7 +155,7 @@ public class FabricDevice implements FabricDeviceInterface {
             }
             outWaitQueue_= new LinkedBlockingDeque<Waker>();
             outQueueHandler_ = new OutQueueHandler(outQueueDiscipline_, outQueue_, this);
-            outThread_= new Thread(outQueueHandler_,name_+"-outQueue");
+            outThread_= new Thread(outQueueHandler_, "/" + listener_.getName() + "/" + name_+"/OutQueue");
             outThread_.start();
         }
     }
@@ -511,10 +511,10 @@ public class FabricDevice implements FabricDeviceInterface {
     {
         name_= name;
         if (inThread_ != null) {
-            inThread_.setName(name+"-InQueue");
+            inThread_.setName("/" + listener_.getName() + "/" + name+"/InQueue");
         }
         if (outThread_ != null) {
-            outThread_.setName(name+"-OutQueue");
+            outThread_.setName("/" + listener_.getName() + "/" + name+"/OutQueue");
         }
 
     }
@@ -601,6 +601,7 @@ class InQueueHandler implements Runnable {
                     }
                     break;
                 } catch (NoRouteToHostException e) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "InQueueHandler run NoRouteToHostException");
                     fabricDevice_.inDroppedPacketNR(dh.datagram);
                     break;
                 } catch (InterfaceBlockedException ex) {

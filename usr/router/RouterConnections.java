@@ -53,7 +53,7 @@ public class RouterConnections implements Runnable {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Ready to accept on " + serverSocket);
 
 
-            myThread = new Thread(this, "RouterConnections" + hashCode());
+            myThread = new Thread(controller.getThreadGroup(), this, "/" + controller.getName() + "/RouterConnections/" + hashCode());
             running = true;
             myThread.start();
 
@@ -90,7 +90,7 @@ public class RouterConnections implements Runnable {
             try {
                 TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
                 NetIF netIF = new TCPNetIF(dst,controller.getListener());
-                netIF.setName("Temp NetIF");
+                netIF.setName("RouterConnections");
                 netIF.connect();
 
                 Socket local = dst.getSocket();

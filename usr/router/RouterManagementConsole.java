@@ -35,6 +35,15 @@ public class RouterManagementConsole extends AbstractManagementConsole implement
         return _routerController;
     }
 
+    /**
+     * Create a Thread for the ManagementConsole.
+     * Done within the context of the thread group.
+     */
+    public Thread createThread() {
+        return new Thread(_routerController.getThreadGroup(), this, "/" + getComponentController().getName() + "/" + this.getClass().getSimpleName() + "/" + hashCode());
+    }
+
+
     public void registerCommands() {
         register(new UnknownCommand());
         register(new QuitCommand());

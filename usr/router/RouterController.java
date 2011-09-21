@@ -76,6 +76,9 @@ public class RouterController implements ComponentController, Runnable {
     ApplicationManager appManager;
 
 
+    // The ThreadGroup
+    ThreadGroup threadGroup;
+
     // Counts ensure that Info Source and Aggreg Points have unique names
     int isCount_= 1;
     int apCount_= 1;
@@ -102,8 +105,8 @@ public class RouterController implements ComponentController, Runnable {
      * The ManagementConsole listens on 'port' and
      * The Router to Router connections listens on port + 1.
      */
-    public RouterController(Router router,  RouterOptions o, int port) {
-        this(router, o, port, port + 1);
+    public RouterController(Router router,  RouterOptions o, int port, String name) {
+        this(router, o, port, port + 1, name);
     }
 
     /**
@@ -112,12 +115,12 @@ public class RouterController implements ComponentController, Runnable {
      * The Router to Router connections listens on 'r2rPort'.
      */
     public RouterController(Router router, RouterOptions o,
-                            int mPort, int r2rPort) {
+                            int mPort, int r2rPort, String name) {
 
         options_= o;
         this.router = router;
 
-        name = "Router-" + mPort + "-" + r2rPort;
+        this.name = name;
 
         try {
             myAddress = AddressFactory.newAddress(name.hashCode());
@@ -138,6 +141,9 @@ public class RouterController implements ComponentController, Runnable {
 
         // setup ApplicationManager
         appManager = new ApplicationManager(router);
+
+        // ThreadGroup
+        threadGroup = router.getThreadGroup();
 
         // Set up info for AP management
         //System.out.println("Construct AP Controller");
@@ -234,6 +240,14 @@ public class RouterController implements ComponentController, Runnable {
         return management;
     }
 
+
+    /**
+     * Get the Thread Group.
+     */
+    ThreadGroup getThreadGroup() {
+        return threadGroup;
+    }
+
     /**
      * Start me up.
      */
@@ -241,7 +255,7 @@ public class RouterController implements ComponentController, Runnable {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
         // start my own thread
-        myThread = new Thread(this, this.getClass().getName() + "-" + hashCode());
+        myThread = new Thread(threadGroup, this, "/" + router.getName() + "/RouterController/" + hashCode());
         running = true;
         myThread.start();
 

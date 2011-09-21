@@ -23,4 +23,8 @@ public interface NetIFListener {
     /** A datagram device has closed and must be removed */
     void closedDevice(DatagramDevice dd);
 
+    /**
+     * Get it's name
+     */
+    public String getName();
 }

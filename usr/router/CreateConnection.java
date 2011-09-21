@@ -160,7 +160,7 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         String latestConnectionName = null;
 
         if (connectionName == null || connectionName.equals("")) {
-            latestConnectionName = "/" + controller.getName() + "/Connection-" + controller.getConnectionCount();
+            latestConnectionName =  controller.getName() + ".Connection-" + controller.getConnectionCount();
         } else {
             latestConnectionName = connectionName;
         }

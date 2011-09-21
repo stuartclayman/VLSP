@@ -90,7 +90,7 @@ public class TCPNetIF implements NetIF, Runnable {
         fabricDevice_.setOutQueueLength(100);
         fabricDevice_.setName(name);
         fabricDevice_.start();
-        runThread_= new Thread(this,"TCPNetIF-"+name);
+        runThread_= new Thread(this, "/" + listener.getName() + "/" + name + "/TCPNetIF");
         runThread_.start();
     }
 
@@ -161,7 +161,7 @@ public class TCPNetIF implements NetIF, Runnable {
             fabricDevice_.setName(n);
         }
         if (runThread_ != null) {
-            runThread_.setName("TCPNetIF-"+n);
+            runThread_.setName("/" + listener.getName() + "/" + n + "/TCPNetIF");
         }
     }
 
@@ -322,6 +322,8 @@ public class TCPNetIF implements NetIF, Runnable {
         }
         Logger.getLogger("log").logln(USR.STDOUT, leadin() +"RemoteClose");
         remoteClose= true;
+
+
         CloseThread ct= new CloseThread(this, this.closed);
         Thread t= new Thread(ct,"RemoteClose-"+name);
         t.start();
@@ -455,9 +457,9 @@ public class TCPNetIF implements NetIF, Runnable {
         }
 
         public void run() {
-            synchronized (closed) {
+            // sclayman 20/9/2011 synchronized (closed) {
                 netif_.close();
-            }
+            //}
         }
     }
 
