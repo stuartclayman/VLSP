@@ -3,6 +3,8 @@
 package usr.globalcontroller;
 
 import usr.router.*;
+import usr.logging.*;
+import usr.common.ANSI;
 import eu.reservoir.monitoring.core.*;
 import eu.reservoir.monitoring.core.table.*;
 import java.util.List;
@@ -69,7 +71,7 @@ public class NetIFStatsReporter implements Reporter {
                 measurements.put(routerName, table);
             }
 
-            //printTable(table);
+            Logger.getLogger("log").logln(1<<7, tableToString(table, false, true));
 
             // Calculate volume of traffic - in and out
             //int volume = calculateTraffic(table);
@@ -84,6 +86,18 @@ public class NetIFStatsReporter implements Reporter {
                 System.out.println("Total = " + calculateTotalTraffic());
             }
 
+        } else if  (m.getType().equals("AppList")) {
+            List<ProbeValue> values = m.getValues();
+
+            // ProbeValue 0 is the router name
+            ProbeValue pv0 = values.get(0);
+            String routerName = (String)pv0.getValue();
+
+            // ProbeValue 1 is the table
+            ProbeValue pv1 = values.get(1);
+            Table table = (Table)pv1.getValue();
+
+            Logger.getLogger("log").logln(1<<10, appListToString(table));
 
         } else {
             // not what we were expecting
@@ -243,28 +257,132 @@ public class NetIFStatsReporter implements Reporter {
      * Print the table
      */
     private void printTable(Table table) {
+        System.out.println(tableToString(table, true, false));
+    }
+
+    private String tableToString(Table table, boolean withHeader, boolean withTime) {
+        StringBuilder builder = new StringBuilder();
+
+        // get the time
+        long startTime = globalController.getSimulationStartTime();
+        long elapsed = System.currentTimeMillis() - startTime;
+
         // get no of cols
         int cols = table.getColumnCount();
 
-        for (int c=0; c<cols; c++) {
-            TableAttribute headerAttr = table.getColumnDefinitions().get(c);
-            System.out.print(headerAttr.getName() + " | ");
+        // output header
+        if (withHeader) {
+            if (withTime) {
+                builder.append(globalController.elapsedToString(elapsed) + " ");
+            }
+
+            for (int c=0; c<cols; c++) {
+                TableAttribute headerAttr = table.getColumnDefinitions().get(c);
+                builder.append(headerAttr.getName() + " | ");
+            }
+
+            builder.append("\n");
         }
-        System.out.println();
 
         // now print out values
         int rows = table.getRowCount();
 
         for (int r=0; r< rows; r++) {
+            if (withTime) {
+                builder.append(globalController.elapsedToString(elapsed) + " ");
+            }
+
             TableRow row = table.getRow(r);
 
             for (int c=0; c<cols; c++) {
                 TableValue tableValue = row.get(c);
-                System.out.print(tableValue.getValue() + " | ");
+
+                switch (c) {
+                case 0: {
+                    // NetIF name
+                    if (tableValue.getValue().toString().endsWith("localnet")) {
+                        builder.append(coloured(ANSI.MAGENTA, tableValue.getValue()));
+                    } else {
+                        builder.append(coloured(ANSI.BLUE,tableValue.getValue()));
+                    }
+                    builder.append(" | ");    
+                    break;
+                }
+
+                case 4:
+                case 10:
+                    Integer dropped = (Integer)tableValue.getValue();
+                    if (dropped > 0) {
+                        builder.append(ANSI.BRIGHT_COLOUR);
+                        builder.append(coloured(ANSI.RED,dropped));
+                        builder.append(ANSI.BRIGHT_OFF);
+                    } else {
+                        builder.append(dropped);
+                    }
+                    builder.append(" | ");    
+                    break;
+
+                default:
+                    builder.append(tableValue.getValue() + " | ");
+                    break;
+                }
             }
-            System.out.println();
+            builder.append("\n");
         }
-        System.out.println();
+
+
+        return builder.toString();
     }
 
+    /**
+     * Coloured text
+     */
+    private String coloured(String colour, Object text) {
+        return colour + text + ANSI.RESET_COLOUR;
+    }
+
+    /**
+     * Print AppList data
+     */
+    private String appListToString(Table table) {
+        StringBuilder builder = new StringBuilder();
+
+        // get the time
+        long startTime = globalController.getSimulationStartTime();
+        long elapsed = System.currentTimeMillis() - startTime;
+
+        // get no of cols
+        int cols = table.getColumnCount();
+
+        // header
+        builder.append(globalController.elapsedToString(elapsed) + " ");
+
+        for (int c=0; c<cols; c++) {
+            TableAttribute headerAttr = table.getColumnDefinitions().get(c);
+            builder.append(headerAttr.getName() + " | ");
+        }
+
+        builder.append("\n");
+
+
+
+        // now print out values
+        int rows = table.getRowCount();
+
+        for (int r=0; r< rows; r++) {
+            builder.append(globalController.elapsedToString(elapsed) + " ");
+
+            TableRow row = table.getRow(r);
+
+            for (int c=0; c<cols; c++) {
+                TableValue tableValue = row.get(c);
+                builder.append(tableValue.getValue() + " | ");
+            }
+            builder.append("\n");
+        }
+
+
+        return builder.toString();
+
+    }
 }

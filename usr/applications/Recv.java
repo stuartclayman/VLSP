@@ -4,6 +4,7 @@ import usr.net.*;
 import usr.logging.*;
 import java.nio.ByteBuffer;
 import java.net.UnknownHostException;
+import java.net.SocketException;
 import java.util.Scanner;
 
 /**
@@ -81,24 +82,28 @@ public class Recv implements Application {
     public void run()  {
         Datagram datagram;
 
-        while ((datagram = socket.receive()) != null) {
+        try {
+            while ((datagram = socket.receive()) != null) {
 
-            Logger.getLogger("log").log(USR.STDOUT, count + ". ");
-            Logger.getLogger("log").log(USR.STDOUT, "HL: " + datagram.getHeaderLength() +
-                                        " TL: " + datagram.getTotalLength() +
-                                        " From: " + datagram.getSrcAddress() +
-                                        " To: " + datagram.getDstAddress() +
-                                        ". ");
-            byte[] payload = datagram.getPayload();
+                Logger.getLogger("log").log(USR.STDOUT, count + ". ");
+                Logger.getLogger("log").log(USR.STDOUT, "HL: " + datagram.getHeaderLength() +
+                                            " TL: " + datagram.getTotalLength() +
+                                            " From: " + datagram.getSrcAddress() +
+                                            " To: " + datagram.getDstAddress() +
+                                            ". ");
+                byte[] payload = datagram.getPayload();
 
-            if (payload == null) {
-                Logger.getLogger("log").log(USR.STDOUT, "No payload");
-            } else {
-                Logger.getLogger("log").log(USR.STDOUT, new String(payload));
+                if (payload == null) {
+                    Logger.getLogger("log").log(USR.STDOUT, "No payload");
+                } else {
+                    Logger.getLogger("log").log(USR.STDOUT, new String(payload));
+                }
+                Logger.getLogger("log").log(USR.STDOUT, "\n");
+
+                count++;
             }
-            Logger.getLogger("log").log(USR.STDOUT, "\n");
-
-            count++;
+        } catch (SocketException se) {
+            Logger.getLogger("log").log(USR.ERROR, se.getMessage());
         }
 
 

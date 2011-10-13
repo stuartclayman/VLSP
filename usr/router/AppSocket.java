@@ -110,6 +110,7 @@ public class AppSocket {
             // the port is free
             localPort = port;
             isBound = true;
+            isClosed = false;
 
             // Logger.getLogger("log").logln(USR.ERROR, "AppSocket: bound to port " + localPort);
 
@@ -139,6 +140,7 @@ public class AppSocket {
             remotePort = port;
 
             isConnected = true;
+            isClosed = false;
 
             //Logger.getLogger("log").logln(USR.ERROR, "AppSocket: connect to " + remoteAddress + ":" +  remotePort);
         } else {
@@ -234,6 +236,10 @@ public class AppSocket {
      * on the remote router.
      */
     public void send(Datagram dg) throws SocketException, NoRouteToHostException {
+        if (isClosed) {
+            throw new SocketException("Socket closed");
+        }
+
         if (isBound) {
             dg.setSrcPort(localPort);
         }
@@ -242,6 +248,7 @@ public class AppSocket {
             dg.setDstAddress(remoteAddress);
             dg.setDstPort(remotePort);
         }
+
         if (appSockMux.sendDatagram(dg) == false) {
             Logger.getLogger("log").logln(USR.ERROR, "AppSocket: forwardDatagram queue full in ASM");
         }
@@ -252,8 +259,14 @@ public class AppSocket {
      * Datagram is filled with the data received. The datagram also contains
      * the sender's  address, and the port number on the sender's machine.
      * This method blocks until a datagram is received.
+     *
+     * TODO: check if this needs to be synchronized for multiple threads
      */
-    public Datagram receive() {
+    public Datagram receive() throws SocketException {
+        if (isClosed) {
+            throw new SocketException("Socket closed");
+        }
+
         takeThread = Thread.currentThread();  
         try {
             return queue.take();
@@ -290,7 +303,7 @@ public class AppSocket {
             if (takeThread != null) {
                 takeThread.interrupt();
             }
-
+            
             isClosed = true;
         }
     }

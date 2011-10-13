@@ -12,6 +12,9 @@ public class Send implements Application {
     Address addr = null;
     int port = 0;
     int count = 0;
+    int interPacketDelay = 0;
+    int startDelay = 0;
+    int sendSize = 0;
 
     boolean running = false;
     DatagramSocket socket = null;
@@ -24,10 +27,14 @@ public class Send implements Application {
 
     /**
      * Initialisation for Send.
-     * Send address port count
+     * Send address port count [optionals]
+     * Optional args:
+     * -i inter packet delay (in milliseconds)
+     * -d start-up delay (in milliseconds)
+     * -s size of send buffer (in bytes)
      */
     public ApplicationResponse init(String[] args) {
-        if (args.length == 3) {
+        if (args.length >= 3) {
             // try address
             try {
                 addr = AddressFactory.newAddress(args[0]);
@@ -55,7 +62,60 @@ public class Send implements Application {
             System.err.print("Send addr: " + addr + " port: " + port + " count: " + count);
 
 
-            return new ApplicationResponse(true, "");
+            if (args.length == 3) {
+                return new ApplicationResponse(true, "");
+            } else {
+                // try and process extra args
+                for (int extra=3; extra < args.length; extra++) {
+                    String thisArg = args[extra];
+
+                    // check if its a flag
+                    if (thisArg.charAt(0) == '-') {
+                        // get option
+                        char option = thisArg.charAt(1);
+
+                        // gwet next arg
+                        String argValue = args[++extra];
+
+                        switch (option) {
+                        case 'i': {
+                            try {
+                                interPacketDelay = Integer.parseInt(argValue);
+                            } catch (Exception e) {
+                                return new ApplicationResponse(false, "Bad interPacketDelay " + argValue);
+                            }
+                            break;
+                        }
+
+                        case 'd': {
+                            try {
+                                startDelay = Integer.parseInt(argValue);
+                            } catch (Exception e) {
+                                return new ApplicationResponse(false, "Bad startDelay " + argValue);
+                            }
+                            break;
+                        }
+
+                        case 's': {
+                            try {
+                                sendSize = Integer.parseInt(argValue);
+                            } catch (Exception e) {
+                                return new ApplicationResponse(false, "Bad sendSize " + argValue);
+                            }
+                            break;
+                        }
+
+
+
+                        default:
+                            return new ApplicationResponse(false, "Bad option " + option);
+                        }
+                    }
+                }
+
+                return new ApplicationResponse(true, "");
+
+            }
 
         } else {
             return new ApplicationResponse(false, "Usage: Send address port count");
@@ -95,22 +155,46 @@ public class Send implements Application {
         return new ApplicationResponse(true, "");
     }
 
-    /** Run the ping application */
+    /** Run the Send application */
     public void run()  {
         Datagram datagram = null;
 
+        // Start Delay
+        if (startDelay > 0) {
+            try {
+                Thread.sleep(startDelay);
+            } catch (Exception e) {
+            }
+        }
+
         for (int i = 0; i < count; i++) {
-            String line = "line " + i;
-            ByteBuffer buffer = ByteBuffer.allocate(line.length());
-            buffer.put(line.getBytes());
+            //ByteBuffer buffer = ByteBuffer.allocate(line.length());
+            //buffer.put(line.getBytes());
+            byte [] buffer;
+
+            if (sendSize == 0) {
+                buffer =  ("line " + i).getBytes();
+            } else {
+                buffer = new byte[sendSize];
+            }
 
             datagram = DatagramFactory.newDatagram(buffer);
 
             try {
                 socket.send(datagram);
 
+                // Inter Packet Delay 
+                if (interPacketDelay > 0) {
+                    Thread.sleep(interPacketDelay);
+                }
+
+
             } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " + datagram + " with " + new String(datagram.getPayload()));
+                if (socket.isClosed()) {
+                    break;
+                } else {
+                    Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " + datagram + " with " + new String(datagram.getPayload()));
+                }
             }
 
         }

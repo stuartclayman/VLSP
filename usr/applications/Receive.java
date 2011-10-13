@@ -5,6 +5,7 @@ import usr.logging.*;
 import java.nio.ByteBuffer;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.net.SocketException;
 
 /**
  * An application for Receiving a specific amount of data
@@ -86,16 +87,19 @@ public class Receive implements Application {
     public void run()  {
         Datagram datagram;
 
-        while ((datagram = socket.receive()) != null) {
+        try {
+            while ((datagram = socket.receive()) != null) {
 
-            count_+=(datagram.getTotalLength()-datagram.getHeaderLength());
-            if (count_ >= bytes_) {
-                Logger.getLogger("log").log(USR.STDOUT,"Received all bytes on connection");
-                running= false;
-                break;
+                count_+=(datagram.getTotalLength()-datagram.getHeaderLength());
+                if (count_ >= bytes_) {
+                    Logger.getLogger("log").log(USR.STDOUT,"Received all bytes on connection");
+                    running= false;
+                    break;
+                }
             }
+            //closeDown();
+        } catch (SocketException se) {
         }
-        closeDown();
 
     }
 

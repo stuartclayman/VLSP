@@ -36,9 +36,6 @@ public class RouterApp1C {
                 // set up id
                 router.setAddress(new IPV4Address("192.168.7.1"));  // WAS new GIDAddress(1));
 
-                // set a thread context, so the DatagramSocket can find the router
-                router.addThreadContext(Thread.currentThread());
-
                 // connnect to the other router
                 // first we tal kto my own ManagementConsole
                 RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);

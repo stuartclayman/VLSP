@@ -24,6 +24,9 @@ public class ApplicationManager {
     // A map of all the Applications, name -> ApplicationHandle object
     HashMap<String, ApplicationHandle> appMap;
 
+    // An App ID / PID
+    int appID = 0;
+
     /**
      * ApplicationManager Constructor.
      */
@@ -37,6 +40,9 @@ public class ApplicationManager {
 
     /**
      * Static entry point to start an Application.
+     * Returns an ApplicationResponse with an app name in it.
+     * The appName is used to stop the app, and is of the form
+     * /Router-1/App/plugins_usr.aggregator.appl.InfoSource/2.
      */
     public synchronized ApplicationResponse startApp(String className, String[] args) {
         // args should be class name + args for class
@@ -48,7 +54,8 @@ public class ApplicationManager {
 
     /**
      * Static entry point to stop an Application.
-     * Application name is passed in.
+     * Application name is passed in, in the form
+     * /Router-1/App/plugins_usr.aggregator.appl.InfoSource/2
      */
     public synchronized ApplicationResponse stopApp(String appName) {
         return terminate(appName);
@@ -100,8 +107,10 @@ public class ApplicationManager {
             // create an instance of the Application
             Application app =  (Application)cons0.newInstance();
 
+            appID++;
+
             // set app name
-            String appName = "/" + router.getName() + "/App/" + className + "/" + app.hashCode();
+            String appName = "/" + router.getName() + "/App/" + className + "/" + appID;
 
             // initialize it
             ApplicationResponse initR = app.init(args);
@@ -112,7 +121,7 @@ public class ApplicationManager {
             }
 
             // otherwise create an ApplicationHandle for the app
-            ApplicationHandle handle = new ApplicationHandle(this, appName, app);
+            ApplicationHandle handle = new ApplicationHandle(this, appName, app, args, appID);
 
             // try and start the app
             ApplicationResponse startR;
@@ -120,6 +129,9 @@ public class ApplicationManager {
             synchronized (app) {
                 startR = app.start();
             }
+
+            // TODO: check if startR is null
+
 
             // if start succeeded then go onto run()
             if (startR.isSuccess()) {

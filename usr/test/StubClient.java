@@ -114,6 +114,13 @@ public class StubClient implements NetIFListener {
         return true;
     }
 
+    /**
+     * get name
+     */
+    public String getName() {
+        return netIF.getName();
+    }
+
     public static void main(String[] args) throws IOException {
         int count = 100;
         int port = PORT_NUMBER;

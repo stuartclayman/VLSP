@@ -166,6 +166,16 @@ public class GlobalController implements ComponentController {
         logger.addOutput(System.out, new BitMask(USR.STDOUT));
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Hello");
 
+        // add some extra output channels, using mask bit 7, 8, 9, 10
+        try {
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel7.out")), new BitMask(1<<7));
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel8.out")), new BitMask(1<<8));
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel9.out")), new BitMask(1<<9));
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel10.out")), new BitMask(1<<10));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         outLinks_= new ArrayList<int []> ();
         linkCosts_= new ArrayList<int []> ();
         routerList_= new ArrayList<Integer>();
@@ -401,9 +411,9 @@ public class GlobalController implements ComponentController {
                     startRouter(time, address, name);
 
                 } else if (data instanceof String) {
-                    String name = (String)e.getData();
-                    // no address, has name
-                    startRouter(time, null, name);
+                    String value = (String)e.getData();
+                    // set value as name and address
+                    startRouter(time, value, value);
                 } else {
                     // no address, no name
                     startRouter(time, null, null);
@@ -680,6 +690,8 @@ public class GlobalController implements ComponentController {
             routerName = lci.newRouter(id, port, port+1, address, name);
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerName);
+            Logger.getLogger("log").logln(1<<9, elapsedToString(getSimulationElapsedTime()) + ANSI.GREEN + " START ROUTER " + id + ANSI.RESET_COLOUR);
+
         }
         catch (MCRPException e) {
             // Failed to start#
@@ -729,6 +741,9 @@ public class GlobalController implements ComponentController {
         for (i= 0; i < MAX_TRIES; i++) {
             try {
                 lci.endRouter(br.getHost(),br.getManagementPort());
+
+                Logger.getLogger("log").logln(1<<9, elapsedToString(getSimulationElapsedTime()) + ANSI.RED + " STOP ROUTER " + rId + ANSI.RESET_COLOUR);
+
                 break;
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down router "+
@@ -931,6 +946,9 @@ public class GlobalController implements ComponentController {
                 linkInfo.put(endPoints, new LinkInfo(endPoints, connectionName, weight));
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + br1 + " -> " + br2 + " = " + connectionName);
+
+                Logger.getLogger("log").logln(1<<9, elapsedToString(getSimulationElapsedTime()) + ANSI.BLUE + " CREATE LINK " + router2Id + " TO " + router1Id + ANSI.RESET_COLOUR);
+
                 break;
             } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() +
@@ -1102,6 +1120,7 @@ public class GlobalController implements ComponentController {
                 // remove Pair<router1Id, router2Id> -> connectionName to linkNames
                 linkInfo.remove(makePair(rId1, rId2));
 
+                Logger.getLogger("log").logln(1<<9, elapsedToString(getSimulationElapsedTime()) + ANSI.MAGENTA + " REMOVE LINK " + rId2 + " TO " + rId1 + ANSI.RESET_COLOUR);
 
                 break;
             } catch (Exception e) {
@@ -1614,12 +1633,54 @@ public class GlobalController implements ComponentController {
     }
 
     /**
+     * Get the simulation elapsed time.
+     * This is the elapsed time within the simulation.
+     */
+    public long getSimulationElapsedTime() {
+        return simulationTime - simulationStartTime;
+    }
+
+    /**
      * Get the time of the current event
      */
     public long getEventTime() {
         return eventTime;
     }
 
+    /**
+     * Convert an elasped time, in milliseconds, into a string.
+     * Converts something like 35432 into 35:43
+     */
+    String elapsedToString(long elapsedTime) {
+        long millis = (elapsedTime % 1000) / 10;
+
+        long rawSeconds = elapsedTime / 1000;
+        long seconds = rawSeconds % 60;
+        long minutes = rawSeconds / 60;
+
+        StringBuilder builder = new StringBuilder();
+
+        if (minutes < 10) {
+            builder.append("0");
+        }
+        builder.append(minutes);
+
+        builder.append(":");
+        if (seconds < 10) {
+            builder.append("0");
+        }
+        builder.append(seconds);
+
+        builder.append(":");
+        if (millis < 10) {
+            builder.append("0");
+        }
+        builder.append(millis);
+
+
+        return builder.toString();
+        
+    }
 
     /**
      * Get the ManagementConsole this ComponentController interacts with.
@@ -1818,6 +1879,13 @@ public class GlobalController implements ComponentController {
         }
         try {
             lci.setAP(gid,AP);
+
+            if (gid == AP) {
+                Logger.getLogger("log").logln(1<<8, elapsedToString(getSimulationElapsedTime()) + ANSI.BLUE + " ROUTER " + gid + " BECOME AP" + ANSI.RESET_COLOUR);
+            } else {
+                Logger.getLogger("log").logln(1<<8, elapsedToString(getSimulationElapsedTime()) + ANSI.CYAN + " ROUTER " + gid + " SET AP " + AP + ANSI.RESET_COLOUR);
+            }
+
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR,leadin()+" unable to set AP for router "+gid);
         }

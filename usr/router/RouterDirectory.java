@@ -60,4 +60,19 @@ public class RouterDirectory {
         return r;
     }
 
+    /**
+     * Find a router by thread group
+     */
+    public static synchronized Router getRouter() {
+        ThreadGroup threadG = Thread.currentThread().getThreadGroup();
+
+        System.err.print("Finding thread group " + threadG);
+
+        Router r = threadToRouter.get(threadG);
+
+        System.err.println(" found: " + r);
+
+        return r;
+    }
+
 }

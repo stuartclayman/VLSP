@@ -83,15 +83,20 @@ public class Ping implements Application {
         Datagram dg;
         while (running_) {
 
-            dg = socket_.receive();
-            if (dg == null) {
+            try {
+                dg = socket_.receive();
+                if (dg == null) {
 
-                Logger.getLogger("log").logln(USR.STDOUT, "Ping waiting");
-                continue;
+                    Logger.getLogger("log").logln(USR.STDOUT, "Ping waiting");
+                    continue;
+                }
+                Logger.getLogger("log").logln(USR.STDOUT, "Ping received in time: "+ (System.currentTimeMillis()- now) + " milliseconds ");
+
+                return;
+            } catch (SocketException se) {
+                Logger.getLogger("log").logln(USR.STDOUT, "Ping receive error");
+                return;
             }
-            Logger.getLogger("log").logln(USR.STDOUT, "Ping received in time: "+ (System.currentTimeMillis()- now) + " milliseconds ");
-
-            return;
 
         }
 

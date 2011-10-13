@@ -4,6 +4,7 @@ import usr.net.*;
 import usr.logging.*;
 import java.nio.ByteBuffer;
 import java.net.UnknownHostException;
+import java.net.SocketException;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -137,8 +138,12 @@ public class RecvDataRate implements Application {
     public void run()  {
         Datagram datagram;
 
-        while ((datagram = socket.receive()) != null) {
-            count++;
+        try {
+            while ((datagram = socket.receive()) != null) {
+                count++;
+            }
+        } catch (SocketException se) {
+            Logger.getLogger("log").log(USR.ERROR, se.getMessage());
         }
 
 

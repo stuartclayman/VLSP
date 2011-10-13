@@ -97,6 +97,14 @@ public class StubServer2 implements NetIFListener {
         return true;
     }
 
+    /**
+     * get name
+     */
+    public String getName() {
+        return netIF.getName();
+    }
+
+
     public synchronized boolean datagramArrived(NetIF netIF, Datagram datagram) {
         datagramQueue_.add(datagram);
         notifyAll();

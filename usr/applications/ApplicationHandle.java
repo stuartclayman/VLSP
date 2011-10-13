@@ -17,6 +17,15 @@ public class ApplicationHandle implements Runnable {
     // The app
     Application app;
 
+    // The args
+    String[] args;
+
+    // The app ID
+    int appID;
+
+    // Start Time
+    long startTime;
+
     // The state
     AppState state;
 
@@ -26,10 +35,13 @@ public class ApplicationHandle implements Runnable {
     /**
      * Construct an ApplicationHandle
      */
-    ApplicationHandle(ApplicationManager appMgr, String name, Application app) {
+    ApplicationHandle(ApplicationManager appMgr, String name, Application app, String[] args, int appID) {
         this.name = name;
         this.app = app;
+        this.args = args;
+        this.appID = appID;
         this.manager = appMgr;
+        this.startTime = System.currentTimeMillis();
         setState(AppState.APP_POST_INIT);
     }
 
@@ -47,6 +59,27 @@ public class ApplicationHandle implements Runnable {
         return app;
     }
 
+    /**
+     * Get the args for the App.
+     */
+    public String[] getArgs() {
+        return args;
+    }
+
+    /**
+     * Get the App ID.
+     */
+    public int getID() {
+        return appID;
+    }
+
+
+    /**
+     * Get the start time
+     */
+    public long getStartTime() {
+        return startTime;
+    }
 
     /**
      * Get the thread name

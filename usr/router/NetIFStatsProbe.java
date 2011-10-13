@@ -13,10 +13,7 @@ import java.util.ArrayList;
  * A probe that talks to a Router can collects the stats
  * for each NetIF.
  */
-public class NetIFStatsProbe extends AbstractProbe implements Probe {
-    // The controller of the router we are getting stats for
-    RouterController controller;
-
+public class NetIFStatsProbe extends RouterProbe implements Probe {
     // The TableHeader for the table of stats
     TableHeader statsHeader;
 
@@ -24,7 +21,7 @@ public class NetIFStatsProbe extends AbstractProbe implements Probe {
      * Construct a NetIFStatsProbe
      */
     public NetIFStatsProbe(RouterController cont) {
-        controller = cont;
+        setController(cont);
 
         // set probe name
         setName(cont.getName()+".NetIFStats");
@@ -85,7 +82,7 @@ public class NetIFStatsProbe extends AbstractProbe implements Probe {
 
         try {
             // check localnet first
-            NetIF localNetIF = controller.getLocalNetIF();
+            NetIF localNetIF = getController().getLocalNetIF();
 
             if (localNetIF == null) {
                 // the router is not ready yet
@@ -94,7 +91,7 @@ public class NetIFStatsProbe extends AbstractProbe implements Probe {
 
 
             // get list of ports
-            List<RouterPort> ports = controller.listPorts();
+            List<RouterPort> ports = getController().listPorts();
 
             if (ports.size() == 0) {
                 // there are no ports to other routers
@@ -106,7 +103,7 @@ public class NetIFStatsProbe extends AbstractProbe implements Probe {
             ArrayList<ProbeValue> list = new ArrayList<ProbeValue>();
 
             // add router name
-            list.add(new DefaultProbeValue(0, controller.getName()));
+            list.add(new DefaultProbeValue(0, getController().getName()));
 
             // now allocate a table
             Table statsTable = new DefaultTable();
@@ -173,19 +170,6 @@ public class NetIFStatsProbe extends AbstractProbe implements Probe {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        }
-    }
-
-    /**
-     * Last will get one last measurement
-     */
-    public void lastMeasurement() {
-        System.out.println("NetIFStatsProbe: last collect for " + controller.getName());
-        try {
-            Measurement m = collectThenCheck();
-            getProbeManager().notifyMeasurement(m);
-        } catch (Exception e) {
-            System.err.println("NetIFStatsProbe: last collect failed - " + e);
         }
     }
 

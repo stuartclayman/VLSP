@@ -309,7 +309,7 @@ public class Logger implements Logging {
                     ((PrintWriter)anOutput).print((String)message);
                 }
             }
-
+            ((PrintWriter)anOutput).flush();
         } else if (anOutput instanceof PrintStream) {
             if (message instanceof LogInput) {
                 ((PrintStream)anOutput).print(((LogInput)message).logView());
@@ -320,7 +320,7 @@ public class Logger implements Logging {
                     ((PrintStream)anOutput).print((String)message);
                 }
             }
-
+            ((PrintStream)anOutput).flush();
         } else if (anOutput instanceof ByteChannel) {
             try {
                 if (message instanceof LogInput) {
