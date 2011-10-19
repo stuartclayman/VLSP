@@ -71,10 +71,10 @@
 <EventEngine>
      <Name>Probabilistic</Name>
      <EndTime>3600</EndTime>
-     <Parameters>scripts/probdistslow_noPA.xml</Parameters>
+     <Parameters>manage_elect_scripts/probdistslow_noPA.xml</Parameters>
   </EventEngine>
   <RouterOptions>
-      scripts/routertestbed_time.xml
+      manage_elect_scripts/routertestbed_time.xml
   </RouterOptions>
       <Output>
         <File>out.net</File>
