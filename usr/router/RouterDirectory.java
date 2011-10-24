@@ -69,11 +69,11 @@ public class RouterDirectory {
     public static synchronized Router getRouter() {
         ThreadGroup threadG = Thread.currentThread().getThreadGroup();
 
-        System.err.print("Finding thread group " + threadG);
+        Logger.getLogger("log").logln(USR.STDOUT,"Finding thread group " + threadG);
 
         Router r = threadToRouter.get(threadG);
 
-        System.err.println(" found: " + r);
+        Logger.getLogger("log").logln(USR.STDOUT," found: " + r);
 
         return r;
     }
