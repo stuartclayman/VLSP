@@ -35,7 +35,8 @@ public class RouterDirectory {
      * Add thread group -> Router mapping info
      */
     static synchronized void addThreadContext(ThreadGroup threadG, Router r) {
-        System.err.println("Add thread group " + threadG + " to " + r);
+        Logger.getLogger("log").logln(USR.STDOUT,
+          "Add thread group " + threadG + " to " + r);
         threadToRouter.put(threadG, r);
     }
 
@@ -43,7 +44,8 @@ public class RouterDirectory {
      * Remove thread group -> Router mapping info
      */
     static synchronized void removeThreadContext(ThreadGroup threadG, Router r) {
-        System.err.println("Remove thread group " + threadG + " to " + r);
+        Logger.getLogger("log").logln(USR.STDOUT,
+          "Remove thread group " + threadG + " to " + r);
         threadToRouter.remove(threadG);
     }
 
@@ -51,11 +53,12 @@ public class RouterDirectory {
      * Find a router by thread group
      */
     public static synchronized Router find(ThreadGroup threadG) {
-        System.err.print("Finding thread group " + threadG);
+        Logger.getLogger("log").logln(USR.STDOUT,
+          "Finding thread group " + threadG);
 
         Router r = threadToRouter.get(threadG);
 
-        System.err.println(" found: " + r);
+        Logger.getLogger("log").logln(USR.STDOUT," found: " + r);
 
         return r;
     }

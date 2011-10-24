@@ -139,7 +139,7 @@ public class SimpleRoutingTable implements RoutingTable {
     /** A new network interface arrives -- add to
        routing table if necessary return true if change was made */
     public synchronized boolean addNetIF(NetIF inter, RouterOptions options) {
-        Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
+        Logger.getLogger("log").logln(USR.STDOUT, "SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table before = " + this);
 
         Address a= inter.getAddress();
