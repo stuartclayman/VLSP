@@ -34,7 +34,7 @@ public class AppSocketMux implements NetIF {
 
     // My Thread
     Thread myThread;
-    boolean running = false;
+    Boolean running = false;
 
     boolean removeRequested_= false;
 
@@ -106,13 +106,14 @@ public class AppSocketMux implements NetIF {
     /**
      * Close all sockets.
      */
-    public synchronized boolean stop() {
+    public boolean stop() {
+      synchronized (running) {
         if (running == true) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
             fabricDevice_.stop();
             // stop my own thread
             running = false;
-
+            
             HashSet<AppSocket> sockets = new HashSet<AppSocket>(socketMap.values());
 
             for (AppSocket s : sockets) {
@@ -125,6 +126,7 @@ public class AppSocketMux implements NetIF {
         } else {
             return false;
         }
+      }
     }
 
 
