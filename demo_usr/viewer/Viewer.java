@@ -238,7 +238,7 @@ public class Viewer {
      */
     protected PipeProcess startDot() throws IOException {
         // create a subrocess
-        String [] processArgs = {"/usr/local/bin/dot", "-Txdot", "-K"+layout };
+        String [] processArgs = {"/usr/bin/env dot", "-Txdot", "-K"+layout };
         ProcessBuilder child = new ProcessBuilder(processArgs);
         Process process = child.start();
 
