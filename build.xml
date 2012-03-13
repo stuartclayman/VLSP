@@ -10,7 +10,7 @@
     <property name="api" value="${basedir}/docs"/>    
     <property name="year" value="2010"/>
     <property name="jars" value="${basedir}"/>
-    <property name="release" value="0.9.2" />
+    <property name="release" value="0.9.4" />
   </target>
 
   <!-- Build -->
