@@ -5,8 +5,11 @@
 package usr.globalcontroller;
 
 import usr.logging.*;
+import usr.globalcontroller.visualization.Visualization;
 import usr.localcontroller.LocalControllerInfo;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.io.*;
@@ -38,6 +41,7 @@ public class ControlOptions {
     private boolean allowIsolatedNodes_= true;   // If true, check for isolated nodes
     private boolean connectedNetwork_= false;  // If true, keep network connected
     private boolean latticeMonitoring = false;  // If true, turn on Lattice Monitoring
+    private HashMap<String, String> consumerInfoMap = null; // An map of class names for Monitoring consumers and thier label
 
 
     private int controllerWaitTime_= 6;
@@ -50,6 +54,8 @@ public class ControlOptions {
 
     private ArrayList <OutputType> outputs_= null;
 
+    private String visualizationClass = null;
+
     /** init function sets up basic information */
     public void init () {
         engines_= new ArrayList <EventEngine>();
@@ -61,6 +67,7 @@ public class ControlOptions {
         remoteStartController_ =
             "java -cp "+prop.getProperty("java.class.path", null)+" usr.localcontroller.LocalController";
         routerOptions_= new RouterOptions(null);
+        consumerInfoMap = new HashMap<String, String>();
     }
 
     /** Adds information about a new host to the list
@@ -104,13 +111,7 @@ public class ControlOptions {
               NodeList ro= doc.getElementsByTagName("RouterOptions");
               processRouterOptions(ro);
               NodeList o= doc.getElementsByTagName("Output");
-
-              for (int i= o.getLength()-1; i>= 0; i--) {
-                  Node oNode= o.item(i);
-                  outputs_.add(processOutput(oNode));
-                  oNode.getParentNode().removeChild(oNode);
-              }
-
+              processRouterOutputs(o);
 
               // Check all tags are processed
               // Check for other unparsed tags
@@ -155,6 +156,8 @@ public class ControlOptions {
         }
         if (gc.getLength() == 0)
             return;
+
+
         Node gcn= gc.item(0);
 
         try {
@@ -231,15 +234,96 @@ public class ControlOptions {
         } catch (XMLNoTagException e) {
         }
 
+        // What is the name of the class for Visualization
         try {
-            latticeMonitoring = ReadXMLUtils.parseSingleBool(gcn, "LatticeMonitoring","GlobalController",true);
-            ReadXMLUtils.removeNode(gcn,"LatticeMonitoring","GlobalController");
-        } catch (SAXException e) {
-            throw e;
-        } catch (XMLNoTagException e) {
+            visualizationClass = ReadXMLUtils.parseSingleString(gcn, "VisualizationClass","GlobalController",true);
+            ReadXMLUtils.removeNode(gcn,"VisualizationClass","GlobalController");
 
+            Logger.getLogger("log").logln(USR.STDOUT, "VisualizationClass = " + visualizationClass);
+
+            // try and find class
+            Class <? extends Visualization> visualizer =  Class.forName(visualizationClass).asSubclass(Visualization.class);
+
+        } catch (SAXException e) {
+            throw new SAXException("Unable to parse class name "+visualizationClass+" in GlobalController options"+e.getMessage());
+        }catch (XMLNoTagException e) {
+
+        } catch (ClassNotFoundException e) {
+            throw new Error("Class not found for class name "+ visualizationClass);
+        } catch (ClassCastException e) {
+            throw new Error("Class name "+visualizationClass+" must be sub type of Visualization");
         }
 
+        // Check for Monitoring node
+        NodeList monitoring = ((Element)gcn).getElementsByTagName("Monitoring");
+
+        // if it exists - parse subelements
+        if (monitoring.getLength() != 0) {
+            Element el = (Element)monitoring.item(0);
+
+            // Should the GlobalController turn on Lattice Monitoring
+            try {
+                latticeMonitoring = ReadXMLUtils.parseSingleBool(el, "LatticeMonitoring","GlobalController", true);
+                ReadXMLUtils.removeNode(el,"LatticeMonitoring","GlobalController");
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+
+            }
+
+            // get Consumers
+            try {
+                // First get all nodes called 'Consumer'
+                NodeList consumers = ((Element)el).getElementsByTagName("Consumer");
+
+                if (consumers.getLength() != 0) {
+                    for (int c=0; c < consumers.getLength(); c++) {
+                        Node elC = consumers.item(c);
+
+                        try {
+                            String className = ReadXMLUtils.parseSingleString(elC, "Name", "Consumer", true);
+                            ReadXMLUtils.removeNodes(elC, "Name", "Consumer");
+
+                            //String label = ReadXMLUtils.parseSingleString(elC, "Label", "Consumer", true);
+                            //ReadXMLUtils.removeNodes(elC, "Label", "Consumer");
+                            String label = null;
+
+                            //Logger.getLogger("log").logln(USR.STDOUT, "Probe: name = " + name + " datarate = " + datarate);
+
+                            if (label == null || label == "") {
+                                label = className.substring(className.lastIndexOf(".") + 1, className.length());
+                            }
+
+                            consumerInfoMap.put(label, className);
+
+                        } catch (SAXException e) {
+                            throw e;
+                        } catch (XMLNoTagException nte) {
+                            Logger.getLogger("log").logln(USR.ERROR, nte.getMessage());
+                        }
+                    }
+
+                    // Remove  'Consumer' nodes
+                    ReadXMLUtils.removeNodes(el, "Consumer", "Monitoring");
+
+
+
+                }
+
+                if (consumers != null) {
+                    Logger.getLogger("log").logln(USR.STDOUT, "Consumers = " + consumerInfoMap);
+                }
+            } catch (SAXException e) {
+                throw e;
+            }
+
+            ReadXMLUtils.removeNode(gcn,"Monitoring","GlobalController");
+        } else {
+            System.out.println("No GlobalController Monitoring node");
+        }
+
+
+        // Check for other unparsed tags
         NodeList nl= gcn.getChildNodes();
         for (int i= 0; i < nl.getLength(); i++) {
             Node n= nl.item(i);
@@ -319,6 +403,7 @@ public class ControlOptions {
                 throw e;
             } catch (XMLNoTagException e) {
             }
+
             NodeList nl= lc.getChildNodes();
             for (int j= 0; j < nl.getLength(); j++) {
                 Node n= nl.item(j);
@@ -482,6 +567,19 @@ public class ControlOptions {
         n0.getParentNode().removeChild(n0);
     }
 
+    /**
+     * Process all router outputs
+     * There maybe multiple Output blocks.
+     */
+    private void processRouterOutputs(NodeList o) throws SAXException {
+        for (int i= o.getLength()-1; i>= 0; i--) {
+            Node oNode= o.item(i);
+            outputs_.add(processOutput(oNode));
+            oNode.getParentNode().removeChild(oNode);
+        }
+
+    }
+
     /** Process tags related to a particular type of output */
     private OutputType processOutput(Node n) throws SAXException
     {
@@ -605,10 +703,24 @@ public class ControlOptions {
     }
 
     /**
+     * Get the class name for Visualization
+     */
+    public String getVisualizationClassName() {
+        return visualizationClass;
+    }
+
+    /**
      * Should we turn on Lattice Monitoring
      */
     public boolean latticeMonitoring() {
         return latticeMonitoring;
+    }
+
+    /**
+     * Get the map of class names and labels for consumers.
+     */
+    public HashMap<String, String>getConsumerInfo() {
+        return consumerInfoMap;
     }
 
     /** Return port number for global controller

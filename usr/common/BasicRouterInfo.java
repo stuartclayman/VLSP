@@ -2,6 +2,9 @@ package usr.common;
 
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
    Class provides simple information that the global and local
@@ -17,10 +20,26 @@ public class BasicRouterInfo {
     private String address;
     // the name of the router
     private String name;
+    // the Map of applications running on this router
+    // It holds data like
+    // 00:14:52 ID | StartTime | State | ClassName | Args | Name | 
+    // 00:14:52 1 | 1331119233159 | RUNNING | usr.applications.Send | [4, 3000, 250000, -d, 250, -i, 10] | /R1/App/usr.applications.Send/1 | 
+    // So /R1/App/usr.applications.Send/1  -> ["time" : 00:14:52, "id" : 1, "startime" : 1331119233159, "state": "RUNNING", "classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ] 
 
+    private HashMap<String, Map<String, Object>> localApplications;
+
+    /**
+     * BasicRouterInfo with router id, start time, the LocalController, and
+     * the managementPort
+     */
     public BasicRouterInfo(int id, long time, LocalControllerInfo lc, int port1) {
         this(id,time,lc,port1,port1+1);
     }
+
+    /**
+     * BasicRouterInfo with router id, start time, the LocalController,
+     * the managementPort, and the router-to-router port.
+     */
     public BasicRouterInfo(int id, long time, LocalControllerInfo lc, int port1,
                            int port2) {
         startTime_= time;
@@ -28,24 +47,40 @@ public class BasicRouterInfo {
         managementPort_= port1;
         router2routerPort_= port2;
         routerId_ = id;
+        localApplications = new HashMap<String, Map<String, Object>>();
     }
 
+    /**
+     * Get the router id
+     */
     public int getId() {
         return routerId_;
     }
 
+    /**
+     * Get the router management port
+     */
     public int getManagementPort() {
         return managementPort_;
     }
 
+    /**
+     * Get the router router-to-router port
+     */
     public int getRoutingPort() {
         return router2routerPort_;
     }
 
+    /**
+     * Get the LocalController managing the router
+     */
     public LocalControllerInfo getLocalControllerInfo() {
         return controller_;
     }
 
+    /**
+     * Get the hostname of the LocalController managing the router
+     */
     public String getHost() {
         return controller_.getName();
     }
@@ -76,6 +111,47 @@ public class BasicRouterInfo {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Add an application to the router.
+     */
+    public void addApplication(String name){
+    	localApplications.put(name, null);
+    }
+    
+    // FIXME: GT - I could not find the globalcontroller command where to invoke application shutdown
+    /**
+     * Remove an application to the router.
+     */
+    public void removeApplication(String name){
+    	localApplications.remove(name);
+    }
+    
+    /**
+     * List all application to the router.
+     */
+    public Set<String> getApplications(){
+    	return localApplications.keySet();
+    }
+
+
+    /**
+     * Get the data held for an application
+     * So /R1/App/usr.applications.Send/1  -> ["time" : 00:14:52, "id" : 1, "startime" : 1331119233159, "state": "RUNNING", "classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ]
+     */
+    public Map<String, Object>getApplicationData(String appName) {
+        return localApplications.get(appName);
+    }
+
+    /**
+     * Set the data held for an application
+     * So /R1/App/usr.applications.Send/1  -> ["time" : 00:14:52, "id" : 1, "startime" : 1331119233159, "state": "RUNNING", "classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ]
+     */
+    public void setApplicationData(String appName, Map<String, Object>data) {
+        localApplications.put(appName, data);
+
+        //System.out.println("BasicRouterInfo: " + name + ". setApplicationData " + appName + " -> " + data);
     }
 
     /**

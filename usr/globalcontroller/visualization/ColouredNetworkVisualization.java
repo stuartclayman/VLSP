@@ -1,6 +1,7 @@
 package usr.globalcontroller.visualization;
 
 import usr.globalcontroller.GlobalController;
+import usr.globalcontroller.TrafficInfo;
 import usr.common.*;
 import usr.APcontroller.*;
 import java.util.HashMap;
@@ -175,6 +176,12 @@ public class ColouredNetworkVisualization implements Visualization {
             s.println("    }");
         }
 
+        // Find the traffic reporter
+        //08032012 gc.getReporter()
+        TrafficInfo reporter = (TrafficInfo)gc.findByInterface(TrafficInfo.class);
+
+        System.err.println("reporter = " + reporter);
+
         // visit all the edges
         for (int i : gc.getRouterList()) {
             for (int j : gc.getOutLinks(i)) {
@@ -187,30 +194,19 @@ public class ColouredNetworkVisualization implements Visualization {
                     String router1Name = gc.findRouterInfo(i).getName();
                     String router2Name = gc.findRouterInfo(j).getName();
 
-                    /*
-                       // get trafffic for link i -> j as router1Name => router2Name
-                       List<Object> iToj = reporter.getTraffic(router1Name, router2Name);
-
-                       // get trafffic for link j -> i as router2Name => router1Name
-                       List<Object> jToi = reporter.getTraffic(router2Name, router1Name);
-
-                       String name = linkNames.get(makePair(i,j));
-
-                       //s.print("label = \"" + name + "\", ");
-
-                       if (iToj != null) {
-                       s.print(" headlabel = \"" + iToj.get(2) + "/" + iToj.get(8) + "\", ");
-                       }
-
-                       if (jToi != null) {
-                       s.print(" taillabel = \"" + jToi.get(2) + "/" + jToi.get(8) + "\", ");
-                       }
-                     */
-
                     // get trafffic for link i -> j as router1Name => router2Name
-                    List<Object> iToj = gc.getReporter().getTraffic(router1Name, router2Name);
+                    List<Object> iToj = null;
+
+                    if (reporter != null) {
+                        iToj = reporter.getTraffic(router1Name, router2Name);
+                    }
+
 
                     if (iToj != null) {
+                        // name | InBytes | InPackets | InErrors | InDropped | InDataBytes | InDataPackets | OutBytes | OutPackets | OutErrors | OutDropped | OutDataBytes | OutDataPackets | InQueue | BiggestInQueue | OutQueue | BiggestOutQueue |
+                        // Router-1 localnet | 2548 | 13 | 0 | 0 | 2548 | 13 | 10584 | 54 | 0 | 0 | 10584 | 54 | 0 | 1 | 0 | 0 |
+                        // pos 1 is InBytes
+                        // pos 7 is OutBytes
                         int traffic = (Integer)iToj.get(1) + (Integer)iToj.get(7);
 
                         s.print("label = \"" + traffic + "\", ");

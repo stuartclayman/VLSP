@@ -3,6 +3,7 @@ package usr.output;
 import java.io.PrintStream;
 import usr.globalcontroller.GlobalController;
 import usr.globalcontroller.visualization.*;
+import java.lang.reflect.*;
 
 /** Class to output network stuff */
 public class OutputNetwork implements OutputFunction {
@@ -70,7 +71,43 @@ public class OutputNetwork implements OutputFunction {
             // We might use arg one day.
             // Maybe to be a classname to instantiate.
 
-            Visualization visualization = new usr.globalcontroller.visualization.ColouredNetworkVisualization();
+            Visualization visualization;
+            
+            // try and get visualizationClass from the GC options
+            String vClass = gc.getOptions().getVisualizationClassName();
+
+            // if nothing, use ColouredNetworkVisualization
+            if (vClass == null) {
+                vClass = "usr.globalcontroller.visualization.PlainNetworkVisualization";
+            }
+
+            // instantiate the Visualization
+            try {
+                Class <? extends Visualization> visualizer;
+                visualizer =  Class.forName(vClass).asSubclass(Visualization.class);
+
+                
+                // find Constructor 
+                Constructor<? extends Visualization> cons = (Constructor<? extends Visualization>)visualizer.getDeclaredConstructor();
+
+                // instantiate
+                visualization = cons.newInstance();
+
+                System.out.println("Instantiated " + vClass);
+
+            } catch (ClassNotFoundException e) {
+                throw new Error("Class not found for class name "+ vClass);
+            } catch (ClassCastException e) {
+                throw new Error("Class name "+vClass+" must be sub type of Visualization");
+            } catch (NoSuchMethodException nsme) {
+                throw new Error("Class name "+vClass+" has no null Constructor");
+            } catch (InstantiationException ie) {
+                throw new Error("Class name "+vClass+" cannot be instantiated");
+            } catch (IllegalAccessException iae) {
+                throw new Error("Class name "+vClass+" cannot be instantiated");
+            } catch (InvocationTargetException ite) {
+                throw new Error("Class name "+vClass+" cannot be instantiated");
+            }
 
             visualization.setGlobalController(gc);
             visualization.visualize(s);

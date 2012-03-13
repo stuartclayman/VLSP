@@ -1,9 +1,10 @@
 /** This class contains the options used for a router
  */
 package usr.router;
-import usr.logging.*;
 
+import usr.logging.*;
 import java.io.*;
+import java.util.HashMap;
 import usr.engine.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -54,7 +55,8 @@ public class RouterOptions {
     boolean outputFileAddName_= false; // Add suffix to output file
     String errorFileName_= ""; // output file name for error stream
     boolean errorFileAddName_= false; // Add suffix to output file
-
+    boolean latticeMonitoring = false;  // If true, turn on Lattice Monitoring
+    HashMap<String, Integer>probeInfoMap = null; // A Class Name -> datarate mapping
 
     /** Constructor for router Options */
 
@@ -70,7 +72,7 @@ public class RouterOptions {
 
     /** init function sets up defaults and basic information */
     void init () {
-
+        probeInfoMap = new HashMap<String, Integer>();
     }
 
     public void setOptionsFromFile(String fName) throws java.io.FileNotFoundException,
@@ -112,8 +114,9 @@ public class RouterOptions {
     public void parseXML(Document doc) throws java.io.FileNotFoundException,
     SAXParseException, SAXException
     {
-        String basenode= doc.getDocumentElement().getNodeName();
-        if (!basenode.equals("RouterOptions")) {
+        Node basenode= doc.getDocumentElement();
+        String basenodeName = basenode.getNodeName();
+        if (!basenodeName.equals("RouterOptions")) {
             throw new SAXException("Base tag should be RouterOptions");
         }
 
@@ -131,6 +134,14 @@ public class RouterOptions {
         if (apm != null) {
             processAPM(apm);
         }
+
+        //NodeList mon = doc.getElementsByTagName("Monitoring");
+        NodeList mon = ((Element)basenode).getElementsByTagName("Monitoring");
+        if (mon != null) {
+            processMonitoring(mon);
+        }
+
+
         // Check for other unparsed tags
         Element el= doc.getDocumentElement();
         NodeList rest= el.getChildNodes();
@@ -475,6 +486,85 @@ public class RouterOptions {
         n.getParentNode().removeChild(n);
     }
 
+
+    /**
+     * Process Monitoring
+     */
+    private void processMonitoring(NodeList list) throws SAXException {
+        if (list.getLength() > 1) {
+            throw new SAXException ("Only one Monitoring tag allowed.");
+        }
+        if (list.getLength() == 0)
+            return;
+
+
+        Node mon = list.item(0);
+
+
+        // Should the Router turn on Lattice Monitoring
+        try {
+            latticeMonitoring = ReadXMLUtils.parseSingleBool(mon, "LatticeMonitoring","Monitoring",true);
+            ReadXMLUtils.removeNode(mon,"LatticeMonitoring","Monitoring");
+
+            //Logger.getLogger("log").logln(USR.STDOUT, "LatticeMonitoring = " + latticeMonitoring);
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+
+        }
+
+        // get Probes
+        try {
+            // First get all nodes called 'Probe'
+            NodeList probes = ((Element)mon).getElementsByTagName("Probe");
+
+            if (probes.getLength() != 0) {
+                for (int p=0; p < probes.getLength(); p++) {
+                    Node el = probes.item(p);
+
+                    try {
+                        String name = ReadXMLUtils.parseSingleString(el, "Name", "Probe", true);
+                        ReadXMLUtils.removeNodes(el, "Name", "Probe");
+
+                        Integer datarate = ReadXMLUtils.parseSingleInt(el, "Rate", "Probe", true);
+                        ReadXMLUtils.removeNodes(el, "Rate", "Probe");
+
+                        //Logger.getLogger("log").logln(USR.STDOUT, "Probe: name = " + name + " datarate = " + datarate);
+
+                        probeInfoMap.put(name, datarate);
+
+                    } catch (SAXException e) {
+                        throw e;
+                    } catch (XMLNoTagException nte) {
+                        Logger.getLogger("log").logln(USR.ERROR, nte.getMessage());
+                    }
+                }
+
+                // Remove all 'Probe' nodes
+                ReadXMLUtils.removeNodes(mon,"Probe","Monitoring");
+
+
+            }
+
+        } catch (SAXException e) {
+            throw e;
+        }
+
+
+        // Clean up
+        NodeList nl= mon.getChildNodes();
+        for (int i= 0; i < nl.getLength(); i++) {
+            Node n= nl.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                throw new SAXException("Monitoring XML unrecognised tag "+n.getNodeName());
+            }
+
+        }
+        mon.getParentNode().removeChild(mon);
+
+
+    }
+
     /** Return the time between sending traffic statistics */
     public int getTrafficStatTime() {
         return trafficStatTime_;
@@ -599,6 +689,19 @@ public class RouterOptions {
         return errorFileAddName_;
     }
 
+    /**
+     * Should we turn on Lattice Monitoring
+     */
+    public boolean latticeMonitoring() {
+        return latticeMonitoring;
+    }
+
+    /**
+     * Get the Probe Info Map
+     */
+    public HashMap<String, Integer> getProbeInfoMap() {
+        return probeInfoMap;
+    }
 
     /**
      * Create the String to print out before a message

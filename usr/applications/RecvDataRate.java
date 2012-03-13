@@ -8,12 +8,14 @@ import java.net.SocketException;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An application for Receiving some data
  * It prints out the data rate.
  */
-public class RecvDataRate implements Application {
+public class RecvDataRate implements Application, RuntimeMonitoring {
     int port = 0;
 
     boolean running = false;
@@ -148,5 +150,18 @@ public class RecvDataRate implements Application {
 
 
     }
+
+    /**
+     * Return a map of monitoring data.
+     */
+    public Map<String, String> getMonitoringData() {
+        Map theMap = new HashMap<String, String>();
+
+        theMap.put("diffs", Integer.toString(diffs));
+        theMap.put("count", Integer.toString(count));
+
+        return theMap;
+    }
+
 
 }

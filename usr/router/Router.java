@@ -537,7 +537,7 @@ public class Router {
 
 
     private static void help() {
-        Logger.getLogger("log").logln(USR.ERROR, "Test1 [mgt_port [r2r_port]]");
+        Logger.getLogger("log").logln(USR.ERROR, "Router [mgt_port [r2r_port]] [name] [address]");
         System.exit(1);
     }
 

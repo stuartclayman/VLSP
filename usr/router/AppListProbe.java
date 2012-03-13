@@ -4,13 +4,16 @@ package usr.router;
 
 import usr.router.*;
 import usr.applications.ApplicationHandle;
+import usr.applications.RuntimeMonitoring;
 import eu.reservoir.monitoring.core.*;
+import eu.reservoir.monitoring.core.list.*;
 import eu.reservoir.monitoring.core.table.*;
 import eu.reservoir.monitoring.appl.datarate.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * A probe that talks to a Router can collects the stats
@@ -40,12 +43,15 @@ public class AppListProbe extends RouterProbe implements Probe {
         // ClassName
         // State
         statsHeader = new DefaultTableHeader()
-                      .add("ID", ProbeAttributeType.INTEGER)
-                      .add("StartTime", ProbeAttributeType.LONG)
-                      .add("State", ProbeAttributeType.STRING)
-                      .add("ClassName", ProbeAttributeType.STRING)
-                      .add("Args", ProbeAttributeType.STRING)
-                      .add("Name", ProbeAttributeType.STRING)
+            .add("ID", ProbeAttributeType.INTEGER)
+            .add("StartTime", ProbeAttributeType.LONG)
+            .add("RunTime", ProbeAttributeType.INTEGER)
+            .add("State", ProbeAttributeType.STRING)
+            .add("ClassName", ProbeAttributeType.STRING)
+            .add("Args", ProbeAttributeType.STRING)
+            .add("Name", ProbeAttributeType.STRING)
+            .add("RuntimeKeys", ProbeAttributeType.LIST)
+            .add("RuntimeValues", ProbeAttributeType.LIST)
                       ;
 
                       //add("ThreadName", ProbeAttributeType.STRING);
@@ -99,6 +105,9 @@ public class AppListProbe extends RouterProbe implements Probe {
                     // StartTime
                     appHRow.add(new DefaultTableValue(ah.getStartTime()));
 
+                    // RunTime
+                    appHRow.add(new DefaultTableValue((int)(System.currentTimeMillis() - ah.getStartTime())));
+
                     // State
                     appHRow.add(new DefaultTableValue(ah.getState().toString()));
 
@@ -111,9 +120,30 @@ public class AppListProbe extends RouterProbe implements Probe {
                     // Name
                     appHRow.add(new DefaultTableValue(ah.getName()));
 
+                    // check if we should get run time monitoring data
+                    if (ah.getApplication() instanceof RuntimeMonitoring) {
+                        // yes
+                        MList keys = new DefaultMList(ProbeAttributeType.STRING);
+                        MList values = new DefaultMList(ProbeAttributeType.STRING);
 
-                    // ThreadName
-                    //appHRow.add(new DefaultTableValue(ah.getThreadName()));
+                        // get the data
+                        Map<String, String> theMap = ((RuntimeMonitoring)ah.getApplication()).getMonitoringData();
+
+                        // add the keys and values
+                        for (Map.Entry<String, String> entry : theMap.entrySet()) {
+                            keys.add(entry.getKey());
+                            values.add(entry.getValue());
+                        }
+
+                        appHRow.add(new DefaultTableValue(keys));
+                        appHRow.add(new DefaultTableValue(values));
+
+                    } else {
+                        // no
+                        appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
+                        appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
+                        
+                    }
 
                     // add this row to the table
                     statsTable.addRow(appHRow);
@@ -123,6 +153,7 @@ public class AppListProbe extends RouterProbe implements Probe {
 
                 list.add(new DefaultProbeValue(1, statsTable));
 
+                // TODO: do the following as a ProbeFilter.
                 // if the tables are the same, don not send a new measurement
                 if (tablesEqual(savedT, statsTable)) {
                     // nothing to send

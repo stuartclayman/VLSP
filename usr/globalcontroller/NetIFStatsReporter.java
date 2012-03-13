@@ -14,15 +14,22 @@ import java.util.HashMap;
 /**
  * A NetIFStatsReporter collects measurements sent by
  * a NetIFStatsProbe embedded in each Router.
+ * It shows the traffic sent over the network since last time.
  */
-public class NetIFStatsReporter implements Reporter {
+public class NetIFStatsReporter implements Reporter, RouterDeletedNotification, TrafficInfo {
     GlobalController globalController;
 
     // A HashMap of RouterName -> latest measurement
     HashMap<String, Table> measurements;
 
     // A HashMap of RouterName -> old measurement
+    // GT: data for deleted routers
     HashMap<String, Table> old;
+
+
+    // A HashMap of RouterName -> old measurement
+    // GT: measurements from previous monitoring cycle
+    HashMap<String, Table> previousMeasurements;
 
     // count of no of measurements
     int count = 0;
@@ -35,6 +42,7 @@ public class NetIFStatsReporter implements Reporter {
 
         measurements = new HashMap<String, Table>();
         old = new HashMap<String, Table>();
+        previousMeasurements = new HashMap<String, Table>();
     }
 
     /**
@@ -67,6 +75,9 @@ public class NetIFStatsReporter implements Reporter {
             // print table
             //printTable(table);
 
+            // GT - save old Measurement
+            previousMeasurements.put(routerName, measurements.get(routerName));
+
             synchronized (measurements) {
                 measurements.put(routerName, table);
             }
@@ -86,21 +97,8 @@ public class NetIFStatsReporter implements Reporter {
                 System.out.println("Total = " + calculateTotalTraffic());
             }
 
-        } else if  (m.getType().equals("AppList")) {
-            List<ProbeValue> values = m.getValues();
-
-            // ProbeValue 0 is the router name
-            ProbeValue pv0 = values.get(0);
-            String routerName = (String)pv0.getValue();
-
-            // ProbeValue 1 is the table
-            ProbeValue pv1 = values.get(1);
-            Table table = (Table)pv1.getValue();
-
-            Logger.getLogger("log").logln(1<<10, appListToString(table));
-
         } else {
-            // not what we were expecting
+            // not what we handle
         }
     }
 
@@ -110,49 +108,112 @@ public class NetIFStatsReporter implements Reporter {
      * @param routerDst the name of dest router
      */
     public List<Object> getTraffic(String routerSrc, String routerDst) {
+        Table tablePrev = previousMeasurements.get(routerSrc);
+
         Table table = measurements.get(routerSrc);
 
-        if (table == null) {
-            // there are no measurements
-            return null;
+        if (tablePrev == null) {
+            if (table == null) { 
+                // there are no measurements
+                return null;
+            } else {
+                // there are some measurements in measurements
+                // but none in previousMeasurements
+                return findRowData(table, routerDst);
+            }
+            
         } else {
-            // skip through all rows looking for routerDst
-            int rows = table.getRowCount();
+            // find previous row for routerDst
+            List<Object> rowPrev = findRowData(tablePrev, routerDst);
 
-            // skip row 0, which is localhost
-            for (int r=1; r< rows; r++) {
-                TableRow row = table.getRow(r);
+            // find current row for routerDst
+            List<Object> row = findRowData(table, routerDst);
 
-                // get name
-                TableValue tableValue = row.get(0);
-                String linkName = (String)tableValue.getValue();
+            if (rowPrev == null) {
+                if (row == null) {
 
-                // check name
-                if (linkName.startsWith(routerDst)) {
-                    // we've found it
-                    List<TableValue> rowAsList = row.toList();
+                    // found nothing
+                    return null;
+                } else {
+                    return row;
+                } 
+            } else {
+                // calcualte difference between the rows
+                // name | InBytes | InPackets | InErrors | InDropped | InDataBytes | InDataPackets | OutBytes | OutPackets | OutErrors | OutDropped | OutDataBytes | OutDataPackets | InQueue | BiggestInQueue | OutQueue | BiggestOutQueue |
+                // Router-1 localnet | 2548 | 13 | 0 | 0 | 2548 | 13 | 10584 | 54 | 0 | 0 | 10584 | 54 | 0 | 1 | 0 | 0 |
+                List<Object> data = new ArrayList<Object>(row.size());
 
-                    // now convert to List<Object>
-                    List<Object> data = new ArrayList<Object>(row.size());
+                // add name
+                data.add(row.get(0));
 
-                    for (TableValue value : rowAsList) {
-                        data.add(value.getValue());
+                // now skip through all the numbers
+                for (int pos=1; pos<row.size(); pos++) {
+                    // get values
+                    Integer prevValue = (Integer)rowPrev.get(pos);
+                    Integer currentValue = (Integer)row.get(pos);
+                    Integer diff = 0;
+
+                    if (prevValue > currentValue) {
+                        // a data oddity
+                        System.err.println("Data error: " + row.get(0) + " previous valueof " + table.getColumnDefinitions().get(pos).getName() + " = " + prevValue + " > current value: " + currentValue );
+                    } else {
+                        diff = currentValue - prevValue;
                     }
 
-                    return data;
+                    // add to data
+                    data.add(diff);
                 }
-            }
 
-            // found nothing
-            return null;
+                return data;
+            }
         }
     }
 
 
     /**
+     * Find data for the row in a table for a Router
+     */
+    private List<Object> findRowData(Table table, String router) {
+        // skip through all rows looking for routerDst
+        int rows = table.getRowCount();
+
+        // skip row 0, which is localhost
+        for (int r=1; r< rows; r++) {
+            TableRow row = table.getRow(r);
+
+            // get name
+            TableValue tableValue = row.get(0);
+            String linkName = (String)tableValue.getValue();
+
+            // check name
+            if (linkName.startsWith(router)) {
+                // we've found it
+                List<TableValue> rowAsList = row.toList();
+
+                // now convert to List<Object>
+                List<Object> data = new ArrayList<Object>(row.size());
+
+                for (TableValue value : rowAsList) {
+                    data.add(value.getValue());
+                }
+
+                return data;
+            }
+        }
+        
+        // found nothing
+        return null;
+
+    }
+
+    /**
+     * Calculate the traffic.
+     private 
+
+    /**
      * Tell this reporter that a router has been deleted
      */
-    protected void routerDeleted(String routerName) {
+    public void routerDeleted(String routerName) {
         Table oldData = null;
 
         synchronized (measurements) {
@@ -298,8 +359,7 @@ public class NetIFStatsReporter implements Reporter {
                 TableValue tableValue = row.get(c);
 
                 switch (c) {
-                case 0: {
-                    // NetIF name
+                case 0: {        // NetIF name col
                     if (tableValue.getValue().toString().endsWith("localnet")) {
                         builder.append(coloured(ANSI.MAGENTA, tableValue.getValue()));
                     } else {
@@ -309,7 +369,7 @@ public class NetIFStatsReporter implements Reporter {
                     break;
                 }
 
-                case 4:
+                case 4:         // Dropped cols
                 case 10:
                     Integer dropped = (Integer)tableValue.getValue();
                     if (dropped > 0) {

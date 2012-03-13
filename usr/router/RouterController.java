@@ -9,6 +9,7 @@ import usr.applications.Ping;
 import java.util.Scanner;
 import java.util.Queue;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
@@ -26,7 +27,9 @@ import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
 import eu.reservoir.monitoring.appl.BasicDataSource;
 import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
+import eu.reservoir.monitoring.appl.datarate.EveryNMilliseconds;
 import java.net.InetSocketAddress;
+import java.lang.reflect.Constructor;
 
 
 /**
@@ -97,9 +100,10 @@ public class RouterController implements ComponentController, Runnable {
     HashMap<Integer, NetIF> tempNetIFMap;
 
     // A BasicDataSource for the stats of a Router
-    BasicDataSource dataSource;
-    RouterProbe probeNIS;
-    RouterProbe probeApp;
+    BasicDataSource dataSource = null;
+
+    // The probes
+    ArrayList<RouterProbe> probeList = null;
 
     /**
      * Construct a RouterController, given a specific port.
@@ -148,16 +152,14 @@ public class RouterController implements ComponentController, Runnable {
 
         // Set up info for AP management
         //System.out.println("Construct AP Controller");
-        apController_= ConstructAPController.constructAPController
-                           (options_);
+        apController_= ConstructAPController.constructAPController(options_);
         apInfo_= apController_.newAPInfo();
 
         // setup DataSource
         dataSource = new BasicDataSource(name + ".dataSource");
-        // and probe
-        probeNIS = new NetIFStatsProbe(this);
-        probeApp = new AppListProbe(this);
+        probeList = new ArrayList<RouterProbe>();
 
+        System.out.println(leadin() + "Setup DataSource: " + dataSource);
     }
 
     /**
@@ -281,8 +283,11 @@ public class RouterController implements ComponentController, Runnable {
 
         // stop the dataSource and associated probe
         if (dataSource.isConnected()) {
-            probeNIS.lastMeasurement();
-            probeApp.lastMeasurement();
+            for (RouterProbe probe : probeList) {
+                probe.lastMeasurement();
+            }
+            //probeNIS.lastMeasurement();
+            //probeApp.lastMeasurement();
             stopMonitoring();
         }
 
@@ -542,7 +547,17 @@ public class RouterController implements ComponentController, Runnable {
     /** Read a string containing router options */
     public boolean readOptionsString(String str)
     {
-        return router.readOptionsString(str);
+        boolean read = router.readOptionsString(str);
+
+        //System.out.println(leadin() + "options_.latticeMonitoring: " + options_.latticeMonitoring);
+
+        // Determine monitoring setup
+        if (options_.latticeMonitoring()) {
+            // and probes
+            setupProbes(options_.getProbeInfoMap());
+        }
+
+        return read;
     }
 
     /** Read a file containing router options */
@@ -639,29 +654,20 @@ public class RouterController implements ComponentController, Runnable {
         DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
         dataSource.setDataPlane(outputDataPlane);
 
-        // set up probe NIS
-        probeNIS.setDataRate(new EveryNSeconds(when));
-
-        // turn on probe
-        dataSource.addProbe(probeNIS);  // this does registerProbe and activateProbe
-
-        // set up probe App
-        probeApp.setDataRate(new EveryNSeconds(when));
-
-        // turn on probe
-        dataSource.addProbe(probeApp);  // this does registerProbe and activateProbe
+        // add probes
+        for (RouterProbe probe : probeList) {
+            dataSource.addProbe(probe);  // this does registerProbe and activateProbe
+        }
 
         // and connect
         dataSource.connect();
 
-        // turn on probe
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "setup data source: " +  dataSource.getName() + " with probe " + probeNIS.getName());
+        // turn on probes
+        for (RouterProbe probe : probeList) {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + " data source: " +  dataSource.getName() + " turn on probe " + probe.getName());
 
-        dataSource.turnOnProbe(probeNIS);
-
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "setup data source: " +  dataSource.getName() + " with probe " + probeApp.getName());
-
-        dataSource.turnOnProbe(probeApp);
+            dataSource.turnOnProbe(probe);
+        }
 
     }
 
@@ -669,11 +675,10 @@ public class RouterController implements ComponentController, Runnable {
      * Pause monitoring
      */
     public synchronized void pauseMonitoring() {
-        if (dataSource.isProbeOn(probeNIS)) {
-            dataSource.turnOffProbe(probeNIS);
-        }
-        if (dataSource.isProbeOn(probeApp)) {
-            dataSource.turnOffProbe(probeApp);
+        for (RouterProbe probe : probeList) {
+            if (dataSource.isProbeOn(probe)) {
+                dataSource.turnOffProbe(probe);
+            }
         }
     }
 
@@ -681,11 +686,10 @@ public class RouterController implements ComponentController, Runnable {
      * Resume monitoring
      */
     public synchronized void resumeMonitoring() {
-        if (!dataSource.isProbeOn(probeNIS)) {
-            dataSource.turnOnProbe(probeNIS);
-        }
-        if (!dataSource.isProbeOn(probeApp)) {
-            dataSource.turnOnProbe(probeApp);
+        for (RouterProbe probe : probeList) {
+            if (!dataSource.isProbeOn(probe)) {
+                dataSource.turnOnProbe(probe);
+            }
         }
     }
 
@@ -694,15 +698,57 @@ public class RouterController implements ComponentController, Runnable {
      */
     public synchronized void stopMonitoring() {
         if (dataSource.isConnected()) {
-            pauseMonitoring();
+            //pauseMonitoring();
 
-            dataSource.removeProbe(probeNIS);
+            // turn off probes
+            for (RouterProbe probe : probeList) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + " data source: " +  dataSource.getName() + " turn off probe " + probe.getName());
 
-            dataSource.removeProbe(probeApp);
+                dataSource.turnOffProbe(probe);
+            }
 
+            // disconnect
             dataSource.disconnect();
-        }
 
+            // remove probes
+            for (RouterProbe probe : probeList) {
+                dataSource.removeProbe(probe);
+            }
+
+        }
+    }
+
+    /**
+     * Set up the probes
+     */
+    private void setupProbes(HashMap<String, Integer>probeInfoMap) {
+        // skip through the map, instantiate a Probe and set its data rate
+        for (Map.Entry<String, Integer> entry : probeInfoMap.entrySet()) {
+            String probeClassName = entry.getKey();
+            Integer datarate = entry.getValue();
+
+            try {
+                // Now convert the class name to a Class
+                // get Class object
+                Class<RouterProbe> cc = (Class<RouterProbe>)Class.forName(probeClassName);
+
+                // find Constructor for when arg is RouterController
+                Constructor<RouterProbe> cons = (Constructor<RouterProbe>)cc.getDeclaredConstructor(RouterController.class);
+
+                RouterProbe probe =  (RouterProbe)cons.newInstance(this);
+                probe.setDataRate(new EveryNMilliseconds(datarate));
+                probeList.add(probe);
+
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Added probe: " + probe);
+
+            } catch (ClassNotFoundException cnfe) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Class not found " + probeClassName);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot instantiate class " + probeClassName);
+            }
+
+
+        }
     }
 
     /**

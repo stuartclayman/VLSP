@@ -20,6 +20,7 @@ import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneConsumerWithNames;
 import eu.reservoir.monitoring.appl.BasicConsumer;
 import java.net.InetSocketAddress;
+import java.lang.reflect.Constructor;
 
 /**
  * The GlobalController is in overall control of the software.  It
@@ -115,8 +116,10 @@ public class GlobalController implements ComponentController {
 
     // A BasicConsumer for the stats of a Router
     BasicConsumer dataConsumer;
-    // and a Reporter object that handles the incoming measurements
-    NetIFStatsReporter reporter;
+
+    // and the Reporters that handle the incoming measurements
+    // Label -> Reporter
+    HashMap<String, Reporter> reporterMap;
 
 
     /**
@@ -240,8 +243,11 @@ public class GlobalController implements ComponentController {
 
             // setup DataConsumer
             dataConsumer = new BasicConsumer();
-            // and reporter
-            reporter = new NetIFStatsReporter(this);
+            // and reporterList
+            reporterMap = new HashMap<String, Reporter>();
+
+            // now start the reporters
+            setupReporters(options_.getConsumerInfo());
 
             // start monitoring
             // listening on the GlobalController address
@@ -358,6 +364,41 @@ public class GlobalController implements ComponentController {
             }
         }
     }
+
+
+    /**
+     * Set up the reporters
+     */
+    private void setupReporters(HashMap<String, String>reporterInfoMap) {
+        // skip through the map, instantiate a Probe and set its data rate
+        for (Map.Entry<String, String> entry : reporterInfoMap.entrySet()) {
+            String reporterClassName = entry.getValue();
+            String label = entry.getKey();
+
+            try {
+                // Now convert the class name to a Class
+                // get Class object
+                Class<Reporter> cc = (Class<Reporter>)Class.forName(reporterClassName);
+
+                // find Constructor for when arg is GlobalController
+                Constructor<Reporter> cons = (Constructor<Reporter>)cc.getDeclaredConstructor(GlobalController.class);
+
+                Reporter reporter =  (Reporter)cons.newInstance(this);
+                reporterMap.put(label, reporter);
+
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Added reporter: " + reporter);
+
+            } catch (ClassNotFoundException cnfe) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Class not found " + reporterClassName);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot instantiate class " + reporterClassName);
+            }
+
+
+        }
+    }
+
+
 
     /** Check queued messages at Global Controller */
     private boolean checkMessages()
@@ -766,13 +807,12 @@ public class GlobalController implements ComponentController {
         // tell reporter that this router is gone
         if (latticeMonitoring) {
             String routerName = br.getName();
-            if (reporter == null) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+
-                                              "Freporter does not exist shutting down" +
-                                              br.getHost()+":"+br.getManagementPort());
-                return;
+            
+            for (Reporter reporter : reporterMap.values()) {
+                if (reporter instanceof RouterDeletedNotification) {
+                    ((RouterDeletedNotification)reporter).routerDeleted(routerName);
+                }
             }
-            reporter.routerDeleted(routerName);
         }
     }
 
@@ -1148,7 +1188,7 @@ public class GlobalController implements ComponentController {
     }
 
     /**
-     * Run something on a Router.
+     * Run an application on a Router.
      */
     public String onRouter(int routerID, String className, String[] args) {
         BasicRouterInfo br = routerIdMap_.get(routerID);
@@ -1162,7 +1202,13 @@ public class GlobalController implements ComponentController {
         int MAX_TRIES= 5;
         for (i=0; i < MAX_TRIES; i++) {
             try {
+                // onRouter retruns an appName
+                // something like: /R4/App/usr.applications.RecvDataRate/1
                 String appName = lci.onRouter(routerID, className, args);
+                
+                // Add app to BasicRouterInfo
+                br.addApplication(appName);
+
                 return appName;
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+
@@ -1503,7 +1549,12 @@ public class GlobalController implements ComponentController {
         dataConsumer.setDataPlane(inputDataPlane);
 
         // set the reporter
-        dataConsumer.setReporter(reporter);
+        dataConsumer.clearReporters();
+
+        // add probes
+        for (Reporter reporter : reporterMap.values()) {
+            dataConsumer.addReporter(reporter);  
+        }
 
         // and connect
         boolean connected = dataConsumer.connect();
@@ -1528,11 +1579,46 @@ public class GlobalController implements ComponentController {
     }
 
     /**
-     * Get the Reporter of the monitoring data
+     * Get the Reporter list of the monitoring data
      */
-    public NetIFStatsReporter getReporter() {
-        return reporter;
+    public List<Reporter> getReporterList() {
+        List<Reporter> list = new ArrayList<Reporter>();
+        list.addAll(reporterMap.values());
+        return list;
     }
+
+    /**
+     * Find reporter by label
+     */
+    public Reporter findByLabel(String label) {
+        return reporterMap.get(label);
+    }
+
+    /**
+     * Find reporter by Interface Class
+     */
+    public Reporter findByInterface(Class inter) {
+        // skip through each Reporter
+        for (Reporter reporter :  reporterMap.values()) {
+            // skip through each Interface
+            for (Class<?>rI : reporter.getClass().getInterfaces()) {
+
+                if (rI.isAssignableFrom(inter)) {
+                    return reporter;
+                }
+
+                /*
+                if (inter.isAssignableFrom(rI)) {
+                    return reporter;
+                }
+                */
+            }
+
+        }
+
+        return null;
+    }
+
 
     private void initSchedule() {
         scheduler_= new EventScheduler();
@@ -1651,7 +1737,7 @@ public class GlobalController implements ComponentController {
      * Convert an elasped time, in milliseconds, into a string.
      * Converts something like 35432 into 35:43
      */
-    String elapsedToString(long elapsedTime) {
+    public String elapsedToString(long elapsedTime) {
         long millis = (elapsedTime % 1000) / 10;
 
         long rawSeconds = elapsedTime / 1000;
