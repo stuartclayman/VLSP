@@ -4,8 +4,8 @@ RIN=monitoring_scripts/gasbed_trafficfilter_dummy_noPA.xml
 ROUT=monitoring_scripts/gasbed_routeroptions.xml
 CONTROL_SCRIPT=monitoring_scripts/gasbed_trafficfilter_noPA.xml
 AWK=gawk
-
-CPVAR=/home/rclegg/code/userspacerouter:/home/rclegg/code/userspacerouter/libs/monitoring-0.6.7.jar:/home/rclegg/code/userspacerouter/libs/timeindex-20101020.jar:/home/rclegg/code/userspacerouter/libs/aggregator-0.3.jar::$USRHOME/libs/rgcmathfunctions.jar:$USRHOME/libs/rgcprobdistributions.jar:$USRHOME/libs/rgcxmlparse.jar
+USRHOME=$HOME/code/userspacerouter
+CPVAR=$USRHOME:$USRHOME/libs/monitoring-0.6.7.jar:$USRHOME/libs/timeindex-20101020.jar:$USRHOME/libs/aggregator-0.3.jar::$USRHOME/libs/rgcmathfunctions.jar:$USRHOME/libs/rgcprobdistributions.jar:$USRHOME/libs/rgcxmlparse.jar
 CLEANSCRIPT=/home/rclegg/code/userspacerouter/scripts/gascleanscript.sh
 
 
