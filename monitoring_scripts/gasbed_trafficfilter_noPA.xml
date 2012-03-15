@@ -3,6 +3,17 @@
      <Port>20001</Port>
      <ConnectedNetwork>false</ConnectedNetwork>
      <Simulation>false</Simulation>
+  
+   <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualization</VisualizationClass>
+     <Monitoring>
+       <LatticeMonitoring>true</LatticeMonitoring>
+       <Consumer>
+         <Name>usr.globalcontroller.NetIFStatsReporter</Name>
+       </Consumer>
+       <Consumer>
+         <Name>usr.globalcontroller.RouterAppsReporter</Name>
+       </Consumer>
+     </Monitoring>
   </GlobalController>
     <LocalController>
      <Name>ethane</Name>

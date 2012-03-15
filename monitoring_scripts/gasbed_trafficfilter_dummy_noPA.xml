@@ -1,4 +1,15 @@
 <RouterOptions>
+        <Monitoring>
+      <LatticeMonitoring>true</LatticeMonitoring>
+      <Probe>
+        <Name>usr.router.NetIFStatsProbe</Name>
+        <Rate>1000</Rate>              <!-- every 1000 millis -->
+      </Probe>
+      <Probe>
+        <Name>usr.router.AppListProbe</Name>
+        <Rate>2500</Rate>             <!-- every 2500 millis -->
+      </Probe>
+    </Monitoring>
     <RoutingParameters>
         <MaxCheckTime>60000</MaxCheckTime>
         <MinNetIFUpdateTime>5000</MinNetIFUpdateTime>
