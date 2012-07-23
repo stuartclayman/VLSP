@@ -2,9 +2,11 @@ package usr.localcontroller.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.router.RouterManagementConsole;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
+import us.monoid.json.*;
 import java.util.Scanner;
 import java.net.InetSocketAddress;
 
@@ -17,17 +19,35 @@ public class MonitoringStopCommand extends LocalCommand {
      * Construct a MonitoringStopCommand
      */
     public MonitoringStopCommand() {
-        super(MCRP.MONITORING_STOP.CMD, MCRP.MONITORING_STOP.CODE, MCRP.ERROR.CODE);
+        super(MCRP.MONITORING_STOP.CMD);
     }
 
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        controller.stopMonitoring();
+    public boolean evaluate(Request request, Response response) {
 
-        boolean result = success("Monitoring Stopped");
+        try {
+            PrintStream out = response.getPrintStream();
 
-        return result;
+            controller.stopMonitoring();
+
+            JSONObject jsobj = new JSONObject();
+
+            jsobj.put("response", "Monitoring Stopped");
+            jsobj.put("success", Boolean.TRUE);
+            out.println(jsobj.toString());
+            response.close();
+
+            return true;
+
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
+            return false;
+        }
     }
 }
+

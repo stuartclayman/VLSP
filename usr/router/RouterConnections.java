@@ -106,7 +106,7 @@ public class RouterConnections implements Runnable {
 
                 netIF.setID(refAddr.hashCode());
 
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
 
                 controller.registerTemporaryNetIF(netIF);
 

@@ -5,7 +5,7 @@ import usr.logging.*;
 public class ThreadTools {
     // can turn on printing with:
     // ThreadTools.on = true
-    public static boolean on = false;
+    public static boolean on = true;
 
     public static void findAllThreads(String leadin) {
         if (!on) {
@@ -29,12 +29,22 @@ public class ThreadTools {
         Thread[] threads = new Thread[numThreads*2];
         numThreads = group.enumerate(threads, false);
 
+        // group name
+        if (on) {
+            for (int sp=0; sp < level; sp++) {
+                System.err.print("  ");
+            }
+            Logger.getLogger("log").logln(USR.ERROR, leadin + " " + group.getName());
+        }
+
         // Enumerate each thread in `group'
         for (int i=0; i<numThreads; i++) {
             // Get thread
             Thread thread = threads[i];
             for (int sp=0; sp < level; sp++) {
-                System.err.print("  ");
+                if (on) {
+                    System.err.print("  ");
+                }
             }
             if (on) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin + " " + thread);

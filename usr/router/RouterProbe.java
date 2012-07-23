@@ -34,12 +34,12 @@ public abstract class RouterProbe extends AbstractProbe implements Probe {
      * Last will get one last measurement
      */
     public void lastMeasurement() {
-        System.out.println("NetIFStatsProbe: last collect for " + controller.getName());
+        //System.out.println("NetIFStatsProbe: last collect for " + controller.getName());
         try {
             Measurement m = collectThenCheck();
             getProbeManager().notifyMeasurement(m);
         } catch (Exception e) {
-            System.err.println("NetIFStatsProbe: last collect failed - " + e);
+            //System.err.println("NetIFStatsProbe: last collect failed - " + e);
         }
     }
 

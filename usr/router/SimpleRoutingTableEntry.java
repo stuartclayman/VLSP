@@ -11,7 +11,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     private Address address_;
     private int cost_;
     // NetIF of null is a local interface
-    NetIF inter_;
+    private NetIF inter_;
 
     SimpleRoutingTableEntry(Address addr, int cost, NetIF inter) {
         address_= addr;
@@ -30,7 +30,7 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
 
         // get correct no of bytes for an address
         int totalLength = tableEntry.length;
-        int costStart = totalLength - 4;
+        int costStart = totalLength - 4;  // subtract length of cost
 
         //System.err.println("SimpleRoutingTableEntry: tableEntry size = " + totalLength);
 
@@ -78,7 +78,8 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
            int id = addr.asInteger();
            return Integer.toString(id);
          */
-        return addr.asTransmitForm();
+        //return addr.asTransmitForm();
+        return addr.toString();
     }
 
     /**
@@ -101,18 +102,41 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         return bytes;
     }
 
+    /**
+     * SHow only data transmitted
+     */
+    public String showTransmitted() {
+        String entry ="[ ";
+
+        entry += addressAsString(address_) + " W(" + cost_+ ") ";
+            
+        entry += " ]";
+
+        return entry;
+            
+    }
+
     /** Entry represented as string */
     public String toString() {
         String entry ="[ ";
         if (inter_ == null) {
-            entry += addressAsString(address_) + " " + cost_+ " nullIF";
+            entry += addressAsString(address_) + " W(" + cost_+ ") IF: localhost";
         } else {
-            entry += addressAsString(address_) + " " + cost_ + " IF: " + inter_.getName();
+            entry += addressAsString(address_) + " W(" + cost_ + ") IF: " + ("if" + portNo(inter_))  + " => " + addressAsString(inter_.getRemoteRouterAddress());
         }
 
         entry += " ]";
         //Logger.getLogger("log").logln(USR.ERROR, "ENTRY: "+entry);
         return entry;
+    }
+
+
+    private String portNo(NetIF inter) {
+        if (inter.getRouterPort() == null) {
+            return "_temp";
+        } else {
+            return Integer.toString(inter.getRouterPort().getPortNo());
+        }
     }
 
 }

@@ -9,13 +9,19 @@ import java.net.UnknownHostException;
 import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
+import us.monoid.web.*;
+import us.monoid.json.*;
 
 /**
  * This class implements the MCRP protocol and acts as a client
  * for interacting with the ManagementConsole of a GlobalController.
  */
-public class GlobalControllerInteractor extends MCRPInteractor
-{
+public class GlobalControllerInteractor {
+    // A URI for a GlobalController to interact with
+    String globalControllerURI;
+    Resty rest;
+    int port;
+
     /**
      * Constructor for a MCRP connection
      * to the ManagementConsole of a GlobalController.
@@ -45,62 +51,93 @@ public class GlobalControllerInteractor extends MCRPInteractor
         initialize(lh.getIp(), lh.getPort());
     }
 
+    /**
+     * Initialize
+     */
+    private synchronized void initialize(InetAddress addr, int port) {
+        this.port = port;
+        //URI uri = new URI("http", null, addr.toString(), port, null, null, null);
+        globalControllerURI = "http://" + addr.getHostName() + ":" + Integer.toString(port);
+
+        Logger.getLogger("log").logln(USR.STDOUT, "globalControllerURI: " + globalControllerURI);
+        
+        rest = new Resty();
+    }
+
+    /**
+     * Get the port this LocalControllerInteractor is connecting to
+     */
+    public int getPort() {
+        return port;
+    }
+
+    /**
+     * Interact 
+     */
+    private JSONObject interact(String str) throws IOException, JSONException {
+        String uri = globalControllerURI +  "/command/" + java.net.URLEncoder.encode(str, "UTF-8");
+
+        Logger.getLogger("log").logln(USR.STDOUT, "GC call: " + uri.substring(0,Math.min(64, uri.length())));
+
+        JSONObject jsobj = rest.json(uri).toObject();
+
+        Logger.getLogger("log").logln(USR.STDOUT, "GC response: " + jsobj.toString());
+
+        return jsobj;
+    }
+
+
+
     /* Calls for ManagementConsole */
 
     /**
      * Responds to the GlobalController.
      */
-    public MCRPInteractor respondToGlobalController(LocalHostInfo lc) throws IOException, MCRPException {
+    public Boolean respondToGlobalController(LocalHostInfo lc) throws IOException, JSONException {
         String command= MCRP.OK_LOCAL_CONTROLLER.CMD+" "+lc.getName()+" "+ lc.getPort();
         interact(command);
-        expect(MCRP.OK_LOCAL_CONTROLLER.CODE);
-        return this;
+        return true;
     }
 
 
     /**
      * Sends collected router stats to the global controller
      */
-    public MCRPInteractor sendRouterStats(String stats) throws IOException, MCRPException {
+    public Boolean sendRouterStats(String stats) throws IOException, JSONException {
 
         String command= MCRP.SEND_ROUTER_STATS.CMD+" "+stats;
         interact(command);
-        expect(MCRP.SEND_ROUTER_STATS.CODE);
-        return this;
+        return true;
     }
 
     /**
      * Quit talking to the router
      * Close a connection to the ManagementConsole of the router.
      */
-    public MCRPInteractor quit() throws IOException, MCRPException {
-        interact(MCRP.QUIT.CMD);
-        expect(MCRP.QUIT.CODE);
-        return this;
+    public Boolean quit() throws IOException, JSONException {
+        return true;
     }
 
     /** Send a message to a local controller informing it about a routers
        status as an aggregation point */
-    public MCRPInteractor reportAP(int GID, int AP) throws IOException, MCRPException {
+    public Boolean reportAP(int GID, int AP) throws IOException, JSONException {
         String toSend = MCRP.REPORT_AP.CMD + " " + GID + " " +AP;
 
         interact(toSend);
-        expect(MCRP.REPORT_AP.CODE);
-        return this;
+        return true;
     }
 
 
     /**
      * Get the networkGraph as a String representation.
      */
-    public String networkGraph(String arg) throws IOException, MCRPException {
+    public String networkGraph(String arg) throws IOException, JSONException {
         String toSend = MCRP.NETWORK_GRAPH.CMD + " " + arg;
 
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.NETWORK_GRAPH.CODE);
+        JSONObject response = interact(toSend);
 
         // return the graph
-        return response.get(0)[1];
+        return (String)response.get("graph");
     }
 
 

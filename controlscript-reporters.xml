@@ -1,0 +1,51 @@
+<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <StartLocalControllers>true</StartLocalControllers>
+     <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass>
+     <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualization</VisualizationClass> -->
+     <Monitoring>
+       <LatticeMonitoring>true</LatticeMonitoring>
+       <Consumer>
+         <Name>usr.globalcontroller.NetIFStatsReporter</Name>
+       </Consumer>
+       <Consumer>
+         <Name>usr.globalcontroller.RouterAppsReporter</Name>
+       </Consumer>
+     </Monitoring>
+  </GlobalController>
+
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10000</Port>
+     <LowPort>11000</LowPort>
+     <HighPort>12000</HighPort>
+  </LocalController>
+
+  <!--
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10001</Port>
+     <LowPort>12000</LowPort>
+     <HighPort>13000</HighPort>
+  </LocalController>
+
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10002</Port>
+     <LowPort>13000</LowPort>
+     <HighPort>14000</HighPort>
+  </LocalController>
+  -->
+
+  <EventEngine>
+     <Name>Script</Name>
+     <EndTime>86400</EndTime>
+     <Parameters>CurrentScript</Parameters>  <!-- AppScript2Ca or b == with router and link names  AppScript2B == simple addresses , AppScriptWait does nothing but wait-->
+  </EventEngine>
+
+  <RouterOptions>
+    routeroptions-noap.xml
+  </RouterOptions>
+
+</SimOptions>

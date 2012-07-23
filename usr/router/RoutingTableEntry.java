@@ -16,6 +16,11 @@ public interface RoutingTableEntry {
      */
     public int size();
 
+    /**
+     * SHow only data transmitted
+     */
+    public String showTransmitted();
+
     public String toString();
 
 }

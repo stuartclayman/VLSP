@@ -20,11 +20,15 @@ public class BasicRouterInfo {
     private String address;
     // the name of the router
     private String name;
+
+    // A map of ID to Name for apps
+    private HashMap<Integer, String> appIDs;
+
     // the Map of applications running on this router
     // It holds data like
-    // 00:14:52 ID | StartTime | State | ClassName | Args | Name | 
+    // 00:14:52 AID | StartTime | State | ClassName | Args | Name | 
     // 00:14:52 1 | 1331119233159 | RUNNING | usr.applications.Send | [4, 3000, 250000, -d, 250, -i, 10] | /R1/App/usr.applications.Send/1 | 
-    // So /R1/App/usr.applications.Send/1  -> ["time" : 00:14:52, "id" : 1, "startime" : 1331119233159, "state": "RUNNING", "classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ] 
+    // So /R1/App/usr.applications.Send/1  -> ["id": 46346535, "time" : 00:14:52, "aid" : 1, "startime" : 1331119233159, "state": "RUNNING", "classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ] 
 
     private HashMap<String, Map<String, Object>> localApplications;
 
@@ -47,6 +51,7 @@ public class BasicRouterInfo {
         managementPort_= port1;
         router2routerPort_= port2;
         routerId_ = id;
+        appIDs = new HashMap<Integer, String>();
         localApplications = new HashMap<String, Map<String, Object>>();
     }
 
@@ -116,7 +121,8 @@ public class BasicRouterInfo {
     /**
      * Add an application to the router.
      */
-    public void addApplication(String name){
+    public void addApplication(Integer id, String name){
+        appIDs.put(id, name);
     	localApplications.put(name, null);
     }
     
@@ -124,7 +130,8 @@ public class BasicRouterInfo {
     /**
      * Remove an application to the router.
      */
-    public void removeApplication(String name){
+    public void removeApplication(Integer id, String name){
+        appIDs.remove(id);
     	localApplications.remove(name);
     }
     
@@ -135,6 +142,19 @@ public class BasicRouterInfo {
     	return localApplications.keySet();
     }
 
+    /**
+     * List all application IDs to the router.
+     */
+    public Set<Integer> getApplicationIDs(){
+    	return appIDs.keySet();
+    }
+
+    /**
+     * Get App Name given an ID
+     */
+    public String getAppName(Integer id) {
+        return appIDs.get(id);
+    }
 
     /**
      * Get the data held for an application
@@ -181,6 +201,7 @@ public class BasicRouterInfo {
      * To string
      */
     public String toString() {
-        return getHost() + ":" + getManagementPort() + "@" + getId();
+        return getHost() + ":" + getManagementPort() + " % " + getId() +
+            " -> " + getName() + "/" + getAddress();
     }
 }

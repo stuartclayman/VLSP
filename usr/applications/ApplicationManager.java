@@ -79,6 +79,13 @@ public class ApplicationManager {
     }
 
     /**
+     * Get an ApplicationHandle for an Application.
+     */
+    public synchronized ApplicationHandle find(String name) {
+        return appMap.get(name);
+    }
+
+    /**
      * Execute an object with ClassName and args
      */
     private synchronized ApplicationResponse execute(String className, String[] args) {
@@ -113,7 +120,16 @@ public class ApplicationManager {
             String appName = "/" + router.getName() + "/App/" + className + "/" + appID;
 
             // initialize it
-            ApplicationResponse initR = app.init(args);
+            ApplicationResponse initR;
+
+            synchronized (app) {
+                initR = app.init(args);
+            }
+
+            if (initR == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Application: " + appName + " failed to init");
+                return new ApplicationResponse(false, "class " + className + " Application failed to init");
+            }
 
             // if init fails, return
             if (!initR.isSuccess()) {
@@ -130,7 +146,11 @@ public class ApplicationManager {
                 startR = app.start();
             }
 
-            // TODO: check if startR is null
+            //  check if startR is null
+            if (startR == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Application: " + handle + " failed to start");
+                return new ApplicationResponse(false, "class " + className + " Application failed to start");
+            }
 
 
             // if start succeeded then go onto run()
@@ -207,6 +227,8 @@ public class ApplicationManager {
                     try {
 
                         Application app = appH.getApplication();
+                        // try and stop the app
+                        ApplicationResponse stopR = null;
 
                         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
 
@@ -214,7 +236,7 @@ public class ApplicationManager {
                         if (appH.getState() == ApplicationHandle.AppState.RUNNING) {
                             appH.setState(ApplicationHandle.AppState.STOPPING);
                             synchronized (app) {
-                                app.stop();
+                                stopR = app.stop();
                             }
 
 
@@ -224,17 +246,27 @@ public class ApplicationManager {
                             // the app had already exited the run loop
                             //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Cleanup app after exiting run() " + appName);
                             synchronized (app) {
-                                app.stop();
+                                stopR = app.stop();
                             }
 
                         }
 
+
+                        // stop state
                         appH.setState(ApplicationHandle.AppState.STOPPED);
 
                         // and remove from the app map
                         appMap.remove(appName);
 
-                        return new ApplicationResponse(true, "");
+
+                        //  check if stopR is null
+                        if (stopR == null) {
+                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Application: " + appH + " failed to stop");
+                            return new ApplicationResponse(false, "Application called " + appName + " failed to stop - returned null.");
+                        } else {
+                            return new ApplicationResponse(true, "");
+                        }
+
                     } catch (Exception e) {
                         return new ApplicationResponse(false, "Application called " + appName + " failed to stop with Exception " + e.getMessage());
                     }

@@ -16,9 +16,8 @@ import java.nio.charset.Charset;
  * A ManagementConsole listens for connections
  * for doing router management.
  * <p>
- * It implements the MCRP (Management Console Router Protocol).
  */
-public class RouterManagementConsole extends AbstractManagementConsole implements Runnable {
+public class RouterManagementConsole extends AbstractRestConsole {
 
     private RouterController _routerController;
     public RouterManagementConsole(RouterController rc, int port) {
@@ -35,18 +34,8 @@ public class RouterManagementConsole extends AbstractManagementConsole implement
         return _routerController;
     }
 
-    /**
-     * Create a Thread for the ManagementConsole.
-     * Done within the context of the thread group.
-     */
-    public Thread createThread() {
-        return new Thread(_routerController.getThreadGroup(), this, "/" + getComponentController().getName() + "/" + this.getClass().getSimpleName() + "/" + hashCode());
-    }
-
-
     public void registerCommands() {
         register(new UnknownCommand());
-        register(new QuitCommand());
         register(new ShutDownCommand());
         register(new GetNameCommand());
         register(new SetNameCommand());

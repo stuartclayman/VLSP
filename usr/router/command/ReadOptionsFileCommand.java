@@ -2,14 +2,12 @@ package usr.router.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.router.RouterManagementConsole;
-import usr.router.RouterPort;
-import usr.router.NetIF;
-import usr.net.*;
-import java.util.Scanner;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
-import java.net.UnknownHostException;
+import us.monoid.json.*;
+
 
 /**
  * The READ_OPTIONS_FILE command
@@ -26,21 +24,60 @@ public class ReadOptionsFileCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        boolean result = true;
+    public boolean evaluate(Request request, Response response) {
+        try {
+            PrintStream out = response.getPrintStream();
 
-        String[] args= req.split(" ");
+            // get full request string
+            String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
+            // strip off /command
+            String value = path.substring(9);
+            // strip off COMMAND
+            String[] args= value.split(" ");
 
-        if (args.length != 2) {
-            error("READ_OPTIONS_FILE requires two arguments");
+            if (args.length != 2) {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "READ_OPTIONS_FILE requires two arguments");
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+
+            } else {
+                if(controller.readOptionsFile(args[1].trim())) {
+                    JSONObject jsobj = new JSONObject();
+
+                    jsobj.put("response", "Read Options File");
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return true;
+
+                } else {
+                    response.setCode(404);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("error", "Cannot read options file");
+
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return false;
+
+                }
+            }
+
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
             return false;
         }
-        if(controller.readOptionsFile(args[1].trim())) {
-            success("Read Options File");
-            return true;
-        }
-        error ("Cannot read options file");
-        return true;
+
     }
 
 }

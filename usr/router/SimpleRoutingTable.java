@@ -67,7 +67,7 @@ public class SimpleRoutingTable implements RoutingTable {
                     // suck out correct no of bytes
                     wrapper.get(entry);
 
-                    // now build RoutingTableEntry
+                    // now build SimpleRoutingTableEntry
                     try {
                         e= new SimpleRoutingTableEntry(entry, netif);
                         Address a= e.getAddress();
@@ -76,21 +76,6 @@ public class SimpleRoutingTable implements RoutingTable {
                         throw ex;
                     }
                 }
-
-                /*
-                   for (int i= 0; i< (bytes.length-1)/8;i++) {
-                    //System.err.println("Parsing complete Routing table entry at "+i);
-                    System.arraycopy(bytes,(1+i*8),entry,0,8);
-                    try {
-                        e= new SimpleRoutingTableEntry(entry, netif);
-                        Address a= e.getAddress();
-                        table_.put(a, e);
-                    } catch (Exception ex) {
-                        throw ex;
-                    }
-                    // System.err.println("Got entry "+e);
-                   }
-                 */
             }
         }
     }
@@ -113,9 +98,9 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * Get all the RoutingTable entries.
      */
-    public synchronized Collection<SimpleRoutingTableEntry> getEntries()
+    public synchronized Collection<? extends RoutingTableEntry> getEntries()
     {
-        return table_.values();
+        return (Collection<? extends RoutingTableEntry>)table_.values();
     }
 
 
@@ -166,8 +151,8 @@ public class SimpleRoutingTable implements RoutingTable {
 
         //System.err.println("New entry from router "+inter.getRemoteRouterAddress());
 
-        // Note weight here is null because weight of inter will be added by merge
-        SimpleRoutingTableEntry e2= new SimpleRoutingTableEntry(inter.getRemoteRouterAddress(),0, inter);
+        // Note weight here is 0 because weight of inter will be added by merge
+        SimpleRoutingTableEntry e2= new SimpleRoutingTableEntry(inter.getRemoteRouterAddress(), 0, inter);
 
         boolean changed2= mergeEntry(e2, inter,options); // Add entry for remote end
 
@@ -178,29 +163,39 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * Merge a RoutingTable into this one.
      */
-    public synchronized boolean mergeTables(SimpleRoutingTable table2, NetIF inter, RouterOptions options) {
-        // Logger.getLogger("log").logln(USR.ERROR, "MERGING TABLES");
+    public synchronized boolean mergeTables(RoutingTable table2, NetIF inter, RouterOptions options) {
+        //Logger.getLogger("log").logln(USR.STDOUT, "MERGING TABLES");
+
         boolean changed= false;
-        Collection <SimpleRoutingTableEntry> es= table2.getEntries();
+        Collection <SimpleRoutingTableEntry> es= (Collection <SimpleRoutingTableEntry>)table2.getEntries();
+
+        // there are no entries
         if (es == null) {
             return false;
         }
 
-        ArrayList <Address> toRemove= new ArrayList <Address>();
         // Check if this table is telling us to remove entries
+        ArrayList <Address> toRemove= new ArrayList <Address>();
+
+
+        // only process entries if inter is not null
         if (inter != null) {
-            for (SimpleRoutingTableEntry e : getEntries()) {
+            for (SimpleRoutingTableEntry e : (Collection <SimpleRoutingTableEntry>)getEntries()) {
                 // If this entry is on the same interface we are getting
                 // info from but route is longer or no entry then assume
                 // we need updating
                 Address a= e.getAddress();
-                if (listener_.ourAddress(a)) { //  Don't update info about our own address
+
+                //  Don't update info about our own address
+                if (listener_.ourAddress(a)) { 
                     //System.err.println("Address is our address");
                     continue;
                 }
+
+                // Is interface the same
                 if (inter.equals(e.getNetIF())) {
 
-                    SimpleRoutingTableEntry e2= table2.getEntry(a);
+                    SimpleRoutingTableEntry e2= (SimpleRoutingTableEntry)table2.getEntry(a);
                     // If interface can no longer reach address remove it
                     if (e2 == null) {
                         toRemove.add(a);  // flag removal and do later
@@ -217,13 +212,14 @@ public class SimpleRoutingTable implements RoutingTable {
                     }
                 }
             }
-            //
+
+            // remove entries from this RoutingTable
             for (Address a : toRemove) {
                 table_.remove(a);
             }
         }
         // Add new entries as appropriate
-        for (SimpleRoutingTableEntry e : table2.getEntries()) {
+        for (SimpleRoutingTableEntry e : (Collection <SimpleRoutingTableEntry>)table2.getEntries()) {
             if (mergeEntry(e, inter,options)) {
                 changed= true;
             }
@@ -232,7 +228,7 @@ public class SimpleRoutingTable implements RoutingTable {
     }
 
     /** Get an entry from the table */
-    synchronized SimpleRoutingTableEntry getEntry(Address a) {
+    public synchronized SimpleRoutingTableEntry getEntry(Address a) {
         return table_.get(a);
     }
 
@@ -240,7 +236,9 @@ public class SimpleRoutingTable implements RoutingTable {
      * Merge an entry in this RoutingTable returns true if there has been
        a change
      */
-    synchronized boolean  mergeEntry(SimpleRoutingTableEntry newEntry, NetIF inter, RouterOptions options) {
+    public synchronized boolean  mergeEntry(SimpleRoutingTableEntry newEntry, NetIF inter, RouterOptions options) {
+
+        //Logger.getLogger("log").logln(USR.STDOUT, "MERGING ENTRY");
 
         if (newEntry == null) {
             //System.err.println ("NULL ENTRY");
@@ -261,6 +259,7 @@ public class SimpleRoutingTable implements RoutingTable {
         // Can't be told more about our address
 
         SimpleRoutingTableEntry oldEntry= table_.get(addr);
+
         // CASE 1 -- NO ENTRY EXISTED
         if (oldEntry == null) {
 
@@ -270,13 +269,13 @@ public class SimpleRoutingTable implements RoutingTable {
                 //Logger.getLogger("log").logln(USR.ERROR, "TOO EXPENSIVE");
                 return false;
             } else {
+                // Create new entry
                 SimpleRoutingTableEntry e= new SimpleRoutingTableEntry(addr,newCost, inter);
                 //Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY ADDED");
                 table_.put(addr,e);
                 return true;
             }
         }
-        // Can't
 
         // CASE 2 -- ENTRY EXISTED BUT WAS MORE EXPENSIVE -- CHEAPER ROUTE FOUND
         int newCost= newEntry.getCost() + weight;
@@ -288,15 +287,19 @@ public class SimpleRoutingTable implements RoutingTable {
         }
 
 
-        // CASE 3 -- ENTRY EXISTED WAS ON THIS INTERFACE
-        if (inter != null && inter.equals(oldEntry.getNetIF()) && newCost > oldEntry.getCost()) {
-            if (newCost > options.getMaxDist()) {
-                table_.remove(addr);   // Too far, can no longer route
+        // CASE 3 -- ENTRY EXISTED WAS ON THIS INTERFACE -- ROUTE GOT MORE EXPENSIVE
+        if (inter != null && inter.equals(oldEntry.getNetIF())) {
+            if (newCost > oldEntry.getCost()) {
+                if (newCost > options.getMaxDist()) {
+                    table_.remove(addr);   // Too far, can no longer route
+                } else {
+                    oldEntry.setCost(newCost);
+                }
+                //System.err.println ("MORE EXPENSIVE ROUTE BUT SAME INTERFACE");
+                return true;
             } else {
-                oldEntry.setCost(newCost);
+                return false;
             }
-            //System.err.println ("MORE EXPENSIVE ROUTE BUT SAME INTERFACE");
-            return true;
         }
         return false;
     }
@@ -315,7 +318,7 @@ public class SimpleRoutingTable implements RoutingTable {
         boolean changed= false;
         //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NET IF CALLED");
         ArrayList <Address> toRemove= new ArrayList <Address>();
-        for (SimpleRoutingTableEntry e : getEntries()) {
+        for (SimpleRoutingTableEntry e : (Collection <SimpleRoutingTableEntry>)getEntries()) {
             //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO REMOVE "+e.getAddress());
             if (netif.equals(e.getNetIF())) {
                 Address addr= e.getAddress();
@@ -342,12 +345,31 @@ public class SimpleRoutingTable implements RoutingTable {
     }
 
     /**
+     * SHow only data transmitted
+     */
+    public synchronized String showTransmitted() {
+        StringBuilder table= new StringBuilder();
+        table.append("\n");
+        for (SimpleRoutingTableEntry e : (Collection <SimpleRoutingTableEntry>)getEntries()) {
+            table.append(e.showTransmitted());
+            table.append("\n");
+        }
+
+        String s= table.toString();
+
+        return s;
+    }
+
+    /**
      * To string
      */
     public synchronized String toString() {
         StringBuilder table= new StringBuilder();
         table.append("\n");
-        for (SimpleRoutingTableEntry e : getEntries()) {
+
+        Collection<SimpleRoutingTableEntry> rtes = (Collection <SimpleRoutingTableEntry>)getEntries();
+
+        for (SimpleRoutingTableEntry e : rtes) {
             table.append(e.toString());
             table.append("\n");
         }
@@ -368,7 +390,7 @@ public class SimpleRoutingTable implements RoutingTable {
         // Each entry is encoded by addressSize bytes
         //System.err.println("Creating routing table to send");
 
-        Collection<SimpleRoutingTableEntry> rtes= getEntries();
+        Collection<SimpleRoutingTableEntry> rtes = (Collection <SimpleRoutingTableEntry>)getEntries();
         int count = rtes.size();
         //int entrySize = rtes.iterator().next().size();
 

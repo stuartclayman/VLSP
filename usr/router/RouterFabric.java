@@ -52,6 +52,11 @@ public interface RouterFabric extends NetIFListener {
     public void closePort(RouterPort port);
 
     /**
+     * initialisation
+     */
+    public boolean init();
+
+    /**
      * Start me up.
      */
     public boolean start();
@@ -60,6 +65,22 @@ public interface RouterFabric extends NetIFListener {
      * Stop the RouterController.
      */
     public boolean stop();
+
+    /**
+     * Get the Router this Fabric is part of
+     */
+    public Router getRouter();
+
+    /**
+     * Create a new empty routing table
+     */
+    public RoutingTable newRoutingTable();
+        
+    /**
+     * Create a new routing table from a transmitted byte[]
+     */
+    public RoutingTable decodeRoutingTable(byte[] bytes, NetIF netif) throws Exception;
+
 
     /** List Routing table */
 

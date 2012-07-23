@@ -9,12 +9,11 @@ import java.util.concurrent.*;
 /**
  * A ManagementConsole for the GlobalController.
  * It listens for commands.
- * <p>
- * It implements the MCRP (Management Console Router Protocol).
  */
-public class GlobalControllerManagementConsole extends AbstractManagementConsole implements Runnable {
+public class GlobalControllerManagementConsole extends AbstractRestConsole {
 
     private GlobalController globalController_;
+
     public GlobalControllerManagementConsole(GlobalController gc, int port) {
 
         globalController_= gc;
@@ -25,6 +24,7 @@ public class GlobalControllerManagementConsole extends AbstractManagementConsole
         return globalController_;
     }
 
+    /*
     public BlockingQueue<Request> addRequest(Request q) {
         // call superclass addRequest
         BlockingQueue<Request> rq = super.addRequest(q);
@@ -33,8 +33,18 @@ public class GlobalControllerManagementConsole extends AbstractManagementConsole
 
         return rq;
     }
+    */
 
     public void registerCommands() {
+
+        // setup default /router/ handler
+        defineRequestHandler("/router/", new RouterRestHandler());
+
+        // setup default /link/ handler
+        defineRequestHandler("/link/", new LinkRestHandler());
+
+        // setup default /router/id/app/ handler
+        defineRequestHandler("/router/[0-9]+/app/", new AppRestHandler());
 
         register(new UnknownCommand());
         register(new LocalOKCommand());

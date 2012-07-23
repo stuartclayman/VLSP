@@ -2,14 +2,13 @@ package usr.router.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.router.RouterManagementConsole;
-import usr.router.RouterPort;
-import usr.router.NetIF;
-import usr.net.Address;
 import usr.applications.ApplicationHandle;
 import java.util.Collection;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
+import us.monoid.json.*;
 
 /**
  * The APP_LIST command.
@@ -25,24 +24,38 @@ public class AppListCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        Collection<ApplicationHandle> apps = controller.appList();
+    public boolean evaluate(Request request, Response response) {
+        try {
+            PrintStream out = response.getPrintStream();
 
-        int count = 0;
-        for (ApplicationHandle appH : apps) {
+            JSONObject jsobj = new JSONObject();
+            JSONArray array = new JSONArray();
 
-            list(appH.getName());
-            count++;
+            Collection<ApplicationHandle> apps = controller.appList();
+
+            int count = 0;
+            for (ApplicationHandle appH : apps) {
+
+                array.put(appH.getName());
+                count++;
+            }
+
+            jsobj.put("list", array);
+            jsobj.put("size", count);
+
+            out.println(jsobj.toString());
+            response.close();
+
+            return true;
+
+
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
+            return false;
         }
-
-        boolean result = success("END " + count);
-
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "APP_LIST response failed");
-        }
-
-        return result;
-
     }
 
 }

@@ -59,7 +59,7 @@ public class Send implements Application {
                 return new ApplicationResponse(false, "Bad count " + args[2]);
             }
 
-            System.err.print("Send addr: " + addr + " port: " + port + " count: " + count);
+            Logger.getLogger("log").logln(USR.STDOUT, "Send addr: " + addr + " port: " + port + " count: " + count);
 
 
             if (args.length == 3) {
@@ -168,8 +168,6 @@ public class Send implements Application {
         }
 
         for (int i = 0; i < count; i++) {
-            //ByteBuffer buffer = ByteBuffer.allocate(line.length());
-            //buffer.put(line.getBytes());
             byte [] buffer;
 
             if (sendSize == 0) {

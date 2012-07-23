@@ -3,61 +3,96 @@ package usr.router;
 import usr.protocol.MCRP;
 import usr.logging.*;
 import usr.interactor.RouterInteractor;
-import usr.interactor.MCRPException;
 import usr.console.*;
 import usr.net.*;
 import java.util.Scanner;
 import java.io.*;
 import java.net.*;
-import java.nio.channels.SocketChannel;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
+import java.io.IOException;
+import us.monoid.json.*;
+
 
 
 /**
  * A EndLink ends connection between two routers
  */
-public class EndLink extends ChannelResponder implements Runnable {
+public class EndLink {
     RouterController controller;
     Request request;
+    Response response;
 
     /**
      * End a link / connection.
      * END_LINK remote_addr
      */
-    public EndLink(RouterController controller, Request request) {
+    public EndLink(RouterController controller, Request request, Response response) {
         this.controller = controller;
         this.request = request;
-        setChannel(request.channel);
+        this.response = response;
     }
 
-    public void run() {
-        // process the request
-        String value = request.value;
-        SocketChannel channel = request.channel;
+    public boolean run() throws IOException, JSONException {
+        PrintStream out = response.getPrintStream();
+
+        // get full request string
+        String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
+        // strip off /command
+        String value = path.substring(9);
+
 
         // check command
         String[] parts = value.split(" ");
         //Logger.getLogger("log").logln(USR.ERROR, "END LINK ENTRY");
         if (parts.length != 2) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID END_LINK command: " + request);
-            respond(MCRP.END_LINK.ERROR + " END_LINK wrong no of args");
-            return;
+            respondError("END_LINK wrong no of args");
+            return false;
         }
 
         String rId= parts[1];
 
+        // try and find the NetIF by ID
         NetIF netif= controller.findNetIF(rId);
         if (netif == null) {
-            respond(MCRP.END_LINK.ERROR + " END_LINK cannot find link to "+rId);
-            return;
+            respondError("END_LINK cannot find link to "+rId);
+            return false;
         }
+
+        // now remove it
         controller.removeNetIF(netif);
-        respond(MCRP.END_LINK.CODE + " END_LINK to " + rId);
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("id", rId);
+        out.println(jsobj.toString());
+        response.close();
+
+        return true;
+
+
 
         // send EVENT
-        respond("700 " + netif.getName());
+        // respond("700 " + netif.getName());
 
         //Logger.getLogger("log").logln(USR.ERROR, "END LINK EXIT");
     }
+
+
+    /**
+     * An error response
+     */
+    private void respondError(String msg) throws IOException, JSONException {
+        JSONObject jsobj = new JSONObject();
+        jsobj.put("error", msg);
+
+        PrintStream out = response.getPrintStream();
+        out.println(jsobj.toString());
+        response.close();
+    }
+
 
     /**
      * Create the String to print out before a message

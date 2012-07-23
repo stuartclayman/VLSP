@@ -42,6 +42,7 @@ public class RouterAppsReporter implements Reporter {
      */
     public void report(Measurement m) {
         if  (m.getType().equals("AppList")) {
+
             List<ProbeValue> values = m.getValues();
 
             // ProbeValue 0 is the router name
@@ -52,6 +53,9 @@ public class RouterAppsReporter implements Reporter {
             ProbeValue pv1 = values.get(1);
             Table table = (Table)pv1.getValue();
 
+            // print out to channel 10
+            //Logger.getLogger("log").logln(USR.STDOUT, routerName + ":\n" + appListToString(table));
+
             /*
              * Patch values into BasicRouterInfo table
              */
@@ -60,9 +64,6 @@ public class RouterAppsReporter implements Reporter {
             BasicRouterInfo routerInfo = globalController.findRouterInfo(routerName);
 
             updateRouterAppInfo(routerInfo, table);
-
-            // print out to channel 10
-            //Logger.getLogger("log").logln(1<<10, appListToString(table));
 
         } else {
             // not what we were expecting

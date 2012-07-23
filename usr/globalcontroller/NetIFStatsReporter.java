@@ -230,27 +230,31 @@ public class NetIFStatsReporter implements Reporter, RouterDeletedNotification, 
      * Calculate the traffic for a router
      */
     protected int calculateTraffic(Table table) {
-        int volume = 0;
+        if (table == null) {
+            return 0;
+        } else {
+            int volume = 0;
 
-        int rows = table.getRowCount();
+            int rows = table.getRowCount();
 
-        // skip row 0, which is localhost
-        for (int r=1; r< rows; r++) {
-            TableRow row = table.getRow(r);
+            // skip row 0, which is localhost
+            for (int r=1; r< rows; r++) {
+                TableRow row = table.getRow(r);
 
-            // in bytes
-            TableValue tableValue = row.get(1);
-            int inBytes = (Integer)tableValue.getValue();
-            // out bytes
-            tableValue = row.get(5);
-            int outBytes = (Integer)tableValue.getValue();
+                // in bytes
+                TableValue tableValue = row.get(1);
+                int inBytes = (Integer)tableValue.getValue();
+                // out bytes
+                tableValue = row.get(5);
+                int outBytes = (Integer)tableValue.getValue();
 
-            volume += inBytes + outBytes;
+                volume += inBytes + outBytes;
+            }
+
+            return volume;
         }
 
-        return volume;
     }
-
 
     /**
      * Caluclaute total traffic.

@@ -1,10 +1,10 @@
 package demo_usr.viewer;
 
 import usr.interactor.GlobalControllerInteractor;
-import usr.interactor.MCRPException;
 import java.net.UnknownHostException;
 import java.io.*;
 import java.lang.management.ManagementFactory;
+import us.monoid.json.*;
 
 /**
  * A viewer of the network.
@@ -150,12 +150,11 @@ public class Viewer {
 
             } catch (IOException ioe) {
                 System.err.println("Viewer error: " + ioe);
-            } catch (MCRPException me) {
+            } catch (JSONException me) {
                 System.err.println("Viewer error: " + me);
 
                 // if the GlobalController has gone away
                 // then hang around indefinitely to drive the UI
-                if (me instanceof usr.interactor.MCRPNoConnectionException) {
                     synchronized (this) {
                         try {
                             System.err.println("Waiting.....");
@@ -163,7 +162,6 @@ public class Viewer {
                         } catch (InterruptedException ie) {
                         }
                     }
-                }
             }
 
             try {

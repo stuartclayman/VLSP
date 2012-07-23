@@ -224,6 +224,13 @@ public class RouterController implements ComponentController, Runnable {
     }
 
     /**
+     * Increment the no of connections that have been made.
+     */
+    public int newConnection() {
+        return ++connectionCount;
+    }
+
+    /**
      * Get the port for the ManagementConsole.
      */
     public int getManagementConsolePort() {
@@ -330,6 +337,8 @@ public class RouterController implements ComponentController, Runnable {
      *
      */
     public void run() {
+        /** Not needed with rest
+
         // get a handle on the Listener Queue
         BlockingQueue<Request> queue = management.queue();
 
@@ -376,6 +385,7 @@ public class RouterController implements ComponentController, Runnable {
         }
         // System.err.println("Pool stop");
         pool.shutdown();
+        */
     }
 
 
@@ -415,7 +425,7 @@ public class RouterController implements ComponentController, Runnable {
      */
     public RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
         RouterPort rp = router.plugInNetIF(netIF);
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
 
         tempNetIFMap.remove(netIF.getID());
 
@@ -463,6 +473,13 @@ public class RouterController implements ComponentController, Runnable {
      */
     public Collection<ApplicationHandle> appList() {
         return appManager.listApps();
+    }
+
+    /**
+     * Get an ApplicationHandle for an Application.
+     */
+    public ApplicationHandle findAppInfo(String name) {
+        return appManager.find(name);
     }
 
     /** Stop running applications if any */
@@ -730,10 +747,15 @@ public class RouterController implements ComponentController, Runnable {
             try {
                 // Now convert the class name to a Class
                 // get Class object
-                Class<RouterProbe> cc = (Class<RouterProbe>)Class.forName(probeClassName);
+
+                // WAS Class<RouterProbe> cc = (Class<RouterProbe>)Class.forName(probeClassName);
+
+                // Replaced with following 2 lines
+                Class<?> c = (Class<?>)Class.forName(probeClassName);
+                Class<? extends RouterProbe> cc = c.asSubclass(RouterProbe.class );
 
                 // find Constructor for when arg is RouterController
-                Constructor<RouterProbe> cons = (Constructor<RouterProbe>)cc.getDeclaredConstructor(RouterController.class);
+                Constructor<? extends RouterProbe> cons = (Constructor<? extends RouterProbe>)cc.getDeclaredConstructor(RouterController.class);
 
                 RouterProbe probe =  (RouterProbe)cons.newInstance(this);
                 probe.setDataRate(new EveryNMilliseconds(datarate));

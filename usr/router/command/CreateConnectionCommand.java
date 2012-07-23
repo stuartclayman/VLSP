@@ -2,10 +2,13 @@ package usr.router.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.console.Request;
-import usr.router.RouterManagementConsole;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
+import us.monoid.json.*;
+import usr.router.CreateConnection;
+
 
 /**
  * The CREATE_CONNECTION command.
@@ -24,15 +27,21 @@ public class CreateConnectionCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        // it is an asynchronous command
-        // and will be processed a bit later
-        SocketChannel sc = getChannel();
+    public boolean evaluate(Request request, Response response) {
+        try {
+            // Call CreateConnection
+            CreateConnection creator = new CreateConnection(controller, request, response);
+            creator.run();
+            //managementConsole.addRequest(new Request(sc, req));
 
-        managementConsole.addRequest(new Request(sc, req));
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Requests = " + managementConsole.queue());
-
-        return true;
+            return true;
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
+            return false;
+        }
     }
 
 }

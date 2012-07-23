@@ -271,7 +271,7 @@ public class AppSocket {
         try {
             return queue.take();
         } catch (InterruptedException ie) {
-            //Logger.getLogger("log").logln(USR.ERROR, "AppSocket: queue take interrupted");
+            Logger.getLogger("log").logln(USR.ERROR, "AppSocket: " + localPort + " queue take interrupted");
             return null;
         }
     }
@@ -300,11 +300,12 @@ public class AppSocket {
 
             appSockMux.removeAppSocket(this);
 
+            isClosed = true;
+
             if (takeThread != null) {
                 takeThread.interrupt();
             }
             
-            isClosed = true;
         }
     }
 

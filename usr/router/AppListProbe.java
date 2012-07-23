@@ -43,7 +43,7 @@ public class AppListProbe extends RouterProbe implements Probe {
         // ClassName
         // State
         statsHeader = new DefaultTableHeader()
-            .add("ID", ProbeAttributeType.INTEGER)
+            .add("AID", ProbeAttributeType.INTEGER)
             .add("StartTime", ProbeAttributeType.LONG)
             .add("RunTime", ProbeAttributeType.INTEGER)
             .add("State", ProbeAttributeType.STRING)
@@ -99,7 +99,7 @@ public class AppListProbe extends RouterProbe implements Probe {
                     // create a row for ApplicationHandle data
                     TableRow appHRow = new DefaultTableRow();
 
-                    // ID
+                    // AID
                     appHRow.add(new DefaultTableValue(ah.getID()));
 
                     // StartTime

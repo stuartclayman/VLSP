@@ -2,9 +2,13 @@ package usr.localcontroller.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
 import usr.common.LocalHostInfo;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
+import java.io.IOException;
+import us.monoid.json.*;
+import java.net.UnknownHostException;
 
 /**
  * The EndLink command.
@@ -14,34 +18,83 @@ public class EndLinkCommand extends LocalCommand {
      * Construct a EndLinkCommand.
      */
     public EndLinkCommand() {
-        super(MCRP.END_LINK.CMD, MCRP.END_LINK.CODE,
-              MCRP.END_LINK.ERROR);
+        super(MCRP.END_LINK.CMD);
     }
 
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        String [] args= req.split(" ");
-        if (args.length != 3) {
-            error("Expected three arguments for End Link Command");
-            return false;
-        }
-        LocalHostInfo r1;
-        String r2Addr;
+    public boolean evaluate(Request request, Response response) {
+
         try {
-            r1= new LocalHostInfo(args[1]);
-            r2Addr = args[2];
-        } catch (Exception e) {
-            error ("CANNOT PARSE HOST INFO FOR END_LINK"+e.getMessage());
+            PrintStream out = response.getPrintStream();
+
+            // get full request string
+            String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
+            // strip off /command
+            String value = path.substring(9);
+
+            String [] args= value.split(" ");
+            if (args.length != 3) {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "Expected two arguments for End Link Command");
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+            }
+
+            LocalHostInfo r1;
+            String r2Addr;
+
+            try {
+                r1= new LocalHostInfo(args[1]);
+                r2Addr = args[2];
+            } catch (UnknownHostException e) {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "CANNOT PARSE HOST INFO FOR END_LINK "+e.getMessage());
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+            }
+
+            if (controller.endLink(r1,r2Addr)) {
+                JSONObject jsobj = new JSONObject();
+
+                jsobj.put("msg", "LINK ENDED FROM"+r1+" to Id "+r2Addr);
+                jsobj.put("success", Boolean.TRUE);
+                out.println(jsobj.toString());
+                response.close();
+
+                return true;
+            } else {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "CANNOT END LINK "+ r1 + " -> " + r2Addr);
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+            }
+
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
             return false;
         }
-        if (controller.endLink(r1,r2Addr)) {
-            success("LINK ENDED FROM"+r1+" to Id "+r2Addr);
-            return true;
-        }
-        error("CANNOT END LINK");
-        return false;
+
+
     }
 
 }

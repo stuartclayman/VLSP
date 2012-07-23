@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
  * A ManagementConsole listens for connections
  * for doing component management.
  */
-public interface ManagementConsole extends Runnable {
+public interface ManagementConsole  {
     /**
      * Start the ManagementConsole.
      */
@@ -36,19 +36,25 @@ public interface ManagementConsole extends Runnable {
     public void register(Command command);
 
     /**
+     * Find a command in the ManagementConsole.
+     * @param commandName The name of the command
+     */
+    public Command find(String commandName);
+
+    /**
      * Register the relevant commands for the ManagementConsole.
      */
     public void  registerCommands();
 
     /**
-     * Get a handle on the request queue
+     * Define a handler for a request
      */
-    public BlockingQueue<Request> queue();
+    public void defineRequestHandler(String pattern, RequestHandler rh);
 
     /**
      * Add a Request to the queue
      */
-    public BlockingQueue<Request> addRequest(Request q);
+    //    public BlockingQueue<Request> addRequest(Request q);
 
     /**
      * Get the ComponentController this ManagementConsole

@@ -39,6 +39,7 @@ public class AppSocketMux implements NetIF {
     boolean removeRequested_= false;
 
     FabricDevice fabricDevice_= null;
+    RouterPort port = null;
 
     /*
      * NetIF stuff
@@ -349,6 +350,20 @@ public class AppSocketMux implements NetIF {
         listener = l;
         fabricDevice_.setListener(l);
 
+    }
+
+    /**
+     * Get the RouterPort a NetIF is plugIged into.
+     */
+    public RouterPort getRouterPort() {
+        return port;
+    }
+
+    /**
+     * Set the RouterPort a NetIF is plugIged into.
+     */
+    public void setRouterPort(RouterPort rp) {
+        port = rp;
     }
 
     /** Remote close received */

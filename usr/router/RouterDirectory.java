@@ -4,6 +4,7 @@ import usr.logging.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import usr.common.ThreadTools;
 
 /**
  * The RouterDirectory has a reference to the Router that
@@ -35,17 +36,18 @@ public class RouterDirectory {
      * Add thread group -> Router mapping info
      */
     static synchronized void addThreadContext(ThreadGroup threadG, Router r) {
-        Logger.getLogger("log").logln(USR.STDOUT,
-          "Add thread group " + threadG + " to " + r);
+        Logger.getLogger("log").logln(USR.STDOUT, "Add thread group: " + threadG.getName() + " for router: " + r.getName());
         threadToRouter.put(threadG, r);
+
+        //ThreadTools.findAllThreads(".. ");
+
     }
 
     /**
      * Remove thread group -> Router mapping info
      */
     static synchronized void removeThreadContext(ThreadGroup threadG, Router r) {
-        Logger.getLogger("log").logln(USR.STDOUT,
-          "Remove thread group " + threadG + " to " + r);
+        Logger.getLogger("log").logln(USR.STDOUT, "Remove thread group: " + threadG.getName() + " for router: " + r.getName());
         threadToRouter.remove(threadG);
     }
 
@@ -53,12 +55,19 @@ public class RouterDirectory {
      * Find a router by thread group
      */
     public static synchronized Router find(ThreadGroup threadG) {
-        Logger.getLogger("log").logln(USR.STDOUT,
-          "Finding thread group " + threadG);
+        //Logger.getLogger("log").logln(USR.STDOUT, "Finding thread group: " + threadG.getName());
 
         Router r = threadToRouter.get(threadG);
 
-        Logger.getLogger("log").logln(USR.STDOUT," found: " + r);
+        //Logger.getLogger("log").logln(USR.STDOUT," found: " + r);
+
+        if (r== null) {
+            try {
+                throw new Exception("RouterDirectory.find() FAILED");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         return r;
     }
@@ -69,11 +78,19 @@ public class RouterDirectory {
     public static synchronized Router getRouter() {
         ThreadGroup threadG = Thread.currentThread().getThreadGroup();
 
-        Logger.getLogger("log").logln(USR.STDOUT,"Finding thread group " + threadG);
+        //Logger.getLogger("log").logln(USR.STDOUT,"Finding thread group: " + threadG.getName() + " for thread: " + Thread.currentThread().getName());
 
         Router r = threadToRouter.get(threadG);
 
-        Logger.getLogger("log").logln(USR.STDOUT," found: " + r);
+        //Logger.getLogger("log").logln(USR.STDOUT," found: " + r);
+
+        if (r== null) {
+            try {
+                throw new Exception("RouterDirectory.getRouter() FAILED");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         return r;
     }

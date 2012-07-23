@@ -14,7 +14,13 @@ public class Pair<A, B> {
         int hashFirst = first != null ? first.hashCode() : 0;
         int hashSecond = second != null ? second.hashCode() : 0;
 
+        hashFirst = hashFirst << 16;
+
+        // could use first.hashCode() ^ second.hashCode() ;
+        // from com.sun.corba.se.spi.orb.StringPair
+
         return (hashFirst + hashSecond) * hashSecond + hashFirst;
+
     }
 
     public boolean equals(Object other) {

@@ -1,14 +1,13 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
-import usr.router.RouterManagementConsole;
-import usr.router.RouterPort;
-import usr.router.NetIF;
-import usr.net.*;
-import java.util.Scanner;
+import usr.logging.*;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
-import java.net.UnknownHostException;
+import us.monoid.json.*;
+
 
 /**
  * The Router OK command simply checks a router is functioning
@@ -24,9 +23,24 @@ public class RouterOKCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        success("OK");
-        return true;
+    public boolean evaluate(Request request, Response response) {
+        try {
+            PrintStream out = response.getPrintStream();
+
+            JSONObject jsobj = new JSONObject();
+            jsobj.put("ok", "ok");
+
+            out.println(jsobj.toString());
+            response.close();
+
+            return true;
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
+            return false;
+        }
     }
 
 }

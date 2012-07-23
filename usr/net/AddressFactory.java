@@ -123,6 +123,7 @@ public class AddressFactory {
 
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + e);
+            e.printStackTrace();
             throw new Error("AddressFactory: config error in AddressFactory.  Cannot configure class data for: " + className);
         }
     }

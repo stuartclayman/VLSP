@@ -2,9 +2,12 @@ package usr.router.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.router.RouterManagementConsole;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
+import us.monoid.json.*;
+
 
 /**
  * The GET_CONNECTION_PORT command.
@@ -20,16 +23,27 @@ public class GetConnectionPortCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        int port = controller.getConnectionPort();
+    public boolean evaluate(Request request, Response response) {
+        try {
+            PrintStream out = response.getPrintStream();
 
-        boolean result = success(""+port);
+            int port = controller.getConnectionPort();
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "GET_CONNECTION_PORT failed");
+            JSONObject jsobj = new JSONObject();
+            jsobj.put("port", Integer.toString(port));
+
+            out.println(jsobj.toString());
+            response.close();
+
+            return true;
+
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
+            return false;
         }
-
-        return result;
     }
 
 }

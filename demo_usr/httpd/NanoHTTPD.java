@@ -810,9 +810,9 @@ public class NanoHTTPD
                 newUri += "%20";
             else
             {
-                newUri += URLEncoder.encode( tok );
+                //newUri += URLEncoder.encode( tok );
                 // For Java 1.4 you'll want to use this instead:
-                // try { newUri += URLEncoder.encode( tok, "UTF-8" ); } catch ( java.io.UnsupportedEncodingException uee ) {}
+                 try { newUri += URLEncoder.encode( tok, "UTF-8" ); } catch ( java.io.UnsupportedEncodingException uee ) {}
             }
         }
         return newUri;

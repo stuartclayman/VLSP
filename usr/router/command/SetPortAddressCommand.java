@@ -2,14 +2,15 @@ package usr.router.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.router.RouterManagementConsole;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
+import java.io.IOException;
+import us.monoid.json.*;
 import usr.router.RouterPort;
 import usr.router.NetIF;
 import usr.net.*;
 import java.util.Scanner;
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
-import java.net.UnknownHostException;
 
 /**
  * The SET_PORT_ADDRESS command.
@@ -27,60 +28,101 @@ public class SetPortAddressCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        boolean result = true;
+    public boolean evaluate(Request request, Response response) {
+        try {
+            PrintStream out = response.getPrintStream();
 
-        String rest = req.substring(MCRP.SET_PORT_ADDRESS.CMD.length()).trim();
-        String[] parts = rest.split(" ");
+            // get full request string
+            String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
+            // strip off /command
+            String value = path.substring(9);
+            // strip off COMMAND
+            String rest = value.substring(MCRP.SET_PORT_ADDRESS.CMD.length()).trim();
+            String[] parts = rest.split(" ");
 
-        if (parts.length == 2) {
+            if (parts.length == 2) {
 
-            String routerPortName = parts[0];
-            String addr = parts[1];
-            Address address = null;
+                String routerPortName = parts[0];
+                String addr = parts[1];
+                Address address = null;
 
-            // find port
-            String portNo;
+                // find port
+                String portNo;
 
-            if (routerPortName.startsWith("port")) {
-                portNo = routerPortName.substring(4);
+                if (routerPortName.startsWith("port")) {
+                    portNo = routerPortName.substring(4);
+                } else {
+                    portNo = routerPortName;
+                }
+
+                Scanner scanner = new Scanner(portNo);
+                int p = scanner.nextInt();
+                RouterPort routerPort = controller.getPort(p);
+
+                if (routerPort == null || routerPort == RouterPort.EMPTY) {
+                    response.setCode(404);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("error", getName() + " invalid port " + routerPortName);
+
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return false;
+
+                } else {
+
+                    // instantiate the address
+                    try {
+                        address = AddressFactory.newAddress(addr);
+                    } catch (Exception e) {
+                        response.setCode(404);
+
+                        JSONObject jsobj = new JSONObject();
+                        jsobj.put("error", getName() + " address error " + e);
+                        out.println(jsobj.toString());
+                        response.close();
+
+                        return false;
+                    }
+
+                    // set address on netIF in port
+                    if (address != null) {
+                        NetIF netIF = routerPort.getNetIF();
+                        netIF.setAddress(address);
+
+                        JSONObject jsobj = new JSONObject();
+
+                        jsobj.put("name", routerPortName);
+                        jsobj.put("address", address.toString());
+                        out.println(jsobj.toString());
+                        response.close();
+
+                        return true;
+
+                    }
+                }
             } else {
-                portNo = routerPortName;
-            }
+                response.setCode(404);
 
-            Scanner scanner = new Scanner(portNo);
-            int p = scanner.nextInt();
-            RouterPort routerPort = controller.getPort(p);
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", getName() + " wrong no of args ");
 
-            if (routerPort == null || routerPort == RouterPort.EMPTY) {
-                error(getName() + " invalid port " + routerPortName);
+                out.println(jsobj.toString());
+                response.close();
+
                 return false;
             }
 
-            // instantiate the address
-            try {
-                address = AddressFactory.newAddress(addr);
-            } catch (Exception e) {
-                error(getName() + " address error " + e);
-                return false;
-            }
-
-            // set address on netIF in port
-            if (address != null) {
-                NetIF netIF = routerPort.getNetIF();
-                netIF.setAddress(address);
-
-                result = success(routerPortName);
-            }
-        } else {
-            error(getName() + " wrong no of args ");
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
+            return false;
         }
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " failed");
-        }
 
-        return result;
     }
 
 }

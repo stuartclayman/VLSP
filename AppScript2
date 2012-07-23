@@ -12,10 +12,10 @@
 +30000 ON_ROUTER 4 usr.applications.Recv 3000  // receive on R 4
 +0 ON_ROUTER 5 usr.applications.Recv 3000  // receive on R 5
 // start 2 senders
-+1000 ON_ROUTER 1 usr.applications.Send 4 3000 500  // send 500 datagrams from 1 to 4 via 3
-+0 ON_ROUTER 2 usr.applications.Send 5 3000 500  // send 500 datagrams from 2 to 5 via 3
++1000 ON_ROUTER 1 usr.applications.Send 4 3000 5000  // send 5000 datagrams from 1 to 4 via 3
+// +0 ON_ROUTER 2 usr.applications.Send 5 3000 5000  // send 5000 datagrams from 2 to 5 via 3
 // end links
-+6000 END_LINK 1 3
++26000 END_LINK 1 3
 +200 END_LINK 2 3
 +200 END_LINK 3 4
 +200 END_LINK 3 5

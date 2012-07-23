@@ -39,6 +39,8 @@ public class TCPNetIF implements NetIF, Runnable {
     Address remoteRouterAddress;
     // The Listener
     NetIFListener listener = null;
+    // The RouterPort
+    RouterPort port = null;
 
     long startTime = 0;
     long stopTime = 0;
@@ -98,9 +100,10 @@ public class TCPNetIF implements NetIF, Runnable {
        fabricDevice */
     public void run() {
         Datagram datagram= null;
+        runWait_= new Object();
+
         while (running_) {
             if (eof) {
-                runWait_= new Object();
                 synchronized (runWait_) {
                     try {
                         runWait_.wait();
@@ -271,6 +274,22 @@ public class TCPNetIF implements NetIF, Runnable {
     }
 
     /**
+     * Get the RouterPort a NetIF is plugIged into.
+     */
+    public RouterPort getRouterPort() {
+        return port;
+    }
+
+    /**
+     * Set the RouterPort a NetIF is plugIged into.
+     */
+    public void setRouterPort(RouterPort rp) {
+        port = rp;
+    }
+
+
+
+    /**
      * Send a Datagram -- sets source to this interface and puts the datagram
        on the incoming queue for this interface
      */
@@ -393,10 +412,12 @@ public class TCPNetIF implements NetIF, Runnable {
         Address address = getAddress();
         Address remoteAddress = getRemoteRouterAddress();
 
-        return getName() + " W(" + getWeight() + ") = " +
-               (address == null ? "No_Address" : "" + address) +
-               " => " + getRemoteRouterName() + " " +
-               (remoteAddress == null ? "No_Remote_Address" : "" + remoteAddress);
+        String ifName = getRouterPort() == null ? ("No port") : ("if" + Integer.toString(getRouterPort().getPortNo()));
+
+        return ifName + " W(" + getWeight() + ") = " +
+            (address == null ? "No_Address" : "" + address) + " => " + 
+            //getRemoteRouterName() + " " +
+            (remoteAddress == null ? "No_Remote_Address" : "" + remoteAddress);
     }
 
 

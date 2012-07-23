@@ -7,14 +7,16 @@ public class LinkInfo {
     private Pair<Integer, Integer> endPoints;   // The end points of a link.  It is a pair of router ids.
     private String linkName;                    // The name of the link
     private int weight;                         // The weight on the link
+    private int linkID;                         // The linkID
 
     /**
      * Construct a LinkInfo.
      */
-    public LinkInfo(Pair<Integer, Integer> routers, String name, int weight) {
+    public LinkInfo(Pair<Integer, Integer> routers, String name, int weight, int linkID) {
         endPoints = routers;
         linkName = name;
         this.weight = weight;
+        this.linkID = linkID;
     }
 
     /**
@@ -36,6 +38,13 @@ public class LinkInfo {
      */
     public int getLinkWeight() {
         return weight;
+    }
+
+    /**
+     * Get the link ID
+     */
+    public int getLinkID() {
+        return linkID;
     }
 
 

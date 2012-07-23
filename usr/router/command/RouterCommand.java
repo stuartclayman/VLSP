@@ -3,12 +3,14 @@ package usr.router.command;
 import usr.console.*;
 import usr.logging.*;
 import usr.router.*;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
 
 /**
  * A Command processes a command handled by the ManagementConsole
  * of a Router.
  */
-public abstract class RouterCommand extends AbstractCommand {
+public abstract class RouterCommand extends AbstractRestCommand {
     // The ManagementConsole
     RouterManagementConsole managementConsole;
 
@@ -16,10 +18,17 @@ public abstract class RouterCommand extends AbstractCommand {
     RouterController controller;
 
     /**
+     * Construct a Command given a name
+     */
+    RouterCommand(String name) {
+        super(name);
+    }
+
+    /**
      * Construct a Command given a name, a success code, an error code.
      */
     RouterCommand(String name, int succCode, int errCode) {
-        super(name, succCode, errCode);
+        super(name);
     }
 
     /**
@@ -36,6 +45,13 @@ public abstract class RouterCommand extends AbstractCommand {
         managementConsole = (RouterManagementConsole)mc;
         controller = (RouterController)managementConsole.getComponentController();
     }
+
+    /**
+     * Evaluate the Command.
+     * Returns false if there is a problem responding down the channel
+     */
+    public abstract boolean evaluate(Request request, Response response);
+
 
 
 }

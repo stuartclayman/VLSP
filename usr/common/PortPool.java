@@ -40,17 +40,22 @@ public class PortPool {
         for (int i= startPort; i < highPort_; i++) {
             int freeCount= 0;
             while (freeCount < nPorts) {
-                if (occupied_[i-lowPort_] == true)
+                if (occupied_[i-lowPort_] == true) {
                     break;
+                } 
                 i++;
                 freeCount++;
             }
+
+            // correct overshoot
+            i--;
+
             if (freeCount == nPorts) {
                 for (int j= 0; j < nPorts; j++) {
                     occupied_[i-j-lowPort_]= true;
                 }
                 currPort_= i+1;
-                return i-nPorts;
+                return currPort_-nPorts;
             }
         }
         IOException e= new IOException ("No free ports available in port pool");

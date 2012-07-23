@@ -1,11 +1,14 @@
 package usr.router.command;
 
 import usr.protocol.MCRP;
-import usr.applications.ApplicationResponse;
 import usr.logging.*;
-import usr.router.RouterManagementConsole;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
+import us.monoid.json.*;
+import usr.applications.ApplicationResponse;
+
 
 /**
  * The RUN command -- allows applications to run on the router
@@ -21,23 +24,65 @@ public class RunCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
+    public boolean evaluate(Request request, Response response) {
 
-        String rest = req.substring(MCRP.RUN.CMD.length()).trim();
-        if (rest == "") {
-            error("RUN Must supply command name and args");
+        try {
+            PrintStream out = response.getPrintStream();
+
+            // get full request string
+            String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
+            // strip off /command
+            String value = path.substring(9);
+            // strip off COMMAND
+            String rest = value.substring(MCRP.RUN.CMD.length()).trim();
+
+            if (rest == "") {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "RUN Must supply command name and args");
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+
+            } else {
+
+                ApplicationResponse result = controller.appStop(rest);
+
+                if (result.isSuccess()) {
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("response", result.getMessage());
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return true;
+
+                } else {
+                    response.setCode(404);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("error", result.getMessage() + " for " + rest);
+
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return false;
+
+                }
+
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
             return false;
         }
 
-        ApplicationResponse response = controller.runCommand(rest);
 
-        if (response.isSuccess()) {
-            success(response.getMessage());
-            return true;
-        } else {
-            error(response.getMessage() + " for " + rest);
-            return false;
-        }
     }
 
 }

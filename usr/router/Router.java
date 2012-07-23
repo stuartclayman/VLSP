@@ -105,10 +105,7 @@ public class Router {
 
 
     /** Common initialisation section for all constructors */
-    void initRouter(int port1, int port2, String name)
-
-    {
-
+    void initRouter(int port1, int port2, String name) {
         // allocate a new logger
         Logger logger = Logger.getLogger("log");
         // tell it to output to stdout
@@ -122,13 +119,28 @@ public class Router {
         // USR.ERROR set
         logger.addOutput(System.err, new BitMask(USR.ERROR));
 
+        // add some extra output channels, using mask bit 6
+        try {
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/router-" + port1 + "-channel6.out")), new BitMask(1<<6));
+            //logger.addOutput(System.out, new BitMask(1<<6));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         options_= new RouterOptions(this);
 
         // Setup ThreadGroup
-        threadGroup = new ThreadGroup(name);
+        threadGroup = Thread.currentThread().getThreadGroup(); // new ThreadGroup(name);
 
         controller = new RouterController(this, options_, port1, port2, name);
+
         fabric = new SimpleRouterFabric(this, options_);
+        //fabric = new VectorRouterFabric(this, options_);
+
+        if (!fabric.init()) {
+            throw new Error("RouterFabric failed to init()");
+        }
+
         RouterDirectory.register(this);
 
     }
@@ -283,7 +295,9 @@ public class Router {
      * Plug in a NetIF to the Router.
      */
     public RouterPort plugInNetIF(NetIF netIF) {
-        return fabric.addNetIF(netIF);
+        RouterPort rp = fabric.addNetIF(netIF);
+        netIF.setRouterPort(rp);
+        return rp;
     }
 
     /**
@@ -471,13 +485,18 @@ public class Router {
         return true;
     }
 
-    public static void main(String[] args) {
-        Router router = null;
+    /**
+     * Main entry point
+     */
+    public static void main(String[] argss) {
+        final String[] args = argss;
+
+        RouterEnv router = null;
         if (args.length == 1) {
             int mPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
-            router = new Router(mPort, "Router-" + mPort + "-" + (mPort+1));
+            router = new RouterEnv(mPort, "Router-" + mPort + "-" + (mPort+1));
         } else if (args.length == 2) {
             int mPort = 0;
             int r2rPort = 0;
@@ -485,7 +504,7 @@ public class Router {
             mPort = sc.nextInt();
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
-            router = new Router(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
+            router = new RouterEnv(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
         } else if (args.length == 3) {
             int mPort = 0;
             int r2rPort = 0;
@@ -496,13 +515,13 @@ public class Router {
             String name = args[2];
             Address addr= null;
             try {
-              addr = AddressFactory.newAddress(args[2]);
+                addr = AddressFactory.newAddress(args[2]);
             } catch (java.net.UnknownHostException e) {
             }
             if (addr == null) {
-                router = new Router(mPort, r2rPort, name);
+                router = new RouterEnv(mPort, r2rPort, name);
             } else {
-                router = new Router(mPort, r2rPort, name, addr);
+                router = new RouterEnv(mPort, r2rPort, name, addr);
             }
         } else if (args.length == 4) {
             int mPort = 0;
@@ -514,23 +533,17 @@ public class Router {
             String name = args[2];
             Address addr= null;
             try {
-              addr = AddressFactory.newAddress(args[3]);
+                addr = AddressFactory.newAddress(args[3]);
             } catch (java.net.UnknownHostException e) {
-              System.err.println("Cannot construct address from "+args[3]);
-              help();
+                System.err.println("Cannot construct address from "+args[3]);
+                help();
             }
 
-            router = new Router(mPort, r2rPort, name, addr);
+            router = new RouterEnv(mPort, r2rPort, name, addr);
         }
 
         else {
             help();
-        }
-
-        // start
-        if (router.start()) {
-        } else {
-            router.stop();
         }
 
     }
@@ -539,10 +552,6 @@ public class Router {
     private static void help() {
         Logger.getLogger("log").logln(USR.ERROR, "Router [mgt_port [r2r_port]] [name] [address]");
         System.exit(1);
-    }
-
-    static {
-        Runtime.getRuntime().addShutdownHook(new TidyUp());
     }
 
     String leadinFname() {
@@ -559,21 +568,3 @@ public class Router {
     }
 
 }
-
-class TidyUp extends Thread {
-    public TidyUp() {
-    }
-
-    public void run() {
-        List<Router> routers = RouterDirectory.getRouterList();
-        for (Router router : routers) {
-            if (router == null)
-                continue;
-
-            if (router.isActive()) {
-                router.stop();
-            }
-        }
-    }
-}
-

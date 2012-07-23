@@ -14,6 +14,8 @@ import usr.common.BasicRouterInfo;
 import usr.common.ProcessWrapper;
 import usr.common.ThreadTools;
 import usr.interactor.*;
+import us.monoid.web.*;
+import us.monoid.json.*;
 
 
 /** The local controller is intended to run on every machine.
@@ -66,8 +68,7 @@ public class LocalController implements ComponentController {
             port= Integer.parseInt(args[0]);
             if (port < 0)
                 throw new NumberFormatException ("Port number must be > 0");
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             Logger.getLogger("log").logln(USR.ERROR, "Unable to understand port number."+
                                           e.getMessage());
             System.exit(-1);
@@ -137,10 +138,10 @@ public class LocalController implements ComponentController {
                 RouterInteractor interactor = routerInteractors_.get(i);
                 try {
                     interactor.shutDown();
-                } catch (java.io.IOException e) {
+                } catch (IOException e) {
                     Logger.getLogger("log").logln(USR.ERROR,leadin() + "Cannot send shut down to Router");
                     Logger.getLogger("log").logln(USR.ERROR,e.getMessage());
-                } catch (usr.interactor.MCRPException e) {
+                } catch (JSONException e) {
                     Logger.getLogger("log").logln(USR.ERROR,
                                                   leadin() + "Cannot send shut down to Router");
                     Logger.getLogger("log").logln(USR.ERROR,e.getMessage());
@@ -203,15 +204,15 @@ public class LocalController implements ComponentController {
             Logger.getLogger("log").logln(USR.STDOUT, "Sending to "+gc.getName()+":"+gc.getPort());
             gcInteractor_= new GlobalControllerInteractor(gc);
             gcInteractor_.respondToGlobalController(hostInfo_);
-        } catch (java.net.UnknownHostException e) {
+        } catch (UnknownHostException e) {
             Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             System.exit(-1);
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             System.exit(-1);
-        }catch (usr.interactor.MCRPException e) {
+        } catch (JSONException e) {
             Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             System.exit(-1);
@@ -230,7 +231,7 @@ public class LocalController implements ComponentController {
         String routerName;
         Address routerAddress= null;
         try {
-          if (address == null) {
+            if (address == null || address.equals("")) {
           
             routerAddress = AddressFactory.newAddress(routerId);
           
@@ -238,12 +239,12 @@ public class LocalController implements ComponentController {
 
             routerAddress = AddressFactory.newAddress(address);
           }
-        } catch (java.net.UnknownHostException e) {
+        } catch (UnknownHostException e) {
           Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot construct address for router");
           return null;
         }
 
-        if (name == null) {
+        if (name == null || name.equals("")) {
             routerName = "Router-" + routerId;
         } else {
             routerName = name;
@@ -253,14 +254,15 @@ public class LocalController implements ComponentController {
         Process child= null;
         ProcessWrapper pw= null;
 
-        String [] cmd= new String[7];
+        String [] cmd= new String[8];
         cmd[0] = "/usr/bin/java";
         cmd[1] = "-cp";
         cmd[2] = classPath_;
-        cmd[3] = "usr.router.Router";
-        cmd[4] = String.valueOf(port1);
-        cmd[5] = String.valueOf(port2);
-        cmd[6] = routerName;
+        cmd[3] = "-Xmx256m";
+        cmd[4] = "usr.router.Router";
+        cmd[5] = String.valueOf(port1);
+        cmd[6] = String.valueOf(port2);
+        cmd[7] = routerName;
 
         try {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting Router on ports "+port1+" "+port2);
@@ -269,7 +271,7 @@ public class LocalController implements ComponentController {
             pw = new ProcessWrapper(child, routerName);
 
 
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute command "+ Arrays.asList(cmd));
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             if (child != null) {
@@ -309,7 +311,7 @@ public class LocalController implements ComponentController {
                 break;
             } catch (UnknownHostException uhe) { // Try again
             } catch (IOException e) {
-            } catch (MCRPException ex) {
+            } catch (JSONException ex) {
             }
         }
 
@@ -329,13 +331,12 @@ public class LocalController implements ComponentController {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() +
                                               "IOException connecting to Router on port " + port1);
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
-            }catch (MCRPException e2) {
+            } catch (JSONException e2) {
             }
 
             return null;
         }
         BasicRouterInfo br= new BasicRouterInfo(routerId,0,hostInfo_,port1);
-        br.setName(routerName);
         routers_.add(br);
 
         // tell the router its new name and config if available
@@ -345,7 +346,9 @@ public class LocalController implements ComponentController {
             }
 
             interactor.setName(routerName);
+            br.setName(routerName);
             interactor.setRouterAddress(routerAddress);
+            br.setAddress(routerAddress.asTransmitForm());
 
             // tell the router to start some monitoring
             if (latticeMonitoring) {
@@ -363,11 +366,11 @@ public class LocalController implements ComponentController {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() +
                                               "IOException connecting to Router on port " + port1);
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
-            }catch (MCRPException e2) {
+            } catch (JSONException e2) {
             }
 
             return null;
-        } catch (MCRPException mcrpe) {
+        } catch (JSONException mcrpe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() +
                                           "MCRP Exception setting interactor details for Router on port " + port1);
             pw.stop();
@@ -378,7 +381,7 @@ public class LocalController implements ComponentController {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() +
                                               "IOException connecting to Router on port " + port1);
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
-            }catch (MCRPException e2) {
+            }catch (JSONException e2) {
             }
             return null;
         }
@@ -669,10 +672,10 @@ public class LocalController implements ComponentController {
                 RouterInteractor interactor = routerInteractors_.get(i);
                 try {
                     interactor.monitoringStop();
-                } catch (java.io.IOException e) {
+                } catch (IOException e) {
                     Logger.getLogger("log").logln(USR.ERROR,leadin() + "Cannot send stopMonitoring to Router");
                     Logger.getLogger("log").logln(USR.ERROR,e.getMessage());
-                } catch (usr.interactor.MCRPException e) {
+                } catch (JSONException e) {
                     Logger.getLogger("log").logln(USR.ERROR,
                                                   leadin() + "Cannot send stopMonitoring to Router");
                     Logger.getLogger("log").logln(USR.ERROR,e.getMessage());
@@ -685,7 +688,7 @@ public class LocalController implements ComponentController {
     /**
      * Run something on a Router.
      */
-    public String onRouter(int routerID, String className, String[] args) {
+    public JSONObject onRouter(int routerID, String className, String[] args) {
         BasicRouterInfo br = routerMap_.get(routerID);
 
         int port = br.getManagementPort();
@@ -695,8 +698,10 @@ public class LocalController implements ComponentController {
             return null;
         } else {
             try {
-                String appName = ri.appStart(className, args);
-                return appName;
+
+                JSONObject jsonObj = ri.appStart(className, args);
+
+                return jsonObj;
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+"");
                 return null;
@@ -718,6 +723,15 @@ public class LocalController implements ComponentController {
         }
         return true;
     }
+
+    /**
+     * Find some router info
+     */
+    public BasicRouterInfo findRouterInfo(int rId) {
+        return routerMap_.get(rId);
+    }
+
+
     /**
      * Get the ManagementConsole this ComponentController interacts with.
      */

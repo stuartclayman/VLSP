@@ -2,9 +2,12 @@ package usr.router.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.router.RouterManagementConsole;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
+import us.monoid.json.*;
+
 
 /**
  * The SET_NAME command.
@@ -22,23 +25,37 @@ public class SetNameCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        String name = req.substring(MCRP.SET_NAME.CMD.length()).trim();
-        boolean nameSet = controller.setName(name);
+    public boolean evaluate(Request request, Response response) {
+        try {
+            PrintStream out = response.getPrintStream();
 
-        boolean result;
+            // get full request string
+            String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
+            // strip off /command
+            String value = path.substring(9);
+            // strip off COMMAND
+            String name = value.substring(MCRP.SET_NAME.CMD.length()).trim();
 
-        if (nameSet) {
-            result = success(name);
-        } else {
-            result = error("Cannot set name after communication");
+            // set name
+            boolean nameSet = controller.setName(name);
+
+
+            JSONObject jsobj = new JSONObject();
+            jsobj.put("name", name);
+
+            out.println(jsobj.toString());
+            response.close();
+
+            return true;
+
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
+            return false;
         }
 
-        if (!result) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + getName() + " response failed");
-        }
-
-        return result;
     }
 
 }

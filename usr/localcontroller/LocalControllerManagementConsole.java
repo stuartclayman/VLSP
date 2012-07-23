@@ -11,10 +11,8 @@ import usr.common.BasicRouterInfo;
 /**
  * A ManagementConsole listens for the LocalController.
  * It listens for commands.
- * <p>
- * It implements the MCRP (Management Console Router Protocol).
  */
-public class LocalControllerManagementConsole extends AbstractManagementConsole implements Runnable {
+public class LocalControllerManagementConsole extends AbstractRestConsole {
 
     public LocalController localController_;
 

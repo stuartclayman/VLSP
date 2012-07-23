@@ -8,16 +8,24 @@ import java.net.Socket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.net.URI;
 import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
+import us.monoid.web.*;
+import us.monoid.json.*;
+
 
 /**
- * This class implements the MCRP protocol and acts as a client
+ * This class implements the REST protocol and acts as a client
  * for interacting with the ManagementConsole of a Router.
  */
-public class RouterInteractor extends MCRPInteractor {
+public class RouterInteractor {
+    // A URI for a router to interact with
+    String routerURI;
+    Resty rest;
+    int port;
 
     /**
      * Constructor for a MCRP connection
@@ -39,26 +47,60 @@ public class RouterInteractor extends MCRPInteractor {
         initialize(addr, port);
     }
 
+
+    /**
+     * Initialize
+     */
+    private synchronized void initialize(InetAddress addr, int port) {
+        this.port = port;
+        //URI uri = new URI("http", null, addr.toString(), port, null, null, null);
+        routerURI = "http://" + addr.getHostName() + ":" + Integer.toString(port);
+
+        Logger.getLogger("log").logln(USR.STDOUT, "routerURI: " + routerURI);
+        
+        rest = new Resty();
+    }
+
+    /**
+     * Get the port this RouterInteractor is connecting to
+     */
+    public int getPort() {
+        return port;
+    }
+
+    /**
+     * Interact 
+     */
+    private JSONObject interact(String str) throws IOException, JSONException {
+        String uri = routerURI +  "/command/" + java.net.URLEncoder.encode(str, "UTF-8");
+
+        Logger.getLogger("log").logln(USR.STDOUT, "call: " + uri.substring(0,Math.min(64, uri.length())));
+
+        JSONObject jsobj = rest.json(uri).toObject();
+
+        Logger.getLogger("log").logln(USR.STDOUT, "response: " + jsobj.toString());
+
+        return jsobj;
+    }
+
     /* Calls for Router ManagementConsole */
 
     /**
      * Quit talking to the router
      * Close a connection to the ManagementConsole of the router.
      */
-    public MCRPInteractor quit() throws IOException, MCRPException {
-        interact(MCRP.QUIT.CMD);
-        expect(MCRP.QUIT.CODE);
+    public RouterInteractor quit() throws IOException, JSONException {
+        //interact(MCRP.QUIT.CMD);
         return this;
     }
 
     /**
      * Get the name of the router.
      */
-    public String getName() throws IOException, MCRPException {
-        MCRPResponse response = interact(MCRP.GET_NAME.CMD);
-        expect(MCRP.GET_NAME.CODE);
+    public String getName() throws IOException, JSONException {
+        JSONObject response = interact(MCRP.GET_NAME.CMD);
 
-        return response.get(0)[1];
+        return (String)response.get("name");
     }
 
 
@@ -66,21 +108,19 @@ public class RouterInteractor extends MCRPInteractor {
      * Set the name of the router.
      * @param name the new name of the router
      */
-    public MCRPInteractor setName(String name) throws IOException, MCRPException {
+    public RouterInteractor setName(String name) throws IOException, JSONException {
         String toSend = MCRP.SET_NAME.CMD + " " + name;
         interact(toSend);
-        expect(MCRP.SET_NAME.CODE);
         return this;
     }
 
     /**
      * Get the address of the router.
      */
-    public Address getRouterAddress() throws IOException, MCRPException {
-        MCRPResponse response = interact(MCRP.GET_ROUTER_ADDRESS.CMD);
-        expect(MCRP.GET_ROUTER_ADDRESS.CODE);
+    public Address getRouterAddress() throws IOException, JSONException {
+        JSONObject response = interact(MCRP.GET_ROUTER_ADDRESS.CMD);
 
-        String value = response.get(0)[1];
+        String value = (String)response.get("address");
 
         Address addr = AddressFactory.newAddress(value);
 
@@ -92,11 +132,11 @@ public class RouterInteractor extends MCRPInteractor {
      * Set the global address of the router.
      * @param addr the address of the router
      */
-    public MCRPInteractor setRouterAddress(Address addr) throws IOException, MCRPException {
+    public RouterInteractor setRouterAddress(Address addr) throws IOException, JSONException {
         String id = addr.asTransmitForm();
         String toSend = MCRP.SET_ROUTER_ADDRESS.CMD + " " + id;
         interact(toSend);
-        expect(MCRP.SET_ROUTER_ADDRESS.CODE);
+
         return this;
     }
 
@@ -104,11 +144,10 @@ public class RouterInteractor extends MCRPInteractor {
      * Get the port number to connect to on the router
      * in order to make a new router-to-router data connection.
      */
-    public String getConnectionPort() throws IOException, MCRPException {
-        MCRPResponse response = interact(MCRP.GET_CONNECTION_PORT.CMD);
-        expect(MCRP.GET_CONNECTION_PORT.CODE);
+    public String getConnectionPort() throws IOException, JSONException {
+        JSONObject response = interact(MCRP.GET_CONNECTION_PORT.CMD);
 
-        return response.get(0)[1];
+        return (String)response.get("port");
     }
 
 
@@ -116,48 +155,44 @@ public class RouterInteractor extends MCRPInteractor {
      * Get the name of a port on the router.
      * @param port the port name
      */
-    public String getPortName(String port) throws IOException, MCRPException {
+    public String getPortName(String port) throws IOException, JSONException {
         String toSend = MCRP.GET_PORT_NAME.CMD + " " + port;
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.GET_PORT_NAME.CODE);
+        JSONObject response = interact(toSend);
 
-        return response.get(0)[1];
+        return (String)response.get("name");
     }
 
     /**
      * Get the name of a remote router of a port on the router.
      * @param port the port name
      */
-    public String getPortRemoteRouterName(String port) throws IOException, MCRPException {
+    public String getPortRemoteRouterName(String port) throws IOException, JSONException {
         String toSend = MCRP.GET_PORT_REMOTE_ROUTER.CMD + " " + port;
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.GET_PORT_REMOTE_ROUTER.CODE);
+        JSONObject response = interact(toSend);
 
-        return response.get(0)[1];
+        return (String)response.get("name");
     }
 
     /**
      * Get the address of a remote router of a port on the router.
      * @param port the port name
      */
-    public String getPortRemoteAddress(String port) throws IOException, MCRPException {
+    public String getPortRemoteAddress(String port) throws IOException, JSONException {
         String toSend = MCRP.GET_PORT_REMOTE_ADDRESS.CMD + " " + port;
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.GET_PORT_REMOTE_ADDRESS.CODE);
+        JSONObject response = interact(toSend);
 
-        return response.get(0)[1];
+        return (String)response.get("address");
     }
 
     /**
      * Get the address of a port on the router.
      * @param port the port name
      */
-    public String getPortAddress(String port) throws IOException, MCRPException {
+    public String getPortAddress(String port) throws IOException, JSONException {
         String toSend = MCRP.GET_PORT_ADDRESS.CMD + " " + port;
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.GET_PORT_ADDRESS.CODE);
+        JSONObject response = interact(toSend);
 
-        return response.get(0)[1];
+        return (String)response.get("address");
     }
 
     /**
@@ -166,10 +201,9 @@ public class RouterInteractor extends MCRPInteractor {
      * @param port the port name
      * @param addr the value for the address
      */
-    public MCRPInteractor setPortAddress(String port, String type, String addr) throws IOException, MCRPException {
+    public RouterInteractor setPortAddress(String port, String type, String addr) throws IOException, JSONException {
         String toSend = MCRP.SET_PORT_ADDRESS.CMD + " " + port + " " + addr;
         interact(toSend);
-        expect(MCRP.SET_PORT_ADDRESS.CODE);
         return this;
     }
 
@@ -177,12 +211,11 @@ public class RouterInteractor extends MCRPInteractor {
      * Get the weight of a port on the router.
      * @param port the port name
      */
-    public String getPortWeight(String port) throws IOException, MCRPException {
+    public String getPortWeight(String port) throws IOException, JSONException {
         String toSend = MCRP.GET_PORT_WEIGHT.CMD + " " + port;
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.GET_PORT_WEIGHT.CODE);
+        JSONObject response = interact(toSend);
 
-        return response.get(0)[1];
+        return (String)response.get("weight");
     }
 
     /**
@@ -191,10 +224,9 @@ public class RouterInteractor extends MCRPInteractor {
      * @param port the port name
      * @param weight the value for the weight
      */
-    public MCRPInteractor setPortWeight(String port, String weight) throws IOException, MCRPException {
+    public RouterInteractor setPortWeight(String port, String weight) throws IOException, JSONException {
         String toSend = MCRP.SET_PORT_WEIGHT.CMD + " " + port + " " + weight;
         interact(toSend);
-        expect(MCRP.SET_PORT_WEIGHT.CODE);
         return this;
     }
 
@@ -208,25 +240,23 @@ public class RouterInteractor extends MCRPInteractor {
      * @param weight the weight of the connection
      * @param port the port number
      */
-    public MCRPInteractor incomingConnection(String connectionID, String name, Address addr, int weight, int port) throws IOException, MCRPException {
+    public RouterInteractor incomingConnection(String connectionID, String name, Address addr, int weight, int port) throws IOException, JSONException {
         String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + addr.asTransmitForm() + " " + weight  + " " + port;
         interact(toSend);
-        expect(MCRP.INCOMING_CONNECTION.CODE);
         return this;
     }
 
     /**
      * List all the router-to-router connections that the router has.
      */
-    public List<String> listConnections()  throws IOException, MCRPException {
-        MCRPResponse response = interact(MCRP.LIST_CONNECTIONS.CMD);
-        expect(MCRP.LIST_CONNECTIONS.CODE);
+    public List<String> listConnections()  throws IOException, JSONException {
+        JSONObject response = interact(MCRP.LIST_CONNECTIONS.CMD);
 
         // now we convert the replies in the response
         // into a list of connections
 
         // get no of connections
-        int connectionReplies = response.getReplies() - 1;
+        Integer connectionReplies = (Integer)response.get("size");
 
         // Logger.getLogger("log").logln(USR.ERROR, "listConnections: " + connectionReplies + " replies");
 
@@ -235,7 +265,7 @@ public class RouterInteractor extends MCRPInteractor {
 
         for (int r=0; r < connectionReplies; r++) {
             // pick out the r-th connection
-            connectionNames.add(response.get(r)[1]);
+            connectionNames.add((String)response.get(Integer.toString(r)));
         }
 
         return connectionNames;
@@ -245,7 +275,7 @@ public class RouterInteractor extends MCRPInteractor {
      * Start an app.
      * APP_START classname args
      */
-    public String appStart(String className, String[] args)  throws IOException, MCRPException {
+    public JSONObject appStart(String className, String[] args)  throws IOException, JSONException {
         StringBuilder builder = new StringBuilder();
         builder.append(MCRP.APP_START.CMD);
         builder.append(" ");
@@ -258,21 +288,19 @@ public class RouterInteractor extends MCRPInteractor {
 
         String toSend = builder.toString();
 
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.APP_START.CODE);
+        JSONObject response = interact(toSend);
 
-        return response.get(0)[1];
+        return response;
     }
 
     /**
      * Stop an app
      * APP_STOP app_name
      */
-    public String appStop(String appName)  throws IOException, MCRPException {
-        MCRPResponse response = interact(MCRP.APP_STOP.CMD);
-        expect(MCRP.APP_STOP.CODE);
+    public String appStop(String appName)  throws IOException, JSONException {
+        JSONObject response = interact(MCRP.APP_STOP.CMD);
 
-        return response.get(0)[1];
+        return (String)response.get("response");
     }
 
 
@@ -280,25 +308,32 @@ public class RouterInteractor extends MCRPInteractor {
      * List all app
      * APP_LIST
      */
-    public List<String> appList()  throws IOException, MCRPException {
-        MCRPResponse response = interact(MCRP.APP_LIST.CMD);
-        expect(MCRP.APP_LIST.CODE);
+    public List<String> appList()  throws IOException, JSONException {
+        JSONObject response = interact(MCRP.APP_LIST.CMD);
 
         // now we convert the replies in the response
         // into a list of apps
 
         // get no of apps
-        int appReplies = response.getReplies() - 1;
+        String appReplies = (String)response.get("size");
 
         // Logger.getLogger("log").logln(USR.ERROR, "appList: " + appReplies + " replies");
 
         // create a list for the names
         List<String> appNames = new ArrayList<String>();
 
+        /** old way
         for (int r=0; r < appReplies; r++) {
             // pick out the r-th app
             appNames.add(response.get(r)[1]);
         }
+
+        */
+
+        JSONArray jsarr = (JSONArray)response.get("list");
+
+        /// TODO:  RESOLVE ACTUAL METHOD
+        // appNames = jsarr.asArray();
 
         return appNames;
 
@@ -311,13 +346,12 @@ public class RouterInteractor extends MCRPInteractor {
      * interface to a router on the address ip_addr/port
      * @return the name of the created connection, e.g. /Router-28/Connection-1
      */
-    public String createConnection(String address) throws IOException, MCRPException {
+    public String createConnection(String address) throws IOException, JSONException {
         String toSend = MCRP.CREATE_CONNECTION.CMD + " " + address;
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.CREATE_CONNECTION.CODE);
+        JSONObject response = interact(toSend);
 
         // return the connection name
-        return response.get(0)[1];
+        return (String)response.get("name");
     }
 
     /**
@@ -327,13 +361,12 @@ public class RouterInteractor extends MCRPInteractor {
      * connection weight of connection_weight
      * @return the name of the created connection, e.g. /Router-28/Connection-1
      */
-    public String createConnection(String address, int weight) throws IOException, MCRPException {
+    public String createConnection(String address, int weight) throws IOException, JSONException {
         String toSend = MCRP.CREATE_CONNECTION.CMD + " " + address + " " + weight;
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.CREATE_CONNECTION.CODE);
+        JSONObject response = interact(toSend);
 
         // return the connection name
-        return response.get(0)[1];
+        return (String)response.get("name");
     }
 
     /**
@@ -343,70 +376,65 @@ public class RouterInteractor extends MCRPInteractor {
      * connection weight of connection_weight and a name of connection_name
      * @return the name of the created connection, i.e. connection_name
      */
-    public String createConnection(String address, int weight, String name) throws IOException, MCRPException {
+    public String createConnection(String address, int weight, String name) throws IOException, JSONException {
         String toSend = MCRP.CREATE_CONNECTION.CMD + " " + address + " " + weight + " " + name;
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.CREATE_CONNECTION.CODE);
+        JSONObject response = interact(toSend);
 
         // return the connection name
-        return response.get(0)[1];
+        return (String)response.get("name");
     }
 
     /** End the link from this router to the router with a given id */
-    public MCRPInteractor endLink(String rId) throws IOException,
-    MCRPException {
+    public RouterInteractor endLink(String rId) throws IOException,
+    JSONException {
         String toSend = MCRP.END_LINK.CMD + " "+ rId;
         interact(toSend);
-        expect(MCRP.END_LINK.CODE);
         return this;
 
     }
 
     /** Set the configuration string for a router */
-    public MCRPInteractor setConfigString(String config) throws IOException,
-    MCRPException {
-        String toSend = MCRP.READ_OPTIONS_STRING.CMD + " "+ config;
+    public RouterInteractor setConfigString(String config) throws IOException,
+    JSONException {
+        String toSend = MCRP.READ_OPTIONS_STRING.CMD + " "+ java.net.URLEncoder.encode(config, "UTF-8");
         interact(toSend);
-        expect(MCRP.READ_OPTIONS_STRING.CODE);
         return this;
 
     }
 
     /** Send a message to a local controller intended for a router to
        set its status as an aggregation point */
-    public MCRPInteractor setAP(int GID, int APGID) throws IOException, MCRPException {
+    public RouterInteractor setAP(int GID, int APGID) throws IOException, JSONException {
         String toSend;
         toSend = MCRP.SET_AP.CMD +
                  " " + GID + " " + APGID;
 
         interact(toSend);
-        expect(MCRP.SET_AP.CODE);
         return this;
     }
 
     /**
      * Get the NetIF stats from a Router.
      */
-    public List<String> getNetIFStats() throws IOException, MCRPException {
+    public List<String> getNetIFStats() throws IOException, JSONException {
         // 237-localnet  InBytes=0 InPackets=0 InErrors=0 InDropped=0 OutBytes=17890 OutPackets=500 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
         // 237-/Router-15151-15152/Connection-1  InBytes=66 InPackets=1 InErrors=0 InDropped=0 OutBytes=17956 OutPackets=501 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
         // 237 END 2
 
-        MCRPResponse response = interact(MCRP.GET_NETIF_STATS.CMD);
-        expect(MCRP.GET_NETIF_STATS.CODE);
+        JSONObject response = interact(MCRP.GET_NETIF_STATS.CMD);
 
         // now we convert the replies in the response
         // into a list of connections
 
         // get no of netifs
-        int netifReplies = response.getReplies() - 1;
+        Integer netifReplies = (Integer)response.get("size");
 
         // create a list for the names
         List<String> stats = new ArrayList<String>();
 
         for (int n=0; n < netifReplies; n++) {
             // pick out the r-th connection
-            stats.add(response.get(n)[1]);
+            stats.add((String)response.get(Integer.toString(n)));
         }
 
         return stats;
@@ -416,26 +444,25 @@ public class RouterInteractor extends MCRPInteractor {
     /**
      * Get the socket stats from a Router.
      */
-    public List<String> getSocketStats() throws IOException, MCRPException {
+    public List<String> getSocketStats() throws IOException, JSONException {
         // 237-localnet  InBytes=0 InPackets=0 InErrors=0 InDropped=0 OutBytes=17890 OutPackets=500 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
         // 237-/Router-15151-15152/Connection-1  InBytes=66 InPackets=1 InErrors=0 InDropped=0 OutBytes=17956 OutPackets=501 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
         // 237 END 2
 
-        MCRPResponse response = interact(MCRP.GET_SOCKET_STATS.CMD);
-        expect(MCRP.GET_SOCKET_STATS.CODE);
+        JSONObject response = interact(MCRP.GET_SOCKET_STATS.CMD);
 
         // now we convert the replies in the response
         // into a list of connections
 
         // get no of sockets
-        int socketReplies = response.getReplies() - 1;
+        Integer socketReplies = (Integer)response.get("size");
 
         // create a list for the names
         List<String> stats = new ArrayList<String>();
 
         for (int s=0; s < socketReplies; s++) {
             // pick out the s-th connection
-            stats.add(response.get(s)[1]);
+            stats.add((String)response.get(Integer.toString(s)));
         }
 
         return stats;
@@ -446,37 +473,32 @@ public class RouterInteractor extends MCRPInteractor {
      * @param addr The InetSocketAddress of the Monitoring data consumer
      * @param howOften How many seconds between measurements
      */
-    public MCRPInteractor monitoringStart(InetSocketAddress addr, int howOften) throws IOException, MCRPException {
+    public RouterInteractor monitoringStart(InetSocketAddress addr, int howOften) throws IOException, JSONException {
         String toSend = MCRP.MONITORING_START.CMD + " " + addr.getAddress().getHostAddress() + ":" + addr.getPort() + " " + howOften;
-        MCRPResponse response = interact(toSend);
-        expect(MCRP.MONITORING_START.CODE);
+        JSONObject response = interact(toSend);
         return this;
     }
 
     /**
      * Monitoring Stop
      */
-    public MCRPInteractor monitoringStop() throws IOException, MCRPException {
+    public RouterInteractor monitoringStop() throws IOException, JSONException {
         interact(MCRP.MONITORING_STOP.CMD);
-        expect(MCRP.MONITORING_STOP.CODE);
         return this;
     }
 
     /** Check router is responding */
-    public boolean routerOK() throws IOException, MCRPException {
+    public boolean routerOK() throws IOException, JSONException {
         interact(MCRP.ROUTER_OK.CMD);
-        expect(MCRP.ROUTER_OK.CODE);
         return true;
     }
 
     /**
      * Shutdown the Router we are interacting with.
      */
-    public MCRPInteractor shutDown() throws IOException, MCRPException {
-
-        interact(MCRP.SHUT_DOWN.CMD);
-        expect(MCRP.SHUT_DOWN.CODE);
-        return this;
+    public Boolean shutDown() throws IOException, JSONException {
+        JSONObject response = interact(MCRP.SHUT_DOWN.CMD);
+        return (Boolean)response.get("success");
     }
 
 

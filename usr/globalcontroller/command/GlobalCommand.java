@@ -3,12 +3,14 @@ package usr.globalcontroller.command;
 import usr.globalcontroller.*;
 import usr.logging.*;
 import usr.console.*;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
 
 /**
  * A Command processes a command handled by the ManagementConsole
  * of a GlobalController.
  */
-public abstract class GlobalCommand extends AbstractCommand {
+public abstract class GlobalCommand extends AbstractRestCommand {
     // The ManagementConsole
     GlobalControllerManagementConsole managementConsole;
 
@@ -18,8 +20,15 @@ public abstract class GlobalCommand extends AbstractCommand {
     /**
      * Construct a Command given a name, a success code, an error code.
      */
+    GlobalCommand(String name) {
+        super(name);
+    }
+
+    /**
+     * Construct a Command given a name, a success code, an error code.
+     */
     GlobalCommand(String name, int succCode, int errCode) {
-        super(name, succCode, errCode);
+        super(name);
     }
 
 
@@ -37,5 +46,13 @@ public abstract class GlobalCommand extends AbstractCommand {
         managementConsole = (GlobalControllerManagementConsole)mc;
         controller = (GlobalController)managementConsole.getComponentController();
     }
+
+
+    /**
+     * Evaluate the Command.
+     * Returns false if there is a problem responding down the channel
+     */
+    public abstract boolean evaluate(Request request, Response response);
+
 
 }

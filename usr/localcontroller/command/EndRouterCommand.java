@@ -2,49 +2,96 @@ package usr.localcontroller.command;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
 import usr.common.LocalHostInfo;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
+import java.io.IOException;
+import us.monoid.json.*;
+import java.net.UnknownHostException;
 
 /**
- * The QUIT command.
+ * The END_ROUTER_COMMAND command.
  */
 public class EndRouterCommand extends LocalCommand {
     /**
-     * Construct a NewRouterCommand.
+     * Construct a EndRouterCommand.
      */
     public EndRouterCommand() {
-        super(MCRP.ROUTER_SHUT_DOWN.CMD, MCRP.ROUTER_SHUT_DOWN.CODE,
-              MCRP.ROUTER_SHUT_DOWN.ERROR);
+        super(MCRP.ROUTER_SHUT_DOWN.CMD);
     }
 
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(String req) {
-        String [] args= req.split(" ");
-        if (args.length != 2) {
-            error("Expected two arguments for End Router Command");
-            return false;
-        }
-        LocalHostInfo lhi= null;
+    public boolean evaluate(Request request, Response response) {
+
         try {
-            lhi = new LocalHostInfo(args[1]);
-            if (lhi == null) {
-                error ("LOCAL HUST INFO IN WRONG FORMAT");
+            PrintStream out = response.getPrintStream();
+
+            // get full request string
+            String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
+            // strip off /command
+            String value = path.substring(9);
+
+            String [] args= value.split(" ");
+
+            if (args.length != 2) {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "Expected argument for End Router Command");
+
+                out.println(jsobj.toString());
+                response.close();
+
                 return false;
             }
-        } catch (Exception e) {
-            error("Cannot convert "+args[1]+" to host info");
+
+            LocalHostInfo lhi= null;
+            try {
+                lhi = new LocalHostInfo(args[1]);
+            } catch (UnknownHostException e) {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "CANNOT PARSE HOST INFO FOR END_ROUTER "+e.getMessage());
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+            }
+
+            // end router
+            if (controller.endRouter(lhi)) {
+                JSONObject jsobj = new JSONObject();
+
+                jsobj.put("msg", "ROUTER ENDED "+lhi);
+                jsobj.put("success", Boolean.TRUE);
+                out.println(jsobj.toString());
+                response.close();
+
+                return true;
+            } else {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "CANNOT END ROUTER "+lhi);
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } finally {
             return false;
         }
 
-        if (controller.endRouter(lhi)) {
-            success("ROUTER ENDED "+lhi);
-            return true;
-        }
-        error("CANNOT END ROUTER "+lhi);
-        return false;
     }
 
 }

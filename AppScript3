@@ -15,8 +15,9 @@
 +0 ON_ROUTER 5 plugins_usr.aggregator.appl.InfoConsumer -i 0/3000 -n info-consumer-5 // receive on R 5
 
 // start 2 senders
-+1000 ON_ROUTER 1 plugins_usr.aggregator.appl.InfoSource -o 4/3000 -p rt -t 1 -n info-source-1
-+0 ON_ROUTER 2 plugins_usr.aggregator.appl.InfoSource -o 5/3000 -p rt -t 1 -n info-source-2
++1000 ON_ROUTER 1 plugins_usr.aggregator.appl.InfoSource -o 4/3000 -p rt -t 1 -n info-source-1 -d 10
++0 ON_ROUTER 2 plugins_usr.aggregator.appl.InfoSource -o 5/3000 -p rt -t 1 -n info-source-2 -d 10
+
 
 // end links
 +60000 END_LINK 1 3

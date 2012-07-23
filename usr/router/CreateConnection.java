@@ -2,23 +2,27 @@ package usr.router;
 
 import usr.protocol.MCRP;
 import usr.logging.*;
-import usr.interactor.RouterInteractor;
-import usr.interactor.MCRPException;
-import usr.console.*;
 import usr.net.*;
 import java.util.Scanner;
 import java.io.*;
 import java.net.*;
-import java.nio.channels.SocketChannel;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.Request;
+import java.io.PrintStream;
+import java.io.IOException;
+import us.monoid.json.*;
+import usr.interactor.RouterInteractor;
+
 
 
 /**
  * A CreateConnection object, creates a connection from one router
  * to another.
  */
-public class CreateConnection extends ChannelResponder implements Runnable {
+public class CreateConnection  {
     RouterController controller;
     Request request;
+    Response response;
 
     /**
      * Create a new connection.
@@ -33,32 +37,38 @@ public class CreateConnection extends ChannelResponder implements Runnable {
      * connection weight of connection_weight and a name
      * of connection_name
      */
-    public CreateConnection(RouterController controller, Request request) {
+    public CreateConnection(RouterController controller, Request request, Response response) {
         this.controller = controller;
         this.request = request;
-        setChannel(request.channel);
-
+        this.response = response;
 
     }
 
-    public void run() {
-        // process the request
-        String value = request.value;
-        SocketChannel channel = request.channel;
+    public boolean run() throws IOException, JSONException {
+        PrintStream out = response.getPrintStream();
+
+        // get full request string
+        String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
+        // strip off /command
+        String value = path.substring(9);
+
+
 
         String[] parts = value.split(" ");
         if (parts.length !=4 && parts.length != 3 && parts.length != 2) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection command: " + request);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION wrong no of args");
-            return;
+
+            // HERE
+            respondError("CREATE_CONNECTION wrong no of args");
+            return false;
         }
 
         // check ip addr spec
         String[] ipParts = parts[1].split(":");
         if (ipParts.length != 2) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection ip address: " + request);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid address " + parts[1]);
-            return;
+            respondError("CREATE_CONNECTION invalid address " + parts[1]);
+            return false;
         }
 
         // process host and port
@@ -69,8 +79,8 @@ public class CreateConnection extends ChannelResponder implements Runnable {
         try {
             portNumber = sc.nextInt();
         } catch (Exception e) {
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid port " + ipParts[1]);
-            return;
+            respondError("CREATE_CONNECTION invalid port " + ipParts[1]);
+            return false;
         }
 
         int weight;
@@ -83,8 +93,8 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             try {
                 weight = sc.nextInt();
             }  catch (Exception e) {
-                respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION invalid weight " + parts[2]);
-                return;
+                respondError("CREATE_CONNECTION invalid weight " + parts[2]);
+                return false;
             }
         } else {
             weight = 1;
@@ -113,12 +123,12 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         } catch (UnknownHostException uhe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
-            return;
+            respondError("CREATE_CONNECTION Unknown host: " + host);
+            return false;
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot connect to " + host + " on port " + portNumber + " -> " + ioexc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
-            return;
+            respondError("CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
+            return false;
         }
 
 
@@ -131,12 +141,12 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             routerResponse = interactor.getConnectionPort();
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
-            return;
-        } catch (MCRPException mcrpe) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + mcrpe);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
-            return;
+            respondError("CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
+            return false;
+        } catch (JSONException jsone) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + jsone);
+            respondError("CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
+            return false;
         }
 
         // Ok now we need to find the port the remote router
@@ -197,12 +207,12 @@ public class CreateConnection extends ChannelResponder implements Runnable {
 
         } catch (UnknownHostException uhe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Unknown host: " + host);
-            return;
+            respondError("CREATE_CONNECTION Unknown host: " + host);
+            return false;
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot connect to " + host + " on port " + connectionPort + " -> " + ioexc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host + " on port " + connectionPort);
-            return;
+            respondError("CREATE_CONNECTION Cannot interact with host: " + host + " on port " + connectionPort);
+            return false;
         }
 
         /*
@@ -222,12 +232,12 @@ public class CreateConnection extends ChannelResponder implements Runnable {
             remoteRouterAddress = interactor.getRouterAddress();
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
-            return;
-        } catch (MCRPException mcrpe) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + mcrpe);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot GET_NAME from host: " + host);
-            return;
+            respondError("CREATE_CONNECTION Cannot GET_NAME from host: " + host);
+            return false;
+        } catch (JSONException jsone) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + jsone);
+            respondError("CREATE_CONNECTION Cannot GET_NAME from host: " + host);
+            return false;
         }
 
         // set the remoteRouterName
@@ -273,36 +283,61 @@ public class CreateConnection extends ChannelResponder implements Runnable {
                 // everything ok
             } else {
                 // connection setup failed
-                respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
-                return;
+                respondError("CREATE_CONNECTION Cannot interact with host: " + host);
+                return false;
             }
 
         } catch (Exception exc) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot interact with host: " + host);
-            return;
+            respondError("CREATE_CONNECTION Cannot interact with host: " + host);
+            return false;
         }
 
         /*
          * Close connection to management port of remote router.
-         */
         try {
+            // close connection to management connection of remote router
             interactor.quit();
 
-            // close connection to management connection of remote router
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed = " + host);
 
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e);
-            respond(MCRP.CREATE_CONNECTION.ERROR + " CREATE_CONNECTION Cannot quit with host: " + host);
-            return;
+            respondError("CREATE_CONNECTION Cannot quit with host: " + host);
+            return false;
         }
+        */
 
         // now plug the temporary netIF into Router
         RouterPort port = controller.plugTemporaryNetIFIntoPort(netIF);
 
-        respond(MCRP.CREATE_CONNECTION.CODE + " " + latestConnectionName); // + " port" + port.getPortNo());
+        controller.newConnection();
+
+        //respond(MCRP.CREATE_CONNECTION.CODE + " " es+ latestConnectionName); // + " port" + port.getPortNo());
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("name", latestConnectionName);
+        jsobj.put("port", port.getPortNo());
+        out.println(jsobj.toString());
+        response.close();
+
+        return true;
+
+    }
+
+
+    /**
+     * An error response
+     */
+    private void respondError(String msg) throws IOException, JSONException {
+        JSONObject jsobj = new JSONObject();
+        jsobj.put("error", msg);
+
+        PrintStream out = response.getPrintStream();
+        out.println(jsobj.toString());
+        response.close();
     }
 
     /**
