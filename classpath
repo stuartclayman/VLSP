@@ -1,0 +1,3 @@
+export USRHOME=/home/richard/code/userspacerouter
+export CLASSPATH=$USRHOME:$USRHOME/libs/simple-4.1.21.jar:$USRHOME/libs/resty-0.3.1.jar:$USRHOME/libs/monitoring-0.6.7.jar:$USRHOME/libs/timeindex-20101020.jar:$USRHOME/libs/aggregator-0.3.jar:$USRHOME/libs/rgcmathfunctions.jar:$USRHOME/libs/rgcprobdistributions.jar:$USRHOME/libs/rgcxmlparse.jar
+

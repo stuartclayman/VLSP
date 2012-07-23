@@ -131,7 +131,7 @@ public class RouterController implements ComponentController, Runnable {
             myAddress = AddressFactory.newAddress(name.hashCode());
         } catch (java.net.UnknownHostException e) {
             myAddress= null;
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot make address from "+ name.hashCode());
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Cannot make address from "+ name.hashCode());
         }
 
         this.managementConsolePort = mPort;
@@ -425,7 +425,7 @@ public class RouterController implements ComponentController, Runnable {
      */
     public RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
         RouterPort rp = router.plugInNetIF(netIF);
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "plugInNetIF "  + netIF);
 
         tempNetIFMap.remove(netIF.getID());
 
