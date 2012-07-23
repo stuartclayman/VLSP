@@ -295,11 +295,7 @@ public class GlobalController implements ComponentController {
                 f.delete();
             }
         }
-
         isActive = true;
-
-
-
     }
 
     /**
@@ -326,11 +322,7 @@ public class GlobalController implements ComponentController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Checking existence of local Controllers");
         checkAllControllers();
     }
-
-
-
-
-
+    
     /** Main loop for events if software simulation */
     private void simulateSoftware() {
         long time= 0;

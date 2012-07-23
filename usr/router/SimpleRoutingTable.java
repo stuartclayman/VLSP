@@ -98,9 +98,9 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * Get all the RoutingTable entries.
      */
-    public synchronized Collection<? extends RoutingTableEntry> getEntries()
+    public synchronized Collection<SimpleRoutingTableEntry> getEntries()
     {
-        return (Collection<? extends RoutingTableEntry>)table_.values();
+        return (Collection<SimpleRoutingTableEntry>)table_.values();
     }
 
 
@@ -163,10 +163,11 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * Merge a RoutingTable into this one.
      */
-    public synchronized boolean mergeTables(RoutingTable table2, NetIF inter, RouterOptions options) {
+    public synchronized boolean mergeTables(RoutingTable table, NetIF inter, RouterOptions options) {
         //Logger.getLogger("log").logln(USR.STDOUT, "MERGING TABLES");
 
         boolean changed= false;
+        SimpleRoutingTable table2= (SimpleRoutingTable)table;
         Collection <SimpleRoutingTableEntry> es= (Collection <SimpleRoutingTableEntry>)table2.getEntries();
 
         // there are no entries

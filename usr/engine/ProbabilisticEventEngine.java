@@ -23,7 +23,7 @@ import java.util.*;
    This engine uses probability distribtions to add events into the
    event library
  */
-public class ProbabilisticEventEngine  implements EventEngine  {
+public class ProbabilisticEventEngine  extends NullEventEngine  {
     int timeToEnd_;   // Time to end of simulation (ms)
     ProbDistribution nodeCreateDist_= null;   //  Distribution for creating nodes
     ProbDistribution nodeDeathDist_= null;    // Distribution of node lifetimes

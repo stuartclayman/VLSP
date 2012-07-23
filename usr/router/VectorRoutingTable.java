@@ -175,9 +175,9 @@ public class VectorRoutingTable implements RoutingTable {
     /**
      * Get all the RoutingTable entries.
      */
-    public synchronized Collection<? extends RoutingTableEntry> getEntries()
+    public synchronized Collection<VectorRoutingTableEntry> getEntries()
     {
-        return (Collection<? extends RoutingTableEntry>)table_.values();
+        return (Collection<VectorRoutingTableEntry>)table_.values();
     }
 
 
@@ -239,9 +239,10 @@ public class VectorRoutingTable implements RoutingTable {
     /**
      * Merge a RoutingTable into this one.
      */
-    public synchronized boolean mergeTables(RoutingTable table2, NetIF inter, RouterOptions options) {
+    public synchronized boolean mergeTables(RoutingTable table, NetIF inter, RouterOptions options) {
         // Logger.getLogger("log").logln(USR.ERROR, "MERGING TABLES");
         boolean changed= false;
+        VectorRoutingTable table2= (VectorRoutingTable)table;
         Collection <VectorRoutingTableEntry> es= (Collection <VectorRoutingTableEntry>)table2.getEntries();
 
         // there are no entries

@@ -89,7 +89,7 @@ public class RouterAppsReporter implements Reporter {
             String name = (String)row.get(6).getValue();
 
             // now fill in infoMap
-            HashMap infoMap = new HashMap<String, Object>();
+            HashMap<String,Object> infoMap = new HashMap<String, Object>();
 
             // visit every column except 6
             // and the last 2

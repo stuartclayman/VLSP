@@ -31,6 +31,8 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
     /**
      * Visualize the current topology of the network.
      */
+     
+    @SuppressWarnings(value={"unchecked"})
     public void visualize(PrintStream s) {
 
         HashMap<String, ArrayList<BasicRouterInfo>> routerLocations = new HashMap<String, ArrayList<BasicRouterInfo>>();
@@ -199,7 +201,10 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
 
                     int count = 0;
                     total = appsToShow.size();
-
+                    
+                    
+                    
+                    
                     for (String app : appsToShow) {
                         count++;
 
@@ -207,12 +212,15 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
                         String nodeName = processAppName(app);
 
                         // Get the application measurement data from the app itself
+                         // Yuck -- but no easy get out here
                         Map<String, Object> applicationData = routerInfo.getApplicationData(app);
                         // and get the MonitoringData from the applicationData
                         Map<String, String> monitoringData = null;
 
                         if (applicationData != null) {
+                            
                             monitoringData = (Map<String, String>)applicationData.get("MonitoringData");
+                            
                         }
 
                         // convert the map to a string
@@ -326,7 +334,7 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
         // Example filter --
         // I don't want TopologyManagers to be shown
 
-        List<String> filteredApps = new ArrayList();
+        List<String> filteredApps = new ArrayList<String>();
 
         for (String app : apps) {
             if (!app.contains("TopologyManager")) {
