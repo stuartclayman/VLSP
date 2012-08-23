@@ -7,6 +7,8 @@ import org.simpleframework.http.Request;
 import java.io.PrintStream;
 import java.io.IOException;
 import us.monoid.json.*;
+import usr.events.*;
+import java.util.concurrent.*;
 
 /**
  * A ShutDownCommand
@@ -26,11 +28,19 @@ public class ShutDownCommand extends GlobalCommand {
         try {
             PrintStream out = response.getPrintStream();
 
-            controller.shutDownCommand();
-
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("msg", "Shut Down Sent to Local Controller -- will be processed next in queue");
-
+            EndSimulationEvent shutdown= 
+                new EndSimulationEvent(System.currentTimeMillis(),null);
+            
+            JSONObject jsobj;
+            try {
+                jsobj= controller.executeEvent(shutdown);
+            } catch (InterruptedException ie) {
+                jsobj= controller.commandError("Semaphor acquisition interrupted "+ie.getMessage());
+            } catch (TimeoutException te) {
+                jsobj= controller.commandError("Semaphor timeout "+te.getMessage());
+            } catch (InstantiationException ise) {
+                jsobj= controller.commandError("Could not shutdown "+ise.getMessage());
+            }
             out.println(jsobj.toString());
             response.close();
 
@@ -38,8 +48,6 @@ public class ShutDownCommand extends GlobalCommand {
 
         } catch (IOException ioe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
-        } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         } finally {
             return false;
         }

@@ -7,6 +7,7 @@ import usr.globalcontroller.*;
 import rgc.xmlparse.*;
 import rgc.probdistributions.*;
 import usr.logging.*;
+import usr.events.*;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -47,11 +48,11 @@ public class BackgroundTrafficEngine implements EventEngine  {
     public void startStopEvents(EventScheduler s, GlobalController g)
     {
         // simulation start
-        SimEvent e0 = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
+        StartSimulationEvent e0 = new StartSimulationEvent(0,this);
         s.addEvent(e0);
 
         // simulation end
-        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null,this);
+        EndSimulationEvent e= new EndSimulationEvent(timeToEnd_,this);
         s.addEvent(e);
 
     }
@@ -62,18 +63,18 @@ public class BackgroundTrafficEngine implements EventEngine  {
         startNewConnection(0, s, g);
     }
 
+    
     /** Add or remove events following a simulation event */
-    public void preceedEvent(SimEvent e, EventScheduler s,  GlobalController g)
+    public void preceedEvent(Event e, EventScheduler s, GlobalController g)
     {
-
     }
 
     /** Add or remove events following a simulation event */
-    public void followEvent(SimEvent e, EventScheduler s,  GlobalController g,
-                            Object o)
+    public void followEvent(Event e, EventScheduler s, GlobalController g)
     {
         startNewConnection(e.getTime(), s,g);
     }
+
 
     /** Start new connection between nodes at a given time */
     private void startNewConnection(long currTime, EventScheduler s,
@@ -96,9 +97,14 @@ public class BackgroundTrafficEngine implements EventEngine  {
         }
         if (currTime+time > timeToEnd_)
             return;
-        SimEvent e= new SimEvent(SimEvent.EVENT_NEW_TRAFFIC_CONNECTION,
-                                 time, null, this);
-        s.addEvent(e);
+        try {
+            CreateTrafficEvent e= new CreateTrafficEvent(time, this);
+             s.addEvent(e);
+        } catch (InstantiationException ex) {
+            System.err.println("This should not happen in BackgroundTRafficEngine");
+            System.exit(-1);
+        }
+       
     }
 
     /** Will empty nodes be connected to more frequently*/

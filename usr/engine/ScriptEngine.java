@@ -8,6 +8,7 @@ import usr.logging.*;
 import usr.common.Pair;
 import java.util.*;
 import java.io.*;
+import usr.events.*;
 
 public class ScriptEngine implements EventEngine {
     int timeToEnd_;
@@ -15,7 +16,7 @@ public class ScriptEngine implements EventEngine {
     int lastEventTime = 0;
 
     // all the events
-    ArrayList<SimEvent> events_= null;
+    ArrayList<Event> events_= null;
 
     /** Contructor from Parameter string */
     public ScriptEngine(int time, String parms)
@@ -28,7 +29,7 @@ public class ScriptEngine implements EventEngine {
     public void initialEvents(EventScheduler s, GlobalController g)
     {
 
-        for (SimEvent e : events_) {
+        for (Event e : events_) {
             s.addEvent(e);
         }
 
@@ -38,32 +39,28 @@ public class ScriptEngine implements EventEngine {
     public void startStopEvents(EventScheduler s, GlobalController g)
     {
         // simulation start
-        SimEvent e;
-        e = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
-        s.addEvent(e);
+        StartSimulationEvent e0 = new StartSimulationEvent(0,this);
+        s.addEvent(e0);
+
         // simulation end
-        e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null,this);
+        EndSimulationEvent e= new EndSimulationEvent(timeToEnd_, this);
         s.addEvent(e);
-
-    }
-
-
-    /** Add or remove events following a simulation event */
-    public void preceedEvent(SimEvent e, EventScheduler s,  GlobalController g)
-    {
-
     }
 
     /** Add or remove events following a simulation event */
-    public void followEvent(SimEvent e, EventScheduler s,  GlobalController g,
-                            Object o)
+    public void preceedEvent(Event e, EventScheduler s, GlobalController g)
     {
-
     }
+
+    /** Add or remove events following a simulation event */
+    public void followEvent(Event e, EventScheduler s, GlobalController g)
+    {
+    }
+
 
     private void readScript(String fname)
     {
-        events_= new ArrayList<SimEvent>();
+        events_= new ArrayList<Event>();
         Scanner scanner= null;
 
         try {
@@ -71,7 +68,7 @@ public class ScriptEngine implements EventEngine {
             String NL = System.getProperty("line.separator");
             scanner = new Scanner(new File(fname));
             while (scanner.hasNextLine()) {
-                SimEvent e= parseEventLine(scanner.nextLine() + NL);
+                Event e= parseEventLine(scanner.nextLine() + NL);
                 if (e != null)
                     events_.add(e);
             }
@@ -86,7 +83,7 @@ public class ScriptEngine implements EventEngine {
 
     }
 
-    private SimEvent parseEventLine(String s)
+    private Event parseEventLine(String s)
     {
 
         //System.err.println("ScriptEngine: input line: " + s);
@@ -126,81 +123,58 @@ public class ScriptEngine implements EventEngine {
 
             if (type.equals("START_ROUTER")) {
                 if (args.length == 2) {
-                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time,null,this);
+                    return new StartRouterEvent(time,this);
 
                 } else if (args.length == 3) {
                     String address = args[2].trim();
-                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time, address,this);
+                    return new StartRouterEvent(time, this,address,null);
                 } else if (args.length == 4) {
                     String address = args[2].trim();
                     String name = args[3].trim();
 
-                    Pair<String,String> pair = new Pair<String, String>(address, name);
-
-                    return new SimEvent(SimEvent.EVENT_START_ROUTER, time, pair,this);
+                    return new StartRouterEvent(time, this, address, name);
                 } else {
                     throw new Exception("START_ROUTER requires router id or no arg "+ s + " => " + noComments + " args.length = " + args.length);
                 }
             }
             else if (type.equals("START_LINK")) {
                 if (args.length < 4 || args.length > 6) {
-                    throw new Exception ("START_LINK requires two router ids "+ s);
+                    throw new Exception ("START_LINK requires two router ids "+ 
+                        s + " plus optional weight and name");
                 } else {
                     // process links
-                    Pair<?,?> pair = null;
+                    String addStr1 = args[2].trim();
+                    String addStr2 = args[3].trim();
 
-                    String arg2 = args[2].trim();
-                    String arg3 = args[3].trim();
-
-                    Scanner arg2Scanner = new Scanner(arg2);
-                    Scanner arg3Scanner = new Scanner(arg3);
-
-                    if (arg2Scanner.hasNextInt() && arg3Scanner.hasNextInt()) {
+                    Scanner a1Scanner = new Scanner(addStr1);
+                    Scanner a2Scanner = new Scanner(addStr2);
+                    int addr1=0;
+                    int addr2=0;
+                    StartLinkEvent e;
+                    if (a1Scanner.hasNextInt() && a2Scanner.hasNextInt()) {
                         // both args are ints
-                        int l1 = arg2Scanner.nextInt();
-                        int l2 = arg3Scanner.nextInt();
-                        pair = new Pair <Integer,Integer>(l1,l2);
-
+                        addr1 = a1Scanner.nextInt();
+                        addr2 = a2Scanner.nextInt();
+                        e= new StartLinkEvent(time,this, addr1, addr2);
                     } else {
-                        // they are not both ints
-                        pair = new Pair<String, String>(arg2, arg3);
-
+                        e= new StartLinkEvent(time,this, addStr1,addStr2);
                     }
 
-                    // now get extra args
-                    if (args.length == 4) {
-                        // time START_LINK r1 r2
-                        Object[] result = new Object[1];
-                        result[0] = pair;
-
-                        // return an Object[] of size 1
-                        return new SimEvent(SimEvent.EVENT_START_LINK,time,result,this);
-
-                    } else if (args.length == 5) {
+                    if (args.length == 5) {
                         // time START_LINK r1 r2 weight
-                        Integer weight = Integer.parseInt(args[4].trim());
-
-                        Object[] result = new Object[2];
-                        result[0] = pair;
-                        result[1] = weight;
-
-                        // return an Object[] of size 1
-                        return new SimEvent(SimEvent.EVENT_START_LINK,time,result,this);
+                        int weight;
+                        try {
+                            weight = Integer.parseInt(args[4].trim());
+                        } catch (Exception ex) {
+                            throw new Exception ("Cannot interpret weight as integer in "+
+                                s);
+                        }
+                        e.setWeight(weight);
 
                     } else if (args.length == 6) {
-                        // time START_LINK r1 r2 weight name
-                        Integer weight = Integer.parseInt(args[4].trim());
-
-                        // Construct return result
-                        Object[] result = new Object[3];
-                        result[0] = pair;
-                        result[1] = weight;
-                        result[2] = args[5].trim();
-
-                        // return an Object[] of size 1
-                        return new SimEvent(SimEvent.EVENT_START_LINK,time,result,this);
-
+                        e.setName(args[5]);
                     }
+                    return e;
                 }
 
             }
@@ -215,11 +189,11 @@ public class ScriptEngine implements EventEngine {
                     if (arg2Scanner.hasNextInt()) {
                         // arg is int
                         int r = arg2Scanner.nextInt();
-                        return new SimEvent(SimEvent.EVENT_END_ROUTER,time,r,this);
+                        return new EndRouterEvent(time,this,r);
 
                     } else {
                         // arg is String
-                        return new SimEvent(SimEvent.EVENT_END_ROUTER,time,arg2,this);
+                        return new EndRouterEvent(time,this,arg2);
                     }
                 }
 
@@ -228,8 +202,7 @@ public class ScriptEngine implements EventEngine {
                 if (args.length != 4) {
                     throw new Exception ("END_LINK requires 2 router ids "+ s);
                 } else {
-                    // process links
-                    Pair<?,?> pair = null;
+
 
                     String arg2 = args[2].trim();
                     String arg3 = args[3].trim();
@@ -241,20 +214,17 @@ public class ScriptEngine implements EventEngine {
                         // both args are ints
                         int l1 = arg2Scanner.nextInt();
                         int l2 = arg3Scanner.nextInt();
-                        pair = new Pair <Integer,Integer>(l1,l2);
+                        return new EndLinkEvent(time,this,l1,l2);
 
                     } else {
-                        // they are not both ints
-                        pair = new Pair<String, String>(arg2, arg3);
+                        return new EndLinkEvent(time,this,arg2,arg3);
 
                     }
-
-                    return new SimEvent(SimEvent.EVENT_END_LINK,time, pair,this);
                 }
 
             }
             else if (type.equals("END_SIMULATION")) {
-                return new SimEvent(SimEvent.EVENT_END_SIMULATION, time, null,this);
+                return new EndSimulationEvent(time, this);
             }
 
             else if (type.equals("ON_ROUTER")) {
@@ -263,13 +233,19 @@ public class ScriptEngine implements EventEngine {
                 } else {
 
                     // eliminate time and ON_ROUTER
-                    String[] cmdArgs = new String[args.length-2];
+                    String[] cmdArgs = new String[args.length-4];
 
-                    for (int a=2; a < args.length; a++) {
-                        cmdArgs[a-2] = args[a];
+                    for (int a=4; a < args.length; a++) {
+                        cmdArgs[a-4] = args[a];
                     }
-
-                    return new SimEvent(SimEvent.EVENT_ON_ROUTER, time, cmdArgs,this);
+                    String args2= args[2].trim();
+                    Scanner arg2Scanner = new Scanner(args2);
+                    if (arg2Scanner.hasNextInt()) {
+                        int rno= arg2Scanner.nextInt();
+                        return new OnRouterEvent(time, this, rno,args[3], cmdArgs);
+                    } else {
+                        return new OnRouterEvent(time, this, args[2],args[3], cmdArgs);
+                    }
                 }
             }
             throw new Exception("Unrecognised event in script line "+s);

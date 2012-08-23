@@ -74,7 +74,7 @@ public class OnRouterCommand extends GlobalCommand {
                 }
 
 
-                int appID = controller.onRouter(routerID, className, cmdArgs);
+                int appID = controller.appStart(routerID, className, cmdArgs);
 
                 if (appID >= 0) {
 

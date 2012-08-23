@@ -58,9 +58,7 @@ public class GlobalControllerInteractor {
         this.port = port;
         //URI uri = new URI("http", null, addr.toString(), port, null, null, null);
         globalControllerURI = "http://" + addr.getHostName() + ":" + Integer.toString(port);
-
         Logger.getLogger("log").logln(USR.STDOUT, "globalControllerURI: " + globalControllerURI);
-        
         rest = new Resty();
     }
 

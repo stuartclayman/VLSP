@@ -42,11 +42,12 @@ public class OutputType {
             outputType_= new OutputTraffic();
             return;
         }
-         try {
+        try {
             java.lang.Class <?> func;
             func=  java.lang.Class.forName(t);
         } catch (ClassCastException e) {
-            throw new java.lang.IllegalArgumentException("Class name "+t+" must be valid class name implementing OutputFunction");
+            throw new java.lang.IllegalArgumentException("Class name "+
+                    t+" must be valid class name implementing OutputFunction");
         }
         catch (ClassNotFoundException e) {
             throw new java.lang.IllegalArgumentException("Class name "+t+" must be valid class name implementing OutputFunction");

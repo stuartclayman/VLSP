@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.io.*;
 import usr.engine.*;
+import usr.events.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
 import usr.output.OutputType;
@@ -47,7 +48,7 @@ public class ControlOptions {
     private int controllerWaitTime_= 6;
     private int lowPort_= 10000;   // Default lowest port to be used on local controller
     private int highPort_= 20000;  // Default highest port to be used on local controller
-    private int maxLag_= 1000000;  // Maximum lag tolerable in simulation in millisec
+    private int maxLag_= 10000;  // Maximum lag tolerable in simulation in millisec
     private String routerOptionsString_= ""; //
     private RouterOptions routerOptions_= null;
     private ArrayList <EventEngine> engines_= null;   // Engines used to create new events for sim
@@ -742,7 +743,6 @@ public class ControlOptions {
     /** Initialise event list */
     public void initialEvents(EventScheduler s, GlobalController g)
     {
-        SimEvent e;
 
         engines_.get(0).startStopEvents(s,g);
         for (EventEngine eng : engines_) {
@@ -750,15 +750,15 @@ public class ControlOptions {
         }
 
         if (routerOptions_.getControllerConsiderTime() > 0) {
-            e = new SimEvent(SimEvent.EVENT_AP_CONTROLLER,
-                                     routerOptions_.getControllerConsiderTime(),null,null);
-            s.addEvent(e);
+            QueryAPEvent ae = new QueryAPEvent(routerOptions_.getControllerConsiderTime(),
+                null,g.getAPController());
+            s.addEvent(ae);
         }
 
         for (OutputType o : outputs_) {
             if (o.getTimeType() == OutputType.AT_TIME || o.getTimeType() == OutputType.AT_INTERVAL) {
-                e = new SimEvent(SimEvent.EVENT_OUTPUT,o.getTime(), o,null);
-                s.addEvent(e);
+                OutputEvent oe = new OutputEvent(o.getTime(), null, o);
+                s.addEvent(oe);
             }
         }
     }

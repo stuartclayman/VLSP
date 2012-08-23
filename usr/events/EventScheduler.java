@@ -1,23 +1,23 @@
 /** This class deals with the scheduling of events
    it keeps a time ordered list of events and returns the first
  */
-package usr.globalcontroller;
+package usr.events;
 
 import usr.logging.*;
 import java.util.*;
 
 public class EventScheduler {
-    private ArrayList <SimEvent> schedule_= null;
+    private ArrayList <Event> schedule_= null;
 
 
     public EventScheduler() {
-        schedule_= new ArrayList <SimEvent>();
+        schedule_= new ArrayList <Event>();
 
     }
 
     /** Return first event from schedule
      */
-    public SimEvent getFirstEvent() {
+    public Event getFirstEvent() {
         if (schedule_.size() == 0) {
             return null;
         }
@@ -35,7 +35,7 @@ public class EventScheduler {
 
     /** Adds an event to the schedule in time order
      */
-    public void addEvent(SimEvent e) {
+    public void addEvent(Event e) {
         long time= e.getTime();
         for (int i= 0; i < schedule_.size(); i++) {
             if (schedule_.get(i).getTime() > time) {  // Add at given

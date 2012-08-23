@@ -8,6 +8,7 @@ import rgc.xmlparse.*;
 import rgc.probdistributions.*;
 import usr.logging.*;
 import usr.common.Pair;
+import usr.events.*;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -42,11 +43,11 @@ public class ProbabilisticEventEngine  extends NullEventEngine  {
     public void startStopEvents(EventScheduler s, GlobalController g)
     {
         // simulation start
-        SimEvent e;
-        e = new SimEvent(SimEvent.EVENT_START_SIMULATION, 0, null,this);
-        s.addEvent(e);
+        StartSimulationEvent e0 = new StartSimulationEvent(0,this);
+        s.addEvent(e0);
+
         // simulation end
-        e= new SimEvent(SimEvent.EVENT_END_SIMULATION, timeToEnd_, null,this);
+        EndSimulationEvent e= new EndSimulationEvent(timeToEnd_,this);
         s.addEvent(e);
 
     }
@@ -66,34 +67,26 @@ public class ProbabilisticEventEngine  extends NullEventEngine  {
             time= 0;
         }
         //Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
-        SimEvent e1= new SimEvent(SimEvent.EVENT_START_ROUTER, time, null, this);
+        StartRouterEvent e1= new StartRouterEvent(time, this);
         s.addEvent(e1);
 
 
     }
 
     /** Add or remove events following a simulation event */
-    public void preceedEvent(SimEvent e, EventScheduler s,  GlobalController g)
+    public void followEvent(Event e, EventScheduler s, GlobalController g)
     {
-
-    }
-
-    /** Add or remove events following a simulation event */
-    public void followEvent(SimEvent e, EventScheduler s,  GlobalController g,
-                            Object o)
-    {
-        if (e.getType() == SimEvent.EVENT_START_ROUTER) {
-            followRouter(e, s, g);
-            return;
+        if (e instanceof StartRouterEvent) {
+            followRouter((StartRouterEvent)e,s,g);
         }
     }
 
-    private void followRouter(SimEvent e, EventScheduler s,
+
+    private void followRouter(StartRouterEvent e, EventScheduler s,
                               GlobalController g) {
         int routerId;
         routerId= g.getMaxRouterId();
         long now= e.getTime();
-        SimEvent e1= null;
         long time;
 
         //  Schedule new node
@@ -106,7 +99,7 @@ public class ProbabilisticEventEngine  extends NullEventEngine  {
             time= 0;
         }
         //Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
-        e1= new SimEvent(SimEvent.EVENT_START_ROUTER, now+time, null, this);
+        StartRouterEvent e1= new StartRouterEvent(now+time, this);
         s.addEvent(e1);
         if (g.getRouterList().indexOf(routerId) == -1) {
             //System.err.println("Router did not start -- adding no links");
@@ -123,8 +116,8 @@ public class ProbabilisticEventEngine  extends NullEventEngine  {
                 time= 0;
             }
 
-            e1= new SimEvent(SimEvent.EVENT_END_ROUTER, now+time, new Integer(routerId), this);
-            s.addEvent(e1);
+            EndRouterEvent e2= new EndRouterEvent(now+time,this, new Integer(routerId));
+            s.addEvent(e2);
         }
         // Schedule links
         int noLinks= 1;
@@ -157,9 +150,8 @@ public class ProbabilisticEventEngine  extends NullEventEngine  {
                     index-= g.getOutLinks(l).length;
                     if (index < 0 || j == nodes.size() - 1) {
                         nodes.remove(j);
-                        e1= new SimEvent(SimEvent.EVENT_START_LINK,now,
-                                         new Pair<Integer,Integer>(l, routerId),this);
-                        s.addEvent(e1);
+                        StartLinkEvent e3= new StartLinkEvent(now,this,l, routerId);
+                        s.addEvent(e3);
                         break;
                     }
                 }
@@ -168,9 +160,8 @@ public class ProbabilisticEventEngine  extends NullEventEngine  {
                 int newLink= nodes.get(index);
                 //Logger.getLogger("log").logln(USR.ERROR, "Picked "+newLink);
                 nodes.remove(index);
-                e1= new SimEvent(SimEvent.EVENT_START_LINK,now,
-                                 new Pair<Integer,Integer>(newLink,routerId),this);
-                s.addEvent(e1);
+                StartLinkEvent e4= new StartLinkEvent(now,this,newLink,routerId);
+                s.addEvent(e4);
             }
         }
     }

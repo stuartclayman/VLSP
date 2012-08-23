@@ -15,6 +15,7 @@ import usr.interactor.*;
 import usr.APcontroller.*;
 import usr.router.*;
 import usr.output.*;
+import usr.events.*;
 import us.monoid.web.*;
 import us.monoid.json.*;
 import eu.reservoir.monitoring.core.*;
@@ -30,13 +31,19 @@ import java.lang.reflect.Constructor;
  * gives set up and tear down instructions directly to them.
  */
 public class GlobalController implements ComponentController {
+
+    private ControlOptions options_;   // Options affecting the simulation
+    
+    // Options structure which is given to each router.
+    private RouterOptions routerOptions_= null;
+
     private long simulationTime;   // Current time in simulation
     private long simulationStartTime;  // time at which simulation started  (assuming realtime)
     private long eventTime;            // The time of the current event
     private long lastEventLength;   // length of time previous event took
     private String xmlFile_;          // name of XML file containing config
     private LocalHostInfo myHostInfo_;  // Information about the local info
-    private ControlOptions options_;   // Options affecting the simulation
+
     private boolean listening_;                         // Is this
     private GlobalControllerManagementConsole console_= null;
     private ArrayList <LocalControllerInteractor> localControllers_ = null;
@@ -84,8 +91,7 @@ public class GlobalController implements ComponentController {
 
     private int noLinks_=0;  // number of links in network
 
-    // Options structure which is given to each router.
-    private RouterOptions routerOptions_= null;
+
 
     // Synchronization object used to wait for next event.
     private Object waitCounter_= null;
@@ -147,9 +153,7 @@ public class GlobalController implements ComponentController {
         gControl.init();
 
         if (gControl.getOptions().isSimulation()) {
-            gControl.simulateSoftware();
-        } else {
-            gControl.simulateHardware();
+            //FIXME write
         }
         Logger.getLogger("log").logln(USR.STDOUT, gControl.leadin() + "Simulation complete");
         System.out.flush();
@@ -277,17 +281,14 @@ public class GlobalController implements ComponentController {
             monitoringAddress = new InetSocketAddress(gcAddress, monitoringPort);
             startMonitoringConsumer(monitoringAddress);
         }
-
-
-        // Set up simulations options
+        // Set up specific details if this is actually emulation not simulation
         if (!options_.isSimulation()) {
             initEmulation();
         }
 
-
         //Initialise events for schedules
         initSchedule();
-
+        //FIXME -- insert start code here
         //Initialise output
         for (OutputType o : options_.getOutputs()) {
             if (o.clearOutputFile()) {
@@ -323,57 +324,6 @@ public class GlobalController implements ComponentController {
         checkAllControllers();
     }
     
-    /** Main loop for events if software simulation */
-    private void simulateSoftware() {
-        long time= 0;
-        while (simulationRunning_) {
-            SimEvent e= scheduler_.getFirstEvent();
-            if (e == null) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Out of events to execute");
-                break;
-            }
-            simulationTime= e.getTime();
-            executeEvent(e);
-        }
-    }
-
-    /** Main loop for events if real time emulation */
-    private void simulateHardware() {
-
-        simulationStartTime = System.currentTimeMillis();
-        while (simulationRunning_) {
-            SimEvent e= scheduler_.getFirstEvent();
-            if (e == null) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Out of events to execute!");
-                break;
-            }
-            while(simulationRunning_) {
-                eventTime= e.getTime();
-                simulationTime= System.currentTimeMillis();
-
-                if (simulationTime - (simulationStartTime + eventTime) > options_.getMaxLag()) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() +
-                                                  "Simulation lagging too much, slow down events");
-                    bailOut();
-                    return;
-                }
-
-                if ((simulationStartTime + eventTime) <= simulationTime) {
-                    executeEvent(e);
-                    break;
-                }
-
-
-                if (checkMessages()) {
-                    // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Check msg true");
-                    continue;
-                }
-                waitUntil(simulationStartTime + eventTime);
-            }
-        }
-    }
-
-
     /**
      * Set up the reporters
      */
@@ -410,226 +360,54 @@ public class GlobalController implements ComponentController {
         }
     }
 
-
-
-    /** Check queued messages at Global Controller */
-    private boolean checkMessages()
-    {
-        /* sclayman 6/6/2012
-        BlockingQueue<Request> queue = console_.queue();
-        if (queue.size() == 0)
-            return false;
-        Request req= queue.remove();
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "TODO -- need to deal with event here!");
-        return true;
-        */
-        return false;
-    }
-
-
     /** bail out of simulation relatively gracefully */
-    private void bailOut() {
+    public void bailOut() {
         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Bailing out of run!");
         shutDown();
         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exit after bailout");
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Bailing out of run!");
     }
 
-    private void executeEvent(SimEvent e) {
-        Object extraParms= null;
-        long eventBegin = System.currentTimeMillis();
-        preceedEvent(e,scheduler_,this);
-        Logger.getLogger("log").logln(USR.STDOUT, "EVENT: " + "<" + lastEventLength + "> " +
-                                      e.getTime() + " @ " +
-                                      eventBegin +  " => " +  e);
-
-        int type= e.getType();
+    /** Execute an event, return a JSON object with information about it 
+     * throws Instantiation if creation fails
+     * Interrupted if acquisition of lock interrupted
+     * Timeout if acquisition timesout*/
+    public JSONObject executeEvent(Event e) throws InstantiationException, 
+        InterruptedException, TimeoutException
+    
+    {
         try {
-            long time= e.getTime();
-
-            if (type == SimEvent.EVENT_START_SIMULATION) {
-                startSimulation(time);
+            boolean acquired = semaphore.tryAcquire(options_.getMaxLag(), TimeUnit.MILLISECONDS);
+            if (!acquired) {
+                throw new TimeoutException("GlobalController lagging too much");
             }
-            else if (type == SimEvent.EVENT_END_SIMULATION) {
-                endSimulation(time);
-            }
-            else if (type == SimEvent.EVENT_START_ROUTER) {
-                Object data = e.getData();
-
-                if (data instanceof Pair) {
-                    // there is just a Pair
-                    Pair<?,?> pair= (Pair<?,?>)data;
-                    String address = (String)pair.getFirst();
-                    String name = (String)pair.getSecond();
-
-                    // with specified address and name
-                    startRouter(time, address, name);
-
-                } else if (data instanceof String) {
-                    String value = (String)e.getData();
-                    // set value as name and address
-                    startRouter(time, value, value);
-                } else {
-                    // no address, no name
-                    startRouter(time, null, null);
-                }
-            }
-            else if (type == SimEvent.EVENT_END_ROUTER) {
-                Object arg = e.getData();
-                int routerNo;
-
-                if (arg instanceof Integer) {
-                    routerNo = (Integer)arg;
-                } else {
-                    // arg is String, we need to look up the router IDs
-                    String routerAddress = (String)arg;
-                    BasicRouterInfo rInfo = findRouterInfo(routerAddress);
-
-                    if (rInfo == null) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + routerAddress +" in END_ROUTER at time " + time);
-                        shutDown();
-                    }
-
-                    routerNo = rInfo.getId();
-
-                }
-
-                endRouter(time,routerNo);
-            }
-            else if (type == SimEvent.EVENT_START_LINK) {
-                int router1= 0, router2= 0;
-
-                Object data = e.getData();
-
-                if (data instanceof Pair) {
-                    // there is just a Pair
-                    Pair<?,?> pair= (Pair<?,?>)data;
-                    router1= (Integer)pair.getFirst();
-                    router2= (Integer)pair.getSecond();
-                    startLink(time,router1, router2, 1, null);
-
-                } else {
-                    // there is an Array of Objects
-                    // this probably comes from a Script
-                    Object[] array = (Object[])data;
-
-                    // Process the link info
-                    Pair<?,?> pair= (Pair<?,?>)array[0];
-
-                    // process router spec
-                    if (pair.getFirst() instanceof Integer && pair.getSecond() instanceof Integer) {
-                        // there are 2 router ID's
-                        router1= (Integer)pair.getFirst();
-                        router2= (Integer)pair.getSecond();
-                    } else {
-                        // we need to look up the router IDs
-                        String router1Address = (String)pair.getFirst();
-                        String router2Address = (String)pair.getSecond();
-
-                        BasicRouterInfo r1Info = findRouterInfo(router1Address);
-                        BasicRouterInfo r2Info = findRouterInfo(router2Address);
-
-                        if (r1Info == null) {
-                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router1Address +" in START_LINK at time " + time);
-                            shutDown();
-                        }
-
-                        if (r2Info == null) {
-                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router2Address +" in START_LINK at time " + time);
-                            shutDown();
-                        }
-
-                        router1 = r1Info.getId();
-                        router2 = r2Info.getId();
-                    }
-
-                    if (array.length == 1) {
-                        // there is just a Pair
-                        startLink(time,router1, router2, 1, null);
-
-                    } else if (array.length == 2) {
-                        // there is a Pair and a weight
-                        int weight = (Integer)array[1];
-                        startLink(time,router1, router2, weight, null);
-                    } else if (array.length == 3) {
-                        // there is a Pair, a weight, and a name
-                        int weight = (Integer)array[1];
-                        String linkName = (String)array[2];
-                        startLink(time,router1, router2, weight, linkName);
-                    }
-
-                }
-            }
-
-            else if (type == SimEvent.EVENT_END_LINK) {
-                int router1= 0, router2= 0;
-                Pair<?,?> pair= (Pair<?,?>)e.getData();
-
-                // process router spec
-                if (pair.getFirst() instanceof Integer && pair.getSecond() instanceof Integer) {
-                    // there are 2 router ID's
-                    router1= (Integer)pair.getFirst();
-                    router2= (Integer)pair.getSecond();
-                } else {
-                    // we need to look up the router IDs
-                    String router1Address = (String)pair.getFirst();
-                    String router2Address = (String)pair.getSecond();
-
-                    BasicRouterInfo r1Info = findRouterInfo(router1Address);
-                    BasicRouterInfo r2Info = findRouterInfo(router2Address);
-
-                    if (r1Info == null) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router1Address +" in END_LINK at time " + time);
-                        shutDown();
-                    }
-
-                    if (r2Info == null) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + router2Address +" in END_LINK at time " + time);
-                        shutDown();
-                    }
-
-                    router1 = r1Info.getId();
-                    router2 = r2Info.getId();
-                }
-
-
-                endLink(time,router1, router2);
-            }
-            else if (type == SimEvent.EVENT_AP_CONTROLLER) {
-                queryAPController(time);
-            }
-            else if (type == SimEvent.EVENT_OUTPUT) {
-                produceOutput(time,(OutputType)(e.getData()));
-            }
-            else if (type == SimEvent.EVENT_ON_ROUTER) {
-                runRouterEvent(time,e);
-
-            } else if (type == SimEvent.EVENT_NEW_TRAFFIC_CONNECTION) {
-                // Create a new traffic connection
-                createTrafficConnection(time,e);
-
-            }
-            else {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unexected event type "
-                                              +type+" shutting down!");
-                shutDown();
-                return;
-            }
-            long eventEnd = System.currentTimeMillis();
-            lastEventLength = eventEnd - eventBegin;
-
-        } catch (ClassCastException ex) {
-            ex.printStackTrace();
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event "+type+" had wrong object");
-            shutDown();
-            return;
+            Object extraParms= null;
+            long eventBegin = System.currentTimeMillis();
+            e.preceedEvent(scheduler_,this);
+            Logger.getLogger("log").logln(USR.STDOUT, "EVENT: "+e);
+            JSONObject js= null;
+            js= e.execute(this);
+            e.followEvent(scheduler_,this);
+            return js;
+        } finally {
+            semaphore.release();
         }
-        followEvent(e,scheduler_,this, extraParms);
+    }
 
+    /** Convenience function to create JSON object from error string*/
+    static public JSONObject commandError(String error)
+    {
+        JSONObject jsobj= new JSONObject();
+        try {
+            jsobj.put("msg", "ERROR: "+error);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, "JSON creation error in commandError");
+        }
+        return jsobj;
     }
 
     /** Event for start Simulation */
-    private void startSimulation(long time) {
+    public void startSimulation(long time) {
 
         lastEventLength = 0;
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Start of simulation event at: " +
@@ -642,8 +420,9 @@ public class GlobalController implements ComponentController {
     }
 
     /** Event for end Simulation */
-    private void endSimulation(long time) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of simulation event at " + time+ " "+System.currentTimeMillis());
+    public void endSimulation(long time) {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
+            "End of simulation event at " + time+ " "+System.currentTimeMillis());
         simulationRunning_= false;
 
         for (OutputType o : options_.getOutputs()) {
@@ -661,53 +440,37 @@ public class GlobalController implements ComponentController {
     }
 
     /** Event to start a router */
-    protected int startRouter(long time, String address, String name) {
+    public int startRouter(long time, String address, String name) {
         // return +ve no for valid id
-        // return -1 for no start - it's a simulation
-        // return -2 for start fail
-        // return -3 for semaphore not acquired in time
-        // return -4 for acquire interrupted
-        try {
-            // wait forever for Semaphore
-            // semaphore.acquire();
+        // return -1 for failure to start
 
-            // wait 2500ms to acquire the semaphore
-            boolean acquired = semaphore.tryAcquire(2500, TimeUnit.MILLISECONDS);
-
-            if (acquired) {
-                maxRouterId_++;
-                int rId= maxRouterId_;
-                outLinks_.add(new int [0]);
-                linkCosts_.add(new int [0]);
-                registerRouter(rId);
-                APController_.addNode(time, rId);
-                if (!options_.isSimulation()) {
-                    //System.err.println("Trying to start");
-                    if (startVirtualRouter(maxRouterId_, address, name ) == false) {
-                        //  System.err.println("Did not start");
-                        unregisterRouter(rId);
-                        return -2;
-                    } else {
-                        return rId;
-                    }
-                } else {
-                    return -1;
-                }
-            } else {
-                // not acquired
-                return -3;
-            }
-        } catch (InterruptedException ie) {
-            return -4;
-        } finally {
-            semaphore.release();
+        maxRouterId_++;
+        int rId= maxRouterId_;
+        outLinks_.add(new int [0]);
+        linkCosts_.add(new int [0]);
+        registerRouter(rId);
+        APController_.addNode(time, rId);
+        if (options_.isSimulation()) {
+            return rId;
         }
+        if (startVirtualRouter(maxRouterId_, address, name ) == false) {
+                //  System.err.println("Did not start");
+            unregisterRouter(rId);
+            return -1;
+        } 
+        return rId;
     }
 
     private boolean startVirtualRouter(int id, String address, String name)
     {
+        // If we have no address or name fake these
+        if (name == null) {
+            name= new String("Router-"+id);
+        }
+        if (address == null) {
+            address= new String(""+id);
+        }
         // Find least used local controller
-
         LocalControllerInfo lc;
         LocalControllerInfo leastUsed= options_.getController(0);
         double minUse= leastUsed.getUsage();
@@ -727,14 +490,13 @@ public class GlobalController implements ComponentController {
         }
         if (minUse >= 1.0) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() +
-                                          "Could not start new router on " + leastUsed+ " too many routers");
+                        "Could not start new router on " + leastUsed+ 
+                        " too many routers");
             //System.err.println("Too many routers");
             return false;
         }
         leastUsed.addRouter();  // Increment count
         LocalControllerInteractor lci= interactorMap_.get(leastUsed);
-
-
         int MAX_TRIES= 5;
         for (int i= 0; i < MAX_TRIES; i++) {
             try {
@@ -744,19 +506,22 @@ public class GlobalController implements ComponentController {
                 }
             } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() +
-                                              "Could not start new router on " + leastUsed+ " out of ports ");
+                                        "Could not start new router on " 
+                                        + leastUsed+ " out of ports ");
                 //System.err.println("Out of ports");
                 return false;
             }
         }
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not start new router on "
-                                      + leastUsed + " after "+MAX_TRIES+" tries.");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "Could not start new router on " + leastUsed + 
+                    " after "+MAX_TRIES+" tries.");
         //System.err.println("Could not start");
         return false;
     }
 
     /** Make one attempt to start a router */
-    boolean tryRouterStart (int id, String address, String name, LocalControllerInfo local, LocalControllerInteractor lci)
+    boolean tryRouterStart (int id, String address, String name, 
+        LocalControllerInfo local, LocalControllerInteractor lci)
     throws IOException {
         int port= 0;
         PortPool pp= portPools_.get(local);
@@ -766,27 +531,33 @@ public class GlobalController implements ComponentController {
             // find 2 ports
             port = pp.findPort(2);
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Creating router: " + id + (address != null ? (" address = " + address) : "")  + (name != null ? (" name = " + name) : ""));
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
+                "Creating router: " + id + (address != null ? 
+                (" address = " + address) : "")  + 
+                (name != null ? (" name = " + name) : ""));
 
             // create the new router and get it's name
             routerAttrs = lci.newRouter(id, port, port+1, address, name);
 
-            BasicRouterInfo br= new BasicRouterInfo((Integer)routerAttrs.get("routerID"), simulationTime,local, (Integer)routerAttrs.get("mgmtPort"), (Integer)routerAttrs.get("r2rPort"));
+            BasicRouterInfo br= new 
+                    BasicRouterInfo((Integer)routerAttrs.get("routerID"), 
+                    simulationTime,local, (Integer)routerAttrs.get("mgmtPort"), 
+                    (Integer)routerAttrs.get("r2rPort"));
             br.setName((String)routerAttrs.get("name"));
             br.setAddress((String)routerAttrs.get("address"));
             // keep a handle on this router
             routerIdMap_.put(id,br);
-
-
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerAttrs);
-            Logger.getLogger("log").logln(1<<9, elapsedToString(getSimulationElapsedTime()) + ANSI.GREEN + " START ROUTER " + id + ANSI.RESET_COLOUR);
-
-
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
+                "Created router " + routerAttrs);
+            Logger.getLogger("log").logln(1<<9, 
+                elapsedToString(getSimulationElapsedTime()) + 
+                ANSI.GREEN + " START ROUTER " + id + ANSI.RESET_COLOUR);
             return true;
 
         } catch (JSONException e) {
             // Failed to start#
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not create router " + id + " on "+lci);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "Could not create router " + id + " on "+lci);
             if (port != 0)
                 pp.freePorts(port,port+1);  // Free ports but different ones will be tried next time
             return false;
@@ -794,39 +565,20 @@ public class GlobalController implements ComponentController {
 
     }
 
-    /** Event to end a router */
-    protected int endRouter(long time, int routerId) {
-        // return 0 for end of router
-        // return -3 for semaphore not acquired in time
-        // return -4 for acquire interrupted
-        try {
-            // wait forever for Semaphore
-            // semaphore.acquire();
-
-            // wait 2500ms to acquire the semaphore
-            boolean acquired = semaphore.tryAcquire(2500, TimeUnit.MILLISECONDS);
-
-            if (acquired) {
-
-                if (options_.isSimulation()) {
-                    endSimulationRouter(routerId);
-                } else {
-                    endVirtualRouter(routerId);
-                }
-                unregisterRouter(routerId);
-                APController_.removeNode(time, routerId);
-
-                return 0;
-            } else {
-                // not acquired
-                return -3;
-            }
-        } catch (InterruptedException ie) {
-            return -4;
-        } finally {
-            semaphore.release();
+    /** Event to end a router -- returns true for success */
+    public boolean endRouter(long time, int routerId) {
+        boolean success;
+        if (options_.isSimulation()) {
+            endSimulationRouter(routerId);
+            success= true;
+        } else {
+            success= endVirtualRouter(routerId);
         }
-
+        if (success) {
+            unregisterRouter(routerId);
+            APController_.removeNode(time, routerId);
+        }
+        return success;
     }
 
 
@@ -839,7 +591,6 @@ public class GlobalController implements ComponentController {
         for (int i= out.length-1; i >= 0; i--) {
             unregisterLink(rId,out[i]);
             // Logger.getLogger("log").logln(USR.ERROR, "Unregister link "+rId+" "+out[i]);
-
         }
         int index= routerList_.indexOf(rId);
         //Logger.getLogger("log").logln(USR.ERROR, "Router found at index "+index);
@@ -852,7 +603,7 @@ public class GlobalController implements ComponentController {
     }
 
     /** Send shutdown to a virtual router */
-    private void endVirtualRouter(int rId) {
+    private boolean endVirtualRouter(int rId) {
         BasicRouterInfo br= routerIdMap_.get(rId);
 
         LocalControllerInteractor lci= interactorMap_.get(br.getLocalControllerInfo());
@@ -862,19 +613,21 @@ public class GlobalController implements ComponentController {
             try {
                 lci.endRouter(br.getHost(),br.getManagementPort());
 
-                Logger.getLogger("log").logln(1<<9, elapsedToString(getSimulationElapsedTime()) + ANSI.RED + " STOP ROUTER " + rId + ANSI.RESET_COLOUR);
+                Logger.getLogger("log").logln(1<<9, 
+                    elapsedToString(getSimulationElapsedTime()) + 
+                    ANSI.RED + " STOP ROUTER " + rId + 
+                    ANSI.RESET_COLOUR);
 
                 break;
             } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down router "+
-                                              br.getHost()+":"+br.getManagementPort()+ " attempt "+(i+1) + " Exception = " + e);
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+ 
+                        "Cannot shut down router "+
+                        br.getHost()+":"+br.getManagementPort()+ 
+                        " attempt "+(i+1) + " Exception = " + e);
             }
         }
         if (i == MAX_TRIES) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+
-                                          "Failed to shut down router " +
-                                          br.getHost()+":"+br.getManagementPort());
-            bailOut();
+            return false;
         }
         LocalControllerInfo lcinf= br.getLocalControllerInfo();
         PortPool pp= portPools_.get(lcinf);
@@ -893,6 +646,7 @@ public class GlobalController implements ComponentController {
                 }
             }
         }
+        return true;
     }
 
     /**
@@ -917,7 +671,6 @@ public class GlobalController implements ComponentController {
                 return info;
             } 
         }
-
         // we got here and found nothing
         return null;
     }
@@ -992,8 +745,6 @@ public class GlobalController implements ComponentController {
         costs2[out.length]= 1; // Link cost 1 so far
         setOutLinks(router1Id, out2);
         setLinkCosts(router1Id, costs2);
-
-
         out= getOutLinks(router2Id);
         out2= new int [out.length +1];
         costs= getLinkCosts(router2Id);
@@ -1006,69 +757,45 @@ public class GlobalController implements ComponentController {
         setLinkCosts(router2Id, costs2);
     }
 
-    /** Event to link two routers */
-    protected int startLink(long time, int router1Id, int router2Id, int weight, String name) {
-        // return +ve no for valid id
-        // return -1 for no start - router at one end is not running
-        // return -3 for semaphore not acquired in time
-        // return -4 for acquire interrupted
-        try {
-            // wait forever for Semaphore
-            // semaphore.acquire();
+    /** Event to link two routers  Return -1 for fail or link id*/
+    public int startLink(long time, int router1Id, int router2Id, int weight, String name) {
+        //
 
-            // wait 2500ms to acquire the semaphore
-            boolean acquired = semaphore.tryAcquire(2500, TimeUnit.MILLISECONDS);
+        int index= routerList_.indexOf(router1Id);
+        if (index == -1)
+            return -1;  // Cannot start link as router 1 dead already
+        index= routerList_.indexOf(router2Id);
+        if (index == -1)
+            return -1;  // Cannot start link as router 2 dead already
 
-            if (acquired) {
-                //Logger.getLogger("log").logln(USR.ERROR, "Start link "+router1Id+" "+router2Id);
+        // check if this link already exists
+        int [] outForRouter1 = getOutLinks(router1Id);
 
-                int index= routerList_.indexOf(router1Id);
-                if (index == -1)
-                    return -1;  // Cannot start link as router 1 dead already
-                index= routerList_.indexOf(router2Id);
-                if (index == -1)
-                    return -1;  // Cannot start link as router 2 dead already
-
-                // check if this link already exists
-                int [] outForRouter1 = getOutLinks(router1Id);
-
-                boolean gotIt= false;
-                for (int i : outForRouter1) {
-                    if (i == router2Id) {
-                        gotIt= true;
-                        break;
-                    }
-                }
-
-                if (gotIt) {             // we already have this link
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Link already exists: "+router1Id + " -> " + router2Id);
-                    return 0;
-                } else {
-                    int linkID;
-
-                    if (options_.isSimulation()) {
-                        linkID = startSimulationLink(router1Id, router2Id);
-                    } else {
-                        linkID = startVirtualLink(router1Id, router2Id, weight, name);
-                    }
-
-                    // register inside GlobalController
-                    registerLink(router1Id, router2Id);
-                    // Tell APController about link
-                    APController_.addLink(time, router1Id,router2Id);
-
-                    return linkID;
-                }
-            } else {
-                // not acquired
-                return -3;
+        boolean gotIt= false;
+        for (int i : outForRouter1) {
+            if (i == router2Id) {
+                gotIt= true;
+                break;
             }
-        } catch (InterruptedException ie) {
-            return -4;
-        } finally {
-            semaphore.release();
         }
 
+        if (gotIt) {             // we already have this link
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                    "Link already exists: "+router1Id + " -> " + router2Id);
+            return -1;
+        } else {
+            int linkID;
+            if (options_.isSimulation()) {
+                linkID = startSimulationLink(router1Id, router2Id);
+            } else {
+                linkID = startVirtualLink(router1Id, router2Id, weight, name);
+            }
+            // register inside GlobalController
+            registerLink(router1Id, router2Id);
+            // Tell APController about link
+            APController_.addLink(time, router1Id,router2Id);
+            return linkID;
+        }
     }
 
     /** Start simulation link */
@@ -1090,21 +817,21 @@ public class GlobalController implements ComponentController {
         br1= routerIdMap_.get(router1Id);
         br2= routerIdMap_.get(router2Id);
         if (br1 == null) {
-            System.err.println ("Router "+router1Id+" does not exist when trying to link to "+ router2Id);
+            System.err.println ("Router "+router1Id+
+                " does not exist when trying to link to "+ router2Id);
             return -1;
         }
         if (br2 == null) {
-            System.err.println ("Router "+router2Id+" does not exist when trying to link to "+ router1Id);
+            System.err.println ("Router "+router2Id+
+                " does not exist when trying to link to "+ router1Id);
             return -1;
         }
-        //Logger.getLogger("log").logln(USR.STDOUT, "Got router Ids"+br1.getHost()+br2.getHost());
 
         lc= br1.getLocalControllerInfo();
-        //Logger.getLogger("log").logln(USR.STDOUT, "Got LC");
         lci= interactorMap_.get(lc);
-        //Logger.getLogger("log").logln(USR.STDOUT, "Got LCI");
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Global controller linking routers "+
-                                      br1 + " and "+ br2);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
+                    "Global controller linking routers "+
+                    br1 + " and "+ br2);
         int MAX_TRIES= 5;
         int i;
         Integer linkID = -1;
@@ -1121,9 +848,14 @@ public class GlobalController implements ComponentController {
 
                 linkInfo.put(linkID, new LinkInfo(endPoints, connectionName, weight, linkID));
 
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + br1 + " -> " + br2 + " = " + connectionName + " with link ID: " + linkID);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
+                        br1 + " -> " + br2 + " = " + connectionName 
+                        + " with link ID: " + linkID);
 
-                Logger.getLogger("log").logln(1<<9, elapsedToString(getSimulationElapsedTime()) + ANSI.BLUE + " CREATE LINK " + router2Id + " TO " + router1Id + ANSI.RESET_COLOUR);
+                Logger.getLogger("log").logln(1<<9, 
+                    elapsedToString(getSimulationElapsedTime()) + 
+                    ANSI.BLUE + " CREATE LINK " + router2Id + 
+                    " TO " + router1Id + ANSI.RESET_COLOUR);
 
                 break;
             } catch (IOException e) {
@@ -1182,8 +914,6 @@ public class GlobalController implements ComponentController {
                 return true;
             }
         }
-
-
         return false;
     }
 
@@ -1278,11 +1008,11 @@ public class GlobalController implements ComponentController {
     private void endSimulationLink(int router1Id, int router2Id)
     /** Event to end simulation link between two routers */
     {
-
+        // Nothing need happen here right now.
     }
 
     /** Event to end virtual link between two routers */
-    private void endVirtualLink(int rId1, int rId2) {
+    private boolean endVirtualLink(int rId1, int rId2) {
 
         BasicRouterInfo br1= routerIdMap_.get(rId1);
         BasicRouterInfo br2= routerIdMap_.get(rId2);
@@ -1300,10 +1030,15 @@ public class GlobalController implements ComponentController {
                 Integer linkID = pair.hashCode();
                 linkInfo.remove(linkID);
 
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "remove link from: " + rId2 + " to " + rId1 + " with link ID: " + linkID);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
+                    "remove link from: " + rId2 + 
+                    " to " + rId1 + " with link ID: " 
+                    + linkID);
 
-                Logger.getLogger("log").logln(1<<9, elapsedToString(getSimulationElapsedTime()) + ANSI.MAGENTA + " REMOVE LINK " + rId2 + " TO " + rId1 + ANSI.RESET_COLOUR);
-
+                Logger.getLogger("log").logln(1<<9, 
+                    elapsedToString(getSimulationElapsedTime()) + 
+                    ANSI.MAGENTA + " REMOVE LINK " + rId2 + 
+                    " TO " + rId1 + ANSI.RESET_COLOUR);
                 break;
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Cannot shut down link "+
@@ -1313,45 +1048,23 @@ public class GlobalController implements ComponentController {
         }
         if (i == MAX_TRIES) {
             Logger.getLogger("log").logln(USR.ERROR,"Giving up after failure to shut link");
-            bailOut();
+            return false;
         }
+        return true;
     }
 
-    /** Event to unlink two routers */
-    protected int endLink (long time, int router1Id, int router2Id) {
+    /** Event to unlink two routers 
+     * Returns true for success*/
+    public boolean endLink (long time, int router1Id, int router2Id) {
         // return 0 for end of link
-        // return -3 for semaphore not acquired in time
-        // return -4 for acquire interrupted
-        try {
-            // wait forever for Semaphore
-            // semaphore.acquire();
-
-            // wait 2500ms to acquire the semaphore
-            boolean acquired = semaphore.tryAcquire(2500, TimeUnit.MILLISECONDS);
-
-            if (acquired) {
-
-
-                unregisterLink(router1Id, router2Id);
-                APController_.removeLink(time, router1Id,router2Id);
-                if (options_.isSimulation()) {
-                    endSimulationLink(router1Id, router2Id);
-                } else {
-                    endVirtualLink(router1Id, router2Id);
-                }
-
-                return 0;
-            } else {
-                // not acquired
-                return -3;
-            }
-        } catch (InterruptedException ie) {
-            return -4;
-        } finally {
-            semaphore.release();
+        unregisterLink(router1Id, router2Id);
+        APController_.removeLink(time, router1Id,router2Id);
+        if (options_.isSimulation()) {
+            endSimulationLink(router1Id, router2Id);
+        } else {
+            return endVirtualLink(router1Id, router2Id);
         }
-
-
+        return true;
     }
 
 
@@ -1364,100 +1077,78 @@ public class GlobalController implements ComponentController {
         return bri;
     }
 
-
-    /**
-     * Run an application on a Router.
-     * Returns the app ID
-     */
-    public int onRouter(int routerID, String className, String[] args) {
-        return appStart(routerID, className, args);
+    // FIXME write this
+    public boolean appStop(int appId)
+    {
+        Logger.getLogger("log").logln(USR.ERROR, "No way yet to stop applications");
+        return false;
     }
 
-
     /**
      * Run an application on a Router.
      * Returns the app ID
      */
-    protected int appStart(int routerID, String className, String[] args) {
+    public int appStart(int routerID, String className, String[] args) {
         // return +ve no for valid id
         // return -1 for no start - cant find LocalController
-        // return -2 for no start - router cant run app
-        // return -3 for semaphore not acquired in time
-        // return -4 for acquire interrupted
-        try {
-            // wait forever for Semaphore
-            // semaphore.acquire();
+        BasicRouterInfo br = routerIdMap_.get(routerID);
 
-            // wait 2500ms to acquire the semaphore
-            boolean acquired = semaphore.tryAcquire(2500, TimeUnit.MILLISECONDS);
+        LocalControllerInteractor lci= interactorMap_.get(br.getLocalControllerInfo());
 
-            if (acquired) {
-                BasicRouterInfo br = routerIdMap_.get(routerID);
-
-                LocalControllerInteractor lci= interactorMap_.get(br.getLocalControllerInfo());
-
-                if (lci == null) {
-                    return -1;
-                }
-                int i;
-                int MAX_TRIES= 5;
-                Integer appID = -1;
-
-                for (i=0; i < MAX_TRIES; i++) {
-                    try {
-                        // appStart returns a JSONObject
-                        // something like: {"aid":1,"startTime":1340614768099,
-                        // "name":"/R4/App/usr.applications.RecvDataRate/1"}                        
-
-
-                        JSONObject response = lci.appStart(routerID, className, args);
-                
-                        // consturct an ID from the routerID and the appID
-                        Pair<Integer, Integer> idPair = new Pair<Integer, Integer>(routerID, (Integer)response.get("aid"));
-                
-                        appID = idPair.hashCode();
-
-                        String appName = (String)response.get("name");
-
-                        // Add app to BasicRouterInfo
-                        br.addApplication(appID, appName);
-
-                        // and set info as
-                        // ["id": 46346535, "time" : "00:14:52", "aid" : 1, "startime" : 1331119233159, "state": "RUNNING", "classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ] 
-                        Map<String, Object>dataMap = new HashMap<String, Object>();
-                        dataMap.put("time", "00:00:00");
-                        dataMap.put("id", appID);
-                        dataMap.put("aid", (Integer)response.get("aid"));
-                        dataMap.put("startime", (Long)response.get("startTime"));
-                        dataMap.put("runtime", 0);
-                        dataMap.put("classname", className);
-                        dataMap.put("args", Arrays.asList(args).toString());
-                        dataMap.put("state", "STARTED");
-
-                        br.setApplicationData(appName, dataMap);
-
-                        // add app to app info
-                        appInfo.put(appID, routerID);
-
-                        return appID;
-                    } catch (Exception e) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin()+
-                                                      " failed to start app "+className+" on "+ routerID+ " try "+i + " with Exception " + e);
-
-                    }
-                }
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+
-                                              " failed to start app "+className+" on "+ routerID+ " giving up ");
-                return -2;
-            }  else {
-                // not acquired
-                return -3;
-            }
-        } catch (InterruptedException ie) {
-            return -4;
-        } finally {
-            semaphore.release();
+        if (lci == null) {
+            return -1;
         }
+        int i;
+        int MAX_TRIES= 5;
+        Integer appID = -1;
+
+        for (i=0; i < MAX_TRIES; i++) {
+            try {
+                // appStart returns a JSONObject
+                // something like: {"aid":1,"startTime":1340614768099,
+                // "name":"/R4/App/usr.applications.RecvDataRate/1"}                        
+
+
+                JSONObject response = lci.appStart(routerID, className, args);
+        
+                // consturct an ID from the routerID and the appID
+                Pair<Integer, Integer> idPair = new Pair<Integer, Integer>(routerID, (Integer)response.get("aid"));
+        
+                appID = idPair.hashCode();
+
+                String appName = (String)response.get("name");
+
+                // Add app to BasicRouterInfo
+                br.addApplication(appID, appName);
+
+                // and set info as
+                // ["id": 46346535, "time" : "00:14:52", "aid" : 1, "startime" : 1331119233159, "state": "RUNNING", "classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ] 
+                Map<String, Object>dataMap = new HashMap<String, Object>();
+                dataMap.put("time", "00:00:00");
+                dataMap.put("id", appID);
+                dataMap.put("aid", (Integer)response.get("aid"));
+                dataMap.put("startime", (Long)response.get("startTime"));
+                dataMap.put("runtime", 0);
+                dataMap.put("classname", className);
+                dataMap.put("args", Arrays.asList(args).toString());
+                dataMap.put("state", "STARTED");
+
+                br.setApplicationData(appName, dataMap);
+
+                // add app to app info
+                appInfo.put(appID, routerID);
+
+                return appID;
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                                              " failed to start app "+className+" on "+ routerID+ " try "+i + " with Exception " + e);
+
+            }
+        }
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                " failed to start app "+className+" on "+ 
+                routerID+ " giving up ");
+        return -1;
     }
 
 
@@ -1469,8 +1160,6 @@ public class GlobalController implements ComponentController {
             for (LocalControllerInteractor lci : localControllers_) {
                 lci.requestRouterStats();
             }
-
-
         } catch (IOException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() +"Could not get stats");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
@@ -1512,15 +1201,6 @@ public class GlobalController implements ComponentController {
 
     }
 
-    /** Shutdown called from console -- add shut down command to list to
-       happen now */
-    public void shutDownCommand() {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Shut down called from console");
-        SimEvent e= new SimEvent(SimEvent.EVENT_END_SIMULATION,0,null,null);
-        scheduler_.addEvent(e);
-        wakeWait();
-    }
-
     /*
      * Shutdown
      */
@@ -1535,54 +1215,34 @@ public class GlobalController implements ComponentController {
                 if (latticeMonitoring) {
                     stopMonitoringConsumer();
                 }
-
                 //ThreadTools.findAllThreads("GC pre killAllControllers:");
-
                 killAllControllers();
-
                 //ThreadTools.findAllThreads("GC post killAllControllers:");
-
-                while (checkMessages()) {};
-
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Pausing.");
-
                 try {
                     Thread.sleep(10);
                 } catch (Exception e) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin()+ e.getMessage());
                     System.exit(-1);
                 }
-
                 //ThreadTools.findAllThreads("GC post checkMessages:");
-
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Stopping console");
                 console_.stop();
-
                 //ThreadTools.findAllThreads("GC post stop console:");
             }
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All stopped, shut down now!");
-
             isActive = false;
         }
     }
 
-    /** Scheduled query of Aggregation point controller*/
-    private void queryAPController(long time) {
-        // Schedule next consider time
-        SimEvent e= new SimEvent(SimEvent.EVENT_AP_CONTROLLER,
-                                 time+routerOptions_.getControllerConsiderTime(), null,null);
-        scheduler_.addEvent(e);
-        APController_.controllerUpdate(time, this);
 
-    }
-
-    public void APControllerUpdate(long time)
+    /*public void APControllerUpdate(long time)
     {
         APController_.controllerUpdate(time, this);
-    }
+    }*/
 
     /** Produce some output */
-    private void produceOutput(long time, OutputType o) {
+    public void produceOutput(long time, OutputType o) {
 
         File f;
         FileOutputStream s= null;
@@ -1599,8 +1259,7 @@ public class GlobalController implements ComponentController {
         o.makeOutput(time, p, this);
         // Schedule next output time
         if (o.getTimeType() == OutputType.AT_INTERVAL) {
-            SimEvent e= new SimEvent(SimEvent.EVENT_OUTPUT,
-                                     time+o.getTime(),o,null);
+            OutputEvent e= new OutputEvent(time+o.getTime(),null,o);
             scheduler_.addEvent(e);
         }
         p.close();
@@ -1618,86 +1277,6 @@ public class GlobalController implements ComponentController {
     }
     
 
-    private void runRouterEvent(long time, SimEvent e)
-    {
-        String[] eventArgs = (String[])e.getData();
-        Scanner sc = new Scanner(eventArgs[0]);
-
-        int routerID;
-
-        // process router spec
-        if (sc.hasNextInt()) {
-            // arg is int
-            routerID = sc.nextInt();
-
-        } else {
-            // arg is String, we need to look up the router IDs
-            String routerName = eventArgs[0].trim();
-            BasicRouterInfo rInfo = findRouterInfo(routerName);
-
-            if (rInfo == null) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown router " + routerName +" in ON_ROUTER at time " + time);
-                shutDown();
-            }
-
-            routerID = rInfo.getId();
-
-        }
-
-        String className = eventArgs[1];
-
-        // eliminate router_id and className
-        String[] cmdArgs = new String[eventArgs.length-2];
-
-        for (int a=2; a < eventArgs.length; a++) {
-            cmdArgs[a-2] = eventArgs[a];
-        }
-
-        // call appStart with correct args
-        appStart(routerID, className, cmdArgs);
-    }
-
-    /** Create a connection to send/receive data between two sites */
-    private void createTrafficConnection(long time, SimEvent e)
-    {
-        if (options_.isSimulation()) {
-            Logger.getLogger("log").logln(USR.ERROR,"Traffic options not available in simulation");
-            return;
-        }
-        int nRouters= getNoRouters();
-        if (nRouters < 2)
-            return;
-        int from;
-        int to;
-        BackgroundTrafficEngine eng= (BackgroundTrafficEngine)e.getEngine();
-        if (eng == null) {
-            Logger.getLogger("log").logln(USR.ERROR,"Need background traffic engine to gen traffic");
-            bailOut();
-        }
-        if (eng.preferEmptyNodes() == true) {
-            Logger.getLogger("log").logln(USR.ERROR,"Not written engine to prefer empty nodes");
-            bailOut();
-        }
-        from= (int)Math.floor(Math.random()*nRouters);
-        to= (int)Math.floor(Math.random()*(nRouters-1));
-        int toRouter= routerList_.get(to);
-        int fromRouter= routerList_.get(from);
-        if (to == from)
-            to= nRouters-1;
-        String [] fromArgs= new String[4];
-        String [] toArgs= new String[2];
-        String port= ((Integer)eng.getReceivePort(to)).toString();
-        String bytes= ((Integer)eng.getBytes()).toString();
-        String rate= ((Double)eng.getRate()).toString();
-        fromArgs[0]= routerIdMap_.get(toRouter).getAddress();
-        fromArgs[1]= port;
-        toArgs[0]= port;
-        fromArgs[2]= bytes;
-        toArgs[1]= bytes;
-        fromArgs[3]= rate;
-        appStart(toRouter,"usr.applications.Receive",toArgs);
-        appStart(fromRouter,"usr.applications.Transfer",fromArgs);
-    }
 
     /** When output for traffic is requested then queue requests for traffic from
      * routers */
@@ -1744,8 +1323,9 @@ public class GlobalController implements ComponentController {
                     s = new FileOutputStream(f,true);
                     p = new PrintStream(s,true);
                 } catch (Exception e) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot open "+o.getFileName()+
-                                                  " for output "+e.getMessage());
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                        "Cannot open "+o.getFileName()+
+                          " for output "+e.getMessage());
                     return;
                 }
                 OutputTraffic ot= (OutputTraffic)o.getOutputClass();
@@ -1781,27 +1361,21 @@ public class GlobalController implements ComponentController {
             // if it is, stop it first
             stopMonitoringConsumer();
         }
-
         // set up DataPlane
         DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(addr);
         dataConsumer.setDataPlane(inputDataPlane);
-
         // set the reporter
         dataConsumer.clearReporters();
-
         // add probes
         for (Reporter reporter : reporterMap.values()) {
             dataConsumer.addReporter(reporter);  
         }
-
         // and connect
         boolean connected = dataConsumer.connect();
-
         if (!connected) {
             System.err.println("Cannot startMonitoringConsumer on " + addr + ". Address probably in use. Exiting.");
             System.exit(1);
         }
-
     }
 
     /**
@@ -1844,7 +1418,6 @@ public class GlobalController implements ComponentController {
                 if (rI.isAssignableFrom(inter)) {
                     return reporter;
                 }
-
                 /*
                 if (inter.isAssignableFrom(rI)) {
                     return reporter;
@@ -1853,7 +1426,6 @@ public class GlobalController implements ComponentController {
             }
 
         }
-
         return null;
     }
 
@@ -1863,7 +1435,6 @@ public class GlobalController implements ComponentController {
         options_.initialEvents(scheduler_,this);
 
     }
-
 
     private void startLocalControllers() {
         Iterator i= options_.getControllersIterator();
@@ -1919,7 +1490,6 @@ public class GlobalController implements ComponentController {
             return;
         try {
             long timeout = time - now;
-
             Logger.getLogger("log").logln(USR.STDOUT, "EVENT: " +  "<" + lastEventLength + "> " +
                                           (now - simulationStartTime) + " @ " +
                                           now +  " waiting " + timeout);
@@ -1928,7 +1498,6 @@ public class GlobalController implements ComponentController {
             }
             lastEventLength = System.currentTimeMillis() - now;
         } catch(InterruptedException e) {
-            checkMessages();
         }
     }
 
@@ -2000,8 +1569,6 @@ public class GlobalController implements ComponentController {
             builder.append("0");
         }
         builder.append(millis);
-
-
         return builder.toString();
         
     }
@@ -2107,10 +1674,8 @@ public class GlobalController implements ComponentController {
             return;
         }
 
-
         // Wait to see if we have all controllers.
         for (int i= 0; i < options_.getControllerWaitTime(); i++) {
-            while (checkMessages()) {};
             if (aliveCount == noControllers_) {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All controllers responded with alive message.");
                 return;
@@ -2161,8 +1726,6 @@ public class GlobalController implements ComponentController {
         }
 
     }
-
-
 
 
     public int getLinkWeight(int l1, int l2)
@@ -2332,61 +1895,6 @@ public class GlobalController implements ComponentController {
 
     }
 
-    /** Add or remove events following a simulation event */
-    public void preceedEvent(SimEvent e, EventScheduler s, GlobalController g)
-    {
-        e.preceedEvent(s,g);
-    }
-
-    /** Add or remove events following a simulation event -- object allows
-       global controller to pass extra parameters related to event if necessary*/
-    public void followEvent(SimEvent e, EventScheduler s, GlobalController g,
-                            Object o)
-    {
-        e.followEvent(s,g,o);
-        long time= e.getTime();
-        if (options_.connectedNetwork()) {
-            if (e.getType() == SimEvent.EVENT_END_ROUTER) {
-                g.connectNetwork(time);
-            } else if (e.getType() == SimEvent.EVENT_END_LINK) {
-                int router1= 0, router2= 0;
-                Pair<?,?> pair= (Pair<?,?>)e.getData();
-                router1= (Integer)pair.getFirst();
-                router2= (Integer)pair.getSecond();
-                g.connectNetwork(time,router1, router2);
-            }
-        } else if (!options_.allowIsolatedNodes()) {
-            if (e.getType() == SimEvent.EVENT_END_ROUTER) {
-                g.checkIsolated(time);
-            } else if (e.getType() == SimEvent.EVENT_END_LINK) {
-                int router1= 0, router2= 0;
-                Pair<?,?> pair= (Pair<?,?>)e.getData();
-                router1= (Integer)pair.getFirst();
-                router2= (Integer)pair.getSecond();
-                g.checkIsolated(time,router1);
-                g.checkIsolated(time,router2);
-            }
-        }
-    }
-
-    /**
-     * Follow an event not generated by engine
-     */
-
-    public void gcFollowEvent(SimEvent e, Object o)
-    {
-
-    }
-
-    /**
-     * Preceed an event not generated by engine
-     */
-
-    public void gcPreceedEvent(SimEvent e)
-    {
-
-    }
-
     /** Make sure network is connected from r1 to r2*/
     public void connectNetwork(long time,int r1, int r2)
     {
@@ -2472,11 +1980,24 @@ public class GlobalController implements ComponentController {
     public ControlOptions getOptions() {
         return options_;
     }
+    
+    public boolean connectedNetwork() {
+        return options_.connectedNetwork();
+    }
+    
+    public boolean allowIsolatedNodes() {
+        return options_.allowIsolatedNodes();
+    }
+    
+    public int getAPControllerConsiderTime() {
+        return routerOptions_.getControllerConsiderTime();
+    }
 
     /** Accessor function for routerList */
     public ArrayList<Integer> getRouterList() {
         return routerList_;
     }
+
 
     /** Return id of ith router */
     public int getRouterId(int i) {
