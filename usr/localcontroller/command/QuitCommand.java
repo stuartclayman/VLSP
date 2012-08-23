@@ -11,38 +11,42 @@ import us.monoid.json.*;
 /**
  * The QUIT command.
  */
-public class QuitCommand extends LocalCommand {
-    /**
-     * Construct a QuitCommand.
-     */
-    public QuitCommand() {
-        super(MCRP.QUIT.CMD);
+public class QuitCommand extends LocalCommand
+{
+/**
+ * Construct a QuitCommand.
+ */
+public QuitCommand(){
+    super(MCRP.QUIT.CMD);
+}
+
+/**
+ * Evaluate the Command.
+ */
+public boolean evaluate(Request request,
+    Response response)                        {
+    try {
+        PrintStream out = response.getPrintStream();
+
+        // not needed when using REST
+        // there is no stream connection or session to quit
+
+        JSONObject jsobj = new JSONObject();
+        jsobj.put("quit", "quit");
+
+        out.println(jsobj.toString());
+        response.close();
+
+        return true;
+    } catch (IOException ioe) {
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() + ioe.getMessage());
+    } catch (JSONException jex) {
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() + jex.getMessage());
     }
-
-    /**
-     * Evaluate the Command.
-     */
-    public boolean evaluate(Request request, Response response) {
-        try {
-            PrintStream out = response.getPrintStream();
-
-            // not needed when using REST
-            // there is no stream connection or session to quit
-
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("quit", "quit");
-
-            out.println(jsobj.toString());
-            response.close();
-
-            return true;
-        } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
-        } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
-        } finally {
-            return false;
-        }
+    finally {
+        return false;
     }
-
+}
 }

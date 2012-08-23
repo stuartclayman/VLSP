@@ -13,24 +13,26 @@ import java.io.Serializable;
  * Information about a transmission.
  * Includes: packet length, src ip address, dst ip address
  */
-public class USRTransmissionMetaData implements MetaData, Serializable {
-    public final int length;
-    public final Address srcIPAddr;
-    public final Address dstIPAddr;
+public class USRTransmissionMetaData implements MetaData,
+Serializable
+{
+public final int length;
+public final Address srcIPAddr;
+public final Address dstIPAddr;
 
-    /**
-     * Construct a USRTransmissionMetaData object.
-     */
-    public USRTransmissionMetaData(int l, Address sia, Address dia) {
-        length = l;
-        srcIPAddr = sia;
-        dstIPAddr = dia;
-    }
+/**
+ * Construct a USRTransmissionMetaData object.
+ */
+public USRTransmissionMetaData(int l, Address sia, Address dia){
+    length = l;
+    srcIPAddr = sia;
+    dstIPAddr = dia;
+}
 
-    /**
-     * USRTransmissionMetaData to string.
-     */
-    public String toString() {
-        return dstIPAddr + ": "  + srcIPAddr + " => " + length;
-    }
+/**
+ * USRTransmissionMetaData to string.
+ */
+public String toString(){
+    return dstIPAddr + ": " + srcIPAddr + " => " + length;
+}
 }

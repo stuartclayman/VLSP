@@ -16,11 +16,13 @@ import eu.reservoir.monitoring.distribution.Transmitting;
  * It is also a DataSourceDelegateInteracter so it can, if needed,
  * talk to the DataSource object it gets bound to.
  */
-public class USRDataPlaneProducer extends USRDataPlaneProducerWithNames implements DataPlane, DataSourceDelegateInteracter, Transmitting {
-    /**
-     * Construct a USRDataPlaneProducer.
-     */
-    public USRDataPlaneProducer(SocketAddress addr) {
-        super(addr);
-    }
+public class USRDataPlaneProducer extends USRDataPlaneProducerWithNames
+implements DataPlane, DataSourceDelegateInteracter, Transmitting
+{
+/**
+ * Construct a USRDataPlaneProducer.
+ */
+public USRDataPlaneProducer(SocketAddress addr){
+    super(addr);
+}
 }

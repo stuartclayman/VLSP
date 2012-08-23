@@ -19,79 +19,82 @@ import java.io.OutputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 
-
 /**
  * A USRDataPlaneProducerWithNames is a DataPlane implementation
  * that sends Measurements by USR.
  * It is also a DataSourceDelegateInteracter so it can, if needed,
  * talk to the DataSource object it gets bound to.
  */
-public class USRDataPlaneProducerWithNames extends AbstractUSRDataPlaneProducer implements DataPlane, DataSourceDelegateInteracter, Transmitting {
-    /**
-     * Construct a USRDataPlaneProducerWithNames
-     */
-    public USRDataPlaneProducerWithNames(SocketAddress addr) {
-        super(addr);
-    }
+public class USRDataPlaneProducerWithNames extends
+AbstractUSRDataPlaneProducer implements DataPlane,
+DataSourceDelegateInteracter, Transmitting
+{
+/**
+ * Construct a USRDataPlaneProducerWithNames
+ */
+public USRDataPlaneProducerWithNames(SocketAddress addr){
+    super(addr);
+}
 
-    /**
-     * Send a message onto the address.
-     * The message is XDR encoded and it's structure is:
-     * +-------------------------------------------------------------------+
-     * | data source id (long) | msg type (int) | seq no (int) | payload   |
-     * +-------------------------------------------------------------------+
-     */
-    public int transmit(DataPlaneMessage dsp) throws Exception {
-        // convert DataPlaneMessage into a ByteArrayOutputStream
-        // then transmit it
+/**
+ * Send a message onto the address.
+ * The message is XDR encoded and it's structure is:
+ * +-------------------------------------------------------------------+
+ * | data source id (long) | msg type (int) | seq no (int) | payload   |
+ * +-------------------------------------------------------------------+
+ */
+public int transmit(DataPlaneMessage dsp) throws Exception {
+    // convert DataPlaneMessage into a ByteArrayOutputStream
+    // then transmit it
 
-        try {
-            // convert the object to a byte []
-            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-            DataOutput dataOutput = new XDRDataOutputStream(byteStream);
+    try {
+        // convert the object to a byte []
+        ByteArrayOutputStream byteStream =
+            new ByteArrayOutputStream();
+        DataOutput dataOutput = new XDRDataOutputStream(byteStream);
 
-            // write the DataSource id
-            ID dataSourceID = dsp.getDataSource().getID();
-            dataOutput.writeLong(dataSourceID.getMostSignificantBits());
-            dataOutput.writeLong(dataSourceID.getLeastSignificantBits());
+        // write the DataSource id
+        ID dataSourceID = dsp.getDataSource().getID();
+        dataOutput.writeLong(dataSourceID.getMostSignificantBits());
+        dataOutput.writeLong(dataSourceID.getLeastSignificantBits());
 
-            // write type
-            dataOutput.writeInt(dsp.getType().getValue());
+        // write type
+        dataOutput.writeInt(dsp.getType().getValue());
 
-            //System.err.println("DSP type = " + dsp.getType().getValue());
+        //System.err.println("DSP type = " +
+        // dsp.getType().getValue());
 
-            // write seqNo
-            int seqNo = dsp.getSeqNo();
-            dataOutput.writeInt(seqNo);
+        // write seqNo
+        int seqNo = dsp.getSeqNo();
+        dataOutput.writeInt(seqNo);
 
-            // write object
-            switch (dsp.getType()) {
+        // write object
+        switch (dsp.getType()) {
+        case ANNOUNCE:
+            System.err.println("ANNOUNCE not implemented yet!");
+            break;
 
-            case ANNOUNCE:
-                System.err.println("ANNOUNCE not implemented yet!");
-                break;
+        case MEASUREMENT:
+            // extract Measurement from message object
+            ProbeMeasurement measurement =
+                ((MeasurementMessage)dsp).getMeasurement();
+            // encode the measurement, ready for transmission
+            MeasurementEncoder encoder =
+                new MeasurementEncoderWithNames(measurement);
+            encoder.encode(dataOutput);
 
-            case MEASUREMENT:
-                // extract Measurement from message object
-                ProbeMeasurement measurement = ((MeasurementMessage)dsp).getMeasurement();
-                // encode the measurement, ready for transmission
-                MeasurementEncoder encoder = new MeasurementEncoderWithNames(measurement);
-                encoder.encode(dataOutput);
-
-                break;
-            }
-
-            //System.err.println("DP: " + dsp + " AS " + byteStream);
-
-            // now tell the multicaster to transmit this byteStream
-            udpTransmitter.transmit(byteStream, seqNo);
-
-            return 1;
-        } catch (TypeException te) {
-            te.printStackTrace(System.err);
-            return 0;
+            break;
         }
+
+        //System.err.println("DP: " + dsp + " AS " + byteStream);
+
+        // now tell the multicaster to transmit this byteStream
+        udpTransmitter.transmit(byteStream, seqNo);
+
+        return 1;
+    } catch (TypeException te) {
+        te.printStackTrace(System.err);
+        return 0;
     }
-
-
+}
 }

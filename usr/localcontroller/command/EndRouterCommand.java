@@ -13,85 +13,92 @@ import java.net.UnknownHostException;
 /**
  * The END_ROUTER_COMMAND command.
  */
-public class EndRouterCommand extends LocalCommand {
-    /**
-     * Construct a EndRouterCommand.
-     */
-    public EndRouterCommand() {
-        super(MCRP.ROUTER_SHUT_DOWN.CMD);
-    }
+public class EndRouterCommand extends LocalCommand
+{
+/**
+ * Construct a EndRouterCommand.
+ */
+public EndRouterCommand(){
+    super(MCRP.ROUTER_SHUT_DOWN.CMD);
+}
 
-    /**
-     * Evaluate the Command.
-     */
-    public boolean evaluate(Request request, Response response) {
+/**
+ * Evaluate the Command.
+ */
+public boolean evaluate(Request request,
+    Response response)                        {
+    try {
+        PrintStream out = response.getPrintStream();
 
-        try {
-            PrintStream out = response.getPrintStream();
+        // get full request string
+        String path = java.net.URLDecoder.decode(
+            request.getPath().getPath(), "UTF-8");
+        // strip off /command
+        String value = path.substring(9);
 
-            // get full request string
-            String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
-            // strip off /command
-            String value = path.substring(9);
+        String [] args = value.split(" ");
 
-            String [] args= value.split(" ");
+        if (args.length != 2) {
+            response.setCode(404);
 
-            if (args.length != 2) {
-                response.setCode(404);
+            JSONObject jsobj = new JSONObject();
+            jsobj.put("error",
+                "Expected argument for End Router Command");
 
-                JSONObject jsobj = new JSONObject();
-                jsobj.put("error", "Expected argument for End Router Command");
+            out.println(jsobj.toString());
+            response.close();
 
-                out.println(jsobj.toString());
-                response.close();
-
-                return false;
-            }
-
-            LocalHostInfo lhi= null;
-            try {
-                lhi = new LocalHostInfo(args[1]);
-            } catch (UnknownHostException e) {
-                response.setCode(404);
-
-                JSONObject jsobj = new JSONObject();
-                jsobj.put("error", "CANNOT PARSE HOST INFO FOR END_ROUTER "+e.getMessage());
-
-                out.println(jsobj.toString());
-                response.close();
-
-                return false;
-            }
-
-            // end router
-            if (controller.endRouter(lhi)) {
-                JSONObject jsobj = new JSONObject();
-
-                jsobj.put("msg", "ROUTER ENDED "+lhi);
-                jsobj.put("success", Boolean.TRUE);
-                out.println(jsobj.toString());
-                response.close();
-
-                return true;
-            } else {
-                response.setCode(404);
-
-                JSONObject jsobj = new JSONObject();
-                jsobj.put("error", "CANNOT END ROUTER "+lhi);
-
-                out.println(jsobj.toString());
-                response.close();
-
-                return false;
-            }
-        } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
-        } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
-        } finally {
             return false;
         }
 
-    }
+        LocalHostInfo lhi = null;
+        try {
+            lhi = new LocalHostInfo(args[1]);
+        } catch (UnknownHostException e) {
+            response.setCode(404);
 
+            JSONObject jsobj = new JSONObject();
+            jsobj.put(
+                "error",
+                "CANNOT PARSE HOST INFO FOR END_ROUTER " +
+                e.getMessage());
+
+            out.println(jsobj.toString());
+            response.close();
+
+            return false;
+        }
+
+        // end router
+        if (controller.endRouter(lhi)) {
+            JSONObject jsobj = new JSONObject();
+
+            jsobj.put("msg", "ROUTER ENDED " + lhi);
+            jsobj.put("success", Boolean.TRUE);
+            out.println(jsobj.toString());
+            response.close();
+
+            return true;
+        } else {
+            response.setCode(404);
+
+            JSONObject jsobj = new JSONObject();
+            jsobj.put("error", "CANNOT END ROUTER " + lhi);
+
+            out.println(jsobj.toString());
+            response.close();
+
+            return false;
+        }
+    } catch (IOException ioe) {
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() + ioe.getMessage());
+    } catch (JSONException jex) {
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() + jex.getMessage());
+    }
+    finally {
+        return false;
+    }
+}
 }

@@ -20,114 +20,127 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
+public class USRDataPlaneConsumerWithNames extends
+AbstractUSRDataPlaneConsumer implements DataPlane, MeasurementReporting,
+Receiving
+{
+/**
+ * Construct a USRDataPlaneConsumerWithNames.
+ */
+public USRDataPlaneConsumerWithNames(SocketAddress addr){
+    super(addr);
+}
 
-public class USRDataPlaneConsumerWithNames extends AbstractUSRDataPlaneConsumer implements DataPlane, MeasurementReporting, Receiving {
-    /**
-     * Construct a USRDataPlaneConsumerWithNames.
-     */
-    public USRDataPlaneConsumerWithNames(SocketAddress addr) {
-        super(addr);
-    }
+/**
+ * This method is called just after a packet
+ * has been received from some underlying transport
+ * at a particular address.
+ * The expected message is XDR encoded and it's structure is:
+ *
+ ***************************+---------------------------------------------------------------------+
+ * | data source id (2 X long) | msg type (int) | seq no (int) | payload
+ *|
+ *
+ ***************************+---------------------------------------------------------------------+
+ */
+public void received(ByteArrayInputStream bis,
+    MetaData metaData) throws IOException,
+TypeException {
+    //System.out.println("DC: Received " + metaData);
 
+    try {
+        DataInput dataIn = new XDRDataInputStream(bis);
 
-    /**
-     * This method is called just after a packet
-     * has been received from some underlying transport
-     * at a particular address.
-     * The expected message is XDR encoded and it's structure is:
-     * +---------------------------------------------------------------------+
-     * | data source id (2 X long) | msg type (int) | seq no (int) | payload |
-     * +---------------------------------------------------------------------+
-     */
-    public void received(ByteArrayInputStream bis, MetaData metaData) throws IOException, TypeException {
+        //System.err.println("DC: datainputstream available = " +
+        // dataIn.available());
 
-        //System.out.println("DC: Received " + metaData);
+        // get the DataSource id
+        long dataSourceIDMSB = dataIn.readLong();
+        long dataSourceIDLSB = dataIn.readLong();
+        ID dataSourceID = new ID(dataSourceIDMSB, dataSourceIDLSB);
 
-        try {
-            DataInput dataIn = new XDRDataInputStream(bis);
+        // check message type
+        int type = dataIn.readInt();
 
-            //System.err.println("DC: datainputstream available = " + dataIn.available());
+        MessageType mType = MessageType.lookup(type);
 
-            // get the DataSource id
-            long dataSourceIDMSB = dataIn.readLong();
-            long dataSourceIDLSB = dataIn.readLong();
-            ID dataSourceID = new ID(dataSourceIDMSB, dataSourceIDLSB);
+        // delegate read to right object
+        if (mType == null)
+            //System.err.println("type = " + type);
+            return;
 
-            // check message type
-            int type = dataIn.readInt();
+        // get seq no
+        int seq = dataIn.readInt();
 
-            MessageType mType = MessageType.lookup(type);
+        /*
+         * Check the DataSource seq no.
+         */
+        if (seqNoMap.containsKey(dataSourceID)) {
+            // we've seen this DataSource before
+            int prevSeqNo = seqNoMap.get(dataSourceID);
 
-            // delegate read to right object
-            if (mType == null) {
-                //System.err.println("type = " + type);
-                return;
-            }
-
-            // get seq no
-            int seq = dataIn.readInt();
-
-            /*
-             * Check the DataSource seq no.
-             */
-            if (seqNoMap.containsKey(dataSourceID)) {
-                // we've seen this DataSource before
-                int prevSeqNo = seqNoMap.get(dataSourceID);
-
-                if (seq == prevSeqNo + 1) {
-                    // we got the correct message from that DataSource
-                    // save this seqNo
-                    seqNoMap.put(dataSourceID, seq);
-                } else {
-                    // a DataSource message is missing
-                    // TODO: decide what to do
-                    // currently: save this seqNo
-                    seqNoMap.put(dataSourceID, seq);
-                }
+            if (seq == prevSeqNo + 1) {
+                // we got the correct message from that DataSource
+                // save this seqNo
+                seqNoMap.put(dataSourceID, seq);
             } else {
-                // this is a new DataSource
+                // a DataSource message is missing
+                // TODO: decide what to do
+                // currently: save this seqNo
                 seqNoMap.put(dataSourceID, seq);
             }
+        } else {
+            // this is a new DataSource
+            seqNoMap.put(dataSourceID, seq);
+        }
 
-            //System.err.println("Received " + type + ". mType " + mType + ". seq " + seq);
+        //System.err.println("Received " + type + ". mType " + mType
+        // +
+        // ". seq " + seq);
 
-            // Message meta data
-            MessageMetaData msgMetaData = new MessageMetaData(dataSourceID, seq, mType);
+        // Message meta data
+        MessageMetaData msgMetaData =
+            new MessageMetaData(dataSourceID, seq,
+                mType);
 
-            // read object and check it's type
-            switch (mType) {
+        // read object and check it's type
+        switch (mType) {
+        case ANNOUNCE:
+            System.err.println("ANNOUNCE not implemented yet!");
+            break;
 
-            case ANNOUNCE:
-                System.err.println("ANNOUNCE not implemented yet!");
-                break;
+        case MEASUREMENT:
+            // decode the bytes into a measurement object
+            MeasurementDecoder decoder =
+                new MeasurementDecoderWithNames();
+            Measurement measurement = decoder.decode(dataIn);
 
-            case MEASUREMENT:
-                // decode the bytes into a measurement object
-                MeasurementDecoder decoder = new MeasurementDecoderWithNames();
-                Measurement measurement = decoder.decode(dataIn);
-
-                if (measurement instanceof ConsumerMeasurementWithMetaData) {
-                    // add the meta data into the Measurement
-                    ((ConsumerMeasurementWithMetaData)measurement).setMessageMetaData(msgMetaData);
-                    ((ConsumerMeasurementWithMetaData)measurement).setTransmissionMetaData(metaData);
-                }
-
-
-                //System.err.println("DC: datainputstream left = " + dataIn.available());
-                // report the measurement
-                report(measurement);
-                //System.err.println("DC: m = " + measurement);
-                break;
+            if (measurement instanceof
+                ConsumerMeasurementWithMetaData) {
+                // add the meta data into the Measurement
+                ((ConsumerMeasurementWithMetaData)
+                 measurement).
+                setMessageMetaData(msgMetaData);
+                ((ConsumerMeasurementWithMetaData)
+                 measurement).
+                setTransmissionMetaData(metaData);
             }
 
-
-        } catch (IOException ioe) {
-            System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
-            throw ioe;
-        } catch (Exception e) {
-            System.err.println("DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
-            throw new TypeException(e.getMessage());
+            //System.err.println("DC: datainputstream left = " +
+            // dataIn.available());
+            // report the measurement
+            report(measurement);
+            //System.err.println("DC: m = " + measurement);
+            break;
         }
+    } catch (IOException ioe) {
+        System.err.println(
+            "DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
+        throw ioe;
+    } catch (Exception e) {
+        System.err.println(
+            "DataConsumer: failed to process measurement input. The Measurement data is likely to be bad.");
+        throw new TypeException(e.getMessage());
     }
-
+}
 }

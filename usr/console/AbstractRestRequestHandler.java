@@ -16,58 +16,60 @@ import java.io.IOException;
 /**
  * A class to handle REST requests
  */
-public abstract class AbstractRestRequestHandler extends AbstractRequestHandler implements RequestHandler {
+public abstract class AbstractRestRequestHandler extends
+AbstractRequestHandler implements RequestHandler
+{
+/**
+ * Complain with an error - HTTP error code 400
+ */
+protected AbstractRestRequestHandler badRequest(Response response,
+    String msg) throws
+IOException, JSONException {
+    PrintStream out = response.getPrintStream();
 
+    response.setCode(400);
 
-    /**
-     * Complain with an error - HTTP error code 400
-     */
-    protected AbstractRestRequestHandler badRequest(Response response, String msg) throws IOException, JSONException {
-        PrintStream out = response.getPrintStream();
+    JSONObject jsobj = new JSONObject();
+    jsobj.put("error", msg);
 
-        response.setCode(400);
+    out.println(jsobj.toString());
 
-        JSONObject jsobj = new JSONObject();
-        jsobj.put("error", msg);
+    return this;
+}
 
-        out.println(jsobj.toString());
+/**
+ * Complain with an error - HTTP error code 403
+ */
+protected AbstractRestRequestHandler complain(Response response,
+    String msg) throws
+IOException, JSONException {
+    PrintStream out = response.getPrintStream();
 
-        return this;
-    }
+    response.setCode(403);
 
+    JSONObject jsobj = new JSONObject();
+    jsobj.put("error", msg);
 
-    /**
-     * Complain with an error - HTTP error code 403
-     */
-    protected AbstractRestRequestHandler complain(Response response, String msg) throws IOException, JSONException {
-        PrintStream out = response.getPrintStream();
+    out.println(jsobj.toString());
 
-        response.setCode(403);
+    return this;
+}
 
-        JSONObject jsobj = new JSONObject();
-        jsobj.put("error", msg);
+/**
+ * Complain with an error - HTTP error code 404
+ */
+protected AbstractRestRequestHandler notFound(Response response,
+    String msg) throws
+IOException, JSONException {
+    PrintStream out = response.getPrintStream();
 
-        out.println(jsobj.toString());
+    response.setCode(404);
 
-        return this;
-    }
+    JSONObject jsobj = new JSONObject();
+    jsobj.put("error", msg);
 
+    out.println(jsobj.toString());
 
-    /**
-     * Complain with an error - HTTP error code 404
-     */
-    protected AbstractRestRequestHandler notFound(Response response, String msg) throws IOException, JSONException {
-        PrintStream out = response.getPrintStream();
-
-        response.setCode(404);
-
-        JSONObject jsobj = new JSONObject();
-        jsobj.put("error", msg);
-
-        out.println(jsobj.toString());
-
-        return this;
-    }
-
-
+    return this;
+}
 }

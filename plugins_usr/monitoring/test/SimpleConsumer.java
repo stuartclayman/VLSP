@@ -8,7 +8,8 @@ package plugins_usr.monitoring.test;
 import usr.router.Router;
 import usr.net.SocketAddress;
 import usr.net.GIDAddress;
-import plugins_usr.monitoring.distribution.USRDataPlaneConsumerWithNames;
+import plugins_usr.monitoring.distribution.
+       USRDataPlaneConsumerWithNames;
 import eu.reservoir.monitoring.appl.BasicConsumer;
 import java.net.InetAddress;
 import java.util.Scanner;
@@ -17,68 +18,63 @@ import java.util.Properties;
 /**
  * This receives measurements from a USR Data Plane.
  */
-public class SimpleConsumer {
-    // The Basic consumer
-    BasicConsumer consumer;
+public class SimpleConsumer
+{
+// The Basic consumer
+BasicConsumer consumer;
 
-    /*
-     * Construct a SimpleConsumer using USR
-     */
-    public SimpleConsumer(int dataPort) {
-        // set up a BasicConsumer
-        consumer = new BasicConsumer();
+/*
+ * Construct a SimpleConsumer using USR
+ */
+public SimpleConsumer(int dataPort){
+    // set up a BasicConsumer
+    consumer = new BasicConsumer();
 
-        // set up multicast address for data
-        SocketAddress address = new SocketAddress(dataPort);
+    // set up multicast address for data
+    SocketAddress address = new SocketAddress(dataPort);
 
-        // set up data plane
-        consumer.setDataPlane(new USRDataPlaneConsumerWithNames(address));
+    // set up data plane
+    consumer.setDataPlane(new USRDataPlaneConsumerWithNames(address));
 
-        consumer.connect();
+    consumer.connect();
+}
 
+public static void main(String [] args){
+    int appPort = 2299;
+
+    if (args.length == 0) {
+    } else if (args.length == 1) {
+        Scanner sc = new Scanner(args[0]);
+        appPort = sc.nextInt();
+    } else {
+        System.err.println("usage: SimpleConsumer port");
+        System.exit(1);
     }
 
-    public static void main(String [] args) {
-        int appPort = 2299;
+    // Set up Router
+    try {
+        int port = 18191;
+        int r2r = 18192;
 
-        if (args.length == 0) {
-        } else if (args.length == 1) {
-            Scanner sc = new Scanner(args[0]);
-            appPort = sc.nextInt();
-        } else {
-            System.err.println("usage: SimpleConsumer port");
-            System.exit(1);
-        }
+        Router router = new Router(port, r2r, "Router-2");
 
-        // Set up Router
-        try {
-            int port = 18191;
-            int r2r = 18192;
+        // set ID
+        router.setAddress(new GIDAddress(2));
 
-            Router router = new Router(port, r2r, "Router-2");
-
-            // set ID
-            router.setAddress(new GIDAddress(2));
-
-            // start
-            if (router.start()) {
-            } else {
-                throw new Exception("Router failed to start");
-            }
-
-
-        } catch (Exception e) {
-            System.err.println("SimpleConsumer exception: " + e);
-            e.printStackTrace();
-            System.exit(2);
-        }
-
-
-        // Set up Consumer on AppSocket 2299
-        new SimpleConsumer(appPort);
-
-        System.err.println("SimpleConsumer listening on " + "localnet" + "/" + appPort);
-
+        // start
+        if (router.start()) {
+        } else { throw new Exception("Router failed to start"); }
+    } catch (Exception e) {
+        System.err.println("SimpleConsumer exception: " + e);
+        e.printStackTrace();
+        System.exit(2);
     }
 
+    // Set up Consumer on AppSocket 2299
+    new SimpleConsumer(appPort);
+
+    System.err.println(
+        "SimpleConsumer listening on " + "localnet" + "/" +
+        appPort);
+}
 }

@@ -10,49 +10,48 @@ import org.simpleframework.http.Request;
  * A Command processes a command handled by the ManagementConsole
  * of a GlobalController.
  */
-public abstract class GlobalCommand extends AbstractRestCommand {
-    // The ManagementConsole
-    GlobalControllerManagementConsole managementConsole;
+public abstract class GlobalCommand extends AbstractRestCommand
+{
+// The ManagementConsole
+GlobalControllerManagementConsole managementConsole;
 
-    // The RouterController
-    GlobalController controller= null;
+// The RouterController
+GlobalController controller = null;
 
-    /**
-     * Construct a Command given a name, a success code, an error code.
-     */
-    GlobalCommand(String name) {
-        super(name);
-    }
+/**
+ * Construct a Command given a name, a success code, an error code.
+ */
+GlobalCommand(String name){
+    super(name);
+}
 
-    /**
-     * Construct a Command given a name, a success code, an error code.
-     */
-    GlobalCommand(String name, int succCode, int errCode) {
-        super(name);
-    }
+/**
+ * Construct a Command given a name, a success code, an error code.
+ */
+GlobalCommand(String name, int succCode, int errCode){
+    super(name);
+}
 
+/**
+ * Get the ManagementConsole this is a command for.
+ */
+public ManagementConsole getManagementConsole(){
+    return managementConsole;
+}
 
-    /**
-     * Get the ManagementConsole this is a command for.
-     */
-    public ManagementConsole getManagementConsole() {
-        return managementConsole;
-    }
+/**
+ * Set the ManagementConsole this is a command for.
+ */
+public void setManagementConsole(ManagementConsole mc){
+    managementConsole = (GlobalControllerManagementConsole)mc;
+    controller =
+        (GlobalController)managementConsole.
+        getComponentController();
+}
 
-    /**
-     * Set the ManagementConsole this is a command for.
-     */
-    public void setManagementConsole(ManagementConsole mc) {
-        managementConsole = (GlobalControllerManagementConsole)mc;
-        controller = (GlobalController)managementConsole.getComponentController();
-    }
-
-
-    /**
-     * Evaluate the Command.
-     * Returns false if there is a problem responding down the channel
-     */
-    public abstract boolean evaluate(Request request, Response response);
-
-
+/**
+ * Evaluate the Command.
+ * Returns false if there is a problem responding down the channel
+ */
+public abstract boolean evaluate(Request request, Response response);
 }

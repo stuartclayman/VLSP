@@ -14,81 +14,90 @@ import usr.router.NetIF;
 import usr.net.*;
 import java.util.Scanner;
 
-
 /**
  * The SET_ROUTER_ADDRESS command.
  * SET_ROUTER_ADDRESS address
  * SET_ROUTER_ADDRESS 47
  */
-public class SetRouterAddressCommand extends RouterCommand {
-    /**
-     * Construct a SetRouterAddressCommand
-     */
-    public SetRouterAddressCommand() {
-        super(MCRP.SET_ROUTER_ADDRESS.CMD, MCRP.SET_ROUTER_ADDRESS.CODE, MCRP.ERROR.CODE);
-    }
+public class SetRouterAddressCommand extends RouterCommand
+{
+/**
+ * Construct a SetRouterAddressCommand
+ */
+public SetRouterAddressCommand(){
+    super(MCRP.SET_ROUTER_ADDRESS.CMD, MCRP.SET_ROUTER_ADDRESS.CODE,
+          MCRP.ERROR.CODE);
+}
 
-    /**
-     * Evaluate the Command.
-     */
-    public boolean evaluate(Request request, Response response) {
+/**
+ * Evaluate the Command.
+ */
+public boolean evaluate(Request request,
+    Response response)                        {
+    try {
+        PrintStream out = response.getPrintStream();
+
+        // get full request string
+        String path = java.net.URLDecoder.decode(
+            request.getPath().getPath(), "UTF-8");
+        // strip off /command
+        String value = path.substring(9);
+        // strip off COMMAND
+        String idStr = value.substring(
+            MCRP.SET_ROUTER_ADDRESS.CMD.length()).trim();
+
+        boolean result;
+
+        Address addr = null;
         try {
-            PrintStream out = response.getPrintStream();
+            addr = AddressFactory.newAddress(idStr);
+        } catch (java.net.UnknownHostException e) {
+            response.setCode(404);
 
-            // get full request string
-            String path =  java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
-            // strip off /command
-            String value = path.substring(9);
-            // strip off COMMAND
-            String idStr = value.substring(MCRP.SET_ROUTER_ADDRESS.CMD.length()).trim();
+            JSONObject jsobj = new JSONObject();
+            jsobj.put("error",
+                getName() + "Cannot construct address from " +
+                idStr);
 
-            boolean result;
+            out.println(jsobj.toString());
+            response.close();
 
-            Address addr = null;
-            try {
-                addr = AddressFactory.newAddress(idStr);
-            } catch (java.net.UnknownHostException e) {
-                response.setCode(404);
-
-                JSONObject jsobj = new JSONObject();
-                jsobj.put("error", getName() + "Cannot construct address from "+idStr);
-
-                out.println(jsobj.toString());
-                response.close();
-
-                return false;
-            }
-
-            // set address
-            boolean idSet = controller.setAddress(addr);
-
-            if (idSet) {
-                JSONObject jsobj = new JSONObject();
-                jsobj.put("address", addr.asTransmitForm());
-
-                out.println(jsobj.toString());
-                response.close();
-
-                return true;
-            } else {
-                response.setCode(404);
-
-                JSONObject jsobj = new JSONObject();
-                jsobj.put("error", getName() + "Cannot set Global Address after communication");
-
-                out.println(jsobj.toString());
-                response.close();
-
-                return false;
-            }
-
-        } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
-        } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
-        } finally {
             return false;
         }
-    }
 
+        // set address
+        boolean idSet = controller.setAddress(addr);
+
+        if (idSet) {
+            JSONObject jsobj = new JSONObject();
+            jsobj.put("address", addr.asTransmitForm());
+
+            out.println(jsobj.toString());
+            response.close();
+
+            return true;
+        } else {
+            response.setCode(404);
+
+            JSONObject jsobj = new JSONObject();
+            jsobj.put("error",
+                getName() +
+                "Cannot set Global Address after communication");
+
+            out.println(jsobj.toString());
+            response.close();
+
+            return false;
+        }
+    } catch (IOException ioe) {
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() + ioe.getMessage());
+    } catch (JSONException jex) {
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() + jex.getMessage());
+    }
+    finally {
+        return false;
+    }
+}
 }
