@@ -396,8 +396,9 @@ public List<String> appList()  throws IOException, JSONException {
  ***************************network
  * interface to a router on the address ip_addr/port
  * @return the name of the created connection, e.g.
- */Router - 28 / Connection - 1
-* /
+ * /Router - 28 / Connection - 1
+ */
+ 
 public String createConnection(String address) throws IOException,
 JSONException {
     String toSend = MCRP.CREATE_CONNECTION.CMD + " " + address;
@@ -414,8 +415,8 @@ JSONException {
  * interface to a router on the address ip_addr/port with a
  * connection weight of connection_weight
  * @return the name of the created connection, e.g.
- */Router - 28 / Connection - 1
-* /
+ * /Router - 28 / Connection - 1
+ */
 public String createConnection(String address,
     int weight) throws IOException,
 JSONException {

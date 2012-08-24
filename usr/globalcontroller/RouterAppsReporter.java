@@ -41,11 +41,11 @@ public RouterAppsReporter(GlobalController gc){
  ***************************RuntimeKeys | RuntimeValues
  * 1 | 1331298150361 | 10000 | RUNNING | usr.applications.Send | [4,
  ***************************3000, 250000, -d, 250, -i, 10] |
- */R1 / App / usr.applications.Send / 1
-* |
-* | * | ****[]
-* | []
-* /
+ *R1 / App / usr.applications.Send / 1
+ * |
+ * | * | ****[]
+ * | []
+ */
 public void report(Measurement m){
     if (m.getType().equals("AppList")) {
         List<ProbeValue> values = m.getValues();

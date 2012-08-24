@@ -312,9 +312,9 @@ public NetStats getStats(){
  */
 public Map<Integer, NetStats> getSocketStats(){
     // now add queues for sockets
-    for (int port : socketStats.keySet())
-        NetStats stats = socketStats.get(port);
-
+    for (int port : socketStats.keySet()) {
+        NetStats stats= socketStats.get(port);
+    }
     return socketStats;
 }
 
