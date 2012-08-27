@@ -136,7 +136,7 @@ private String appListToString(Table table){
     StringBuilder builder = new StringBuilder();
 
     // get the time
-    long startTime = globalController.getSimulationStartTime();
+    long startTime = globalController.getStartTime();
     long elapsed = System.currentTimeMillis() - startTime;
 
     // get no of cols

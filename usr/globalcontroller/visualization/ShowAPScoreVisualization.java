@@ -33,7 +33,7 @@ public void visualize(PrintStream s){
         else
             s.print(r + " [shape=circle");
 
-        long time = gc.getEventTime();         // the current event time
+        long time = gc.getElapsedTime();         // the current event time
         s.print(",label=\"" + ap + " (" +
             gc.getAPController().getScore(time, r, gc) + ")\"");
 

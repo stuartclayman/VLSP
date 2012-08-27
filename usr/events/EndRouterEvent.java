@@ -14,17 +14,17 @@ int routerNo_;
 String address_ = null;
 boolean routerNumSet_ = true;
 
-public EndRouterEvent (long time,
-    EventEngine eng,
-    String address,
-    GlobalController gc) throws
-InstantiationException {
+public EndRouterEvent (long time, EventEngine eng, String address,
+        GlobalController gc) throws
+        InstantiationException 
+{
     time_ = time;
     engine_ = eng;
     initNumber(address, gc);
 }
 
-public EndRouterEvent (long time, EventEngine eng, String addr){
+public EndRouterEvent (long time, EventEngine eng, String addr)
+{
     time_ = time;
     engine_ = eng;
     address_ = addr;

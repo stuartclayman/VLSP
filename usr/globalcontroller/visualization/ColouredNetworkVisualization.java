@@ -95,8 +95,7 @@ public void visualize(PrintStream s){
     // the label of the graph
     s.print("    label=" + "\"snapshot:");
     s.print(" time=");
-    long t = gc.getSimulationCurrentTime() -
-             gc.getSimulationStartTime();
+    long t = gc.getElapsedTime();
     int totalSecs = (int)t / 1000;
     int millis = (int)t % 1000;
     int hundreths = millis / 10;

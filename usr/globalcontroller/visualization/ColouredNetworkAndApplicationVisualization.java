@@ -101,8 +101,8 @@ public void visualize(PrintStream s){
     s.print("    label=" + "\"snapshot:");
     s.print(" time=");
     //long t = gc.getSimulationCurrentTime() -
-    // gc.getSimulationStartTime();
-    long t = System.currentTimeMillis() - gc.getSimulationStartTime();
+    // gc.getStartTime();
+    long t = System.currentTimeMillis() - gc.getStartTime();
     int totalSecs = (int)t / 1000;
     int millis = (int)t % 1000;
     int hundreths = millis / 10;

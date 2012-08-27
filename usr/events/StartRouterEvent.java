@@ -5,6 +5,7 @@ import java.lang.*;
 import usr.globalcontroller.*;
 import usr.engine.*;
 import us.monoid.json.*;
+import usr.common.*;
 
 /** Class represents a global controller event*/
 public class StartRouterEvent extends Event
@@ -48,26 +49,28 @@ private String nameString(){
 public JSONObject execute(GlobalController gc) throws
 InstantiationException {
     int rNo = gc.startRouter(time_, address_, name_);
-    JSONObject json = new JSONObject();
+    JSONObject jsobj = new JSONObject();
 
     try {
         if (rNo < 0) {
-            json.put("success", false);
-            json.put("msg", "Could not create router");
+            jsobj.put("success", false);
+            jsobj.put("msg", "Could not create router");
         } else {
-            json.put("success", true);
-            json.put("router", (Integer)rNo);
-            json.put("msg", "Created router " + rNo + " " + nameString());
-            if (name_ != null)
-                json.put("name", name_);
-            if (address_ != null)
-                json.put("address", address_);
+            BasicRouterInfo bri= gc.findRouterInfo(rNo);
+            jsobj.put("success", true);
+            jsobj.put("routerID", bri.getId());
+            jsobj.put("name", bri.getName());
+            jsobj.put("address", bri.getAddress());
+            jsobj.put("mgmtPort", bri.getManagementPort());
+            jsobj.put("r2rPort", bri.getRoutingPort());
+            jsobj.put("msg", "Created router " + rNo + " " +
+                bri.getName()+":"+bri.getRoutingPort());
         }
     } catch (JSONException je) {
         Logger.getLogger("log").logln(
             USR.ERROR,
             "JSONException in StartLinkEvent should not occur");
     }
-    return json;
+    return jsobj;
 }
 }

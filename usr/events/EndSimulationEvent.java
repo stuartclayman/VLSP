@@ -29,7 +29,7 @@ InstantiationException {
             USR.ERROR,
             "JSONException in EndSimulationEvent should not occur");
     }
-    gc.endSimulation(time_);
+    gc.deactivate();
     return jsobj;
 }
 }

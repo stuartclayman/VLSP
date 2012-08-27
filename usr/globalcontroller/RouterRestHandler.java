@@ -12,6 +12,8 @@ import us.monoid.json.*;
 import java.util.Scanner;
 import java.io.PrintStream;
 import java.io.IOException;
+import java.util.concurrent.*;
+import usr.events.*;
 
 /**
  * A class to handle /router/ requests
@@ -20,7 +22,7 @@ public class RouterRestHandler extends AbstractRestRequestHandler
 implements RequestHandler
 {
 // get GlobalController
-GlobalController gc;
+GlobalController controller_;
 
 public RouterRestHandler(){
 }
@@ -31,7 +33,7 @@ public RouterRestHandler(){
 public void  handle(Request request,
     Response response)                    {
     // get GlobalController
-    gc =
+    controller_ =
         (GlobalController)getManagementConsole().
         getComponentController();
 
@@ -77,11 +79,12 @@ public void  handle(Request request,
 
         // and evaluate the input
         if (method.equals("POST")) {
-            if (name == null)
+            if (name == null) {
                 // looks like a create
                 createRouter(request, response);
-            else
+            } else {
                 notFound(response, "POST bad request");
+            }
         } else if (method.equals("DELETE")) {
             if (segments.length == 2)
                 // looks like a delete
@@ -98,9 +101,7 @@ public void  handle(Request request,
             else
                 notFound(response, "GET bad request");
         } else if (method.equals("PUT")) {
-            {
-                badRequest(response, "PUT bad request");
-            }
+            badRequest(response, "PUT bad request");
         } else {
             badRequest(response, "Unknown method" + method);
         }
@@ -124,8 +125,8 @@ JSONException {
     // [name]
     // [address]
 
-    String name = "";
-    String address = "";
+    String name = null;
+    String address = null;
 
     Query query = request.getQuery();
 
@@ -139,29 +140,31 @@ JSONException {
 
     /* do work */
 
-    // start a router, and get it's ID
-    int rID = gc.startRouter(
-        System.currentTimeMillis(), address, name);
-
-    if (rID < 0) {
-        // error
-        badRequest(response, "Error creating router");
-    } else {
-        // now lookup all the saved details
-        BasicRouterInfo bri = gc.findRouterInfo(rID);
-
-        // and send them back as the return value
+    boolean success= true;
+    String failMessage=null;
+    JSONObject jsobj= null;
+    try {
+        StartRouterEvent ev= new StartRouterEvent(0,null,address,name);
+        jsobj= controller_.executeEvent(ev);
+        if (jsobj.get("success").equals(false)) {
+            success= false;
+            failMessage= (String)jsobj.get("msg");
+        }
+    } catch (InterruptedException ie) {
+        success= false;
+        failMessage="Signal interrupted in global controller";
+    } catch (InstantiationException ine) {
+        success= false;
+        failMessage="Unexplained failure executing startRouter";
+    } catch (TimeoutException to) {
+        success= false;
+        failMessage="Semaphore timeout in global controller -- too busy";
+    }
+    if (success) {
         PrintStream out = response.getPrintStream();
-
-        JSONObject jsobj = new JSONObject();
-
-        jsobj.put("routerID", bri.getId());
-        jsobj.put("name", bri.getName());
-        jsobj.put("address", bri.getAddress());
-        jsobj.put("mgmtPort", bri.getManagementPort());
-        jsobj.put("r2rPort", bri.getRoutingPort());
-
         out.println(jsobj.toString());
+    } else {
+        badRequest(response, "Error creating router: "+failMessage);
     }
 }
 
@@ -174,63 +177,87 @@ JSONException {
     // if we got here we have 2 parts
     // /router/ and another bit
     String name = request.getPath().getName();
-    Scanner sc = new Scanner(name);
-
-    if (sc.hasNextInt()) {
-        int id = sc.nextInt();
-
-        // if it exists, stop it, otherwise complain
-        if (gc.isValidRouterID(id)) {
-            // delete a router
-            gc.endRouter(System.currentTimeMillis(), id);
-
-            // and send them back as the return value
-            PrintStream out = response.getPrintStream();
-
-            JSONObject jsobj = new JSONObject();
-
-            jsobj.put("status", "done");
-
-            out.println(jsobj.toString());
-        } else {
-            badRequest(
-                response,
-                "deleteRouter arg is not valid router id: " +
-                name);
+    JSONObject jsobj= null;
+    boolean success= true;
+    String failMessage=null;
+    EndRouterEvent ev;
+    try {           // Could be integer or could be string
+        int rId= Integer.parseInt(name);
+        ev= new EndRouterEvent(0,null,rId);
+    } catch (NumberFormatException nfe) {
+        try {
+            ev= new EndRouterEvent(0,null,name,controller_);
+        } catch (InstantiationException ie) {
+            badRequest(response,
+                "deleteRouter cannot find router with address "+name);
+            return;
         }
-    } else {
+    }
+    
+    try {
+        jsobj= controller_.executeEvent(ev);
+        if (jsobj.get("success").equals(false)) {
+            success= false;
+            failMessage= (String)jsobj.get("msg");
+        }
+    } catch (InterruptedException ie) {
+        success= false;
+        failMessage="Signal interrupted in global controller";
+    } catch (InstantiationException ine) {
+        success= false;
+        failMessage="Unexplained failure executing endRouter";
+    } catch (TimeoutException to) {
+        success= false;
+        failMessage="Semaphore timeout in global controller -- too busy";
+    }
+    if (success) {
+        PrintStream out = response.getPrintStream();
+        out.println(jsobj.toString());
+    }else {
         badRequest(response,
-            "deleteRouter arg is not Integer: " + name);
+            "Error deleting router "+failMessage);
     }
 }
 
 /**
  * List routers given a request and send a response.
  */
-public void listRouters(Request request,
-    Response response) throws IOException,
-JSONException {
-    // and send them back as the return value
-    PrintStream out = response.getPrintStream();
+public void listRouters(Request request, Response response) 
+    throws IOException, JSONException 
+{
 
     JSONObject jsobj = new JSONObject();
-    JSONArray array = new JSONArray();
-
-    for (BasicRouterInfo info : gc.getAllRouterInfo())
-        array.put(info.getId());
-
-    jsobj.put("type", "router");
-    jsobj.put("list", array);
-
-    out.println(jsobj.toString());
+    boolean success=true;
+    String failMessage=null;
+    try {
+        ListRoutersEvent ev= new ListRoutersEvent(0);
+        jsobj= controller_.executeEvent(ev);
+    } catch (InterruptedException ie) {
+        success= false;
+        failMessage="Signal interrupted in global controller";
+    } catch (InstantiationException ine) {
+        success= false;
+        failMessage="Unexplained failure executing endRouter";
+    } catch (TimeoutException to) {
+        success= false;
+        failMessage="Semaphore timeout in global controller -- too busy";
+    }
+    if (success) {
+        PrintStream out = response.getPrintStream();
+        out.println(jsobj.toString());
+    }else {
+        badRequest(response,
+            "Error listing routers: "+failMessage);
+    }
 }
 
 /**
  * Get info on a router given a request and send a response.
  */
-public void getRouterInfo(Request request,
-    Response response) throws IOException,
-JSONException {
+public void getRouterInfo(Request request, Response response) 
+    throws IOException, JSONException 
+{
     notFound(response, "getRouterInfo not implemented yet");
 }
+
 }

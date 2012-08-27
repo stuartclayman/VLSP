@@ -39,44 +39,31 @@ private ControlOptions options_;        // Options affecting the
 // Options structure which is given to each router.
 private RouterOptions routerOptions_ = null;
 
-private long simulationTime;            // Current time in simulation
-private long simulationStartTime;       // time at which simulation
-                                        // started  (assuming realtime)
-private long eventTime;                 // The time of the current event
-private long lastEventLength;           // length of time previous event
-                                        // took
 private String xmlFile_;                // name of XML file containing
                                         // config
-private LocalHostInfo myHostInfo_;      // Information about the local
-                                        // info
+private LocalHostInfo myHostInfo_;   // Information about the localhosts
 
-private boolean listening_;             // Is this
+
+private boolean listening_;             
 private GlobalControllerManagementConsole console_ = null;
 private ArrayList <LocalControllerInteractor> localControllers_ =
     null;
 private HashMap<String,
     ProcessWrapper> childProcessWrappers_ = null;
-private ArrayList <String> childNames_ = null;          // names of
-                                                        // child
-                                                        // processes
+private ArrayList <String> childNames_ = null;          
+        // names of child processes
 
 // Arrays below are sparse and this approach is for fast access.
 // outLinks_.get(i) returns a primitive array containing all the
 // nodes directly connected from node i
-private ArrayList <int []> outLinks_ = null;            // numbers of
-                                                        // nodes
-                                                        // which are
-                                                        // connected
-                                                        // from
-// a given node
-private ArrayList <int []> linkCosts_ = null;           // costs of
-                                                        // connections
-                                                        // in above
-
-private ArrayList <Integer> routerList_ = null;         // List of
-                                                        // integers
-                                                        // which
-// contains the numbers of nodes present
+private ArrayList <int []> outLinks_ = null;           
+        // numbers of nodes which are connected from
+        // a given node
+private ArrayList <int []> linkCosts_ = null;           
+        // costs of connections in above
+private ArrayList <Integer> routerList_ = null;         
+        // List of integers which
+        // contains the numbers of nodes present
 
 // Map connections LocalControllerInfo for given LCs to the appropriate
 // interactors
@@ -101,17 +88,13 @@ private int aliveCount = 0;     // Counts number of live nodes running.
 private EventScheduler scheduler_ = null;
 // Class holds scheduler for event list
 
-private boolean simulationRunning_ = true;
-// Used to stop simulation
+private long simulationTime_= 0;
 
 // Maximum ID no of any router instantiated so far.  Next router
 // will have number maxRouterId_+1
 private int maxRouterId_ = 0;
 
 private int noLinks_ = 0;      // number of links in network
-
-// Synchronization object used to wait for next event.
-private Object waitCounter_ = null;
 
 // Variables relate to traffic output of statistics
 private ArrayList <OutputType> trafficOutputRequests_ = null;
@@ -132,7 +115,10 @@ private String myName = "GlobalController";
 private APController APController_ = null;
 
 // Used in shut down routines
-private boolean isActive = false;
+private boolean isActive_ = false;
+
+// Object used in emulation simply to wait
+private Object runLoop_;
 
 // Doing Lattice monitoring ?
 boolean latticeMonitoring = false;
@@ -164,13 +150,9 @@ public static void main(String[] args){
     GlobalController gControl = new GlobalController();
     gControl.xmlFile_ = args[0];
     gControl.init();
-
-    if (gControl.getOptions().isSimulation()) {
-        //FIXME write
-    }
     Logger.getLogger("log").logln(USR.STDOUT,
         gControl.leadin() +
-        "Simulation complete");
+        "Global controller session complete");
     System.out.flush();
 }
 
@@ -186,13 +168,11 @@ private void init(){
     // allocate a new logger
     Logger logger = Logger.getLogger("log");
 
-    // tell it to output to stdout
-    // and tell it what to pick up
+    // tell it to output to stdout and tell it what to pick up
     // it will actually output things where the log has bit
     // USR.STDOUT set
 
-    // tell it to output to stderr
-    // and tell it what to pick up
+    // tell it to output to stderr and tell it what to pick up
     // it will actually output things where the log has bit
     // USR.ERROR set
     logger.addOutput(System.err, new BitMask(USR.ERROR));
@@ -224,11 +204,12 @@ private void init(){
     appInfo = new HashMap<Integer, Integer>();
     options_ = new ControlOptions(xmlFile_);
     routerOptions_ = options_.getRouterOptions();
-    waitCounter_ = new Object();
 
     // create a semaphore with 1 element to ensure
     // single access to some key code blocks
     semaphore = new Semaphore(1);
+    
+    runLoop_= new Object();
 
     // Redirect ouptut for error and normal output if requested in
     // router options file
@@ -311,17 +292,91 @@ private void init(){
         initEmulation();
 
     //Initialise events for schedules
-    initSchedule();
-    //FIXME -- insert start code here
-    //Initialise output
+    scheduler_ = new EventScheduler(options_.isSimulation(), this);
+    options_.initialEvents(scheduler_, this);
+    // Clear output files where needed
     for (OutputType o : options_.getOutputs()) {
         if (o.clearOutputFile()) {
             File f = new File(o.getFileName());
             f.delete();
         }
     }
-    isActive = true;
+    
+    if (options_.isSimulation()) {
+        runSimulation(); 
+    } else {
+        runEmulation();
+    }
 }
+
+/** Runs a simulation loop -- this gets events in turn and executes
+ * them
+ */
+ 
+private void runSimulation() 
+{
+    isActive_= true;
+    while (isActive_) {
+        Event ev= scheduler_.getFirstEvent();
+        simulationTime_= ev.getTime();
+        if (ev == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                "Ran out of events to schedule");
+        }
+        try {
+            executeEvent(ev);
+        } catch (InstantiationException ine) {
+            isActive_= false;
+        } catch (InterruptedException ie) {
+            isActive_= false;
+        } catch (TimeoutException te) {
+            isActive_= false;
+        }
+    }
+    shutDown();
+}
+
+
+/** Runs an emulation loop -- this spawns the scheduler as an independent
+ *  process then waits.  The scheduler sends events back into the
+ *  main loop
+ */
+ 
+private void runEmulation() 
+{
+    isActive_= true;
+    // Start Scheduler as thread
+    Thread t= new Thread(scheduler_);
+    t.start();
+    while(isActive_) {
+        synchronized (runLoop_) {
+            try {
+                runLoop_.wait();
+            } catch (InterruptedException ie) {
+            }
+        }
+    }
+    scheduler_.wakeWait(); // Interrupt the scheduler to close it
+    if (t.isAlive()) {
+        scheduler_.wakeWait();
+        try {
+            t.join();
+        } catch (InterruptedException ie) {
+        }
+    }
+    shutDown();
+}
+
+
+/** Sets isActive_ to false ending the simulation */
+public void deactivate()
+{
+    isActive_= false;
+    if (!options_.isSimulation()) {
+        runLoop_.notify();
+    }
+}
+    
 
 /**
  * Initialisation if we are emulating on hardware.
@@ -401,8 +456,15 @@ private void setupReporters(HashMap<String,
     }
 }
 
+/** checks if events can be simulated */
+public boolean isActive()
+{
+    return isActive_;
+}
+
 /** bail out of simulation relatively gracefully */
-public void bailOut(){
+public void bailOut()
+{
     Logger.getLogger("log").logln(USR.ERROR,
         leadin() + "Bailing out of run!");
     shutDown();
@@ -417,13 +479,19 @@ public void bailOut(){
  * Interrupted if acquisition of lock interrupted
  * Timeout if acquisition timesout*/
 public JSONObject executeEvent(Event e) throws
-InstantiationException,
-InterruptedException, TimeoutException {
+        InstantiationException, InterruptedException, TimeoutException 
+{
+    
     try {
+        // Wait to aquire a lock -- only one event at once
+        //
         boolean acquired = semaphore.tryAcquire(
             options_.getMaxLag(), TimeUnit.MILLISECONDS);
         if (!acquired) throw new TimeoutException(
                 "GlobalController lagging too much");
+        if (!isActive_) {
+            throw new InterruptedException ("Run finished!");
+        }
         Object extraParms = null;
         long eventBegin = System.currentTimeMillis();
         e.preceedEvent(scheduler_, this);
@@ -438,7 +506,8 @@ InterruptedException, TimeoutException {
 }
 
 /** Convenience function to create JSON object from error string*/
-static public JSONObject commandError(String error){
+static public JSONObject commandError(String error)
+{
     JSONObject jsobj = new JSONObject();
 
     try {
@@ -452,7 +521,6 @@ static public JSONObject commandError(String error){
 
 /** Event for start Simulation */
 public void startSimulation(long time){
-    lastEventLength = 0;
     Logger.getLogger("log").logln(USR.STDOUT,
         leadin() +
         "Start of simulation event at: " +
@@ -468,7 +536,6 @@ public void endSimulation(long time){
         leadin() +
         "End of simulation event at " + time +
         " " + System.currentTimeMillis());
-    simulationRunning_ = false;
 
     for (OutputType o : options_.getOutputs())
         if (o.getTimeType() == OutputType.AT_END)
@@ -572,7 +639,7 @@ boolean tryRouterStart(int id,
     String name,
     LocalControllerInfo local,
     LocalControllerInteractor lci)
-throws IOException {
+        throws IOException {
     int port = 0;
     PortPool pp = portPools_.get(local);
     JSONObject routerAttrs;
@@ -593,15 +660,11 @@ throws IOException {
         // create the new router and get it's name
         routerAttrs = lci.newRouter(id, port, port + 1, address, name);
 
-        BasicRouterInfo br = new
-                             BasicRouterInfo(
-            (Integer)routerAttrs.get(
-                "routerID"),
-            simulationTime, local,
-            (Integer)routerAttrs.get(
-                "mgmtPort"),
-            (Integer)routerAttrs.get(
-                "r2rPort"));
+        BasicRouterInfo br = new BasicRouterInfo
+                    ((Integer)routerAttrs.get(
+                    "routerID"), getElapsedTime(), local,
+                    (Integer)routerAttrs.get("mgmtPort"),
+                    (Integer)routerAttrs.get("r2rPort"));
         br.setName((String)routerAttrs.get("name"));
         br.setAddress((String)routerAttrs.get("address"));
         // keep a handle on this router
@@ -610,7 +673,7 @@ throws IOException {
             "Created router " + routerAttrs);
         Logger.getLogger("log").logln(1 << 9,
             elapsedToString(
-                getSimulationElapsedTime()) +
+                getElapsedTime()) +
             ANSI.GREEN + " START ROUTER " +
             id + ANSI.RESET_COLOUR);
         return true;
@@ -684,7 +747,7 @@ private boolean endVirtualRouter(int rId){
 
             Logger.getLogger("log").logln(1 << 9,
                 elapsedToString(
-                    getSimulationElapsedTime())
+                    getElapsedTime())
                 +
                 ANSI.RED + " STOP ROUTER " +
                 rId +
@@ -952,7 +1015,7 @@ private int startVirtualLink(int router1Id,
 
             Logger.getLogger("log").logln(1 << 9,
                 elapsedToString(
-                    getSimulationElapsedTime())
+                    getElapsedTime())
                 +
                 ANSI.BLUE + " CREATE LINK " +
                 router2Id +
@@ -983,7 +1046,6 @@ private int startVirtualLink(int router1Id,
             leadin() + "Giving up on linking");
         bailOut();
     }
-
     return linkID;
 }
 
@@ -1125,33 +1187,7 @@ private boolean endVirtualLink(int rId1, int rId2){
             // TODO:  work out link name, and pass that to
             // LocalControllerInteractor
             lci.endLink(br1.getHost(),
-                br1.getManagementPort(), br2.getAddress());                             //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        //
-                                                                                        // rId2);
-
+                br1.getManagementPort(), br2.getAddress());
             // remove Pair<router1Id, router2Id> -> connectionName
             // to
             // linkNames
@@ -1160,20 +1196,13 @@ private boolean endVirtualLink(int rId1, int rId2){
             linkInfo.remove(linkID);
 
             Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() +
-                "remove link from: " + rId2 +
-                " to " + rId1 +
-                " with link ID: "
-                + linkID);
-
+                leadin() + "remove link from: " + rId2 +
+                " to " + rId1 + " with link ID: " + linkID);
             Logger.getLogger("log").logln(1 << 9,
                 elapsedToString(
-                    getSimulationElapsedTime())
-                +
-                ANSI.MAGENTA +
-                " REMOVE LINK " + rId2 +
-                " TO " + rId1 +
-                ANSI.RESET_COLOUR);
+                    getElapsedTime())
+                + ANSI.MAGENTA + " REMOVE LINK " + rId2 +
+                " TO " + rId1 + ANSI.RESET_COLOUR);
             break;
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR,
@@ -1353,45 +1382,36 @@ public List<String> compileRouterStats(){
  * Shutdown
  */
 void shutDown(){
-    simulationRunning_ = false;
-    if (isActive) {
+    Logger.getLogger("log").logln(USR.STDOUT,
+        leadin() + "SHUTDOWN CALLED!");
+    if (!options_.isSimulation()) {
+        // stop monitoring
+        if (latticeMonitoring)
+            stopMonitoringConsumer();
+        //ThreadTools.findAllThreads("GC pre
+        // killAllControllers:");
+        killAllControllers();
+        //ThreadTools.findAllThreads("GC post
+        // killAllControllers:");
         Logger.getLogger("log").logln(USR.STDOUT,
-            leadin() + "SHUTDOWN CALLED!");
-        if (!options_.isSimulation()) {
-            // stop monitoring
-            if (latticeMonitoring)
-                stopMonitoringConsumer();
-            //ThreadTools.findAllThreads("GC pre
-            // killAllControllers:");
-            killAllControllers();
-            //ThreadTools.findAllThreads("GC post
-            // killAllControllers:");
-            Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() + "Pausing.");
-            try {
-                Thread.sleep(10);
-            } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                    leadin() + e.getMessage());
-                System.exit(-1);
-            }
-            //ThreadTools.findAllThreads("GC post checkMessages:");
-            Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() + "Stopping console");
-            console_.stop();
-            //ThreadTools.findAllThreads("GC post stop console:");
+            leadin() + "Pausing.");
+        try {
+            Thread.sleep(10);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                leadin() + e.getMessage());
+            System.exit(-1);
         }
+        //ThreadTools.findAllThreads("GC post checkMessages:");
         Logger.getLogger("log").logln(USR.STDOUT,
-            leadin() +
-            "All stopped, shut down now!");
-        isActive = false;
+            leadin() + "Stopping console");
+        console_.stop();
+        //ThreadTools.findAllThreads("GC post stop console:");
     }
+    Logger.getLogger("log").logln(USR.STDOUT,
+        leadin() +
+        "All stopped, shut down now!");
 }
-
-/*public void APControllerUpdate(long time)
- * {
- *  APController_.controllerUpdate(time, this);
- * }*/
 
 /** Produce some output */
 public void produceOutput(long time, OutputType o){
@@ -1572,19 +1592,9 @@ public Reporter findByInterface(Class inter){
         for (Class<?>rI : reporter.getClass().getInterfaces()) {
             if (rI.isAssignableFrom(inter))
                 return reporter;
-            /*
-             * if (inter.isAssignableFrom(rI)) {
-             *  return reporter;
-             * }
-             */
         }
     }
     return null;
-}
-
-private void initSchedule(){
-    scheduler_ = new EventScheduler();
-    options_.initialEvents(scheduler_, this);
 }
 
 private void startLocalControllers(){
@@ -1639,66 +1649,24 @@ public void aliveMessage(LocalHostInfo lh){
         lh.getName() + ":" + lh.getPort());
 }
 
-/**
- * Wait until a specified absolute time is milliseconds.
- */
-public void waitUntil(long time){
-    long now = System.currentTimeMillis();
-
-    if (time <= now)
-        return;
-    try {
-        long timeout = time - now;
-        Logger.getLogger("log").logln(
-            USR.STDOUT,
-            "EVENT: " + "<" + lastEventLength + "> " +
-            (now -
-             simulationStartTime) + " @ " +
-            now + " waiting " + timeout);
-        synchronized (waitCounter_) {
-            waitCounter_.wait(timeout);
-        }
-        lastEventLength = System.currentTimeMillis() - now;
-    } catch (InterruptedException e) {
-    }
-}
-
-/** Interrupt above wait*/
-public void wakeWait(){
-    synchronized (waitCounter_) {
-        waitCounter_.notify();
-    }
-}
 
 /**
  * Get the simulation start time.
  * This is the time the simulation actually started.
  */
-public long getSimulationStartTime(){
-    return simulationStartTime;
+public long getStartTime(){
+    if (options_.isSimulation())
+        return 0;
+    return scheduler_.getStartTime();
 }
 
-/**
- * Get the simulation current time.
- * This is the current time within the simulation.
- */
-public long getSimulationCurrentTime(){
-    return simulationTime;
-}
 
 /**
  * Get the simulation elapsed time.
  * This is the elapsed time within the simulation.
  */
-public long getSimulationElapsedTime(){
-    return simulationTime - simulationStartTime;
-}
-
-/**
- * Get the time of the current event
- */
-public long getEventTime(){
-    return eventTime;
+public long getElapsedTime(){
+    return scheduler_.getElapsedTime();
 }
 
 /**
@@ -1931,8 +1899,6 @@ public int getLinkWeight(int l1, int l2){
 
 public void setAP(int gid, int AP){
     //System.out.println("setAP called");
-    if (!simulationRunning_)
-        return;
     Logger.getLogger("log").logln(USR.STDOUT,
         leadin() + " router " + gid +
         " now has access point " + AP);
@@ -1961,14 +1927,14 @@ public void setAP(int gid, int AP){
         if (gid == AP) {
             Logger.getLogger("log").logln(1 << 8,
                 elapsedToString(
-                    getSimulationElapsedTime())
+                    getElapsedTime())
                 + ANSI.BLUE + " ROUTER " +
                 gid + " BECOME AP" +
                 ANSI.RESET_COLOUR);
         } else {
             Logger.getLogger("log").logln(1 << 8,
                 elapsedToString(
-                    getSimulationElapsedTime())
+                    getElapsedTime())
                 + ANSI.CYAN + " ROUTER " +
                 gid + " SET AP " + AP +
                 ANSI.RESET_COLOUR);
