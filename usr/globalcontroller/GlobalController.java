@@ -42,8 +42,6 @@ private RouterOptions routerOptions_ = null;
 private String xmlFile_;                // name of XML file containing
                                         // config
 private LocalHostInfo myHostInfo_;   // Information about the localhosts
-
-
 private boolean listening_;             
 private GlobalControllerManagementConsole console_ = null;
 private ArrayList <LocalControllerInteractor> localControllers_ =
@@ -346,13 +344,15 @@ private void runEmulation()
 {
     isActive_= true;
     // Start Scheduler as thread
-    Thread t= new Thread(scheduler_);
-    t.start();
-    while(isActive_) {
-        synchronized (runLoop_) {
+    Thread t;
+    synchronized (runLoop_) {
+        t= new Thread(scheduler_);
+        t.start();
+        while(isActive_) {
             try {
                 runLoop_.wait();
             } catch (InterruptedException ie) {
+            } catch (IllegalMonitorStateException ims) {
             }
         }
     }
@@ -373,7 +373,9 @@ public void deactivate()
 {
     isActive_= false;
     if (!options_.isSimulation()) {
-        runLoop_.notify();
+        synchronized(runLoop_) {
+            runLoop_.notify();
+        }
     }
 }
     
@@ -634,12 +636,10 @@ private boolean startVirtualRouter(int id, String address,
 }
 
 /** Make one attempt to start a router */
-boolean tryRouterStart(int id,
-    String address,
-    String name,
-    LocalControllerInfo local,
-    LocalControllerInteractor lci)
-        throws IOException {
+boolean tryRouterStart(int id, String address, String name,
+    LocalControllerInfo local, LocalControllerInteractor lci)
+throws IOException 
+{
     int port = 0;
     PortPool pp = portPools_.get(local);
     JSONObject routerAttrs;
@@ -1258,15 +1258,16 @@ public boolean appStop(int appId){
  * Run an application on a Router.
  * Returns the app ID
  */
-public int appStart(int routerID, String className,
-    String[] args)                               {
+public int appStart(int routerID, String className, String[] args)                               
+{
     // return +ve no for valid id
     // return -1 for no start - cant find LocalController
     BasicRouterInfo br = routerIdMap_.get(routerID);
-
+    if (br == null) {
+        return -1;
+    }
     LocalControllerInteractor lci = interactorMap_.get(
         br.getLocalControllerInfo());
-
     if (lci == null)
         return -1;
     int i;
@@ -1283,12 +1284,10 @@ public int appStart(int routerID, String className,
                 args);
 
             // consturct an ID from the routerID and the appID
-            Pair<Integer,
-                Integer> idPair = new Pair<Integer, Integer>(
-                routerID, (Integer)response.get("aid"));
-
+            Pair<Integer,Integer> idPair = 
+                    new Pair<Integer, Integer>(routerID, 
+                        (Integer)response.get("aid"));
             appID = idPair.hashCode();
-
             String appName = (String)response.get("name");
 
             // Add app to BasicRouterInfo
@@ -1310,25 +1309,22 @@ public int appStart(int routerID, String className,
             dataMap.put("state", "STARTED");
 
             br.setApplicationData(appName, dataMap);
-
             // add app to app info
             appInfo.put(appID, routerID);
-
             return appID;
-        } catch (Exception e) {
+        } catch (JSONException je) {
             Logger.getLogger("log").logln(USR.ERROR,
-                leadin() +
-                " failed to start app " +
-                className + " on " + routerID +
-                " try " + i +
-                " with Exception " + e);
+                leadin() + " failed to start app " + className + " on " 
+                + routerID + " try " + i + " with Exception " + je);
+        } catch (IOException io) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                leadin() + " failed to start app " + className + " on " 
+                + routerID + " try " + i + " with Exception " + io);
         }
     }
     Logger.getLogger("log").logln(USR.ERROR,
-        leadin() +
-        " failed to start app " + className +
-        " on " +
-        routerID + " giving up ");
+        leadin() + " failed to start app " + className +
+        " on " + routerID + " giving up ");
     return -1;
 }
 
@@ -1424,9 +1420,8 @@ public void produceOutput(long time, OutputType o){
         s = new FileOutputStream(f, true);
         p = new PrintStream(s, true);
     } catch (Exception e) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + "Cannot open " +
-            o.getFileName() +
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+            "Cannot open " + o.getFileName() +
             " for output " + e.getMessage());
         return;
     }
@@ -1455,7 +1450,8 @@ public void checkTrafficOutputRequests(long time,
     if (options_.isSimulation()) {
         Logger.getLogger("log").logln(USR.ERROR,
             leadin() +
-            "Request for output of traffic makes sense only in context of emulation");
+            "Request for output of traffic makes sense only"
+            +" in context of emulation");
         return;
     }
     if (trafficOutputRequests_ == null) {
@@ -1497,11 +1493,8 @@ public void receiveRouterStats(String stats){
                 p = new PrintStream(s, true);
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.ERROR,
-                    leadin() +
-                    "Cannot open " +
-                    o.getFileName() +
-                    " for output " +
-                    e.getMessage());
+                    leadin() + "Cannot open " + o.getFileName() +
+                    " for output " + e.getMessage());
                 return;
             }
             OutputTraffic ot = (OutputTraffic)o.getOutputClass();
@@ -1667,6 +1660,14 @@ public long getStartTime(){
  */
 public long getElapsedTime(){
     return scheduler_.getElapsedTime();
+}
+
+/**
+ * Is the global controller running in simulation mode
+ */
+ 
+public boolean isSimulation() {
+    return options_.isSimulation();
 }
 
 /**
@@ -2011,11 +2012,6 @@ public void connectNetwork(long time){
                     (nRouters - noVisited));
             int l1 = -1;
             int l2 = -1;
-            //System.err.println("Pick "+i1+" from "+noVisited+"
-            // visited
-            // nodes");
-            //System.err.println("Pick "+i2+" from
-            // "+(nRouters-noVisited)+" unvisited nodes");
             for (int i = 0; i < nRouters; i++) {
                 int tmpNode = routerList_.get(i);
                 if (visited[tmpNode] && i1 >= 0) {
@@ -2038,10 +2034,6 @@ public void connectNetwork(long time){
                 bailOut();
                 return;
             }
-            // Make a new link to connect network
-            //System.err.println("Link "+l1+" is "+visited[l1]+"
-            // "+l2+"
-            // is "+visited[l2]);
             startLink(time, l1, l2, 1, null);
             toVisitCtr++;
             toVisit[0] = l2;
@@ -2080,11 +2072,8 @@ public void connectNetwork(long time, int r1, int r2){
     toVisit[0] = r1;
     int noVisited = 1;
     while (noVisited < nRouters) {
-        //System.err.println("NoVisited = "+noVisited+" /
-        // "+nRouters);
-        if (toVisitCtr == 0) {          // Not visited everything so
-                                        // make a
-                                        // new link
+        if (toVisitCtr == 0) {          
+            // Not visited everything so make a new link
             // Choose i1 th visited and i2 th unvisited
             int i1 = (int)Math.floor(Math.random() * noVisited);
             int i2 =
@@ -2092,11 +2081,6 @@ public void connectNetwork(long time, int r1, int r2){
                     (nRouters - noVisited));
             int l1 = -1;
             int l2 = -1;
-            //System.err.println("Pick "+i1+" from "+noVisited+"
-            // visited
-            // nodes");
-            //System.err.println("Pick "+i2+" from
-            // "+(nRouters-noVisited)+" unvisited nodes");
             for (int i = 0; i < nRouters; i++) {
                 int tmpNode = routerList_.get(i);
                 if (visited[tmpNode] && i1 >= 0) {
@@ -2119,10 +2103,6 @@ public void connectNetwork(long time, int r1, int r2){
                 bailOut();
                 return;
             }
-            // Make a new link to connect network
-            //System.err.println("Link "+l1+" is "+visited[l1]+"
-            // "+l2+"
-            // is "+visited[l2]);
             startLink(time, l1, l2, 1, null);
             toVisitCtr++;
             toVisit[0] = l2;
@@ -2145,6 +2125,10 @@ public void connectNetwork(long time, int r1, int r2){
 
 public boolean isLatticeMonitoring(){
     return latticeMonitoring;
+}
+
+public long getMaximumLag() {
+    return options_.getMaxLag();
 }
 
 /** Accessor function for ControlOptions structure options_ */

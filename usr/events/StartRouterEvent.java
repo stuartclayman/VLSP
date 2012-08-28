@@ -56,15 +56,18 @@ InstantiationException {
             jsobj.put("success", false);
             jsobj.put("msg", "Could not create router");
         } else {
-            BasicRouterInfo bri= gc.findRouterInfo(rNo);
+            
             jsobj.put("success", true);
-            jsobj.put("routerID", bri.getId());
-            jsobj.put("name", bri.getName());
-            jsobj.put("address", bri.getAddress());
-            jsobj.put("mgmtPort", bri.getManagementPort());
-            jsobj.put("r2rPort", bri.getRoutingPort());
+            jsobj.put("routerID", rNo);
+            if (!gc.isSimulation()) {
+                BasicRouterInfo bri= gc.findRouterInfo(rNo);
+                jsobj.put("name", bri.getName());
+                jsobj.put("address", bri.getAddress());
+                jsobj.put("mgmtPort", bri.getManagementPort());
+                jsobj.put("r2rPort", bri.getRoutingPort());
+            }
             jsobj.put("msg", "Created router " + rNo + " " +
-                bri.getName()+":"+bri.getRoutingPort());
+                nameString());
         }
     } catch (JSONException je) {
         Logger.getLogger("log").logln(

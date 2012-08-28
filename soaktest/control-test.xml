@@ -3,7 +3,6 @@
      <Port>8888</Port>
      <StartLocalControllers>true</StartLocalControllers>
      <ConnectedNetwork>true</ConnectedNetwork>
-     <LatticeMonitoring>true</LatticeMonitoring>
   </GlobalController>
 
   <LocalController>

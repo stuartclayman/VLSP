@@ -118,20 +118,15 @@ public void  handle(Request request,
 /**
  * Create router given a request and send a response.
  */
-public void createRouter(Request request,
-    Response response) throws IOException,
-JSONException {
-    // Args:
-    // [name]
-    // [address]
+public void createRouter(Request request, Response response) 
+        throws IOException, JSONException 
+{       //Args: [name][address]
 
     String name = null;
     String address = null;
 
     Query query = request.getQuery();
-
     /* process optional args */
-
     if (query.containsKey("name"))
         name = query.get("name");
 
@@ -144,7 +139,8 @@ JSONException {
     String failMessage=null;
     JSONObject jsobj= null;
     try {
-        StartRouterEvent ev= new StartRouterEvent(0,null,address,name);
+        StartRouterEvent ev= new StartRouterEvent
+            (controller_.getElapsedTime(),null,address,name);
         jsobj= controller_.executeEvent(ev);
         if (jsobj.get("success").equals(false)) {
             success= false;
@@ -171,9 +167,9 @@ JSONException {
 /**
  * Delete a router given a request and send a response.
  */
-public void deleteRouter(Request request,
-    Response response) throws IOException,
-JSONException {
+public void deleteRouter(Request request, Response response) 
+    throws IOException, JSONException 
+{
     // if we got here we have 2 parts
     // /router/ and another bit
     String name = request.getPath().getName();
@@ -183,10 +179,11 @@ JSONException {
     EndRouterEvent ev;
     try {           // Could be integer or could be string
         int rId= Integer.parseInt(name);
-        ev= new EndRouterEvent(0,null,rId);
+        ev= new EndRouterEvent(controller_.getElapsedTime(),null,rId);
     } catch (NumberFormatException nfe) {
         try {
-            ev= new EndRouterEvent(0,null,name,controller_);
+            ev= new EndRouterEvent(controller_.getElapsedTime(),
+                null,name,controller_);
         } catch (InstantiationException ie) {
             badRequest(response,
                 "deleteRouter cannot find router with address "+name);
@@ -230,7 +227,8 @@ public void listRouters(Request request, Response response)
     boolean success=true;
     String failMessage=null;
     try {
-        ListRoutersEvent ev= new ListRoutersEvent(0);
+        ListRoutersEvent ev= new ListRoutersEvent
+            (controller_.getElapsedTime(),null);
         jsobj= controller_.executeEvent(ev);
     } catch (InterruptedException ie) {
         success= false;

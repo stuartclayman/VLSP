@@ -25,8 +25,8 @@ public LocalOKCommand(){
 /**
  * Evaluate the Command.
  */
-public boolean evaluate(Request request,
-    Response response)                        {
+public boolean evaluate(Request request, Response response)                        
+{
     try {
         PrintStream out = response.getPrintStream();
 

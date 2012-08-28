@@ -26,10 +26,9 @@ public StartLinkEvent (long time, EventEngine eng, int r1, int r2){
     numbersSet_ = true;
 }
 
-public StartLinkEvent (long time,
-    EventEngine eng,
-    String add1,
-    String add2){
+public StartLinkEvent (long time, EventEngine eng, String add1, 
+        String add2)
+{
     time_ = time_;
     engine_ = eng;
     address1_ = add1;
@@ -37,12 +36,10 @@ public StartLinkEvent (long time,
     numbersSet_ = false;
 }
 
-public StartLinkEvent (long time,
-    EventEngine eng,
-    String add1,
-    String add2,
-    GlobalController gc)
-throws InstantiationException {
+public StartLinkEvent (long time, EventEngine eng, String add1, 
+    String add2, GlobalController gc)
+throws InstantiationException 
+{
     time_ = time_;
     engine_ = eng;
     address1_ = add1;
@@ -67,10 +64,10 @@ private String getName(){
     return str;
 }
 
-private void setRouterNumbers(String add1,
-    String add2,
+private void setRouterNumbers(String add1, String add2,
     GlobalController gc)
-throws InstantiationException {
+throws InstantiationException 
+{
     BasicRouterInfo r1Info = gc.findRouterInfo(add1);
 
     if (r1Info == null) throw new InstantiationException(
@@ -105,10 +102,17 @@ InstantiationException {
             json.put("msg", "link started " + getName());
             json.put("router1", (Integer)router1_);
             json.put("router2", (Integer)router2_);
-            json.put("link", (Integer)linkNo);
+            json.put("linkID", (Integer)linkNo);
+            json.put("weight", weight_);
             if (address1_ != null) {
                 json.put("address1", address1_);
                 json.put("address2", address2_);
+            }
+            if (linkName_ != null) {
+                json.put("linkName", linkName_); 
+            } else if (!gc.isSimulation()) {
+                LinkInfo li = gc.findLinkInfo(linkNo);
+                json.put("linkName", li.getLinkName());
             }
         } else {
             json.put("success", (Boolean)false);

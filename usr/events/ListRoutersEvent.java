@@ -11,8 +11,9 @@ import usr.common.*;
 public class ListRoutersEvent extends Event
 {
 
-public ListRoutersEvent (long time){
-    engine_ = null;
+public ListRoutersEvent (long time, EventEngine eng){
+    time_= time;
+    engine_ = eng;
 }
 
 

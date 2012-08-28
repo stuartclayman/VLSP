@@ -13,27 +13,29 @@ import java.util.Scanner;
 import java.util.Map;;
 import java.io.PrintStream;
 import java.io.IOException;
+import java.util.concurrent.*;
+import usr.events.*;
 
 /**
  * A class to handle /router/[0-9]+/app/ requests
  */
 public class AppRestHandler extends AbstractRestRequestHandler
-implements RequestHandler
+    implements RequestHandler
 {
 // get GlobalController
-GlobalController gc;
+GlobalController controller_;
 
-public AppRestHandler(){
+public AppRestHandler()
+{
 }
 
 /**
  * Handle a request and send a response.
  */
-public void  handle(Request request,
-    Response response)                    {
+public void  handle(Request request, Response response)                    
+{
     // get GlobalController
-    gc =
-        (GlobalController)getManagementConsole().
+    controller_ = (GlobalController)getManagementConsole().
         getComponentController();
 
     try {
@@ -90,8 +92,7 @@ public void  handle(Request request,
             else
                 notFound(response, "DELETE bad request");
         } else if (method.equals("GET")) {
-            if (name == null)                           // no arg, so
-                                                        // list apps
+            if (name == null)  // no arg, so list apps
                 listApps(request, response);
             else if (segments.length == 4)              // get app info
                 getAppInfo(request, response);
@@ -117,18 +118,14 @@ public void  handle(Request request,
 /**
  * Create app given a request and send a response.
  */
-public void createApp(Request request,
-    Response response) throws IOException,
-JSONException {
-    // Args:
-    // routerID
-    // className
+public void createApp(Request request, Response response) 
+throws IOException, JSONException
+{
     // args
 
     int routerID;
-    String className;
-    String rawArgs = "";
-
+    String className= null;
+    String rawArgs = null;
     String[] args = null;
 
     // get the path
@@ -141,9 +138,7 @@ JSONException {
     // process router ID
     // it is 2nd element of segments
     String routerValue = segments[1];
-
     scanner = new Scanner(routerValue);
-
     if (scanner.hasNextInt()) {
         routerID = scanner.nextInt();
     } else {
@@ -171,56 +166,59 @@ JSONException {
 
         rawArgs = rawArgs.trim();
         rawArgs = rawArgs.replaceAll("  +", " ");
-
         // now convert raw args to String[]
         args = rawArgs.split(" ");
+    } else {
+        args= new String[0];
     }
 
     /* do work */
 
-    // Start app
-    int appID = gc.appStart(routerID, className, args);
-
-    if (response == null) {
-        // error
-        badRequest(response,
-            "Error creating app " + className + " " + rawArgs);
-    } else {
-        // Finding an app by appID returns the BasicRouterInfo
-        // of the Router the app  is running on
-        BasicRouterInfo bri = gc.findAppInfo(appID);
-        // Now get the App name from the ID
-        String appName = bri.getAppName(appID);
-        // New lookup all the app data, by name
-        Map<String, Object>data = bri.getApplicationData(appName);
-
-        // and send them back as the return value
+    boolean success= true;
+    String failMessage=null;
+    JSONObject jsobj= null;
+    try {
+        OnRouterEvent ore= new OnRouterEvent
+            (controller_.getElapsedTime(),null,routerID,
+                className, args);
+        jsobj= controller_.executeEvent(ore);
+        if (jsobj.get("success").equals(false)) {
+            success= false;
+            failMessage= (String)jsobj.get("msg");
+        }
+    } catch (InterruptedException ie) {
+        success= false;
+        failMessage="Signal interrupted in global controller";
+    } catch (InstantiationException ine) {
+        success= false;
+        failMessage="Unexplained failure executing OnRouterEvent";
+    } catch (TimeoutException to) {
+        success= false;
+        failMessage="Semaphore timeout in global controller -- too busy";
+    }
+    if (success) {
         PrintStream out = response.getPrintStream();
-
-        JSONObject jsobj = new JSONObject();
-        jsobj.put("id", appID);
-        jsobj.put("aid", (Integer)data.get("aid"));
-        jsobj.put("name", appName);
-        jsobj.put("routerID", bri.getId());
-
         out.println(jsobj.toString());
+    } else {
+        badRequest(response, "Error starting application: "+failMessage);
+        response.close();
     }
 }
 
 /**
  * Delete a app given a request and send a response.
  */
-public void deleteApp(Request request,
-    Response response) throws IOException,
-JSONException {
+public void deleteApp(Request request, Response response) 
+throws IOException, JSONException 
+{
+     notFound(response, "deleteApp not implemented yet");
 }
 
 /**
  * List apps given a request and send a response.
  */
-public void listApps(Request request,
-    Response response) throws IOException,
-JSONException {
+public void listApps(Request request, Response response) 
+    throws IOException, JSONException {
     int routerID;
 
     Scanner scanner;
@@ -243,30 +241,44 @@ JSONException {
         response.close();
         return;
     }
+    
+    boolean success= true;
+    String failMessage=null;
+    JSONObject jsobj= null;
+    try {
+        ListAppsEvent lae= new ListAppsEvent
+            (controller_.getElapsedTime(),null,routerID);
+        jsobj= controller_.executeEvent(lae);
+        if (jsobj.get("success").equals(false)) {
+            success= false;
+            failMessage= (String)jsobj.get("msg");
+        }
+    } catch (InterruptedException ie) {
+        success= false;
+        failMessage="Signal interrupted in global controller";
+    } catch (InstantiationException ine) {
+        success= false;
+        failMessage="Unexplained failure executing OnRouterEvent";
+    } catch (TimeoutException to) {
+        success= false;
+        failMessage="Semaphore timeout in global controller -- too busy";
+    }
+    if (success) {
+        PrintStream out = response.getPrintStream();
+        out.println(jsobj.toString());
+    } else {
+        badRequest(response, "Error starting application: "+failMessage);
+    }
+    
 
-    BasicRouterInfo bri = gc.findRouterInfo(routerID);
-
-    // and send them back as the return value
-    PrintStream out = response.getPrintStream();
-
-    JSONObject jsobj = new JSONObject();
-    JSONArray array = new JSONArray();
-
-    for (Integer id : bri.getApplicationIDs())
-        array.put(id);
-
-    jsobj.put("type", "app");
-    jsobj.put("list", array);
-
-    out.println(jsobj.toString());
 }
 
 /**
  * Get info on a app given a request and send a response.
  */
-public void getAppInfo(Request request,
-    Response response) throws IOException,
-JSONException {
+public void getAppInfo(Request request, Response response) 
+throws IOException, JSONException 
+{
     notFound(response, "getAppInfo not implemented yet");
 }
 }

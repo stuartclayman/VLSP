@@ -33,103 +33,41 @@ import java.lang.reflect.InvocationTargetException;
 public class ControlOptions
 {
 private ArrayList<LocalControllerInfo> localControllers_;
-private int globalControlPort_ = 8888;                  // Port global
-                                                        // controller
-                                                        // listens on
-private String remoteLoginCommand_ = null;              // Command used
-                                                        // to login
-                                                        // to start
-                                                        // local
-                                                        // controller
-private String remoteStartController_ = null;           // Command used
-                                                        // on
-                                                        // local
-                                                        // controller to
-                                                        // start it
-private String remoteLoginFlags_ = null;                //  Flags used
-                                                        // for ssh to
-                                                        // login to
-                                                        // remote
-                                                        // machine
-private String remoteLoginUser_ = null;                 // User on
-                                                        // remote
-                                                        // machines to
-                                                        // login
-                                                        // with.
-private boolean startLocalControllers_ = true;          // If true
-                                                        // Global
-                                                        // Controller
-                                                        // starts
-                                                        // local
-                                                        // controllers
-private boolean isSimulation_ = false;                  //  If true
-                                                        // simulation in
-                                                        // software not
-                                                        // emulation
-                                                        // in hardware
-private boolean allowIsolatedNodes_ = true;             // If true,
-                                                        // check for
-                                                        // isolated
-                                                        // nodes
-private boolean connectedNetwork_ = false;              // If true, keep
-                                                        // network
-                                                        // connected
-private boolean latticeMonitoring = false;              // If true, turn
-                                                        // on
-                                                        // Lattice
-                                                        // Monitoring
-private HashMap<String, String> consumerInfoMap = null; // An map of
-                                                        // class
-                                                        // names for
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        //
-                                                        // Monitoring
-                                                        // consumers
-                                                        // and thier
-                                                        // label
+private int globalControlPort_ = 8888;                  
+        // Port global  controller listens on
+private String remoteLoginCommand_ = null;              
+        // Command used  to login to start local
+        // controller
+private String remoteStartController_ = null;           
+        // Command used on local controller to start it
+private String remoteLoginFlags_ = null;                
+        //  Flags used for ssh to login to remote machine
+private String remoteLoginUser_ = null;                 
+        // User on remote machines to login with.
+private boolean startLocalControllers_ = true;          
+        // If true Global Controller starts local controllers
+private boolean isSimulation_ = false;                  
+        // If true simulation in software not emulation in hardware
+private boolean allowIsolatedNodes_ = true;             
+        // If true, check for isolated nodes
+private boolean connectedNetwork_ = false;              
+        // If true, keep network connected
+private boolean latticeMonitoring = false;           
+        // If true, turn on Lattice Monitoring
+private HashMap<String, String> consumerInfoMap = null; 
+        // A map of class names for Monitoring consumers and their label
 
 private int controllerWaitTime_ = 6;
-private int lowPort_ = 10000;                           // Default
-                                                        // lowest port
-                                                        // to be used on
-                                                        // local
-                                                        // controller
-private int highPort_ = 20000;                          // Default
-                                                        // highest port
-                                                        // to be used on
-                                                        // local
-                                                        // controller
-private int maxLag_ = 10000;                            // Maximum lag
-                                                        // tolerable in
-                                                        // simulation
-                                                        // in millisec
+private int lowPort_ = 10000;                           
+    // Default lowest port to be used on  local controller
+private int highPort_ = 20000;                          
+    // Default highest port to be used on local controller
+private int maxLag_ = 10000;                            
+    // Maximum lag tolerable in simulation in millisec
 private String routerOptionsString_ = "";               //
 private RouterOptions routerOptions_ = null;
-private ArrayList <EventEngine> engines_ = null;        // Engines used
-                                                        // to
-                                                        // create new
-                                                        // events for
-                                                        // sim
+private ArrayList <EventEngine> engines_ = null;        
+    // Engines used to create new events for sim
 
 private ArrayList <OutputType> outputs_ = null;
 
@@ -575,9 +513,6 @@ SAXException {
 /**
  *  Process tags which specify Event engines */
 private void processEventEngines(NodeList eng) throws SAXException {
-    if (eng.getLength() == 0) throw new SAXException
-              (
-            "Must be at least one EventEngine tag in control file");
     while (eng.getLength() != 0)
         engines_.add(processEventEngine(eng.item(0)));
 }
@@ -911,8 +846,14 @@ ArrayList <OutputType> getOutputs(){
 }
 
 /** Initialise event list */
-public void initialEvents(EventScheduler s,
-    GlobalController g)                        {
+public void initialEvents(EventScheduler s, GlobalController g)
+{
+    // If no engines simply start simulation
+    if (engines_.size() == 0) {
+        StartSimulationEvent sse= new StartSimulationEvent(0,null);
+        s.addEvent(sse);
+        return;
+    }
     engines_.get(0).startStopEvents(s, g);
     for (EventEngine eng : engines_)
         eng.initialEvents(s, g);

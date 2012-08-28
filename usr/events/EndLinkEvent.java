@@ -17,17 +17,15 @@ String addr1_ = null;
 String addr2_ = null;
 
 public EndLinkEvent (long time, EventEngine eng, int r1, int r2)
-throws InstantiationException {
+{
     time_ = time;
     engine_ = eng;
     router1_ = r1;
     router2_ = r2;
 }
 
-public EndLinkEvent (long time,
-    EventEngine eng,
-    String add1,
-    String add2){
+public EndLinkEvent (long time, EventEngine eng, String add1, 
+        String add2){
     time_ = time;
     engine_ = eng;
     addr1_ = add1;
@@ -35,12 +33,10 @@ public EndLinkEvent (long time,
     routerNumsSet_ = false;
 }
 
-public EndLinkEvent (long time,
-    EventEngine eng,
-    String add1,
-    String add2,
-    GlobalController gc)
-throws InstantiationException {
+public EndLinkEvent (long time, EventEngine eng, String add1,
+    String add2, GlobalController gc)
+throws InstantiationException 
+{
     time_ = time_;
     engine_ = eng;
     addr1_ = add1;
@@ -48,15 +44,14 @@ throws InstantiationException {
     initNumbers(add1, add2, gc);
 }
 
-public String toString(){
+public String toString()
+{
     String str = "EndLinkEvent " + time_ + getName();
-
     return str;
 }
 
 private String getName(){
     String str = "";
-
     if (addr1_ == null)
         str += router1_ + " " + router2_;
     else
@@ -65,9 +60,9 @@ private String getName(){
 }
 
 private void initNumbers(String add1, String add2, GlobalController gc)
-throws InstantiationException {
+throws InstantiationException 
+{
     BasicRouterInfo r1Info = gc.findRouterInfo(add1);
-
     if (r1Info == null) throw new InstantiationException(
             "Cannot find address " + add1);
     BasicRouterInfo r2Info = gc.findRouterInfo(add2);

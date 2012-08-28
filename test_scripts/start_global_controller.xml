@@ -1,0 +1,19 @@
+<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <StartLocalControllers>true</StartLocalControllers>
+     <Simulation>false</Simulation>
+  </GlobalController>
+  <LocalController>
+        <Name>localhost</Name>
+        <Port>9000</Port>
+        <LowPort>9900</LowPort>
+        <HighPort>10000</HighPort>
+  </LocalController>
+    <LocalController>
+        <Name>localhost</Name>
+        <Port>9001</Port>
+        <LowPort>10002</LowPort>
+        <HighPort>10100</HighPort>
+  </LocalController>
+</SimOptions>

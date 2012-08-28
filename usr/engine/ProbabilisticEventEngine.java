@@ -26,27 +26,18 @@ import java.util.*;
  */
 public class ProbabilisticEventEngine  extends NullEventEngine
 {
-int timeToEnd_;                                         // Time to end
-                                                        // of simulation
-                                                        // (ms)
-ProbDistribution nodeCreateDist_ = null;                //  Distribution
-                                                        // for
-                                                        // creating
-                                                        // nodes
-ProbDistribution nodeDeathDist_ = null;                 // Distribution
-                                                        // of node
-                                                        // lifetimes
-ProbDistribution linkCreateDist_ = null;                // Distribution
-                                                        // for number
-                                                        // of links
-                                                        // created
-ProbDistribution linkDeathDist_ = null;                 // Distribution
-                                                        // for link
-                                                        // lifetimes
-private boolean preferentialAttachment_ = false;        // If true links
-                                                        // are
-                                                        // chosen using
-                                                        // P.A.
+int timeToEnd_; 
+    // Time to end of simulation (ms)
+ProbDistribution nodeCreateDist_ = null;                
+    //  Distribution for creating nodes
+ProbDistribution nodeDeathDist_ = null;                 
+    // Distribution of node lifetimes
+ProbDistribution linkCreateDist_ = null;                
+    // Distribution for number of links created
+ProbDistribution linkDeathDist_ = null;                 
+    // Distribution for link  lifetimes
+private boolean preferentialAttachment_ = false;        
+    // If true links are chosen using P.A.
 
 /** Contructor from Parameter string */
 public ProbabilisticEventEngine(int time, String parms) throws
@@ -160,9 +151,9 @@ private void followRouter(StartRouterEvent e,
     for (int i = 0; i < noLinks; i++) {
         if (nodes.size() <= 0)
             break;
-        if (preferentialAttachment_) {          // Choose a node using
-                                                // pref.
-                                                // attach.
+            
+        // Choose a node using pref. attach.
+        if (preferentialAttachment_) { 
             int totLinks = 0;
             for (int l : nodes)
                 totLinks += g.getOutLinks(l).length;

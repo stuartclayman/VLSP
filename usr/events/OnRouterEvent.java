@@ -6,6 +6,8 @@ import usr.globalcontroller.*;
 import usr.engine.*;
 import usr.common.*;
 import us.monoid.json.*;
+import java.util.*;
+import java.lang.*;
 
 /** Class represents a global controller event*/
 public class OnRouterEvent extends Event
@@ -16,11 +18,8 @@ String [] command_ = null;
 String address_ = null;
 boolean routerNumSet_ = true;
 
-public OnRouterEvent (long time,
-    EventEngine eng,
-    int rNo,
-    String cname,
-    String []   args){
+public OnRouterEvent (long time, EventEngine eng, int rNo, String cname,
+    String [] args){
     time_ = time;
     engine_ = eng;
     routerNo_ = rNo;
@@ -28,11 +27,8 @@ public OnRouterEvent (long time,
     command_ = args;
 }
 
-public OnRouterEvent (long time,
-    EventEngine eng,
-    String addr,
-    String cname,
-    String []   args){
+public OnRouterEvent (long time, EventEngine eng, String addr, 
+    String cname, String [] args){
     time_ = time;
     engine_ = eng;
     className_ = cname;
@@ -41,13 +37,11 @@ public OnRouterEvent (long time,
     routerNumSet_ = false;
 }
 
-public OnRouterEvent (long time,
-    EventEngine eng,
-    String addr,
-    String cname,
-    String []        args,
+public OnRouterEvent (long time, EventEngine eng, String addr,
+    String cname, String [] args,
     GlobalController gc)
-throws InstantiationException {
+throws InstantiationException 
+{
     time_ = time;
     engine_ = eng;
     className_ = cname;
@@ -56,14 +50,14 @@ throws InstantiationException {
     setRouterNo(addr, gc);
 }
 
-public String toString(){
+public String toString()
+{
     String str = "OnRouter " + time_ + getName();
-
     return str;
 }
-private String getName(){
+private String getName()
+{
     String str = "";
-
     if (address_ == null)
         str += (routerNo_ + " ");
     else
@@ -74,24 +68,32 @@ private String getName(){
     return str;
 }
 
-private void setRouterNo(String addr, GlobalController gc) throws
-InstantiationException {
+private void setRouterNo(String addr, GlobalController gc) 
+throws InstantiationException 
+{
     BasicRouterInfo rInfo = gc.findRouterInfo(addr);
-
     if (rInfo == null) throw new InstantiationException(
             "Cannot find address " + addr);
     routerNo_ = rInfo.getId();
 }
 
-public JSONObject execute(GlobalController gc) throws
-InstantiationException {
+public JSONObject execute(GlobalController gc) 
+throws InstantiationException 
+{
     if (!routerNumSet_)
         setRouterNo(address_, gc);
-    int start = gc.appStart(routerNo_, className_, command_);
+    int appID = gc.appStart(routerNo_, className_, command_);
     JSONObject json = new JSONObject();
     try {
-        if (start >= 0) {
+        if (appID >= 0) {
             json.put("success", true);
+            BasicRouterInfo bri = gc.findAppInfo(appID);
+            String appName = bri.getAppName(appID);
+            Map<String, Object>data = bri.getApplicationData(appName);
+            json.put("id", appID);
+            json.put("aid", (Integer)data.get("aid"));
+            json.put("name", appName);
+            json.put("routerID", bri.getId());
             json.put("msg",
                 "Started Application on router " + getName());
         } else {

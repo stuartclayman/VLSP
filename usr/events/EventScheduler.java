@@ -43,10 +43,28 @@ public void run()
 {
     while (true) {
         Event ev= getFirstEvent();
-        waitUntil(ev.getTime());
+        long expectedStart= 0;
+        if (ev == null) {
+            waitForever(); 
+        } else {
+            expectedStart= ev.getTime()+simulationStartTime_;
+            waitUntil(expectedStart);
+        }
         if (!controller_.isActive())
             break;
-        // Fix me -- detect large lag
+        if (ev == null) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                "Run out of events to process");
+            controller_.deactivate();
+        }
+        long lag= System.currentTimeMillis() - expectedStart;
+        if (lag > controller_.getMaximumLag()) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                "Global Controller problem -- "+
+                "lag is greater than allowed in options "+
+                " allowed: "+controller_.getMaximumLag() + " saw "+lag);
+            controller_.deactivate();
+        }
         try {
             controller_.executeEvent(ev);
         } catch (InstantiationException ine) {
@@ -111,6 +129,22 @@ private void waitUntil(long time){
             waitCounter_.wait(timeout);
         }
         lastEventLength_ = System.currentTimeMillis() - now;
+    } catch (InterruptedException e) {
+        if (controller_.isActive()) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                "Scheduler interrupted without reason");
+        }
+    }
+}
+
+/**
+ * Wait forever -- no events in scheduler
+ */
+private void waitForever (){
+    try {
+        synchronized (waitCounter_) {
+            waitCounter_.wait();
+        }
     } catch (InterruptedException e) {
         if (controller_.isActive()) {
             Logger.getLogger("log").logln(USR.ERROR,
