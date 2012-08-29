@@ -3,6 +3,9 @@ package usr.output;
 import java.io.PrintStream;
 import usr.globalcontroller.GlobalController;
 import usr.APcontroller.APController;
+import usr.globalcontroller.GlobalController;
+import usr.events.*;
+import us.monoid.json.*;
 
 /** Class to output summary stats  */
 class OutputSummary implements OutputFunction
@@ -26,4 +29,11 @@ public void makeOutput(long time,
     s.print(" " + apc.meanAPLifeSoFar(time));
     s.println();
 }
+
+public void makeEventOutput(Event event, JSONObject result, 
+    PrintStream s, OutputType out, GlobalController gc)
+{
+    makeOutput(event.getTime(),s,out,gc);
+}
+
 }

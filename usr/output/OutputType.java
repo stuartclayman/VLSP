@@ -3,6 +3,8 @@ package usr.output;
 import usr.globalcontroller.*;
 import usr.logging.*;
 import java.io.PrintStream;
+import usr.events.*;
+import us.monoid.json.*;
 
 /** This class produces output from the simulation */
 
@@ -12,6 +14,7 @@ public static final int AT_TIME = 1;
 public static final int AT_START = 2;
 public static final int AT_INTERVAL = 3;
 public static final int AT_END = 4;
+public static final int AT_EVENT = 5;
 
 Logger mylog = null;
 private String fileName_ = "";
@@ -46,14 +49,11 @@ IllegalArgumentException {
         java.lang.Class <?> func;
         func = java.lang.Class.forName(t);
     } catch (ClassCastException e) { throw new java.lang.
-                                           IllegalArgumentException(
-                                         "Class name " +
-                                         t +
-                                         " must be valid class name implementing OutputFunction");
+        IllegalArgumentException("Class name " + t +
+        " must be valid class name implementing OutputFunction");
     }catch (ClassNotFoundException e) { throw new java.lang.
-                                              IllegalArgumentException(
-                                            "Class name " + t +
-                                            " must be valid class name implementing OutputFunction");
+        IllegalArgumentException("Class name " + t +
+        " must be valid class name implementing OutputFunction");
     } throw new java.lang.IllegalArgumentException(
         "Cannot parse Type " + t);
 }
@@ -81,7 +81,12 @@ IllegalArgumentException {
     if (tt.equals("Time")) {
         outputTimeType_ = AT_TIME;
         return;
-    } throw new java.lang.IllegalArgumentException(
+    } 
+    if (tt.equals("Event")) {
+        outputTimeType_ = AT_EVENT;
+        return;
+    }
+    throw new java.lang.IllegalArgumentException(
         "Cannot parse Time Type " + tt);
 }
 
@@ -135,9 +140,16 @@ public OutputFunction getOutputClass(){
 }
 
 /** Create the required output */
-public void makeOutput(long time, PrintStream s,
-    GlobalController gc)                         {
+public void makeOutput(long time, PrintStream s, GlobalController gc)                         
+{
     outputType_.makeOutput(time, s, this, gc);
+}
+
+/** Create the required output after an event */
+public void makeEventOutput(Event event, JSONObject result, 
+    PrintStream s,  GlobalController gc)                  
+{
+    outputType_.makeEventOutput(event, result, s, this, gc);
 }
 
 /**

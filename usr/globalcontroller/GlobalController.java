@@ -101,6 +101,8 @@ private int statsCount_ = 0;
 private ArrayList <Long> trafficOutputTime_ = null;
 private HashMap<String, int []> trafficLinkCounts_ = null;
 
+private ArrayList <OutputType> eventOutput_= null;
+
 private Thread ProcessOutputThread_;
 
 // Number of aggregation point controllers
@@ -202,6 +204,8 @@ private void init(){
     appInfo = new HashMap<Integer, Integer>();
     options_ = new ControlOptions(xmlFile_);
     routerOptions_ = options_.getRouterOptions();
+    
+    eventOutput_= options_.getEventOutput();
 
     // create a semaphore with 1 element to ensure
     // single access to some key code blocks
@@ -495,11 +499,13 @@ public JSONObject executeEvent(Event e) throws
             throw new InterruptedException ("Run finished!");
         }
         Object extraParms = null;
-        long eventBegin = System.currentTimeMillis();
         e.preceedEvent(scheduler_, this);
         Logger.getLogger("log").logln(USR.STDOUT, "EVENT: " + e);
         JSONObject js = null;
         js = e.execute(this);
+        for (OutputType t: eventOutput_) {
+            produceEventOutput(e,js,t);
+        }
         e.followEvent(scheduler_, this);
         return js;
     } finally {
@@ -1431,6 +1437,34 @@ public void produceOutput(long time, OutputType o){
         OutputEvent e = new OutputEvent(time + o.getTime(), null, o);
         scheduler_.addEvent(e);
     }
+    p.close();
+    try {
+        s.close();
+    } catch (IOException ex) {
+    }
+}
+
+
+/** Produce some output */
+public void produceEventOutput(Event ev, JSONObject response, 
+        OutputType o)
+{
+    File f;
+    FileOutputStream s = null;
+    PrintStream p = null;
+
+    try {
+        f = new File(o.getFileName());
+        s = new FileOutputStream(f, true);
+        p = new PrintStream(s, true);
+    } catch (Exception e) {
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+            "Cannot open " + o.getFileName() +
+            " for output " + e.getMessage());
+        return;
+    }
+    o.makeEventOutput(ev, response, p, this);
+ 
     p.close();
     try {
         s.close();

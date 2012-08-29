@@ -4,22 +4,27 @@ import usr.logging.*;
 import java.util.*;
 import java.io.PrintStream;
 import usr.globalcontroller.GlobalController;
+import usr.globalcontroller.GlobalController;
+import usr.events.*;
+import us.monoid.json.*;
 
 /** Class to output network stuff */
 public class OutputTraffic implements OutputFunction
 {
 /** In fact this only requests output -- actual output occurs later */
-public void makeOutput(long t,
-    PrintStream p,
-    OutputType o,
+public void makeOutput(long t, PrintStream p, OutputType o,
     GlobalController gc)
 {
     gc.checkTrafficOutputRequests(t, o);
 }
 
-public void produceOutput(long t,
-    PrintStream p,
-    OutputType o,
+public void makeEventOutput(Event event, JSONObject result, 
+    PrintStream s, OutputType out, GlobalController gc)
+{
+    makeOutput(event.getTime(),s,out,gc);
+}
+
+public void produceOutput(long t, PrintStream p, OutputType o, 
     GlobalController gc)
 {
     String routerStats = gc.getRouterStats();

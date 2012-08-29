@@ -767,6 +767,18 @@ public String [] localControllerStartCommand(LocalControllerInfo lh){
     }
 }
 
+public ArrayList<OutputType> getEventOutput() {
+    ArrayList<OutputType>eo= new ArrayList<OutputType>();
+    
+    for (OutputType t: outputs_) {
+        if (t.getTime() == OutputType.AT_EVENT) {
+            eo.add(t);
+        }
+    }
+    
+    return eo;
+}
+
 /** Accessor function returns the number of controllers
  */
 public int noControllers(){

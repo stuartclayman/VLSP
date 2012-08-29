@@ -4,6 +4,9 @@ import java.io.PrintStream;
 import usr.globalcontroller.GlobalController;
 import usr.globalcontroller.visualization.*;
 import java.lang.reflect.*;
+import usr.globalcontroller.GlobalController;
+import usr.events.*;
+import us.monoid.json.*;
 
 /** Class to output network stuff */
 public class OutputNetwork implements OutputFunction
@@ -27,6 +30,12 @@ public void makeOutput(long time,
     }
 
     plainNetworkGraphviz(s, gc);
+}
+
+public void makeEventOutput(Event event, JSONObject result, 
+    PrintStream s, OutputType out, GlobalController gc)
+{
+    makeOutput(event.getTime(),s,out,gc);
 }
 
 /**
