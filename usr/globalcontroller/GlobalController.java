@@ -188,9 +188,6 @@ private void init(){
                     "/tmp/gc-channel8.out")),
             new BitMask(1 << 8));
         logger.addOutput(new PrintWriter(new FileOutputStream(
-                    "/tmp/gc-channel9.out")),
-            new BitMask(1 << 9));
-        logger.addOutput(new PrintWriter(new FileOutputStream(
                     "/tmp/gc-channel10.out")),
             new BitMask(1 << 10));
     } catch (Exception e) {
@@ -699,105 +696,65 @@ throws IOException
     }
 }
 
-/** Event to end a router -- returns true for success */
-public boolean endRouter(long time, int routerId){
-    boolean success;
-
-    if (options_.isSimulation()) {
-        endSimulationRouter(routerId);
-        success = true;
-    } else {
-        success = endVirtualRouter(routerId);
-    }
-    if (success) {
-        unregisterRouter(routerId);
-        APController_.removeNode(time, routerId);
-    }
-    return success;
-}
-
 /** Unregister a router and all links from structures in
  *  GlobalController*/
-private void unregisterRouter(int rId){
+public void unregisterRouter(int rId)
+{
     int[] out = getOutLinks(rId);
-    //Logger.getLogger("log").logln(USR.ERROR, "Unregister router
-    // "+rId);
+    APController_.removeNode(getElapsedTime(), rId);
     for (int i = out.length - 1; i >= 0; i--) {
         unregisterLink(rId, out[i]);
-        // Logger.getLogger("log").logln(USR.ERROR, "Unregister link
-        // "+rId+" "+out[i]);
     }
     int index = routerList_.indexOf(rId);
-    //Logger.getLogger("log").logln(USR.ERROR, "Router found at
-    // index
-    // "+index);
     routerList_.remove(index);
 }
 
-/** remove a router in simulation*/
-private void endSimulationRouter(int rId){
+/** Find some router info
+*/
+public BasicRouterInfo findRouterInfo(int rId){
+    return routerIdMap_.get(rId);
 }
 
-/** Send shutdown to a virtual router */
-private boolean endVirtualRouter(int rId){
-    BasicRouterInfo br = routerIdMap_.get(rId);
-
-    LocalControllerInteractor lci = interactorMap_.get(
-        br.getLocalControllerInfo());
-    int MAX_TRIES = 5;
-    int i;
-
-    for (i = 0; i < MAX_TRIES; i++) {
-        try {
-            lci.endRouter(br.getHost(), br.getManagementPort());
-
-            Logger.getLogger("log").logln(1 << 9,
-                elapsedToString(
-                    getElapsedTime())
-                +
-                ANSI.RED + " STOP ROUTER " +
-                rId +
-                ANSI.RESET_COLOUR);
-
-            break;
-        } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() +
-                "Cannot shut down router " +
-                br.getHost() + ":" +
-                br.getManagementPort() +
-                " attempt " +
-                (i + 1) + " Exception = " + e);
-        }
-    }
-    if (i == MAX_TRIES)
-        return false;
-    LocalControllerInfo lcinf = br.getLocalControllerInfo();
-    PortPool pp = portPools_.get(lcinf);
-    pp.freePort(br.getManagementPort());
-    pp.freePort(br.getRoutingPort());
-    lcinf.delRouter();
+/** remove id from basic router info*/
+public void removeBasicRouterInfo(int rId) 
+{
     routerIdMap_.remove(rId);
+}
 
+/** Return the local controller attached to a router id*/
+public LocalControllerInteractor getLocalController(int rId)
+{
+    BasicRouterInfo br= findRouterInfo(rId);
+    if (br == null)
+        return null;
+    return interactorMap_.get(br.getLocalControllerInfo());
+}
+
+/** Return the local controller attached to router info*/
+public LocalControllerInteractor getLocalController(BasicRouterInfo br)
+{
+    return interactorMap_.get(br.getLocalControllerInfo());
+}
+
+
+/** Get the port pool associated with a local controller */
+public PortPool getPortPool(LocalControllerInfo lci) 
+{
+    return portPools_.get(lci);
+}
+
+public void latticeMonitorRouterRemoval(BasicRouterInfo br)
+{
     // tell reporter that this router is gone
     if (latticeMonitoring) {
         String routerName = br.getName();
-
         for (Reporter reporter : reporterMap.values()) {
             if (reporter instanceof RouterDeletedNotification) {
                 ((RouterDeletedNotification)reporter).
-                routerDeleted(
-                    routerName);
+                routerDeleted(routerName);
             }
         }
     }
-    return true;
-}
-
-/**
- * Find some router info
- */
-public BasicRouterInfo findRouterInfo(int rId){
-    return routerIdMap_.get(rId);
 }
 
 /**
@@ -1112,13 +1069,13 @@ private Pair <Integer, Integer> makeRouterPair(int r1,
 }
 
 /** Create pair of integers  */
-private Pair <Integer, Integer> makePair(int r1, int r2){
+static public Pair <Integer, Integer> makePair(int r1, int r2){
     return new Pair<Integer, Integer>(r1, r2);
 }
 
 /** Register a link with structures necessary in Global
  * Controller */
-private void unregisterLink(int router1Id, int router2Id){
+public void unregisterLink(int router1Id, int router2Id){
     Pair <Integer, Integer> rnos = makeRouterPair(router1Id,
         router2Id);
     int [] out;
@@ -1171,77 +1128,15 @@ private void unregisterLink(int router1Id, int router2Id){
     }
     setOutLinks(router2Id, out2);
     setLinkCosts(router2Id, costs2);
+    APController_.removeLink(getElapsedTime(), router1Id, router2Id);
 }
 
-private void endSimulationLink(int router1Id,
-    int router2Id)                   {
-/** Event to end simulation link between two routers */
-    // Nothing need happen here right now.
+/** Remove info about link from linkInfo struct */
+public void removeLinkInfo(Integer id) 
+{
+    linkInfo.remove(id);
 }
 
-/** Event to end virtual link between two routers */
-private boolean endVirtualLink(int rId1, int rId2){
-    BasicRouterInfo br1 = routerIdMap_.get(rId1);
-    BasicRouterInfo br2 = routerIdMap_.get(rId2);
-    LocalControllerInteractor lci = interactorMap_.get
-                                        (br1.getLocalControllerInfo());
-    int MAX_TRIES = 5;
-    int i;
-
-    for (i = 0; i < MAX_TRIES; i++) {
-        try {
-            // TODO:  work out link name, and pass that to
-            // LocalControllerInteractor
-            lci.endLink(br1.getHost(),
-                br1.getManagementPort(), br2.getAddress());
-            // remove Pair<router1Id, router2Id> -> connectionName
-            // to
-            // linkNames
-            Pair<Integer, Integer> pair = makePair(rId1, rId2);
-            Integer linkID = pair.hashCode();
-            linkInfo.remove(linkID);
-
-            Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() + "remove link from: " + rId2 +
-                " to " + rId1 + " with link ID: " + linkID);
-            Logger.getLogger("log").logln(1 << 9,
-                elapsedToString(
-                    getElapsedTime())
-                + ANSI.MAGENTA + " REMOVE LINK " + rId2 +
-                " TO " + rId1 + ANSI.RESET_COLOUR);
-            break;
-        } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() +
-                "Cannot shut down link " +
-                br1.getHost() + ":" +
-                br1.getManagementPort() + " " +
-                br2.getHost() + ":" +
-                br2.getManagementPort() +
-                " try " + (i + 1));
-        }
-    }
-    if (i == MAX_TRIES) {
-        Logger.getLogger("log").logln(
-            USR.ERROR, "Giving up after failure to shut link");
-        return false;
-    }
-    return true;
-}
-
-/** Event to unlink two routers
- * Returns true for success*/
-public boolean endLink(long time, int router1Id,
-    int router2Id)                         {
-    // return 0 for end of link
-    unregisterLink(router1Id, router2Id);
-    APController_.removeLink(time, router1Id, router2Id);
-    if (options_.isSimulation())
-        endSimulationLink(router1Id, router2Id);
-    else
-        return endVirtualLink(router1Id, router2Id);
-    return true;
-}
 
 /**
  * Find some app info
@@ -1249,7 +1144,6 @@ public boolean endLink(long time, int router1Id,
 public BasicRouterInfo findAppInfo(int appId){
     int routerID = appInfo.get(appId);
     BasicRouterInfo bri = routerIdMap_.get(routerID);
-
     return bri;
 }
 

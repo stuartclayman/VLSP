@@ -551,9 +551,7 @@ private EventEngine processEventEngine(Node n) throws SAXException {
         Node n0 = nl.item(i);
         if (n0.getNodeType() ==
             Node.ELEMENT_NODE) {throw new SAXException(
-                                    "Event Engine unrecognised XML tag "
-                                    +
-                                    n0.getNodeName());
+             "Event Engine unrecognised XML tag " + n0.getNodeName());
         }
     }
     n.getParentNode().removeChild(n);
@@ -577,9 +575,8 @@ private EventEngine processEventEngine(Node n) throws SAXException {
             return eng;
         }
     } catch (EventEngineException e) { throw new SAXException(
-                                           "Cannot construct event engine "
-                                           + engine + " " +
-                                           e.getMessage());
+        "Cannot construct event engine " + engine + " " + 
+                e.getMessage());
     }
     Class <?> engClass = null;
     try {
@@ -637,7 +634,8 @@ javax.xml.parsers.ParserConfigurationException {
         reader = new BufferedReader(new FileReader(fName));
     } catch (FileNotFoundException e) {
         Logger.getLogger("log").logln(USR.ERROR,
-            "Cannot find router file " + fName); throw new SAXException();
+            "Cannot find router file " + fName); 
+        throw new SAXException();
     }
     String line = null;
     StringBuilder stringBuilder = new StringBuilder();
@@ -697,21 +695,17 @@ private OutputType processOutput(Node n) throws SAXException {
         ReadXMLUtils.removeNode(n, "Type", "Output");
         ot.setType(type);
         String parm =
-            ReadXMLUtils.parseSingleString(n,
-                "Parameter",
-                "Output",
-                true);
+            ReadXMLUtils.parseSingleString(n,"Parameter",
+                "Output",true);
         ReadXMLUtils.removeNode(n, "Parameter", "Output");
         ot.setParameter(parm);
     } catch (NumberFormatException e) { throw new SAXException(
-                                            "Cannot parse integer in Output Tag "
+             "Cannot parse integer in Output Tag "
                                             + e.getMessage());
     } catch (java.lang.IllegalArgumentException e) { throw new
-                                                           SAXException(
-                                                         "Cannot parse tag "
-                                                         + e.
-                                                         getMessage());
-    }  catch (SAXException e) {  throw e;
+            SAXException("Cannot parse tag "+ e.getMessage());
+    } catch (SAXException e) {  
+        throw e;
     } catch (XMLNoTagException e) {
     }
     try {
@@ -720,13 +714,10 @@ private OutputType processOutput(Node n) throws SAXException {
         ReadXMLUtils.removeNode(n, "Time", "Output");
         ot.setTime(time);
     } catch (NumberFormatException e) { throw new SAXException(
-                                            "Cannot parse integer in Output Tag "
-                                            + e.getMessage());
+          "Cannot parse integer in Output Tag "
+            + e.getMessage());
     } catch (java.lang.IllegalArgumentException e) { throw new
-                                                           SAXException(
-                                                         "Cannot parse tag "
-                                                         + e.
-                                                         getMessage());
+           SAXException("Cannot parse tag "+ e.getMessage());
     }  catch (SAXException e) {  throw e;
     } catch (XMLNoTagException e) {
     }
@@ -771,7 +762,7 @@ public ArrayList<OutputType> getEventOutput() {
     ArrayList<OutputType>eo= new ArrayList<OutputType>();
     
     for (OutputType t: outputs_) {
-        if (t.getTime() == OutputType.AT_EVENT) {
+        if (t.getTimeType() == OutputType.AT_EVENT) {
             eo.add(t);
         }
     }

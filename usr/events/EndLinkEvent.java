@@ -4,6 +4,7 @@ import usr.logging.*;
 import java.lang.*;
 import usr.globalcontroller.*;
 import usr.engine.*;
+import usr.interactor.*;
 import usr.common.*;
 import us.monoid.json.*;
 
@@ -89,7 +90,7 @@ InstantiationException {
     if (!routerNumsSet_)
         initNumbers(addr1_, addr2_, gc);
     JSONObject json = new JSONObject();
-    boolean success = gc.endLink(time_, router1_, router2_);
+    boolean success = endLink(time_, router1_, router2_, gc);
     try {
         if (success) {
             json.put("success", true);
@@ -111,4 +112,78 @@ InstantiationException {
     }
     return json;
 }
+
+
+/** Event to unlink two routers
+ * Returns true for success*/
+private boolean endLink(long time, int router1Id,
+    int router2Id, GlobalController gc)
+{
+    // return 0 for end of link
+    gc.unregisterLink(router1Id, router2Id);
+    if (gc.isSimulation())
+        endSimulationLink(router1Id, router2Id, gc);
+    else
+        return endEmulatedLink(router1Id, router2Id, gc);
+    return true;
 }
+
+
+private void endSimulationLink(int router1Id, int router2Id,
+    GlobalController gc)
+{
+/** Event to end simulation link between two routers */
+    // Nothing need happen here right now.
+}
+
+/** Event to end emulated link between two routers */
+private boolean endEmulatedLink(int rId1, int rId2,
+    GlobalController gc)
+{
+    BasicRouterInfo br1 = gc.findRouterInfo(rId1);
+    BasicRouterInfo br2 = gc.findRouterInfo(rId1);
+    
+    if (br1 == null || br2 == null) 
+        return false;
+    
+    LocalControllerInteractor lci = gc.getLocalController(br1);
+    int MAX_TRIES = 5;
+    int i;
+
+    for (i = 0; i < MAX_TRIES; i++) {
+        try {
+            lci.endLink(br1.getHost(),
+                br1.getManagementPort(), br2.getAddress());
+            Pair<Integer, Integer> pair = gc.makePair(rId1, rId2);
+            Integer linkID = pair.hashCode();
+            gc.removeLinkInfo(linkID);
+
+            Logger.getLogger("log").logln(USR.STDOUT,
+                leadin() + "remove link from: " + rId2 +
+                " to " + rId1 + " with link ID: " + linkID);
+          /*  Logger.getLogger("log").logln(1 << 9,
+                 */
+            break; 
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                leadin() + "Cannot shut down link " +
+                br1.getHost() + ":" + br1.getManagementPort() + " " +
+                br2.getHost() + ":" + br2.getManagementPort() +
+                " try " + (i + 1));
+        }
+    }
+    if (i == MAX_TRIES) {
+        Logger.getLogger("log").logln(
+            USR.ERROR, "Giving up after failure to shut link");
+        return false;
+    }
+    return true;
+}
+
+
+private String leadin(){
+    return "ELE: ";
+}
+
+}
+

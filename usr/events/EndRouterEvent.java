@@ -3,9 +3,11 @@ package usr.events;
 import usr.logging.*;
 import java.lang.*;
 import usr.globalcontroller.*;
+import usr.localcontroller.*;
 import usr.engine.*;
 import usr.common.*;
 import us.monoid.json.*;
+import usr.interactor.*;
 
 /** Class represents a global controller event*/
 public class EndRouterEvent extends Event
@@ -65,7 +67,7 @@ public JSONObject execute(GlobalController gc) throws
 InstantiationException {
     if (!routerNumSet_)
         initNumber(address_, gc);
-    boolean success = gc.endRouter(time_, routerNo_);
+    boolean success = endRouter(routerNo_,gc);
     JSONObject json = new JSONObject();
     try {
         if (success) {
@@ -86,12 +88,72 @@ InstantiationException {
     return json;
 }
 
-public void followEvent(EventScheduler s,
-    GlobalController g)                          {
+public void followEvent(EventScheduler s, GlobalController g) 
+{
     super.followEvent(s, g);
     if (g.connectedNetwork())
         g.connectNetwork(time_);
     else if (!g.allowIsolatedNodes())
         g.checkIsolated(time_);
 }
+
+
+/** Event to end a router -- returns true for success */
+public boolean endRouter(int routerId, GlobalController gc){
+    boolean success;
+
+    if (gc.isSimulation()) {
+        endSimulationRouter(routerId,gc);
+        success = true;
+    } else {
+        success = endEmulatedRouter(routerId,gc);
+    }
+    if (success) {
+        gc.unregisterRouter(routerId);
+    }
+    return success;
+}
+
+
+/** remove a router in simulation*/
+private void endSimulationRouter(int rId, GlobalController gc){
+}
+
+/** Send shutdown to an emulated router */
+private boolean endEmulatedRouter(int rId, GlobalController gc){
+    BasicRouterInfo br = gc.findRouterInfo(rId);
+    if (br == null)
+        return false;
+
+    LocalControllerInteractor lci = gc.getLocalController(br);
+    int MAX_TRIES = 5;
+    int i;
+
+    for (i = 0; i < MAX_TRIES; i++) {
+        try {
+            lci.endRouter(br.getHost(), br.getManagementPort());
+            break;
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() +
+                "Cannot shut down router " + br.getHost() + ":" +
+                br.getManagementPort() + " attempt " +
+                (i + 1) + " Exception = " + e);
+        }
+    }
+    if (i == MAX_TRIES)
+        return false;
+    LocalControllerInfo lcinf = br.getLocalControllerInfo();
+    PortPool pp = gc.getPortPool(lcinf);
+    pp.freePort(br.getManagementPort());
+    pp.freePort(br.getRoutingPort());
+    lcinf.delRouter();
+    gc.removeBasicRouterInfo(rId);
+    gc.latticeMonitorRouterRemoval(br);
+    return true;
+}
+
+private String leadin(){
+    return "ERE: ";
+}
+
 }

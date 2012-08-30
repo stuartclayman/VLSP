@@ -5,6 +5,10 @@ import usr.logging.*;
 import java.io.PrintStream;
 import usr.events.*;
 import us.monoid.json.*;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import java.lang.reflect.*;
 
 /** This class produces output from the simulation */
 
@@ -18,7 +22,7 @@ public static final int AT_EVENT = 5;
 
 Logger mylog = null;
 private String fileName_ = "";
-private OutputFunction outputType_ = null;
+private OutputFunction outputFunction_ = null;
 private boolean clear_ = true;
 private int outputTimeType_ = 0;        // Repeated or at time?
 private int outputTime_ = 0;            // Time parameter
@@ -29,33 +33,46 @@ public OutputType(){
 }
 
 /** Set type from string*/
-public void setType(String t) throws java.lang.
-IllegalArgumentException {
+public void setType(String t) throws java.lang.IllegalArgumentException 
+{
     //  These names are defined for legacy reasons -- please use
     // class name in future
     if (t.equals("Network")) {
-        outputType_ = new OutputNetwork();
+        outputFunction_ = new OutputNetwork();
         return;
     }
     if (t.equals("Summary")) {
-        outputType_ = new OutputSummary();
+        outputFunction_ = new OutputSummary();
         return;
     }
     if (t.equals("Traffic")) {
-        outputType_ = new OutputTraffic();
+        outputFunction_ = new OutputTraffic();
         return;
     }
     try {
-        java.lang.Class <?> func;
-        func = java.lang.Class.forName(t);
+        java.lang.Class <?> func= java.lang.Class.forName(t).
+                asSubclass(OutputFunction.class);
+        Constructor <?> c = func.getConstructor();
+        outputFunction_= (OutputFunction)c.newInstance();
     } catch (ClassCastException e) { throw new java.lang.
         IllegalArgumentException("Class name " + t +
         " must be valid class name implementing OutputFunction");
-    }catch (ClassNotFoundException e) { throw new java.lang.
-        IllegalArgumentException("Class name " + t +
-        " must be valid class name implementing OutputFunction");
-    } throw new java.lang.IllegalArgumentException(
-        "Cannot parse Type " + t);
+    }catch (ClassNotFoundException e) { 
+        throw new java.lang.IllegalArgumentException("Class name " 
+        + t + " must be valid class name implementing OutputFunction");
+    } catch (NoSuchMethodException nsme) {
+        throw new java.lang.IllegalArgumentException("Cannot construct"
+            +t);
+    } catch (InstantiationException ie) {
+        throw new java.lang.IllegalArgumentException("Cannot construct"
+            +t);
+    } catch (IllegalAccessException ie) {
+        throw new java.lang.IllegalArgumentException("Cannot construct"
+            +t);
+    } catch (InvocationTargetException ie) {
+        throw new java.lang.IllegalArgumentException("Cannot construct"
+            +t);
+    }
 }
 
 /** Accessor for output time type */
@@ -64,8 +81,9 @@ public int getTimeType(){
 }
 
 /** Set time type from string*/
-public void setTimeType(String tt) throws java.lang.
-IllegalArgumentException {
+public void setTimeType(String tt) 
+throws java.lang.IllegalArgumentException 
+{
     if (tt.equals("Start")) {
         outputTimeType_ = AT_START;
         return;
@@ -136,20 +154,25 @@ public void setFirst(boolean f){
 
 /** Get output function */
 public OutputFunction getOutputClass(){
-    return outputType_;
+    return outputFunction_;
 }
 
 /** Create the required output */
 public void makeOutput(long time, PrintStream s, GlobalController gc)                         
 {
-    outputType_.makeOutput(time, s, this, gc);
+    outputFunction_.makeOutput(time, s, this, gc);
 }
 
 /** Create the required output after an event */
 public void makeEventOutput(Event event, JSONObject result, 
     PrintStream s,  GlobalController gc)                  
 {
-    outputType_.makeEventOutput(event, result, s, this, gc);
+    outputFunction_.makeEventOutput(event, result, s, this, gc);
+}
+
+public void parseExtraXML(Node n) throws SAXException
+{
+    outputFunction_.parseExtraXML(n);
 }
 
 /**
@@ -158,7 +181,7 @@ public void makeEventOutput(Event event, JSONObject result,
 public String toString(){
     StringBuilder builder = new StringBuilder();
 
-    builder.append(outputType_.toString());
+    builder.append(outputFunction_.toString());
 
     builder.append(" ");
 

@@ -7,6 +7,11 @@ import usr.globalcontroller.GlobalController;
 import usr.globalcontroller.GlobalController;
 import usr.events.*;
 import us.monoid.json.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.w3c.dom.*;
 
 /** Class to output network stuff */
 public class OutputTraffic implements OutputFunction
@@ -22,6 +27,10 @@ public void makeEventOutput(Event event, JSONObject result,
     PrintStream s, OutputType out, GlobalController gc)
 {
     makeOutput(event.getTime(),s,out,gc);
+}
+
+public void parseExtraXML(Node n) throws SAXException
+{
 }
 
 public void produceOutput(long t, PrintStream p, OutputType o, 

@@ -309,8 +309,8 @@ public void addLink(long time, int gid1, int gid2){
 }
 
 /** Remove link from network */
-public void removeLink(long time, int gid1,
-    int gid2)                    {
+public void removeLink(long time, int gid1,int gid2)                    
+{
     changedNet_ = true;
 }
 
