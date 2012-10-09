@@ -401,8 +401,7 @@ private void initEmulation(){
     }
     if (options_.startLocalControllers()) {
         Logger.getLogger("log").logln(USR.STDOUT,
-            leadin() +
-            "Starting Local Controllers");
+            leadin() + "Starting Local Controllers");
         startLocalControllers();
     }
     Logger.getLogger("log").logln(USR.STDOUT,
@@ -549,151 +548,15 @@ public void endSimulation(long time){
 }
 
 /** Register existence of router */
-private void registerRouter(int rId){
+public void registerRouter(int rId){
     routerList_.add(rId);
 }
 
-/** Event to start a router */
-public int startRouter(long time, String address,
-    String name)                          {
-    // return +ve no for valid id
-    // return -1 for failure to start
-
-    maxRouterId_++;
-    int rId = maxRouterId_;
+/** Add structures for new router */
+public void addLinkAndCost()
+{
     outLinks_.add(new int [0]);
     linkCosts_.add(new int [0]);
-    registerRouter(rId);
-    APController_.addNode(time, rId);
-    if (options_.isSimulation())
-        return rId;
-    if (startVirtualRouter(maxRouterId_, address,
-            name) == false) {
-        //  System.err.println("Did not start");
-        unregisterRouter(rId);
-        return -1;
-    }
-    return rId;
-}
-
-private boolean startVirtualRouter(int id, String address,
-    String name)                       {
-    // If we have no address or name fake these
-    if (name == null)
-        name = new String("Router-" + id);
-    if (address == null)
-        address = new String("" + id);
-    // Find least used local controller
-    LocalControllerInfo lc;
-    LocalControllerInfo leastUsed = options_.getController(0);
-    double minUse = leastUsed.getUsage();
-    double thisUsage;
-    for (int i = 1; i < noControllers_; i++) {
-        lc = options_.getController(i);
-        thisUsage = lc.getUsage();
-        // Logger.getLogger("log").logln(USR.STDOUT, i+" Usage
-        // "+thisUsage);
-        if (thisUsage == 0.0) {
-            leastUsed = lc;
-            break;
-        }
-        if (thisUsage < minUse) {
-            minUse = thisUsage;
-            leastUsed = lc;
-        }
-    }
-    if (minUse >= 1.0) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            "Could not start new router on "
-            + leastUsed +
-            " too many routers");
-        //System.err.println("Too many routers");
-        return false;
-    }
-    leastUsed.addRouter();      // Increment count
-    LocalControllerInteractor lci = interactorMap_.get(leastUsed);
-    int MAX_TRIES = 5;
-    for (int i = 0; i < MAX_TRIES; i++) {
-        try {
-            if (tryRouterStart(id, address, name, leastUsed,
-                    lci))
-                //System.err.println("Started");
-                return true;
-        } catch (IOException e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() +
-                "Could not start new router on "
-                + leastUsed + " out of ports ");
-            //System.err.println("Out of ports");
-            return false;
-        }
-    }
-    Logger.getLogger("log").logln(USR.ERROR,
-        leadin() +
-        "Could not start new router on " +
-        leastUsed +
-        " after " + MAX_TRIES + " tries.");
-    //System.err.println("Could not start");
-    return false;
-}
-
-/** Make one attempt to start a router */
-boolean tryRouterStart(int id, String address, String name,
-    LocalControllerInfo local, LocalControllerInteractor lci)
-throws IOException 
-{
-    int port = 0;
-    PortPool pp = portPools_.get(local);
-    JSONObject routerAttrs;
-
-    try {
-        // find 2 ports
-        port = pp.findPort(2);
-
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() +
-            "Creating router: " + id +
-            (address != null ?
-             (
-                 " address = " +
-                 address) : "") +
-            (name !=
-             null ? (" name = " + name) : ""));
-
-        // create the new router and get it's name
-        routerAttrs = lci.newRouter(id, port, port + 1, address, name);
-
-        BasicRouterInfo br = new BasicRouterInfo
-                    ((Integer)routerAttrs.get(
-                    "routerID"), getElapsedTime(), local,
-                    (Integer)routerAttrs.get("mgmtPort"),
-                    (Integer)routerAttrs.get("r2rPort"));
-        br.setName((String)routerAttrs.get("name"));
-        br.setAddress((String)routerAttrs.get("address"));
-        // keep a handle on this router
-        routerIdMap_.put(id, br);
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() +
-            "Created router " + routerAttrs);
-        Logger.getLogger("log").logln(1 << 9,
-            elapsedToString(
-                getElapsedTime()) +
-            ANSI.GREEN + " START ROUTER " +
-            id + ANSI.RESET_COLOUR);
-        return true;
-    } catch (JSONException e) {
-        // Failed to start#
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            "Could not create router " + id +
-            " on " + lci);
-        if (port != 0)
-            pp.freePorts(port, port + 1);               // Free ports
-                                                        // but different
-                                                        // ones will be
-                                                        // tried next
-                                                        // time
-        return false;
-    }
 }
 
 /** Unregister a router and all links from structures in
@@ -713,6 +576,11 @@ public void unregisterRouter(int rId)
 */
 public BasicRouterInfo findRouterInfo(int rId){
     return routerIdMap_.get(rId);
+}
+
+public void addRouterInfo(int id, BasicRouterInfo br)
+{
+    routerIdMap_.put(id, br);
 }
 
 /** remove id from basic router info*/
@@ -735,6 +603,42 @@ public LocalControllerInteractor getLocalController(BasicRouterInfo br)
 {
     return interactorMap_.get(br.getLocalControllerInfo());
 }
+
+/** Return the local controller attached to router info*/
+public LocalControllerInteractor getLocalController(LocalControllerInfo lcinf)
+{
+    return interactorMap_.get(lcinf);
+}
+
+
+public LocalControllerInfo getLeastUsedLC()
+
+{  
+    
+    LocalControllerInfo leastUsed = options_.getController(0);
+    
+    double minUse = leastUsed.getUsage();
+    double thisUsage;
+    for (int i = 1; i < noControllers_; i++) {
+        LocalControllerInfo lc= options_.getController(i);
+        thisUsage = lc.getUsage();
+        // Logger.getLogger("log").logln(USR.STDOUT, i+" Usage
+        // "+thisUsage);
+        if (thisUsage == 0.0) {
+            leastUsed = lc;
+            break;
+        }
+        if (thisUsage < minUse) {
+            minUse = thisUsage;
+            leastUsed = lc;
+        }
+    }
+    if (minUse >= 1.0) {
+        return null;
+    }
+    return leastUsed;
+}
+
 
 
 /** Get the port pool associated with a local controller */
@@ -2049,6 +1953,17 @@ public void connectNetwork(long time, int r1, int r2){
             }
         }
     }
+}
+
+public int incMaxRouterId()
+{
+    maxRouterId_++;
+    return maxRouterId_;
+}
+
+public void addAPNode(long time, int rId)
+{
+    APController_.addNode(time, rId);
 }
 
 public boolean isLatticeMonitoring(){

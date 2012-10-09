@@ -36,7 +36,7 @@
         <When>Event</When>
         <Type>usr.output.OutputEndRouterEvent</Type>
     </Output>
-          <Output>
+    <Output>
         <File>/tmp/gc-channel9.out</File>
         <When>Event</When>
         <Type>usr.output.OutputEndLinkEvent</Type>
