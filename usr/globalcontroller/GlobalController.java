@@ -715,6 +715,13 @@ public LinkInfo findLinkInfo(int linkID){
 }
 
 /**
+ * Set LinkInfo
+ */
+public void setLinkInfo(Integer linkID, LinkInfo linkinf) {
+    linkInfo.put(linkID, linkinf);
+}
+
+/**
  * List all LinkInfo
  */
 public Collection<LinkInfo> getAllLinkInfo(){
@@ -733,7 +740,7 @@ public boolean isValidLinkID(int lId){
 
 /** Register a link with structures necessary in Global
  * Controller */
-private void registerLink(int router1Id, int router2Id){
+public void registerLink(int router1Id, int router2Id){
     noLinks_++;
 
     // Add links in both directions
@@ -757,163 +764,6 @@ private void registerLink(int router1Id, int router2Id){
     costs2[out.length] = 1;     // Link cost 1 so far
     setOutLinks(router2Id, out2);
     setLinkCosts(router2Id, costs2);
-}
-
-/** Event to link two routers  Return -1 for fail or link id*/
-public int startLink(long time,
-    int router1Id,
-    int router2Id,
-    int weight,
-    String name)
-{
-    //
-
-    int index = routerList_.indexOf(router1Id);
-
-    if (index == -1)
-        return -1;              // Cannot start link as router 1 dead
-                                // already
-    index = routerList_.indexOf(router2Id);
-    if (index == -1)
-        return -1;              // Cannot start link as router 2 dead
-                                // already
-
-    // check if this link already exists
-    int [] outForRouter1 = getOutLinks(router1Id);
-
-    boolean gotIt = false;
-    for (int i : outForRouter1) {
-        if (i == router2Id) {
-            gotIt = true;
-            break;
-        }
-    }
-
-    if (gotIt) {                 // we already have this link
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            "Link already exists: " +
-            router1Id + " -> " + router2Id);
-        return -1;
-    } else {
-        int linkID;
-        if (options_.isSimulation())
-            linkID = startSimulationLink(router1Id, router2Id);
-        else
-            linkID = startVirtualLink(router1Id, router2Id, weight,
-                name);
-        // register inside GlobalController
-        registerLink(router1Id, router2Id);
-        // Tell APController about link
-        APController_.addLink(time, router1Id, router2Id);
-        return linkID;
-    }
-}
-
-/** Start simulation link */
-private int startSimulationLink(int router1Id,
-    int router2Id)                  {
-    return 0;
-}
-
-/**
- * Send commands to start virtual link
- * Args are: router1 ID, router2 ID, the weight for the link, a name for
- ***************************the link
- */
-private int startVirtualLink(int router1Id,
-    int router2Id,
-    int weight,
-    String name)
-{
-    BasicRouterInfo br1, br2;
-    LocalControllerInfo lc;
-    LocalControllerInteractor lci;
-
-    br1 = routerIdMap_.get(router1Id);
-    br2 = routerIdMap_.get(router2Id);
-    if (br1 == null) {
-        System.err.println(
-            "Router " + router1Id +
-            " does not exist when trying to link to " +
-            router2Id);
-        return -1;
-    }
-    if (br2 == null) {
-        System.err.println(
-            "Router " + router2Id +
-            " does not exist when trying to link to " +
-            router1Id);
-        return -1;
-    }
-
-    lc = br1.getLocalControllerInfo();
-    lci = interactorMap_.get(lc);
-    Logger.getLogger("log").logln(USR.STDOUT, leadin() +
-        "Global controller linking routers " +
-        br1 + " and " + br2);
-    int MAX_TRIES = 5;
-    int i;
-    Integer linkID = -1;
-
-    for (i = 0; i < MAX_TRIES; i++) {
-        try {
-            String connectionName = lci.connectRouters(
-                br1.getHost(), br1.getManagementPort(),
-                br2.getHost(),
-                br2.getManagementPort(),
-                weight, name);
-
-            // add Pair<router1Id, router2Id> -> connectionName to
-            // linkNames
-            Pair<Integer, Integer> endPoints = makePair(router1Id,
-                router2Id);
-            linkID = endPoints.hashCode();
-
-            linkInfo.put(linkID,
-                new LinkInfo(endPoints, connectionName, weight,
-                    linkID));
-
-            Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() +
-                br1 + " -> " + br2 + " = " +
-                connectionName
-                + " with link ID: " + linkID);
-
-            Logger.getLogger("log").logln(1 << 9,
-                elapsedToString(
-                    getElapsedTime())
-                +
-                ANSI.BLUE + " CREATE LINK " +
-                router2Id +
-                " TO " + router1Id +
-                ANSI.RESET_COLOUR);
-
-            break;
-        } catch (IOException e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() +
-                "Cannot link routers " +
-                router1Id + " " + router2Id +
-                " try " + (i + 1));
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() + e.getMessage());
-        }catch (JSONException e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() +
-                "Cannot link routers " +
-                router1Id + " " + router2Id +
-                " try " + (i + 1));
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() + e.getMessage());
-        }
-    }
-    if (i == MAX_TRIES) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + "Giving up on linking");
-        bailOut();
-    }
-    return linkID;
 }
 
 /* Return a list of outlinks from a router */
@@ -1731,6 +1581,7 @@ public int getLinkWeight(int l1, int l2){
 }
 
 public void setAP(int gid, int AP){
+    
     //System.out.println("setAP called");
     Logger.getLogger("log").logln(USR.STDOUT,
         leadin() + " router " + gid +
@@ -1806,7 +1657,7 @@ public void checkIsolated(long time, int gid){
         int i = (int)Math.floor(Math.random() * nRouters);
         int dest = routerList_.get(i);
         if (dest != gid) {
-            startLink(time, gid, dest, 1, null);
+            StartLinkEvent.startLink(this,time, gid, dest, 1, null);
             break;
         }
     }
@@ -1866,7 +1717,7 @@ public void connectNetwork(long time){
                 bailOut();
                 return;
             }
-            startLink(time, l1, l2, 1, null);
+            StartLinkEvent.startLink(this, time, l1, l2, 1, null);
             toVisitCtr++;
             toVisit[0] = l2;
         }
@@ -1935,7 +1786,7 @@ public void connectNetwork(long time, int r1, int r2){
                 bailOut();
                 return;
             }
-            startLink(time, l1, l2, 1, null);
+            StartLinkEvent.startLink(this,time, l1, l2, 1, null);
             toVisitCtr++;
             toVisit[0] = l2;
         }
@@ -1964,6 +1815,11 @@ public int incMaxRouterId()
 public void addAPNode(long time, int rId)
 {
     APController_.addNode(time, rId);
+}
+
+public void addAPLink(long time, int router1Id, int router2Id)
+{
+    APController_.addLink(time, router1Id, router2Id);
 }
 
 public boolean isLatticeMonitoring(){

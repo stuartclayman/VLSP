@@ -3,8 +3,11 @@ package usr.events;
 import usr.logging.*;
 import java.lang.*;
 import usr.globalcontroller.*;
+import usr.localcontroller.*;
+import usr.interactor.*;
 import usr.engine.*;
 import usr.common.*;
+import java.io.*;
 import us.monoid.json.*;
 
 /** Class represents a global controller event*/
@@ -92,7 +95,7 @@ public JSONObject execute(GlobalController gc) throws
 InstantiationException {
     if (!numbersSet_)
         setRouterNumbers(address1_, address2_, gc);
-    int linkNo = gc.startLink(time_, router1_, router2_, weight_,
+    int linkNo = startLink(gc, time_, router1_, router2_, weight_,
         linkName_);
     boolean success = linkNo >= 0;
     JSONObject json = new JSONObject();
@@ -125,4 +128,148 @@ InstantiationException {
     }
     return json;
 }
+
+/** Event to link two routers  Return -1 for fail or link id*/
+static public int startLink(GlobalController gc, long time, 
+    int router1Id, int router2Id, int weight, String name)
+{
+    //
+
+    int index = gc.getRouterId(router1Id);
+
+    if (index == -1)
+        return -1;              // Cannot start link as router 1 dead
+                                // already
+    index = gc.getRouterId(router2Id);
+    if (index == -1)
+        return -1;              // Cannot start link as router 2 dead
+                                // already
+
+    // check if this link already exists
+    int [] outForRouter1 = gc.getOutLinks(router1Id);
+
+    boolean gotIt = false;
+    for (int i : outForRouter1) {
+        if (i == router2Id) {
+            gotIt = true;
+            break;
+        }
+    }
+
+    if (gotIt) {                 // we already have this link
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() + "Link already exists: " +
+            router1Id + " -> " + router2Id);
+        return -1;
+    } else {
+        int linkID;
+        if (gc.isSimulation())
+            linkID = startSimulationLink(gc, router1Id, router2Id);
+        else
+            linkID = startVirtualLink(gc, router1Id, router2Id, weight,
+                name);
+        // register inside GlobalController
+        gc.registerLink(router1Id, router2Id);
+        // Tell APController about link
+        gc.addAPLink(time, router1Id, router2Id);
+        return linkID;
+    }
+}
+
+/** Start simulation link */
+static private int startSimulationLink(GlobalController gc, 
+    int router1Id, int router2Id)                 
+{
+    return 0;
+}
+
+/**
+ * Send commands to start virtual link
+ * Args are: router1 ID, router2 ID, the weight for the link, a name for
+ ***************************the link
+ */
+static private int startVirtualLink(GlobalController gc, int router1Id,
+    int router2Id, int weight, String name)
+{
+    BasicRouterInfo br1, br2;
+    LocalControllerInfo lc;
+    LocalControllerInteractor lci;
+
+    br1 = gc.findRouterInfo(router1Id);
+    br2 = gc.findRouterInfo(router2Id);
+    if (br1 == null) {
+         Logger.getLogger("log").logln(USR.ERROR,
+            leadin() +"Router " + router1Id +
+            " does not exist when trying to link to " +
+            router2Id);
+        return -1;
+    }
+    if (br2 == null) {
+         Logger.getLogger("log").logln(USR.ERROR,
+            leadin() +"Router " + router2Id +
+            " does not exist when trying to link to " +
+            router1Id);
+        return -1;
+    }
+
+    lc = br1.getLocalControllerInfo();
+    lci = gc.getLocalController(lc);
+    Logger.getLogger("log").logln(USR.STDOUT, leadin() +
+        "Global controller linking routers " +
+        br1 + " and " + br2);
+    int MAX_TRIES = 5;
+    int i;
+    Integer linkID = -1;
+
+    for (i = 0; i < MAX_TRIES; i++) {
+        try {
+            String connectionName = lci.connectRouters(
+                br1.getHost(), br1.getManagementPort(),
+                br2.getHost(),
+                br2.getManagementPort(),
+                weight, name);
+
+            // add Pair<router1Id, router2Id> -> connectionName to
+            // linkNames
+            Pair<Integer, Integer> endPoints = gc.makePair(router1Id,
+                router2Id);
+            linkID = endPoints.hashCode();
+
+            gc.setLinkInfo(linkID,
+                new LinkInfo(endPoints, connectionName, weight,
+                    linkID));
+
+            Logger.getLogger("log").logln(USR.STDOUT,
+                leadin() + br1 + " -> " + br2 + " = " +
+                connectionName + " with link ID: " + linkID);
+            break;
+        } catch (IOException e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                leadin() +
+                "Cannot link routers " +
+                router1Id + " " + router2Id +
+                " try " + (i + 1));
+            Logger.getLogger("log").logln(USR.ERROR,
+                leadin() + e.getMessage());
+        }catch (JSONException e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                leadin() + "Cannot link routers " +
+                router1Id + " " + router2Id +
+                " try " + (i + 1));
+            Logger.getLogger("log").logln(USR.ERROR,
+                leadin() + e.getMessage());
+        }
+    }
+    if (i == MAX_TRIES) {
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() + "Giving up on linking");
+        gc.bailOut();
+    }
+    return linkID;
+}
+
+static private String leadin() {
+    return "GC(SLE):";
+}
+
 }

@@ -133,10 +133,8 @@ private static boolean doRouterStart(GlobalController gc, int id,
         }
     }
     Logger.getLogger("log").logln(USR.ERROR,
-        leadin() +
-        "Could not start new router on " +
-        leastUsed +
-        " after " + MAX_TRIES + " tries.");
+        leadin() + "Could not start new router on " +
+        leastUsed + " after " + MAX_TRIES + " tries.");
     //System.err.println("Could not start");
     return false;
 }
@@ -176,11 +174,6 @@ throws IOException
         gc.addRouterInfo(id,br);
         Logger.getLogger("log").logln(USR.STDOUT, leadin() +
             "Created router " + routerAttrs);
-        Logger.getLogger("log").logln(1 << 9,
-            gc.elapsedToString(
-                gc.getElapsedTime()) +
-            ANSI.GREEN + " START ROUTER " +
-            id + ANSI.RESET_COLOUR);
         return true;
     } catch (JSONException e) {
         // Failed to start#
@@ -189,11 +182,9 @@ throws IOException
             "Could not create router " + id +
             " on " + lci);
         if (port != 0)
-            pp.freePorts(port, port + 1);               // Free ports
-                                                        // but different
-                                                        // ones will be
-                                                        // tried next
-                                                        // time
+            pp.freePorts(port, port + 1); 
+                // Free ports but different ones will be
+                // tried next time
         return false;
     }
 }

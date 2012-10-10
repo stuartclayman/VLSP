@@ -17,6 +17,7 @@ public List<Integer> getAPList();
 /** Is node with GID an AP*/
 public boolean isAP(int gid);
 
+
 /** get AP for given GID */
 public int getAP(int gid);
 
