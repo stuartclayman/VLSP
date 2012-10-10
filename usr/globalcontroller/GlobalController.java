@@ -179,20 +179,6 @@ private void init(){
     logger.addOutput(System.out, new BitMask(USR.STDOUT));
     //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Hello");
 
-    // add some extra output channels, using mask bit 7, 8, 9, 10
-    try {
-        logger.addOutput(new PrintWriter(new FileOutputStream(
-                    "/tmp/gc-channel7.out")),
-            new BitMask(1 << 7));
-        logger.addOutput(new PrintWriter(new FileOutputStream(
-                    "/tmp/gc-channel8.out")),
-            new BitMask(1 << 8));
-        logger.addOutput(new PrintWriter(new FileOutputStream(
-                    "/tmp/gc-channel10.out")),
-            new BitMask(1 << 10));
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
 
     outLinks_ = new ArrayList<int []> ();
     linkCosts_ = new ArrayList<int []> ();
@@ -1607,28 +1593,20 @@ public void setAP(int gid, int AP){
     }
     try {
         lci.setAP(gid, AP);
+        APInformEvent aie= new APInformEvent(getElapsedTime(),gid,AP);
+        scheduler_.addEvent(aie);
 
-        if (gid == AP) {
-            Logger.getLogger("log").logln(1 << 8,
-                elapsedToString(
-                    getElapsedTime())
-                + ANSI.BLUE + " ROUTER " +
-                gid + " BECOME AP" +
-                ANSI.RESET_COLOUR);
-        } else {
-            Logger.getLogger("log").logln(1 << 8,
-                elapsedToString(
-                    getElapsedTime())
-                + ANSI.CYAN + " ROUTER " +
-                gid + " SET AP " + AP +
-                ANSI.RESET_COLOUR);
-        }
     } catch (Exception e) {
         Logger.getLogger("log").logln(USR.ERROR,
             leadin() +
             " unable to set AP for router " +
             gid);
     }
+}
+
+public void addEvent(Event e)
+{
+    scheduler_.addEvent(e);
 }
 
 /** Router GID reports a connection to access point AP */

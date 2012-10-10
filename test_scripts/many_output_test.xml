@@ -31,8 +31,17 @@
   <RouterOptions>
       test_scripts/routeroptions_time.xml
   </RouterOptions>
-
-        <Output>
+      <Output>
+        <File>/tmp/gc-channel7.out</File>
+        <When>Event</When>
+        <Type>usr.output.OutputNetStatsEvent</Type>
+      </Output>
+      <Output>
+        <File>/tmp/gc-channel8.out</File>
+        <When>Event</When>
+        <Type>usr.output.OutputAPInformEvent</Type>
+      </Output>
+    <Output>
         <File>/tmp/gc-channel9.out</File>
         <When>Event</When>
         <Type>usr.output.OutputStartRouterEvent</Type>
@@ -51,5 +60,5 @@
         <File>/tmp/gc-channel9.out</File>
         <When>Event</When>
         <Type>usr.output.OutputEndLinkEvent</Type>
-      </Output>
+    </Output>
 </SimOptions>

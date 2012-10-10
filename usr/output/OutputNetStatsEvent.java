@@ -12,7 +12,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /** Class to output network stuff */
-public class OutputStartLinkEvent implements OutputFunction
+public class OutputNetStatsEvent implements OutputFunction
 {
 /** In fact this only requests output -- actual output occurs later */
 public void makeOutput(long t, PrintStream p, OutputType o,
@@ -24,19 +24,15 @@ public void makeOutput(long t, PrintStream p, OutputType o,
 public void makeEventOutput(Event event, JSONObject result, 
     PrintStream s, OutputType out, GlobalController gc)
 {
-    if (!(event instanceof StartLinkEvent)) 
+    if (!(event instanceof NetStatsEvent)) 
         return;
-    int rId1;
-    int rId2;
+    String netstats;
     try {
-        rId1= (Integer)result.get("router1");
-        rId2= (Integer)result.get("router2");
+        netstats= (String)result.get("netstats");
     } catch (JSONException je) {
         return;
     }
-    s.println(gc.elapsedToString(gc.getElapsedTime())
-                + ANSI.BLUE + " CREATE LINK " + rId1 +
-                " TO " + rId2 + ANSI.RESET_COLOUR);
+    s.println(netstats);
 }
 
 

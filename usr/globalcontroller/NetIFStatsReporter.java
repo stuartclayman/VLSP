@@ -10,6 +10,7 @@ import eu.reservoir.monitoring.core.table.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import usr.events.*;
 
 /**
  * A NetIFStatsReporter collects measurements sent by
@@ -100,9 +101,9 @@ public void report(Measurement m){
             measurements.put(routerName, table);
         }
 
-        Logger.getLogger("log").logln(1 << 7,
+        NetStatsEvent nse= new NetStatsEvent(globalController.getElapsedTime(),
             tableToString(table, false, true));
-
+        globalController.addEvent(nse);
         // Calculate volume of traffic - in and out
         //int volume = calculateTraffic(table);
 

@@ -12,7 +12,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /** Class to output network stuff */
-public class OutputStartLinkEvent implements OutputFunction
+public class OutputAPInformEvent implements OutputFunction
 {
 /** In fact this only requests output -- actual output occurs later */
 public void makeOutput(long t, PrintStream p, OutputType o,
@@ -24,19 +24,29 @@ public void makeOutput(long t, PrintStream p, OutputType o,
 public void makeEventOutput(Event event, JSONObject result, 
     PrintStream s, OutputType out, GlobalController gc)
 {
-    if (!(event instanceof StartLinkEvent)) 
+    if (!(event instanceof APInformEvent)) 
         return;
-    int rId1;
-    int rId2;
+    int AP;
+    int gid;
     try {
-        rId1= (Integer)result.get("router1");
-        rId2= (Integer)result.get("router2");
+        gid= (Integer)result.get("router");
+        AP= (Integer)result.get("AP");
     } catch (JSONException je) {
         return;
     }
-    s.println(gc.elapsedToString(gc.getElapsedTime())
-                + ANSI.BLUE + " CREATE LINK " + rId1 +
-                " TO " + rId2 + ANSI.RESET_COLOUR);
+    if (gid == AP) {
+            s.println(gc.elapsedToString(
+                    gc.getElapsedTime())
+                + ANSI.BLUE + " ROUTER " +
+                gid + " BECOME AP" +
+                ANSI.RESET_COLOUR);
+        } else {
+            s.println(gc.elapsedToString(
+                    gc.getElapsedTime())
+                + ANSI.CYAN + " ROUTER " +
+                gid + " SET AP " + AP +
+                ANSI.RESET_COLOUR);
+        }
 }
 
 
