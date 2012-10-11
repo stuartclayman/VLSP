@@ -9,6 +9,7 @@ import java.io.*;
 import java.net.*;
 import usr.common.*;
 import usr.engine.*;
+import usr.abstractnetwork.*;
 import java.util.concurrent.*;
 import java.nio.channels.FileChannel;
 import usr.interactor.*;
@@ -51,17 +52,7 @@ private HashMap<String,
 private ArrayList <String> childNames_ = null;          
         // names of child processes
 
-// Arrays below are sparse and this approach is for fast access.
-// outLinks_.get(i) returns a primitive array containing all the
-// nodes directly connected from node i
-private ArrayList <int []> outLinks_ = null;           
-        // numbers of nodes which are connected from
-        // a given node
-private ArrayList <int []> linkCosts_ = null;           
-        // costs of connections in above
-private ArrayList <Integer> routerList_ = null;         
-        // List of integers which
-        // contains the numbers of nodes present
+private AbstractNetwork network_= null;
 
 // Map connections LocalControllerInfo for given LCs to the appropriate
 // interactors
@@ -180,9 +171,7 @@ private void init(){
     //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Hello");
 
 
-    outLinks_ = new ArrayList<int []> ();
-    linkCosts_ = new ArrayList<int []> ();
-    routerList_ = new ArrayList<Integer>();
+    network_= new AbstractNetwork();
     linkInfo = new HashMap<Integer, LinkInfo>();
     appInfo = new HashMap<Integer, Integer>();
     options_ = new ControlOptions(xmlFile_);
@@ -535,14 +524,7 @@ public void endSimulation(long time){
 
 /** Register existence of router */
 public void registerRouter(int rId){
-    routerList_.add(rId);
-}
-
-/** Add structures for new router */
-public void addLinkAndCost()
-{
-    outLinks_.add(new int [0]);
-    linkCosts_.add(new int [0]);
+    network_.addNode(rId);
 }
 
 /** Unregister a router and all links from structures in
@@ -554,8 +536,7 @@ public void unregisterRouter(int rId)
     for (int i = out.length - 1; i >= 0; i--) {
         unregisterLink(rId, out[i]);
     }
-    int index = routerList_.indexOf(rId);
-    routerList_.remove(index);
+    network_.removeNode(rId);
 }
 
 /** Find some router info
@@ -678,19 +659,14 @@ public Collection<BasicRouterInfo> getAllRouterInfo(){
  * Get the number of routers
  */
 public int getRouterCount(){
-    return routerList_.size();
+    return network_.getNoNodes();
 }
 
 /**
  * Is the router ID valid.
  */
 public boolean isValidRouterID(int rId){
-    int index = routerList_.indexOf(rId);
-
-    if (index >= 0)
-        return true;
-    else
-        return false;
+    return network_.nodeExists(rId);
 }
 
 /**
@@ -727,44 +703,14 @@ public boolean isValidLinkID(int lId){
 /** Register a link with structures necessary in Global
  * Controller */
 public void registerLink(int router1Id, int router2Id){
-    noLinks_++;
-
-    // Add links in both directions
-    int [] out = getOutLinks(router1Id);
-    int [] out2 = new int [out.length + 1];
-    int [] costs = getLinkCosts(router1Id);
-    int [] costs2 = new int [out.length + 1];
-    System.arraycopy(out, 0, out2, 0, out.length);
-    System.arraycopy(costs, 0, costs2, 0, out.length);
-    out2[out.length] = router2Id;
-    costs2[out.length] = 1;     // Link cost 1 so far
-    setOutLinks(router1Id, out2);
-    setLinkCosts(router1Id, costs2);
-    out = getOutLinks(router2Id);
-    out2 = new int [out.length + 1];
-    costs = getLinkCosts(router2Id);
-    costs2 = new int [out.length + 1];
-    System.arraycopy(out, 0, out2, 0, out.length);
-    System.arraycopy(costs, 0, costs2, 0, out.length);
-    out2[out.length] = router1Id;
-    costs2[out.length] = 1;     // Link cost 1 so far
-    setOutLinks(router2Id, out2);
-    setLinkCosts(router2Id, costs2);
+    network_.addLink(router1Id, router2Id);
 }
 
 /* Return a list of outlinks from a router */
 public int [] getOutLinks(int routerId){
-    return outLinks_.get(routerId - 1);
+    return network_.getOutLinks(routerId);
 }
 
-/* Return a list of outlinks from a router */
-public void setOutLinks(int routerId, int []  out){
-    outLinks_.set(routerId - 1, out);
-    //System.err.print(routerId+" contains ");
-    //for (int i:out)
-    //    System.err.print(i+" ");
-    //System.err.println();
-}
 
 /**
  * Get the number of links
@@ -788,14 +734,10 @@ public boolean isConnected(int routerId, int other){
 /* Return a list of link costs from a router -- must be used in
  *  parallel get getOutLinks to id link nos*/
 public int [] getLinkCosts(int routerId){
-    return linkCosts_.get(routerId - 1);
+    return network_.getLinkCosts(routerId);
 }
 
-/* Return a list of link costs from a router -- must be used in
- *  parallel with setOutLinks to id link nos*/
-public void setLinkCosts(int routerId, int [] costs){
-    linkCosts_.set(routerId - 1, costs);
-}
+
 
 /** Create pair of integers with first integer smallest */
 private Pair <Integer, Integer> makeRouterPair(int r1,
@@ -813,61 +755,10 @@ static public Pair <Integer, Integer> makePair(int r1, int r2){
     return new Pair<Integer, Integer>(r1, r2);
 }
 
-/** Register a link with structures necessary in Global
+/** Remove a link with structures necessary in Global
  * Controller */
 public void unregisterLink(int router1Id, int router2Id){
-    Pair <Integer, Integer> rnos = makeRouterPair(router1Id,
-        router2Id);
-    int [] out;
-    int [] out2;
-    int [] costs;
-    int [] costs2;
-    int arrayPos = 0;
-    noLinks_--;
-    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Adding
-    // link
-    // from "+router1Id+" "+router2Id);
-    // remove r2 from outlinks of r1
-    out = getOutLinks(router1Id);
-    costs = getLinkCosts(router1Id);
-    for (int i = 0; i < out.length; i++) {
-        if (out[i] == router2Id) {
-            arrayPos = i;
-            break;
-        }
-    }
-    out2 = new int[out.length - 1];
-    costs2 = new int [out.length - 1];
-    System.arraycopy(out, 0, out2, 0, out.length - 1);
-    System.arraycopy(costs, 0, costs2, 0, out.length - 1);
-    //System.err.println("Old array "+out+" new "+out2+" remove
-    // "+router1Id+" "+router2Id+" pos "+arrayPos);
-
-    if (arrayPos != out.length - 1) {
-        out2[arrayPos] = out[out.length - 1];
-        costs2[arrayPos] = costs[out.length - 1];
-    }
-    setOutLinks(router1Id, out2);
-    setLinkCosts(router1Id, costs2);
-    // remove r1 from outlinks of r2
-    out = getOutLinks(router2Id);
-    costs = getLinkCosts(router2Id);
-    for (int i = 0; i < out.length; i++) {
-        if (out[i] == router1Id) {
-            arrayPos = i;
-            break;
-        }
-    }
-    out2 = new int[out.length - 1];
-    costs2 = new int [out.length - 1];
-    System.arraycopy(out, 0, out2, 0, out.length - 1);
-    System.arraycopy(costs, 0, costs2, 0, out.length - 1);
-    if (arrayPos != out.length - 1) {
-        out2[arrayPos] = out[out.length - 1];
-        costs2[arrayPos] = costs[out.length - 1];
-    }
-    setOutLinks(router2Id, out2);
-    setLinkCosts(router2Id, costs2);
+    network_.removeLink(router1Id, router2Id);
     APController_.removeLink(getElapsedTime(), router1Id, router2Id);
 }
 
@@ -1550,22 +1441,10 @@ private void killAllControllers(){
         pw.stop();
 }
 
-public int getLinkWeight(int l1, int l2){
 /** Return the weight from link1 to link2 or 0 if no link*/
-    int [] out = getOutLinks(l1);
-    int index = -1;
-    for (int i = 0; i < out.length; i++) {
-        if (out[i] == l2) {
-            index = i;
-            break;
-        }
-    }
-    if (index == -1)
-        return 0;
-    int [] costs = getLinkCosts(l1);
-    return costs[index];
+public int getLinkWeight(int l1, int l2){
+    return network_.getLinkWeight(l1,l2);
 }
-
 public void setAP(int gid, int AP){
     
     //System.out.println("setAP called");
@@ -1616,173 +1495,6 @@ public boolean reportAP(int gid, int AP){
     return true;
 }
 
-/** Check network for isolated nodes and connect them if possible */
-public void checkIsolated(long time){
-    for (int i : getRouterList())
-        checkIsolated(time, i);
-}
-
-/** Check if given node is isolated and connect it if possible */
-public void checkIsolated(long time, int gid){
-    int [] links = getOutLinks(gid);
-    int nRouters = routerList_.size();
-    if (nRouters == 1)     // One node is allowed to be isolated
-        return;
-    if (links.length > 0)
-        return;
-    // Node is isolated.
-    while (true) {
-        int i = (int)Math.floor(Math.random() * nRouters);
-        int dest = routerList_.get(i);
-        if (dest != gid) {
-            StartLinkEvent.startLink(this,time, gid, dest, 1, null);
-            break;
-        }
-    }
-}
-
-/** Make sure network is connected*/
-public void connectNetwork(long time){
-    int nRouters = routerList_.size();
-
-    if (nRouters <= 1)
-        return;
-    // Boolean arrays are larger than needed but this is fast
-    boolean [] visited = new boolean[maxRouterId_ + 1];
-    boolean [] visiting = new boolean[maxRouterId_ + 1];
-    for (int i = 0; i < maxRouterId_ + 1; i++) {
-        visited[i] = true;
-        visiting[i] = false;
-    }
-    for (int i = 0; i < nRouters; i++)
-        visited[routerList_.get(i)] = false;
-    int [] toVisit = new int[nRouters];
-    int toVisitCtr = 1;
-    toVisit[0] = routerList_.get(0);
-    int noVisited = 0;
-    while (noVisited < nRouters) {
-        //System.err.println("NoVisited = "+noVisited+" /
-        // "+nRouters);
-        if (toVisitCtr == 0) {          // Not visited everything so
-                                        // make a
-                                        // new link
-            // Choose i1 th visited and i2 th unvisited
-            int i1 = (int)Math.floor(Math.random() * noVisited);
-            int i2 =
-                (int)Math.floor(Math.random() *
-                    (nRouters - noVisited));
-            int l1 = -1;
-            int l2 = -1;
-            for (int i = 0; i < nRouters; i++) {
-                int tmpNode = routerList_.get(i);
-                if (visited[tmpNode] && i1 >= 0) {
-                    if (i1 == 0)
-                        l1 = tmpNode;
-                    i1--;
-                } else if (!visited[tmpNode] && i2 >= 0) {
-                    if (i2 == 0)
-                        l2 = tmpNode;
-                    i2--;
-                }
-                if (i1 < 0 && i2 < 0)
-                    break;
-            }
-            if (l1 == -1 || l2 == -1) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                    leadin() +
-                    "Error in network connection "
-                    + l1 + " " + l2);
-                bailOut();
-                return;
-            }
-            StartLinkEvent.startLink(this, time, l1, l2, 1, null);
-            toVisitCtr++;
-            toVisit[0] = l2;
-        }
-        toVisitCtr--;
-        int node = toVisit[toVisitCtr];
-        visited[node] = true;
-        noVisited++;
-        for (int l : getOutLinks(node)) {
-            if (visited[l] == false && visiting[l] == false) {
-                toVisit[toVisitCtr] = l;
-                visiting[l] = true;
-                toVisitCtr++;
-            }
-        }
-    }
-}
-
-/** Make sure network is connected from r1 to r2*/
-public void connectNetwork(long time, int r1, int r2){
-    int nRouters = routerList_.size();
-
-    if (nRouters <= 1)
-        return;
-    // Boolean arrays are larger than needed but this is fast
-    boolean [] visited = new boolean[maxRouterId_ + 1];
-    boolean [] visiting = new boolean[maxRouterId_ + 1];
-    for (int i = 0; i < maxRouterId_ + 1; i++) {
-        visited[i] = true;
-        visiting[i] = false;
-    }
-    for (int i = 0; i < nRouters; i++)
-        visited[routerList_.get(i)] = false;
-    int [] toVisit = new int[nRouters];
-    int toVisitCtr = 1;
-    toVisit[0] = r1;
-    int noVisited = 1;
-    while (noVisited < nRouters) {
-        if (toVisitCtr == 0) {          
-            // Not visited everything so make a new link
-            // Choose i1 th visited and i2 th unvisited
-            int i1 = (int)Math.floor(Math.random() * noVisited);
-            int i2 =
-                (int)Math.floor(Math.random() *
-                    (nRouters - noVisited));
-            int l1 = -1;
-            int l2 = -1;
-            for (int i = 0; i < nRouters; i++) {
-                int tmpNode = routerList_.get(i);
-                if (visited[tmpNode] && i1 >= 0) {
-                    if (i1 == 0)
-                        l1 = tmpNode;
-                    i1--;
-                } else if (!visited[tmpNode] && i2 >= 0) {
-                    if (i2 == 0)
-                        l2 = tmpNode;
-                    i2--;
-                }
-                if (i1 < 0 && i2 < 0)
-                    break;
-            }
-            if (l1 == -1 || l2 == -1) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                    leadin() +
-                    "Error in network connection "
-                    + l1 + " " + l2);
-                bailOut();
-                return;
-            }
-            StartLinkEvent.startLink(this,time, l1, l2, 1, null);
-            toVisitCtr++;
-            toVisit[0] = l2;
-        }
-        toVisitCtr--;
-        int node = toVisit[toVisitCtr];
-        visited[node] = true;
-        noVisited++;
-        for (int l : getOutLinks(node)) {
-            if (l == r2)                // We have a connection
-                return;
-            if (visited[l] == false && visiting[l] == false) {
-                toVisit[toVisitCtr] = l;
-                visiting[l] = true;
-                toVisitCtr++;
-            }
-        }
-    }
-}
 
 public int incMaxRouterId()
 {
@@ -1827,18 +1539,189 @@ public int getAPControllerConsiderTime(){
 
 /** Accessor function for routerList */
 public ArrayList<Integer> getRouterList(){
-    return routerList_;
+    return network_.getNodeList();
 }
 
 /** Return id of ith router */
 public int getRouterId(int i){
-    return routerList_.get(i);
+    return network_.getNodeId(i);
 }
 
 /** Number of routers in simulation */
 public int getNoRouters(){
-    return routerList_.size();
+    return network_.getNoNodes();
 }
+
+/** Check network for isolated nodes and connect them if possible */
+public void checkIsolated(long time){
+    for (int i : network_.getNodeList())
+        checkIsolated(time, i);
+}
+
+/** Check if given node is isolated and connect it if possible */
+public void checkIsolated(long time, int gid){
+    int [] links = network_.getOutLinks(gid);
+    int nRouters = network_.getNoLinks();
+    if (nRouters == 1)     // One node is allowed to be isolated
+        return;
+    if (links.length > 0)
+        return;
+    // Node is isolated.
+    while (true) {
+        int i = (int)Math.floor(Math.random() * nRouters);
+        int dest = network_.getNodeId(i);
+        if (dest != gid) {
+            StartLinkEvent.startLink(this,time, gid, dest, 1, null);
+            break;
+        }
+    }
+}
+
+/** Make sure network is connected*/
+public void connectNetwork(long time){
+    int nRouters = network_.getNoNodes();
+
+    if (nRouters <= 1)
+        return;
+    // Boolean arrays are larger than needed but this is fast
+    boolean [] visited = new boolean[maxRouterId_ + 1];
+    boolean [] visiting = new boolean[maxRouterId_ + 1];
+    for (int i = 0; i < maxRouterId_ + 1; i++) {
+        visited[i] = true;
+        visiting[i] = false;
+    }
+    for (int i = 0; i < nRouters; i++)
+        visited[network_.getNodeId(i)] = false;
+    int [] toVisit = new int[nRouters];
+    int toVisitCtr = 1;
+    toVisit[0] = network_.getNodeId(0);
+    int noVisited = 0;
+    while (noVisited < nRouters) {
+        //System.err.println("NoVisited = "+noVisited+" /
+        // "+nRouters);
+        if (toVisitCtr == 0) {          
+            // Not visited everything so make a new link
+            // Choose i1 th visited and i2 th unvisited
+            int i1 = (int)Math.floor(Math.random() * noVisited);
+            int i2 =
+                (int)Math.floor(Math.random() *
+                    (nRouters - noVisited));
+            int l1 = -1;
+            int l2 = -1;
+            for (int i = 0; i < nRouters; i++) {
+                int tmpNode = network_.getNodeId(i);
+                if (visited[tmpNode] && i1 >= 0) {
+                    if (i1 == 0)
+                        l1 = tmpNode;
+                    i1--;
+                } else if (!visited[tmpNode] && i2 >= 0) {
+                    if (i2 == 0)
+                        l2 = tmpNode;
+                    i2--;
+                }
+                if (i1 < 0 && i2 < 0)
+                    break;
+            }
+            if (l1 == -1 || l2 == -1) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                    leadin() +  "Error in network connection "
+                    + l1 + " " + l2);
+                bailOut();
+                return;
+            }
+            StartLinkEvent.startLink(this, time, l1, l2, 1, null);
+            toVisitCtr++;
+            toVisit[0] = l2;
+        }
+        toVisitCtr--;
+        int node = toVisit[toVisitCtr];
+        visited[node] = true;
+        noVisited++;
+        for (int l : network_.getOutLinks(node)) {
+            if (visited[l] == false && visiting[l] == false) {
+                toVisit[toVisitCtr] = l;
+                visiting[l] = true;
+                toVisitCtr++;
+            }
+        }
+    }
+}
+
+/** Make sure network is connected from r1 to r2*/
+public void connectNetwork(long time, int r1, int r2){
+    int nRouters = network_.getNoNodes();
+
+    if (nRouters <= 1)
+        return;
+    // Boolean arrays are larger than needed but this is fast
+    boolean [] visited = new boolean[maxRouterId_ + 1];
+    boolean [] visiting = new boolean[maxRouterId_ + 1];
+    for (int i = 0; i < maxRouterId_ + 1; i++) {
+        visited[i] = true;
+        visiting[i] = false;
+    }
+    for (int i = 0; i < nRouters; i++) {
+        int rId= network_.getNodeId(i);
+        visited[rId] = false;
+    }
+    int [] toVisit = new int[nRouters];
+    int toVisitCtr = 1;
+    toVisit[0] = r1;
+    int noVisited = 1;
+    while (noVisited < nRouters) {
+        if (toVisitCtr == 0) {          
+            // Not visited everything so make a new link
+            // Choose i1 th visited and i2 th unvisited
+            int i1 = (int)Math.floor(Math.random() * noVisited);
+            int i2 =
+                (int)Math.floor(Math.random() *
+                    (nRouters - noVisited));
+            int l1 = -1;
+            int l2 = -1;
+            for (int i = 0; i < nRouters; i++) {
+                int tmpNode = network_.getNodeId(i);
+                if (visited[tmpNode] && i1 >= 0) {
+                    if (i1 == 0)
+                        l1 = tmpNode;
+                    i1--;
+                } else if (!visited[tmpNode] && i2 >= 0) {
+                    if (i2 == 0)
+                        l2 = tmpNode;
+                    i2--;
+                }
+                if (i1 < 0 && i2 < 0)
+                    break;
+            }
+            if (l1 == -1 || l2 == -1) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                    leadin() +
+                    "Error in network connection "
+                    + l1 + " " + l2);
+                bailOut();
+                return;
+            }
+            StartLinkEvent.startLink(this,time, l1, l2, 1, null);
+            toVisitCtr++;
+            toVisit[0] = l2;
+        }
+        toVisitCtr--;
+        int node = toVisit[toVisitCtr];
+        visited[node] = true;
+        noVisited++;
+        for (int l : getOutLinks(node)) {
+            if (l == r2)                // We have a connection
+                return;
+            if (visited[l] == false && visiting[l] == false) {
+                toVisit[toVisitCtr] = l;
+                visiting[l] = true;
+                toVisitCtr++;
+            }
+        }
+    }
+}
+
+
+
 
 /**
  * Get the name of this GlobalController.
