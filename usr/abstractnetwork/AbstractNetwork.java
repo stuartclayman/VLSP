@@ -203,7 +203,7 @@ public boolean nodeExists(int node){
 
 /** Return id of ith router */
 public int getNodeId(int i){
-    return nodeList_.get(i);
+    return nodeList_.get(i-1);
 }
 
 
