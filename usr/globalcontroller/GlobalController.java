@@ -79,9 +79,6 @@ private EventScheduler scheduler_ = null;
 
 private long simulationTime_= 0;
 
-// Maximum ID no of any router instantiated so far.  Next router
-// will have number maxRouterId_+1
-private int maxRouterId_ = 0;
 
 private int noLinks_ = 0;      // number of links in network
 
@@ -1265,11 +1262,6 @@ public ManagementConsole getManagementConsole(){
     return console_;
 }
 
-/**Accessor function for maxRouterId_*/
-public int getMaxRouterId(){
-    return maxRouterId_;
-}
-
 /**
  * Get the APController
  */
@@ -1496,11 +1488,6 @@ public boolean reportAP(int gid, int AP){
 }
 
 
-public int incMaxRouterId()
-{
-    maxRouterId_++;
-    return maxRouterId_;
-}
 
 public void addAPNode(long time, int rId)
 {
@@ -1523,6 +1510,15 @@ public long getMaximumLag() {
 /** Accessor function for ControlOptions structure options_ */
 public ControlOptions getOptions(){
     return options_;
+}
+
+public int getMaxRouterId() {
+    return network_.getLargestRouterId();
+}
+
+/** FIXME -- improve this */
+public int getNextNodeId() {
+    return network_.getLargestRouterId();
 }
 
 public boolean connectedNetwork(){
@@ -1561,7 +1557,7 @@ public void checkIsolated(long time){
 /** Check if given node is isolated and connect it if possible */
 public void checkIsolated(long time, int gid){
     int [] links = network_.getOutLinks(gid);
-    int nRouters = network_.getNoLinks();
+    int nRouters = network_.getNoNodes();
     if (nRouters == 1)     // One node is allowed to be isolated
         return;
     if (links.length > 0)
@@ -1580,13 +1576,13 @@ public void checkIsolated(long time, int gid){
 /** Make sure network is connected*/
 public void connectNetwork(long time){
     int nRouters = network_.getNoNodes();
-
+    int largestRouterId= network_.getLargestRouterId();
     if (nRouters <= 1)
         return;
     // Boolean arrays are larger than needed but this is fast
-    boolean [] visited = new boolean[maxRouterId_ + 1];
-    boolean [] visiting = new boolean[maxRouterId_ + 1];
-    for (int i = 0; i < maxRouterId_ + 1; i++) {
+    boolean [] visited = new boolean[largestRouterId+1];
+    boolean [] visiting = new boolean[largestRouterId+1];
+    for (int i = 0; i < largestRouterId+1; i++) {
         visited[i] = true;
         visiting[i] = false;
     }
@@ -1650,13 +1646,13 @@ public void connectNetwork(long time){
 /** Make sure network is connected from r1 to r2*/
 public void connectNetwork(long time, int r1, int r2){
     int nRouters = network_.getNoNodes();
-
+    int maxRouterId= network_.getLargestRouterId();
     if (nRouters <= 1)
         return;
     // Boolean arrays are larger than needed but this is fast
-    boolean [] visited = new boolean[maxRouterId_ + 1];
-    boolean [] visiting = new boolean[maxRouterId_ + 1];
-    for (int i = 0; i < maxRouterId_ + 1; i++) {
+    boolean [] visited = new boolean[maxRouterId+1];
+    boolean [] visiting = new boolean[maxRouterId+1];
+    for (int i = 0; i < maxRouterId+1; i++) {
         visited[i] = true;
         visiting[i] = false;
     }

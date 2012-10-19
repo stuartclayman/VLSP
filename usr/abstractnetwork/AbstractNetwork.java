@@ -35,14 +35,19 @@ int noLinks_= 0;
 public AbstractNetwork (){
     outLinks_= new ArrayList<int[]>();
     linkCosts_= new ArrayList<int[]>();
+    outLinks_.add(new int [0]);
+    linkCosts_.add(new int [0]);
     nodeList_= new ArrayList<Integer>();
 }
 
 /** Add a new node */
 public void addNode(int rId){
+    while (outLinks_.size() <= rId) {
+        outLinks_.add(new int [0]);
+        linkCosts_.add(new int [0]);
+    }
     nodeList_.add(rId);    
-    outLinks_.add(new int [0]);
-    linkCosts_.add(new int [0]);
+
     noNodes_++;
 }
 
@@ -164,12 +169,12 @@ public int [] getLinkCosts(int routerId){
 
 /* set list of link costs*/
 public void setLinkCosts(int routerId, int [] costs){
-    linkCosts_.set(routerId - 1, costs);
+    linkCosts_.set(routerId, costs);
 }
 
 /* set list of outlinks from a router */
 private void setOutLinks(int routerId, int []  out){
-    outLinks_.set(routerId - 1, out);
+    outLinks_.set(routerId, out);
 }
 
 public int getNoNodes()
@@ -180,6 +185,11 @@ public int getNoNodes()
 public int getNoLinks()
 {
     return noLinks_;
+}
+
+public int getLargestRouterId()
+{
+    return outLinks_.size();
 }
 
 /** Accessor function for routerList */
@@ -203,7 +213,7 @@ public boolean nodeExists(int node){
 
 /** Return id of ith router */
 public int getNodeId(int i){
-    return nodeList_.get(i-1);
+    return nodeList_.get(i);
 }
 
 

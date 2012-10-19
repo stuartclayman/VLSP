@@ -266,9 +266,10 @@ public Datagram receive() throws SocketException {
     try {
         return queue.take();
     } catch (InterruptedException ie) {
-        Logger.getLogger("log").logln(
-            USR.ERROR, "AppSocket: " + localPort +
-            " queue take interrupted");
+        // This gets interrupted routinely on shut down
+        // Logger.getLogger("log").logln(
+         //   USR.ERROR, "AppSocket: " + localPort +
+         //   " queue take interrupted");
         return null;
     }
 }

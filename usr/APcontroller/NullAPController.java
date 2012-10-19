@@ -263,9 +263,11 @@ public Pair<Integer, Integer> findClosestAP(int gid,
 }
 
 /** Add node to network */
-public void addNode(long time, int gid){
-    APs_.add(0);
-    APCosts_.add(options_.getMaxAPWeight());
+public void addNode(long time, int gid) {
+    while (APs_.size() <= gid) {
+        APs_.add(0);
+        APCosts_.add(options_.getMaxAPWeight());
+    }
     lse_.newNode(time, gid);
     changedNet_ = true;
 }

@@ -25,6 +25,7 @@ public void makeOutput(long t, PrintStream p, OutputType o,
 public void makeEventOutput(Event event, JSONObject result, 
     PrintStream s, OutputType out, GlobalController gc)
 {
+    //System.err.println("STOP EVENT "+ event.getClass().toString());
     if (!(event instanceof EndRouterEvent)) 
         return;
     int rId;

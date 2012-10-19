@@ -87,7 +87,7 @@ public static int startRouter(GlobalController gc, long time,
 {
     
     
-    int rId = gc.incMaxRouterId();
+    int rId = gc.getNextNodeId();
     gc.registerRouter(rId);
     gc.addAPNode(time,rId);
     if (gc.isSimulation())
