@@ -38,9 +38,9 @@ InstantiationException {
 }
 
 /** Perform logic which follows an event */
-public void followEvent(EventScheduler s,
+public void followEvent(EventScheduler s, JSONObject response,
     GlobalController g)                          {
-    super.followEvent(s, g);
+    super.followEvent(s, response, g);
     long newTime = time_ + g.getAPControllerConsiderTime();
     QueryAPEvent e = new QueryAPEvent(newTime, engine_, apc_);
     s.addEvent(e);

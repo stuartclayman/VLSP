@@ -19,8 +19,8 @@
                  <Parameter>7.0</Parameter>
                  <Parameter>1.5</Parameter>
             </ProbElement>
-</NodeDeathDist>
-      <LinkCreateDist>
+    </NodeDeathDist>
+    <LinkCreateDist>
             
             <ProbElement>
                  <Type>PoissonPlus</Type>

@@ -18,6 +18,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import java.io.*;
 import java.util.*;
+import us.monoid.json.*;
 
 public class BackgroundTrafficEngine implements EventEngine
 {
@@ -67,7 +68,7 @@ public void preceedEvent(Event e, EventScheduler s,
 }
 
 /** Add or remove events following a simulation event */
-public void followEvent(Event e, EventScheduler s,
+public void followEvent(Event e, EventScheduler s, JSONObject response,
     GlobalController g)                          {
     startNewConnection(e.getTime(), s, g);
 }

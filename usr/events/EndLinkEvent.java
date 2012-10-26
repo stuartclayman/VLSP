@@ -74,9 +74,9 @@ throws InstantiationException
 }
 
 /** Perform logic which follows an event */
-public void followEvent(EventScheduler s,
+public void followEvent(EventScheduler s, JSONObject response,
     GlobalController g)                          {
-    super.followEvent(s, g);
+    super.followEvent(s, response, g);
     if (g.connectedNetwork()) {
         g.connectNetwork(time_, router1_, router2_);
     } else if (!g.allowIsolatedNodes()) {

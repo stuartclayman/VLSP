@@ -21,7 +21,7 @@ private String address2_ = null;
 private String linkName_ = null;
 private boolean numbersSet_ = false;
 
-public StartLinkEvent (long time, EventEngine eng, int r1, int r2){
+public StartLinkEvent (long time, EventEngine eng, int r1, int r2) {
     time_ = time;
     engine_ = eng;
     router1_ = r1;
@@ -95,16 +95,38 @@ public JSONObject execute(GlobalController gc) throws
 InstantiationException {
     if (!numbersSet_)
         setRouterNumbers(address1_, address2_, gc);
-    int linkNo = startLink(gc, time_, router1_, router2_, weight_,
+    JSONObject json = new JSONObject();
+    int r1= router1_;
+    int r2= router2_;
+    if (!gc.isRouterAlive(r1)) {
+        try {
+            json.put("success", (Boolean)false);
+            json.put("msg", "Router not alive "+r1);
+            return json;
+        } catch (JSONException js) {
+            Logger.getLogger("log").logln(USR.ERROR,
+            "JSONException in StartLinkEvent should not occur");
+        }    
+    }
+    if (!gc.isRouterAlive(r2)) {
+        try {
+            json.put("success", (Boolean)false);
+            json.put("msg", "Router not alive "+r2);
+            return json;
+        } catch (JSONException js) {
+            Logger.getLogger("log").logln(USR.ERROR,
+            "JSONException in StartLinkEvent should not occur");
+        }    
+    }
+    int linkNo = startLink(gc, time_, r1, r2, weight_,
         linkName_);
     boolean success = linkNo >= 0;
-    JSONObject json = new JSONObject();
     try {
         if (success) {
             json.put("success", (Boolean)true);
             json.put("msg", "link started " + getName());
-            json.put("router1", (Integer)router1_);
-            json.put("router2", (Integer)router2_);
+            json.put("router1", (Integer)r1);
+            json.put("router2", (Integer)r2);
             json.put("linkID", (Integer)linkNo);
             json.put("weight", weight_);
             if (address1_ != null) {
@@ -133,18 +155,6 @@ InstantiationException {
 static public int startLink(GlobalController gc, long time, 
     int router1Id, int router2Id, int weight, String name)
 {
-    //
-
-    int index = gc.getRouterId(router1Id);
-
-    if (index == -1)
-        return -1;              // Cannot start link as router 1 dead
-                                // already
-    index = gc.getRouterId(router2Id);
-    if (index == -1)
-        return -1;              // Cannot start link as router 2 dead
-                                // already
-
     // check if this link already exists
     int [] outForRouter1 = gc.getOutLinks(router1Id);
 

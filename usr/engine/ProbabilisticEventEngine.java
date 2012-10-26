@@ -9,6 +9,8 @@ import rgc.probdistributions.*;
 import usr.logging.*;
 import usr.common.Pair;
 import usr.events.*;
+import us.monoid.json.*;
+
 
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -81,21 +83,25 @@ public void initialEvents(EventScheduler s,
 
 /** Add or remove events following a simulation event */
 public void followEvent(Event e, EventScheduler s,
-    GlobalController g)                          {
+    JSONObject response, GlobalController g)                          {
     if (e instanceof StartRouterEvent)
-        followRouter((StartRouterEvent)e, s, g);
+        followRouter((StartRouterEvent)e, s, response, g);
 }
 
-private void followRouter(StartRouterEvent e,
-    EventScheduler s,
-    GlobalController g)
+private void followRouter(StartRouterEvent e, EventScheduler s, 
+    JSONObject response, GlobalController g)
 {
-    int routerId;
-
-    routerId = g.getMaxRouterId();
     long now = e.getTime();
     long time;
-
+    int routerId= 0;
+    try {
+        routerId=(Integer)response.get("routerID");
+    } catch (JSONException ex) {
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() +
+            " Error interpreting response from JSON to router create");
+        return;
+    }
     //  Schedule new node
     try {
         time = (long)(nodeCreateDist_.getVariate() * 1000);
@@ -105,16 +111,8 @@ private void followRouter(StartRouterEvent e,
             " Error generating trafficArriveDist variate");
         time = 0;
     }
-    //Logger.getLogger("log").logln(USR.ERROR, "Time to next router
-    // "+time);
     StartRouterEvent e1 = new StartRouterEvent(now + time, this);
     s.addEvent(e1);
-    if (g.getRouterList().indexOf(routerId) == -1) {
-        //System.err.println("Router did not start -- adding no
-        // links");
-        return;
-    }
-
     // Schedule node death if this will happen
     if (nodeDeathDist_ != null) {
         try {
@@ -130,6 +128,8 @@ private void followRouter(StartRouterEvent e,
             new EndRouterEvent(now + time, this, new Integer(
                     routerId));
         s.addEvent(e2);
+    } else {
+        System.err.println("Death dist null");
     }
     // Schedule links
     int noLinks = 1;
@@ -142,6 +142,7 @@ private void followRouter(StartRouterEvent e,
     }
     ArrayList <Integer>nodes = new ArrayList<Integer>(
         g.getRouterList());
+    //System.err.println("Router list "+nodes);
     nodes.remove(nodes.indexOf(routerId));
     int [] outlinks = g.getOutLinks(routerId);
     for (Integer l : outlinks)

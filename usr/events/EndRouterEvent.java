@@ -88,9 +88,10 @@ InstantiationException {
     return json;
 }
 
-public void followEvent(EventScheduler s, GlobalController g) 
+public void followEvent(EventScheduler s, JSONObject response,
+    GlobalController g) 
 {
-    super.followEvent(s, g);
+    super.followEvent(s,response, g);
     if (g.connectedNetwork())
         g.connectNetwork(time_);
     else if (!g.allowIsolatedNodes())

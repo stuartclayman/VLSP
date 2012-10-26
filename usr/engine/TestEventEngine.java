@@ -6,6 +6,7 @@ package usr.engine;
 import usr.globalcontroller.*;
 import usr.common.Pair;
 import usr.logging.*;
+import us.monoid.json.*;
 import usr.events.*;
 
 public class TestEventEngine implements EventEngine
@@ -44,7 +45,7 @@ public void preceedEvent(Event e, EventScheduler s,
 }
 
 /** Add or remove events following a simulation event */
-public void followEvent(Event e, EventScheduler s,
+public void followEvent(Event e, EventScheduler s, JSONObject response,
     GlobalController g)                          {
 }
 }

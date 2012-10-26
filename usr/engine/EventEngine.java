@@ -6,6 +6,7 @@ package usr.engine;
 import usr.globalcontroller.*;
 import usr.logging.*;
 import usr.events.*;
+import us.monoid.json.*;
 
 public interface EventEngine
 {
@@ -19,5 +20,6 @@ public void initialEvents(EventScheduler s, GlobalController g);
 public void preceedEvent(Event e, EventScheduler s, GlobalController g);
 
 /** Add or remove events following a simulation event */
-public void followEvent(Event e, EventScheduler s, GlobalController g);
+public void followEvent(Event e, EventScheduler s, JSONObject response,
+    GlobalController g);
 }

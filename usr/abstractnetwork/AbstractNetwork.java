@@ -67,10 +67,7 @@ public void removeLink(int n1, int n2)
     int [] costs2;
     int arrayPos = 0;
     noLinks_--;
-    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Adding
-    // link
-    // from "+router1Id+" "+router2Id);
-    // remove r2 from outlinks of r1
+    //System.err.println("Remove link from "+n1+" to "+n2);
     out = getOutLinks(n1);
     costs = getLinkCosts(n1);
     for (int i = 0; i < out.length; i++) {
@@ -117,7 +114,11 @@ public void removeLink(int n1, int n2)
 public void addLink(int n1, int n2)
 {
     noLinks_++;
+    //System.err.println("Adding link from "+n1+" to "+n2);
     // Add links in both directions
+    
+    
+    // Add link from n1 to n2
     int [] out = getOutLinks(n1);
     int [] out2 = new int [out.length + 1];
     int [] costs = getLinkCosts(n1);
@@ -128,6 +129,8 @@ public void addLink(int n1, int n2)
     costs2[out.length] = 1;     // Link cost 1 so far
     setOutLinks(n1, out2);
     setLinkCosts(n1, costs2);
+    
+    // Add link from n2 to n1
     out = getOutLinks(n2);
     out2 = new int [out.length + 1];
     costs = getLinkCosts(n2);
@@ -138,6 +141,18 @@ public void addLink(int n1, int n2)
     costs2[out.length] = 1;     // Link cost 1 so far
     setOutLinks(n2, out2);
     setLinkCosts(n2, costs2);
+    /*System.err.print("Outlinks "+n1+" now ");
+    out2= getOutLinks(n1);
+    for (int i= 0; i < out2.length; i++) {
+        System.err.print(out2[i]);
+    }
+    System.err.println();
+    out2= getOutLinks(n2);
+    System.err.print("Outlinks "+n2+" now ");
+    for (int i= 0; i < out2.length; i++) {
+        System.err.print(out2[i]);
+    }
+    System.err.println();*/
 }
 
 /** Return the weight from link1 to link2 or 0 if no link*/
@@ -158,13 +173,13 @@ public int getLinkWeight(int l1, int l2){
 
 /* Return a list of outlinks from a router */
 public int [] getOutLinks(int n1){
-    return outLinks_.get(n1 - 1);
+    return outLinks_.get(n1);
 }
 
 /* Return a list of link costs from a router -- must be used in
  *  parallel get getOutLinks to id link nos*/
 public int [] getLinkCosts(int routerId){
-    return linkCosts_.get(routerId - 1);
+    return linkCosts_.get(routerId);
 }
 
 /* set list of link costs*/

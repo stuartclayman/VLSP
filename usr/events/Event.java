@@ -25,10 +25,10 @@ public long getTime(){
 }
 
 /** Perform logic which follows an event */
-public void followEvent(EventScheduler s,
+public void followEvent(EventScheduler s, JSONObject response,
     GlobalController g)                          {
     if (engine_ != null)
-        engine_.followEvent(this, s, g);
+        engine_.followEvent(this, s, response, g);
     // Non-engine specific follows go here
 }
 

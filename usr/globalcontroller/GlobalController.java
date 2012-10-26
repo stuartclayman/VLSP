@@ -280,8 +280,7 @@ private void init(){
     }
 }
 
-/** Runs a simulation loop -- this gets events in turn and executes
- * them
+/** Runs a simulation loop --- gets events and executes them in order.
  */
  
 private void runSimulation() 
@@ -474,7 +473,7 @@ public JSONObject executeEvent(Event e) throws
         for (OutputType t: eventOutput_) {
             produceEventOutput(e,js,t);
         }
-        e.followEvent(scheduler_, this);
+        e.followEvent(scheduler_, js, this);
         return js;
     } finally {
         semaphore.release();
@@ -1541,6 +1540,11 @@ public ArrayList<Integer> getRouterList(){
 /** Return id of ith router */
 public int getRouterId(int i){
     return network_.getNodeId(i);
+}
+
+/** Check if node is in network*/
+public boolean isRouterAlive(int i) {
+    return network_.nodeExists(i);
 }
 
 /** Number of routers in simulation */
