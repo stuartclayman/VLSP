@@ -54,7 +54,8 @@ public void produceOutput(long t, PrintStream p, OutputType o,
         } else {
             Logger.getLogger("log").logln(
                 USR.ERROR,
-                "Unable to parse traffic output parameter " +
+                leadin()+"Required XML Parameter in OutputTraffic "+
+                "configuration not found " +
                 o.getParameter());
         }
     }
@@ -70,19 +71,19 @@ void outputTrafficLocal(OutputType o,
         if (o.isFirst()) {
             o.setFirst(false);
             p.print("Time r_no name ");
-            for (int i = 2; i < args.length; i++) {
+            for (int i = 3; i < args.length; i++) {
                 p.print(args[i].split("=")[0]);
                 p.print(" ");
             }
             p.println();
         }
-        if (args.length < 2)
+        if (args.length < 3) 
             continue;
-        if (!args[1].equals("localnet"))
+        if (!args[2].equals("localnet"))
             continue;
         p.print(t + " ");
-        p.print(args[0] + " " + args[1]);
-        for (int i = 2; i < args.length; i++) {
+        p.print(args[0] + " " + args[1] + " ");
+        for (int i = 3; i < args.length; i++) {
             p.print(args[i].split("=")[1]);
             p.print(" ");
         }
@@ -108,10 +109,10 @@ void  outputTrafficAggregate(OutputType o,
     if (nField <= 0) {
         Logger.getLogger("log").logln(
             USR.ERROR,
-            "Can't parse no of fields in stats line " +
+            leadin()+" Can't parse no of fields in stats line " +
             out[0]);
         Logger.getLogger("log").logln(USR.ERROR,
-            "Stats Line \"" + routerStats + "\"");
+            leadin()+" Stats Line \"" + routerStats + "\"");
 
         return;
     }

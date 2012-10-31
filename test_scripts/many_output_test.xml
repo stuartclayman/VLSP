@@ -31,6 +31,13 @@
   <RouterOptions>
       test_scripts/routeroptions_time.xml
   </RouterOptions>
+    <Output>
+        <File>traffic.out</File>
+        <When>Interval</When>
+        <Time>10000</Time>
+        <Parameter>Local</Parameter>
+        <Type>usr.output.OutputTraffic</Type>
+    </Output>
       <Output>
         <File>/tmp/gc-channel7.out</File>
         <When>Event</When>

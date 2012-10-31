@@ -49,10 +49,9 @@ public boolean evaluate(Request request,
 
             // put out netif name
             statsString = localNetIF.getRemoteRouterName() + " " +
-                          localNetIF.getName()
-                          + " " + stats.toString();
+                          localNetIF.getName() + " " + stats.toString();
 
-            jsobj.put(localNetIF.getRemoteRouterName(), statsString);
+            jsobj.put(Integer.toString(count), statsString);
             count++;
         }
 
@@ -66,10 +65,8 @@ public boolean evaluate(Request request,
 
                     // put out netif name
                     statsString = netIF.getRemoteRouterName() +
-                                  " " +
-                                  netIF.getName() + " " +
+                                  " " + netIF.getName() + " " +
                                   stats.toString();
-                    //System.err.println(statsString);
 
                     //jsobj.put(netIF.getRemoteRouterName(),
                     // statsString);
@@ -80,7 +77,6 @@ public boolean evaluate(Request request,
         }
 
         jsobj.put("size", count);
-
         out.println(jsobj.toString());
         response.close();
 

@@ -64,21 +64,17 @@ public boolean evaluate(Request request,
 
             JSONObject jsobj = new JSONObject();
             jsobj.put("error",
-                "GetRouterStatsCommand: ExecutionException " +
-                ex);
+                "GetRouterStatsCommand: ExecutionException " + ex);
 
             out.println(jsobj.toString());
             response.close();
-
             return false;
         } catch (InterruptedException ie) {
             response.setCode(404);
 
             JSONObject jsobj = new JSONObject();
-            jsobj.put(
-                "error",
-                "GetRouterStatsCommand: InterruptedException "
-                + ie);
+            jsobj.put("error",
+                "GetRouterStatsCommand: InterruptedException "  + ie);
 
             out.println(jsobj.toString());
             response.close();

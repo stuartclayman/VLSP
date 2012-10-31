@@ -123,7 +123,6 @@ IOException, JSONException {
 public Boolean sendRouterStats(String stats) throws IOException,
 JSONException {
     String command = MCRP.SEND_ROUTER_STATS.CMD + " " + stats;
-
     interact(command);
     return true;
 }

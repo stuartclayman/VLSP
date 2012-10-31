@@ -456,14 +456,10 @@ public String connectRouters(LocalHostInfo r1,
             }
 
             Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() +
-                "Connection from Router: " +
-                r1 +
-                " to Router: " + r2 +
-                " is " + connectionName);
-
+                leadin() + "Connection from Router: " + " to Router: "
+                 + r2 + " is " + connectionName);
             return connectionName;
-        }catch (Exception e) {
+        } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR,
                 "Cannot connect routers");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
@@ -631,10 +627,8 @@ public boolean setAP(int GID, int AP){
 
     if (br == null) {
         Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            " cannot find information for router "
-            + GID +
-            " to set AP");
+            leadin() + " cannot find information for router "
+            + GID + " to set AP");
         return false;
     }
     int port = br.getManagementPort();
@@ -691,10 +685,8 @@ public synchronized List<String> getRouterStats(int routerID){
 
             List<String> list = ri.getNetIFStats();
             Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() +
-                " requesting statistics from router "
+                leadin() + " requesting statistics from router "
                 + routerID);
-
             // now add the router id to each element of the list
             List<String> newList = new ArrayList<String>();
 
@@ -703,7 +695,8 @@ public synchronized List<String> getRouterStats(int routerID){
 
             return newList;
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + 
+                "got exception in getRouterStats " + e.getMessage());
             return null;
         }
     }

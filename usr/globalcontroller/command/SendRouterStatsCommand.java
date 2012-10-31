@@ -11,6 +11,7 @@ import us.monoid.json.*;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
+import java.io.*;
 
 /**
  * The SendRouterStatsCommand command -- receives stats from local
@@ -40,16 +41,12 @@ public boolean evaluate(Request request,
         String value = path.substring(9);
         // strip off COMMAND
         String rest =
-            value.substring(MCRP.SEND_ROUTER_STATS.CMD.length())
-            .
-            trim();
-
+            value.substring(MCRP.SEND_ROUTER_STATS.CMD.length()).trim();
         controller.receiveRouterStats(rest);
-
         JSONObject jsobj = new JSONObject();
-
         jsobj.put("msg", "STATS RECEIVED");
         out.println(jsobj.toString());
+
         response.close();
 
         return true;

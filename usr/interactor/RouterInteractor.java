@@ -54,19 +54,15 @@ IOException {
 /**
  * Initialize
  */
-private synchronized void initialize(InetAddress addr,
-    int port)                        {
+private synchronized void initialize(InetAddress addr, int port) {
     this.port = port;
     //URI uri = new URI("http", null, addr.toString(), port, null,
     // null,
     // null);
     routerURI = "http://" + addr.getHostName() + ":" +
-                Integer.toString(
-        port);
-
+                Integer.toString(port);
     Logger.getLogger("log").logln(USR.STDOUT,
         "routerURI: " + routerURI);
-
     rest = new Resty();
 }
 
@@ -83,18 +79,12 @@ public int getPort(){
 private JSONObject interact(String str) throws IOException,
 JSONException {
     String uri = routerURI + "/command/" +
-                 java.net.URLEncoder.encode(
-        str, "UTF-8");
-
+                 java.net.URLEncoder.encode(str, "UTF-8");
     Logger.getLogger("log").logln(USR.STDOUT, "call: " +
-        uri.substring(0,
-            Math.min(64, uri.length())));
-
+        uri.substring(0, Math.min(64, uri.length())));
     JSONObject jsobj = rest.json(uri).toObject();
-
     Logger.getLogger("log").logln(USR.STDOUT,
         "response: " + jsobj.toString());
-
     return jsobj;
 }
 
@@ -474,10 +464,7 @@ JSONException {
 public RouterInteractor setAP(int GID, int APGID) throws IOException,
 JSONException {
     String toSend;
-
-    toSend = MCRP.SET_AP.CMD +
-             " " + GID + " " + APGID;
-
+    toSend = MCRP.SET_AP.CMD +  " " + GID + " " + APGID;
     interact(toSend);
     return this;
 }
@@ -485,8 +472,7 @@ JSONException {
 /**
  * Get the NetIF stats from a Router.
  */
-public List<String> getNetIFStats() throws IOException,
-JSONException {
+public List<String> getNetIFStats() throws IOException {
     // 237-localnet  InBytes=0 InPackets=0 InErrors=0 InDropped=0
     // OutBytes=17890 OutPackets=500 OutErrors=0 OutDropped=0
     // InQueue=0
@@ -496,22 +482,36 @@ JSONException {
     // OutErrors=0
     // OutDropped=0 InQueue=0 OutQueue=0
     // 237 END 2
-
-    JSONObject response = interact(MCRP.GET_NETIF_STATS.CMD);
-
+    JSONObject response;
+    try {
+        response = interact(MCRP.GET_NETIF_STATS.CMD);
+    } catch (JSONException e) {
+        throw new IOException ("Response to rest call threw error "+
+            e.getMessage());
+    }
     // now we convert the replies in the response
     // into a list of connections
 
     // get no of netifs
-    Integer netifReplies = (Integer)response.get("size");
-
+    Integer netifReplies;
+    try {
+        netifReplies = (Integer)response.get("size");
+    } catch (JSONException e) {
+        throw new IOException ("JSON response from router invalid");
+    }
     // create a list for the names
     List<String> stats = new ArrayList<String>();
 
-    for (int n = 0; n < netifReplies; n++)
+    for (int n = 0; n < netifReplies; n++) {
         // pick out the r-th connection
-        stats.add((String)response.get(Integer.toString(n)));
-
+        try {
+            stats.add((String)response.get(Integer.toString(n)));
+        } catch (JSONException e) {
+            throw new IOException("JSON response from router format "+
+                "error missing response "+n);
+        }
+        
+    }
     return stats;
 }
 
@@ -558,9 +558,8 @@ public RouterInteractor monitoringStart(InetSocketAddress addr,
 throws
 IOException, JSONException {
     String toSend = MCRP.MONITORING_START.CMD + " " +
-                    addr.getAddress().getHostAddress() + ":" +
-                    addr.getPort() +
-                    " " + howOften;
+        addr.getAddress().getHostAddress() + ":" + addr.getPort() +
+            " " + howOften;
     JSONObject response = interact(toSend);
 
     return this;

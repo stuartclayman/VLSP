@@ -76,11 +76,8 @@ public boolean evaluate(Request request,
             response.setCode(404);
 
             JSONObject jsobj = new JSONObject();
-            jsobj.put(
-                "error",
-                "GetRouterStatsCommand: InterruptedException "
-                + ie);
-
+            jsobj.put("error",
+                "GetRouterStatsCommand: InterruptedException " + ie);
             out.println(jsobj.toString());
             response.close();
 
