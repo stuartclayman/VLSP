@@ -25,9 +25,13 @@ private ArrayList <int []> linkCosts_ = null;
 private ArrayList <Integer> nodeList_ = null;         
         // List of integers which
         // contains the numbers of nodes present
+
+private ArrayList <Map<Integer,Integer>> floydwarshall_= null;
         
 int noNodes_= 0;
 int noLinks_= 0;
+
+boolean changed_= true;
     
 /**
  * Construct a AbstractNetwork by initialising links
@@ -47,7 +51,6 @@ public void addNode(int rId){
         linkCosts_.add(new int [0]);
     }
     nodeList_.add(rId);    
-
     noNodes_++;
 }
 
@@ -185,6 +188,48 @@ public int [] getLinkCosts(int routerId){
 /* set list of link costs*/
 public void setLinkCosts(int routerId, int [] costs){
     linkCosts_.set(routerId, costs);
+}
+
+
+private void performFloydWarshall()
+{
+    int n= outLinks_.size();
+    floydwarshall_= new ArrayList<Map<Integer,Integer>>(n);
+    for (int i: nodeList_) {
+        floydwarshall_.set(i, new HashMap<Integer,Integer>());
+    }
+    for (int k: nodeList_) {
+        for (int i: nodeList_) {
+            for (int j: nodeList_) {
+                int newDist= getDist(i,k) + getDist(k,j);
+                if (newDist < getDist(i,j)) {
+                    setDist(i,j,newDist);
+                }
+            }
+        }
+    }
+}
+
+private void setDist(int i, int j, int dist)
+{
+    Map <Integer,Integer> h= floydwarshall_.get(i);
+    if (h == null) {
+        return;
+    }
+    h.put((Integer)j,(Integer)dist);
+}
+
+private int getDist(int i, int j)
+{
+    if (i == j)
+        return 0;
+    Map <Integer,Integer> h= floydwarshall_.get(i);
+    if (h == null)
+        return Integer.MAX_VALUE;
+    Integer d= h.get((Integer)j);
+    if (d == null)
+        return Integer.MAX_VALUE;
+    return d;
 }
 
 /* set list of outlinks from a router */

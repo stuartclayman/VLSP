@@ -179,12 +179,10 @@ public List<Object> getTraffic(String routerSrc,
 
                 if (prevValue > currentValue) {
                     // a data oddity
-                    System.err.println("Data error: " + row.get(
-                            0) + " previous valueof " +
-                        table.getColumnDefinitions().get(
-                            pos).getName() + " = " +
-                        prevValue +
-                        " > current value: " +
+                    System.err.println("Data error: " + row.get(0) + 
+                        " previous valueof " +
+                        table.getColumnDefinitions().get(pos).getName() 
+                        + " = " + prevValue + " > current value: " +
                         currentValue);
                 } else {
                     diff = currentValue - prevValue;

@@ -1059,6 +1059,10 @@ public void receiveRouterStats(String stats){
         trafficOutputRequests_ = new ArrayList<OutputType>();
         trafficOutputTime_ = new ArrayList<Long>();
         statsCount_ = 0;
+        
+        NetStatsEvent nse= new NetStatsEvent(getElapsedTime(),
+            routerStats_);
+        addEvent(nse);
         routerStats_ = "";
         //    System.err.println("Finished here");
         p.close();
@@ -1066,6 +1070,7 @@ public void receiveRouterStats(String stats){
             s.close();
         } catch (IOException ex) {
         }
+        
     }
 }
 
