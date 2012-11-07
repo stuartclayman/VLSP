@@ -1557,6 +1557,16 @@ public int getNoRouters(){
     return network_.getNoNodes();
 }
 
+/** Number of links in simulation */
+public int getNoLinks(){
+    return network_.getNoLinks();
+}
+
+/** Access function for abstract network */
+public AbstractNetwork getAbstractNetwork() {
+    return network_;
+}
+
 /** Check network for isolated nodes and connect them if possible */
 public void checkIsolated(long time){
     for (int i : network_.getNodeList())

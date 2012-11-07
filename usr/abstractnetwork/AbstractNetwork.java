@@ -30,6 +30,8 @@ private ArrayList <Map<Integer,Integer>> floydwarshall_= null;
         
 int noNodes_= 0;
 int noLinks_= 0;
+int dmax_= 0;  // Maximum diameter
+double dbar_= 0.0; // mean width
 
 boolean changed_= true;
     
@@ -190,9 +192,26 @@ public void setLinkCosts(int routerId, int [] costs){
     linkCosts_.set(routerId, costs);
 }
 
+public int getdmax()
+/** get diameter of network */
+{
+    performFloydWarshall();
+    return dmax_;
+}
 
+/** Get the average pair-to-pair distance on the network*/
+public double getdbar()
+{
+    performFloydWarshall();
+    return dbar_;
+}
+
+/** Execute the Floyd Warshall algorithm with unit costs assumed */
 private void performFloydWarshall()
 {
+    if (!changed_)
+        return;
+    changed_= false;
     int n= outLinks_.size();
     floydwarshall_= new ArrayList<Map<Integer,Integer>>(n);
     for (int i: nodeList_) {
@@ -201,6 +220,8 @@ private void performFloydWarshall()
     for (int k: nodeList_) {
         for (int i: nodeList_) {
             for (int j: nodeList_) {
+                if (j == i)
+                    break;
                 int newDist= getDist(i,k) + getDist(k,j);
                 if (newDist < getDist(i,j)) {
                     setDist(i,j,newDist);
@@ -208,10 +229,26 @@ private void performFloydWarshall()
             }
         }
     }
+    dbar_= 0.0;
+    dmax_= 0;
+    for (int i:nodeList_) {
+        for(int j: nodeList_) {
+            if (j == i)
+                break;
+            int dist= getDist(i,j);
+            if (dist > dmax_) {
+                dmax_= dist;
+            }
+            dbar_+= dist;
+        }
+    }
+    dbar_/=(noNodes_*(noNodes_-1)/2);
 }
 
 private void setDist(int i, int j, int dist)
 {
+    if (i > j) 
+        setDist(j,i,dist);
     Map <Integer,Integer> h= floydwarshall_.get(i);
     if (h == null) {
         return;
@@ -221,6 +258,8 @@ private void setDist(int i, int j, int dist)
 
 private int getDist(int i, int j)
 {
+    if (i > j)
+        getDist(j,i);
     if (i == j)
         return 0;
     Map <Integer,Integer> h= floydwarshall_.get(i);
