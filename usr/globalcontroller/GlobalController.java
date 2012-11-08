@@ -273,12 +273,23 @@ private void init(){
         }
     }
     
+    if (options_.getWarmUpPeriod() > 0) {
+        for (EventEngine e: options_.getEngines()) {
+            if (e instanceof ProbabilisticEventEngine) {
+                ((ProbabilisticEventEngine)e).warmUp(
+                    options_.getWarmUpPeriod(),APController_, this);
+            }
+        }
+    }
+    
     if (options_.isSimulation()) {
         runSimulation(); 
     } else {
         runEmulation();
     }
 }
+
+
 
 /** Runs a simulation loop --- gets events and executes them in order.
  */

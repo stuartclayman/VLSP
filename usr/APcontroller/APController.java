@@ -45,6 +45,12 @@ public void removeAccessPoint(long time, int gid);
 /** Add node to network */
 public void addNode(long time, int gid);
 
+/** Add warm up (not real) node*/
+public void addWarmUpNode(long time);
+
+/** Remove warm up (not real) node */
+public void removeWarmUpNode(long startTime, long endTime);
+
 /** Remove node and hence possibly AP from network*/
 public void removeNode(long time, int gid);
 

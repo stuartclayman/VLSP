@@ -284,6 +284,19 @@ public void removeNode(long time, int gid){
     removeAccessPoint(time, gid);
 }
 
+/** Add warm up (not real) node*/
+public void addWarmUpNode(long time) 
+{
+    
+}
+
+/** Remove warm up (not real) node */
+public void removeWarmUpNode(long startTime, long endTime)
+{
+    
+}
+
+
 /** Can AP be removed giving a new AP */
 boolean removable(int gid, GlobalController g){
     ArrayList <Integer> toVisit = new ArrayList<Integer> ();

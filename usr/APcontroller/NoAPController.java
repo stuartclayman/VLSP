@@ -40,6 +40,16 @@ public int getAP(int gid){
     return 0;
 }
 
+/** Add warm up (not real) node*/
+public void addWarmUpNode(long time)
+{
+}
+
+/** Remove warm up (not real) node */
+public void removeWarmUpNode(long startTime, long endTime)
+{
+}
+
 /** Return APCost for given gid (or max dist if none) */
 public int getAPCost(int gid){
     return 0;

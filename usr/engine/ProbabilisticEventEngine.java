@@ -8,13 +8,11 @@ import rgc.xmlparse.*;
 import rgc.probdistributions.*;
 import usr.logging.*;
 import usr.common.Pair;
+import usr.APcontroller.*;
 import usr.events.*;
 import us.monoid.json.*;
-
-
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
@@ -43,14 +41,14 @@ private boolean preferentialAttachment_ = false;
 
 /** Contructor from Parameter string */
 public ProbabilisticEventEngine(int time, String parms) throws
-EventEngineException {
+    EventEngineException {
     timeToEnd_ = time * 1000;
     parseXMLFile(parms);
 }
 
 /** Start up and shut down events */
-public void startStopEvents(EventScheduler s,
-    GlobalController g)                      {
+public void startStopEvents(EventScheduler s, GlobalController g)                      
+{
     // simulation start
     StartSimulationEvent e0 = new StartSimulationEvent(0, this);
 
@@ -61,15 +59,15 @@ public void startStopEvents(EventScheduler s,
     s.addEvent(e);
 }
 /** Initial events to add to schedule */
-public void initialEvents(EventScheduler s,
-    GlobalController g)                        {
+public void initialEvents(EventScheduler s, GlobalController g)                        
+{
     // Start initial router
     long time;
 
     //  Schedule new node
     try {
         time = (long)(nodeCreateDist_.getVariate() * 1000);
-    }catch (ProbException x) {
+    } catch (ProbException x) {
         Logger.getLogger("log").logln(USR.ERROR,
             leadin() +
             " Error generating trafficArriveDist variate");
@@ -79,6 +77,47 @@ public void initialEvents(EventScheduler s,
     // "+time);
     StartRouterEvent e1 = new StartRouterEvent(time, this);
     s.addEvent(e1);
+}
+
+/** 
+ * Add nodes simply to prime AP controllers lifetime estimation
+ */
+public void warmUp (long period, APController controller, 
+    GlobalController gc)
+{
+    long tmptime= -period;
+    if (nodeDeathDist_ == null || nodeCreateDist_ == null) {
+        Logger.getLogger("log").logln(USR.ERROR,"WarmUpPeriod option "+
+            "does not make sense without node death and create dists");
+            return;
+    }
+    long deathtime;
+    while(true) {
+        try {
+            long diff= (long)nodeCreateDist_.getVariate()*1000;
+            if (diff == 0) 
+                diff= 1000;
+            tmptime+= diff;
+            if (tmptime >= 0) {
+                return;
+            }
+            deathtime= tmptime+ (long)nodeDeathDist_.getVariate()*1000;
+        } catch (ProbException e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                "Exception thrown in ProbabilisticEventEngine.warmUp "+
+                e.getMessage());
+            return;
+        }
+        controller.addWarmUpNode(tmptime);
+        if (deathtime >= 0) {
+            controller.removeWarmUpNode(tmptime,deathtime);
+        } else {
+            EndWarmupRouterEvent e= new EndWarmupRouterEvent(tmptime,
+                deathtime, this);
+            gc.addEvent(e);
+        }
+        
+    }    
 }
 
 /** Add or remove events following a simulation event */
@@ -236,23 +275,20 @@ private void parseXMLFile(String fName) throws EventEngineException {
         } catch (SAXException e) { throw e;
         } catch (XMLNoTagException e) {
         }
-    } catch (java.io.FileNotFoundException e) { throw new
-                                                      EventEngineException(
-                                                    "Parsing ProbabilisticEventEngine: Cannot find file "
-                                                    + fName);
-    }catch (SAXParseException err) { throw new EventEngineException(
-                                         "Parsing ProbabilisticEventEngine: error"
-                                         + ", line "
-                                         + err.getLineNumber() +
-                                         ", uri " +
-                                         err.getSystemId());
-    }catch (SAXException e) { throw new EventEngineException(
-                                  "Parsing ProbabilisticEventEngine: Exception in SAX XML parser"
-                                  + e.getMessage());
-    }catch (Throwable t) { throw new EventEngineException(
-                               "Parsing ProbabilisticEventEngine: "
-                               +
-                               t.getMessage());
+    } catch (java.io.FileNotFoundException e) { 
+        throw new EventEngineException(
+        "Parsing ProbabilisticEventEngine: Cannot find file "+ fName);
+    } catch (SAXParseException err) { 
+        throw new EventEngineException(
+            "Parsing ProbabilisticEventEngine: error" + ", line "+ 
+            err.getLineNumber() + ", uri " + err.getSystemId());
+    }catch (SAXException e) { 
+        throw new EventEngineException(
+        "Parsing ProbabilisticEventEngine: Exception in SAX XML parser"
+        + e.getMessage());
+    }catch (Throwable t) { 
+        throw new EventEngineException(
+           "Parsing ProbabilisticEventEngine: " + t.getMessage());
     }
 }
 

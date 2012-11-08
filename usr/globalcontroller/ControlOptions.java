@@ -56,6 +56,7 @@ private boolean latticeMonitoring = false;
         // If true, turn on Lattice Monitoring
 private HashMap<String, String> consumerInfoMap = null; 
         // A map of class names for Monitoring consumers and their label
+private long warmUpPeriod_= 0;
 
 private int controllerWaitTime_ = 6;
 private int lowPort_ = 10000;                           
@@ -269,7 +270,15 @@ SAXException {
     } catch (SAXException e) { throw e;
     } catch (XMLNoTagException e) {
     }
-
+    try {
+        warmUpPeriod_ =
+            ReadXMLUtils.parseSingleInt(gcn, "WarmUpPeriod",
+                "GlobalController",
+                true)*1000;
+        ReadXMLUtils.removeNode(gcn, "WarmUpPeriod", "GlobalController");
+    } catch (SAXException e) { throw e;
+    } catch (XMLNoTagException e) {
+    }
     // What is the name of the class for Visualization
     try {
         visualizationClass = ReadXMLUtils.parseSingleString(
@@ -770,6 +779,10 @@ public ArrayList<OutputType> getEventOutput() {
     return eo;
 }
 
+public long getWarmUpPeriod(){
+    return warmUpPeriod_;
+}
+
 /** Accessor function returns the number of controllers
  */
 public int noControllers(){
@@ -798,6 +811,10 @@ public boolean startLocalControllers(){
  */
 public boolean isSimulation(){
     return isSimulation_;
+}
+
+public ArrayList<EventEngine> getEngines() {
+    return engines_;
 }
 
 /** Do we allow isolated nodes in simulation */

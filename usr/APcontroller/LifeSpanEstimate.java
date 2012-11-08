@@ -172,8 +172,7 @@ public ArrayList<Pair<Integer,
                                                 // for tail
                                                 // plot
         return plotKMGraph(time);
-    ArrayList<Pair<Integer,
-            Double> > graph =
+    ArrayList<Pair<Integer, Double> > graph =
         new ArrayList<Pair<Integer, Double> >();
 
     Pair <Integer, Double> p;
