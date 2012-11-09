@@ -5,6 +5,7 @@ package usr.router;
 import usr.logging.*;
 import java.io.*;
 import java.util.HashMap;
+import java.lang.reflect.*;
 import usr.engine.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -80,7 +81,7 @@ boolean latticeMonitoring = false;              // If true, turn on
                                                 // Monitoring
 HashMap<String, Integer>probeInfoMap = null;    // A Class Name ->
                                                 // datarate mapping
-
+RouteSelectionPolicy routePolicy_= null;        
 /** Constructor for router Options */
 
 public RouterOptions (Router router){
@@ -161,6 +162,7 @@ SAXParseException, SAXException {
     NodeList apm = doc.getElementsByTagName("APManager");
     if (apm != null)
         processAPM(apm);
+        
 
     //NodeList mon = doc.getElementsByTagName("Monitoring");
     NodeList mon = ((Element)basenode).getElementsByTagName(
@@ -252,6 +254,37 @@ void processRoutingParameters(NodeList rps) throws SAXException {
             "RoutingParameters");
     } catch (SAXException e) { throw e;
     } catch (XMLNoTagException e) {
+    }
+    String pol= "";
+    try {
+        pol = ReadXMLUtils.parseSingleString(rp,"RoutingPolicy",
+            "RoutingParameters", true);
+        Class <?> routepol= Class.forName(pol);
+        if (!RouteSelectionPolicy.class.isAssignableFrom(routepol)) {
+            throw new SAXException ("In Routing policy tag "+ pol+ 
+                " does not implement RouteSelectionPolicy interface");
+        }
+        Constructor <?> c= routepol.getConstructor(new Class[0]);
+        routePolicy_= (RouteSelectionPolicy)c.newInstance(new Object[0]);
+        
+        ReadXMLUtils.removeNode(rp,"RoutingPolicy","RoutingParameters");
+    } catch (SAXException e) { throw e;
+    } catch (XMLNoTagException e) {
+    } catch (InstantiationException e) {
+        throw new SAXException("Trying to create RoutingPolicy: "+
+            "Cannot create object of class "+pol+ "\n"+e.getMessage());
+    } catch (ClassNotFoundException e) {
+        throw new SAXException("Trying to create RoutingPolicy: "+
+            "Cannot create object of class "+pol+ "\n"+e.getMessage());    
+    } catch (NoSuchMethodException e) {
+        throw new SAXException("Trying to create RoutingPolicy: "+
+            "Cannot create object of class "+pol+ "\n"+e.getMessage());
+    } catch (IllegalAccessException e) {
+        throw new SAXException("Trying to create RoutingPolicy: "+
+            "Cannot create object of class "+pol+ "\n"+e.getMessage());
+    } catch (InvocationTargetException e) {
+        throw new SAXException("Trying to create RoutingPolicy: "+
+            "Cannot create object of class "+pol+ "\n"+e.getMessage());
     }
 
     // Process DatagramType

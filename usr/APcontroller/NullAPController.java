@@ -121,8 +121,8 @@ public void controllerUpdate(long time,
 }
 
 /** Use the controller to remove the least efficient AP */
-public void controllerRemove(long time,
-    GlobalController g)                        {
+public void controllerRemove(long time, GlobalController g)                        
+{
     System.err.println("To write");
 }
 
@@ -287,13 +287,13 @@ public void removeNode(long time, int gid){
 /** Add warm up (not real) node*/
 public void addWarmUpNode(long time) 
 {
-    
+    lse_.addWarmUpNode(time);
 }
 
 /** Remove warm up (not real) node */
 public void removeWarmUpNode(long startTime, long endTime)
 {
-    
+    lse_.removeWarmUpNode(startTime,endTime);
 }
 
 

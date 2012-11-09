@@ -60,11 +60,8 @@ public LifeSpanEstimate(){
 /* Given a list of nodes, scores and lifetimes, pick n of them
  * with the highest score, possibly with weighting due to lifespan
  */
-ArrayList<Integer> pickNByScore(int N,
-    double[]                score,
-    ArrayList <Integer>     nodes,
-    boolean max,
-    long time)
+ArrayList<Integer> pickNByScore(int N, double[] score,
+    ArrayList <Integer> nodes, boolean max, long time)
 {
     int noReturn = Math.min(nodes.size(), N);
 
@@ -99,8 +96,8 @@ ArrayList<Integer> pickNByScore(int N,
  *
  */
 double [] weightScoresByLife(ArrayList<Integer> nodes,
-    double []          score,
-    long time)                                                  {
+    double [] score, long time)                                                  
+{
     int n = nodes.size();
 
     double [] lifeEstimates = new double[score.length];
@@ -134,7 +131,8 @@ double [] weightScoresByLife(ArrayList<Integer> nodes,
 }
 
 /** Plot (return co-ords of a graph of the Kaplan--Meier Estimator */
-public ArrayList<Pair<Integer, Double> > plotKMGraph(long time){
+public ArrayList<Pair<Integer, Double> > plotKMGraph(long time)
+{
     updateKMEstimate(time);
     if (KMTime_ == null) {
         Logger.getLogger("log").logln(USR.STDOUT,
@@ -159,8 +157,8 @@ public ArrayList<Pair<Integer, Double> > plotKMGraph(long time){
 
 /** Plot (return co-ords of a graph of the Kaplan--Meier Estimator with
  * tail*/
-public ArrayList<Pair<Integer,
-        Double> > plotKMGraphTail(long time){
+public ArrayList<Pair<Integer, Double> > plotKMGraphTail(long time)
+{
     updateKMEstimate(time);
     if (KMTime_ == null) {
         Logger.getLogger("log").logln(USR.STDOUT,
@@ -192,7 +190,8 @@ public ArrayList<Pair<Integer,
     return graph;
 }
 /** Fit the lognormal tail */
-public void fitTail(){
+public void fitTail()
+{
     /** Fit the parameters of the lognormal distribution */
     if (KMTime_ == null || KMTime_.size() * TAIL_FIT_PERCENT <
         MIN_TAIL_FIT) {
@@ -241,7 +240,8 @@ public void fitTail(){
 }
 
 /** */
-public double getKMTailProb(int t){
+public double getKMTailProb(int t)
+{
     if (KMTime_ == null)
         return 0.0;
     if (t < T_ || mu_ == 0 && sigma_ == 0)
@@ -250,7 +250,8 @@ public double getKMTailProb(int t){
 }
 
 /** returns the Kaplan-Meir estimate for time t */
-public double getKMProb(int t){
+public double getKMProb(int t)
+{
     if (KMTime_ == null)
         return 0.0;
     for (int i = 0; i < KMTime_.size(); i++)
@@ -278,9 +279,9 @@ public void nodeDeath(long time, int gid){
     int lifeTime = (int)(time - births_.get(gid));
 
     births_.remove(gid);
-    for (int i = 0; i < deaths_.size(); i++) {          // Keep list of
-                                                        // deaths
-                                                        // ordered
+
+    // Keep list of deaths ordered
+    for (int i = 0; i < deaths_.size(); i++) {          
         if (deaths_.get(i) >= lifeTime) {
             deaths_.add(i, lifeTime);
             return;
@@ -294,6 +295,18 @@ public void newAP(long time, int gid){
     APBirths_.put(gid, time);
 }
 
+/** Add warm up (not real) node*/
+public void addWarmUpNode(long time) 
+{
+    newNode(time,(int)(time/1000));
+}
+
+/** Remove warm up (not real) node */
+public void removeWarmUpNode(long startTime, long endTime)
+{
+    nodeDeath(endTime,(int)(startTime/1000));
+}
+
 public int getNodeLife(int id, long time){
     Long birth = births_.get(id);
 
@@ -305,11 +318,9 @@ public int getNodeLife(int id, long time){
 /** A node dies -- register this */
 public void APDeath(long time, int gid){
     int lifeTime = (int)(time - APBirths_.get(gid));
-
     APBirths_.remove(gid);
-    for (int i = 0; i < APDeaths_.size(); i++) {        // Keep list of
-                                                        // deaths
-                                                        // ordered
+    // Keep list of deaths ordered
+    for (int i = 0; i < APDeaths_.size(); i++) {
         if (APDeaths_.get(i) >= lifeTime) {
             APDeaths_.add(i, lifeTime);
             return;
@@ -468,38 +479,16 @@ public void updateKMEstimate(long time){
     if (life.size() == 0) {
         nextLifeTime = -1;
     } else {
-        nextLifeTime = (int)(time - life.get(0));               // still
-                                                                // alive
-                                                                // (but
-                                                                // only
-                                                                // up
-                                                                // to
-                                                                // this
-                                                                // time)
+        nextLifeTime = (int)(time - life.get(0));               
+        // still alive(but only up to this time)
     }
-    int dCount = 0;                                             //
-                                                                //
-                                                                // Position
-                                                                // in
-                                                                // array
-                                                                // of
-                                                                //
-                                                                // births
-                                                                // and
-                                                                //
-                                                                // deaths
+    int dCount = 0;
+      // Position in array of births and deaths
     int lCount = 0;
-    int ni = deaths_.size() + births_.size();                   // No
-                                                                // alive
-                                                                // in
-                                                                //
-                                                                // system
-    int prevni = ni;                                            // ni at
-                                                                //
-                                                                // previous
-                                                                // time
-                                                                //
-                                                                // period
+    int ni = deaths_.size() + births_.size();                   
+    // No alive in system
+    int prevni = ni;                                            
+    // ni at previous time period
     int prevDCount = 0;
     int prevTime = -1;
     double totProb = 1.0;

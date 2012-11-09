@@ -273,8 +273,7 @@ SAXException {
     try {
         warmUpPeriod_ =
             ReadXMLUtils.parseSingleInt(gcn, "WarmUpPeriod",
-                "GlobalController",
-                true)*1000;
+                "GlobalController", true)*1000;
         ReadXMLUtils.removeNode(gcn, "WarmUpPeriod", "GlobalController");
     } catch (SAXException e) { throw e;
     } catch (XMLNoTagException e) {
@@ -342,9 +341,7 @@ SAXException {
                     try {
                         String className =
                             ReadXMLUtils.parseSingleString(
-                                elC, "Name",
-                                "Consumer",
-                                true);
+                                elC, "Name", "Consumer", true);
                         ReadXMLUtils.removeNodes(elC, "Name",
                             "Consumer");
 
@@ -397,11 +394,10 @@ SAXException {
     NodeList nl = gcn.getChildNodes();
     for (int i = 0; i < nl.getLength(); i++) {
         Node n = nl.item(i);
-        if (n.getNodeType() ==
-            Node.ELEMENT_NODE) {throw new SAXException(
-                                    "Global Controller XML unrecognised tag "
-                                    +
-                                    n.getNodeName());
+        if (n.getNodeType() == Node.ELEMENT_NODE) 
+        {
+            throw new SAXException("Global Controller XML"+
+                " unrecognised tag " + n.getNodeName());
         }
     }
     gcn.getParentNode().removeChild(gcn);
@@ -409,8 +405,8 @@ SAXException {
 /**
  *  Process tags which specify local controllers
  */
-private void processLocalControllers(NodeList lcs) throws
-SAXException {
+private void processLocalControllers(NodeList lcs) throws SAXException 
+{
     String hostName;
     int port;
 
@@ -420,24 +416,19 @@ SAXException {
         try {
             hostName =
                 ReadXMLUtils.parseSingleString(lc, "Name",
-                    "LocalController",
-                    false);
+                    "LocalController", false);
             port =
                 ReadXMLUtils.parseSingleInt(lc, "Port",
-                    "LocalController",
-                    false);
+                    "LocalController", false);
             ReadXMLUtils.removeNode(lc, "Name", "LocalController");
             ReadXMLUtils.removeNode(lc, "Port", "LocalController");
             lh = new LocalControllerInfo(hostName, port);
             lh.setHighPort(highPort_);
             lh.setLowPort(lowPort_);
             localControllers_.add(lh);
-        } catch (java.net.UnknownHostException e) { throw new
-                                                          SAXException(
-                                                        "Unable to recognise hostname in XML"
-                                                        +
-                                                        e.
-                                                        getMessage());
+        } catch (java.net.UnknownHostException e) { 
+            throw new SAXException("Unable to recognise hostname in XML"
+                + e.getMessage());
         }catch (SAXException e) { throw e;
         } catch (XMLNoTagException e) {
             Logger.getLogger("log").logln(
