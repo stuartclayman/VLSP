@@ -109,7 +109,7 @@ public void warmUp (long period, APController controller,
             return;
         }
         controller.addWarmUpNode(tmptime);
-        if (deathtime >= 0) {
+        if (deathtime <= 0) {
             controller.removeWarmUpNode(tmptime,deathtime);
         } else {
             EndWarmupRouterEvent e= new EndWarmupRouterEvent(tmptime,

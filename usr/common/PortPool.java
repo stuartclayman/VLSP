@@ -44,13 +44,10 @@ public int findPort(int nPorts) throws IOException {
             freeCount++;
         }
 
-        // correct overshoot
-        i--;
-
         if (freeCount == nPorts) {
-            for (int j = 0; j < nPorts; j++)
+            for (int j = 1; j <= nPorts; j++)
                 occupied_[i - j - lowPort_] = true;
-            currPort_ = i + 1;
+            currPort_= i;
             return currPort_ - nPorts;
         }
     }

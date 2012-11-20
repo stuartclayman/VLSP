@@ -14,13 +14,13 @@ import usr.APcontroller.*;
 public class EndWarmupRouterEvent extends Event
 {
     
-long time_= 0;
 long starttime_= 0;
 EventEngine engine_= null;
 
 public EndWarmupRouterEvent (long starttime, long time, 
         EventEngine eng) 
 {
+    starttime_= starttime;
     time_ = time;
     engine_ = eng;
 }
