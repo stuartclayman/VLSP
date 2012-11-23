@@ -17,16 +17,13 @@
   <target name="build" depends="init">
     <echo message="------ Compiling application"/>
     <mkdir dir="${classes}"/>
-    <javac debug="on" srcdir="${sources}" classpath="${external.jars}" target="1.5" includeantruntime="false">
+    <javac debug="on" srcdir="${sources}" classpath="${external.jars}" includeantruntime="false">
 	   <!-- destdir="${classes}" -->
     <include name="usr/**" />
     <include name="plugins_usr/**" />
     <include name="demo_usr/**" />
-    <!--
-    <compilerarg value="-Xlint:unchecked" />
-    -->
-
-    <compilerarg value="-Xlint:deprecation" />
+    
+    <compilerarg value="-Xlint:unchecked,deprecation" />
 
     </javac>
 

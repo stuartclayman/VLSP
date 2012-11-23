@@ -81,6 +81,13 @@ public synchronized void fromBytes(byte[]       bytes,
     }
 }
 
+/** remove address from table.  Return true if address was in table*/
+public boolean removeAddress(Address addr)
+{
+    System.err.println("Write me");
+    return false;
+}
+
 /** Set the NetIFListener */
 public void setListener(NetIFListener l){
     listener_ = l;

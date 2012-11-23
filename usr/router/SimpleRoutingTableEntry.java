@@ -23,8 +23,7 @@ SimpleRoutingTableEntry(Address addr, int cost, NetIF inter){
 SimpleRoutingTableEntry(byte [] tableEntry, NetIF inter)
 throws Exception {
     if (tableEntry.length < 8) throw new Exception
-              (
-            "Byte array received to construct routing table too short");
+              ("Byte array received to construct routing table too short");
     ByteBuffer wrapper = ByteBuffer.wrap(tableEntry);
 
     // get correct no of bytes for an address

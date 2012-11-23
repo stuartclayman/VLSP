@@ -34,11 +34,10 @@ public RoutingTable newRoutingTable(){
 }
 
 /**
- * Create a new routing table from a transmitted byte[]
+ * Create a new routing table from a transmitted bytes
  */
-public RoutingTable decodeRoutingTable(byte[]   bytes,
-    NetIF netif) throws
-Exception {
+public RoutingTable decodeRoutingTable(byte[] bytes, NetIF netif) 
+throws Exception {
     RoutingTable table = new SimpleRoutingTable(bytes, netif);
 
     Logger.getLogger("log").logln(1 << 6,

@@ -531,13 +531,19 @@ boolean  processControlDatagram(Datagram dg,
         }
         return true;
     }
-
+    if (controlChar == 'W') {
+        Logger.getLogger("log").logln(USR.STDOUT,
+            leadin()+ "Received withdraw message from "+
+                dg.getSrcAddress()+":"+dg.getSrcPort());
+        receiveAddressWithdraw(payload, netif);
+    }
     if (controlChar == 'X') {
         Logger.getLogger("log").logln(USR.STDOUT,
             leadin() +
             "Received TTL expired from " +
             dg.getSrcAddress()
             + ":" + dg.getSrcPort());
+        
         return true;
     }
     if (controlChar == 'E') {
@@ -580,36 +586,51 @@ boolean pingResponse(Datagram dg){
     return echo(dst, port);
 }
 
-/** Routing table received via netIF */
-void receiveRoutingTable(byte []        bytes,
-    NetIF netIF)                     {
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() +
-        System.currentTimeMillis() +
-        " receiveRoutingTable: Received routing table from "
-        + netIF);
+/** Request to withdraw address received via netIF*/
+void receiveAddressWithdraw(byte [] bytes, NetIF netIF) {
+    Address addr;
+    // Bit twiddling is such fun in java
+    ByteBuffer wrapper = ByteBuffer.wrap(bytes);
+    wrapper.position(1);
+    byte[] addrbytes= new byte[bytes.length - 1];
+    wrapper.get(addrbytes);
+    addr= AddressFactory.newAddress(addrbytes);
+    boolean changed= false;
+    synchronized (table_) {
+        changed= table_.removeAddress(addr);
+    }
+    if (changed) {
+        withdrawToOtherInterfaces(netIF,addr);
+    }
+}
 
+public void withdrawToOtherInterfaces(NetIF netIF, Address addr)
+{
+    System.err.println("To implement");
+}
+
+/** Routing table received via netIF */
+void receiveRoutingTable(byte [] bytes, NetIF netIF) {
+    Logger.getLogger("log").logln(USR.STDOUT,
+        leadin() + System.currentTimeMillis() +
+        " receiveRoutingTable: Received routing table from " + netIF);
     RoutingTable t;
     try {
         t = decodeRoutingTable(bytes, netIF);
     } catch (Exception e) {
         Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            "Received unreadable routing table");
+            leadin() + "Received unreadable routing table");
         Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
         return;
     }
 
     if (t == null) {
         Logger.getLogger("log").logln(1 << 6,
-            leadin() +
-            " not merging null routing table received on "
-            +
-            netIF);
+            leadin() + " not merging null routing table received on "
+            + netIF);
     } else {
         Logger.getLogger("log").logln(1 << 6,
-            leadin() +
-            " merging routing table received on "
+            leadin() + " merging routing table received on "
             + netIF);
     }
 
@@ -695,59 +716,6 @@ public NetIF findNetIF(String name){
             if (port.equals(RouterPort.EMPTY)) {
                 continue;
             } else {
-                /*
-                 * Logger.getLogger("log").logln(USR.ERROR, leadin()
-                 +
-                 +    "findNetIF " + name +
-                 +                            "
-                 +                               getRemoteRouterAddress
-                 +                               =
-                 +                               " +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +              port.getNetIF().getRemoteRouterAddress()
-                 +
-                 +                            " getRemoteRouterName
-                 +++++++++++++++++++++++++= "
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +
-                 +                 port.getNetIF().getRemoteRouterName()
-                 +
-                 +                            " getName = " +
-                 +
-                 +
-                 +                             port.getNetIF().getName()
-                 +
-                 +                            "\n");
-                 */
 
                 Address addr = null;
                 try {

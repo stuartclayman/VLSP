@@ -39,6 +39,10 @@ public void setListener(NetIFListener l);
  * or null if not known */
 public NetIF getInterface(Address addr);
 
+/** Remove all instances of address from routing table
+ * returns true if routing table has changed*/
+public boolean removeAddress(Address addr);
+
 /**
  * SHow only data transmitted
  */
