@@ -324,7 +324,6 @@ public RoutingTable getRoutingTable(){
  */
 public RouterPort plugInNetIF(NetIF netIF){
     RouterPort rp = fabric.addNetIF(netIF);
-
     netIF.setRouterPort(rp);
     return rp;
 }

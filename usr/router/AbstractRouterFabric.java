@@ -600,13 +600,36 @@ void receiveAddressWithdraw(byte [] bytes, NetIF netIF) {
         changed= table_.removeAddress(addr);
     }
     if (changed) {
-        withdrawToOtherInterfaces(netIF,addr);
+        withdrawToOtherInterfaces(addr,netIF);
     }
 }
 
-public void withdrawToOtherInterfaces(NetIF netIF, Address addr)
+
+/** Send a withdrawal message for a given address
+ * to all interfaces on this network
+ * interface*/
+public void withdrawToOtherInterfaces(Address addr, NetIF netIF)
 {
-    System.err.println("To implement");
+    for (RouterPort p: ports) {
+        NetIF nf= p.getNetIF();
+        if (nf == netIF || nf == localNetIF) {
+            continue;
+        }
+        byte [] message= new byte[1+addr.size()];
+        System.arraycopy(addr.asByteArray(),0,message,1,addr.size());
+        message[0]='W';
+        Datagram dg= DatagramFactory.newDatagram(Protocol.CONTROL,
+            message);
+        dg.setSrcAddress(address_);
+        dg.setDstAddress(nf.getRemoteRouterAddress());
+        try {
+            sendDatagram(dg);
+        } catch (NoRouteToHostException e) {
+            Logger.getLogger("log").logln(USR.STDOUT,
+                leadin() + "Cannot route CONTROL withdraw message to "+
+                    nf.getRemoteRouterAddress());
+        }
+    }
 }
 
 /** Routing table received via netIF */

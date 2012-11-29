@@ -56,8 +56,7 @@ public int getTopology(){
  */
 public void setTopology(int t){
     if (t >= totalTopology) {throw new Error(
-                                 "Cannot set topology to " + t +
-                                 ". Max is " +
+        "Cannot set topology to " + t + ". Max is " +
                                  (totalTopology - 1));
     } else {
         currentTopology = t;
@@ -164,8 +163,10 @@ public synchronized void fromBytes(byte[]       bytes,
 /** remove address from table.  Return true if address was in table*/
 public boolean removeAddress(Address addr)
 {
-    System.err.println("Write me");
-    return false;
+    VectorRoutingTableEntry en= table_.remove(addr);
+    if (en == null)
+        return false;
+    return true;
 }
 
 

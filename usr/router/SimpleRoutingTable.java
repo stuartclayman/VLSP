@@ -84,8 +84,10 @@ public synchronized void fromBytes(byte[]       bytes,
 /** remove address from table.  Return true if address was in table*/
 public boolean removeAddress(Address addr)
 {
-    System.err.println("Write me");
-    return false;
+    SimpleRoutingTableEntry en= table_.remove(addr);
+    if (en == null)
+        return false;
+    return true;
 }
 
 /** Set the NetIFListener */
