@@ -110,9 +110,7 @@ ArrayList<RouterProbe> probeList = null;
  * The ManagementConsole listens on 'port' and
  * The Router to Router connections listens on port + 1.
  */
-public RouterController(Router router,
-    RouterOptions o,
-    int port,
+public RouterController(Router router, RouterOptions o, int port,
     String name){
     this(router, o, port, port + 1, name);
 }
@@ -122,11 +120,8 @@ public RouterController(Router router,
  * The ManagementConsole listens on 'mPort' and
  * The Router to Router connections listens on 'r2rPort'.
  */
-public RouterController(Router router,
-    RouterOptions o,
-    int mPort,
-    int r2rPort,
-    String name){
+public RouterController(Router router, RouterOptions o,
+    int mPort, int r2rPort, String name){
     options_ = o;
     this.router = router;
 
@@ -136,10 +131,8 @@ public RouterController(Router router,
         myAddress = AddressFactory.newAddress(name.hashCode());
     } catch (java.net.UnknownHostException e) {
         myAddress = null;
-        Logger.getLogger("log").logln(USR.STDOUT,
-            leadin() +
-            "Cannot make address from " +
-            name.hashCode());
+        Logger.getLogger("log").logln(USR.ERROR,
+            leadin() + "Cannot make address from " + name.hashCode());
     }
 
     this.managementConsolePort = mPort;
@@ -295,7 +288,11 @@ public boolean start(){
  */
 public boolean stop(){
     Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
-
+    
+    if (options_.gracefulExit()) {
+        router.sendGoodbye();
+    }
+    
     // stop applications
     stopApplications();
 

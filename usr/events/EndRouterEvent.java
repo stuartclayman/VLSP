@@ -46,6 +46,12 @@ public String toString(){
     return str;
 }
 
+public int getNumber(GlobalController gc) throws InstantiationException{
+    if (!routerNumSet_)
+        initNumber(address_, gc);
+    return routerNo_;
+}
+
 private String getName(){
     String str = "";
 

@@ -25,7 +25,7 @@
   </LocalController>
   <EventEngine>
      <Name>Probabilistic</Name>
-     <EndTime>600</EndTime>
+     <EndTime>3000</EndTime>
      <Parameters>test_scripts/probdistslow_noPA.xml</Parameters>
   </EventEngine>
   <RouterOptions>

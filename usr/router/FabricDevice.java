@@ -269,7 +269,6 @@ throws NoRouteToHostException {
     } catch (usr.net.InterfaceBlockedException e) {
         Logger.getLogger("log").logln(USR.STDOUT,
             leadin() +
-
             " Interface Blocked Exception should not be thrown in addToInQueue");
     }
     return false;     // This line should never be reached.

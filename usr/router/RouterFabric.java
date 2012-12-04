@@ -47,6 +47,11 @@ public NetIF findNetIF(String host);
  */
 public void closePorts();
 
+/** 
+ * Send goodbye message to all ports
+ */
+public void sendGoodbye();
+
 /**
  * Close port.
  */

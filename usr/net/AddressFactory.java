@@ -32,8 +32,8 @@ static {
 /**
  * Return an Address, given an int
  */
-public static Address newAddress(int addr) throws java.net.
-UnknownHostException {
+public static Address newAddress(int addr) 
+throws java.net.UnknownHostException {
     Exception finalE = null;
 
     try {
@@ -41,15 +41,11 @@ UnknownHostException {
         return address;
     } catch (java.lang.reflect.InvocationTargetException e) {
         Throwable e2 = e.getTargetException();
-        if (e2 instanceof java.net.UnknownHostException) {throw (
-                                                                    java
-                                                                    .
-                                                                    net
-                                                                    .
-                                                                    UnknownHostException)
-                                                                e2;
+        if (e2 instanceof java.net.UnknownHostException) {
+            throw (java.net.UnknownHostException) e2;
         }
-        System.err.println(e2.getClass());
+        Logger.getLogger("log").logln(
+            USR.ERROR,"Unknown Host "+e2.getClass());
         finalE = new Exception(e.getMessage());
     } catch (Exception e) {
         finalE = e;
@@ -58,8 +54,8 @@ UnknownHostException {
     Logger.getLogger("log").logln(
         USR.ERROR, "AddressFactory: Exception: " + finalE);
     throw new Error(
-        "AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: "
-        + className);
+        "AddressFactory: config error in AddressFactory. "+
+        " Cannot allocate an instance of: "+ className);
 }
 
 /**
@@ -89,13 +85,8 @@ UnknownHostException {
         return address;
     } catch (java.lang.reflect.InvocationTargetException e) {
         Throwable e2 = e.getTargetException();
-        if (e2 instanceof java.net.UnknownHostException) {throw (
-                                                                    java
-                                                                    .
-                                                                    net
-                                                                    .
-                                                                    UnknownHostException)
-                                                                e2;
+        if (e2 instanceof java.net.UnknownHostException) {
+            throw (java.net.UnknownHostException) e2;
         }
         System.err.println(e2.getClass());
         finalE = new Exception(e.getMessage());
@@ -136,8 +127,7 @@ public static void setClassForAddress(String name){
         // find Constructor for when arg is int
         consI =
             (Constructor<? extends Address>)xc.
-            getDeclaredConstructor(
-                int.class );
+            getDeclaredConstructor(int.class);
 
         // get Consturctor for when arg is byte[]
         consB =

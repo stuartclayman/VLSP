@@ -23,7 +23,6 @@ public abstract class AbstractRouterFabric implements RouterFabric,
 Router router;
 RouterOptions options_;
 
-Address address_ = null;
 
 boolean theEnd = false;
 
@@ -46,7 +45,7 @@ RoutingTableTransmitter routingTableTransmitter;
 // The RoutingTable
 RoutingTable table_ = null;
 
-// routing table info
+// list of addresses this router handles
 HashMap<Address, Integer> routableAddresses_ = null;
 
 NetIF nextUpdateIF_ = null;
@@ -73,9 +72,6 @@ public boolean init(){
     ports = new ArrayList<RouterPort>(limit);
     for (int p = 0; p < limit; p++)
         setupPort(p);
-
-    address_ = router.getAddress();
-
     localNetIF = null;
     name_ = router.getName();
     routableAddresses_ = new HashMap<Address, Integer>();
@@ -283,14 +279,9 @@ public boolean ourAddress(Address addr){
     // ADDRESS");
     if (addr == null)
         return true;
-    if (address_ == null)
-        return false;
-
-    if (addr.equals(address_))
+    if (addr.equals(router.getAddress()))
         return true;
-
     Object obj = routableAddresses_.get(addr);
-
     return obj != null;
 }
 
@@ -307,10 +298,6 @@ NoRouteToHostException {
 
     Address addr = dg.getDstAddress();
 
-    /* if (dg.getProtocol() == Protocol.CONTROL) {
-     *  System.err.println("Got CONTROL "+ dg.getDstAddress()+" "+
-     *     dg.getDstPort() + " vs "+address_);
-     * }*/
 
     if (ourAddress(addr)) {
         if (dg.getDstPort() == 0) {
@@ -411,11 +398,9 @@ public synchronized boolean outQueueHandler(Datagram datagram,
     DatagramDevice device)                             {
     //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "
     // receiveOurDatagram ");
-    if (running == false)               // If we're not running simply
-                                        // pretend
-                                        // to have received it
+    if (running == false) // If we're not running simply
+                          // pretend to have received it
         return true;
-
     if (datagram.getProtocol() == Protocol.CONTROL) {
         processControlDatagram(datagram, device);
     } else if (datagram.getProtocol() == Protocol.DATA) {
@@ -437,8 +422,7 @@ void  processOrdinaryDatagram(Datagram datagram,
     Logger.getLogger("log").logln(USR.ERROR,
         leadin() +
         " Fabric received ordinary datagram from "
-        +
-        datagram.getSrcAddress() + ":" +
+        + datagram.getSrcAddress() + ":" +
         datagram.getSrcPort() +
         " => " + datagram.getDstAddress() +
         ":" + datagram.getDstPort());
@@ -536,6 +520,7 @@ boolean  processControlDatagram(Datagram dg,
             leadin()+ "Received withdraw message from "+
                 dg.getSrcAddress()+":"+dg.getSrcPort());
         receiveAddressWithdraw(payload, netif);
+        return true;
     }
     if (controlChar == 'X') {
         Logger.getLogger("log").logln(USR.STDOUT,
@@ -588,52 +573,119 @@ boolean pingResponse(Datagram dg){
 
 /** Request to withdraw address received via netIF*/
 void receiveAddressWithdraw(byte [] bytes, NetIF netIF) {
-    Address addr;
-    // Bit twiddling is such fun in java
-    ByteBuffer wrapper = ByteBuffer.wrap(bytes);
-    wrapper.position(1);
-    byte[] addrbytes= new byte[bytes.length - 1];
-    wrapper.get(addrbytes);
-    addr= AddressFactory.newAddress(addrbytes);
+    ArrayList<Address> addresses;
+    addresses= translateWithdraw(bytes);
     boolean changed= false;
     synchronized (table_) {
-        changed= table_.removeAddress(addr);
+        for (Address a: addresses) {
+            if(table_.removeAddress(a)) {
+                changed= true;
+            }
+        }
     }
     if (changed) {
-        withdrawToOtherInterfaces(addr,netIF);
+        withdrawToOtherInterfaces(addresses,netIF);
     }
 }
 
+public void sendGoodbye()
+{
+    ArrayList <Address> addresses= new ArrayList<Address>();
+    Address me= router.getAddress();
+    if (me != null) {
+        addresses.add(me);
+    }
+    for (Address a: routableAddresses_.keySet()) {
+        if (! a.equals(me)) {
+            addresses.add(a);
+        }
+    }
+    for (Address a: addresses) {
+        Logger.getLogger("log").logln(USR.STDOUT,
+                leadin() + "Sending route withdraw message for "+a);
+    }
+    withdrawToOtherInterfaces(addresses, null);
+}
 
 /** Send a withdrawal message for a given address
  * to all interfaces on this network
  * interface*/
-public void withdrawToOtherInterfaces(Address addr, NetIF netIF)
+public void withdrawToOtherInterfaces(ArrayList <Address> addr, 
+    NetIF netIF)
 {
-    for (RouterPort p: ports) {
-        NetIF nf= p.getNetIF();
-        if (nf == netIF || nf == localNetIF) {
-            continue;
-        }
-        byte [] message= new byte[1+addr.size()];
-        System.arraycopy(addr.asByteArray(),0,message,1,addr.size());
-        message[0]='W';
-        Datagram dg= DatagramFactory.newDatagram(Protocol.CONTROL,
-            message);
-        dg.setSrcAddress(address_);
-        dg.setDstAddress(nf.getRemoteRouterAddress());
-        try {
-            sendDatagram(dg);
-        } catch (NoRouteToHostException e) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() + "Cannot route CONTROL withdraw message to "+
-                    nf.getRemoteRouterAddress());
+    synchronized (ports) {
+        for (RouterPort p: ports) {
+            NetIF nf= p.getNetIF();
+            if (nf == null || nf == netIF || nf == localNetIF) {
+                continue;
+            }
+            byte [] message= constructWithdrawMessage(addr);
+            Datagram dg= DatagramFactory.newDatagram(Protocol.CONTROL,
+                message);
+            dg.setSrcAddress(router.getAddress());
+            Address a= nf.getRemoteRouterAddress();
+            if (a == null) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                    leadin() + "Network interface "+nf+" has no address");
+                continue;
+            }
+            dg.setDstAddress(a);
+            try {
+                sendDatagram(dg);
+            } catch (NoRouteToHostException e) {
+                Logger.getLogger("log").logln(USR.STDOUT,
+                    leadin() + "Cannot route CONTROL withdraw message to "+
+                        nf.getRemoteRouterAddress());
+            }
         }
     }
 }
 
+/** Convert a series of addresses to a withdraw message in bytes */
+private byte [] constructWithdrawMessage(ArrayList <Address> addr) 
+{
+    int totSize= 0;
+    for (Address a: addr) {
+        totSize+= a.size();
+    }
+    byte [] message= new byte[1+totSize];        
+    message[0]='W';
+    int pos=1;
+    for (Address a: addr) {
+        System.arraycopy(a.asByteArray(),0,message,pos,a.size());
+        pos+= a.size();
+    }
+    return message;
+}
+
+/** Translate message to address array */
+private ArrayList <Address> translateWithdraw(byte [] bytes)
+{
+    ByteBuffer wrapper = ByteBuffer.wrap(bytes);
+    ArrayList <Address> addresses= new ArrayList<Address>();
+    Address a;
+    try {
+        a = AddressFactory.newAddress(0);
+    } catch (UnknownHostException e) {
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+
+            "Cannot create new address in translateWithdraw");
+        return addresses;
+    }
+    int pos= 1;
+    while (pos < bytes.length) {
+        wrapper.position(pos);
+        byte[] addrbytes= new byte[a.size()];
+        wrapper.get(addrbytes);
+        Address a2= AddressFactory.newAddress(addrbytes);
+        addresses.add(a2);
+        pos+= a.size();
+    }
+    
+    return addresses;
+}
+
 /** Routing table received via netIF */
-void receiveRoutingTable(byte [] bytes, NetIF netIF) {
+private void receiveRoutingTable(byte [] bytes, NetIF netIF) {
     Logger.getLogger("log").logln(USR.STDOUT,
         leadin() + System.currentTimeMillis() +
         " receiveRoutingTable: Received routing table from " + netIF);
@@ -662,15 +714,11 @@ void receiveRoutingTable(byte [] bytes, NetIF netIF) {
         merged = table_.mergeTables(t, netIF, options_);
 
         Logger.getLogger("log").logln(1 << 6,
-            leadin() +
-            " merged routing table received on "
-            + netIF +
-            "\nResult = " + table_);
+            leadin() + " merged routing table received on "
+            + netIF + "\nResult = " + table_);
     }
 
     if (merged) {
-        //Logger.getLogger("log").logln(USR.STDOUT, "Send to other
-        // interfaces");
         sendToOtherInterfaces(netIF);
     }
 }
@@ -745,9 +793,7 @@ public NetIF findNetIF(String name){
                     addr = AddressFactory.newAddress(name);
                 } catch (java.net.UnknownHostException e) {
                     Logger.getLogger("log").logln(USR.ERROR,
-                        leadin() +
-                        "Cannot create address from "
-                        + name);
+                        leadin() +"Cannot create address from " + name);
                 }
 
                 if (port.getNetIF().getRemoteRouterAddress().
@@ -755,8 +801,7 @@ public NetIF findNetIF(String name){
                     // try by string form
                     return port.getNetIF();
                 else if (port.getNetIF().getRemoteRouterAddress()
-                         .
-                         equals(addr))
+                         .equals(addr))
                     // try by addr
                     return port.getNetIF();
                 else if (port.getNetIF().getRemoteRouterName().
@@ -844,13 +889,9 @@ public boolean ping(Address dst){
     return true;
 }
 
-public Address getAddress(){
-    return address_;
-}
 
-public void setAddress(Address a){
-    address_ = a;
-}
+
+
 
 public String getName(){
     return name_;
@@ -910,15 +951,13 @@ public boolean echo(Address dst, int port){
 public RouterPort addNetIF(NetIF netIF){
     Logger.getLogger("log").logln(USR.STDOUT,
         leadin() + "addNetIF NetIF: " +
-        netIF.getName() + " " +
-        getAddress());
-
+        netIF.getName() + " " + netIF.getAddress());
     try {
         synchronized (ports) {
             Address address = netIF.getAddress();
             Address remoteAddress = netIF.getRemoteRouterAddress();
             // add this address into the routableAddresses set
-            addRoutableAddress(address);
+            
             // is this actually the local NetIF
             boolean localPort = netIF.isLocal();
             // bind NetIF into a port
@@ -939,6 +978,8 @@ public RouterPort addNetIF(NetIF netIF){
                         ) + " " +
                     localNetIF.getAddress());
                 return null;
+            } else {
+                addRoutableAddress(address);
             }
 
             if (!localPort) {
@@ -1079,6 +1120,16 @@ public void closedDevice(DatagramDevice dd){
     Logger.getLogger("log").logln(USR.ERROR,
         leadin() + dd +
         " Datagram device reports as broken");
+}
+
+public Address getAddress()
+{
+    return router.getAddress();
+}
+
+public void setAddress(Address a)
+{
+    router.setAddress(a);
 }
 
 /**
@@ -1312,6 +1363,8 @@ void sendNextTable(){
         // time"+nextUpdateTime_);
     }
 }
+
+
 
 /**
  * Stop the RoutingTableTransmitter

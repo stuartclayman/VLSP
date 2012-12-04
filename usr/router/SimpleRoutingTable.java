@@ -46,7 +46,8 @@ public synchronized void fromBytes(byte[]       bytes,
     byte t = wrapper.get();
 
     if (t != 'T') {throw new Exception(
-                       "SimpleRoutingTable: tried to construct a RoutingTable with invalid data");
+         "SimpleRoutingTable: tried to construct a RoutingTable" +
+         " with invalid data");
     } else {
         int count = wrapper.getShort();
         int entrySize = wrapper.getShort();
@@ -54,7 +55,8 @@ public synchronized void fromBytes(byte[]       bytes,
             Logger.getLogger("log").logln(
                 USR.ERROR, "Routing table has entrySize 0");
             throw new Exception(
-                "SimpleRoutingTable: tried to construct a RoutingTable with invalid data");
+                "SimpleRoutingTable: tried to construct a RoutingTable"+
+                " with invalid data");
         }
 
         if ((bytes.length - 5) % entrySize != 0) {

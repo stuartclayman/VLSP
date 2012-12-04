@@ -45,6 +45,24 @@ throws InstantiationException
     initNumbers(add1, add2, gc);
 }
 
+public int getRouter1(GlobalController gc) throws InstantiationException
+{
+    if (!routerNumsSet_) {
+        initNumbers(addr1_, addr2_, gc);
+    }
+    return router1_;
+}
+
+
+
+public int getRouter2(GlobalController gc) throws InstantiationException
+{
+    if (!routerNumsSet_) {
+        initNumbers(addr1_, addr2_, gc);
+    }
+    return router2_;
+}
+
 public String toString()
 {
     String str = "EndLinkEvent " + time_ + getName();

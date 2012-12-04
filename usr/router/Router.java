@@ -134,36 +134,9 @@ void initRouter(int port1, int port2, String name){
     options_ = new RouterOptions(this);
 
     // Setup ThreadGroup
-    threadGroup = Thread.currentThread().getThreadGroup();      // new
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                //
-                                                                // ThreadGroup(name);
-
+    threadGroup = Thread.currentThread().getThreadGroup();      
     controller = new RouterController(this, options_, port1, port2,
         name);
-
     fabric = new SimpleRouterFabric(this, options_);
     //fabric = new VectorRouterFabric(this, options_);
 
@@ -231,6 +204,11 @@ public boolean stop(){
     } else {
         return false;
     }
+}
+
+/** Send goodbye message to all interfaces */
+public void sendGoodbye() {
+    fabric.sendGoodbye();
 }
 
 public void shutDown(){

@@ -25,18 +25,15 @@ Router router_;
 
 // Parameters set in RoutingParameters Tag
 // how many millis to wait between checks of routing table
-int maxCheckTime_ = 60000;              // Interface wakes up this often
-                                        // anyway
-int minNetIFUpdateTime_ = 1000;         // Shortest interval between
-                                        // routing
-                                        // updates down given NetIF
-int maxNetIFUpdateTime_ = 30000;        // Longest interval between
-                                        // routing
-                                        // updates down given NetIF
+int maxCheckTime_ = 60000;   // Interface wakes up this often
+int minNetIFUpdateTime_ = 1000; // Shortest interval between
+                                // routing updates down given NetIF
+int maxNetIFUpdateTime_ = 30000;        
+                        // Longest interval between routing
+                        // updates down given NetIF
 
-int maxDist_ = 20;                      // If a router is at a distance
-                                        // more than this it
-                                        // is assumed unroutable
+int maxDist_ = 20;      // If a router is at a distance
+                       // more than this it is assumed unroutable
 // Parameters set in APManager Tag
 
 String APManagerName_ = null;           // Name of  APManager
@@ -45,43 +42,33 @@ String APOutputPath_ = null;            // Path to which infosource and
 int maxAPs_ = 0;                        // max APs
 int minAPs_ = 0;                        // min APs
 int routerConsiderTime_ = 10000;        // Time router reconsiders APs
-
 int controllerConsiderTime_ = 10000;    // Time controller reconsiders
                                         // APs
-int controllerRemoveTime_ = 0;          // Time to consider removing
-                                        // weakest AP --
-// if non-zero then weakest AP removed
-// and appropriate new APs added
-int maxAPWeight_ = 0;                           // Maximum link weight
-                                                // an AP can be away
-String APFilter_ = null;                        // AP filtering
-                                                // percentage
-String monType_ = "rt";                         // What to monitor
-int trafficStatTime_ = 10000;                   // Time to send traffic
-                                                // stats
-double apLifeBias_ = 0.0;                       // Weight to give to AP
-                                                // lifetime
-                                                // predictions  -- 0
-                                                // means ignore
-double minPropAP_ = 0.0;                        // Minimum proportion of
-                                                // AP
-double maxPropAP_ = 1.0;                        // Maximum proportion of
-                                                // AP
-String [] APParms_ = {};                        // Parameters for AP
-                                                // Options
+int controllerRemoveTime_ = 0;  // Time to consider removing
+                                // weakest AP -- if non-zero then 
+                                // weakest AP removed
+int maxAPWeight_ = 0;  // Maximum link weight an AP can be away
+String APFilter_ = null;  // AP filtering percentage
+String monType_ = "rt";    // What to monitor
+int trafficStatTime_ = 10000;   // Time to send traffic stats
+double apLifeBias_ = 0.0;     // Weight to give to AP  lifetime
+                             // predictions  -- 0 means ignore
+double minPropAP_ = 0.0;     // Minimum proportion of  AP
+double maxPropAP_ = 1.0;     // Maximum proportion of AP
+String [] APParms_ = {};     // Parameters for AP Options
 String outputFileName_ = "";                    // output file name
-boolean outputFileAddName_ = false;             // Add suffix to output
-                                                // file
-String errorFileName_ = "";                     // output file name for
-                                                // error stream
-boolean errorFileAddName_ = false;              // Add suffix to output
-                                                // file
-boolean latticeMonitoring = false;              // If true, turn on
-                                                // Lattice
-                                                // Monitoring
+boolean outputFileAddName_ = false; // Add suffix to output file
+String errorFileName_ = "";     // output file name for error stream
+boolean errorFileAddName_ = false;    // Add suffix to output file
+boolean latticeMonitoring = false;   // Turn on Lattice Monitoring
 HashMap<String, Integer>probeInfoMap = null;    // A Class Name ->
                                                 // datarate mapping
-RouteSelectionPolicy routePolicy_= null;        
+RouteSelectionPolicy routePolicy_= null;  // Policy for choosing route
+                                        // From merging tables
+String extendedOutputFile_= null; // File name for more output
+boolean gracefulExit_= true;  // Routers send a message before leaving
+
+
 /** Constructor for router Options */
 
 public RouterOptions (Router router){
@@ -192,36 +179,28 @@ void processOutputParameters(NodeList out) throws SAXException {
 
     try {
         outputFileName_ = ReadXMLUtils.parseSingleString(o,
-            "FileName",
-            "Output",
-            true);
+            "FileName", "Output", true);
         ReadXMLUtils.removeNode(o, "FileName", "Output");
     } catch (SAXException e) { throw e;
     } catch (XMLNoTagException e) {
     }
     try {
         outputFileAddName_ = ReadXMLUtils.parseSingleBool(o,
-            "ExtendedName",
-            "Output",
-            true);
+            "ExtendedName", "Output", true);
         ReadXMLUtils.removeNode(o, "ExtendedName", "Output");
     } catch (SAXException e) { throw e;
     } catch (XMLNoTagException e) {
     }
     try {
         errorFileName_ = ReadXMLUtils.parseSingleString(o,
-            "ErrorFileName",
-            "Output",
-            true);
+            "ErrorFileName", "Output", true);
         ReadXMLUtils.removeNode(o, "ErrorFileName", "Output");
     } catch (SAXException e) { throw e;
     } catch (XMLNoTagException e) {
     }
     try {
         errorFileAddName_ = ReadXMLUtils.parseSingleBool(
-            o,
-            "ErrorExtendedName",
-            "Output", true);
+            o, "ErrorExtendedName", "Output", true);
         ReadXMLUtils.removeNode(o, "ErrorExtendedName", "Output");
     } catch (SAXException e) { throw e;
     } catch (XMLNoTagException e) {
@@ -231,8 +210,7 @@ void processOutputParameters(NodeList out) throws SAXException {
         Node n = nl.item(i);
         if (n.getNodeType() ==
             Node.ELEMENT_NODE) throw new SAXException(
-                "Unrecognised tag "
-                + n.getNodeName());
+                "Unrecognised tag " + n.getNodeName());
     }
     o.getParentNode().removeChild(o);
 }
@@ -247,12 +225,20 @@ void processRoutingParameters(NodeList rps) throws SAXException {
     try {
         int n =
             ReadXMLUtils.parseSingleInt(rp, "TrafficStatTime",
-                "RoutingParameters",
-                true);
+                "RoutingParameters",true);
         trafficStatTime_ = n;
         ReadXMLUtils.removeNode(rp, "TrafficStatTime",
             "RoutingParameters");
     } catch (SAXException e) { throw e;
+    } catch (XMLNoTagException e) {
+    }
+    try {
+        gracefulExit_ = ReadXMLUtils.parseSingleBool(rp,
+            "GracefulExit","RoutingParameters",true);
+        ReadXMLUtils.removeNode(rp, "GracefulExit", 
+            "RoutingParameters");
+    } catch (SAXException e) { 
+        throw e;
     } catch (XMLNoTagException e) {
     }
     String pol= "";
@@ -286,7 +272,6 @@ void processRoutingParameters(NodeList rps) throws SAXException {
         throw new SAXException("Trying to create RoutingPolicy: "+
             "Cannot create object of class "+pol+ "\n"+e.getMessage());
     }
-
     // Process DatagramType
     String dgtype = "";
     try {
@@ -737,6 +722,13 @@ public boolean getErrorFileAddName(){
 public boolean latticeMonitoring(){
     return latticeMonitoring;
 }
+
+/** Does a router send an exit message before leaving
+ */
+public boolean gracefulExit() {
+    return gracefulExit_;
+}
+
 
 /**
  * Get the Probe Info Map

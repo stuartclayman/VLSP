@@ -42,8 +42,20 @@ private boolean preferentialAttachment_ = false;
 /** Contructor from Parameter string */
 public ProbabilisticEventEngine(int time, String parms) throws
     EventEngineException {
-    timeToEnd_ = time * 1000;
+    init(time);
     parseXMLFile(parms);
+}
+
+/** Constructor used from subclasses where XML parse not required*/
+protected ProbabilisticEventEngine(int time)
+{
+    init(time);
+}
+
+/** Common elements in all constructors*/
+private void init(int time)
+{
+    timeToEnd_ = time * 1000;
 }
 
 /** Start up and shut down events */
@@ -127,19 +139,23 @@ public void followEvent(Event e, EventScheduler s,
         followRouter((StartRouterEvent)e, s, response, g);
 }
 
-private void followRouter(StartRouterEvent e, EventScheduler s, 
+protected int followRouter(StartRouterEvent e, EventScheduler s, 
     JSONObject response, GlobalController g)
 {
     long now = e.getTime();
     long time;
     int routerId= 0;
+    int nlinks= 0;
     try {
-        routerId=(Integer)response.get("routerID");
+        if ( (Boolean)response.get("success")) {
+            routerId=(Integer)response.get("routerID");
+            nlinks= followSuccessfulRouter(s,routerId, g, now);
+        }
     } catch (JSONException ex) {
         Logger.getLogger("log").logln(USR.ERROR,
             leadin() +
             " Error interpreting response from JSON to router create");
-        return;
+        return -1;
     }
     //  Schedule new node
     try {
@@ -152,7 +168,13 @@ private void followRouter(StartRouterEvent e, EventScheduler s,
     }
     StartRouterEvent e1 = new StartRouterEvent(now + time, this);
     s.addEvent(e1);
-    // Schedule node death if this will happen
+    return nlinks;
+}
+
+private int followSuccessfulRouter(EventScheduler s, int routerId,
+    GlobalController g, long now)
+{
+    long time;
     if (nodeDeathDist_ != null) {
         try {
             time = (long)(nodeDeathDist_.getVariate() * 1000);
@@ -167,9 +189,7 @@ private void followRouter(StartRouterEvent e, EventScheduler s,
             new EndRouterEvent(now + time, this, new Integer(
                     routerId));
         s.addEvent(e2);
-    } else {
-        System.err.println("Death dist null");
-    }
+    } 
     // Schedule links
     int noLinks = 1;
     try {
@@ -179,6 +199,12 @@ private void followRouter(StartRouterEvent e, EventScheduler s,
             leadin() +
             " Error generating linkCreateDist variate");
     }
+    return createNLinks(s, routerId, g, now, noLinks);
+}
+
+protected int createNLinks(EventScheduler s, int routerId,
+    GlobalController g, long now, int noLinks)   
+{
     ArrayList <Integer>nodes = new ArrayList<Integer>(
         g.getRouterList());
     //System.err.println("Router list "+nodes);
@@ -188,10 +214,10 @@ private void followRouter(StartRouterEvent e, EventScheduler s,
         nodes.remove(nodes.indexOf(l));
     //Logger.getLogger("log").logln(USR.ERROR, "Trying to pick
     // "+noLinks+" links");
-    for (int i = 0; i < noLinks; i++) {
+    int i;
+    for (i = 0; i < noLinks; i++) {
         if (nodes.size() <= 0)
             break;
-            
         // Choose a node using pref. attach.
         if (preferentialAttachment_) { 
             int totLinks = 0;
@@ -223,16 +249,18 @@ private void followRouter(StartRouterEvent e, EventScheduler s,
             s.addEvent(e4);
         }
     }
+    return i;
 }
 
 /** Parse the XML to get probability distribution information*/
 private void parseXMLFile(String fName) throws EventEngineException {
+    Document doc;
     try {
         DocumentBuilderFactory docBuilderFactory =
             DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder =
             docBuilderFactory.newDocumentBuilder();
-        Document doc = docBuilder.parse(new File(fName));
+        doc = docBuilder.parse(new File(fName));
 
         // normalize text representation
         doc.getDocumentElement().normalize();
@@ -240,6 +268,29 @@ private void parseXMLFile(String fName) throws EventEngineException {
         if (!basenode.equals("ProbabilisticEngine")) throw new
                   SAXException(
                 "Base tag should be ProbabilisticEngine");
+    } catch (java.io.FileNotFoundException e) { 
+        throw new EventEngineException(
+        "Parsing ProbabilisticEventEngine: Cannot find file "+ fName);
+    } catch (SAXParseException err) { 
+        throw new EventEngineException(
+            "Parsing ProbabilisticEventEngine: error" + ", line "+ 
+            err.getLineNumber() + ", uri " + err.getSystemId());
+    }catch (SAXException e) { 
+        throw new EventEngineException(
+        "Parsing ProbabilisticEventEngine: Exception in SAX XML parser"
+        + e.getMessage());
+    }catch (Throwable t) { 
+        throw new EventEngineException(
+           "Parsing ProbabilisticEventEngine: " + t.getMessage());
+    }    
+    parseXMLDoc(doc,fName);
+}
+
+protected void parseXMLDoc(Document doc, String fName) 
+throws EventEngineException
+{
+    try 
+    {
         NodeList nbd = doc.getElementsByTagName("NodeBirthDist");
         nodeCreateDist_ = ProbDistribution.parseProbDist(nbd,
             "NodeBirthDist");
@@ -275,9 +326,6 @@ private void parseXMLFile(String fName) throws EventEngineException {
         } catch (SAXException e) { throw e;
         } catch (XMLNoTagException e) {
         }
-    } catch (java.io.FileNotFoundException e) { 
-        throw new EventEngineException(
-        "Parsing ProbabilisticEventEngine: Cannot find file "+ fName);
     } catch (SAXParseException err) { 
         throw new EventEngineException(
             "Parsing ProbabilisticEventEngine: error" + ", line "+ 

@@ -41,7 +41,8 @@ public MinimalDatagramDevice(String name, Address addr,
 public MinimalDatagramDevice(String name,
     Address addr,
     FabricDevice fd,
-    NetIFListener l){
+    NetIFListener l)
+{
     name_ = name;
     address_ = addr;
     fabric_ = fd;
@@ -59,8 +60,8 @@ public void start(){
     }
     if (listener_ == null) {
         Logger.getLogger("log").logln(
-            USR.ERROR,
-            "Minimal Datagram Device needs listener to create fabric device");
+            USR.ERROR, "Minimal Datagram Device needs listener "+
+            "to create fabric device");
     }
     fabric_ = new FabricDevice(this, listener_);
     fabric_.setName(name_);
