@@ -387,7 +387,8 @@ SAXException {
 
         ReadXMLUtils.removeNode(gcn, "Monitoring", "GlobalController");
     } else {
-        System.out.println("No GlobalController Monitoring node");
+        Logger.getLogger("log").logln(
+            USR.STDOUT,leadin()+"No GlobalController Monitoring node");
     }
 
     // Check for other unparsed tags
@@ -497,10 +498,8 @@ private void processLocalControllers(NodeList lcs) throws SAXException
             Node n = nl.item(j);
             if (n.getNodeType() ==
                 Node.ELEMENT_NODE) {throw new SAXException(
-                                        "Local Controller unrecognised tag "
-                                        +
-                                        n.
-                                        getNodeName());
+                   "Local Controller unrecognised tag "+
+                   n.getNodeName());
             }
         }
     }
@@ -581,18 +580,9 @@ private EventEngine processEventEngine(Node n) throws SAXException {
     Class <?> engClass = null;
     try {
         engClass = Class.forName(engine);
-        boolean impEng = false;
-        for (Class e : engClass.getInterfaces()) {
-            if (e.equals(Class.forName("usr.engine.EventEngine"))) {
-                impEng = true;
-                break;
-            }
-        }
-        if (impEng == false) throw new Exception(
-                "Class name not instance of EventEngine");
-    } catch (Exception e) { throw new SAXException(
-                                "Could not find engine type " +
-                                engine);
+    } catch (Exception e) { 
+        throw new SAXException(
+        "Could not find engine type " + engine+" "+e.getMessage());
     }
     try {
         Class[] args = new Class[2];
@@ -605,15 +595,25 @@ private EventEngine processEventEngine(Node n) throws SAXException {
         eng = (EventEngine)c.newInstance(arglist);
         return eng;
     } catch (InvocationTargetException e) {
-        Throwable t = e.getTargetException(); throw new SAXException(
+        throw new SAXException(
             "Could not construct engine " + engine +
-            "\n Error message:" +
-            t.getMessage());
-    } catch (Exception e) { throw new SAXException(
-                                "Could not construct engine " +
-                                engine +
-                                "\n Error message:" +
-                                e.getMessage());
+            "\nError message:" +
+            e.getTargetException().getMessage());
+    } catch (InstantiationException e) {
+        throw new SAXException(
+            "Could not instantiate EventEngine " + engine +
+            "\nError message:" +
+            e.getMessage());
+    } catch (NoSuchMethodException e) {
+        throw new SAXException(
+            "Could not find constructor for EventEngine " + engine +
+            "\nError message:" +
+            e.getMessage());
+    } catch (IllegalAccessException e) {
+        throw new SAXException(
+            "Could not instantiate object for EventEngine " + engine +
+            "\nError message:" +
+            e.getMessage());
     }
 }
 
@@ -894,5 +894,9 @@ public String getRouterOptionsString(){
  */
 public int getMaxLag(){
     return maxLag_;
+}
+
+private String leadin() {
+    return "ControlOptions: ";
 }
 }

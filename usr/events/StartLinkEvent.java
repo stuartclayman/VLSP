@@ -51,6 +51,24 @@ throws InstantiationException
     numbersSet_ = true;
 }
 
+public int getRouter1(GlobalController gc) throws InstantiationException
+{
+    if (!numbersSet_) {
+        setRouterNumbers(address1_, address2_, gc);
+    }
+    return router1_;
+}
+
+
+
+public int getRouter2(GlobalController gc) throws InstantiationException
+{
+    if (!numbersSet_) {
+        setRouterNumbers(address1_, address2_, gc);
+    }
+    return router2_;
+}
+
 public String toString(){
     String str = "StartLink " + time_ + " " + getName();
 

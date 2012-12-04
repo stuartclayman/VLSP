@@ -30,16 +30,21 @@ public class ProbabilisticMaxLinkEventEngine extends ProbabilisticEventEngine
     HashMap <Integer,Integer> routerMaxLinkCount_;
     HashMap <Integer,Integer> routerMinLinkCount_;
     ProbDistribution extraLinkDist_= null;
+    HashMap <Integer, ArrayList<Integer>> pendingLinks_;
     
     public ProbabilisticMaxLinkEventEngine(int time, String parms) 
         throws EventEngineException 
     {
         super(time);
         Document doc= parseXMLHead(parms);
-        super.parseXMLDoc(doc,parms);
+        parseXMLExtra(doc);
+        parseXMLMain(doc);
         routerMaxLinkCount_= new HashMap <Integer,Integer>();
         routerMinLinkCount_= new HashMap <Integer,Integer>();
+        pendingLinks_= new HashMap <Integer,ArrayList<Integer>>();
     }
+
+
     
 public void precedeEvent(Event e, EventScheduler s, 
         GlobalController g)
@@ -50,6 +55,32 @@ public void precedeEvent(Event e, EventScheduler s,
         precedeEndLink((EndLinkEvent) e,s,g);
     }
 }   
+
+/** Add or remove events following a simulation event */
+public void followEvent(Event e, EventScheduler s,
+    JSONObject response, GlobalController g)                          
+{
+    if (e instanceof StartRouterEvent) {
+        StartRouterEvent sre= (StartRouterEvent)e;
+        followRouter(sre, s, response, g);
+        
+    } else if (e instanceof StartLinkEvent) {
+        followEndLinkEvent((StartLinkEvent)e,g);
+    } 
+}
+
+private void followEndLinkEvent(StartLinkEvent e, GlobalController g)
+{
+    try {
+        int r1= e.getRouter1(g);
+        int r2= e.getRouter2(g);
+        unscheduleLink(r1,r2);
+    } catch (InstantiationException ex) {
+        Logger.getLogger("log").logln(
+            USR.ERROR, leadin()+
+            "Error getting address in followEndLinkEvent "+e);
+    }
+}
 
 private void precedeEndRouter(EndRouterEvent e, EventScheduler s,
     GlobalController g)
@@ -67,6 +98,24 @@ private void precedeEndRouter(EndRouterEvent e, EventScheduler s,
             "Error getting address "+e);
     }
 }
+private int followRouter(StartRouterEvent e, EventScheduler s, 
+    JSONObject response, GlobalController g)
+{
+    
+    long now= e.getTime();
+    int routerId= scheduleDeath(now,s,response,g, this);
+    int nlinks= 0;
+    int created= 0;
+    if (routerId >= 0) {
+        nlinks= howManyLinks();
+        initMLRouter((StartRouterEvent)e, s, response, g, nlinks);
+        created= createNLinks(s, routerId, g,now,nlinks);
+    }
+    scheduleNextRouter(now,s,g, this);
+    return created;
+}
+
+
 
 private void precedeEndLink(EndLinkEvent e, EventScheduler s,
     GlobalController g)
@@ -94,6 +143,8 @@ private void checkRouter(int router, EventScheduler s,
     }
 }
 
+/** Choose n links -- schedule their creation
+ * -- return number created*/
 private int createNLinks(EventScheduler s, int routerId,
     GlobalController g, long now, int noLinks)   
 {
@@ -104,23 +155,52 @@ private int createNLinks(EventScheduler s, int routerId,
             nodes.add(i);
         }
     }
-        nodes.remove(nodes.indexOf(routerId));
+    nodes.remove(nodes.indexOf(routerId));
     int [] outlinks = g.getOutLinks(routerId);
-    for (Integer l : outlinks)
+    for (Integer l : outlinks) {
         nodes.remove(nodes.indexOf(l));
-    
+    }
+    ArrayList <Integer> tmp= pendingLinks_.get(routerId);
+    if (tmp != null) {
+        for (int i: tmp) {
+            int t= nodes.indexOf(i);
+            if (t >= 0) {
+                nodes.remove(t);
+            }
+        }
+    }
+    ArrayList <Integer> picked= linkPicker_.pickNLinks(nodes, g, noLinks);
+    for (int i: picked) {
+        StartLinkEvent e = new StartLinkEvent(now, this, i,
+            routerId);
+        s.addEvent(e);
+        scheduleLink(routerId, i);
+    }
+    return picked.size();
 }
-    
-/** Add or remove events following a simulation event */
-public void followEvent(Event e, EventScheduler s,
-    JSONObject response, GlobalController g)                          
+
+private void scheduleLink (int l1, int l2)
 {
-    if (e instanceof StartRouterEvent) {
-        int nlinks= 
-            super.followRouter((StartRouterEvent)e, s, response, g);
-        if (nlinks >= 0) 
-            initMLRouter((StartRouterEvent)e, s, response, g, nlinks);
-    } 
+    ArrayList <Integer> tmp= pendingLinks_.get(l1);
+    if (tmp == null) {
+        tmp= new ArrayList<Integer>(1);
+        pendingLinks_.put(l1,tmp);
+    }
+    tmp.add(l2);
+    tmp= pendingLinks_.get(l2);    
+    if (tmp == null) {
+        tmp= new ArrayList<Integer>(1);
+        pendingLinks_.put(l2,tmp);
+    }
+    tmp.add(l1);
+}
+
+private void unscheduleLink (int l1, int l2)
+{
+    ArrayList <Integer> tmp= pendingLinks_.get(l1);
+    tmp.remove(tmp.indexOf(l2));
+    tmp= pendingLinks_.get(l2);
+    tmp.remove(tmp.indexOf(l1));
 }
 
 private void initMLRouter(StartRouterEvent e, EventScheduler s, 
@@ -141,40 +221,10 @@ private void initMLRouter(StartRouterEvent e, EventScheduler s,
     }
 }
 
-/** Parse the head of the XML file to get info specific to this
- * return document in form for ProbabilisticEventEngine*/
-private Document parseXMLHead(String fName) throws EventEngineException {
-    Document doc;
-    try {
-        DocumentBuilderFactory docBuilderFactory =
-            DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder =
-            docBuilderFactory.newDocumentBuilder();
-        doc = docBuilder.parse(new File(fName));
 
-        // normalize text representation
-        doc.getDocumentElement().normalize();
-        String basenode = doc.getDocumentElement().getNodeName();
-        if (!basenode.equals("ProbabilisticEngine")) throw new
-                  SAXException(
-                "Base tag should be ProbabilisticEngine");
-    } catch (java.io.FileNotFoundException e) { 
-        throw new EventEngineException(
-        "Parsing ProbabilisticEventEngine: Cannot find file "+ fName);
-    } catch (SAXParseException err) { 
-        throw new EventEngineException(
-            "Parsing ProbabilisticEventEngine: error" + ", line "+ 
-            err.getLineNumber() + ", uri " + err.getSystemId());
-    }catch (SAXException e) { 
-        throw new EventEngineException(
-        "Parsing ProbabilisticEventEngine: Exception in SAX XML parser"
-        + e.getMessage());
-    }catch (Throwable t) { 
-        throw new EventEngineException(
-           "Parsing ProbabilisticEventEngine: " + t.getMessage());
-    }    
-    try 
-    {
+private void parseXMLExtra(Document doc) throws EventEngineException
+{
+    try {
         NodeList eld = doc.getElementsByTagName("ExtraLinkDist");
         extraLinkDist_ = ProbDistribution.parseProbDist(eld,
             "ExtraLinkDist");
@@ -182,7 +232,8 @@ private Document parseXMLHead(String fName) throws EventEngineException {
             throw new EventEngineException("Must specify ExtraLinkDist "+
                 "in ProbablisiticMaxLinkEventEngine");
         }
-        
+        ReadXMLUtils.removeNode(eld.item(0).getParentNode(),
+            "ExtraLinkDist","ProbabilisticEngine");
     } catch (ProbException e) {
         throw new EventEngineException("Must specify ExtraLinkDist "+
                 "correctly in ProbablisiticMaxLinkEventEngine "+
@@ -194,7 +245,6 @@ private Document parseXMLHead(String fName) throws EventEngineException {
         throw new EventEngineException("Must specify ExtraLinkDist "+
                 "in ProbablisiticMaxLinkEventEngine");
     }
-    return doc;
 }
 
 private String leadin(){
