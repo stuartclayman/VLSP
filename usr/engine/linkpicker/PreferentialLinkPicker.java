@@ -1,8 +1,9 @@
 /** Interface choses n links using some rule*/
 
-package usr.engine;
+package usr.engine.linkpicker;
 import java.util.*;
 import usr.globalcontroller.*;
+import org.w3c.dom.*;
 
 public class PreferentialLinkPicker implements NodeLinkPicker {
     Random rand;
@@ -14,7 +15,7 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
     }
     
     public ArrayList <Integer> pickNLinks(ArrayList<Integer> nodes,
-        GlobalController g, int noLinks)
+        GlobalController g, int noLinks, int node)
     {
         ArrayList<Integer> picked= new ArrayList<Integer>();
         updateNodes(g,nodes);
@@ -46,7 +47,8 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
         }
     }
     
-    public int pickLink(ArrayList<Integer> nodes, GlobalController g)
+    public int pickLink(ArrayList<Integer> nodes, GlobalController g,
+        int node)
     {
         updateNodes(g,nodes);
         return pickLinkWithoutUpdate();
@@ -73,5 +75,9 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
             }
         }
         return chosen;
+    }
+    
+    public void parseExtraXML(Node linkpicker)
+    {
     }
 }

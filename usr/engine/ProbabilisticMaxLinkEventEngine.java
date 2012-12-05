@@ -169,7 +169,8 @@ private int createNLinks(EventScheduler s, int routerId,
             }
         }
     }
-    ArrayList <Integer> picked= linkPicker_.pickNLinks(nodes, g, noLinks);
+    ArrayList <Integer> picked= linkPicker_.pickNLinks(nodes, g, 
+        noLinks, routerId);
     for (int i: picked) {
         StartLinkEvent e = new StartLinkEvent(now, this, i,
             routerId);

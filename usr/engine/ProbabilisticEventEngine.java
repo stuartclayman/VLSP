@@ -21,7 +21,7 @@ import java.io.*;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Constructor;
-
+import usr.engine.linkpicker.*;
 
 /**
  * This engine uses probability distribtions to add events into the
@@ -247,7 +247,8 @@ private ArrayList <Integer> chooseNLinks(int routerId,
     int [] outlinks = g.getOutLinks(routerId);
     for (Integer l : outlinks)
         nodes.remove(nodes.indexOf(l));
-    ArrayList <Integer> picked= linkPicker_.pickNLinks(nodes, g, noLinks);
+    ArrayList <Integer> picked= linkPicker_.pickNLinks(nodes, g, 
+        noLinks, routerId);
     
     return picked;
 }
@@ -319,12 +320,30 @@ throws EventEngineException
             "LinkDeathDist");
         try {
             NodeList misc = doc.getElementsByTagName("Parameters");
-            if (misc.getLength() > 0) throw new SAXException(
-                "Parameters tag deprecated, replace with LinkPicker.");
-        } catch (SAXException e) { 
-            throw new EventEngineException("Error parsing SAX in "+
-                "ProbabilisticEventEngine "+e.getMessage());
-        } 
+            if (misc.getLength() > 1) throw new SAXException(
+                    "Only one Parameters tag allowed in XML for "
+                    + "ProbabilisticEventEngine");
+            if (misc.getLength() == 1) {
+                Node miscnode = misc.item(0);
+                boolean tmp =
+                    ReadXMLUtils.parseSingleBool(
+                        miscnode,
+                        "PreferentialAttachment",
+                        "Parameters", true);
+                if (tmp) {
+                    linkPicker_= new PreferentialLinkPicker();
+                }
+                ReadXMLUtils.removeNode(miscnode,
+                    "PreferentialAttachment",
+                    "Parameters");
+                Logger.getLogger("log").logln(USR.ERROR,
+                    leadin() + "Parameters tag deprecated");
+                ReadXMLUtils.removeNode(miscnode.getParentNode(),
+                    "Parameters","ProabilisticEngine");
+            }
+        } catch (SAXException e) { throw e;
+        } catch (XMLNoTagException e) {
+        }
     } catch (SAXParseException err) { 
         throw new EventEngineException(
             "Parsing ProbabilisticEventEngine: error" + ", line "+ 
@@ -350,24 +369,32 @@ throws EventEngineException
             
         }
     }
+
     
 }
 
 
 private void parseLinkPicker(Document doc) throws EventEngineException
 {
-    NodeList lpns= doc.getElementsByTagName("ProbabilisticEngine");
+    NodeList lpns= doc.getElementsByTagName("LinkPicker");
+    if (lpns.getLength() == 0)
+        return;
+    if (lpns.getLength() > 1) {
+        throw new EventEngineException("Only one LinkPicker tag allowed"
+            + " in ProbabilisticEventEngine");
+    }
     Node lpn= lpns.item(0);
     String linkpick;
     try {
         linkpick= ReadXMLUtils.parseSingleString(lpn,
-            "LinkPicker","ProbabilisicEngine",true);
-        ReadXMLUtils.removeNode(lpn, "LinkPicker","ProbabilisicEngine");
+            "Name","LinkPicker",true);
+        ReadXMLUtils.removeNode(lpn, "Name","LinkPicker");
     } catch (SAXException e) {
-      throw new EventEngineException ("Error parsing XML in ProbMLEE "+
-            e.getMessage());
+        throw new EventEngineException ("Error parsing XML in "+
+            "ProbabilisticEventEngine "+ e.getMessage());
     } catch (XMLNoTagException e) {
-        return;
+        throw new EventEngineException ("Name tag missing from "+
+            "LinkPicker in ProbabilisticEventEngine XML");
     }
     Class <?> lpclass = null;
     
@@ -403,13 +430,29 @@ private void parseLinkPicker(Document doc) throws EventEngineException
             "\n Error message:" +
             e.getMessage());
     }
-
+    linkPicker_.parseExtraXML(lpn);
+    NodeList nl = lpn.getChildNodes();
+    for (int j = 0; j < nl.getLength(); j++) {
+        Node n = nl.item(j);
+        if (n.getNodeType() == Node.ELEMENT_NODE) {
+            throw new EventEngineException(
+                   "ProbabilisticEventEngine unrecognised tag "+
+                   n.getNodeName());
+        }
+    }
+    try {
+        ReadXMLUtils.removeNode(lpn.getParentNode(),
+            "LinkPicker","ProbabilisticEngine");
+    } catch (SAXException e) {
+        throw new EventEngineException ("Unable to remove node "+
+            "LinkPicer in ProbabilisticEventEngine "+e.getMessage());
+    }
 }
 
 /**
  * Header for errors
  */
 private String leadin(){
-    return new String("ProbabilisticTrafficEngine:");
+    return new String("ProbabilisticEventEngine:");
 }
 }
