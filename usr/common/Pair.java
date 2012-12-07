@@ -1,6 +1,7 @@
 package usr.common;
 
-public class Pair<A, B>
+public class Pair<A extends Comparable <A> , B extends Comparable <B>>
+    implements Comparable <Pair<A,B>>
 {
 private A first;
 private B second;
@@ -9,6 +10,14 @@ public Pair(A first, B second){
     super();
     this.first = first;
     this.second = second;
+}
+
+
+public int compareTo(Pair <A,B> other)
+{
+    
+    
+    return 0;
 }
 
 public int hashCode(){
