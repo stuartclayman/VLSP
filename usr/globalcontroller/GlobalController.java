@@ -3,6 +3,7 @@ package usr.globalcontroller;
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.*;
 import usr.console.*;
+import cc.clayman.console.ManagementConsole;
 import java.lang.*;
 import java.util.*;
 import java.io.*;

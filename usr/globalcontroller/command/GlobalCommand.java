@@ -3,6 +3,7 @@ package usr.globalcontroller.command;
 import usr.globalcontroller.*;
 import usr.logging.*;
 import usr.console.*;
+import cc.clayman.console.ManagementConsole;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Request;
 
@@ -43,9 +44,7 @@ public abstract class GlobalCommand extends AbstractRestCommand {
      */
     public void setManagementConsole(ManagementConsole mc) {
         managementConsole = (GlobalControllerManagementConsole)mc;
-        controller
-            = (GlobalController)managementConsole.
-                getComponentController();
+        controller = (GlobalController)managementConsole.getAssociated();
     }
 
     /**

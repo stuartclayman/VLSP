@@ -2,8 +2,7 @@ package usr.globalcontroller;
 
 import usr.logging.*;
 import usr.common.BasicRouterInfo;
-import usr.console.RequestHandler;
-import usr.console.AbstractRestRequestHandler;
+import cc.clayman.console.BasicRequestHandler;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Path;
@@ -19,8 +18,7 @@ import usr.events.*;
 /**
  * A class to handle /router/[0-9]+/app/ requests
  */
-public class AppRestHandler extends AbstractRestRequestHandler
-implements RequestHandler {
+public class AppRestHandler extends BasicRequestHandler {
     // get GlobalController
     GlobalController controller_;
 
@@ -30,10 +28,9 @@ implements RequestHandler {
     /**
      * Handle a request and send a response.
      */
-    public void handle(Request request, Response response) {
+    public boolean handle(Request request, Response response) {
         // get GlobalController
-        controller_ = (GlobalController)getManagementConsole().
-            getComponentController();
+        controller_ = (GlobalController)getManagementConsole().getAssociated();
 
         try {
             /*
@@ -93,10 +90,7 @@ implements RequestHandler {
             } else if (method.equals("GET")) {
                 if (name == null) { // no arg, so list apps
                     listApps(request, response);
-                } else if (segments.length == 4) {                                                 //
-                                                                                                   // get
-                                                                                                   // app
-                                                                                                   // info
+                } else if (segments.length == 4) {    // get app info
 
                     getAppInfo(request, response);
                 } else {
@@ -112,11 +106,17 @@ implements RequestHandler {
 
             // check if the response is closed
             response.close();
+
+            return true;
+
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe.getMessage());
         } catch (JSONException jse) {
             System.err.println("JSONException " + jse.getMessage());
         }
+
+
+        return false;
     }
 
     /**

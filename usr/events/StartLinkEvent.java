@@ -143,8 +143,7 @@ public class StartLinkEvent extends AbstractEvent {
             }
         }
 
-        int linkNo = startLink(gc, time_, r1, r2, weight_,
-                               linkName_);
+        int linkNo = startLink(gc, time_, r1, r2, weight_, linkName_);
         boolean success = linkNo >= 0;
         try {
             if (success) {
@@ -262,21 +261,17 @@ public class StartLinkEvent extends AbstractEvent {
 
         for (i = 0; i < MAX_TRIES; i++) {
             try {
-                String connectionName = lci.connectRouters(
-                        br1.getHost(), br1.getManagementPort(),
-                        br2.getHost(),
-                        br2.getManagementPort(),
-                        weight, name);
+                JSONObject response = lci.connectRouters(br1.getHost(), br1.getManagementPort(),
+                                                         br2.getHost(), br2.getManagementPort(),
+                                                         weight, name);
 
-                // add Pair<router1Id, router2Id> -> connectionName to
-                // linkNames
-                Pair<Integer, Integer> endPoints = gc.makePair(router1Id,
-                                                               router2Id);
+                String connectionName = (String)response.get("name");
+
+                // add Pair<router1Id, router2Id> -> connectionName to  linkNames
+                Pair<Integer, Integer> endPoints = gc.makePair(router1Id, router2Id);
                 linkID = endPoints.hashCode();
 
-                gc.setLinkInfo(linkID,
-                               new LinkInfo(endPoints, connectionName, weight,
-                                            linkID));
+                gc.setLinkInfo(linkID, new LinkInfo(endPoints, connectionName, weight, linkID, gc.getElapsedTime()));
 
                 Logger.getLogger("log").logln(USR.STDOUT,
                                               leadin() + br1 + " -> " + br2 + " = "

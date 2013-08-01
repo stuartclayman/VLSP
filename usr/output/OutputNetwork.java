@@ -14,7 +14,7 @@ public class OutputNetwork implements OutputFunction {
 
     public void makeOutput(long time, PrintStream s, OutputType o, GlobalController gc) {
         //System.err.println("APS are "+APController_.getAPList());
-        gc.APControllerUpdate(time);
+        // gc.APControllerUpdate(time);
 
         boolean printAP = o.getParameter().equals("AP");
         boolean printScore = o.getParameter().equals("Score");
