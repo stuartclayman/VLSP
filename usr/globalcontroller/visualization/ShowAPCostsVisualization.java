@@ -4,8 +4,7 @@ import usr.globalcontroller.GlobalController;
 import java.io.PrintStream;
 
 /**
- * A view of the current network topology, showing where aggregation
- *******************************points are.
+ * A view of the current network topology, showing where aggregation points are.
  */
 public class ShowAPCostsVisualization implements Visualization {
     GlobalController gc;
@@ -30,15 +29,12 @@ public class ShowAPCostsVisualization implements Visualization {
             int ap = gc.getAPController().getAP(r);
 
             if (ap == r) {
-                s.print(r + " [shape=box");
+                s.print(r+" [shape=box");
             } else {
-                s.print(r + " [shape=circle");
+                s.print(r+" [shape=circle");
             }
 
-            s.print(
-                ",label=\"" + ap + " ("
-                + gc.getAPController().getAPCost(
-                    r) + ")\"");
+            s.print(",label=\""+ap+" (" + gc.getAPController().getAPCost(r) + ")\"");
 
             s.println("];");
         }
@@ -46,12 +42,13 @@ public class ShowAPCostsVisualization implements Visualization {
         for (int i : gc.getRouterList()) {
             for (int j : gc.getOutLinks(i)) {
                 if (i < j) {
-                    s.println(i + " -- " + j + ";");
+                    s.println(i+ " -- "+j+";");
                 }
             }
         }
-
         s.println("}");
+
+
     }
 
 }
