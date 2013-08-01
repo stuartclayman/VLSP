@@ -14,6 +14,8 @@ import java.io.PrintStream;
 import java.io.IOException;
 import us.monoid.json.*;
 
+
+
 /**
  * A EndLink ends connection between two routers
  */
@@ -36,22 +38,17 @@ public class EndLink {
         PrintStream out = response.getPrintStream();
 
         // get full request string
-        String path = java.net.URLDecoder.decode(
-                request.getPath().getPath(
-                    ), "UTF-8");
-
+        String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
         // strip off /command
         String value = path.substring(9);
+
 
         // check command
         String[] parts = value.split(" ");
 
         //Logger.getLogger("log").logln(USR.ERROR, "END LINK ENTRY");
         if (parts.length != 2) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "INVALID END_LINK command: "
-                                          + request);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID END_LINK command: " + request);
             respondError("END_LINK wrong no of args");
             return false;
         }
@@ -62,7 +59,7 @@ public class EndLink {
         NetIF netif = controller.findNetIF(rId);
 
         if (netif == null) {
-            respondError("END_LINK cannot find link to " + rId);
+            respondError("END_LINK cannot find link to "+rId);
             return false;
         }
 
@@ -77,6 +74,8 @@ public class EndLink {
 
         return true;
 
+
+
         // send EVENT
         // respond("700 " + netif.getName());
 
@@ -86,10 +85,8 @@ public class EndLink {
     /**
      * An error response
      */
-    private void respondError(String msg) throws IOException,
-    JSONException {
+    private void respondError(String msg) throws IOException, JSONException {
         JSONObject jsobj = new JSONObject();
-
         jsobj.put("error", msg);
 
         PrintStream out = response.getPrintStream();
@@ -108,6 +105,7 @@ public class EndLink {
         } else {
             return controller.getName() + " " + EL;
         }
+
     }
 
 }

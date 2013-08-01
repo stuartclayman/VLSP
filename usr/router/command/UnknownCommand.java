@@ -25,19 +25,18 @@ public class UnknownCommand extends RouterCommand {
         try {
             PrintStream out = response.getPrintStream();
 
-            response.setCode(404);
+            response.setCode(302);
 
             JSONObject jsobj = new JSONObject();
             jsobj.put("error", "UnknownCommand");
 
             out.println(jsobj.toString());
             response.close();
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {

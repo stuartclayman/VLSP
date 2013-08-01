@@ -37,11 +37,9 @@ public class QuitCommand extends LocalCommand {
 
             return true;
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {

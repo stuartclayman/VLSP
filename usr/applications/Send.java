@@ -38,9 +38,9 @@ public class Send implements Application {
             // try address
             try {
                 addr = AddressFactory.newAddress(args[0]);
+
             } catch (Exception e) {
-                return new ApplicationResponse(false,
-                                               "UnknownHost " + args[0]);
+                return new ApplicationResponse(false, "UnknownHost " + args[0]);
             }
 
             // try port
@@ -49,8 +49,7 @@ public class Send implements Application {
             if (scanner.hasNextInt()) {
                 port = scanner.nextInt();
             } else {
-                return new ApplicationResponse(false,
-                                               "Bad port " + args[1]);
+                return new ApplicationResponse(false, "Bad port " + args[1]);
             }
 
             // try count
@@ -59,14 +58,10 @@ public class Send implements Application {
             if (scanner.hasNextInt()) {
                 count = scanner.nextInt();
             } else {
-                return new ApplicationResponse(false,
-                                               "Bad count " + args[2]);
+                return new ApplicationResponse(false, "Bad count " + args[2]);
             }
 
-            Logger.getLogger("log").logln(
-                USR.STDOUT,
-                "Send addr: " + addr + " port: " + port
-                + " count: " + count);
+            Logger.getLogger("log").logln(USR.STDOUT, "Send addr: " + addr + " port: " + port + " count: " + count);
 
             if (args.length == 3) {
                 return new ApplicationResponse(true, "");
@@ -86,13 +81,9 @@ public class Send implements Application {
                         switch (option) {
                         case 'i': {
                             try {
-                                interPacketDelay = Integer.parseInt(
-                                        argValue);
+                                interPacketDelay = Integer.parseInt(argValue);
                             } catch (Exception e) {
-                                return new ApplicationResponse(
-                                    false,
-                                    "Bad interPacketDelay "
-                                    + argValue);
+                                return new ApplicationResponse(false, "Bad interPacketDelay " + argValue);
                             }
 
                             break;
@@ -102,9 +93,7 @@ public class Send implements Application {
                             try {
                                 startDelay = Integer.parseInt(argValue);
                             } catch (Exception e) {
-                                return new ApplicationResponse(
-                                    false, "Bad startDelay "
-                                    + argValue);
+                                return new ApplicationResponse(false, "Bad startDelay " + argValue);
                             }
 
                             break;
@@ -114,26 +103,26 @@ public class Send implements Application {
                             try {
                                 sendSize = Integer.parseInt(argValue);
                             } catch (Exception e) {
-                                return new ApplicationResponse(
-                                    false, "Bad sendSize "
-                                    + argValue);
+                                return new ApplicationResponse(false, "Bad sendSize " + argValue);
                             }
 
                             break;
                         }
 
+
+
                         default:
-                            return new ApplicationResponse(
-                                false, "Bad option " + option);
+                            return new ApplicationResponse(false, "Bad option " + option);
                         }
                     }
                 }
 
                 return new ApplicationResponse(true, "");
+
             }
+
         } else {
-            return new ApplicationResponse(false,
-                                           "Usage: Send address port count");
+            return new ApplicationResponse(false, "Usage: Send address port count");
         }
     }
 
@@ -145,14 +134,11 @@ public class Send implements Application {
 
             socket.connect(addr, port);
 
-            // Logger.getLogger("log").logln(USR.ERROR, "Socket has
-            // source
-            // port "+socket.getLocalPort());
+            // Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket.getLocalPort());
+
         } catch (Exception e) {
-            Logger.getLogger("log").logln(
-                USR.ERROR, "Cannot open socket " + e.getMessage());
-            return new ApplicationResponse(
-                false, "Cannot open socket " + e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot open socket " + e.getMessage());
+            return new ApplicationResponse(false, "Cannot open socket " + e.getMessage());
         }
 
         running = true;
@@ -203,19 +189,21 @@ public class Send implements Application {
                 if (interPacketDelay > 0) {
                     Thread.sleep(interPacketDelay);
                 }
+
+
             } catch (Exception e) {
                 if (socket.isClosed()) {
                     break;
                 } else {
-                    Logger.getLogger("log").logln(
-                        USR.STDOUT, "Cant send: " + datagram
-                        + " with "
-                        + new String(datagram.getPayload()));
+                    Logger.getLogger("log").logln(USR.STDOUT, "Cant send: " + e + " " + datagram + " with " + new String(datagram.getPayload()));
                 }
             }
+
         }
 
         Logger.getLogger("log").logln(USR.STDOUT, "Send: end of run()");
+
+
     }
 
 }

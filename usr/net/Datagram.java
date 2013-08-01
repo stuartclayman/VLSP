@@ -8,6 +8,11 @@ import usr.logging.*;
  */
 public interface Datagram {
     /**
+     * Get the length of the data, i.e. the payload length.
+     */
+    public int getLength();
+
+    /**
      * Get the header len
      */
     public byte getHeaderLength();
@@ -104,4 +109,5 @@ public interface Datagram {
      * Get the checksum
      */
     public byte[] getChecksum();
+
 }

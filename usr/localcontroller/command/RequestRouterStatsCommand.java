@@ -33,18 +33,18 @@ public class RequestRouterStatsCommand extends LocalCommand {
             PrintStream out = response.getPrintStream();
 
             if (controller.getGlobalControllerInteractor() == null) {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put(
-                    "error",
-                    "RequestRouterStatsCommand: No global controller present");
+                jsobj.put("error", "RequestRouterStatsCommand: No global controller present");
 
                 out.println(jsobj.toString());
                 response.close();
 
                 return false;
+
             } else {
+
                 List<String> list = controller.getRouterStats();
                 controller.sendRouterStats(list);
 
@@ -55,13 +55,12 @@ public class RequestRouterStatsCommand extends LocalCommand {
                 response.close();
 
                 return true;
+
             }
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {

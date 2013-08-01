@@ -13,18 +13,15 @@ public class LocalControllerInfo extends LocalHostInfo {
     private String remoteLoginUser_ = null;
     private String remoteStartController_ = null;
 
-    public LocalControllerInfo(String hostName, int port) throws java.net.
-    UnknownHostException {
+    public LocalControllerInfo(String hostName, int port) throws java.net.UnknownHostException {
         super(hostName, port);
     }
 
-    public LocalControllerInfo(java.net.InetAddress ip, int port)  throws java.net.
-    UnknownHostException {
+    public LocalControllerInfo(java.net.InetAddress ip, int port)  throws java.net.UnknownHostException {
         super(ip, port);
     }
 
-    public LocalControllerInfo(int port)  throws java.net.
-    UnknownHostException {
+    public LocalControllerInfo(int port)  throws java.net.UnknownHostException {
         super(port);
     }
 
@@ -41,11 +38,8 @@ public class LocalControllerInfo extends LocalHostInfo {
     }
 
     public double getUsage() {
-        double usage = (double)currRouters_ / maxRouters_;
-
-        //   System.err.println("Port "+getPort()+ " R "+currRouters_+"
-        // max
-        // "+maxRouters_);
+        double usage = (double)currRouters_/maxRouters_;
+        //   System.err.println("Port "+getPort()+ " R "+currRouters_+" max "+maxRouters_);
         return usage;
     }
 

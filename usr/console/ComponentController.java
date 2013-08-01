@@ -1,7 +1,9 @@
 package usr.console;
 
+import cc.clayman.console.ManagementConsole;
+
 /**
- * import usr.logging.*;
+   import usr.logging.*;
  * A ComponentController is the controller for a component
  * in the UserSpaceRouting system.
  * It interacts with a ManagementConsole.

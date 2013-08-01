@@ -6,7 +6,7 @@ import usr.logging.*;
 import usr.net.*;
 
 /** Class holds a routing table deals with getting updated routing
- * tables
+   tables
  */
 public class VectorRoutingTable implements RoutingTable {
     // The routing table
@@ -26,6 +26,7 @@ public class VectorRoutingTable implements RoutingTable {
     // the current chosen topology
     int currentTopology = 0;
 
+
     /** Construct a new VectorRoutingTable
      * with a number of topologies
      */
@@ -35,8 +36,7 @@ public class VectorRoutingTable implements RoutingTable {
     }
 
     /** Construct a new routing table with the assumption that
-     * everything on it comes down a given interface -- note the first byte
-     *******************************is T
+     * everything on it comes down a given interface -- note the first byte is T
      */
     VectorRoutingTable(byte [] bytes, NetIF netif) throws Exception {
         table_ = new HashMap<Address, VectorRoutingTableEntry>();
@@ -55,9 +55,7 @@ public class VectorRoutingTable implements RoutingTable {
      */
     public void setTopology(int t) {
         if (t >= totalTopology) {
-            throw new Error(
-                      "Cannot set topology to " + t + ". Max is "
-                      + (totalTopology - 1));
+            throw new Error("Cannot set topology to " + t + ". Max is " + (totalTopology-1));
         } else {
             currentTopology = t;
         }
@@ -67,6 +65,7 @@ public class VectorRoutingTable implements RoutingTable {
      * To byte[]
      */
     public synchronized byte[] toBytes() {
+
         // TODO add T to start
         // add size of each entry
         // then add entries
@@ -74,27 +73,22 @@ public class VectorRoutingTable implements RoutingTable {
         // Each entry is encoded by addressSize bytes
         //System.err.println("Creating routing table to send");
 
-        Collection<VectorRoutingTableEntry> rtes
-            = (Collection<VectorRoutingTableEntry> )getEntries();
+        Collection<VectorRoutingTableEntry> rtes = (Collection<VectorRoutingTableEntry> )getEntries();
         int count = rtes.size();
-
         //int entrySize = rtes.iterator().next().size();
 
         if (entrySize == 0) {
-            throw new Error(
-                      "VectorRoutingTable: entrySize is 0");
+            throw new Error("VectorRoutingTable: entrySize is 0");
         }
 
         // create a byte[] big enough for
         // T entryCount entrySize all_the_entries_as_byte[]
         // 6 + (entrySize * no_of_entires)
         if (entrySize == 0) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          "SRT: entry size is zero!");
+            Logger.getLogger("log").logln(USR.ERROR, "SRT: entry size is zero!");
             return null;
         }
-
-        byte [] bytes = new byte[6 + entrySize * count];
+        byte [] bytes = new byte[6 + entrySize*count];
 
         ByteBuffer wrapper = ByteBuffer.wrap(bytes);
 
@@ -116,7 +110,6 @@ public class VectorRoutingTable implements RoutingTable {
      */
     public synchronized void fromBytes(byte[] bytes, NetIF netif) throws Exception {
         VectorRoutingTableEntry e;
-
         //System.err.println("Parsing complete Routing table");
 
         ByteBuffer wrapper = ByteBuffer.wrap(bytes);
@@ -124,26 +117,22 @@ public class VectorRoutingTable implements RoutingTable {
         byte t = wrapper.get();
 
         if (t != 'T') {
-            throw new Exception(
-                      "VectorRoutingTable: tried to construct a RoutingTable with invalid data");
+            throw new Exception("VectorRoutingTable: tried to construct a RoutingTable with invalid data");
         } else {
             int count = wrapper.getShort();
             int entrySize = wrapper.getShort();
             addressSize = wrapper.get();
 
             if (entrySize == 0) {
-                Logger.getLogger("log").logln(
-                    USR.ERROR, "Routing table has entrySize 0");
-                throw new Exception(
-                          "VectorRoutingTable: tried to construct a RoutingTable with invalid data");
+                Logger.getLogger("log").logln(USR.ERROR, "Routing table has entrySize 0");
+                throw new Exception("VectorRoutingTable: tried to construct a RoutingTable with invalid data");
             }
 
             if ((bytes.length - 6) % entrySize != 0) {
-                Logger.getLogger("log").logln(
-                    USR.ERROR,
-                    "Received unusual routing table length "
-                    + bytes.length);
+                Logger.getLogger("log").logln(USR.ERROR, "Received unusual routing table length "+ bytes.length);
+
             } else {
+
                 byte [] entry = new byte[entrySize];
 
                 while (wrapper.hasRemaining()) {
@@ -152,10 +141,7 @@ public class VectorRoutingTable implements RoutingTable {
 
                     // now build VectorRoutingTableEntry
                     try {
-                        e
-                            = new VectorRoutingTableEntry(addressSize,
-                                                          entry,
-                                                          netif);
+                        e = new VectorRoutingTableEntry(addressSize, entry, netif);
                         Address a = e.getAddress();
                         table_.put(a, e);
                     } catch (Exception ex) {
@@ -177,6 +163,7 @@ public class VectorRoutingTable implements RoutingTable {
         return true;
     }
 
+
     /** Set the NetIFListener */
     public void setListener(NetIFListener l) {
         listener_ = l;
@@ -192,17 +179,17 @@ public class VectorRoutingTable implements RoutingTable {
     /**
      * Get all the RoutingTable entries.
      */
-    public synchronized Collection<VectorRoutingTableEntry> getEntries() {
-        return (Collection<VectorRoutingTableEntry> )table_.values();
+    public synchronized Collection<? extends RoutingTableEntry> getEntries() {
+        return (Collection<? extends RoutingTableEntry> )table_.values();
     }
 
     /** Return the interface on which to send a packet to a given address
-     * or null if not known */
+       or null if not known */
     public synchronized NetIF getInterface(Address addr) {
+
         if (addr == null) {
             return null;
         }
-
         VectorRoutingTableEntry e = table_.get(addr);
 
         if (e == null) {
@@ -213,14 +200,10 @@ public class VectorRoutingTable implements RoutingTable {
     }
 
     /** A new network interface arrives -- add to
-     * routing table if necessary return true if change was made */
+       routing table if necessary return true if change was made */
     public synchronized boolean addNetIF(NetIF inter, RouterOptions options) {
-        Logger.getLogger("log").logln(
-            USR.STDOUT, "VectorRoutingTable: ADD LOCAL NET IF "
-            + inter.getAddress());
-
-        //Logger.getLogger("log").logln(USR.ERROR, "VectorRoutingTable:
-        // addNetIF: table before = " + this);
+        Logger.getLogger("log").logln(USR.STDOUT, "VectorRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
+        //Logger.getLogger("log").logln(USR.ERROR, "VectorRoutingTable: addNetIF: table before = " + this);
 
         Address a = inter.getAddress();
 
@@ -228,10 +211,7 @@ public class VectorRoutingTable implements RoutingTable {
         // so we get the size of an Address
         if (table_.size() == 0) {
             addressSize = a.size();
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "VectorRoutingTable: set addressSize = "
-                + addressSize);
+            Logger.getLogger("log").logln(USR.ERROR, "VectorRoutingTable: set addressSize = " + addressSize);
         }
 
         // see if the table is changed
@@ -239,49 +219,32 @@ public class VectorRoutingTable implements RoutingTable {
 
         // If necessary add this local address to routing table
         if (table_.get(a) == null) {
-            VectorRoutingTableEntry e1 = new VectorRoutingTableEntry(
-                    a, fillIntegers(0), fillNetIFs(null));
+            VectorRoutingTableEntry e1 = new VectorRoutingTableEntry(a, fillIntegers(0), fillNetIFs(null));
             table_.put(a, e1);
             changed1 = true;
             entrySize = e1.size();
-
-            //Logger.getLogger("log").logln(USR.ERROR,
-            // "VectorRoutingTable:
-            // set entrySize = " + entrySize);
+            //Logger.getLogger("log").logln(USR.ERROR, "VectorRoutingTable: set entrySize = " + entrySize);
         }
 
-        //System.err.println("New entry from router
-        // "+inter.getRemoteRouterAddress());
+        //System.err.println("New entry from router "+inter.getRemoteRouterAddress());
 
-        // Note weight here is 0 because weight of inter will be added
-        // by
-        // merge
-        VectorRoutingTableEntry e2 = new VectorRoutingTableEntry(
-                inter.getRemoteRouterAddress(), fillIntegers(0),
-                fillNetIFs(inter));
+        // Note weight here is 0 because weight of inter will be added by merge
+        VectorRoutingTableEntry e2 =
+            new VectorRoutingTableEntry(inter.getRemoteRouterAddress(), fillIntegers(0), fillNetIFs(inter));
 
-        boolean changed2 = mergeEntry(e2, inter, options);  // Add
-                                                            // entry
-                                                            // for
-                                                            //
-                                                            // remote
-                                                            // end
+        boolean changed2 = mergeEntry(e2, inter, options); // Add entry for remote end
 
-        //Logger.getLogger("log").logln(USR.ERROR, "VectorRoutingTable:
-        // addNetIF: table after = " + this);
+        //Logger.getLogger("log").logln(USR.ERROR, "VectorRoutingTable: addNetIF: table after = " + this);
         return changed1 || changed2;
     }
 
     /**
      * Merge a RoutingTable into this one.
      */
-    public synchronized boolean mergeTables(RoutingTable table, NetIF inter, RouterOptions options) {
+    public synchronized boolean mergeTables(RoutingTable table2, NetIF inter, RouterOptions options) {
         // Logger.getLogger("log").logln(USR.ERROR, "MERGING TABLES");
         boolean changed = false;
-        VectorRoutingTable table2 = (VectorRoutingTable)table;
-
-        Collection<VectorRoutingTableEntry> es
-            = (Collection<VectorRoutingTableEntry> )table2.getEntries();
+        Collection<VectorRoutingTableEntry> es = (Collection<VectorRoutingTableEntry> )table2.getEntries();
 
         // there are no entries
         if (es == null) {
@@ -293,9 +256,7 @@ public class VectorRoutingTable implements RoutingTable {
 
         // only process entries if inter is not null
         if (inter != null) {
-            for (VectorRoutingTableEntry e : (Collection<
-                                                  VectorRoutingTableEntry> )
-                 getEntries()) {
+            for (VectorRoutingTableEntry e : (Collection<VectorRoutingTableEntry> )getEntries()) {
                 // If this entry is on the same interface we are getting
                 // info from but route is longer or no entry then assume
                 // we need updating
@@ -309,34 +270,25 @@ public class VectorRoutingTable implements RoutingTable {
 
                 // Is interface the same
                 if (inter.equals(e.getNetIF())) {
-                    VectorRoutingTableEntry e2
-                        = (VectorRoutingTableEntry)table2.getEntry(a);
 
-                    // If interface can no longer reach address remove
-                    // it
+                    VectorRoutingTableEntry e2 = (VectorRoutingTableEntry)table2.getEntry(a);
+
+                    // If interface can no longer reach address remove it
                     if (e2 == null) {
-                        toRemove.add(a);    // flag
-                                            // removal
-                                            // and
-                                            // do
-                                            // later
+                        toRemove.add(a);  // flag removal and do later
                         //System.err.println ("REMOVE");
                         changed = true;
                         continue;
                     }
 
                     // process each topology to check costs
-                    for (int t = 0; t < totalTopology; t++) {
+                    for (int t = 0; t<totalTopology; t++) {
                         // If cost has become higher add higher cost
-                        int receivedCost = e2.getCost(t) +
-                            inter.getWeight();
+                        int receivedCost = e2.getCost(t)+inter.getWeight();
 
                         if (receivedCost > e.getCost(t)) {
                             e.setCost(t, receivedCost);
-
-                            //Logger.getLogger("log").logln(USR.ERROR,
-                            // "COST
-                            // CHANGE");
+                            //Logger.getLogger("log").logln(USR.ERROR, "COST CHANGE");
                             changed = true;
                         }
                     }
@@ -350,14 +302,11 @@ public class VectorRoutingTable implements RoutingTable {
         }
 
         // Add new entries as appropriate
-        for (VectorRoutingTableEntry e : (Collection<
-                                              VectorRoutingTableEntry> )
-             table2.getEntries()) {
+        for (VectorRoutingTableEntry e : (Collection<VectorRoutingTableEntry> )table2.getEntries()) {
             if (mergeEntry(e, inter, options)) {
                 changed = true;
             }
         }
-
         return changed;
     }
 
@@ -368,21 +317,20 @@ public class VectorRoutingTable implements RoutingTable {
 
     /**
      * Merge an entry in this RoutingTable returns true if there has been
-     * a change
+       a change
      */
-    public synchronized boolean mergeEntry(VectorRoutingTableEntry newEntry, NetIF inter, RouterOptions options) {
+    public synchronized boolean  mergeEntry(VectorRoutingTableEntry newEntry, NetIF inter, RouterOptions options) {
+
         if (newEntry == null) {
             //System.err.println ("NULL ENTRY");
             return false;
         }
-
         /* if (inter == null) {
-         *   System.err.println("Merging entry "+newEntry+" from null");
-         * } else {
-         *   System.err.println("Merging entry "+newEntry+" from
-         *      "+inter+"
-         *      "+inter.getClass());
-         * }*/
+             System.err.println("Merging entry "+newEntry+" from null");
+           } else {
+             System.err.println("Merging entry "+newEntry+" from "+inter+" "+inter.getClass());
+           }*/
+
 
         // if the Address is our Address, do nothing
         Address addr = newEntry.getAddress();
@@ -391,6 +339,7 @@ public class VectorRoutingTable implements RoutingTable {
             return false;
         }
 
+
         // get the weight of the interface the RoutingTable came in on
         int weight = 0;
 
@@ -398,8 +347,7 @@ public class VectorRoutingTable implements RoutingTable {
             weight = inter.getWeight();
         }
 
-        //  Logger.getLogger("log").logln(USR.ERROR, "Weight =
-        // "+weight);
+        //  Logger.getLogger("log").logln(USR.ERROR, "Weight = "+weight);
 
         // Can't be told more about our address
 
@@ -407,45 +355,38 @@ public class VectorRoutingTable implements RoutingTable {
 
         // CASE 1 -- NO ENTRY EXISTED
         if (oldEntry == null) {
+
             // skip through all topologies
             Integer[] newCosts = new Integer[totalTopology];
 
             // process each topology to check costs
-            for (int t = 0; t < totalTopology; t++) {
+            for (int t = 0; t<totalTopology; t++) {
                 // Work out new cost
                 newCosts[t] = newEntry.getCost(t) + weight;
-
-                //Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY
-                // "+addr+" cost "+newCosts);
-
+                //Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY "+addr+" cost "+newCosts);
                 /* ignoring max dist at moment
-                 * if (newCost > options.getMaxDist()) {
-                 *  //Logger.getLogger("log").logln(USR.ERROR, "TOO
-                 *     EXPENSIVE");
-                 *  return false;
-                 *
-                 * } else {
-                 * }
+                   if (newCost > options.getMaxDist()) {
+                    //Logger.getLogger("log").logln(USR.ERROR, "TOO EXPENSIVE");
+                    return false;
+
+                   } else {
+                   }
                  */
+
             }
-
             // Create new entry
-            VectorRoutingTableEntry e = new VectorRoutingTableEntry(
-                    addr, newCosts, fillNetIFs(inter));
-
-            //Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY
-            // ADDED");
+            VectorRoutingTableEntry e = new VectorRoutingTableEntry(addr, newCosts, fillNetIFs(inter));
+            //Logger.getLogger("log").logln(USR.ERROR, "NEW ENTRY ADDED");
             table_.put(addr, e);
             return true;
+
         }
 
-        // CASE 2 -- ENTRY EXISTED BUT WAS MORE EXPENSIVE -- CHEAPER
-        // ROUTE
-        // FOUND
+        // CASE 2 -- ENTRY EXISTED BUT WAS MORE EXPENSIVE -- CHEAPER ROUTE FOUND
         // process each topology to check costs
         boolean changed = false;
 
-        for (int t = 0; t < totalTopology; t++) {
+        for (int t = 0; t<totalTopology; t++) {
             int newCost = newEntry.getCost(t) + weight;
 
             if (oldEntry.getCost(t) > newCost) {
@@ -460,29 +401,24 @@ public class VectorRoutingTable implements RoutingTable {
             return true;
         }
 
-        // CASE 3 -- ENTRY EXISTED WAS ON THIS INTERFACE -- ROUTE GOT
-        // MORE
-        // EXPENSIVE
+        // CASE 3 -- ENTRY EXISTED WAS ON THIS INTERFACE -- ROUTE GOT MORE EXPENSIVE
         changed = false;
 
-        if (inter != null &&inter.equals(oldEntry.getNetIF())) {
-            for (int t = 0; t < totalTopology; t++) {
+        if (inter != null && inter.equals(oldEntry.getNetIF())) {
+            for (int t = 0; t<totalTopology; t++) {
                 int newCost = newEntry.getCost(t) + weight;
 
                 if (newCost > oldEntry.getCost(t)) {
                     /* ignoring max dist at moment
-                     * if (newCost > options.getMaxDist()) {
-                     *  table_.remove(addr);   // Too far, can no longer
-                     *     route
-                     * } else {
-                     * }
+                       if (newCost > options.getMaxDist()) {
+                        table_.remove(addr);   // Too far, can no longer route
+                       } else {
+                       }
                      */
 
                     oldEntry.setCost(t, newCost);
                     changed = true;
-
-                    //System.err.println ("MORE EXPENSIVE ROUTE BUT SAME
-                    // INTERFACE");
+                    //System.err.println ("MORE EXPENSIVE ROUTE BUT SAME INTERFACE");
                 }
             }
 
@@ -490,41 +426,32 @@ public class VectorRoutingTable implements RoutingTable {
                 return true;
             }
         }
-
         return false;
     }
 
     boolean interfaceMatch(NetIF a, NetIF b) {
-        if (a == null &&b == null) {
+        if (a == null && b == null) {
             return true;
         }
 
-        if ((a == null) || (b == null)) {
+        if (a == null || b == null) {
             return false;
         }
-
         return a.equals(b);
     }
 
     /** Removes a network interface from a router returns true if
-     * routing table has changed*/
+       routing table has changed*/
     public synchronized boolean removeNetIF(NetIF netif) {
         boolean changed = false;
-
-        //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NET IF
-        // CALLED");
+        //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NET IF CALLED");
         ArrayList<Address> toRemove = new ArrayList<Address>();
 
-        for (VectorRoutingTableEntry e : (Collection<
-                                              VectorRoutingTableEntry> )
-             getEntries()) {
-            //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO REMOVE
-            // "+e.getAddress());
+        for (VectorRoutingTableEntry e : (Collection<VectorRoutingTableEntry> )getEntries()) {
+            //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO REMOVE "+e.getAddress());
             if (netif.equals(e.getNetIF())) {
                 Address addr = e.getAddress();
-                toRemove.add(addr); // Flag removal and do
-                                    // it
-                                    // later
+                toRemove.add(addr); // Flag removal and do it later
                 changed = true;
             }
         }
@@ -532,9 +459,21 @@ public class VectorRoutingTable implements RoutingTable {
         for (Address a : toRemove) {
             table_.remove(a);
         }
-
         return changed;
     }
+
+
+    /**
+     * Sets a weight on a link on the specified NetIF.
+     */
+    public boolean setNetIFWeight(NetIF inter, int weight) {
+        Integer [] array = fillIntegers(weight);
+
+        // TODO: patch up vector of weights for specified NetIF
+
+        return false;
+    }
+
 
     /**
      * Fill an Integer [] with a value
@@ -567,8 +506,8 @@ public class VectorRoutingTable implements RoutingTable {
      */
     String addressAsString(Address addr) {
         /*
-         * int id = addr.asInteger();
-         * return Integer.toString(id);
+           int id = addr.asInteger();
+           return Integer.toString(id);
          */
         return addr.asTransmitForm();
     }
@@ -578,12 +517,9 @@ public class VectorRoutingTable implements RoutingTable {
      */
     public synchronized String showTransmitted() {
         StringBuilder table = new StringBuilder();
-
         table.append("\n");
 
-        for (VectorRoutingTableEntry e : (Collection<
-                                              VectorRoutingTableEntry> )
-             getEntries()) {
+        for (VectorRoutingTableEntry e : (Collection<VectorRoutingTableEntry> )getEntries()) {
             table.append(e.showTransmitted());
             table.append("\n");
         }
@@ -598,21 +534,16 @@ public class VectorRoutingTable implements RoutingTable {
      */
     public synchronized String toString() {
         StringBuilder table = new StringBuilder();
-
         table.append("\n");
 
-        Collection<VectorRoutingTableEntry> rtes
-            = (Collection<VectorRoutingTableEntry> )getEntries();
+        Collection<VectorRoutingTableEntry> rtes = (Collection<VectorRoutingTableEntry> )getEntries();
 
         for (VectorRoutingTableEntry e : rtes) {
             table.append(e.toString());
             table.append("\n");
         }
-
         String s = table.toString();
-
-        //Logger.getLogger("log").logln(USR.ERROR, "VectorRoutingTable
-        // is:\n"+s);
+        //Logger.getLogger("log").logln(USR.ERROR, "VectorRoutingTable is:\n"+s);
         return s;
     }
 

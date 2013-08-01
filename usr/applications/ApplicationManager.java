@@ -68,7 +68,6 @@ public class ApplicationManager {
     public synchronized void stopAll() {
         //System.err.println("Stopping all apps");
         shutdown();
-
         //System.err.println("Stopped all apps");
     }
 
@@ -90,10 +89,8 @@ public class ApplicationManager {
      * Execute an object with ClassName and args
      */
     private synchronized ApplicationResponse execute(String className, String[] args) {
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin() + "execute: " + className
-                                      + " args: "
-                                      + Arrays.asList(args));
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "execute: " + className + " args: " + Arrays.asList(args));
 
         // Class
         Class<?> clazz;
@@ -106,21 +103,12 @@ public class ApplicationManager {
             // check if the class implements the right interface
             // it is an Application
             try {
-                Class<? extends Application> appClazz
-                    = clazz.asSubclass(
-                            Application.class);
-                cons0
-                    = (Constructor<? extends Application> )appClazz.
-                        getDeclaredConstructor();
+                Class<? extends Application> appClazz = clazz.asSubclass(Application.class );
+                cons0 = (Constructor<? extends Application> )appClazz.getDeclaredConstructor();
             } catch (ClassCastException cce) {
                 // it is not an Application, so we cant run it
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin() + "class "
-                                              + className
-                                              + " is not at Application");
-                return new ApplicationResponse(
-                    false, "class " + className
-                    + " is not at Application");
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "class " + className + " is not at Application");
+                return new ApplicationResponse(false, "class " + className + " is not at Application");
             }
 
             // create an instance of the Application
@@ -129,24 +117,19 @@ public class ApplicationManager {
             appID++;
 
             // set app name
-            String appName = "/" + router.getName() + "/App/"
-                + className
-                + "/" + appID;
+            String appName = "/" + router.getName() + "/App/" + className + "/" + appID;
 
             // initialize it
-            ApplicationResponse initR;
+            ApplicationResponse initR = null;
+
 
             synchronized (app) {
                 initR = app.init(args);
             }
 
             if (initR == null) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin() + "Application: "
-                                              + appName + " failed to init");
-                return new ApplicationResponse(
-                    false, "class " + className
-                    + " Application failed to init");
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Application: " + appName + " failed to init");
+                return new ApplicationResponse(false, "class " + className + " Application failed to init");
             }
 
             // if init fails, return
@@ -155,9 +138,7 @@ public class ApplicationManager {
             }
 
             // otherwise create an ApplicationHandle for the app
-            ApplicationHandle handle
-                = new ApplicationHandle(this, appName, app, args,
-                                        appID);
+            ApplicationHandle handle = new ApplicationHandle(this, appName, app, args, appID);
 
             // try and start the app
             ApplicationResponse startR;
@@ -168,12 +149,8 @@ public class ApplicationManager {
 
             //  check if startR is null
             if (startR == null) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin() + "Application: "
-                                              + handle + " failed to start");
-                return new ApplicationResponse(
-                    false, "class " + className
-                    + " Application failed to start");
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Application: " + handle + " failed to start");
+                return new ApplicationResponse(false, "class " + className + " Application failed to start");
             }
 
             // if start succeeded then go onto run()
@@ -185,57 +162,44 @@ public class ApplicationManager {
 
                 pool.execute(handle);
 
-                // Logger.getLogger("log").logln(USR.ERROR, leadin() +
-                // "pool
-                // = " + pool.getActiveCount() + "/" +
-                // pool.getTaskCount() +
-                // "/" + pool.getPoolSize());
+                // Logger.getLogger("log").logln(USR.ERROR, leadin() + "pool = " + pool.getActiveCount() + "/" + pool.getTaskCount()
+                // + "/" + pool.getPoolSize());
 
                 return new ApplicationResponse(true, appName);
+
             } else {
                 // the app did not start properly
                 handle.setState(ApplicationHandle.AppState.STOPPED);
 
                 return startR;
             }
+
         } catch (ClassNotFoundException cnfe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "ClassNotFoundException " + cnfe);
-            return new ApplicationResponse(false,
-                                           "ClassNotFoundException " + cnfe);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "ClassNotFoundException " + cnfe);
+            return new ApplicationResponse(false, "ClassNotFoundException " + cnfe);
+
         } catch (NoClassDefFoundError ncdfe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "NoClassDefFoundError " + ncdfe);
-            return new ApplicationResponse(false,
-                                           "NoClassDefFoundError " + ncdfe);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoClassDefFoundError " + ncdfe);
+            return new ApplicationResponse(false, "NoClassDefFoundError " + ncdfe);
+
         } catch (NoSuchMethodException nsme) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "NoSuchMethodException " + nsme);
-            return new ApplicationResponse(false,
-                                           "NoSuchMethodException " + nsme);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoSuchMethodException " + nsme);
+            return new ApplicationResponse(false, "NoSuchMethodException " + nsme);
+
         } catch (InstantiationException ie) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "InstantiationException " + ie);
-            return new ApplicationResponse(false,
-                                           "InstantiationException " + ie);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "InstantiationException " + ie);
+            return new ApplicationResponse(false, "InstantiationException " + ie);
+
         } catch (IllegalAccessException iae) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "IllegalAccessException " + iae);
-            return new ApplicationResponse(false,
-                                           "IllegalAccessException " + iae);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "IllegalAccessException " + iae);
+            return new ApplicationResponse(false, "IllegalAccessException " + iae);
+
         } catch (InvocationTargetException ite) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "InvocationTargetException "
-                                          + ite);
-            return new ApplicationResponse(
-                false, "InvocationTargetException " + ite);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "InvocationTargetException " + ite);
+            return new ApplicationResponse(false, "InvocationTargetException " + ite);
+
         }
+
     }
 
     /**
@@ -246,87 +210,67 @@ public class ApplicationManager {
 
         if (appH == null) {
             // no app with that name
-            return new ApplicationResponse(
-                false, "No Application called " + appName);
+            return new ApplicationResponse(false, "No Application called " + appName);
         } else {
-            synchronized (appH) { // This must not be called twice
-                                  // for
-                                  // the same appH simultaneously
+            synchronized (appH) {  // This must not be called twice for the same appH simultaneously
 
-                if (appH.getState() ==
-                    ApplicationHandle.AppState.STOPPED) {
+                if (appH.getState() == ApplicationHandle.AppState.STOPPED) {
+
                     // wait for the thread to actually end
                     //pool.waitFor(appH);
 
                     // and remove from the app map
                     appMap.remove(appName);
 
-                    return new ApplicationResponse(
-                        false, "Application called " + appName
-                        + " already stopped");
+                    return new ApplicationResponse(false, "Application called " + appName + " already stopped");
                 } else {
                     // NOT ApplicationHandle.AppState.STOPPED
                     try {
-                        Application app = appH.getApplication();
 
+                        Application app = appH.getApplication();
                         // try and stop the app
                         ApplicationResponse stopR = null;
 
-                        Logger.getLogger("log").logln(USR.STDOUT,
-                                                      leadin()
-                                                      + "stopping " + appName);
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopping " + appName);
 
-                        if (appH.getState() ==
-                            ApplicationHandle.AppState.RUNNING) {
-                            appH.setState(
-                                ApplicationHandle.AppState.STOPPING);
+                        if (appH.getState() == ApplicationHandle.AppState.RUNNING) {
+                            appH.setState(ApplicationHandle.AppState.STOPPING);
                             synchronized (app) {
                                 stopR = app.stop();
                             }
+
 
                             // wait for the thread to actually end
                             pool.waitFor(appH);
-                        } else if (appH.getState() ==
-                                   ApplicationHandle.AppState.
-                                   APP_POST_RUN) {
+                        } else if (appH.getState() == ApplicationHandle.AppState.APP_POST_RUN) {
                             // the app had already exited the run loop
-                            //Logger.getLogger("log").logln(USR.STDOUT,
-                            // leadin() + "Cleanup app after exiting
-                            // run() "
-                            // + appName);
+                            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Cleanup app after exiting run() " + appName);
                             synchronized (app) {
                                 stopR = app.stop();
                             }
+
                         }
 
+
                         // stop state
-                        appH.setState(
-                            ApplicationHandle.AppState.STOPPED);
+                        appH.setState(ApplicationHandle.AppState.STOPPED);
 
                         // and remove from the app map
                         appMap.remove(appName);
 
                         //  check if stopR is null
                         if (stopR == null) {
-                            Logger.getLogger("log").logln(USR.ERROR,
-                                                          leadin(
-                                                              )
-                                                          + "Application: "
-                                                          + appH
-                                                          + " failed to stop");
-                            return new ApplicationResponse(
-                                false, "Application called "
-                                + appName
-                                + " failed to stop - returned null.");
+                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Application: " + appH + " failed to stop");
+                            return new ApplicationResponse(false,
+                                                           "Application called " + appName + " failed to stop - returned null.");
                         } else {
                             return new ApplicationResponse(true, "");
                         }
+
                     } catch (Exception e) {
-                        return new ApplicationResponse(
-                            false,
-                            "Application called " + appName
-                            + " failed to stop with Exception "
-                            + e.getMessage());
+                        return new ApplicationResponse(false,
+                                                       "Application called " + appName + " failed to stop with Exception " +
+                                                       e.getMessage());
                     }
                 }
             }
@@ -337,22 +281,16 @@ public class ApplicationManager {
      * Shutdown the ApplicationManager
      */
     private synchronized void shutdown() {
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin() + "shutdown ");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "shutdown ");
 
-        Collection<ApplicationHandle> apps
-            = new java.util.LinkedList<ApplicationHandle>(
-                    appMap.values());
+        Collection<ApplicationHandle> apps = new java.util.LinkedList<ApplicationHandle>(appMap.values());
 
         for (ApplicationHandle appH : apps) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin()
-                                          + "Attempting to terminate " + appH);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Attempting to terminate "+appH);
             terminate(appH.getName());
         }
 
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "pool
-        // shutdown ");
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "pool shutdown ");
         //pool.shutdown();
     }
 

@@ -1,5 +1,6 @@
 package usr.APcontroller;
 
+
 import usr.logging.*;
 import usr.router.RouterOptions;
 
@@ -38,10 +39,8 @@ public class ConstructAPController {
             return a;
         }
 
-        Logger.getLogger("log").logln(
-            USR.ERROR,
-            "Unknown Access Point controller name " + name
-            + " using no controller");
+        Logger.getLogger("log").logln(USR.ERROR, "Unknown Access Point controller name "+name+
+                                      " using no controller");
         a = new NoAPController();
         return a;
     }

@@ -48,8 +48,8 @@ public class SocketAddress {
         if (obj instanceof SocketAddress) {
             SocketAddress sockaddr = (SocketAddress)obj;
 
-            if (sockaddr.getAddress().equals(getAddress())
-                && (sockaddr.getPort() == getPort())) {
+            if (sockaddr.getAddress().equals(getAddress()) &&
+                sockaddr.getPort() == getPort()) {
                 return true;
             } else {
                 return false;

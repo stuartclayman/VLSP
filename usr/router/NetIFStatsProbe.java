@@ -24,8 +24,7 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
         setController(cont);
 
         // set probe name
-        setName(cont.getName() + ".NetIFStats");
-
+        setName(cont.getName()+".NetIFStats");
         // set data rate
         setDataRate(new EveryNSeconds(10));
 
@@ -60,22 +59,19 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
             add("OutErrors", ProbeAttributeType.INTEGER).
             add("OutDropped", ProbeAttributeType.INTEGER).
             add("OutDataBytes", ProbeAttributeType.INTEGER).
-            add("OutDataPackets",
-                ProbeAttributeType.INTEGER).
+            add("OutDataPackets", ProbeAttributeType.INTEGER).
             add("InQueue", ProbeAttributeType.INTEGER).
-            add("BiggestInQueue",
-                ProbeAttributeType.INTEGER).
+            add("BiggestInQueue", ProbeAttributeType.INTEGER).
             add("OutQueue", ProbeAttributeType.INTEGER).
             add("BiggestOutQueue", ProbeAttributeType.INTEGER);
+
 
         // setup the probe attributes
         // The router name
         // The table of stats
-        addProbeAttribute(new DefaultProbeAttribute(0, "RouterName",
-                                                    ProbeAttributeType.
-                                                    STRING, "name"));
-        addProbeAttribute(new TableProbeAttribute(1, "Data",
-                                                  statsHeader));
+        addProbeAttribute(new DefaultProbeAttribute(0, "RouterName", ProbeAttributeType.STRING, "name"));
+        addProbeAttribute(new TableProbeAttribute(1, "Data", statsHeader));
+
     }
 
     /**
@@ -92,6 +88,7 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
                 // the router is not ready yet
                 return null;
             }
+
 
             // get list of ports
             List<RouterPort> ports = getController().listPorts();
@@ -112,6 +109,7 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
             Table statsTable = new DefaultTable();
             statsTable.defineTable(statsHeader);
 
+
             // process localNetIF
             NetStats stats = localNetIF.getStats();
 
@@ -119,8 +117,7 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
             TableRow localNetRow = new DefaultTableRow();
 
             // work out localnet netif name
-            String ifLabel = localNetIF.getRemoteRouterName() + " "
-                + localNetIF.getName();
+            String ifLabel = localNetIF.getRemoteRouterName()+ " "+localNetIF.getName();
 
             // add name of NetIf to row
             localNetRow.add(new DefaultTableValue(ifLabel));
@@ -129,6 +126,7 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
             for (NetStats.Stat s : NetStats.Stat.values()) {
                 localNetRow.add(new DefaultTableValue(stats.getValue(s)));
             }
+
 
             // add this row to the table
             statsTable.addRow(localNetRow);
@@ -146,20 +144,21 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
                     TableRow netIFRow = new DefaultTableRow();
 
                     // work out netif name
-                    ifLabel = netIF.getRemoteRouterName() + " "
-                        + netIF.getName();
+                    ifLabel = netIF.getRemoteRouterName()+ " " + netIF.getName();
+
 
                     // add name of NetIf to row
                     netIFRow.add(new DefaultTableValue(ifLabel));
 
                     // now add all NetStats to row
                     for (NetStats.Stat s : NetStats.Stat.values()) {
-                        netIFRow.add(new DefaultTableValue(stats.
-                                                           getValue(s)));
+                        netIFRow.add(new DefaultTableValue(stats.getValue(s)));
                     }
+
 
                     // add this row to the table
                     statsTable.addRow(netIFRow);
+
                 }
             }
 
@@ -167,6 +166,7 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
 
             // set the type to be: NetIFStats
             return new ProducerMeasurement(this, list, "NetIFStats");
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;

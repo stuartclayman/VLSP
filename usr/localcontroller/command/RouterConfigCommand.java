@@ -23,20 +23,16 @@ public class RouterConfigCommand extends LocalCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(Request request, Response response) {
+
         try {
             PrintStream out = response.getPrintStream();
 
             // get full request string
-            String path = java.net.URLDecoder.decode(
-                    request.getPath().getPath(), "UTF-8");
-
+            String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
             // strip off /command
             String value = path.substring(9);
-
             // strip off COMMAND
-            String rest
-                = value.substring(MCRP.ROUTER_CONFIG.CMD.length()).
-                    trim();
+            String rest = value.substring(MCRP.ROUTER_CONFIG.CMD.length()).trim();
 
             String options = java.net.URLDecoder.decode(rest, "UTF-8");
             controller.setRouterOptions(options);
@@ -49,17 +45,18 @@ public class RouterConfigCommand extends LocalCommand {
             response.close();
 
             return true;
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
+
     }
 
 }

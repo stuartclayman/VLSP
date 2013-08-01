@@ -13,6 +13,7 @@ import java.io.PrintStream;
 import java.io.IOException;
 import us.monoid.json.*;
 
+
 /**
  * The LIST_CONNECTIONS command.
  */
@@ -21,8 +22,7 @@ public class ListConnectionsCommand extends RouterCommand {
      * Construct a ListConnectionsCommand.
      */
     public ListConnectionsCommand() {
-        super(MCRP.LIST_CONNECTIONS.CMD, MCRP.LIST_CONNECTIONS.CODE,
-              MCRP.ERROR.CODE);
+        super(MCRP.LIST_CONNECTIONS.CMD, MCRP.LIST_CONNECTIONS.CODE, MCRP.ERROR.CODE);
     }
 
     /**
@@ -43,23 +43,15 @@ public class ListConnectionsCommand extends RouterCommand {
                 } else {
                     NetIF netIF = rp.getNetIF();
                     Address address = netIF.getAddress();
-                    Address remoteAddress
-                        = netIF.getRemoteRouterAddress();
+                    Address remoteAddress = netIF.getRemoteRouterAddress();
                     int port = rp.getPortNo();
 
-                    String portString = "port" + port + " "
-                        + netIF.getName() + " W("
-                        + netIF.getWeight() + ") = "
-                        + controller.getName() + " "
-                        + (address ==
-                           null ? "No_Address" : address)
-                        +
-                        " => "
-                        + netIF.getRemoteRouterName()
-                        + " "
-                        + (remoteAddress ==
-                           null ? "No_Remote_Address" :
-                           remoteAddress);
+                    String portString = "port" + port + " " +
+                        netIF.getName() + " W(" + netIF.getWeight() + ") = " +
+                        controller.getName() + " " +
+                        (address == null ? "No_Address" : address) +
+                        " => " + netIF.getRemoteRouterName() + " " +
+                        (remoteAddress == null ? "No_Remote_Address" : remoteAddress);
 
                     jsobj.put(Integer.toString(port), portString);
 
@@ -73,17 +65,18 @@ public class ListConnectionsCommand extends RouterCommand {
             response.close();
 
             return true;
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
+
     }
 
 }

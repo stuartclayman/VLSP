@@ -36,4 +36,11 @@ public class ApplicationResponse {
         return msg;
     }
 
+    /**
+     * toString
+     */
+    public String toString() {
+        return "ApplicationResponse: " + result + " -> " + msg;
+    }
+
 }

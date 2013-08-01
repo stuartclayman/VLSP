@@ -6,11 +6,11 @@ import usr.globalcontroller.GlobalController;
 import usr.router.RouterOptions;
 import usr.logging.*;
 
-/** Implements Random AP Controller -- default actions are from
- * NullAPController*/
+/** Implements Random AP Controller -- default actions are from NullAPController*/
 
 public class RandomAPController extends NullAPController {
-    RandomAPController(RouterOptions o) {
+
+    RandomAPController (RouterOptions o) {
         super(o);
     }
 
@@ -24,22 +24,21 @@ public class RandomAPController extends NullAPController {
         super.controllerUpdate(time, g);
 
         if (gotMinAPs(g)) {
-            if (overMaxAPs(g) && canRemoveAP(g)) { // Too many APs,
-                // remove one
+            if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
                 int no = noToRemove(g);
                 removeAP(time, g, no);
-            }
 
+
+            }
             return;
         }
-
         int no = noToAdd(g);
 
         if (no <= 0) {
             return;
         }
-
         addAP(time, g, no);
+
     }
 
     /** Use the controller to remove one random AP controller */
@@ -49,38 +48,33 @@ public class RandomAPController extends NullAPController {
 
     /** Add no aggregation points chosen at random */
     void addAP(long time, GlobalController g, int no) {
-        if (options_ != null &&options_.getAPLifeBias() > 0.0) {
-            double scores[] = new double[g.getMaxRouterId() + 1];
+        if (options_ != null && options_.getAPLifeBias() > 0.0) {
+            double scores[] = new double[g.getMaxRouterId()+1];
             ArrayList<Integer> nodes = nonAPNodes(g);
 
             for (Integer node : nodes) {
                 scores[node] = 1.0;
             }
-
             ArrayList<Integer> picked = lse_.pickNByScore(no, scores,
                                                           nodes, true, time);
 
             for (Integer p : picked) {
                 addAccessPoint(time, p, g);
             }
-
             return;
         }
 
         for (int i = 0; i < no; i++) {
             ArrayList<Integer> elect = nonAPNodes(g);
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + " adding random AP");
-
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" adding random AP");
             // No nodes which can be made managers
             int nNodes = elect.size();
 
             if (nNodes == 0) {
                 return;
             }
-
             // Choose a random node to become an AP manager
-            int index = (int)Math.floor(Math.random() * nNodes);
+            int index = (int)Math.floor( Math.random()*nNodes);
             int elected = elect.get(index);
             addAccessPoint(time, elected, g);
         }
@@ -88,21 +82,19 @@ public class RandomAPController extends NullAPController {
 
     /** Remove no aggregation points chosen at random */
     void removeAP(long time, GlobalController g, int no) {
-        if (options_ != null &&options_.getAPLifeBias() > 0.0) {
-            double scores[] = new double[g.getMaxRouterId() + 1];
+        if (options_ != null && options_.getAPLifeBias() > 0.0) {
+            double scores[] = new double[g.getMaxRouterId()+1];
             ArrayList<Integer> nodes = nonAPNodes(g);
 
             for (Integer node : nodes) {
                 scores[node] = 1.0;
             }
-
             ArrayList<Integer> picked = lse_.pickNByScore(no, scores,
                                                           nodes, false, time);
 
             for (Integer p : picked) {
                 removeAccessPoint(time, p);
             }
-
             return;
         }
 
@@ -111,25 +103,22 @@ public class RandomAPController extends NullAPController {
 
             while (APs.size() > 0) {
                 int nAPs = APs.size();
-                int j = (int)Math.floor(Math.random() * nAPs);
+                int j = (int)Math.floor( Math.random()*nAPs);
                 int rno = APs.get(j);
 
                 if (removable(rno, g)) {
                     Logger.getLogger("log").logln(USR.STDOUT,
-                                                  leadin()
-                                                  + " too many APs remove "
-                                                  + rno);
+                                                  leadin()+" too many APs remove "+rno);
                     removeAccessPoint(time, rno);
                     break;
                 }
-
                 APs.remove(j);
             }
         }
     }
 
     String leadin() {
-        return "RandomAPController:";
+        return ("RandomAPController:");
     }
 
     /** Create new APInfo */

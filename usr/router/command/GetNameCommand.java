@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.io.IOException;
 import us.monoid.json.*;
 
+
 /**
  * The GET_NAME command.
  */
@@ -36,16 +37,15 @@ public class GetNameCommand extends RouterCommand {
 
             return true;
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
     }
 
 }

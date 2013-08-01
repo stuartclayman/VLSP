@@ -9,10 +9,10 @@ import java.io.IOException;
 
 /**
  * A Minimal version of netIF for devices which can ship packets but
- * do not necessarily face the network.  NetIF provides a larger
- *******************************interface
+ * do not necessarily face the network.  NetIF provides a larger interface
  */
 public interface DatagramDevice {
+
     /**
      * Get the name of this Net Device
      */
@@ -39,19 +39,18 @@ public interface DatagramDevice {
     /**
      * Send a Datagram originating at this host (sets src address) and
      */
-    public boolean sendDatagram(Datagram dg) throws
-    NoRouteToHostException;
+    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException;
 
     /**
      * forward a datagram (does not set src address)
      */
-    public boolean enqueueDatagram(Datagram dg) throws
-    NoRouteToHostException;
+    public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException;
 
     /**
      *   Send the datagram onwards to the world
      */
     public boolean outQueueHandler(Datagram dg, DatagramDevice dd);
+
 
     /**
      * Get the Listener of a NetIF.
@@ -62,4 +61,5 @@ public interface DatagramDevice {
      * Set the Listener of NetIF.
      */
     public void setNetIFListener(NetIFListener l);
+
 }

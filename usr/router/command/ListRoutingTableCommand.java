@@ -42,7 +42,7 @@ public class ListRoutingTableCommand extends RouterCommand {
             for (RoutingTableEntry e : c) {
                 if (e.getNetIF() == null) {
                     // its the local NetIF
-                    array.put(e.toString() + " localnet");
+                    array.put(e.toString()  + " localnet");
                 } else {
                     array.put(e.toString());
                 }
@@ -55,17 +55,18 @@ public class ListRoutingTableCommand extends RouterCommand {
             response.close();
 
             return true;
+
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
     }
 
 }

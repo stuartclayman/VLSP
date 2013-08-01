@@ -3,6 +3,7 @@ package usr.console;
 import usr.logging.*;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Request;
+import cc.clayman.console.ManagementConsole;
 
 /**
  * A Command object processes a command handled by the ManagementConsole
@@ -47,158 +48,7 @@ public abstract class AbstractRestCommand implements RestCommand {
     /**
      * Set the ManagementConsole this is a command for.
      */
-    public abstract void setManagementConsole(ManagementConsole mc);      //
-
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    // to
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    // be
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    // set
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    // in
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    // particular
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    // subclasses
+    public abstract void setManagementConsole(ManagementConsole mc);  // to be set in particular subclasses
 
     /**
      * Hash code
@@ -213,13 +63,14 @@ public abstract class AbstractRestCommand implements RestCommand {
     protected String leadin() {
         final String MC = "MC: ";
         ManagementConsole mc = getManagementConsole();
-        ComponentController controller = mc.getComponentController();
+        ComponentController controller = (ComponentController)mc.getAssociated();
 
         if (controller == null) {
             return MC;
         } else {
             return controller.getName() + " " + MC;
         }
+
     }
 
 }

@@ -7,6 +7,7 @@ import usr.globalcontroller.GlobalController;
 /** Interface for aggregation point controller types */
 
 public interface APController {
+
     /** Return number of access points allocated */
     public int getNoAPs();
 
@@ -59,12 +60,13 @@ public interface APController {
     public void removeLink(long time, int gid1, int gid2);
 
     /** Return the mean life of a node -- this only includes
-     * nodes which have died*/
+       nodes which have died*/
     public double meanNodeLife();
 
     /** Return the mean life of an AP -- this only includes APs which have
-     * died*/
+       died*/
     public double meanAPLife();
+
 
     /** Return the mean life of an AP -- includes all  APs*/
     public double meanAPLifeSoFar(long time);
@@ -74,4 +76,5 @@ public interface APController {
 
     /** Return APInfo appropriate for this controller */
     public APInfo newAPInfo();
+
 }

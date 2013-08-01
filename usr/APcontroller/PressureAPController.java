@@ -6,16 +6,19 @@ import usr.router.Router;
 import usr.globalcontroller.GlobalController;
 import usr.router.RouterOptions;
 
-/** Implements PressureAP Controller -- default actions are from
- * NullAPController*/
+/** Implements PressureAP Controller -- default actions are from NullAPController*/
 
 public class PressureAPController extends NullAPController {
-    PressureAPController(RouterOptions o) {
+
+
+    PressureAPController (RouterOptions o) {
         super(o);
+
     }
 
     /** Router regular AP update action */
     public void routerUpdate(Router r) {
+
     }
 
     /** Controller regular AP update action */
@@ -23,25 +26,22 @@ public class PressureAPController extends NullAPController {
         super.controllerUpdate(time, g);
 
         if (gotMinAPs(g)) {
-            if (overMaxAPs(g)) { // Too many APs, remove one
+            if (overMaxAPs(g)) {   // Too many APs, remove one
                 int noToRemove = noToRemove(g);
 
                 if (noToRemove > 0) {
                     removeAP(time, g, noToRemove);
                 }
-            }
 
+            }
             return;
         }
-
         int noToAdd = noToAdd(g);
-
         //System.err.println("Adding "+noToAdd);
         addAP(time, g, noToAdd);
     }
 
-    /** Use the controller to remove the least efficient AP using Pressure
-     * alg*/
+    /** Use the controller to remove the least efficient AP using Pressure alg*/
     public void controllerRemove(long time, GlobalController g) {
         System.err.println("To write");
     }
@@ -50,12 +50,11 @@ public class PressureAPController extends NullAPController {
     void removeAP(long time, GlobalController g, int no) {
         ArrayList<Integer> elect = new ArrayList<Integer>(getAPList());
 
-        double scores[] = new double[g.getMaxRouterId() + 1];
+        double scores[] = new double[g.getMaxRouterId()+1];
 
         for (int e : elect) {
             scores[e] = getPressure(e, g);
         }
-
         ArrayList<Integer> picked = lse_.pickNByScore(no, scores,
                                                       elect, false, time);
 
@@ -68,14 +67,12 @@ public class PressureAPController extends NullAPController {
     void addAP(long time, GlobalController g, int no) {
         // System.err.println("At "+time+" adding "+no);
         ArrayList<Integer> elect = new ArrayList<Integer>(nonAPNodes(g));
-
         // No nodes which can be made managers
-        double scores[] = new double[g.getMaxRouterId() + 1];
+        double scores[] = new double[g.getMaxRouterId()+1];
 
         for (int e : elect) {
             scores[e] = getPressure(e, g);
         }
-
         ArrayList<Integer> picked = lse_.pickNByScore(no, scores,
                                                       elect, true, time);
 
@@ -97,21 +94,19 @@ public class PressureAPController extends NullAPController {
     int getPressure(int gid, GlobalController g) {
         // Array lists are of costs and gids
 
-        int [] permCost = new int[g.getMaxRouterId() + 1];
-        int [] tempCost = new int[g.getMaxRouterId() + 1];
+        int [] permCost = new int[g.getMaxRouterId()+1];
+        int [] tempCost = new int[g.getMaxRouterId()+1];
         ArrayList<Integer> routers = g.getRouterList();
 
         for (int i : routers) {
             permCost[i] = -1;
             tempCost[i] = -1;
         }
-
         int maxCost = options_.getMaxAPWeight();
 
         if (maxCost == 0) {
             maxCost = g.getMaxRouterId();
         }
-
         int [] temporary = new int[routers.size()]; // Unordered list of
         // nodes on temporary list
         temporary[0] = gid;
@@ -131,18 +126,16 @@ public class PressureAPController extends NullAPController {
                     cheapest = i;
                 }
             }
-
             int cheapNode = temporary[cheapest];
 
             permCost[cheapNode] = cheapCost;
-            score += getAPCost(cheapNode) - cheapCost;
+            score += getAPCost(cheapNode)-cheapCost;
             tempLen--;
             temporary[cheapest] = temporary[tempLen];
 
             if (cheapCost == maxCost) {
                 continue;
             }
-
             int [] out = g.getOutLinks(cheapNode);
             int [] outCost = g.getLinkCosts(cheapNode);
             int link;
@@ -154,37 +147,31 @@ public class PressureAPController extends NullAPController {
                 if (permCost[link] >= 0) { // Already visited
                     continue;
                 }
+                int newCost = cheapCost+outCost[i];
 
-                int newCost = cheapCost + outCost[i];
-
-                if (newCost > maxCost) {                                                   //
-                                                                                           // Too
-                                                                                           // pricey
-
+                if (newCost > maxCost) { // Too pricey
                     continue;
                 }
 
-                if (newCost >= getAPCost(link)) { // Pricer than
-                    // other AP
+                if (newCost >= getAPCost(link)) { // Pricer than other AP
                     continue;
                 }
 
-                if (tempCost[link] >= 0) {  // Already
-                    // visiting
+                if (tempCost[link] >= 0) { // Already visiting
                     if (tempCost[link] > newCost) {
                         tempCost[link] = newCost;
+                        // Found cheaper route
                     }
-
-                    // Found cheaper route
                     continue;
                 }
-
                 // Add to temporary list
                 tempCost[link] = newCost;
                 temporary[tempLen] = link;
                 tempLen++;
             }
+
         }
+
 
         return score;
     }
@@ -192,7 +179,6 @@ public class PressureAPController extends NullAPController {
     /** Pressure score for AP -- crude, simply number of nodes controlled*/
     int getAPPressure(int gid, GlobalController g) {
         int pressure = 0;
-
         ArrayList<Integer> gids = g.getRouterList();
 
         for (int i : gids) {
@@ -200,7 +186,6 @@ public class PressureAPController extends NullAPController {
                 pressure += 1;
             }
         }
-
         return pressure;
     }
 

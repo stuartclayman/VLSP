@@ -1,10 +1,15 @@
 package usr.router;
 
 import usr.net.Address;
+import usr.interactor.RouterInteractor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.List;
+import java.net.UnknownHostException;
+import java.io.IOException;
+
 
 /**
  * Create a Router Environment.
@@ -21,9 +26,9 @@ public class RouterEnv {
      * @param port the port for the management console
      */
     public RouterEnv(int port) {
-        String name = "Router-" + port + "-" + (port + 1);
+        String name = "Router-" + port + "-" + (port+1);
 
-        r = initRouter(port, port + 1, name);
+        r = initRouter(port, port+1, name);
     }
 
     /**
@@ -34,7 +39,7 @@ public class RouterEnv {
      * @param name the name of the router
      */
     public RouterEnv(int port, String name) {
-        r = initRouter(port, port + 1, name);
+        r = initRouter(port, port+1, name);
     }
 
     /**
@@ -58,7 +63,7 @@ public class RouterEnv {
      * @param r2rPort the port for Router to Router connections
      * @param name the name of the router
      */
-    public RouterEnv(int mPort, int r2rPort, String name) {
+    public RouterEnv(int mPort, int r2rPort, String name ) {
         r = initRouter(mPort, r2rPort, name);
     }
 
@@ -79,17 +84,16 @@ public class RouterEnv {
     /**
      * Start the router
      */
-
     /*
-     * boolean start() {
-     *  return r.start();
-     * }
+       boolean start() {
+        return r.start();
+       }
      */
 
     /**
      * Stop the Router and end the Environment
      */
-    boolean stop() {
+    public boolean stop() {
         return r.stop();
     }
 
@@ -102,9 +106,8 @@ public class RouterEnv {
         starter = new Starter(port1, port2, name);
 
         // Execute the Starter
-        ExecutorService executer = Executors.newSingleThreadExecutor(
-                new SimpleThreadFactory(name));
-        executer.execute(starter);
+        ExecutorService executer = Executors.newSingleThreadExecutor(new SimpleThreadFactory(name));
+        Future future = executer.submit(starter);
 
         // Get a handle on the Router itself
         return getRouter();
@@ -118,11 +121,29 @@ public class RouterEnv {
     }
 
     /**
+     * Get a RouterInteractor into the Environment
+     */
+    public RouterInteractor getRouterInteractor() throws IOException {
+        Router router = starter.getRouter();
+
+        RouterInteractor interactor;
+        
+        try {
+            interactor = new RouterInteractor("localhost", router.getManagementConsolePort());
+            return interactor;
+
+        } catch (UnknownHostException uhe) {
+            // VERY BAD: cant resolve localhost - seems impossible
+            throw new Error("System cannot resolve host: localhost");
+        }
+
+    }
+
+    /**
      * Is the router active yet
      */
     public boolean isActive() {
         Router r = getRouter();
-
         return r.isActive();
     }
 
@@ -133,6 +154,9 @@ public class RouterEnv {
     static {
         Runtime.getRuntime().addShutdownHook(new TidyUp());
     }
+
+
+
 }
 
 /**
@@ -145,8 +169,8 @@ class Starter implements Runnable {
     Object flag = new Object();
     boolean running = false;
 
-    int port1;
-    int port2;
+    int port1; 
+    int port2; 
     String name;
     Router router;
 
@@ -161,6 +185,8 @@ class Starter implements Runnable {
 
     // Thread.start jumps in here.
     public void run() {
+        System.out.println("Starting Router: " + name + " / " + port1 + " / " + port2);
+
         router = new Router(port1, port2, name);
 
         router.start();
@@ -171,12 +197,12 @@ class Starter implements Runnable {
          * Maybe need to wait()
          * But so for it's not needed
          *
-         * try {
-         *  synchronized (this) {
-         *      wait();
-         *  }
-         * } catch (InterruptedException ie) {
-         * }
+           // try {
+           //  synchronized (this) {
+           //      wait();
+           //  }
+           // } catch (InterruptedException ie) {
+           // }
          */
     }
 
@@ -198,15 +224,15 @@ class Starter implements Runnable {
     Router getRouter() {
         try {
             synchronized (flag) {
-                System.out.println(name + " running = " + running);
+                //System.out.println(name + " running = " + running);
 
                 if (!running) {
-                    System.out.println(name + " about to wait");
+                    //System.out.println(name + " about to wait");
                     flag.wait();
                 }
             }
         } catch (InterruptedException ie) {
-            System.out.println(name + " end of wait");
+            //System.out.println(name + " end of wait");
         }
 
         return router;

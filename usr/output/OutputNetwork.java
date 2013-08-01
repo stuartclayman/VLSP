@@ -3,19 +3,19 @@ package usr.output;
 import java.io.PrintStream;
 import usr.globalcontroller.GlobalController;
 import usr.globalcontroller.visualization.*;
+import usr.events.Event;
 import java.lang.reflect.*;
-import usr.globalcontroller.GlobalController;
-import usr.events.*;
 import us.monoid.json.*;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.w3c.dom.*;
+import org.w3c.dom.Node;
 
 /** Class to output network stuff */
 public class OutputNetwork implements OutputFunction {
+
     public void makeOutput(long time, PrintStream s, OutputType o, GlobalController gc) {
+        //System.err.println("APS are "+APController_.getAPList());
+        gc.APControllerUpdate(time);
+
         boolean printAP = o.getParameter().equals("AP");
         boolean printScore = o.getParameter().equals("Score");
 
@@ -58,6 +58,7 @@ public class OutputNetwork implements OutputFunction {
 
         visualization.setGlobalController(gc);
         visualization.visualize(s);
+
     }
 
     /**
@@ -68,6 +69,7 @@ public class OutputNetwork implements OutputFunction {
 
         visualization.setGlobalController(gc);
         visualization.visualize(s);
+
     }
 
     /**
@@ -83,60 +85,46 @@ public class OutputNetwork implements OutputFunction {
             Visualization visualization;
 
             // try and get visualizationClass from the GC options
-            String vClass = gc.getOptions().getVisualizationClassName();
+            String vClass = null;
+
+            if (arg == null) {            // no arg - use predefined visualizationClass
+                vClass = gc.getOptions().getVisualizationClassName();
+            } else {                      // used passed in class name
+                vClass = arg;
+            }
 
             // if nothing, use ColouredNetworkVisualization
             if (vClass == null) {
-                vClass
-                    =
-                        "usr.globalcontroller.visualization.PlainNetworkVisualization";
+                vClass = "usr.globalcontroller.visualization.PlainNetworkVisualization";
             }
 
             // instantiate the Visualization
             try {
                 Class<? extends Visualization> visualizer;
-                visualizer = Class.forName(vClass).asSubclass(
-                        Visualization.class);
+                visualizer = Class.forName(vClass).asSubclass(Visualization.class);
+
 
                 // find Constructor
-                Constructor<? extends Visualization> cons
-                    = (Constructor<? extends Visualization> )
-                        visualizer.
-                        getDeclaredConstructor();
+                Constructor<? extends Visualization> cons =
+                    (Constructor<? extends Visualization> )visualizer.getDeclaredConstructor();
 
                 // instantiate
                 visualization = cons.newInstance();
 
                 System.out.println("Instantiated " + vClass);
+
             } catch (ClassNotFoundException e) {
-                throw new Error(
-                          "Class not found for class name "
-                          + vClass);
+                throw new Error("Class not found for class name "+ vClass);
             } catch (ClassCastException e) {
-                throw new Error(
-                          "Class name " + vClass
-                          + " must be sub type of Visualization");
+                throw new Error("Class name "+vClass+" must be sub type of Visualization");
             } catch (NoSuchMethodException nsme) {
-                throw new Error(
-                          "Class name "
-                          + vClass
-                          + " has no null Constructor");
+                throw new Error("Class name "+vClass+" has no null Constructor");
             } catch (InstantiationException ie) {
-                throw new Error(
-                          "Class name "
-                          + vClass
-                          + " cannot be instantiated");
+                throw new Error("Class name "+vClass+" cannot be instantiated");
             } catch (IllegalAccessException iae) {
-                throw new Error(
-                          "Class name "
-                          + vClass
-                          + " cannot be instantiated");
+                throw new Error("Class name "+vClass+" cannot be instantiated");
             } catch (InvocationTargetException ite) {
-                throw new Error(
-                          "Class name "
-                          +
-                          vClass
-                          + " cannot be instantiated");
+                throw new Error("Class name "+vClass+" cannot be instantiated");
             }
 
             visualization.setGlobalController(gc);

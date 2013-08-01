@@ -1,10 +1,10 @@
 package usr.APcontroller;
 
-/** Implements Extra information for the Null AP controller (essentially
- * none) */
+/** Implements Extra information for the Null AP controller (essentially none) */
+
 
 public class NullAPInfo implements APInfo {
-    boolean controller_ = false;    // Is this router an AP controller
+    boolean controller_ = false;  // Is this router an AP controller
 
     public NullAPInfo() {
     }

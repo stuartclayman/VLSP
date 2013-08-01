@@ -4,19 +4,20 @@ import usr.logging.*;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Request;
 import java.io.IOException;
+import cc.clayman.console.BasicRequestHandler;
+import cc.clayman.console.ManagementConsole;
 
 /**
  * An abstraxct base class for all RequestHandlers.
  */
-public class CommandAsRestHandler extends AbstractRequestHandler
-implements RequestHandler {
+public class CommandAsRestHandler extends BasicRequestHandler  {
     public CommandAsRestHandler() {
     }
 
     /**
      * Handle a request and send a response.
      */
-    public void handle(Request request, Response response) {
+    public boolean handle(Request request, Response response) {
         try {
             long time = System.currentTimeMillis();
 
@@ -41,34 +42,32 @@ implements RequestHandler {
 
             // get the command from the input
             if (endOfCommand == -1) {
-                // if there is no space the whole input is the command
-                // name
+                // if there is no space the whole input is the command name
                 commandName = value;
             } else {
                 // from 0 to first space
                 commandName = value.substring(0, endOfCommand);
             }
 
-            System.out.println(
-                getClass().getName() + " command: " + commandName);
+            //System.out.println(getClass().getName() + " command: " + commandName);
 
             // now lookup the command
-            RestCommand command
-                = (RestCommand)getManagementConsole().find(
-                        commandName);
+            ManagementConsole mc = getManagementConsole();
+            USRRestConsole rc = (USRRestConsole)mc;
+            RestCommand command = (RestCommand)rc.find(commandName);
             boolean result;
 
             if (command != null) {
                 // we got a command
             } else {
                 //fetch the UnknownCommand
-                command = (RestCommand)getManagementConsole().find(
-                        "__UNKNOWN__");
+                command = (RestCommand)rc.find("__UNKNOWN__");
             }
 
             // and evaluate the input
             try {
                 result = command.evaluate(request, response);
+
             } catch (Exception e) {
                 // try and send generic error code
                 e.printStackTrace();
@@ -77,9 +76,15 @@ implements RequestHandler {
             // the evaluator will handle the response
             // check if the response is closed
             response.close();
+
+            return true;
+
         } catch (IOException ioe) {
             System.err.println(ioe.getMessage());
         }
+
+        return false;
+
     }
 
 }

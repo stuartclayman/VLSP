@@ -1,7 +1,6 @@
 package usr.common;
 
-public class Pair<A extends Comparable<A>, B extends Comparable<B> >
-implements Comparable<Pair<A, B> > {
+public class Pair<A extends Comparable<A>, B extends Comparable<B>> implements Comparable<Pair<A, B> > {
     private A first;
     private B second;
 
@@ -11,9 +10,9 @@ implements Comparable<Pair<A, B> > {
         this.second = second;
     }
 
-    public int compareTo(Pair<A, B> other) {
-        return 0;
-    }
+     public int compareTo(Pair<A, B> other) {
+         return 0;
+     }
 
     public int hashCode() {
         int hashFirst = first != null ? first.hashCode() : 0;
@@ -25,21 +24,19 @@ implements Comparable<Pair<A, B> > {
         // from com.sun.corba.se.spi.orb.StringPair
 
         return (hashFirst + hashSecond) * hashSecond + hashFirst;
+
     }
 
     public boolean equals(Object other) {
         if (other instanceof Pair) {
             Pair otherPair = (Pair)other;
             return
-                (this.first == otherPair.first
-                 || (this.first != null &&otherPair.first !=
-                     null &&
-                     this.first.equals(otherPair.first)))
-                && (this.second == otherPair.second
-                    || (this.second !=
-                        null &&otherPair.second !=
-                        null &&
-                        this.second.equals(otherPair.second)));
+                ((  this.first == otherPair.first ||
+                    ( this.first != null && otherPair.first != null &&
+                      this.first.equals(otherPair.first))) &&
+                 (      this.second == otherPair.second ||
+                        ( this.second != null && otherPair.second != null &&
+                          this.second.equals(otherPair.second))) );
         }
 
         return false;

@@ -1,7 +1,7 @@
 package usr.router;
 
 /**
- * import usr.logging.*;
+   import usr.logging.*;
  * A port on a Router
  */
 public class RouterPort {

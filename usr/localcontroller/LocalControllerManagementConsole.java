@@ -12,11 +12,12 @@ import usr.common.BasicRouterInfo;
  * A ManagementConsole listens for the LocalController.
  * It listens for commands.
  */
-public class LocalControllerManagementConsole extends
-AbstractRestConsole {
+public class LocalControllerManagementConsole extends USRRestConsole {
+
     public LocalController localController_;
 
     public LocalControllerManagementConsole(LocalController lc, int port) {
+
         localController_ = lc;
         initialise(port);
     }
@@ -42,6 +43,7 @@ AbstractRestConsole {
         register(new RequestRouterStatsCommand());
         register(new MonitoringStartCommand());
         register(new MonitoringStopCommand());
+        register(new SetLinkWeightCommand());
     }
 
 }

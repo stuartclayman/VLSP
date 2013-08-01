@@ -10,7 +10,7 @@ import java.net.NoRouteToHostException;
 /**
  * A DatagramSocket looks similar to a Java DatagramSocket.
  * It is intended to be a replacement for the Java version
- * in order that apps can use USR for networking without <em>too</em>
+ * in order that apps can use USR for networking without <em>too much</em>
  * effort in rewrites.
  */
 public class DatagramSocket {
@@ -23,8 +23,7 @@ public class DatagramSocket {
         Router router = RouterDirectory.getRouter();
 
         if (router == null) {
-            throw new SocketException(
-                      "Cannot find Router");
+            throw new SocketException("Cannot find Router");
         }
 
         AppSocket appSocket = new AppSocket(router);
@@ -39,8 +38,7 @@ public class DatagramSocket {
         Router router = RouterDirectory.getRouter();
 
         if (router == null) {
-            throw new SocketException(
-                      "Cannot find Router");
+            throw new SocketException("Cannot find Router");
         }
 
         AppSocket appSocket = new AppSocket(router, port);
@@ -49,15 +47,13 @@ public class DatagramSocket {
     }
 
     /**
-     * Create a DatagramSocket connected to a specified remote Address and
-     *******************************port.
+     * Create a DatagramSocket connected to a specified remote Address and port.
      */
     public DatagramSocket(Address addr, int port) throws SocketException {
         Router router = RouterDirectory.getRouter();
 
         if (router == null) {
-            throw new SocketException(
-                      "Cannot find Router");
+            throw new SocketException("Cannot find Router");
         }
 
         AppSocket appSocket = new AppSocket(router, addr, port);
@@ -74,8 +70,7 @@ public class DatagramSocket {
 
     /**
      * Connects the socket to a remote address for this socket. When
-     * a socket is connected to a remote address, packets may only be sent
-     *******************************to
+     * a socket is connected to a remote address, packets may only be sent to
      * or received from that address. By default a datagram socket is not
      * connected.
      */
@@ -85,8 +80,7 @@ public class DatagramSocket {
 
     /**
      * Connects the socket to a remote address for this socket. When
-     * a socket is connected to a remote address, packets may only be sent
-     *******************************to
+     * a socket is connected to a remote address, packets may only be sent to
      * or received from that address. By default a datagram socket is not
      * connected.
      */
@@ -155,8 +149,7 @@ public class DatagramSocket {
      * its length, the address of the remote router, and the port number
      * on the remote router.
      */
-    public void send(Datagram dg) throws SocketException,
-    NoRouteToHostException {
+    public void send(Datagram dg) throws SocketException, NoRouteToHostException {
         socketImpl.send(dg);
     }
 

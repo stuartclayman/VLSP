@@ -16,8 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * A RouterFabric within UserSpaceRouting.
  */
-public class VectorRouterFabric extends AbstractRouterFabric implements
-RouterFabric, NetIFListener, DatagramDevice {
+public class VectorRouterFabric extends AbstractRouterFabric implements RouterFabric, NetIFListener, DatagramDevice {
     /**
      * Construct a VectorRouterFabric.
      */
@@ -35,17 +34,15 @@ RouterFabric, NetIFListener, DatagramDevice {
     /**
      * Create a new routing table from a transmitted byte[]
      */
-    public RoutingTable decodeRoutingTable(byte[] bytes, NetIF netif) throws
-    Exception {
+    public RoutingTable decodeRoutingTable(byte[] bytes, NetIF netif) throws Exception {
         RoutingTable table = new VectorRoutingTable(bytes, netif);
 
-        Logger.getLogger("log").logln(1 << 6,
-                                      leadin() + "\nsize " + bytes.length
-                                      + " = 6+"
-                                      + (bytes.length
-                                         - 6) + " -> " + table.showTransmitted());
+        Logger.getLogger("log").logln(1<<6,
+                                      leadin() + "\nsize " + bytes.length + " = 6+" +
+                                      (bytes.length-6) + " -> " + table.showTransmitted());
 
         return table;
+
     }
 
 }

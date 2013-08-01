@@ -28,9 +28,7 @@ public class GlobalControllerInteractor {
      * @param addr the name of the host
      * @param port the port the server is listening on
      */
-    public GlobalControllerInteractor(String addr, int port) throws
-    UnknownHostException,
-    IOException {
+    public GlobalControllerInteractor(String addr, int port) throws UnknownHostException, IOException  {
         initialize(InetAddress.getByName(addr), port);
     }
 
@@ -40,9 +38,7 @@ public class GlobalControllerInteractor {
      * @param addr the InetAddress of the host
      * @param port the port the server is listening on
      */
-    public GlobalControllerInteractor(InetAddress addr, int port) throws
-    UnknownHostException,
-    IOException {
+    public GlobalControllerInteractor(InetAddress addr, int port) throws UnknownHostException, IOException  {
         initialize(addr, port);
     }
 
@@ -51,8 +47,7 @@ public class GlobalControllerInteractor {
      * to the ManagementConsole of a GlobalController.
      * @param lh the LocalHostInfo description
      */
-    public GlobalControllerInteractor(LocalHostInfo lh) throws
-    UnknownHostException, IOException {
+    public GlobalControllerInteractor(LocalHostInfo lh) throws UnknownHostException, IOException  {
         initialize(lh.getIp(), lh.getPort());
     }
 
@@ -61,15 +56,11 @@ public class GlobalControllerInteractor {
      */
     private synchronized void initialize(InetAddress addr, int port) {
         this.port = port;
+        //URI uri = new URI("http", null, addr.toString(), port, null, null, null);
+        globalControllerURI = "http://" + addr.getHostName() + ":" + Integer.toString(port);
 
-        //URI uri = new URI("http", null, addr.toString(), port, null,
-        // null,
-        // null);
-        globalControllerURI = "http://" + addr.getHostName() + ":"
-            + Integer.toString(port);
-        Logger.getLogger("log").logln(
-            USR.STDOUT,
-            "globalControllerURI: " + globalControllerURI);
+        Logger.getLogger("log").logln(USR.STDOUT, "globalControllerURI: " + globalControllerURI);
+
         rest = new Resty();
     }
 
@@ -83,19 +74,14 @@ public class GlobalControllerInteractor {
     /**
      * Interact
      */
-    private JSONObject interact(String str) throws IOException,
-    JSONException {
-        String uri = globalControllerURI + "/command/"
-            + java.net.URLEncoder.encode(str, "UTF-8");
+    private JSONObject interact(String str) throws IOException, JSONException {
+        String uri = globalControllerURI +  "/command/" + java.net.URLEncoder.encode(str, "UTF-8");
 
-        Logger.getLogger("log").logln(USR.STDOUT, "GC call: "
-                                      + uri.substring(0, Math.min(64,
-                                                                  uri.length())));
+        Logger.getLogger("log").logln(USR.STDOUT, "GC call: " + uri.substring(0, Math.min(64, uri.length())));
 
         JSONObject jsobj = rest.json(uri).toObject();
 
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      "GC response: " + jsobj.toString());
+        Logger.getLogger("log").logln(USR.STDOUT, "GC response: " + jsobj.toString());
 
         return jsobj;
     }
@@ -105,13 +91,8 @@ public class GlobalControllerInteractor {
     /**
      * Responds to the GlobalController.
      */
-    public Boolean respondToGlobalController(LocalHostInfo lc) throws
-    IOException, JSONException {
-        String command = MCRP.OK_LOCAL_CONTROLLER.CMD + " "
-            + lc.getName()
-            + " "
-            + lc.getPort();
-
+    public Boolean respondToGlobalController(LocalHostInfo lc) throws IOException, JSONException {
+        String command = MCRP.OK_LOCAL_CONTROLLER.CMD+" "+lc.getName()+" "+ lc.getPort();
         interact(command);
         return true;
     }
@@ -119,10 +100,9 @@ public class GlobalControllerInteractor {
     /**
      * Sends collected router stats to the global controller
      */
-    public Boolean sendRouterStats(String stats) throws IOException,
-    JSONException {
-        String command = MCRP.SEND_ROUTER_STATS.CMD + " " + stats;
+    public Boolean sendRouterStats(String stats) throws IOException, JSONException {
 
+        String command = MCRP.SEND_ROUTER_STATS.CMD+" "+stats;
         interact(command);
         return true;
     }
@@ -136,9 +116,9 @@ public class GlobalControllerInteractor {
     }
 
     /** Send a message to a local controller informing it about a routers
-     * status as an aggregation point */
+       status as an aggregation point */
     public Boolean reportAP(int GID, int AP) throws IOException, JSONException {
-        String toSend = MCRP.REPORT_AP.CMD + " " + GID + " " + AP;
+        String toSend = MCRP.REPORT_AP.CMD + " " + GID + " " +AP;
 
         interact(toSend);
         return true;
@@ -147,8 +127,7 @@ public class GlobalControllerInteractor {
     /**
      * Get the networkGraph as a String representation.
      */
-    public String networkGraph(String arg) throws IOException,
-    JSONException {
+    public String networkGraph(String arg) throws IOException, JSONException {
         String toSend = MCRP.NETWORK_GRAPH.CMD + " " + arg;
 
         JSONObject response = interact(toSend);

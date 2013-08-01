@@ -28,6 +28,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
     // payload    - 24 / N
     // checksum   - 24 + N / 4
 
+
     // The full datagram contents
     ByteBuffer fullDatagram;
 
@@ -37,7 +38,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
     // Dst port
     int dstPort = 0;
 
-    static int initialTTL_ = 64;   // TTL used for new
+    static int initialTTL_ = 64; // TTL used for new
 
     /**
      * Construct a Size4Datagram given a payload.
@@ -45,11 +46,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     Size4Datagram(ByteBuffer payload) {
         payload.rewind();
         int payloadSize = payload.limit();
-
-        //Logger.getLogger("log").logln(USR.ERROR, "PAYLOAD SIZE
-        // "+payloadSize);
-        fullDatagram = ByteBuffer.allocate(
-                payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
+        //Logger.getLogger("log").logln(USR.ERROR, "PAYLOAD SIZE "+payloadSize);
+        fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
         fillDatagram(payload);
     }
@@ -70,8 +68,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
         int payloadSize = payload.limit();
 
-        fullDatagram = ByteBuffer.allocate(
-                payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
+        fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
         fillDatagram(payload);
     }
@@ -94,8 +91,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
         int payloadSize = payload.limit();
 
-        fullDatagram = ByteBuffer.allocate(
-                payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
+        fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
         fillDatagram(payload);
     }
@@ -109,6 +105,13 @@ class Size4Datagram implements Datagram, DatagramPatch {
     }
 
     Size4Datagram() {
+    }
+
+    /**
+     * Get the length of the data, i.e. the payload length.
+     */
+    public int getLength() {
+        return getTotalLength() - getHeaderLength() - getChecksumLength();
     }
 
     /**
@@ -145,7 +148,6 @@ class Size4Datagram implements Datagram, DatagramPatch {
      */
     public int getTTL() {
         byte b = fullDatagram.get(8);
-
         return 0 | (0xFF & b);
     }
 
@@ -154,7 +156,6 @@ class Size4Datagram implements Datagram, DatagramPatch {
      */
     public Datagram setTTL(int ttl) {
         byte b = (byte)(ttl & 0xFF);
-
         fullDatagram.put(8, b);
         return this;
     }
@@ -164,7 +165,6 @@ class Size4Datagram implements Datagram, DatagramPatch {
      */
     public byte getProtocol() {
         byte b = fullDatagram.get(9);
-
         return b;
     }
 
@@ -173,7 +173,6 @@ class Size4Datagram implements Datagram, DatagramPatch {
      */
     public Datagram setProtocol(int p) {
         byte b = (byte)(p & 0xFF);
-
         fullDatagram.put(9, b);
 
         return this;
@@ -199,15 +198,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * Set the src address
      */
     public Datagram setSrcAddress(Address addr) {
-        if (addr !=
-            null && !(addr instanceof Size4)) {
-            throw new
-                  UnsupportedOperationException(
-                      "Cannot use "
-                      + addr.getClass().
-                      getName()
-                      +
-                      " addresses in Size4Datagram");
+        if (addr != null && !(addr instanceof Size4)) {
+            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in Size4Datagram");
         }
 
         // put src addr
@@ -242,15 +234,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * Set the dst address
      */
     public Datagram setDstAddress(Address addr) {
-        if (addr !=
-            null && !(addr instanceof Size4)) {
-            throw new
-                  UnsupportedOperationException(
-                      "Cannot use "
-                      + addr.getClass().
-                      getName()
-                      +
-                      " addresses in Size4Datagram");
+        if (addr != null && !(addr instanceof Size4)) {
+            throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in Size4Datagram");
         }
 
         dstAddr = addr;
@@ -273,7 +258,6 @@ class Size4Datagram implements Datagram, DatagramPatch {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -327,14 +311,12 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /** Reduce TTL and return true if packet still valid */
     public boolean TTLReduce() {
         int ttl = getTTL();
-
         ttl--;
         setTTL(ttl);
 
         if (ttl <= 0) {
             return false;
         }
-
         return true;
     }
 
@@ -360,24 +342,22 @@ class Size4Datagram implements Datagram, DatagramPatch {
         int headerLen = getHeaderLength();
         int totalLen = getTotalLength();
 
-        // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram
-        // getPayload: headerLen = " + headerLen + " totalLen = " +
+        // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram getPayload: headerLen = " + headerLen + " totalLen = " +
         // totalLen);
 
         fullDatagram.position(headerLen);
 
-        byte[] payloadBytes
-            = new byte[totalLen - CHECKSUM_SIZE - headerLen];
+        byte[] payloadBytes = new byte[totalLen - CHECKSUM_SIZE - headerLen];
 
         fullDatagram.get(payloadBytes);
 
         //ByteBuffer payload =  ByteBuffer.wrap(payloadBytes);
 
-        // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram
-        // getPayload: payload = " + payload.position() + " < " +
+        // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram getPayload: payload = " + payload.position() + " < " +
         // payload.limit() + " < " + payload.capacity());
 
         return payloadBytes;
+
     }
 
     /**
@@ -410,9 +390,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
     public boolean fromByteBuffer(ByteBuffer b) {
         fullDatagram = b;
 
-        // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram
-        // fromByteBuffer: fullDatagram = " + fullDatagram.position() +
-        // " <
+        // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " <
         // " + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
         return true;
@@ -424,7 +402,6 @@ class Size4Datagram implements Datagram, DatagramPatch {
     void fillDatagram(ByteBuffer payload) {
         // put USRD literal - 4 bytes
         fullDatagram.put("USRD".getBytes(), 0, 4);
-
         //Logger.getLogger("log").logln(USR.ERROR, "USRD set");
         // put header len
         fullDatagram.put(4, (byte)(HEADER_SIZE & 0xFF));
@@ -474,11 +451,9 @@ class Size4Datagram implements Datagram, DatagramPatch {
          */
         fullDatagram.position(24);
         payload.rewind();
+        // Logger.getLogger("log").logln(USR.ERROR, "payload size = " + payload.limit());
 
-        // Logger.getLogger("log").logln(USR.ERROR, "payload size = " +
-        // payload.limit());
-
-        fullDatagram.put(payload);
+        fullDatagram.put(payload.array(), 0, payload.limit());
 
         // evaluate checksum
         int checksum = -1;
@@ -486,23 +461,20 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
         fullDatagram.rewind();
 
-        // Logger.getLogger("log").logln(USR.ERROR, "Size4Address
-        // fillDatagram: fullDatagram = " + fullDatagram.position() + "
-        // < "
-        // + fullDatagram.limit() + " < " + fullDatagram.capacity());
+        // Logger.getLogger("log").logln(USR.ERROR, "Size4Address fillDatagram: fullDatagram = " + fullDatagram.position() + " < " +
+        // fullDatagram.limit() + " < " + fullDatagram.capacity());
+
     }
 
     /**
      * To String
      */
     public String toString() {
-        return "( src: " + getSrcAddress() + "/" + getSrcPort()
-               + " dst: " + getDstAddress() + "/" + getDstPort()
-               + " len: " + getTotalLength() + " proto: "
-               + getProtocol()
-               + " ttl: " + getTTL() + " payload: "
-               + (getTotalLength() - HEADER_SIZE - CHECKSUM_SIZE)
-               + " )";
+        return "( src: " + getSrcAddress() + "/" + getSrcPort() +
+               " dst: " + getDstAddress() + "/" + getDstPort() +
+               " len: " + getTotalLength() + " proto: " + getProtocol() +
+               " ttl: " + getTTL() + " payload: " + (getTotalLength() - HEADER_SIZE - CHECKSUM_SIZE) +
+               " )";
     }
 
 }

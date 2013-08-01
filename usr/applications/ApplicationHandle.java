@@ -2,6 +2,7 @@ package usr.applications;
 
 import usr.logging.*;
 
+
 /**
  * A handle on an Application.
  * It holds the name, the Application itself, and its state.
@@ -34,7 +35,7 @@ public class ApplicationHandle implements Runnable {
     /**
      * Construct an ApplicationHandle
      */
-    ApplicationHandle(ApplicationManager appMgr, String name, Application app, String[]           args, int appID) {
+    ApplicationHandle(ApplicationManager appMgr, String name, Application app, String[] args, int appID) {
         this.name = name;
         this.app = app;
         this.args = args;
@@ -113,16 +114,13 @@ public class ApplicationHandle implements Runnable {
      * This run() delegates to Application run()
      */
     public void run() {
-        Logger.getLogger("log").logln(
-            USR.STDOUT, "ApplicationHandle: entering run: " + app);
+        Logger.getLogger("log").logln(USR.STDOUT, "ApplicationHandle: entering run: " + app);
 
         if (getState() == ApplicationHandle.AppState.RUNNING) {
             app.run();
         }
 
-        Logger.getLogger("log").logln(
-            USR.STDOUT, "ApplicationHandle: exiting run: " + app
-            + " with state of: " + getState());
+        Logger.getLogger("log").logln(USR.STDOUT, "ApplicationHandle: exiting run: " + app + " with state of: " + getState());
 
         // if we get to the end of run() and the app
         // is still in the RUNNING state,
@@ -131,19 +129,20 @@ public class ApplicationHandle implements Runnable {
             setState(ApplicationHandle.AppState.APP_POST_RUN);
             manager.stopApp(getName());
         }
+
     }
 
     /**
      * The states of the app
      */
     public enum AppState {
-        APP_POST_INIT,      // after for init()
-        RUNNING,            // we have entered run()
-        APP_POST_RUN,       // the app dropped out of run(), without
-                            // a
-                            // stop()
-        STOPPING,           // we have called stop() and the the app
-                            // should stop
-        STOPPED             // the app is stopped
+        APP_POST_INIT,   // after for init()
+        RUNNING,         // we have entered run()
+        APP_POST_RUN,    // the app dropped out of run(), without a stop()
+        STOPPING,          // we have called stop() and the the app should stop
+        STOPPED          // the app is stopped
     }
+
+
+
 }

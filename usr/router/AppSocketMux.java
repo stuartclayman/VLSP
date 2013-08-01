@@ -21,10 +21,8 @@ public class AppSocketMux implements NetIF {
     // the RouterController
     RouterController controller;
     boolean theEnd = false;
-
     // the count of the no of Datagrams
     int datagramCount = 0;
-
     // the next free port
     int freePort = 32768;
 
@@ -49,19 +47,16 @@ public class AppSocketMux implements NetIF {
 
     // My name
     String name;
-
     // My address
     Address address;
 
     // Remote name
     String remoteName;
-
     // Remote address
     Address remoteAddress;
 
     // weight
     int weight;
-
     // ID
     int id;
 
@@ -80,8 +75,7 @@ public class AppSocketMux implements NetIF {
         this.controller = controller;
         name = new String("localnet");
         socketMap = new HashMap<Integer, AppSocket>();
-        socketQueue =
-            new HashMap<Integer, LinkedBlockingQueue<Datagram> >();
+        socketQueue = new HashMap<Integer, LinkedBlockingQueue<Datagram> >();
         socketStats = new HashMap<Integer, NetStats>();
     }
 
@@ -90,25 +84,21 @@ public class AppSocketMux implements NetIF {
      */
     public boolean start() {
         try {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "start");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
             // start my own thread
             running = true;
-            fabricDevice_ = new FabricDevice(this,
-                                             controller.getListener());
+            address = AddressFactory.newAddress(0);
+            fabricDevice_ = new FabricDevice(this, controller.getListener());
 
-            fabricDevice_.setInQueueDiscipline(
-                FabricDevice.QUEUE_BLOCKING);
+            fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
             fabricDevice_.setInQueueLength(1000);
             fabricDevice_.setName("localnet");
             fabricDevice_.start();
             boolean connected = connect();
             return connected;
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + " AppSocketMux not started");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " AppSocketMux not started");
             e.printStackTrace();
             running = false;
             return false;
@@ -121,24 +111,19 @@ public class AppSocketMux implements NetIF {
     public boolean stop() {
         synchronized (running) {
             if (running == true) {
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin() + "stop");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
                 fabricDevice_.stop();
-
                 // stop my own thread
                 running = false;
 
-                HashSet<AppSocket> sockets = new HashSet<AppSocket>(
-                        socketMap.values());
+                HashSet<AppSocket> sockets = new HashSet<AppSocket>(socketMap.values());
 
                 for (AppSocket s : sockets) {
                     s.close();
                 }
 
                 close();
-
-                // Logger.getLogger("log").logln(USR.STDOUT, leadin() +
-                // "reached end of stop");
+                // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached end of stop");
                 return true;
             } else {
                 return false;
@@ -151,37 +136,35 @@ public class AppSocketMux implements NetIF {
      */
     private void waitFor() {
         try {
-            //Logger.getLogger("log").logln(USR.STDOUT,
-            // leadin()+"waiting");
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"waiting");
             synchronized (this) {
                 setTheEnd();
                 wait();
             }
         } catch (InterruptedException ie) {
         }
+
     }
 
     /**
      * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
      */
     private void theEnd() {
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() +
-        // "theEnd");
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "theEnd");
         while (!ended()) {
             try {
-                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In
-                // a
-                // loop");
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
                 Thread.sleep(100);
             } catch (Exception e) {
+
             }
         }
 
-        //Logger.getLogger("log").logln(USR.STDOUT,
-        // leadin()+"notifying");
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"notifying");
         synchronized (this) {
             notify();
         }
+
     }
 
     synchronized void setTheEnd() {
@@ -265,7 +248,8 @@ public class AppSocketMux implements NetIF {
      * Get the Address for this connection.
      */
     public Address getAddress() {
-        return controller.getAddress();
+        // return controller.getAddress();
+        return address;
     }
 
     /**
@@ -360,6 +344,7 @@ public class AppSocketMux implements NetIF {
     public void setNetIFListener(NetIFListener l) {
         listener = l;
         fabricDevice_.setListener(l);
+
     }
 
     /**
@@ -382,14 +367,16 @@ public class AppSocketMux implements NetIF {
     }
 
     /**
-     * Send a Datagram -- sets source to this interface and puts the
-     *******************************datagram
-     * on the incoming queue for this interface
+     * Send a Datagram -- sets source to this interface and puts the datagram
+       on the incoming queue for this interface
      */
-    public boolean sendDatagram(Datagram dg) throws
-    NoRouteToHostException {
+    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
         if (running == true) {
             // set the source address and port on the Datagram
+            // SC 20130619 removed following - now in TCPNetIF
+            //dg.setSrcAddress(controller.getAddress());
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "set Datagram src Address to " + getAddress());
+
             dg.setSrcAddress(getAddress());
             return enqueueDatagram(dg);
         } else {
@@ -400,18 +387,15 @@ public class AppSocketMux implements NetIF {
     /**
      * Puts a datagram on the incoming queue for this network interface
      */
-    public boolean enqueueDatagram(Datagram dg) throws
-    NoRouteToHostException {
+    public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
         return fabricDevice_.blockingAddToInQueue(dg, this);
     }
 
     /**
-     *  Deliver a received datagram to the appropriate app
+        Deliver a received datagram to the appropriate app
      */
     public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
-        // if (running == false)  // If we're not running simply pretend
-        // to
-        // have received it
+        // if (running == false)  // If we're not running simply pretend to have received it
         //     return true;
         if (datagram.getProtocol() == Protocol.CONTROL) {
             datagramCount++;
@@ -421,28 +405,20 @@ public class AppSocketMux implements NetIF {
             if (controlChar == 'C') {
                 remoteClose();
             }
-
             return true;
         }
-
         int dstPort = datagram.getDstPort();
 
         // find the socket to deliver to
         AppSocket socket = socketMap.get(dstPort);
 
         if (socket == null) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin()
-                                          + "Can't deliver to port "
-                                          + dstPort + " from "
-                                          + datagram.getSrcAddress() + "/"
-                                          + datagram.getSrcPort());
-            return true; // Returns true as packet is dropped not
-                         // blocked
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() +
+                                          "Can't deliver to port " + dstPort + " from " + datagram.getSrcAddress() + "/" +
+                                          datagram.getSrcPort());
+            return true;  // Returns true as packet is dropped not blocked
         }
-
-        LinkedBlockingQueue<Datagram> portQueue = getQueueForPort(
-                dstPort);
+        LinkedBlockingQueue<Datagram> portQueue = getQueueForPort(dstPort);
         portQueue.add(datagram);
         NetStats stats = socketStats.get(dstPort);
         stats.increment(NetStats.Stat.InPackets);
@@ -454,12 +430,12 @@ public class AppSocketMux implements NetIF {
      * Add an AppSocket.
      */
     synchronized void addAppSocket(AppSocket s) {
-        s.localAddress = getAddress();
+        s.localAddress = controller.getAddress();
 
         int port = s.getLocalPort();
 
-        //  Logger.getLogger("log").logln(USR.ERROR, leadin() +
-        // "addAppSocket " + port + "  -> " + s);
+        //  Logger.getLogger("log").logln(USR.ERROR, leadin() + "addAppSocket " + port + "  -> " + s);
+
 
         // register the socket
         socketMap.put(port, s);
@@ -469,6 +445,10 @@ public class AppSocketMux implements NetIF {
 
         // set up the stats
         socketStats.put(port, new NetStats());
+
+
+        //usr.common.ThreadTools.findAllThreads(".. ");
+
     }
 
     /**
@@ -477,14 +457,14 @@ public class AppSocketMux implements NetIF {
     synchronized void removeAppSocket(AppSocket s) {
         int port = s.getLocalPort();
 
-        // Logger.getLogger("log").logln(USR.ERROR, leadin() +
-        // "removeAppSocket " + port + "  -> " + s);
+        // Logger.getLogger("log").logln(USR.ERROR, leadin() + "removeAppSocket " + port + "  -> " + s);
 
         // unregister the socket
         socketMap.remove(port);
 
         // remove the queue
         socketQueue.remove(port);
+
 
         // remove stats
         socketStats.remove(port);

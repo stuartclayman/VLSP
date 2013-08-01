@@ -42,6 +42,11 @@ public interface RouterFabric extends NetIFListener {
     public NetIF findNetIF(String host);
 
     /**
+     * Set the netIF weight associated with a link to a certain router name
+     */
+    public boolean setNetIFWeight(String name, int weight);
+
+    /**
      * Close ports
      */
     public void closePorts();
@@ -84,8 +89,8 @@ public interface RouterFabric extends NetIFListener {
     /**
      * Create a new routing table from a transmitted byte[]
      */
-    public RoutingTable decodeRoutingTable(byte[] bytes, NetIF netif) throws
-    Exception;
+    public RoutingTable decodeRoutingTable(byte[] bytes, NetIF netif) throws Exception;
+
 
     /** List Routing table */
 

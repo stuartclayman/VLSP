@@ -10,8 +10,7 @@ import java.io.Serializable;
 /**
  * An GID Address
  */
-public class GIDAddress extends Size4 implements Address,
-Serializable {
+public class GIDAddress extends Size4 implements Address, Serializable {
     int globalAddress;
 
     /**
@@ -28,6 +27,8 @@ Serializable {
             // convert int to byte[]
             ByteBuffer buf = ByteBuffer.wrap(bytes);
             buf.putInt(gid);
+
+
         } else {
             throw new UnknownHostException("Not a GID: " + gidStr);
         }
@@ -38,17 +39,16 @@ Serializable {
      */
     public GIDAddress(int addr) {
         globalAddress = addr;
-
         // convert int to byte[]
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         buf.putInt(addr);
+
     }
 
     /**
      * Create a GIDAddress from a byte[]
      */
-    public GIDAddress(byte[] addr)  throws
-    UnsupportedOperationException {
+    public GIDAddress(byte[] addr)  throws UnsupportedOperationException {
         if (addr.length == 4) {
             // copy bytes in
             System.arraycopy(addr, 0, bytes, 0, 4);
@@ -56,10 +56,9 @@ Serializable {
             // convert byte[] to int
             ByteBuffer buf = ByteBuffer.wrap(bytes);
             globalAddress = buf.getInt();
+
         } else {
-            throw new UnsupportedOperationException(
-                      "GIDAddress: wrong length. Expected 4, got "
-                      + addr.length);
+            throw new UnsupportedOperationException("GIDAddress: wrong length. Expected 4, got " + addr.length);
         }
     }
 
@@ -120,7 +119,7 @@ Serializable {
      * To String
      */
     public String toString() {
-        return "@(" + globalAddress + ")";
+        return "@("+globalAddress + ")";
     }
 
 }

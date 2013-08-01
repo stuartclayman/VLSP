@@ -36,11 +36,11 @@ public class Recv implements Application {
             if (scanner.hasNextInt()) {
                 port = scanner.nextInt();
             } else {
-                return new ApplicationResponse(false,
-                                               "Bad port " + args[1]);
+                return new ApplicationResponse(false, "Bad port " + args[1]);
             }
 
             return new ApplicationResponse(true, "");
+
         } else {
             return new ApplicationResponse(false, "Usage: Recv port");
         }
@@ -54,14 +54,11 @@ public class Recv implements Application {
 
             socket.bind(port);
 
-            // Logger.getLogger("log").logln(USR.ERROR, "Socket has
-            // source
-            // port "+socket.getLocalPort());
+            // Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket.getLocalPort());
+
         } catch (Exception e) {
-            Logger.getLogger("log").logln(
-                USR.ERROR, "Cannot open socket " + e.getMessage());
-            return new ApplicationResponse(
-                false, "Cannot open socket " + e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot open socket " + e.getMessage());
+            return new ApplicationResponse(false, "Cannot open socket " + e.getMessage());
         }
 
         running = true;
@@ -88,27 +85,20 @@ public class Recv implements Application {
 
         try {
             while ((datagram = socket.receive()) != null) {
+
                 Logger.getLogger("log").log(USR.STDOUT, count + ". ");
-                Logger.getLogger("log").log(
-                    USR.STDOUT,
-                    "HL: " + datagram.getHeaderLength()
-                    + " TL: "
-                    + datagram.getTotalLength()
-                    + " From: "
-                    + datagram.getSrcAddress()
-                    + " To: "
-                    + datagram.getDstAddress()
-                    + ". ");
+                Logger.getLogger("log").log(USR.STDOUT, "HL: " + datagram.getHeaderLength() +
+                                            " TL: " + datagram.getTotalLength() +
+                                            " From: " + datagram.getSrcAddress() +
+                                            " To: " + datagram.getDstAddress() +
+                                            ". ");
                 byte[] payload = datagram.getPayload();
 
                 if (payload == null) {
-                    Logger.getLogger("log").log(USR.STDOUT,
-                                                "No payload");
+                    Logger.getLogger("log").log(USR.STDOUT, "No payload");
                 } else {
-                    Logger.getLogger("log").log(USR.STDOUT,
-                                                new String(payload));
+                    Logger.getLogger("log").log(USR.STDOUT, new String(payload));
                 }
-
                 Logger.getLogger("log").log(USR.STDOUT, "\n");
 
                 count++;
@@ -116,6 +106,8 @@ public class Recv implements Application {
         } catch (SocketException se) {
             Logger.getLogger("log").log(USR.ERROR, se.getMessage());
         }
+
+
     }
 
 }

@@ -19,7 +19,6 @@ public class TCPEndPointSrc implements TCPEndPoint {
 
     // socket
     Socket socket;
-
     // and channel
     SocketChannel channel;
 
@@ -29,8 +28,7 @@ public class TCPEndPointSrc implements TCPEndPoint {
     /**
      * A TCPEndPointSrc needs a host and port for the TCPEndPointDst.
      */
-    public TCPEndPointSrc(String host, int port) throws UnknownHostException,
-    IOException {
+    public TCPEndPointSrc(String host, int port) throws UnknownHostException, IOException {
         this.host = host;
         this.port = port;
         isConnected = false;
@@ -43,10 +41,10 @@ public class TCPEndPointSrc implements TCPEndPoint {
      */
     public boolean connect() throws IOException {
         if (isConnected) {
-            throw new IOException(
-                      "Cannot connect again to: " + socket);
+            throw new IOException("Cannot connect again to: " + socket);
         } else {
             socket = channel.socket();
+            //socket.setTcpNoDelay(true);
             socket.connect(new InetSocketAddress(host, port));
             isConnected = true;
             return true;

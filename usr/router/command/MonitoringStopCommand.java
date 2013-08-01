@@ -17,14 +17,14 @@ public class MonitoringStopCommand extends RouterCommand {
      * Construct a MonitoringStopCommand
      */
     public MonitoringStopCommand() {
-        super(MCRP.MONITORING_STOP.CMD, MCRP.MONITORING_STOP.CODE,
-              MCRP.ERROR.CODE);
+        super(MCRP.MONITORING_STOP.CMD, MCRP.MONITORING_STOP.CODE, MCRP.ERROR.CODE);
     }
 
     /**
      * Evaluate the Command.
      */
     public boolean evaluate(Request request, Response response) {
+
         try {
             PrintStream out = response.getPrintStream();
 
@@ -37,12 +37,11 @@ public class MonitoringStopCommand extends RouterCommand {
             response.close();
 
             return true;
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {

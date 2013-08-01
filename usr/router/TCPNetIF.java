@@ -2,13 +2,16 @@ package usr.router;
 
 import usr.net.*;
 import usr.logging.*;
+import usr.common.ANSI;
 import usr.protocol.Protocol;
 import java.io.*;
 import java.net.*;
 import java.util.Map;
 import java.util.HashMap;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * A Network Interface for a Router using TCP
@@ -20,32 +23,25 @@ import java.util.concurrent.LinkedBlockingQueue;
  * other end of stuff.
  */
 public class TCPNetIF implements NetIF, Runnable {
+
     // The connection
     ConnectionOverTCP connection;
-
     // The name of this
     String name;
-
     // The weight
     int outq = 0;
     int weight;
-
     // int ID
     int id;
     boolean local_ = false;
-
     // Address at this end
     Address address;
-
     // Remote router name
     String remoteRouterName;
-
     // Remote Router Address
     Address remoteRouterAddress;
-
     // The Listener
     NetIFListener listener = null;
-
     // The RouterPort
     RouterPort port = null;
 
@@ -54,23 +50,21 @@ public class TCPNetIF implements NetIF, Runnable {
 
     // closed ?
     Boolean closed = true;
-
     // got a remote close
     boolean remoteClose = false;
-
     // Is the current reading thread running
     boolean running_ = false;
-
     // Has the stream closed
     boolean eof = false;
-
     // Fabric device does the data transfer
     FabricDevice fabricDevice_ = null;
-
     // Run thread for main loop
     Thread runThread_ = null;
 
     Object runWait_ = null;
+
+    CountDownLatch latch = null;
+
 
     /**
      * Construct a TCPNetIF around a Socket.
@@ -78,6 +72,7 @@ public class TCPNetIF implements NetIF, Runnable {
     public TCPNetIF(TCPEndPointSrc src, NetIFListener l) throws IOException {
         connection = new ConnectionOverTCP(src);
         listener = l;
+
     }
 
     /**
@@ -94,7 +89,6 @@ public class TCPNetIF implements NetIF, Runnable {
      */
     public synchronized void start() {
         running_ = true;
-
         //System.err.println("New fabric device listener "+listener);
         fabricDevice_ = new FabricDevice(this, listener);
         fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
@@ -103,17 +97,15 @@ public class TCPNetIF implements NetIF, Runnable {
         fabricDevice_.setOutQueueLength(100);
         fabricDevice_.setName(name);
         fabricDevice_.start();
-        runThread_ = new Thread(this,
-                                "/" + listener.getName() + "/" + name
-                                + "/TCPNetIF");
+        latch = new CountDownLatch(1);
+        runThread_ = new Thread(this, "/" + listener.getName() + "/" + name + "/TCPNetIF");
         runThread_.start();
     }
 
     /** Run method loops and grabs input from connection to queue in
-     * fabricDevice */
+       fabricDevice */
     public void run() {
         Datagram datagram = null;
-
         runWait_ = new Object();
 
         while (running_) {
@@ -125,15 +117,12 @@ public class TCPNetIF implements NetIF, Runnable {
                     }
                 }
             }
-
             try {
                 datagram = connection.readDatagram();
             } catch (Exception ioe) {
-                Logger.getLogger("log").logln(
-                    USR.ERROR,
-                    "TCPNetIF readDatagram error "
-                    + connection
-                    + " IOException " + ioe);
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              "TCPNetIF readDatagram error " + connection +
+                                              " IOException " + ioe);
                 ioe.printStackTrace();
             }
 
@@ -141,7 +130,6 @@ public class TCPNetIF implements NetIF, Runnable {
                 eof = true;
                 continue;
             }
-
             try {
                 if (fabricDevice_.inIsBlocking()) {
                     fabricDevice_.blockingAddToInQueue(datagram, this);
@@ -151,6 +139,10 @@ public class TCPNetIF implements NetIF, Runnable {
             } catch (NoRouteToHostException e) {
             }
         }
+
+        // reduce latch count by 1
+        latch.countDown();
+
     }
 
     /**
@@ -182,8 +174,7 @@ public class TCPNetIF implements NetIF, Runnable {
         }
 
         if (runThread_ != null) {
-            runThread_.setName(
-                "/" + listener.getName() + "/" + n + "/TCPNetIF");
+            runThread_.setName("/" + listener.getName() + "/" + n + "/TCPNetIF");
         }
     }
 
@@ -198,6 +189,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the weight of this NetIF.
      */
     public void setWeight(int w) {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + " TCPNetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
         weight = w;
     }
 
@@ -242,6 +234,7 @@ public class TCPNetIF implements NetIF, Runnable {
      */
     public void setRemoteRouterName(String name) {
         remoteRouterName = name;
+
     }
 
     /**
@@ -277,8 +270,7 @@ public class TCPNetIF implements NetIF, Runnable {
      */
     public void setNetIFListener(NetIFListener l) {
         if (listener != null) {
-            Logger.getLogger("log").logln(
-                USR.ERROR, "TCPNetIF: already has a NetIFListener");
+            Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: already has a NetIFListener");
         } else {
             listener = l;
 
@@ -303,14 +295,13 @@ public class TCPNetIF implements NetIF, Runnable {
     }
 
     /**
-     * Send a Datagram -- sets source to this interface and puts the
-     *******************************datagram
-     * on the incoming queue for this interface
+     * Send a Datagram -- sets source to this interface and puts the datagram
+       on the incoming queue for this interface
      */
-    public boolean sendDatagram(Datagram dg) throws
-    NoRouteToHostException {
+    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
         if (running_ == true) {
             // set the source address and port on the Datagram
+            // SC 20130619 added following - was in AppSocketMux
             dg.setSrcAddress(getAddress());
             return enqueueDatagram(dg);
         } else {
@@ -321,100 +312,114 @@ public class TCPNetIF implements NetIF, Runnable {
     /**
      * Puts a datagram on the incoming queue for this network interface
      */
-    public boolean enqueueDatagram(Datagram dg) throws
-    NoRouteToHostException {
+    public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
         return fabricDevice_.blockingAddToInQueue(dg, this);
     }
 
     /** Finally send the datagram onwards */
     public boolean outQueueHandler(Datagram dg, DatagramDevice dd) {
         boolean sent = false;
-
         try {
+            dg.setSrcAddress(getAddress());
             sent = connection.sendDatagram(dg);
 
-            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "
-            // TCPNetIF " + name + " sent " + dg);
-        } catch (IOException e) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin()
-                                          + " failure in connection.send "
-                                          + address + "->"
-                                          + remoteRouterAddress);
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + e.getMessage());
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " TCPNetIF " + name + " sent " + dg);
+        } catch (ClosedByInterruptException cbie) {
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + " ClosedByInterruptException connection.send "+address+"->"+remoteRouterAddress);
+
+            //cbie.printStackTrace();
+
             listener.closedDevice(this);
             return false;
+
+        } catch (IOException e) {
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + " failure in connection.send "+address+"->"+remoteRouterAddress);
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
+
+            //e.printStackTrace();
+
+            listener.closedDevice(this);
+            return false;
+
         }
 
         if (sent == false) {
             listener.closedDevice(this);
             return false;
         }
-
         return true;
     }
 
     /** Close a netIF given remote end has called close -- this is done as a
-     * spawned process since it would otherwise block out queues which might
-     *    need
-     * to be written to during close*/
+       spawned process since it would otherwise block out queues which might need
+       to be written to during close*/
     public void remoteClose() {
         if (closed) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin()
-                                          + "Already closed when remoteClose() called");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when remoteClose() called");
             return;
         }
-
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin() + "RemoteClose");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() +"RemoteClose");
         remoteClose = true;
 
+
         CloseThread ct = new CloseThread(this, this.closed);
-        Thread t = new Thread(ct, "RemoteClose-" + name);
+        Thread t = new Thread(ct, "RemoteClose-"+name);
         t.start();
     }
 
     /**
-     * Close a NetIF -- must be synchronized to prevent close() exiting
-     *******************************prematurely when a
-     * remoteClose has already been encountered -- close will never exit
-     *******************************until the netif actually
-     * is closed -- synchronized on "closed" object to prevent lock ups with
-     *******************************other sync objects
+     * Close a NetIF -- must be synchronized to prevent close() exiting prematurely when a
+     * remoteClose has already been encountered -- close will never exit until the netif actually
+     * is closed -- synchronized on "closed" object to prevent lock ups with other sync objects
      */
     public void close() {
-        synchronized (closed) { // prevent this running twice by
-                                // blocking
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "  Close");
+        synchronized (closed) { // prevent this running twice by blocking
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() +"  Close");
 
             if (closed) {
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin()
-                                              + "Already closed when close() called");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when close() called");
                 return;
             }
-
             closed = true;
 
-            // send a ControlMessage
+            // send a ControlMessage if this is a local close
+            // and not a remote close
             if (!remoteClose) {
                 controlClose();
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Did control close");
             }
 
+
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" About to stop fabricDevice_");
+            // tell the fabricDevice to stop
             if (fabricDevice_ != null) {
                 fabricDevice_.stop();
             }
 
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Did stop fabricDevice_");
+
             running_ = false;
-            connection.close();
-            runThread_.interrupt();
-            try {
-                runThread_.join();
-            } catch (InterruptedException e) {
+
+            // close the connection
+            if (!remoteClose) {
+                connection.close();
             }
+
+            runThread_.interrupt();
+
+            // join runThread when it is  finished
+            try {
+                latch.await();
+            } catch (InterruptedException ie) {
+            }
+  
+            /*
+             * try {
+             *   runThread_.join();
+             * } catch (InterruptedException e) {
+             *
+             * }
+             */
 
             if (runWait_ != null) {
                 synchronized (runWait_) {
@@ -429,6 +434,30 @@ public class TCPNetIF implements NetIF, Runnable {
      */
     public boolean isClosed() {
         return closed;
+    }
+
+    /**
+     * Consturct and send a control message.
+     */
+    protected boolean controlClose() {
+        synchronized (closed) {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Sending controlClose to "+remoteRouterAddress);
+            ByteBuffer buffer = ByteBuffer.allocate(1);
+            String c = "C";
+            buffer.put(c.getBytes());
+            Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, buffer);
+            ByteBuffer b = ((DatagramPatch)datagram).toByteBuffer();
+            datagram.setDstAddress(remoteRouterAddress);
+            try {
+                sendDatagram(datagram);
+                return true;
+
+            } catch (Exception ioe) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+" controlClose error " + connection + " IOException " + ioe);
+                //ioe.printStackTrace();
+                return true;
+            }
+        }
     }
 
     /**
@@ -451,19 +480,12 @@ public class TCPNetIF implements NetIF, Runnable {
         Address address = getAddress();
         Address remoteAddress = getRemoteRouterAddress();
 
-        String ifName = getRouterPort() ==
-            null ? ("No port") : ("if"
-                                  + Integer.toString(
-                                      getRouterPort().
-                                      getPortNo()));
+        String ifName = getRouterPort() == null ? ("No port") : ("if" + Integer.toString(getRouterPort().getPortNo()));
 
-        return ifName + " W(" + getWeight() + ") = "
-               + (address == null ? "No_Address" : ""
-                  + address) + " => " +
-
+        return ifName + " W(" + getWeight() + ") = " +
+               (address == null ? "No_Address" : "" + address) + " => " +
                //getRemoteRouterName() + " " +
-               (remoteAddress == null ? "No_Remote_Address" : ""
-                + remoteAddress);
+               (remoteAddress == null ? "No_Remote_Address" : "" + remoteAddress);
     }
 
     public boolean equals(Object obj) {
@@ -473,37 +495,7 @@ public class TCPNetIF implements NetIF, Runnable {
         } else {
             return false;
         }
-    }
 
-    /**
-     * Consturct and send a control message.
-     */
-    protected boolean controlClose() {
-        synchronized (closed) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "controlClose to "
-                                          + remoteRouterAddress);
-            ByteBuffer buffer = ByteBuffer.allocate(1);
-            String c = "C";
-            buffer.put(c.getBytes());
-            Datagram datagram = DatagramFactory.newDatagram(
-                    Protocol.CONTROL, buffer);
-            ByteBuffer b = ((DatagramPatch)datagram).toByteBuffer();
-            datagram.setDstAddress(remoteRouterAddress);
-            try {
-                sendDatagram(datagram);
-                return true;
-            } catch (Exception ioe) {
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin()
-                                              + " controlClose error "
-                                              + connection
-                                              + " IOException " + ioe);
-
-                //ioe.printStackTrace();
-                return true;
-            }
-        }
     }
 
     public boolean isLocal() {
@@ -515,7 +507,7 @@ public class TCPNetIF implements NetIF, Runnable {
     }
 
     String leadin() {
-        return "TCPNetIF " + name + ":";
+        return "TCPNetIF "+name+":";
     }
 
     /** Thread to perform remote close on netif */
@@ -526,11 +518,11 @@ public class TCPNetIF implements NetIF, Runnable {
         }
 
         public void run() {
-            // sclayman 20/9/2011 synchronized (closed) {
-            netif_.close();
-
+            // sclayman synchronized (closed) {
+                netif_.close();
             //}
         }
 
     }
+
 }

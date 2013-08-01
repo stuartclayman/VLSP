@@ -33,8 +33,7 @@ public class AppListProbe extends RouterProbe implements Probe {
         setController(cont);
 
         // set probe name
-        setName(cont.getName() + ".appList");
-
+        setName(cont.getName()+".appList");
         // set data rate
         setDataRate(new EveryNSeconds(10));
 
@@ -57,14 +56,13 @@ public class AppListProbe extends RouterProbe implements Probe {
 
         //add("ThreadName", ProbeAttributeType.STRING);
 
+
         // setup the probe attributes
         // The router name
         // The table of stats
-        addProbeAttribute(new DefaultProbeAttribute(0, "RouterName",
-                                                    ProbeAttributeType.
-                                                    STRING, "name"));
-        addProbeAttribute(new TableProbeAttribute(1, "Data",
-                                                  statsHeader));
+        addProbeAttribute(new DefaultProbeAttribute(0, "RouterName", ProbeAttributeType.STRING, "name"));
+        addProbeAttribute(new TableProbeAttribute(1, "Data", statsHeader));
+
     }
 
     /**
@@ -76,17 +74,19 @@ public class AppListProbe extends RouterProbe implements Probe {
         // get list of apps
         Collection<ApplicationHandle> appList = getController().appList();
 
-        if ((appList == null) || (appList.size() == 0)) {
+        if (appList == null || appList.size() == 0) {
             // no apps to report
             return null;
+
         } else {
+
             try {
+
                 // collate measurement values
                 ArrayList<ProbeValue> list = new ArrayList<ProbeValue>();
 
                 // add router name
-                list.add(new DefaultProbeValue(0,
-                                               getController().getName()));
+                list.add(new DefaultProbeValue(0, getController().getName()));
 
                 // now allocate a table
                 DefaultTable statsTable = new DefaultTable();
@@ -104,85 +104,66 @@ public class AppListProbe extends RouterProbe implements Probe {
                     appHRow.add(new DefaultTableValue(ah.getStartTime()));
 
                     // RunTime
-                    appHRow.add(new DefaultTableValue((int)(System.
-                                                            currentTimeMillis()
-                                                            - ah.
-                                                            getStartTime())));
+                    appHRow.add(new DefaultTableValue((int)(System.currentTimeMillis() - ah.getStartTime())));
 
                     // State
-                    appHRow.add(new DefaultTableValue(ah.getState().
-                                                      toString()));
+                    appHRow.add(new DefaultTableValue(ah.getState().toString()));
 
                     // ClassName
-                    appHRow.add(new DefaultTableValue(ah.getApplication()
-                                                      .
-                                                      getClass().getName()));
+                    appHRow.add(new DefaultTableValue(ah.getApplication().getClass().getName()));
 
                     // Args
-                    appHRow.add(new DefaultTableValue(Arrays.asList(ah.
-                                                                    getArgs())
-                                                      .toString()));
+                    appHRow.add(new DefaultTableValue(Arrays.asList(ah.getArgs()).toString()));
 
                     // Name
                     appHRow.add(new DefaultTableValue(ah.getName()));
 
                     // check if we should get run time monitoring data
-                    if (ah.getApplication() instanceof
-                        RuntimeMonitoring) {
+                    if (ah.getApplication() instanceof RuntimeMonitoring) {
                         // yes
-                        MList keys = new DefaultMList(
-                                ProbeAttributeType.STRING);
-                        MList values = new DefaultMList(
-                                ProbeAttributeType.STRING);
+                        MList keys = new DefaultMList(ProbeAttributeType.STRING);
+                        MList values = new DefaultMList(ProbeAttributeType.STRING);
 
                         // get the data
-                        Map<String,
-                            String> theMap
-                            = ((RuntimeMonitoring)ah.getApplication())
-                                .
-                                getMonitoringData();
+                        Map<String, String> theMap = ((RuntimeMonitoring)ah.getApplication()).getMonitoringData();
 
                         // add the keys and values
-                        for (Map.Entry<String,
-                                       String> entry : theMap.entrySet()) {
+                        for (Map.Entry<String, String> entry : theMap.entrySet()) {
                             keys.add(entry.getKey());
                             values.add(entry.getValue());
                         }
 
                         appHRow.add(new DefaultTableValue(keys));
                         appHRow.add(new DefaultTableValue(values));
+
                     } else {
                         // no
-                        appHRow.add(new DefaultTableValue(new
-                                                          DefaultMList(
-                                                              ProbeAttributeType
-                                                              .STRING)));
-                        appHRow.add(new DefaultTableValue(new
-                                                          DefaultMList(
-                                                              ProbeAttributeType
-                                                              .STRING)));
+                        appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
+                        appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
+
                     }
 
                     // add this row to the table
                     statsTable.addRow(appHRow);
+
+
                 }
 
                 list.add(new DefaultProbeValue(1, statsTable));
 
                 // TODO: do the following as a ProbeFilter.
-                // if the tables are the same, don not send a new
-                // measurement
+                // if the tables are the same, don not send a new measurement
                 if (tablesEqual(savedT, statsTable)) {
                     // nothing to send
                     return null;
                 } else {
                     // set the type to be: AppList
-                    ProducerMeasurement lastestM
-                        = new ProducerMeasurement(
-                                this, list, "AppList");
+                    ProducerMeasurement lastestM = new ProducerMeasurement(this, list, "AppList");
                     savedT = statsTable;
                     return lastestM;
                 }
+
+
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -196,7 +177,7 @@ public class AppListProbe extends RouterProbe implements Probe {
     private boolean tablesEqual(Table t1, Table t2) {
         // check all the rows
 
-        if ((t1 == null) || (t2 == null)) {
+        if (t1 == null || t2 == null) {
             return false;
         } else {
             // get sizes
@@ -220,9 +201,7 @@ public class AppListProbe extends RouterProbe implements Probe {
                         TableValue t2V = t2Row.get(e);
 
                         if (!t1V.getValue().equals(t2V.getValue())) {
-                            // a value is different - therefore table
-                            // must
-                            // be different
+                            // a value is different - therefore table must be different
                             return false;
                         }
                     }
@@ -230,6 +209,7 @@ public class AppListProbe extends RouterProbe implements Probe {
 
                 // all the rows are the same
                 return true;
+
             }
         }
     }

@@ -13,6 +13,8 @@ import java.io.IOException;
 import us.monoid.json.*;
 import usr.interactor.RouterInteractor;
 
+
+
 /**
  * A CreateConnection object, creates a connection from one router
  * to another.
@@ -26,8 +28,7 @@ public class CreateConnection {
      * Create a new connection.
      * CREATE_CONNECTION ip_addr/port - create a new network connection
      * with weight of 1, and a constructed name
-     * CREATE_CONNECTION ip_addr/port connection_weight - create a new
-     *******************************network
+     * CREATE_CONNECTION ip_addr/port connection_weight - create a new network
      * connection to a router on the address ip_addr/port with a
      * connection weight of connection_weight and a constructed name
      * CREATE_CONNECTION ip_addr/port connection_weight connection_name -
@@ -40,27 +41,23 @@ public class CreateConnection {
         this.controller = controller;
         this.request = request;
         this.response = response;
+
     }
 
     public boolean run() throws IOException, JSONException {
         PrintStream out = response.getPrintStream();
 
         // get full request string
-        String path = java.net.URLDecoder.decode(
-                request.getPath().getPath(
-                    ), "UTF-8");
-
+        String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
         // strip off /command
         String value = path.substring(9);
 
+
+
         String[] parts = value.split(" ");
 
-        if ((parts.length != 4) && (parts.length != 3) && (parts.length !=
-                                                           2)) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "INVALID createConnection command: "
-                                          + request);
+        if (parts.length !=4 && parts.length != 3 && parts.length != 2) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection command: " + request);
 
             // HERE
             respondError("CREATE_CONNECTION wrong no of args");
@@ -71,12 +68,8 @@ public class CreateConnection {
         String[] ipParts = parts[1].split(":");
 
         if (ipParts.length != 2) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "INVALID createConnection ip address: "
-                                          + request);
-            respondError(
-                "CREATE_CONNECTION invalid address " + parts[1]);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID createConnection ip address: " + request);
+            respondError("CREATE_CONNECTION invalid address " + parts[1]);
             return false;
         }
 
@@ -102,8 +95,7 @@ public class CreateConnection {
             try {
                 weight = sc.nextInt();
             } catch (Exception e) {
-                respondError(
-                    "CREATE_CONNECTION invalid weight " + parts[2]);
+                respondError("CREATE_CONNECTION invalid weight " + parts[2]);
                 return false;
             }
         } else {
@@ -127,24 +119,18 @@ public class CreateConnection {
         RouterInteractor interactor = null;
         String routerResponse;
 
+
         try {
-            interactor = new RouterInteractor(InetAddress.getByName(
-                                                  host), portNumber);
+            interactor = new RouterInteractor(InetAddress.getByName(host), portNumber);
+
         } catch (UnknownHostException uhe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + "Unknown host: "
-                                          + host);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
             respondError("CREATE_CONNECTION Unknown host: " + host);
             return false;
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + "Cannot connect to "
-                                          + host + " on port "
-                                          + portNumber + " -> " + ioexc);
-            respondError(
-                "CREATE_CONNECTION Cannot interact with host: "
-                + host
-                + " on port " + portNumber);
+                                          leadin() + "Cannot connect to " + host + " on port " + portNumber + " -> " + ioexc);
+            respondError("CREATE_CONNECTION Cannot interact with host: " + host + " on port " + portNumber);
             return false;
         }
 
@@ -154,26 +140,12 @@ public class CreateConnection {
         try {
             routerResponse = interactor.getConnectionPort();
         } catch (IOException ioexc) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "Cannot GET_CONNECTION_PORT from "
-                                          + host
-                                          + " -> " + ioexc);
-            respondError(
-                "CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: "
-                +
-                host);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + ioexc);
+            respondError("CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
             return false;
         } catch (JSONException jsone) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "Cannot GET_CONNECTION_PORT from "
-                                          + host
-                                          + " -> " + jsone);
-            respondError(
-                "CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: "
-                +
-                host);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_CONNECTION_PORT from " + host + " -> " + jsone);
+            respondError("CREATE_CONNECTION Cannot GET_CONNECTION_PORT from host: " + host);
             return false;
         }
 
@@ -184,11 +156,9 @@ public class CreateConnection {
         // now get connection port
         int connectionPort = scanner.nextInt();
 
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin()
-                                      + "createConnection: connectionPort at "
-                                      + host
-                                      + " is " + connectionPort);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "createConnection: connectionPort at " + host + " is " +
+                                      connectionPort);
+
 
         /*
          * Now connect to connections port of remote router.
@@ -200,23 +170,19 @@ public class CreateConnection {
         InetSocketAddress refAddr;
         String latestConnectionName = null;
 
-        if ((connectionName == null) || connectionName.equals("")) {
-            latestConnectionName = controller.getName()
-                + ".Connection-"
-                + controller.getConnectionCount();
+        if (connectionName == null || connectionName.equals("")) {
+            latestConnectionName = controller.getName() + ".Connection-" + controller.getConnectionCount();
         } else {
             latestConnectionName = connectionName;
         }
 
         try {
             // make a connection to a remote router
-            TCPEndPointSrc src = new TCPEndPointSrc(host,
-                                                    connectionPort);
+            TCPEndPointSrc src = new TCPEndPointSrc(host, connectionPort);
             netIF = new TCPNetIF(src, controller.getListener());
 
             // set its name
             netIF.setName(latestConnectionName);
-
             // set its weight
             netIF.setWeight(weight);
 
@@ -228,33 +194,26 @@ public class CreateConnection {
             // get socket so we can determine the Inet Address
             socket = src.getSocket();
 
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin()
-                                          + "connection socket: " + socket);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "connection socket: " + socket);
 
-            refAddr = new InetSocketAddress(
-                    socket.getInetAddress(), socket.getLocalPort());
+
+
+            refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
 
             // set its ID
             netIF.setID(refAddr.hashCode());
 
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "netif = " + netIF);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
+
+
         } catch (UnknownHostException uhe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + "Unknown host: "
-                                          + host);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
             respondError("CREATE_CONNECTION Unknown host: " + host);
             return false;
         } catch (IOException ioexc) {
             Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + "Cannot connect to "
-                                          + host + " on port "
-                                          + connectionPort + " -> " + ioexc);
-            respondError(
-                "CREATE_CONNECTION Cannot interact with host: "
-                + host
-                + " on port " + connectionPort);
+                                          leadin() + "Cannot connect to " + host + " on port " + connectionPort + " -> " + ioexc);
+            respondError("CREATE_CONNECTION Cannot interact with host: " + host + " on port " + connectionPort);
             return false;
         }
 
@@ -272,24 +231,14 @@ public class CreateConnection {
         try {
             // now get router name
             remoteRouterName = interactor.getName();
-            remoteRouterAddress = interactor.getRouterAddress();
+            remoteRouterAddress = interactor.getAddress();
         } catch (IOException ioexc) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "Cannot GET_NAME from " + host
-                                          + " -> " + ioexc);
-            respondError(
-                "CREATE_CONNECTION Cannot GET_NAME from host: "
-                + host);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + ioexc);
+            respondError("CREATE_CONNECTION Cannot GET_NAME from host: " + host);
             return false;
         } catch (JSONException jsone) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "Cannot GET_NAME from " + host
-                                          + " -> " + jsone);
-            respondError(
-                "CREATE_CONNECTION Cannot GET_NAME from host: "
-                + host);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot GET_NAME from " + host + " -> " + jsone);
+            respondError("CREATE_CONNECTION Cannot GET_NAME from host: " + host);
             return false;
         }
 
@@ -301,6 +250,7 @@ public class CreateConnection {
          * Save the netIF temporarily
          */
         controller.registerTemporaryNetIF(netIF);
+
 
         /*
          * Interact with remote router
@@ -316,83 +266,54 @@ public class CreateConnection {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ie) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  "CC: SLEEP");
+                    Logger.getLogger("log").logln(USR.ERROR, "CC: SLEEP");
                 }
 
                 // send INCOMING_CONNECTION command
 
                 try {
-                    interactor.incomingConnection(latestConnectionName,
-                                                  controller.getName(),
-                                                  controller.getAddress(),
-                                                  weight,
-                                                  socket.getLocalPort());
+                    interactor.incomingConnection(latestConnectionName, controller.getName(),
+                                                  controller.getAddress(), weight, socket.getLocalPort());
 
                     // connection setup ok
                     interactionOK = true;
                     break;
                 } catch (Exception e) {
                     Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin()
-                                                  + "INCOMING_CONNECTION with host error "
-                                                  +
-                                                  host + " -> " + e
-                                                  + ". Attempt: " + attempts);
+                                                  leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " +
+                                                  attempts);
                 }
+
             }
 
             if (interactionOK) {
                 // everything ok
             } else {
                 // connection setup failed
-                respondError(
-                    "CREATE_CONNECTION Cannot interact with host: "
-                    +
-                    host);
+                respondError("CREATE_CONNECTION Cannot interact with host: " + host);
                 return false;
             }
+
         } catch (Exception exc) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "INCOMING_CONNECTION with host error "
-                                          + host
-                                          + " -> " + exc);
-            respondError(
-                "CREATE_CONNECTION Cannot interact with host: "
-                + host);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc);
+            respondError("CREATE_CONNECTION Cannot interact with host: " + host);
             return false;
         }
 
         /*
          * Close connection to management port of remote router.
-         * try {
-         *  // close connection to management connection of remote
-         *******************************router
-         *  interactor.quit();
-         *
-         *
-         *  Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed
-         *******************************= "
-         *+ host);
-         *+
-         *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+} catch (Exception e) {
-         *+ Logger.getLogger("log").logln(USR.ERROR, leadin() +
-         *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"INCOMING_CONNECTION with host
-         ******************error
-         ************************+"
-         *++
-         *++*++*++*++*++*++*++*++*+*+*+*+host
-         *++
-         *++*++*++*++*++*++*++*++*++*+*+"
-         *++*++*++*++*++*++*++*++*++*+*+*+->
-         *++*++*++*++*++*++*++*++*+*+*+*+"
-         *++
-         *++*++*++*++*++*++*++*+*+*+*+*+e);
-         *  respondError("CREATE_CONNECTION Cannot quit with host: " +
-         *++*++*++*++*++*++*+*+*+*+*+*+*host);
-         *  return false;
-         * }
+           try {
+            // close connection to management connection of remote router
+            interactor.quit();
+
+
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed = " + host);
+
+           } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e);
+            respondError("CREATE_CONNECTION Cannot quit with host: " + host);
+            return false;
+           }
          */
 
         // now plug the temporary netIF into Router
@@ -400,26 +321,29 @@ public class CreateConnection {
 
         controller.newConnection();
 
-        //respond(MCRP.CREATE_CONNECTION.CODE + " " es+
-        // latestConnectionName); // + " port" + port.getPortNo());
+        //respond(MCRP.CREATE_CONNECTION.CODE + " " es+ latestConnectionName); // + " port" + port.getPortNo());
 
         JSONObject jsobj = new JSONObject();
 
-        jsobj.put("name", latestConnectionName);
+        jsobj.put("weight", netIF.getWeight());
+        jsobj.put("name", netIF.getName());
+        jsobj.put("address", netIF.getAddress().asTransmitForm());
+        jsobj.put("remoteName",  netIF.getRemoteRouterName());
+        jsobj.put("remoteAddress ", netIF.getRemoteRouterAddress().asTransmitForm());
         jsobj.put("port", port.getPortNo());
+
         out.println(jsobj.toString());
         response.close();
 
         return true;
+
     }
 
     /**
      * An error response
      */
-    private void respondError(String msg) throws IOException,
-    JSONException {
+    private void respondError(String msg) throws IOException, JSONException {
         JSONObject jsobj = new JSONObject();
-
         jsobj.put("error", msg);
 
         PrintStream out = response.getPrintStream();
@@ -438,6 +362,7 @@ public class CreateConnection {
         } else {
             return controller.getName() + " " + CC;
         }
+
     }
 
 }

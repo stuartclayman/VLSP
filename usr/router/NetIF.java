@@ -17,6 +17,7 @@ public interface NetIF extends DatagramDevice {
      */
     public boolean connect() throws IOException;
 
+
     /**
      * Get the ID of this NetIF.
      */
@@ -41,6 +42,7 @@ public interface NetIF extends DatagramDevice {
      * Get the name of the remote router this NetIF is connected to.
      */
     public String getRemoteRouterName();
+
 
     /**
      * Set the name of the remote router this NetIF is connected to.
@@ -83,6 +85,7 @@ public interface NetIF extends DatagramDevice {
      */
     public boolean isClosed();
 
+
     /** Remote close received */
     public void remoteClose();
 
@@ -95,4 +98,5 @@ public interface NetIF extends DatagramDevice {
      * Set the RouterPort a NetIF is plugIged into.
      */
     public void setRouterPort(RouterPort rp);
+
 }

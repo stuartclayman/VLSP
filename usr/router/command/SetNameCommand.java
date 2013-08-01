@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.io.IOException;
 import us.monoid.json.*;
 
+
 /**
  * The SET_NAME command.
  * SET_NAME name
@@ -29,18 +30,15 @@ public class SetNameCommand extends RouterCommand {
             PrintStream out = response.getPrintStream();
 
             // get full request string
-            String path = java.net.URLDecoder.decode(
-                    request.getPath().getPath(), "UTF-8");
-
+            String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
             // strip off /command
             String value = path.substring(9);
-
             // strip off COMMAND
-            String name
-                = value.substring(MCRP.SET_NAME.CMD.length()).trim();
+            String name = value.substring(MCRP.SET_NAME.CMD.length()).trim();
 
             // set name
             boolean nameSet = controller.setName(name);
+
 
             JSONObject jsobj = new JSONObject();
             jsobj.put("name", name);
@@ -49,17 +47,17 @@ public class SetNameCommand extends RouterCommand {
             response.close();
 
             return true;
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
     }
 
 }

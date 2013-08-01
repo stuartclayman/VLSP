@@ -48,7 +48,6 @@ public class NetStats implements Cloneable {
      */
     public Object clone() {
         NetStats theClone = new NetStats();
-
         System.arraycopy(stats, 0, theClone.stats, 0, 16);
 
         return theClone;

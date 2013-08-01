@@ -7,8 +7,7 @@ import java.net.UnknownHostException;
 /**
  * A simple implementation of a GID Datagram.
  */
-public class GIDDatagram extends Size4Datagram implements Datagram,
-DatagramPatch {
+public class GIDDatagram extends Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Construct a GIDDatagram given a payload.
      */
@@ -71,7 +70,6 @@ DatagramPatch {
         if (emptyAddress(address)) {
             return null;
         }
-
         return new GIDAddress(address);
     }
 
@@ -91,7 +89,6 @@ DatagramPatch {
         if (emptyAddress(address)) {
             return null;
         }
-
         return new GIDAddress(address);
     }
 

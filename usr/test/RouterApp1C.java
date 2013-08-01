@@ -32,95 +32,16 @@ public class RouterApp1C {
 
             // start
             if (router.start()) {
+
                 // set up id
-                router.setAddress(new IPV4Address("192.168.7.1"));  //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    // WAS
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    // new
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    // GIDAddress(1));
+                router.setAddress(new IPV4Address("192.168.7.1"));  // WAS new GIDAddress(1));
 
                 // connnect to the other router
                 // first we tal kto my own ManagementConsole
-                RouterInteractor selfInteractor = new RouterInteractor(
-                        "localhost", 18181);
+                RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);
 
                 // then set up Router-to-Router data connection
-                selfInteractor.createConnection(remHost + ":" + remPort,
-                                                20);
+                selfInteractor.createConnection(remHost + ":" + remPort, 20);
 
                 // and stop talking to the ManagementConsole
                 selfInteractor.quit();
@@ -129,20 +50,16 @@ public class RouterApp1C {
                 socket = new DatagramSocket();
 
                 // and we want to connect to address 2 : port 3000
-                socket.connect(new IPV4Address(
-                                   "192.168.7.2")             /* new
-                                                               * GIDAddress(2)
-                                                               */
-                               ,
-                               3000);
+                socket.connect(  new IPV4Address("192.168.7.2") /* new GIDAddress(2)  */, 3000);
+
             } else {
                 router.stop();
             }
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          "RouterApp1C exception: " + e);
+            Logger.getLogger("log").logln(USR.ERROR, "RouterApp1C exception: " + e);
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -153,6 +70,7 @@ public class RouterApp1C {
         if (socket == null) {
             return;
         }
+
 
         Datagram datagram = null;
 
@@ -168,13 +86,13 @@ public class RouterApp1C {
 
             datagram = DatagramFactory.newDatagram(buffer);
 
+
             try {
                 socket.send(datagram);
             } catch (SocketException se) {
-                //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " +
-                // datagram + " with " + new
-                // String(datagram.getPayload()));
+                //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
             }
+
         }
 
         Logger.getLogger("log").logln(USR.STDOUT, "ending....");
@@ -206,9 +124,11 @@ public class RouterApp1C {
             count = scanner.nextInt();
         }
 
+
         RouterApp1C app1c = new RouterApp1C(host, 18191);
 
         app1c.writeALot(count);
+
     }
 
 }

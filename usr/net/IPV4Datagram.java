@@ -7,8 +7,7 @@ import java.net.UnknownHostException;
 /**
  * A simple implementation of a IPV4 Datagram.
  */
-public class IPV4Datagram extends Size4Datagram implements Datagram,
-DatagramPatch {
+public class IPV4Datagram extends Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Construct a IPV4Datagram given a payload.
      */
@@ -69,7 +68,6 @@ DatagramPatch {
         if (emptyAddress(address)) {
             return null;
         }
-
         try {
             return new IPV4Address(address);
         } catch (UnknownHostException uhe) {
@@ -89,7 +87,6 @@ DatagramPatch {
         if (emptyAddress(address)) {
             return null;
         }
-
         try {
             return new IPV4Address(address);
         } catch (UnknownHostException uhe) {

@@ -16,7 +16,6 @@ public class TCPEndPointDst implements TCPEndPoint {
 
     // listen socket
     ServerSocket serverSocket;
-
     // socket for connection
     Socket socket;
 
@@ -26,8 +25,7 @@ public class TCPEndPointDst implements TCPEndPoint {
     /**
      * A TCPEndPointDst needs a port to listen on.
      */
-    public TCPEndPointDst(ServerSocket serverSocket) throws
-    UnknownHostException, IOException {
+    public TCPEndPointDst(ServerSocket serverSocket) throws UnknownHostException, IOException {
         this.serverSocket = serverSocket;
         this.port = serverSocket.getLocalPort();
         isConnected = false;
@@ -38,8 +36,7 @@ public class TCPEndPointDst implements TCPEndPoint {
      */
     public boolean connect() throws IOException {
         if (isConnected) {
-            throw new IOException(
-                      "Cannot connect again to: " + socket);
+            throw new IOException("Cannot connect again to: " + socket);
         } else {
             socket = serverSocket.accept();
             isConnected = true;
@@ -73,13 +70,9 @@ public class TCPEndPointDst implements TCPEndPoint {
      */
     public String toString() {
         if (socket == null) {
-            return " @ "
-                   + serverSocket.getInetAddress().getHostName()
-                   + ":" + port;
+            return " @ " + serverSocket.getInetAddress().getHostName() + ":" + port;
         } else {
-            return " -> "
-                   + serverSocket.getInetAddress().getHostName()
-                   + ":" + port;
+            return " -> " + serverSocket.getInetAddress().getHostName() + ":" + port;
         }
     }
 

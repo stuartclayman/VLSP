@@ -30,14 +30,8 @@ class ApplicationThreadManager {
     public void execute(ApplicationHandle appH) {
         // create a thread name
         synchronized (threads) {
-            String threadName = "/"
-                + appManager.getRouter().getName()
-                + "/"
-                + appH.getApplication().getClass().
-                getName()
-                + "/"
-                + threadCount;
-
+            String threadName = "/" + appManager.getRouter().getName() + "/" + appH.getApplication().getClass().getName() + "/" +
+                threadCount;
             // set the thread name in the ApplicationHandle
             appH.setThreadName(threadName);
 
@@ -47,9 +41,7 @@ class ApplicationThreadManager {
             // save it in the threads map
             threads.put(threadName, t);
 
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "Starting thread "
-                                          + threadName);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting thread "  + threadName);
 
             // and start it
             t.start();
@@ -62,6 +54,7 @@ class ApplicationThreadManager {
      * Cleanup a thread
      */
     public void waitFor(ApplicationHandle appH) {
+
         synchronized (threads) {
             String threadName = appH.getThreadName();
 
@@ -72,10 +65,7 @@ class ApplicationThreadManager {
                 // no thread for this app, so notihng to wait for
             } else {
                 // there is a thread, so do a join
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin()
-                                              + "Waiting for thread "
-                                              + threadName);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Waiting for thread "  + threadName);
 
                 try {
                     t.join();
@@ -83,13 +73,12 @@ class ApplicationThreadManager {
                 }
 
                 finally {
-                    Logger.getLogger("log").logln(USR.STDOUT,
-                                                  leadin() + "End of "
-                                                  + threadName);
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of "  + threadName);
 
                     // remove the thread from the threads map
                     threads.remove(threadName);
                 }
+
             }
         }
     }

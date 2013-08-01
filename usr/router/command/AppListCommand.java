@@ -36,6 +36,7 @@ public class AppListCommand extends RouterCommand {
             int count = 0;
 
             for (ApplicationHandle appH : apps) {
+
                 array.put(appH.getName());
                 count++;
             }
@@ -47,12 +48,12 @@ public class AppListCommand extends RouterCommand {
             response.close();
 
             return true;
+
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {

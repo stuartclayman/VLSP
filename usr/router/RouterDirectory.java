@@ -16,9 +16,7 @@ public class RouterDirectory {
     private static List<Router> routerList = new ArrayList<Router>();
 
     // a Map of thread group -> router
-    private static HashMap<ThreadGroup,
-                           Router> threadToRouter
-        = new HashMap<ThreadGroup, Router>();
+    private static HashMap<ThreadGroup, Router> threadToRouter = new HashMap<ThreadGroup, Router>();
 
     /**
      * Register a Router.
@@ -38,25 +36,18 @@ public class RouterDirectory {
      * Add thread group -> Router mapping info
      */
     static synchronized void addThreadContext(ThreadGroup threadG, Router r) {
-        Logger.getLogger("log").logln(
-            USR.STDOUT,
-            "Add thread group: " + threadG.getName()
-            + " for router: "
-            + r.getName());
+        Logger.getLogger("log").logln(USR.STDOUT, "Add thread group: " + threadG.getName() + " for router: " + r.getName());
         threadToRouter.put(threadG, r);
 
         //ThreadTools.findAllThreads(".. ");
+
     }
 
     /**
      * Remove thread group -> Router mapping info
      */
     static synchronized void removeThreadContext(ThreadGroup threadG, Router r) {
-        Logger.getLogger("log").logln(
-            USR.STDOUT,
-            "Remove thread group: " + threadG.getName()
-            + " for router: "
-            + r.getName());
+        Logger.getLogger("log").logln(USR.STDOUT, "Remove thread group: " + threadG.getName() + " for router: " + r.getName());
         threadToRouter.remove(threadG);
     }
 
@@ -64,15 +55,13 @@ public class RouterDirectory {
      * Find a router by thread group
      */
     public static synchronized Router find(ThreadGroup threadG) {
-        //Logger.getLogger("log").logln(USR.STDOUT, "Finding thread
-        // group: "
-        // + threadG.getName());
+        //Logger.getLogger("log").logln(USR.STDOUT, "Finding thread group: " + threadG.getName());
 
         Router r = threadToRouter.get(threadG);
 
         //Logger.getLogger("log").logln(USR.STDOUT," found: " + r);
 
-        if (r == null) {
+        if (r== null) {
             try {
                 throw new Exception("RouterDirectory.find() FAILED");
             } catch (Exception e) {
@@ -89,19 +78,16 @@ public class RouterDirectory {
     public static synchronized Router getRouter() {
         ThreadGroup threadG = Thread.currentThread().getThreadGroup();
 
-        //Logger.getLogger("log").logln(USR.STDOUT,"Finding thread
-        // group: "
-        // + threadG.getName() + " for thread: " +
+        //Logger.getLogger("log").logln(USR.STDOUT,"Finding thread group: " + threadG.getName() + " for thread: " +
         // Thread.currentThread().getName());
 
         Router r = threadToRouter.get(threadG);
 
         //Logger.getLogger("log").logln(USR.STDOUT," found: " + r);
 
-        if (r == null) {
+        if (r== null) {
             try {
-                throw new Exception(
-                          "RouterDirectory.getRouter() FAILED");
+                throw new Exception("RouterDirectory.getRouter() FAILED");
             } catch (Exception e) {
                 e.printStackTrace();
             }

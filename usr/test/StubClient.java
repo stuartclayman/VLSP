@@ -24,19 +24,14 @@ public class StubClient implements NetIFListener {
     public StubClient(String host, int port) {
         try {
             logger = Logger.getLogger("log");
-
             // tell it to output to stdout
             // and tell it what to pick up
-            // it will actually output things where the log has bit 1
-            // set
+            // it will actually output things where the log has bit 1 set
             logger.addOutput(System.out, new BitMask(USR.STDOUT));
-
             // tell it to output to stderr
             // and tell it what to pick up
-            // it will actually output things where the log has bit 2
-            // set
+            // it will actually output things where the log has bit 2 set
             logger.addOutput(System.err, new BitMask(USR.ERROR));
-
             // initialise socket
             TCPEndPointSrc src = new TCPEndPointSrc(host, port);
 
@@ -48,17 +43,14 @@ public class StubClient implements NetIFListener {
             netIF.connect();
             int i;
 
-            Logger.getLogger("log").logln(
-                USR.ERROR, "StubClient: Connected to: " + host);
+            Logger.getLogger("log").logln(USR.ERROR, "StubClient: Connected to: " + host);
+
+
         } catch (UnknownHostException uhe) {
-            Logger.getLogger("log").logln(
-                USR.ERROR, "StubClient: Unknown host " + host);
+            Logger.getLogger("log").logln(USR.ERROR, "StubClient: Unknown host " + host);
             System.exit(1);
         } catch (IOException ioexc) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "StubClient: Cannot connect to " + host
-                + "on port " + port);
+            Logger.getLogger("log").logln(USR.ERROR, "StubClient: Cannot connect to " + host + "on port " + port);
             System.exit(1);
         }
     }
@@ -76,18 +68,15 @@ public class StubClient implements NetIFListener {
 
             datagram = DatagramFactory.newDatagram(buffer);
 
+
             datagram.setDstAddress(netIF.getRemoteRouterAddress());
             datagram.setDstPort(3333);
             try {
                 if (netIF.sendDatagram(datagram) == false) {
-                    Logger.getLogger("log").logln(
-                        USR.ERROR,
-                        "Failed: " + datagram + " with "
-                        + new String(datagram.getPayload()));
+                    Logger.getLogger("log").logln(USR.ERROR, "Failed: " + datagram + " with " + new String(datagram.getPayload()));
                 }
             } catch (NoRouteToHostException e) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              "No route to host");
+                Logger.getLogger("log").logln(USR.ERROR, "No route to host");
             }
         }
 
@@ -100,6 +89,7 @@ public class StubClient implements NetIFListener {
 
     /** A datagram device has closed and must be removed */
     public void closedDevice(DatagramDevice dd) {
+
     }
 
     /**

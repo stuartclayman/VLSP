@@ -8,6 +8,7 @@ import usr.logging.*;
  * Each router holds 1 EndPoint for the Connection.
  */
 public interface Connection {
+
     /**
      * Connect
      */
@@ -37,4 +38,6 @@ public interface Connection {
      * Set the Address for this connection.
      */
     public Connection setAddress(Address addr);
+
+
 }

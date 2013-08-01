@@ -14,8 +14,7 @@ import java.io.Serializable;
  * This is a 2 parts address, with 2 bytes/ 16 bits for a domain,
  * and 2 bytes/ 16 bits for a host.
  */
-public class DomainAddress extends Size4 implements Address,
-Serializable {
+public class DomainAddress extends Size4 implements Address, Serializable {
     int domainPart;
     int hostPart;
 
@@ -43,13 +42,16 @@ Serializable {
             scanner = new Scanner(part2);
             hostPart = ((int)0) | (scanner.nextShort() & 0xFFFF);
 
+
             // convert int to byte[]
             ByteBuffer buf = ByteBuffer.wrap(bytes);
             buf.putShort((short)domainPart);
             buf.putShort((short)hostPart);
+
+
+
         } else {
-            throw new UnknownHostException(
-                      "Not a Domain: " + addrStr);
+            throw new UnknownHostException("Not a Domain: " + addrStr);
         }
     }
 
@@ -61,8 +63,9 @@ Serializable {
         int top16 = (addr & 0xFFFF0000) >> 16;
         int bottom16 = addr & 0x0000FFFF;
 
-        domainPart = top16 & 0x0000FFFF;
-        hostPart = bottom16 & 0x0000FFFF;
+        domainPart = top16  & 0x0000FFFF;
+        hostPart = bottom16  & 0x0000FFFF;
+
 
         // convert shorts to byte[]
         ByteBuffer buf = ByteBuffer.wrap(bytes);
@@ -73,8 +76,7 @@ Serializable {
     /**
      * Create a DomainAddress from a byte[]
      */
-    public DomainAddress(byte[] addr)  throws
-    UnsupportedOperationException {
+    public DomainAddress(byte[] addr)  throws UnsupportedOperationException {
         if (addr.length == 4) {
             // copy bytes in
             System.arraycopy(addr, 0, bytes, 0, 4);
@@ -83,10 +85,9 @@ Serializable {
             ByteBuffer buf = ByteBuffer.wrap(bytes);
             domainPart = buf.getShort();
             hostPart = buf.getShort();
+
         } else {
-            throw new UnsupportedOperationException(
-                      "DomainAddress: wrong length. Expected 4, got "
-                      + addr.length);
+            throw new UnsupportedOperationException("DomainAddress: wrong length. Expected 4, got " + addr.length);
         }
     }
 
@@ -109,7 +110,6 @@ Serializable {
      */
     public int asInteger() {
         int integerView = (int)((domainPart << 16)) | hostPart;
-
         return integerView;
     }
 
@@ -153,8 +153,8 @@ Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof DomainAddress) {
             DomainAddress addr = (DomainAddress)obj;
-            return addr.domainPart == this.domainPart
-                   && addr.hostPart == this.hostPart;
+            return addr.domainPart == this.domainPart &&
+                   addr.hostPart == this.hostPart;
         } else {
             return false;
         }

@@ -25,13 +25,12 @@ public class LocalCheckCommand extends LocalCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(Request request, Response response) {
+
         try {
             PrintStream out = response.getPrintStream();
 
             // get full request string
-            String path = java.net.URLDecoder.decode(
-                    request.getPath().getPath(), "UTF-8");
-
+            String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
             // strip off /command
             String value = path.substring(9);
 
@@ -39,12 +38,10 @@ public class LocalCheckCommand extends LocalCommand {
             String [] args = value.split(" ");
 
             if (args.length != 3) {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put("error",
-                          "Local Check Command has wrong arguments "
-                          + rest);
+                jsobj.put("error", "Local Check Command has wrong arguments " + rest);
 
                 out.println(jsobj.toString());
                 response.close();
@@ -52,20 +49,17 @@ public class LocalCheckCommand extends LocalCommand {
                 return false;
             }
 
+
             String hostName = args[1];
             int port = Integer.parseInt(args[2]);
             LocalHostInfo gc = null;
             try {
                 gc = new LocalHostInfo(hostName, port);
             } catch (UnknownHostException e) {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put(
-                    "error",
-                    "Cannot find host info for LOCAL_CHECK_COMMAND "
-                    +
-                    e.getMessage());
+                jsobj.put("error", "Cannot find host info for LOCAL_CHECK_COMMAND "+e.getMessage());
 
                 out.println(jsobj.toString());
                 response.close();
@@ -83,17 +77,17 @@ public class LocalCheckCommand extends LocalCommand {
             response.close();
 
             return true;
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
     }
 
 }

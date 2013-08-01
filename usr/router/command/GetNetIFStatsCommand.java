@@ -14,6 +14,7 @@ import java.io.PrintStream;
 import java.io.IOException;
 import us.monoid.json.*;
 
+
 /**
  * The GET_NETIF_STATS command.
  */
@@ -22,8 +23,7 @@ public class GetNetIFStatsCommand extends RouterCommand {
      * Construct a GetNetIFStatsCommand.
      */
     public GetNetIFStatsCommand() {
-        super(MCRP.GET_NETIF_STATS.CMD, MCRP.GET_NETIF_STATS.CODE,
-              MCRP.ERROR.CODE);
+        super(MCRP.GET_NETIF_STATS.CMD, MCRP.GET_NETIF_STATS.CODE, MCRP.ERROR.CODE);
     }
 
     /**
@@ -47,11 +47,10 @@ public class GetNetIFStatsCommand extends RouterCommand {
                 stats = localNetIF.getStats();
 
                 // put out netif name
-                statsString = localNetIF.getRemoteRouterName() + " "
-                    + localNetIF.getName() + " " +
-                    stats.toString();
+                statsString = localNetIF.getRemoteRouterName()+ " "+localNetIF.getName()
+                    + " " + stats.toString();
 
-                jsobj.put(Integer.toString(count), statsString);
+                jsobj.put(localNetIF.getRemoteRouterName(), statsString);
                 count++;
             }
 
@@ -62,37 +61,41 @@ public class GetNetIFStatsCommand extends RouterCommand {
                     NetIF netIF = rp.getNetIF();
 
                     if (netIF != null) {
+
                         stats = netIF.getStats();
 
-                        // put out netif name
-                        statsString = netIF.getRemoteRouterName()
-                            + " " + netIF.getName() + " "
-                            + stats.toString();
 
-                        //jsobj.put(netIF.getRemoteRouterName(),
-                        // statsString);
+                        // put out netif name
+                        statsString = netIF.getRemoteRouterName()+ " " +
+                            netIF.getName() + " " + stats.toString();
+                        //System.err.println(statsString);
+
+                        //jsobj.put(netIF.getRemoteRouterName(), statsString);
                         jsobj.put(Integer.toString(count), statsString);
                         count++;
                     }
                 }
+
             }
 
             jsobj.put("size", count);
+
             out.println(jsobj.toString());
             response.close();
 
             return true;
+
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
     }
 
 }

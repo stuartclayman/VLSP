@@ -6,36 +6,41 @@
     <echo message=""/>
     <property name="sources" value="${basedir}"/>
     <property name="classes" value="${basedir}/classes"/>
-    <property name="external.jars" value="./libs/monitoring-0.6.7.jar:./libs/timeindex-20101020.jar:./libs/aggregator-0.3.jar:./libs/rgcprobdistributions.jar:./libs/rgcxmlparse.jar:./libs/rgcmathfunctions.jar:./libs/resty-0.3.1.jar:./libs/simple-4.1.21.jar" />
+    <property name="external.jars" value="./libs/monitoring-0.6.7.jar:./libs/timeindex-20130121.jar:./libs/aggregator-0.3.jar:./libs/rgcprobdistributions.jar:./libs/rgcxmlparse.jar:./libs/rgcmathfunctions.jar:./libs/resty-0.3.1.jar:./libs/simple-4.1.21.jar:./libs/restconsole-0.1.0.jar:./umf_libs/UMFCommon.jar:./umf_libs/restbind.jar" />
     <property name="api" value="${basedir}/docs"/>    
     <property name="year" value="2012"/>
     <property name="jars" value="${basedir}"/>
-    <property name="release" value="0.10.1" />
+    <property name="release" value="0.10.2" />
   </target>
 
   <!-- Build -->
   <target name="build" depends="init">
     <echo message="------ Compiling application"/>
     <mkdir dir="${classes}"/>
-    <javac debug="on" srcdir="${sources}" classpath="${external.jars}" includeantruntime="false">
-	   <!-- destdir="${classes}" -->
-    <include name="usr/**" />
-    <include name="plugins_usr/**" />
-    <include name="demo_usr/**" />
-    
-    <compilerarg value="-Xlint:unchecked,deprecation" />
+    <javac debug="on" srcdir="${sources}" classpath="${external.jars}"
+           target="1.7" includeantruntime="false">
+      <!-- destdir="${classes}" -->
+      <include name="usr/**" />
+      <include name="plugins_usr/**" />
+      <include name="demo_usr/**" />
+      <!--
+          <compilerarg value="-Xlint:unchecked" />
+          -->
+
+      <!-- <compilerarg value="-verbose" /> -->
+      <compilerarg value="-Xlint:deprecation" />
 
     </javac>
 
   </target>
 
   <!-- Jar -->
- <target name="jars" depends="build">
-     <delete file="localcontroller.jar"/>
-     <delete file="MANIFEST.MF"/>
-     <manifest file="MANIFEST.MF">
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Main-Class" value="usr.localcontroller.LocalController"/>
+  <target name="jars" depends="build">
+    <delete file="localcontroller.jar"/>
+    <delete file="MANIFEST.MF"/>
+    <manifest file="MANIFEST.MF">
+      <attribute name="Built-By" value="${user.name}"/>
+      <attribute name="Main-Class" value="usr.localcontroller.LocalController"/>
     </manifest>
 
     <jar destfile="localcontroller.jar"
@@ -43,12 +48,12 @@
          includes="**/*.class"
          manifest="MANIFEST.MF"
          />
-     
-     <delete file="globalcontroller.jar"/>
-     <delete file="MANIFEST.MF"/>
-     <manifest file="MANIFEST.MF">
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Main-Class" value="usr.globalcontroller.GlobalController"/>
+    
+    <delete file="globalcontroller.jar"/>
+    <delete file="MANIFEST.MF"/>
+    <manifest file="MANIFEST.MF">
+      <attribute name="Built-By" value="${user.name}"/>
+      <attribute name="Main-Class" value="usr.globalcontroller.GlobalController"/>
     </manifest>
 
     <jar destfile="globalcontroller.jar"
@@ -56,12 +61,12 @@
          includes="**/*.class"
          manifest="MANIFEST.MF"
          />
-         
+    
     <delete file="router.jar"/>
-     <delete file="MANIFEST.MF"/>
-     <manifest file="MANIFEST.MF">
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Main-Class" value="usr.router.Router"/>
+    <delete file="MANIFEST.MF"/>
+    <manifest file="MANIFEST.MF">
+      <attribute name="Built-By" value="${user.name}"/>
+      <attribute name="Main-Class" value="usr.router.Router"/>
     </manifest>
 
     <jar destfile="router.jar"
@@ -75,35 +80,35 @@
   <target name="dist" depends="build">
     <echo message="------ Building Jar file"/>
     <jar jarfile="${jars}/userspacerouting-${release}.jar"
-    basedir="${basedir}" includes="usr/**, plugins_usr/**, demo_usr/**" />
+         basedir="${basedir}" includes="usr/**, plugins_usr/**, demo_usr/**" />
     <jar jarfile="${jars}/userspacerouting-bin-${release}.jar"
-    basedir="${basedir}" includes="usr/**, plugins_usr/**, demo_usr/**" excludes="**/*.java" />
+         basedir="${basedir}" includes="usr/**, plugins_usr/**, demo_usr/**" excludes="**/*.java" />
     <jar jarfile="${jars}/userspacerouting-src-${release}.jar"
-    basedir="${basedir}" includes="usr/**, plugins_usr/**, demo_usr/**" excludes="**/*.class" />
+         basedir="${basedir}" includes="usr/**, plugins_usr/**, demo_usr/**" excludes="**/*.class" />
   </target>
 
   <!-- JavaDoc -->
   <target name="javadoc" depends="build">
-     <echo message="------ Running JavaDoc"/>
-     <javadoc packagenames="usr.*, plugins_usr.*, demo_usr.*"
-              sourcepath="${sources}"
-              destdir="${api}"
-	      classpath="${external.jars}"
-	      excludepackagenames="usr.test, plugins_usr.monitoring.test"
-              bottom="User Space Routing ${release}"
-              author="false">
+    <echo message="------ Running JavaDoc"/>
+    <javadoc packagenames="usr.*, plugins_usr.*, demo_usr.*"
+             sourcepath="${sources}"
+             destdir="${api}"
+	     classpath="${external.jars}"
+	     excludepackagenames="usr.test, plugins_usr.monitoring.test"
+             bottom="User Space Routing ${release}"
+             author="false">
       <classpath>
         <pathelement location="${classes}"/>
       </classpath>
-     </javadoc>
+    </javadoc>
   </target>
 
-    <target name="clean" description="Delete class files and docs dir.">
-        <delete>
-            <fileset dir="${basedir}" includes="**/*.class"/>
-        </delete>
-        <delete dir="${api}" />
-    </target>
+  <target name="clean" description="Delete class files and docs dir.">
+    <delete>
+      <fileset dir="${basedir}" includes="**/*.class"/>
+    </delete>
+    <delete dir="${api}" />
+  </target>
 
   <!-- ALL -->
   <target name="all" depends="dist, javadoc">
@@ -111,17 +116,17 @@
 
   <!-- Usage -->
   <target name="usage">
-     <echo message="*** User Space Routing ANT build script ***"/>
-     <echo message="Usage : "/>
-     <echo message="   ant [target]"/>
-     <echo message=""/>     
-     <echo message="   target : "/>     
-     <echo message="            build : Build Application"/>     
-     <echo message="            dist  : Build Application + Archive (JAR)"/>     
-     <echo message="            javadoc  : Build Application + Javadoc"/>    
-     <echo message="            clean : Remove docs and .class files"/>      
-     <echo message="            all   : Build Application + Archive + JavaDoc"/>       
+    <echo message="*** User Space Routing ANT build script ***"/>
+    <echo message="Usage : "/>
+    <echo message="   ant [target]"/>
+    <echo message=""/>     
+    <echo message="   target : "/>     
+    <echo message="            build : Build Application"/>     
+    <echo message="            dist  : Build Application + Archive (JAR)"/>     
+    <echo message="            javadoc  : Build Application + Javadoc"/>    
+    <echo message="            clean : Remove docs and .class files"/>      
+    <echo message="            all   : Build Application + Archive + JavaDoc"/>       
   </target>
-       
+  
 
 </project>

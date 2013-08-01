@@ -12,6 +12,7 @@ import usr.router.NetIF;
 import usr.net.*;
 import java.util.Scanner;
 
+
 /**
  * The GET_PORT_WEIGHT command.
  * GET_PORT_WEIGHT port
@@ -22,8 +23,7 @@ public class GetPortWeightCommand extends RouterCommand {
      * Construct a GetPortWeightCommand.
      */
     public GetPortWeightCommand() {
-        super(MCRP.GET_PORT_WEIGHT.CMD, MCRP.GET_PORT_WEIGHT.CODE,
-              MCRP.GET_PORT_WEIGHT.ERROR);
+        super(MCRP.GET_PORT_WEIGHT.CMD, MCRP.GET_PORT_WEIGHT.CODE, MCRP.GET_PORT_WEIGHT.ERROR);
     }
 
     /**
@@ -34,19 +34,15 @@ public class GetPortWeightCommand extends RouterCommand {
             PrintStream out = response.getPrintStream();
 
             // get full request string
-            String path = java.net.URLDecoder.decode(
-                    request.getPath().getPath(), "UTF-8");
-
+            String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
             // strip off /command
             String value = path.substring(9);
-
             // strip off COMMAND
-            String rest
-                = value.substring(MCRP.GET_PORT_WEIGHT.CMD.length()).
-                    trim();
+            String rest = value.substring(MCRP.GET_PORT_WEIGHT.CMD.length()).trim();
             String[] parts = rest.split(" ");
 
             if (parts.length == 1) {
+
                 String routerPortName = parts[0];
 
                 // find port
@@ -62,20 +58,19 @@ public class GetPortWeightCommand extends RouterCommand {
                 int p = scanner.nextInt();
                 RouterPort routerPort = controller.getPort(p);
 
-                if ((routerPort == null) || (routerPort ==
-                                             RouterPort.EMPTY)) {
-                    response.setCode(404);
+                if (routerPort == null || routerPort == RouterPort.EMPTY) {
+                    response.setCode(302);
 
                     JSONObject jsobj = new JSONObject();
-                    jsobj.put("error",
-                              getName() + " invalid port "
-                              + routerPortName);
+                    jsobj.put("error", getName() + " invalid port " + routerPortName);
 
                     out.println(jsobj.toString());
                     response.close();
 
                     return false;
+
                 } else {
+
                     // get weight on netIF in port
                     NetIF netIF = routerPort.getNetIF();
                     int weight = netIF.getWeight();
@@ -87,8 +82,9 @@ public class GetPortWeightCommand extends RouterCommand {
 
                     return true;
                 }
+
             } else {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
                 jsobj.put("error", getName() + " wrong no of args ");
@@ -97,13 +93,13 @@ public class GetPortWeightCommand extends RouterCommand {
                 response.close();
 
                 return false;
+
             }
+
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {

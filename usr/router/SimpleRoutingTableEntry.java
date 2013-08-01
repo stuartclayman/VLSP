@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 public class SimpleRoutingTableEntry implements RoutingTableEntry {
     private Address address_;
     private int cost_;
-
     // NetIF of null is a local interface
     private NetIF inter_;
 
@@ -24,19 +23,15 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     throws Exception {
         if (tableEntry.length < 8) {
             throw new Exception
-                  (
-                      "Byte array received to construct routing table too short");
+                      ("Byte array received to construct routing table too short");
         }
-
         ByteBuffer wrapper = ByteBuffer.wrap(tableEntry);
 
         // get correct no of bytes for an address
         int totalLength = tableEntry.length;
-        int costStart = totalLength - 4;   // subtract length of cost
+        int costStart = totalLength - 4;  // subtract length of cost
 
-        //System.err.println("SimpleRoutingTableEntry: tableEntry size =
-        // " +
-        // totalLength);
+        //System.err.println("SimpleRoutingTableEntry: tableEntry size = " + totalLength);
 
         // suck out the address
         byte[] addr = new byte[costStart];
@@ -47,7 +42,6 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         wrapper.position(costStart);
         cost_ = wrapper.getInt();
         inter_ = inter;
-
         //System.err.println("NEW ENTRY CREATED "+toString());
     }
 
@@ -77,10 +71,9 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
      */
     String addressAsString(Address addr) {
         /*
-         * int id = addr.asInteger();
-         * return Integer.toString(id);
+           int id = addr.asInteger();
+           return Integer.toString(id);
          */
-
         //return addr.asTransmitForm();
         return addr.toString();
     }
@@ -99,7 +92,6 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     public byte [] toBytes() {
         byte [] bytes = new byte[size()];
         ByteBuffer b = ByteBuffer.wrap(bytes);
-
         // copy in the address
         b.put(address_.asByteArray());
         b.putInt(cost_);
@@ -112,11 +104,12 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     public String showTransmitted() {
         String entry = "[ ";
 
-        entry += addressAsString(address_) + " W(" + cost_ + ") ";
+        entry += addressAsString(address_) + " W(" + cost_+ ") ";
 
         entry += " ]";
 
         return entry;
+
     }
 
     /** Entry represented as string */
@@ -124,18 +117,13 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         String entry = "[ ";
 
         if (inter_ == null) {
-            entry += addressAsString(address_) + " W(" + cost_
-                + ") IF: localhost";
+            entry += addressAsString(address_) + " W(" + cost_+ ") IF: localhost";
         } else {
-            entry += addressAsString(address_) + " W(" + cost_
-                + ") IF: "
-                + ("if"
-                   + portNo(inter_)) + " => " + addressAsString(
+            entry += addressAsString(address_) + " W(" + cost_ + ") IF: " + ("if" + portNo(inter_))  + " => " + addressAsString(
                     inter_.getRemoteRouterAddress());
         }
 
         entry += " ]";
-
         //Logger.getLogger("log").logln(USR.ERROR, "ENTRY: "+entry);
         return entry;
     }

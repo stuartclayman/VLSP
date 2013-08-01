@@ -26,8 +26,7 @@ public class UDPEndPointSrc implements UDPEndPoint {
     /**
      * A UDPEndPointSrc needs a host and port for the UDPEndPointDst.
      */
-    public UDPEndPointSrc(String host, int port) throws UnknownHostException,
-    IOException {
+    public UDPEndPointSrc(String host, int port) throws UnknownHostException, IOException {
         this.host = host;
         this.port = port;
         isConnected = false;
@@ -38,8 +37,7 @@ public class UDPEndPointSrc implements UDPEndPoint {
      */
     public boolean connect() throws IOException {
         if (isConnected) {
-            throw new IOException(
-                      "Cannot connect again to: " + socket);
+            throw new IOException("Cannot connect again to: " + socket);
         } else {
             socket = new DatagramSocket();
             isConnected = true;

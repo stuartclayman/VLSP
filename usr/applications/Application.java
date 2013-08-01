@@ -16,6 +16,7 @@ public interface Application extends Runnable {
      */
     public ApplicationResponse start();
 
+
     /**
      * Stop an application.
      * This is called to implement graceful shut down

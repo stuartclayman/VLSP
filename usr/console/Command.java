@@ -1,8 +1,6 @@
 package usr.console;
 
-import usr.router.*;
-import usr.logging.*;
-import java.nio.channels.SocketChannel;
+import cc.clayman.console.ManagementConsole;
 
 /**
  * A Command object processes a command handled by the ManagementConsole
@@ -23,4 +21,5 @@ public interface Command {
      * Set the ManagementConsole this is a command for.
      */
     public void setManagementConsole(ManagementConsole mc);
+
 }

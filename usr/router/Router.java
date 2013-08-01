@@ -6,6 +6,7 @@ import usr.net.Address;
 import usr.net.AddressFactory;
 import usr.net.DatagramFactory;
 import usr.protocol.Protocol;
+import usr.applications.ApplicationResponse;
 import java.util.List;
 import java.util.Scanner;
 import java.nio.ByteBuffer;
@@ -26,12 +27,8 @@ public class Router {
 
     // Router options
     RouterOptions options_;
-
     // The Router controller
     RouterController controller;
-
-    // ApplicationSocket Multiplexor
-    AppSocketMux appSocketMux;
 
     // Is the router active
     boolean isActive = false;
@@ -49,9 +46,9 @@ public class Router {
      * @param port the port for the management console
      */
     public Router(int port) {
-        String name = "Router-" + port + "-" + (port + 1);
+        String name = "Router-" + port + "-" + (port+1);
 
-        initRouter(port, port + 1, name);
+        initRouter(port, port+1, name);
     }
 
     /**
@@ -62,7 +59,7 @@ public class Router {
      * @param name the name of the router
      */
     public Router(int port, String name) {
-        initRouter(port, port + 1, name);
+        initRouter(port, port+1, name);
     }
 
     /**
@@ -86,7 +83,7 @@ public class Router {
      * @param r2rPort the port for Router to Router connections
      * @param name the name of the router
      */
-    public Router(int mPort, int r2rPort, String name) {
+    public Router(int mPort, int r2rPort, String name ) {
         initRouter(mPort, r2rPort, name);
     }
 
@@ -109,13 +106,11 @@ public class Router {
     void initRouter(int port1, int port2, String name) {
         // allocate a new logger
         Logger logger = Logger.getLogger("log");
-
         // tell it to output to stdout
         // and tell it what to pick up
         // it will actually output things where the log has bit
         // USR.STDOUT set
         logger.addOutput(System.out, new BitMask(USR.STDOUT));
-
         // tell it to output to stderr
         // and tell it what to pick up
         // it will actually output things where the log has bit
@@ -124,11 +119,7 @@ public class Router {
 
         // add some extra output channels, using mask bit 6
         try {
-            logger.addOutput(new PrintWriter(new FileOutputStream(
-                                                 "/tmp/router-" + port1
-                                                 + "-channel6.out")),
-                             new BitMask(1 << 6));
-
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/router-" + port1 + "-channel6.out")), new BitMask(1<<6));
             //logger.addOutput(System.out, new BitMask(1<<6));
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,19 +128,19 @@ public class Router {
         options_ = new RouterOptions(this);
 
         // Setup ThreadGroup
-        threadGroup = Thread.currentThread().getThreadGroup();
-        controller = new RouterController(this, options_, port1, port2,
-                                          name);
-        fabric = new SimpleRouterFabric(this, options_);
+        threadGroup = Thread.currentThread().getThreadGroup(); // new ThreadGroup(name);
 
+        controller = new RouterController(this, options_, port1, port2, name);
+
+        fabric = new SimpleRouterFabric(this, options_);
         //fabric = new VectorRouterFabric(this, options_);
 
         if (!fabric.init()) {
-            throw new Error(
-                      "RouterFabric failed to init()");
+            throw new Error("RouterFabric failed to init()");
         }
 
         RouterDirectory.register(this);
+
     }
 
     /**
@@ -157,16 +148,13 @@ public class Router {
      */
     public boolean start() {
         if (!isActive) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "start");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
             boolean fabricStart = fabric.start();
             boolean controllerStart = controller.start();
 
             // if the fabric and the controller started OK
             if (fabricStart && controllerStart) {
-                appSocketMux = new AppSocketMux(controller);
-                appSocketMux.start();
 
                 addThreadContext(threadGroup);
 
@@ -181,14 +169,14 @@ public class Router {
 
                 return false;
             }
+
         } else {
             return false;
         }
     }
 
     /**
-     * Stop the router --- called from internal threads such as management
-     *******************************console
+     * Stop the router --- called from internal threads such as management console
      */
     public boolean stop() {
         if (isActive) {
@@ -197,7 +185,6 @@ public class Router {
 
             removeThreadContext(threadGroup);
 
-            appSocketMux.stop();
             controller.stop();
             fabric.stop();
 
@@ -255,7 +242,24 @@ public class Router {
      * Get the AppSockMux this talks to.
      */
     AppSocketMux getAppSocketMux() {
-        return appSocketMux;
+        return controller.getAppSocketMux();
+    }
+
+    /**
+     * Start an App.
+     * It takes a class name and some args.
+     * It returns app_name ~= /Router-1/App/class.blah.Blah/1
+     */
+    public ApplicationResponse appStart(String commandstr) {
+        return controller.appStart(commandstr);
+    }
+
+    /**
+     * Stop an App.
+     * It takes an app name
+     */
+    public ApplicationResponse appStop(String commandstr) {
+        return controller.appStop(commandstr);
     }
 
     /**
@@ -277,8 +281,7 @@ public class Router {
 
     /**
      * Get the router address.
-     * This is a special feature where the router itself has its own
-     *******************************address.
+     * This is a special feature where the router itself has its own address.
      */
     public Address getAddress() {
         return controller.getAddress();
@@ -286,8 +289,7 @@ public class Router {
 
     /**
      * Set the router address.
-     * This is a special feature where the router itself has its own
-     *******************************address.
+     * This is a special feature where the router itself has its own address.
      */
     public boolean setAddress(Address addr) {
         return controller.setAddress(addr);
@@ -310,7 +312,6 @@ public class Router {
      */
     public RouterPort plugInNetIF(NetIF netIF) {
         RouterPort rp = fabric.addNetIF(netIF);
-
         netIF.setRouterPort(rp);
         return rp;
     }
@@ -344,6 +345,13 @@ public class Router {
      */
     public NetIF findNetIF(String name) {
         return fabric.findNetIF(name);
+    }
+
+    /**
+     * Set the netIF weight associated with a link to a certain router name
+     */
+    public boolean setNetIFWeight(String name, int weight) {
+        return fabric.setNetIFWeight(name, weight);
     }
 
     /**
@@ -396,11 +404,10 @@ public class Router {
     /** Read a string containing router options */
     public boolean readOptionsString(String str) {
         Logger logger = Logger.getLogger("log");
-
         try {
-            //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO PARSE
-            // STRING "+str);
+            //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO PARSE STRING "+str);
             options_.setOptionsFromString(str);
+
         } catch (Exception e) {
             logger.logln(USR.ERROR, "Cannot parse options string");
             logger.logln(USR.ERROR, e.getMessage());
@@ -411,9 +418,8 @@ public class Router {
 
         if (!fileName.equals("")) {
             if (options_.getOutputFileAddName()) {
-                fileName += "_" + leadinFname();
+                fileName += "_"+leadinFname();
             }
-
             File output = new File(fileName);
             try {
                 outputStream_ = new FileOutputStream(output);
@@ -430,9 +436,8 @@ public class Router {
 
         if (!errorName.equals("")) {
             if (options_.getOutputFileAddName()) {
-                errorName += "_" + leadinFname();
+                errorName += "_"+leadinFname();
             }
-
             File output = new File(fileName);
             try {
                 FileOutputStream fos = new FileOutputStream(output);
@@ -444,7 +449,6 @@ public class Router {
                 System.exit(-1);
             }
         }
-
         return true;
     }
 
@@ -456,9 +460,9 @@ public class Router {
 
     public boolean readOptionsFile(String fName) {
         Logger logger = Logger.getLogger("log");
-
         try {
             options_.setOptionsFromFile(fName);
+
         } catch (Exception e) {
             logger.logln(USR.ERROR, "Cannot parse options file");
             logger.logln(USR.ERROR, e.getMessage());
@@ -470,9 +474,8 @@ public class Router {
 
         if (!fileName.equals("")) {
             if (options_.getOutputFileAddName()) {
-                fileName += "_" + leadinFname();
+                fileName += "_"+leadinFname();
             }
-
             File output = new File(fileName);
             try {
                 FileOutputStream fos = new FileOutputStream(output, true);
@@ -484,14 +487,12 @@ public class Router {
                 System.exit(-1);
             }
         }
-
         String errorName = options_.getErrorFile();
 
         if (!errorName.equals("")) {
             if (options_.getOutputFileAddName()) {
-                errorName += "_" + leadinFname();
+                errorName += "_"+leadinFname();
             }
-
             File output = new File(fileName);
             try {
                 FileOutputStream fos = new FileOutputStream(output, true);
@@ -503,7 +504,6 @@ public class Router {
                 System.exit(-1);
             }
         }
-
         return true;
     }
 
@@ -519,9 +519,7 @@ public class Router {
             int mPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
-            router
-                = new RouterEnv(mPort, "Router-" + mPort + "-"
-                                + (mPort + 1));
+            router = new RouterEnv(mPort, "Router-" + mPort + "-" + (mPort+1));
         } else if (args.length == 2) {
             int mPort = 0;
             int r2rPort = 0;
@@ -529,8 +527,7 @@ public class Router {
             mPort = sc.nextInt();
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
-            router = new RouterEnv(mPort, r2rPort,
-                                   "Router-" + mPort + "-" + r2rPort);
+            router = new RouterEnv(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
         } else if (args.length == 3) {
             int mPort = 0;
             int r2rPort = 0;
@@ -562,8 +559,7 @@ public class Router {
             try {
                 addr = AddressFactory.newAddress(args[3]);
             } catch (java.net.UnknownHostException e) {
-                System.err.println(
-                    "Cannot construct address from " + args[3]);
+                System.err.println("Cannot construct address from "+args[3]);
                 help();
             }
 
@@ -571,17 +567,16 @@ public class Router {
         } else {
             help();
         }
+
     }
 
     private static void help() {
-        Logger.getLogger("log").logln(
-            USR.ERROR,
-            "Router [mgt_port [r2r_port]] [name] [address]");
+        Logger.getLogger("log").logln(USR.ERROR, "Router [mgt_port [r2r_port]] [name] [address]");
         System.exit(1);
     }
 
     String leadinFname() {
-        return "R_" + getName();
+        return "R_"+getName();
     }
 
     /**

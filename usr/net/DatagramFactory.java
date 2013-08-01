@@ -16,8 +16,7 @@ import java.lang.reflect.Constructor;
 public class DatagramFactory {
     // The list of Protocols to DatagramFactoryInfo objects
     // indexed by Protocol number
-    private static ArrayList<DatagramFactoryInfo> list
-        = new ArrayList<DatagramFactoryInfo>();
+    private static ArrayList<DatagramFactoryInfo> list = new ArrayList<DatagramFactoryInfo>();
 
     /** Set the default TTL to be used by new packets */
     static int initialTTL_ = 64;
@@ -71,12 +70,12 @@ public class DatagramFactory {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Logger.getLogger("log").logln(
-                USR.ERROR, "DatagramFactory: Exception: " + e);
+            Logger.getLogger("log").logln(USR.ERROR, "DatagramFactory: Exception: " + e);
             throw new Error(
-                      "DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: "
-                      + dfi.className + " for protocol " + protocol);
+                      "DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: " + dfi.className + " for protocol " +
+                      protocol);
         }
+
     }
 
     /**
@@ -101,12 +100,11 @@ public class DatagramFactory {
      * Set up the class for a protocol
      */
     public static void setClassForProtocol(String className, int protocol) {
-        //System.err.println("DatagramFactory: setClassForProtocol " +
-        // className + " " + protocol);
+        //System.err.println("DatagramFactory: setClassForProtocol " + className + " " + protocol);
 
         DatagramFactoryInfo dfi = new DatagramFactoryInfo(className);
 
-        if ((list.size() <= protocol) || (list.get(protocol) == null)) {
+        if (list.size() <= protocol || list.get(protocol) == null) {
             list.add(protocol, dfi);
         } else {
             list.set(protocol, dfi);
@@ -132,25 +130,17 @@ class DatagramFactoryInfo {
             // get Class object
             Class<?> c = (Class<?> )Class.forName(className);
 
-            final Class<? extends Datagram> xc = c.asSubclass(
-                    Datagram.class);
-
+            final Class<? extends Datagram> xc = c.asSubclass(Datagram.class );
             // find Constructor for when arg is null
-            cons0
-                = (Constructor<? extends Datagram> )xc.
-                    getDeclaredConstructor();
+            cons0 = (Constructor<? extends Datagram> )xc.getDeclaredConstructor();
+
 
             // get Consturctor for when arg is ByteBuffer
-            cons1
-                = (Constructor<? extends Datagram> )xc.
-                    getDeclaredConstructor(
-                        ByteBuffer.class);
+            cons1 = (Constructor<? extends Datagram> )xc.getDeclaredConstructor(ByteBuffer.class );
+
         } catch (Exception e) {
-            Logger.getLogger("log").logln(
-                USR.ERROR, "DatagramFactoryInfo: Exception: " + e);
-            throw new Error(
-                      "DatagramFactory: config error in DatagramFactory.  Cannot configure class data for: "
-                      + className);
+            Logger.getLogger("log").logln(USR.ERROR, "DatagramFactoryInfo: Exception: " + e);
+            throw new Error("DatagramFactory: config error in DatagramFactory.  Cannot configure class data for: " + className);
         }
     }
 

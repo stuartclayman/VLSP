@@ -4,6 +4,7 @@ import java.util.*;
 import usr.logging.*;
 
 public interface RoutingTableEntry {
+
     public NetIF getNetIF();
 
     public Address getAddress();
@@ -21,4 +22,5 @@ public interface RoutingTableEntry {
     public String showTransmitted();
 
     public String toString();
+
 }

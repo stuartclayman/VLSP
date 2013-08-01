@@ -11,15 +11,13 @@ import java.util.Set;
  * controllers need about a router
  */
 public class BasicRouterInfo {
-    private long startTime_;
+    private long time_;
     private LocalControllerInfo controller_;
     private int managementPort_;
     private int router2routerPort_;
     private int routerId_;
-
     // the address of the router
     private String address;
-
     // the name of the router
     private String name;
 
@@ -29,21 +27,32 @@ public class BasicRouterInfo {
     // the Map of applications running on this router
     // It holds data like
     // 00:14:52 AID | StartTime | State | ClassName | Args | Name |
-    // 00:14:52 1 | 1331119233159 | RUNNING | usr.applications.Send | [4,
-    // 3000, 250000, -d, 250, -i, 10] | /R1/App/usr.applications.Send/1 |
-    // So /R1/App/usr.applications.Send/1  -> ["id": 46346535, "time" :
-    // 00:14:52, "aid" : 1, "startime" : 1331119233159, "state": "RUNNING",
-    // "classname" : "usr.applications.Send", "args" : "[4, 3000, 250000,
-    // -d, 250, -i, 10]" ]
+    // 00:14:52 1 | 1331119233159 | RUNNING | usr.applications.Send | [4, 3000, 250000, -d, 250, -i, 10] |
+    // /R1/App/usr.applications.Send/1 |
+    // So /R1/App/usr.applications.Send/1  -> ["id": 46346535, "time" : 00:14:52, "aid" : 1, "startime" : 1331119233159, "state":
+    // "RUNNING", "classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ]
 
     private HashMap<String, Map<String, Object> > localApplications;
+
+    /**
+     * BasicRouterInfo with router id and time only.
+     */
+    public BasicRouterInfo(int id, long time) {
+        routerId_ = id;
+        time_ = time;
+        controller_ = null;
+        managementPort_ = 0;
+        router2routerPort_ = 0;
+        appIDs = null;
+        localApplications = null;
+    }
 
     /**
      * BasicRouterInfo with router id, start time, the LocalController, and
      * the managementPort
      */
     public BasicRouterInfo(int id, long time, LocalControllerInfo lc, int port1) {
-        this(id, time, lc, port1, port1 + 1);
+        this(id, time, lc, port1, port1+1);
     }
 
     /**
@@ -51,13 +60,20 @@ public class BasicRouterInfo {
      * the managementPort, and the router-to-router port.
      */
     public BasicRouterInfo(int id, long time, LocalControllerInfo lc, int port1, int port2) {
-        startTime_ = time;
+        routerId_ = id;
+        time_ = time;
         controller_ = lc;
         managementPort_ = port1;
         router2routerPort_ = port2;
-        routerId_ = id;
         appIDs = new HashMap<Integer, String>();
         localApplications = new HashMap<String, Map<String, Object> >();
+    }
+
+    /**
+     * Get the router time
+     */
+    public long getTime() {
+        return time_;
     }
 
     /**
@@ -131,9 +147,7 @@ public class BasicRouterInfo {
         localApplications.put(name, null);
     }
 
-    // FIXME: GT - I could not find the globalcontroller command where to
-    // invoke application shutdown
-
+    // FIXME: GT - I could not find the globalcontroller command where to invoke application shutdown
     /**
      * Remove an application to the router.
      */
@@ -165,19 +179,8 @@ public class BasicRouterInfo {
 
     /**
      * Get the data held for an application
-     * So /R1/App/usr.applications.Send/1  -> ["time" : 00:14:52, "id" : 1,
-     *******************************"startime" : 1331119233159, "state":
-     ***************"RUNNING",
-     ***************************"classname"
-     *****************************:
-     *******************************"usr.applications.Send", "args" : "[4,
-     * 3000,
-     ********************250000,
-     ************************-d,
-     *****************************250,
-     *******************************-i,
-     *******************************10]"
-     *******************************]
+     * So /R1/App/usr.applications.Send/1  -> ["time" : 00:14:52, "id" : 1, "startime" : 1331119233159, "state": "RUNNING",
+     *"classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ]
      */
     public Map<String, Object> getApplicationData(String appName) {
         return localApplications.get(appName);
@@ -185,26 +188,13 @@ public class BasicRouterInfo {
 
     /**
      * Set the data held for an application
-     * So /R1/App/usr.applications.Send/1  -> ["time" : 00:14:52, "id" : 1,
-     *******************************"startime" : 1331119233159, "state":
-     ***************"RUNNING",
-     ***************************"classname"
-     *****************************:
-     *******************************"usr.applications.Send", "args" : "[4,
-     * 3000,
-     ********************250000,
-     ************************-d,
-     *****************************250,
-     *******************************-i,
-     *******************************10]"
-     *******************************]
+     * So /R1/App/usr.applications.Send/1  -> ["time" : 00:14:52, "id" : 1, "startime" : 1331119233159, "state": "RUNNING",
+     *"classname" : "usr.applications.Send", "args" : "[4, 3000, 250000, -d, 250, -i, 10]" ]
      */
-    public void setApplicationData(String appName, Map<String,
-                                                       Object> data) {
+    public void setApplicationData(String appName, Map<String, Object> data) {
         localApplications.put(appName, data);
 
-        //System.out.println("BasicRouterInfo: " + name + ".
-        // setApplicationData " + appName + " -> " + data);
+        //System.out.println("BasicRouterInfo: " + name + ". setApplicationData " + appName + " -> " + data);
     }
 
     /**
@@ -218,10 +208,9 @@ public class BasicRouterInfo {
         if (obj instanceof BasicRouterInfo) {
             BasicRouterInfo other = (BasicRouterInfo)obj;
 
-            if ((other.routerId_ == this.routerId_)
-                && (other.managementPort_ == this.managementPort_)
-                && (other.router2routerPort_ ==
-                    this.router2routerPort_)) {
+            if (other.routerId_ == this.routerId_ &&
+                other.managementPort_ == this.managementPort_ &&
+                other.router2routerPort_ == this.router2routerPort_) {
                 return true;
             } else {
                 return false;
@@ -235,9 +224,8 @@ public class BasicRouterInfo {
      * To string
      */
     public String toString() {
-        return getHost() + ":" + getManagementPort() + " % "
-               + getId()
-               + " -> " + getName() + "/" + getAddress();
+        return getHost() + ":" + getManagementPort() + " % " + getId() +
+               " -> " + getName() + "/" + getAddress();
     }
 
 }

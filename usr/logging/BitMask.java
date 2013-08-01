@@ -105,7 +105,7 @@ public class BitMask implements Cloneable {
      * Returns true if it is, false otherwise.
      */
     public boolean isClear() {
-        return actual == 0;
+        return (actual == 0);
     }
 
     /**
@@ -155,7 +155,7 @@ public class BitMask implements Cloneable {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        for (int b = 31; b >= 0; b--) {
+        for (int b = 31; b>=0; b--) {
             if ((actual & (1 << b)) == 0) {
                 // bit is not set
                 builder.append('0');
@@ -165,6 +165,7 @@ public class BitMask implements Cloneable {
         }
 
         return builder.toString();
+
     }
 
 }

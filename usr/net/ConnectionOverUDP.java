@@ -58,9 +58,7 @@ public class ConnectionOverUDP implements Connection {
         DatagramSocket socket = endPoint.getSocket();
 
         if (socket == null) {
-            throw new Error(
-                      "EndPoint: " + endPoint
-                      + " is not connected");
+            throw new Error("EndPoint: " + endPoint + " is not connected");
         }
 
         return true;
@@ -93,8 +91,7 @@ public class ConnectionOverUDP implements Connection {
         try {
             // convert byte buffer to a DatagramPacket
             byte[] data = ((DatagramPatch)dg).toByteBuffer().array();
-            DatagramPacket packet = new DatagramPacket(data,
-                                                       data.length);
+            DatagramPacket packet = new DatagramPacket(data, data.length);
 
             // set destination address
             // These are in the endPoint
@@ -102,23 +99,20 @@ public class ConnectionOverUDP implements Connection {
                 // this is good
                 UDPEndPointSrc src = (UDPEndPointSrc)endPoint;
 
-                InetAddress addr = InetAddress.getByName(
-                        src.getHostName());
+                InetAddress addr = InetAddress.getByName(src.getHostName());
                 packet.setAddress(addr);
                 packet.setPort(src.getPort());
             } else {
-                throw new Error(
-                          "ConnectionOverUDP: cannot send from an EndPoitn destination");
+                throw new Error("ConnectionOverUDP: cannot send from an EndPoitn destination");
             }
 
-            //Logger.getLogger("log").logln(USR.ERROR,
-            // "ConnectionOverUDP
-            // sendDatagram: packet = " + packet);
+            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP sendDatagram: packet = " + packet);
 
             // send it
             socket.send(packet);
 
             return true;
+
         } catch (IOException ioe) {
             return false;
         }
@@ -135,6 +129,7 @@ public class ConnectionOverUDP implements Connection {
             int count = 0;
             short totalLen = 0;
 
+
             // read
             socket.receive(recvPacket);
             count = recvPacket.getLength();
@@ -143,9 +138,7 @@ public class ConnectionOverUDP implements Connection {
             buffer.clear();
             buffer.limit(count);
 
-            // Logger.getLogger("log").logln(USR.ERROR,
-            // "ConnectionOverUDP
-            // readDatagram: buffer = " + buffer.position() + " < " +
+            // Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP readDatagram: buffer = " + buffer.position() + " < " +
             // buffer.limit() + " < " + buffer.capacity());
 
             totalLen = (short)count;
@@ -161,6 +154,7 @@ public class ConnectionOverUDP implements Connection {
             buffer.clear();
 
             return dg;
+
         } catch (IOException ioe) {
             // TODO:  return Datagram.ERROR object
             return null;

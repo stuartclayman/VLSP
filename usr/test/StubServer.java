@@ -17,8 +17,7 @@ import java.util.TimerTask;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 
-public class StubServer extends MinimalDatagramDevice implements
-NetIFListener {
+public class StubServer extends MinimalDatagramDevice implements NetIFListener  {
     final static int PORT_NUMBER = 4433;
 
     static BitMask normal;
@@ -27,24 +26,19 @@ NetIFListener {
     TCPNetIF netIF;
     ConnectionOverTCP connection;
     ServerSocket serverSocket;
-
     // and channel
     ServerSocketChannel channel;
     Logger logger;
 
     // total no of Datagrams in
     int count = 0;
-
     // last time count
     int lastTimeCount = 0;
-
     // no per second
     int diffs = 0;
-
     // start time
     long t0 = 0;
     Address addr;
-
     // Timer stuff
     Timer timer;
     TimerTask timerTask;
@@ -55,27 +49,25 @@ NetIFListener {
         super("StubSeverver Fabric");
         listenPort = lp;
         addr = new GIDAddress(555);
-        setAddress(addr); // Dummy address for us
+        setAddress(addr);  // Dummy address for us
     }
 
     void run() {
         endObject_ = new Object();
-        start(); //  Starts Minimal datagram device
+        start();  //  Starts Minimal datagram device
         normal = new BitMask(USR.STDOUT);
         error = new BitMask(USR.ERROR);
-
         // allocate a new logger
         logger = Logger.getLogger("log");
-
         // tell it to output to stdout
         // and tell it what to pick up
         // it will actually output things where the log has bit 1 set
         logger.addOutput(System.out, normal);
-
         // tell it to output to stderr
         // and tell it what to pick up
         // it will actually output things where the log has bit 2 set
         logger.addOutput(System.err, error);
+
 
         // initialise the socket
         try {
@@ -89,15 +81,9 @@ NetIFListener {
             netIF.setName("TCPNetIF");
             netIF.setRemoteRouterAddress(new GIDAddress(1));
             netIF.connect();
-            logger.log(
-                error,
-                "StubServer: Listening on port: " + listenPort
-                + "\n");
+            logger.log(error, "StubServer: Listening on port: " + listenPort + "\n");
         } catch (IOException ioe) {
-            logger.log(
-                error, "StubServer: Cannot listen on port: "
-                + listenPort
-                + "\n");
+            logger.log(error, "StubServer: Cannot listen on port: " + listenPort + "\n");
             return;
         }
 
@@ -108,10 +94,7 @@ NetIFListener {
             public void run() {
                 if (running) {
                     diffs = count - lastTimeCount;
-                    Logger.getLogger("log").logln(
-                        USR.ERROR, "Task count: " + count
-                        + " diff: "
-                        + diffs);
+                    Logger.getLogger("log").logln(USR.ERROR, "Task count: " + count + " diff: "  + diffs);
                     lastTimeCount = count;
                 }
             }
@@ -122,6 +105,7 @@ NetIFListener {
                 if (running) {
                     running = false;
                 }
+
 
                 return running;
             }
@@ -136,6 +120,7 @@ NetIFListener {
             try {
                 endObject_.wait();
             } catch (InterruptedException e) {
+
             }
         }
         stop();
@@ -148,7 +133,6 @@ NetIFListener {
         if (ourAddress(d.getDstAddress())) {
             return getFabricDevice();
         }
-
         System.err.println("Received datagram to go the other way");
         return netIF.getFabricDevice();
     }
@@ -174,11 +158,11 @@ NetIFListener {
 
         logger.log(normal, count + ". ");
         logger.log(normal,
-                   "HL: " + datagram.getHeaderLength()
-                   + " TL: " + datagram.getTotalLength()
-                   + " From: " + datagram.getSrcAddress()
-                   + " To: " + datagram.getDstAddress()
-                   + ". ");
+                   "HL: " + datagram.getHeaderLength() +
+                   " TL: " + datagram.getTotalLength() +
+                   " From: " + datagram.getSrcAddress() +
+                   " To: " + datagram.getDstAddress() +
+                   ". ");
         byte[] payload = datagram.getPayload();
 
         if (payload == null) {
@@ -198,6 +182,7 @@ NetIFListener {
 
     /** A datagram device has closed and must be removed */
     public void closedDevice(DatagramDevice dd) {
+
     }
 
     /**
@@ -212,9 +197,7 @@ NetIFListener {
         int millis = (int)elapsed % 1000;
 
         NumberFormat millisFormat = new DecimalFormat("000");
-        logger.log(
-            error, "elapsed[" + count + "] = " + secs + ":"
-            + millisFormat.format(millis) + "\n");
+        logger.log(error, "elapsed[" + count + "] = " + secs + ":" + millisFormat.format(millis) + "\n");
 
         netIF.remoteClose();
 
@@ -223,6 +206,7 @@ NetIFListener {
         }
 
         timer = null;
+
     }
 
     public static void main(String[] args) throws IOException {

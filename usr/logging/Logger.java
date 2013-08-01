@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.channels.ByteChannel;
 import java.nio.ByteBuffer;
 
+
 /**
  * An object that will be a logger.
  * It keeps a set of output objects which actually do the logging,
@@ -53,7 +54,6 @@ public class Logger implements Logging {
             // we don't know this Logger
             // so create it
             logger = new Logger(name);
-
             // and put it in the map
             loggerMap.put(name, logger);
         }
@@ -268,7 +268,7 @@ public class Logger implements Logging {
 
             // if the result has more than 0 bits set then
             // the current output will accept the current message
-            if (!(acceptMask.isClear())) { // empty
+            if (!(acceptMask.isClear())) {  // empty
                 dispatch(message, anOutput, trailingNL);
             }
         }
@@ -290,39 +290,31 @@ public class Logger implements Logging {
                     String msg = (String)message;
                     ((LogOutput)anOutput).process(msg + "\n");
                 } else {
-                    ((LogOutput)anOutput).process(((String)
-                                                   message));
-                }
-            }
-        } else if (anOutput instanceof PrintWriter) {
-            if (message instanceof LogInput) {
-                ((PrintWriter)anOutput).print(
-                    ((LogInput)message).logView());
-            } else {
-                if (trailingNL) {
-                    ((PrintWriter)anOutput).println(
-                        (String)message);
-                } else {
-                    ((PrintWriter)anOutput).print(
-                        (String)message);
+                    ((LogOutput)anOutput).process(((String)message));
                 }
             }
 
+        } else if (anOutput instanceof PrintWriter) {
+            if (message instanceof LogInput) {
+                ((PrintWriter)anOutput).print(((LogInput)message).logView());
+            } else {
+                if (trailingNL) {
+                    ((PrintWriter)anOutput).println((String)message);
+                } else {
+                    ((PrintWriter)anOutput).print((String)message);
+                }
+            }
             ((PrintWriter)anOutput).flush();
         } else if (anOutput instanceof PrintStream) {
             if (message instanceof LogInput) {
-                ((PrintStream)anOutput).print(
-                    ((LogInput)message).logView());
+                ((PrintStream)anOutput).print(((LogInput)message).logView());
             } else {
                 if (trailingNL) {
-                    ((PrintStream)anOutput).println(
-                        (String)message);
+                    ((PrintStream)anOutput).println((String)message);
                 } else {
-                    ((PrintStream)anOutput).print(
-                        (String)message);
+                    ((PrintStream)anOutput).print((String)message);
                 }
             }
-
             ((PrintStream)anOutput).flush();
         } else if (anOutput instanceof ByteChannel) {
             try {
@@ -333,19 +325,18 @@ public class Logger implements Logging {
                 } else {
                     if (trailingNL) {
                         String msg = ((String)message) + "\n";
-                        ByteBuffer buffer = ByteBuffer.wrap(
-                                msg.getBytes());
+                        ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
                         ((ByteChannel)anOutput).write(buffer);
                     } else {
                         String msg = (String)message;
-                        ByteBuffer buffer = ByteBuffer.wrap(
-                                msg.getBytes());
+                        ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
                         ((ByteChannel)anOutput).write(buffer);
                     }
                 }
             } catch (IOException ioe) {
             }
         } else {
+            ;
         }
     }
 

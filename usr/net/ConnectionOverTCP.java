@@ -4,6 +4,7 @@ import usr.protocol.Protocol;
 import usr.logging.*;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -18,7 +19,6 @@ public class ConnectionOverTCP implements Connection {
 
     static final int PACKETS_BEFORE_SHUFFLE = 10;
     static final byte [] checkbytes = "USRD".getBytes();
-
     // The underlying connection
     SocketChannel channel;
 
@@ -26,7 +26,7 @@ public class ConnectionOverTCP implements Connection {
     Address localAddress;
 
     // A ByteBuffer to read into
-    int bufferSize_ = 20000;
+    int bufferSize_ = PACKETS_BEFORE_SHUFFLE * 2  * 2048;
     ByteBuffer buffer;
 
     // current position in the ByteBuffer
@@ -41,6 +41,7 @@ public class ConnectionOverTCP implements Connection {
 
     // eof
     boolean eof = false;
+
 
     /**
      * Construct a ConnectionOverTCP given a TCPEndPointSrc
@@ -67,10 +68,9 @@ public class ConnectionOverTCP implements Connection {
         Socket socket = endPoint.getSocket();
 
         if (socket == null) {
-            throw new Error(
-                      "EndPoint: " + endPoint
-                      + " is not connected");
+            throw new Error("EndPoint: " + endPoint + " is not connected");
         }
+
 
         channel = socket.getChannel();
         int i;
@@ -80,23 +80,20 @@ public class ConnectionOverTCP implements Connection {
             if (channel.finishConnect()) {
                 break;
             }
-
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
             }
+
         }
 
         if (i == MAX_TRIES) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          "Could not connect");
+            Logger.getLogger("log").logln(USR.ERROR, "Could not connect");
             return false;
         }
 
         if (channel == null) {
-            throw new Error(
-                      "Socket: " + socket
-                      + " has no channel");
+            throw new Error("Socket: " + socket + " has no channel");
         }
 
         return true;
@@ -117,65 +114,56 @@ public class ConnectionOverTCP implements Connection {
         return this;
     }
 
-    /** Send datagram down channel -- must be synchronized to prevent close
-     * occuring
-     * when this is working */
-    public synchronized boolean sendDatagram(Datagram dg) throws
-    IOException {
-        //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP:
-        // send(" + outCounter + ")");
+    /** Send datagram down channel -- must be synchronized to prevent close occuring
+     * when this is working
+     */
+    public synchronized boolean sendDatagram(Datagram dg) throws IOException, ClosedByInterruptException {
+        //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: send(" + outCounter + ")");
         if (dg == null) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "ConnectionOverTCP: received null datagram");
+            Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: received null datagram");
             return false;
         }
 
         if (channel.isOpen()) {
-            boolean success = writeBytesToChannel(
-                    ((DatagramPatch)dg).toByteBuffer());
+            try {
+                boolean success = writeBytesToChannel(((DatagramPatch)dg).toByteBuffer());
 
-            if (success == false) {
-                throw new IOException(
-                          "Channel closed to write");
+                if (success == false) {
+                    throw new IOException ("Channel closed to write");
+                }
+                outCounter++;
+                return true;
+            } catch (ClosedByInterruptException cbie) {
+                //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: write failed because ClosedByInterruptException");
+                throw new ClosedByInterruptException();
             }
-
-            outCounter++;
-            return true;
         } else {
-            Logger.getLogger("log").logln(
-                USR.STDOUT, "ConnectionOverTCP: " + endPoint
-                + " outCounter = " + outCounter
-                + " ALREADY CLOSED -- channel is closed");
+            Logger.getLogger("log").logln(USR.STDOUT,
+                                          "ConnectionOverTCP: " + endPoint + " outCounter = " + outCounter +
+                                          " ALREADY CLOSED -- channel is closed");
 
             return false;
         }
+
     }
 
-    public boolean writeBytesToChannel(ByteBuffer bb) throws
-    IOException {
+    public boolean writeBytesToChannel(ByteBuffer bb) throws IOException {
+
         int len = channel.write(bb);
 
         if (len < 0) {
             return false;
         }
 
-        while (bb.remaining() > 0) {
-            /* 25/7/2011 SC
-             * // Here to be cautious
-             * try {
-             *  Thread.sleep(10);
-             * } catch (InterruptedException e) {
-             * }
-             */
+        while (bb.remaining()>0) {
 
             len = channel.write(bb);
 
             if (len < 0) {
                 return false;
             }
-        }
 
+        }
         return true;
     }
 
@@ -196,35 +184,30 @@ public class ConnectionOverTCP implements Connection {
             inCounter++;
             return dg;
         } else {
-            throw new IOException(
-                      "ConnectionOverTCP: Unexpected Null in readDatagram()");
+            throw new IOException("ConnectionOverTCP: Unexpected Null in readDatagram()");
         }
     }
 
-    /** look at buffer and try to decode a datagram from it without reading
-     * more data */
+    /** look at buffer and try to decode a datagram from it without reading more data */
     Datagram decodeDatagram() {
         while (true) {
+
             // if we hit EOF an anytime, return null
             if (eof) {
                 return null;
             }
 
-            // Read a datagram at pos bufferStartData_ -- it may be
-            // partly
-            // read into buffer
+            // Read a datagram at pos bufferStartData_ -- it may be partly read into buffer
             // and it may have other datagrams following it in buffer
 
             // Do we have enough space left in buffer to read at least
-            // packet length if not then shuffle the buffer and try
-            // again.
+            // packet length if not then shuffle the buffer and try again.
             if (bufferSize_ - bufferStartData_ < 8) {
                 shuffleBuffer();
                 continue;
             }
 
-            // Do we have enough data to read packetLen -- if not return
-            // null
+            // Do we have enough data to read packetLen -- if not return null
             if (bufferEndData_ - bufferStartData_ < 8) {
                 readMoreData();
                 continue;
@@ -235,6 +218,7 @@ public class ConnectionOverTCP implements Connection {
             // Because of buffer position we cannot read a full packet
             // -- shuffle the buffer and retry
             if (packetLen > bufferSize_ - bufferStartData_) {
+
                 shuffleBuffer();
                 readMoreData();
 
@@ -248,64 +232,50 @@ public class ConnectionOverTCP implements Connection {
                 continue;
             }
 
-            // If our buffer is too short (want several packets before
-            // recopy)
+            // If our buffer is too short (want several packets before recopy)
             //, make it longer and read more data
 
             if (packetLen * PACKETS_BEFORE_SHUFFLE > bufferSize_) {
-                Logger.getLogger("log").logln(
-                    USR.STDOUT,
-                    "Connection over TCP: Increasing buffer size");
-                bufferSize_ = packetLen * PACKETS_BEFORE_SHUFFLE * 2;
+                Logger.getLogger("log").logln(USR.STDOUT, "Connection over TCP: Increasing buffer size");
+                bufferSize_ = packetLen * PACKETS_BEFORE_SHUFFLE *2;
                 ByteBuffer bigB = ByteBuffer.allocate(bufferSize_);
-                int bufferRead = bufferEndData_ - bufferStartData_;
+                int bufferRead = bufferEndData_- bufferStartData_;
                 buffer.position(bufferStartData_);
                 buffer.limit(bufferEndData_);
                 bigB.put(buffer);
                 buffer = bigB;
                 bufferStartData_ = 0;
                 bufferEndData_ = bufferRead;
-
                 // SC return decodeDatagram();
                 continue;
             }
 
-            // OK -- we got a full packet of data, let's make a datagram
-            // of
-            // it
-            if (bufferEndData_ - bufferStartData_ <
-                packetLen) {
-                throw new Error(
-                          "ConnectionOverTCP: Bug in decodeDatagram()");
+            // OK -- we got a full packet of data, let's make a datagram of it
+            if (bufferEndData_ - bufferStartData_ < packetLen) {
+                throw new Error("ConnectionOverTCP: Bug in decodeDatagram()");
             }
 
             byte[] latestDGData = new byte[packetLen];
 
-            //Logger.getLogger("log").logln(USR.STDOUT, "READING PACKET
-            // FROM
-            // "+bufferStartData_+ " to "+
+            //Logger.getLogger("log").logln(USR.STDOUT, "READING PACKET FROM "+bufferStartData_+ " to "+
             //  (bufferStartData_+packetLen));
             buffer.position(bufferStartData_);
             buffer.get(latestDGData);
-
             //for (int i= 0; i < packetLen; i++) {
-            //   Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+"
-            // char
-            // is "+ (char) latestDGData[i]);
+            //   Logger.getLogger("log").logln(USR.ERROR, "At pos"+i+" char is "+ (char) latestDGData[i]);
             //}
 
             bufferStartData_ += packetLen;
             ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
-
             // get an empty Datagram
             Datagram dg = DatagramFactory.newDatagram();
-
             // and fill in contents
             // not just the payload, but all headers too
             ((DatagramPatch)dg).fromByteBuffer(newBB);
 
             checkDatagram(latestDGData, dg);
             return dg;
+
         }
     }
 
@@ -313,10 +283,8 @@ public class ConnectionOverTCP implements Connection {
     void readMoreData() {
         buffer.position(bufferEndData_);
 
-        //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP:
-        // readMoreData: buffer position = " + bufferStartData_ + "/" +
-        // bufferEndData_ + "/" + buffer.limit() + "/" +
-        // buffer.capacity());
+        //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: readMoreData: buffer position = " + bufferStartData_ + "/" +
+        // bufferEndData_ + "/" + buffer.limit() + "/" + buffer.capacity());
 
         try {
             int count = channel.read(buffer);
@@ -327,41 +295,31 @@ public class ConnectionOverTCP implements Connection {
             } else {
                 bufferEndData_ += count;
             }
+
         } catch (IOException ioe) {
-            eof = true; // Error occurs on shut down sometimes
-                        // as pipe
-                        // must close from one end
-            //  Logger.getLogger("log").logln(USR.ERROR, "Connection
-            // over
-            // TCP read error "+ioe.getMessage());
+            eof = true;  // Error occurs on shut down sometimes as pipe must close from one end
+            //  Logger.getLogger("log").logln(USR.ERROR, "Connection over TCP read error "+ioe.getMessage());
             return;
         }
     }
 
-    void checkDatagram(byte [] latestDGData, Datagram dg) {
-        if ((latestDGData[0] != checkbytes[0])
-            || (latestDGData[1] != checkbytes[1])
-            || (latestDGData[2] != checkbytes[2])
-            || (latestDGData[3] != checkbytes[3])) {
-            Logger.getLogger("log").logln(
-                USR.ERROR, "Read incorrect datagram " + latestDGData);
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "Buffer size " + bufferSize_ + " start pos "
-                + bufferStartData_
-                + " end Pos " + bufferEndData_);
+    void checkDatagram (byte [] latestDGData, Datagram dg) {
+        if (latestDGData[0] != checkbytes[0] ||
+            latestDGData[1] != checkbytes[1] ||
+            latestDGData[2] != checkbytes[2] ||
+            latestDGData[3] != checkbytes[3]) {
+            Logger.getLogger("log").logln(USR.ERROR, "Read incorrect datagram "+latestDGData);
+            Logger.getLogger("log").logln(USR.ERROR, "Buffer size "+bufferSize_+" start pos "+bufferStartData_ +
+                                          " end Pos "+bufferEndData_);
             ByteBuffer b = ((DatagramPatch)dg).toByteBuffer();
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          "READ as bytes " + b.asCharBuffer());
+            Logger.getLogger("log").logln(USR.ERROR, "READ as bytes "+ b.asCharBuffer());
             System.exit(-1);
         }
     }
 
     void shuffleBuffer() {
-        //Logger.getLogger("log").logln(USR.ERROR, "Shuffling the buffer
-        // " +
-        // inCounter);
-        int remaining = bufferEndData_ - bufferStartData_;
+        //Logger.getLogger("log").logln(USR.ERROR, "Shuffling the buffer " + inCounter);
+        int remaining = bufferEndData_-bufferStartData_;
 
         if (remaining == 0) {
             bufferStartData_ = 0;
@@ -369,7 +327,6 @@ public class ConnectionOverTCP implements Connection {
             buffer.position(0);
             return;
         }
-
         // this is a single copy shuffle
         ByteBuffer newBuf = ByteBuffer.allocate(bufferSize_);
         buffer.position(bufferStartData_);
@@ -381,12 +338,10 @@ public class ConnectionOverTCP implements Connection {
     }
 
     /** Get length of packet from data in buffer -- implicit assumption here
-     * about position of data*/
+       about position of data*/
     short getPacketLen() {
-        short pktLen = buffer.getShort(bufferStartData_ + 5);
-
-        //Logger.getLogger("log").logln(USR.ERROR, "READ PACKET LENGTH
-        // "+pktLen);
+        short pktLen = buffer.getShort(bufferStartData_+5);
+        //Logger.getLogger("log").logln(USR.ERROR, "READ PACKET LENGTH "+pktLen);
         return pktLen;
     }
 
@@ -398,20 +353,15 @@ public class ConnectionOverTCP implements Connection {
         if (socketClosing_) {
             return;
         }
-
         socketClosing_ = true;
-        Logger.getLogger("log").logln(
-            USR.STDOUT, "ConnectionOverTCP: close() inCounter = "
-            + inCounter + " outCounter = "
-            + outCounter);
+        Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " +
+                                      inCounter + " outCounter = " + outCounter);
         Socket socket = getSocket();
         try {
             eof = true;
             socket.close();
         } catch (IOException ioe) {
-            throw new Error(
-                      "Socket: " + socket
-                      + " can't close");
+            throw new Error("Socket: " + socket + " can't close");
         }
     }
 

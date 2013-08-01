@@ -30,96 +30,21 @@ public class RouterApp1S {
             // start
             if (router.start()) {
                 // set ID
-                router.setAddress(new IPV4Address("192.168.7.2"));  //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    // WAS
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    // new
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    //
-                                                                    // GIDAddress(2));
+                router.setAddress(new IPV4Address("192.168.7.2")); // WAS new GIDAddress(2));
 
                 // now set up a socket to receive
                 socket = new DatagramSocket(3000);
+
             } else {
                 router.stop();
             }
+
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          "RouterApp1S exception: " + e);
+            Logger.getLogger("log").logln(USR.ERROR, "RouterApp1S exception: " + e);
             e.printStackTrace();
         }
+
+
     }
 
     /**
@@ -130,12 +55,13 @@ public class RouterApp1S {
 
         try {
             while ((datagram = socket.receive()) != null) {
+
                 System.out.print(count + ". ");
-                System.out.print("HL: " + datagram.getHeaderLength()
-                                 + " TL: " + datagram.getTotalLength()
-                                 + " From: " + datagram.getSrcAddress()
-                                 + " To: " + datagram.getDstAddress()
-                                 + ". ");
+                System.out.print("HL: " + datagram.getHeaderLength() +
+                                 " TL: " + datagram.getTotalLength() +
+                                 " From: " + datagram.getSrcAddress() +
+                                 " To: " + datagram.getDstAddress() +
+                                 ". ");
                 byte[] payload = datagram.getPayload();
 
                 if (payload == null) {
@@ -143,11 +69,11 @@ public class RouterApp1S {
                 } else {
                     System.out.print(new String(payload));
                 }
-
                 System.out.print("\n");
 
                 count++;
             }
+
         } catch (SocketException se) {
             System.err.println(se.getMessage());
         }

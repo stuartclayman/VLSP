@@ -28,60 +28,49 @@ public class MonitoringStartCommand extends LocalCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(Request request, Response response) {
+
         try {
             PrintStream out = response.getPrintStream();
 
             // get full request string
-            String path = java.net.URLDecoder.decode(
-                    request.getPath().getPath(), "UTF-8");
-
+            String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
             // strip off /command
             String value = path.substring(9);
-
             // strip off COMMAND
-            String rest
-                = value.substring(MCRP.MONITORING_START.CMD.length())
-                    .
-                    trim();
+            String rest = value.substring(MCRP.MONITORING_START.CMD.length()).trim();
 
             String [] parts = rest.split(" ");
 
             if (parts.length != 2) {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put(
-                    "error",
-                    "Expected request: MONITORING_START address:port seconds");
+                jsobj.put("error", "Expected request: MONITORING_START address:port seconds");
 
                 out.println(jsobj.toString());
                 response.close();
 
                 return false;
+
             } else {
                 // get address and port
                 // check ip addr spec
                 String[] ipParts = parts[0].split(":");
 
                 if (ipParts.length != 2) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin()
-                                                  + "INVALID MONITORING_START ip address: "
-                                                  +
-                                                  parts[0]);
-                    response.setCode(404);
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID MONITORING_START ip address: " + parts[0]);
+                    response.setCode(302);
 
                     JSONObject jsobj = new JSONObject();
-                    jsobj.put(
-                        "error",
-                        "MONITORING_START invalid address: "
-                        + parts[0]);
+                    jsobj.put("error", "MONITORING_START invalid address: " + parts[0]);
 
                     out.println(jsobj.toString());
                     response.close();
 
                     return false;
+
                 } else {
+
                     // process host and port
                     String host = ipParts[0];
 
@@ -91,13 +80,10 @@ public class MonitoringStartCommand extends LocalCommand {
                     try {
                         portNumber = sc.nextInt();
                     } catch (Exception e) {
-                        response.setCode(404);
+                        response.setCode(302);
 
                         JSONObject jsobj = new JSONObject();
-                        jsobj.put(
-                            "error",
-                            "MONITORING_START invalid port: "
-                            + ipParts[1]);
+                        jsobj.put("error", "MONITORING_START invalid port: " + ipParts[1]);
 
                         out.println(jsobj.toString());
                         response.close();
@@ -114,24 +100,21 @@ public class MonitoringStartCommand extends LocalCommand {
                     try {
                         timeout = sc.nextInt();
                     } catch (Exception e) {
-                        response.setCode(404);
+                        response.setCode(302);
 
                         JSONObject jsobj = new JSONObject();
-                        jsobj.put(
-                            "error",
-                            "MONITORING_START invalid timeout: "
-                            + parts[1]);
+                        jsobj.put("error", "MONITORING_START invalid timeout: " + parts[1]);
 
                         out.println(jsobj.toString());
                         response.close();
 
                         return false;
+
                     }
 
                     // if we get here all the args seem OK
-                    InetSocketAddress socketAddress
-                        = new InetSocketAddress(
-                                host, portNumber);
+                    InetSocketAddress socketAddress = new InetSocketAddress(host, portNumber);
+
 
                     controller.startMonitoring(socketAddress, timeout);
 
@@ -143,19 +126,20 @@ public class MonitoringStartCommand extends LocalCommand {
                     response.close();
 
                     return true;
+
                 }
             }
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
+
     }
 
 }

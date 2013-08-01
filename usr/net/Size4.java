@@ -8,9 +8,7 @@ public abstract class Size4 implements Address {
     protected byte[] bytes = new byte[4];
 
     // an EMPTY address
-    public final static byte[] EMPTY = {
-        0, 0, 0, 0
-    };
+    public final static byte[] EMPTY = { 0, 0, 0, 0 };
 
     /**
      * Get the size in bytes of an instantiation of an Size4 Address.
@@ -30,10 +28,7 @@ public abstract class Size4 implements Address {
      * Convert.
      */
     static String numericToTextFormat(byte[] src) {
-        return (src[0]
-                & 0xff) + "."
-               + (src[1]
-                  & 0xff) + "." + (src[2] & 0xff) + "." + (src[3] & 0xff);
+        return (src[0] & 0xff) + "." + (src[1] & 0xff) + "." + (src[2] & 0xff) + "." + (src[3] & 0xff);
     }
 
     public int hashCode() {

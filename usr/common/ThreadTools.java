@@ -12,8 +12,7 @@ public class ThreadTools {
             return;
         } else {
             // Find the root thread group
-            ThreadGroup root
-                = Thread.currentThread().getThreadGroup().getParent();
+            ThreadGroup root = Thread.currentThread().getThreadGroup().getParent();
 
             while (root.getParent() != null) {
                 root = root.getParent();
@@ -28,8 +27,7 @@ public class ThreadTools {
     public static void visit(ThreadGroup group, int level, String leadin) {
         // Get threads in `group'
         int numThreads = group.activeCount();
-
-        Thread[] threads = new Thread[numThreads * 2];
+        Thread[] threads = new Thread[numThreads*2];
         numThreads = group.enumerate(threads, false);
 
         // group name
@@ -37,13 +35,11 @@ public class ThreadTools {
             for (int sp = 0; sp < level; sp++) {
                 System.err.print("  ");
             }
-
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin + " " + group.getName());
+            Logger.getLogger("log").logln(USR.ERROR, leadin + " " + group.getName());
         }
 
         // Enumerate each thread in `group'
-        for (int i = 0; i < numThreads; i++) {
+        for (int i = 0; i<numThreads; i++) {
             // Get thread
             Thread thread = threads[i];
 
@@ -54,19 +50,18 @@ public class ThreadTools {
             }
 
             if (on) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin + " " + thread);
+                Logger.getLogger("log").logln(USR.ERROR, leadin + " " + thread);
             }
         }
 
         // Get thread subgroups of `group'
         int numGroups = group.activeGroupCount();
-        ThreadGroup[] groups = new ThreadGroup[numGroups * 2];
+        ThreadGroup[] groups = new ThreadGroup[numGroups*2];
         numGroups = group.enumerate(groups, false);
 
         // Recursively visit each subgroup
-        for (int i = 0; i < numGroups; i++) {
-            visit(groups[i], level + 1, leadin);
+        for (int i = 0; i<numGroups; i++) {
+            visit(groups[i], level+1, leadin);
         }
     }
 

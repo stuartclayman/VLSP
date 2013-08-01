@@ -52,7 +52,8 @@ public class ANSI {
      */
     public static String CROSSED_OFF = CSI + "29m";
 
-    // 30–37	Set text color	30 + x, where x is from the color table
+
+    // 30-37	Set text color	30 + x, where x is from the color table
     // Black	Red	Green	Yellow	Blue	Magenta	Cyan	White
 
     /**
@@ -95,8 +96,8 @@ public class ANSI {
      */
     public static String WHITE = CSI + "37m";
 
-    // 40–47	Set background color	40 + x, where x is from the
-    // color table
+
+    // 40-47	Set background color	40 + x, where x is from the color table
 
     /**
      * Black background
@@ -137,6 +138,7 @@ public class ANSI {
      * White background
      */
     public static String WHITE_BG = CSI + "47m";
+
 
     /**
      * Underline
@@ -271,7 +273,7 @@ public class ANSI {
      * Move cursor to a position
      */
     public static String POS(int n, int m) {
-        return CSI + n + ";" + m + "H";
+        return CSI + n +";" + m +"H";
     }
 
     /**

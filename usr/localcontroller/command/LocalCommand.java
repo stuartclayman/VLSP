@@ -3,6 +3,7 @@ package usr.localcontroller.command;
 import usr.localcontroller.*;
 import usr.logging.*;
 import usr.console.*;
+import cc.clayman.console.ManagementConsole;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Request;
 
@@ -16,6 +17,7 @@ public abstract class LocalCommand extends AbstractRestCommand {
 
     // The RouterController
     LocalController controller;
+
 
     /**
      * Construct a Command given a name
@@ -43,9 +45,7 @@ public abstract class LocalCommand extends AbstractRestCommand {
      */
     public void setManagementConsole(ManagementConsole mc) {
         managementConsole = (LocalControllerManagementConsole)mc;
-        controller
-            = (LocalController)managementConsole.
-                getComponentController();
+        controller = (LocalController)managementConsole.getComponentController();
     }
 
     /**
@@ -53,4 +53,6 @@ public abstract class LocalCommand extends AbstractRestCommand {
      * Returns false if there is a problem responding down the channel
      */
     public abstract boolean evaluate(Request request, Response response);
+
+
 }

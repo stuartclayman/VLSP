@@ -13,10 +13,8 @@ import java.lang.reflect.Constructor;
 public class AddressFactory {
     // The Constructor for Addresses passed by int
     static Constructor<? extends Address> consI;
-
     // The Constructor for Addresses passed by byte[]
     static Constructor<? extends Address> consB;
-
     // The Constructor for Addresses passed by String
     static Constructor<? extends Address> consS;
 
@@ -26,7 +24,6 @@ public class AddressFactory {
     // class initiation code
     static {
         setClassForAddress("usr.net.GIDAddress");
-
         //setClassForAddress("usr.net.DomainAddress");
         //setClassForAddress("usr.test.IPV6Address");
     }
@@ -34,10 +31,8 @@ public class AddressFactory {
     /**
      * Return an Address, given an int
      */
-    public static Address newAddress(int addr)
-    throws java.net.UnknownHostException {
+    public static Address newAddress(int addr) throws java.net.UnknownHostException {
         Exception finalE = null;
-
         try {
             Address address = (Address)consI.newInstance(addr);
             return address;
@@ -47,20 +42,15 @@ public class AddressFactory {
             if (e2 instanceof java.net.UnknownHostException) {
                 throw (java.net.UnknownHostException)e2;
             }
-
-            Logger.getLogger("log").logln(
-                USR.ERROR, "Unknown Host " + e2.getClass());
+            Logger.getLogger("log").logln(USR.ERROR, "Unknown Host " + (e2.getClass()));
             finalE = new Exception(e.getMessage());
         } catch (Exception e) {
             finalE = e;
         }
 
         finalE.printStackTrace();
-        Logger.getLogger("log").logln(
-            USR.ERROR, "AddressFactory: Exception: " + finalE);
-        throw new Error(
-                  "AddressFactory: config error in AddressFactory. "
-                  + " Cannot allocate an instance of: " + className);
+        Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + finalE);
+        throw new Error("AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: " + className);
     }
 
     /**
@@ -71,21 +61,17 @@ public class AddressFactory {
             Address address = (Address)consB.newInstance(addr);
             return address;
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          "AddressFactory: Exception: " + e);
-            throw new Error(
-                      "AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: "
-                      + className);
+            Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + e);
+            throw new Error("AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: " + className);
+
         }
     }
 
     /**
      * Return an Address, given a String
      */
-    public static Address newAddress(String addr) throws java.net.
-    UnknownHostException {
+    public static Address newAddress(String addr) throws java.net.UnknownHostException  {
         Exception finalE = null;
-
         try {
             Address address = (Address)consS.newInstance(addr);
             return address;
@@ -95,19 +81,16 @@ public class AddressFactory {
             if (e2 instanceof java.net.UnknownHostException) {
                 throw (java.net.UnknownHostException)e2;
             }
-
-            System.err.println(e2.getClass());
+            System.err.println (e2.getClass());
             finalE = new Exception(e.getMessage());
         } catch (Exception e) {
             finalE = e;
         }
 
         finalE.printStackTrace();
-        Logger.getLogger("log").logln(
-            USR.ERROR, "AddressFactory: Exception: " + finalE);
-        throw new Error(
-                  "AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: "
-                  + className);
+        Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + finalE);
+        throw new Error("AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: " + className);
+
     }
 
     /**
@@ -124,38 +107,28 @@ public class AddressFactory {
         try {
             className = name;
 
-            //System.err.println("AddressFactory: setClassForAddress " +
-            // className);
+            //System.err.println("AddressFactory: setClassForAddress " + className);
 
             // get Class object
             Class<?> c = (Class<?> )Class.forName(className);
 
             // get it as more exact type
-            Class<? extends Address> xc = c.asSubclass(Address.class);
+            Class<? extends Address> xc = c.asSubclass(Address.class );
 
             // find Constructor for when arg is int
-            consI
-                = (Constructor<? extends Address> )xc.
-                    getDeclaredConstructor(int.class);
+            consI = (Constructor<? extends Address> )xc.getDeclaredConstructor(int.class );
+
 
             // get Consturctor for when arg is byte[]
-            consB
-                = (Constructor<? extends Address> )xc.
-                    getDeclaredConstructor(
-                        byte[].class);
+            consB = (Constructor<? extends Address> )xc.getDeclaredConstructor(byte[].class );
 
             // get Consturctor for when arg is String
-            consS
-                = (Constructor<? extends Address> )xc.
-                    getDeclaredConstructor(
-                        String.class);
+            consS = (Constructor<? extends Address> )xc.getDeclaredConstructor(String.class );
+
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          "AddressFactory: Exception: " + e);
+            Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + e);
             e.printStackTrace();
-            throw new Error(
-                      "AddressFactory: config error in AddressFactory.  Cannot configure class data for: "
-                      + className);
+            throw new Error("AddressFactory: config error in AddressFactory.  Cannot configure class data for: " + className);
         }
     }
 

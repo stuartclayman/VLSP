@@ -32,16 +32,12 @@ public class ProcessWrapper {
         this.name = name;
 
         // allocate a ProcessListener for the InputStream
-        iListener = new ProcessListener(
-                proc.getInputStream(), "stdout", this);
-
+        iListener = new ProcessListener(proc.getInputStream(), "stdout", this);
         // allocate a ProcessListener for the ErrorStream
-        eListener = new ProcessListener(
-                proc.getErrorStream(), "stderr", this);
+        eListener = new ProcessListener(proc.getErrorStream(), "stderr", this);
 
         // allocate a Thread for the InputStream Listener
         iThread = new Thread(iListener, name + "-InputStream");
-
         // allocate a Thread for the ErrorStream Listener
         eThread = new Thread(eListener, name + "-ErrorStream");
 
@@ -71,13 +67,9 @@ public class ProcessWrapper {
         // could check if label is 'stderr' or 'stdout'
         // and do different things
         if (label.equals("stderr")) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          label + " " + getName() + " "
-                                          + line);
+            Logger.getLogger("log").logln(USR.ERROR, label + " " + getName() + " " + line);
         } else {
-            Logger.getLogger("log").logln(USR.STDOUT, label + " "
-                                          + getName(
-                                              ) + " " + line);
+            Logger.getLogger("log").logln(USR.STDOUT, label + " " + getName() + " " + line);
         }
     }
 
@@ -92,9 +84,7 @@ public class ProcessWrapper {
      * There has been an IO error
      */
     public void ioerror(String label, IOException ioe) {
-        //System.out.println("ProcessWrapper: " + label + " Got
-        // IOException
-        // " + ioe);
+        //System.out.println("ProcessWrapper: " + label + " Got IOException " + ioe);
         stop();
     }
 
@@ -106,9 +96,16 @@ public class ProcessWrapper {
             // disconnect the process
             //System.err.println("ProcessWrapper: STOPPING "+name);
 
+            //System.err.println("ProcessWrapper: close input");
             process.getOutputStream().close();
-            process.getInputStream().close();
-            process.getErrorStream().close();
+
+            /*
+             * close moved into thread for better reliability
+               System.err.println("ProcessWrapper: close InputStream");
+               process.getInputStream().close();
+               System.err.println("ProcessWrapper: close ErrorStream");
+               process.getErrorStream().close();
+             */
 
             // stop listeners
             iListener.stop();
@@ -116,6 +113,7 @@ public class ProcessWrapper {
 
             // now splat it
             destroy();
+
         } catch (IOException ioe) {
         }
     }
@@ -163,8 +161,7 @@ public class ProcessWrapper {
         public void run() {
             running = true;
 
-            BufferedReader reader
-                = new BufferedReader(new InputStreamReader(input));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
             String line;
 
@@ -184,8 +181,16 @@ public class ProcessWrapper {
                 }
             }
 
+
+            try {
+                //System.err.println("ProcessListener: close " + label);
+                input.close();
+            } catch (IOException ioe) {
+            }
+
             //wrapper.print(label, "EOF");
             wrapper.eof();
+
         }
 
     }

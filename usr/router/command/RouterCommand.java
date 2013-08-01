@@ -1,6 +1,7 @@
 package usr.router.command;
 
 import usr.console.*;
+import cc.clayman.console.ManagementConsole;
 import usr.logging.*;
 import usr.router.*;
 import org.simpleframework.http.Response;
@@ -43,9 +44,7 @@ public abstract class RouterCommand extends AbstractRestCommand {
      */
     public void setManagementConsole(ManagementConsole mc) {
         managementConsole = (RouterManagementConsole)mc;
-        controller
-            = (RouterController)managementConsole.
-                getComponentController();
+        controller = (RouterController)managementConsole.getComponentController();
     }
 
     /**
@@ -53,4 +52,7 @@ public abstract class RouterCommand extends AbstractRestCommand {
      * Returns false if there is a problem responding down the channel
      */
     public abstract boolean evaluate(Request request, Response response);
+
+
+
 }

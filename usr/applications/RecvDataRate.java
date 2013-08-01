@@ -27,13 +27,10 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
 
     // total no of Datagrams in
     int count = 0;
-
     // last time count
     int lastTimeCount = 0;
-
     // no per second
     int diffs = 0;
-
     // elaspsed time
     long startTime = 0;
     long lastTime = 0;
@@ -56,11 +53,11 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
             if (scanner.hasNextInt()) {
                 port = scanner.nextInt();
             } else {
-                return new ApplicationResponse(false,
-                                               "Bad port " + args[1]);
+                return new ApplicationResponse(false, "Bad port " + args[1]);
             }
 
             return new ApplicationResponse(true, "");
+
         } else {
             return new ApplicationResponse(false, "Usage: Recv port");
         }
@@ -74,14 +71,11 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
 
             socket.bind(port);
 
-            // Logger.getLogger("log").logln(USR.ERROR, "Socket has
-            // source
-            // port "+socket.getLocalPort());
+            // Logger.getLogger("log").logln(USR.ERROR, "Socket has source port "+socket.getLocalPort());
+
         } catch (Exception e) {
-            Logger.getLogger("log").logln(
-                USR.ERROR, "Cannot open socket " + e.getMessage());
-            return new ApplicationResponse(
-                false, "Cannot open socket " + e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot open socket " + e.getMessage());
+            return new ApplicationResponse(false, "Cannot open socket " + e.getMessage());
         }
 
         // set up timer to count throughput
@@ -92,32 +86,30 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
                 if (running) {
                     diffs = count - lastTimeCount;
                     lastTime = System.currentTimeMillis();
-                    long elaspsedSecs = (lastTime - startTime) / 1000;
-                    long elaspsedMS = (lastTime - startTime) % 1000;
-                    Logger.getLogger("log").logln(
-                        USR.STDOUT,
-                        "Task count: " + count + " time:"
-                        + elaspsedSecs + "." + elaspsedMS
-                        + " diff: "
-                        + diffs);
+                    long elaspsedSecs = (lastTime - startTime)/1000;
+                    long elaspsedMS = (lastTime - startTime)%1000;
+
+                    usr.net.Address address = usr.router.RouterDirectory.getRouter().getAddress();
+                    Logger.getLogger("log").logln(USR.STDOUT,
+                                                  address + ": Task count: " + count + " time:" + elaspsedSecs + "." + elaspsedMS + " diff: "  +
+                                                  diffs);
                     lastTimeCount = count;
                 }
             }
 
             public boolean cancel() {
-                Logger.getLogger("log").log(USR.STDOUT,
-                                            "cancel @ " + count);
+                Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
 
                 if (running) {
                     running = false;
                 }
 
+
                 return running;
             }
 
             public long scheduledExecutionTime() {
-                Logger.getLogger("log").log(USR.STDOUT,
-                                            "scheduledExecutionTime:");
+                Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
                 return 0;
             }
 
@@ -126,7 +118,6 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
         // if there is no timer, start one
         if (timer == null) {
             timer = new Timer();
-
             timer.schedule(timerTask, 1000, 1000);
         }
 
@@ -163,13 +154,15 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
         } catch (SocketException se) {
             Logger.getLogger("log").log(USR.ERROR, se.getMessage());
         }
+
+
     }
 
     /**
      * Return a map of monitoring data.
      */
     public Map<String, String> getMonitoringData() {
-        Map<String, String> theMap = new HashMap<String, String>();
+        Map theMap = new HashMap<String, String>();
 
         theMap.put("diffs", Integer.toString(diffs));
         theMap.put("count", Integer.toString(count));

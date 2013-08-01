@@ -4,20 +4,18 @@ import usr.logging.*;
 import java.util.*;
 import java.io.PrintStream;
 import usr.globalcontroller.GlobalController;
-import usr.globalcontroller.GlobalController;
-import usr.events.*;
+import usr.events.Event;
 import us.monoid.json.*;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.w3c.dom.*;
+import org.w3c.dom.Node;
 
 /** Class to output network stuff */
 public class OutputTraffic implements OutputFunction {
+
     /** In fact this only requests output -- actual output occurs later */
     public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
         gc.checkTrafficOutputRequests(t, o);
+
     }
 
     public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
@@ -30,29 +28,24 @@ public class OutputTraffic implements OutputFunction {
     public void produceOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
         String routerStats = gc.getRouterStats();
 
-        if ((routerStats == null) || routerStats.equals("")) {
+        if (routerStats == null || routerStats.equals("")) {
             return;
         }
-
         synchronized (routerStats) {
             if (o.getParameter().equals("Local")) {
                 outputTrafficLocal(o, t, p, routerStats);
             } else if (o.getParameter().equals("Aggregate")) {
                 outputTrafficAggregate(o, t, p, routerStats, gc);
             } else if (o.getParameter().equals("Raw")) {
-                System.err.println("OUTPUT RAW!");
+                System.err.println ("OUTPUT RAW!");
 
                 for (String s : routerStats.split("\\*\\*\\*")) {
-                    p.println(t + " " + s);
+                    p.println(t+" "+s);
                 }
             } else if (o.getParameter().equals("Separate")) {
                 outputTrafficSeparate(o, t, p, routerStats);
             } else {
-                Logger.getLogger("log").logln(
-                    USR.ERROR,
-                    leadin() + "Required XML Parameter in OutputTraffic "
-                    + "configuration not found "
-                    + o.getParameter());
+                Logger.getLogger("log").logln(USR.ERROR, "Unable to parse traffic output parameter "+o.getParameter());
             }
         }
     }
@@ -69,7 +62,6 @@ public class OutputTraffic implements OutputFunction {
                     p.print(args[i].split("=")[0]);
                     p.print(" ");
                 }
-
                 p.println();
             }
 
@@ -80,40 +72,32 @@ public class OutputTraffic implements OutputFunction {
             if (!args[2].equals("localnet")) {
                 continue;
             }
-
-            p.print(t + " ");
+            p.print(t+" ");
             p.print(args[0] + " " + args[1] + " ");
 
             for (int i = 3; i < args.length; i++) {
                 p.print(args[i].split("=")[1]);
                 p.print(" ");
             }
-
             p.println();
         }
     }
 
-    void outputTrafficAggregate(OutputType o, long t, PrintStream p, String routerStats, GlobalController gc) {
-        HashMap<String,
-                int []> trafficLinkCounts = gc.getTrafficLinkCounts();
-        Hashtable<Integer,
-                  Boolean> routerCount = new Hashtable<Integer, Boolean>();
+    void  outputTrafficAggregate (OutputType o, long t, PrintStream p, String routerStats, GlobalController gc) {
+
+        HashMap<String, int []> trafficLinkCounts = gc.getTrafficLinkCounts();
+        Hashtable<Integer, Boolean> routerCount = new Hashtable<Integer, Boolean>();
 
         String [] out = routerStats.split("\\*\\*\\*");
 
         if (out.length < 1) {
             return;
         }
-
         int nField = out[0].split("\\s+").length - 3;
 
         if (nField <= 0) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                leadin() + " Can't parse no of fields in stats line "
-                + out[0]);
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + " Stats Line \"" + routerStats + "\"");
+            Logger.getLogger("log").logln(USR.ERROR, "Can't parse no of fields in stats line "+out[0]);
+            Logger.getLogger("log").logln(USR.ERROR, "Stats Line \""+routerStats+"\"");
 
             return;
         }
@@ -121,22 +105,20 @@ public class OutputTraffic implements OutputFunction {
         if (trafficLinkCounts == null) {
             trafficLinkCounts = new HashMap<String, int []>();
         }
-
         int nLinks = 0;
         int nRouters = 0;
-        int [] totCount = new int[nField];
+        int [] totCount = new int [nField];
 
         for (int i = 0; i < nField; i++) {
             totCount[i] = 0;
         }
 
         for (String s : out) {
-            int [] count = new int[nField];
+            int [] count = new int [nField];
 
             for (int i = 0; i < nField; i++) {
                 count[i] = 0;
             }
-
             String [] args = s.split("\\s+");
 
             if (o.isFirst()) {
@@ -147,7 +129,6 @@ public class OutputTraffic implements OutputFunction {
                     p.print(args[i].split("=")[0]);
                     p.print(" ");
                 }
-
                 p.println();
             }
 
@@ -158,7 +139,6 @@ public class OutputTraffic implements OutputFunction {
             if (args[2].equals("localnet")) {
                 continue;
             }
-
             nLinks++;
 
             int router = Integer.parseInt(args[0]);
@@ -166,53 +146,51 @@ public class OutputTraffic implements OutputFunction {
             if (routerCount.get(router) == null) {
                 nRouters++;
                 routerCount.put(router, true);
-
                 //System.err.println("Time "+t+" found router "+router);
             }
 
-            String linkName = args[0] + args[2];
+
+            String linkName = args[0]+args[2];
 
             for (int i = 3; i < args.length; i++) {
                 String[] spl = args[i].split("=");
 
-                if (spl.length != 2) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin()
-                                                  + " Cannot parse traffic stats "
-                                                  + args[i]);
+                if (spl.length !=2) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                                                  " Cannot parse traffic stats "+args[i]);
                 } else {
-                    count[i - 3] = Integer.parseInt(spl[1]);
+                    count[i-3] = Integer.parseInt(spl[1]);
+
                 }
             }
-
             //System.err.println("new count "+linkName+" "+count[0]);
             int [] oldCount = trafficLinkCounts.get(linkName);
 
             if (oldCount == null) {
+
                 for (int i = 0; i < nField; i++) {
                     totCount[i] += count[i];
                 }
             } else {
-                //System.err.println("old count "+linkName+"
-                // "+oldCount[0]);
+                //System.err.println("old count "+linkName+" "+oldCount[0]);
                 for (int i = 0; i < nField; i++) {
-                    totCount[i] += count[i] - oldCount[i];
+                    totCount[i] += count[i]-oldCount[i];
+
                 }
             }
-
             trafficLinkCounts.put(linkName, count);
         }
 
-        p.print(t + " " + nRouters + " " + nLinks + " ");
+
+        p.print(t+" "+nRouters+" "+nLinks+" ");
 
         for (int i = 0; i < nField; i++) {
-            p.print(totCount[i] + " ");
+            p.print(totCount[i]+" ");
         }
-
         p.println();
     }
 
-    void outputTrafficSeparate(OutputType o, long t, PrintStream p, String routerStats) {
+    void outputTrafficSeparate (OutputType o, long t, PrintStream p, String routerStats) {
         //System.err.println("Performing output");
         String [] out = routerStats.split("\\*\\*\\*");
 
@@ -232,7 +210,6 @@ public class OutputTraffic implements OutputFunction {
                     p.print(args[i].split("=")[0]);
                     p.print(" ");
                 }
-
                 p.println();
             }
 
@@ -243,21 +220,19 @@ public class OutputTraffic implements OutputFunction {
             if (args[1].equals("localnet")) {
                 continue;
             }
-
-            p.print(t + " ");
-            p.print(args[1] + " " + args[2] + " ");
+            p.print(t+" ");
+            p.print(args[1]+" "+args[2] + " ");
 
             for (int i = 3; i < args.length; i++) {
                 String [] splitit = args[i].split("=");
 
                 if (splitit.length < 2) {
-                    System.err.println("Cannot split " + args[i]);
+                    System.err.println("Cannot split "+ args[i]);
                 } else {
                     p.print(args[i].split("=")[1]);
                     p.print(" ");
                 }
             }
-
             p.println();
         }
     }

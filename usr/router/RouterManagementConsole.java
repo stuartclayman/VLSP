@@ -17,9 +17,11 @@ import java.nio.charset.Charset;
  * for doing router management.
  * <p>
  */
-public class RouterManagementConsole extends AbstractRestConsole {
+public class RouterManagementConsole extends USRRestConsole {
+
     private RouterController _routerController;
     public RouterManagementConsole(RouterController rc, int port) {
+
         _routerController = rc;
         initialise(port);
     }
@@ -66,6 +68,7 @@ public class RouterManagementConsole extends AbstractRestConsole {
         register(new MonitoringStartCommand());
         register(new MonitoringStopCommand());
         register(new RouterOKCommand());
+        register(new SetLinkWeightCommand());
     }
 
 }

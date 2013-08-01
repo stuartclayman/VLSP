@@ -12,23 +12,18 @@ import java.nio.ByteBuffer;
 public class VectorRoutingTableEntry implements RoutingTableEntry {
     private Address address_;
     private Vector<Integer> costs_;
-    private Vector<NetIF> interfaces_;    // NetIF of null is a
-                                          // local interface
+    private Vector<NetIF> interfaces_;           // NetIF of null is a local interface
 
-    private int totalTopology = 0;        // the total no of topologies
-    private int topology = 0;             // the current chosen topology
+    private int totalTopology = 0; // the total no of topologies
+    private int topology = 0;   // the current chosen topology
 
     VectorRoutingTableEntry(Address addr, List<Integer> costs, List<NetIF> inters) {
-        this(addr, costs.toArray(new Integer[costs.size()]),
-             (inters ==
-              null ? null : inters.toArray(new NetIF[inters.size()
-                                           ])));
+        this(addr, costs.toArray(new Integer[costs.size()]), (inters == null ? null : inters.toArray(new NetIF[inters.size()])));
     }
 
     VectorRoutingTableEntry(Address addr, Integer[] costs, NetIF[] inters) {
         if (costs.length != inters.length) {
-            throw new Error(
-                      "costs length != interfaces length");
+            throw new Error("costs length != interfaces length");
         }
 
         if (costs.length == 0) {
@@ -39,15 +34,13 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
 
         totalTopology = costs.length;
 
-        //System.err.println("totalTopology = " + totalTopology + "
-        // costs =
-        // " + costs.length);
+        //System.err.println("totalTopology = " + totalTopology + " costs = " + costs.length);
 
         // copy costs into costs_ vector
         costs_ = new Vector<Integer>(totalTopology);
         costs_.setSize(totalTopology);
 
-        for (int c = 0; c < totalTopology; c++) {
+        for (int c = 0; c<totalTopology; c++) {
             setCost(c, costs[c]);
         }
 
@@ -55,17 +48,15 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
         interfaces_ = new Vector<NetIF>(totalTopology);
         interfaces_.setSize(totalTopology);
 
-        for (int i = 0; i < totalTopology; i++) {
+        for (int i = 0; i<totalTopology; i++) {
             setNetIF(i, inters[i]);
         }
     }
 
     VectorRoutingTableEntry(int addressSize, byte [] tableEntry, NetIF inter) throws Exception {
         if (tableEntry.length < 8) {
-            throw new Exception(
-                      "Byte array received to construct routing table too short");
+            throw new Exception("Byte array received to construct routing table too short");
         }
-
         ByteBuffer wrapper = ByteBuffer.wrap(tableEntry);
 
         // get correct no of bytes for an address
@@ -75,9 +66,8 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
         // work out the number of topologies
         totalTopology = (totalLength - addressSize) / 4;
 
-        //System.err.println("VectorRoutingTableEntry: tableEntry size =
-        // " +
-        // totalLength +
+
+        //System.err.println("VectorRoutingTableEntry: tableEntry size = " + totalLength +
         //                   " costStart = " + costStart +
         //                   " totalTopology = " + totalTopology);
 
@@ -97,7 +87,7 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
         interfaces_ = new Vector<NetIF>(totalTopology);
         interfaces_.setSize(totalTopology);
 
-        for (int t = 0; t < totalTopology; t++) {
+        for (int t = 0; t<totalTopology; t++) {
             setCost(t, wrapper.getInt());
             setNetIF(t, inter);
         }
@@ -117,10 +107,7 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
      */
     public void setTopology(int t) {
         if (t >= totalTopology) {
-            throw new Error(
-                      "Cannot set topology to " + t
-                      + ". Max is "
-                      + (totalTopology - 1));
+            throw new Error("Cannot set topology to " + t + ". Max is " + (totalTopology-1));
         } else {
             topology = t;
         }
@@ -167,8 +154,7 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
      * The size in bytes of a RoutingTableEntry.
      */
     public int size() {
-        // the size of the address, plus 4 for the cost of each topology
-        // entry
+        // the size of the address, plus 4 for the cost of each topology entry
         return address_.asByteArray().length + (4 * totalTopology);
     }
 
@@ -178,12 +164,11 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
     public byte [] toBytes() {
         byte [] bytes = new byte[size()];
         ByteBuffer b = ByteBuffer.wrap(bytes);
-
         // copy in the address
         b.put(address_.asByteArray());
 
         // copy in all costs, 1 per topology
-        for (int t = 0; t < totalTopology; t++) {
+        for (int t = 0; t<totalTopology; t++) {
             b.putInt(costs_.get(t));
         }
 
@@ -198,13 +183,14 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
 
         entry += addressAsString(address_);
 
-        for (int t = 0; t < totalTopology; t++) {
+        for (int t = 0; t<totalTopology; t++) {
             entry += " W(" + costs_.get(t) + ") ";
         }
 
         entry += " ]";
 
         return entry;
+
     }
 
     /** Entry represented as string */
@@ -217,7 +203,7 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
             entry += addressAsString(address_);
         }
 
-        for (int t = 0; t < totalTopology; t++) {
+        for (int t = 0; t< totalTopology; t++) {
             entry += " W(" + costs_.get(t) + ") ";
 
             NetIF inter_ = interfaces_.get(t);
@@ -225,15 +211,12 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
             if (inter_ == null) {
                 entry += "IF: localhost";
             } else {
-                entry += "IF: "
-                    + ("if"
-                       + portNo(inter_)) + " => " + addressAsString(
-                        inter_.getRemoteRouterAddress());
+                entry += "IF: " + ("if" + portNo(inter_))  + " => " + addressAsString(inter_.getRemoteRouterAddress());
             }
         }
 
-        entry += " ]";
 
+        entry += " ]";
         //Logger.getLogger("log").logln(USR.ERROR, "ENTRY: "+entry);
         return entry;
     }

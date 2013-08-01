@@ -29,24 +29,23 @@ public class ReportAPCommand extends LocalCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(Request request, Response response) {
+
         try {
             PrintStream out = response.getPrintStream();
 
             // get full request string
-            String path = java.net.URLDecoder.decode(
-                    request.getPath().getPath(), "UTF-8");
-
+            String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
             // strip off /command
             String value = path.substring(9);
+
 
             String[] parts = value.split(" ");
 
             if (parts.length != 3) {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put("error",
-                          "REPORT_AP command requires GID and AP GID");
+                jsobj.put("error", "REPORT_AP command requires GID and AP GID");
 
                 out.println(jsobj.toString());
                 response.close();
@@ -61,11 +60,10 @@ public class ReportAPCommand extends LocalCommand {
                 GID = Integer.parseInt(parts[1]);
                 AP = Integer.parseInt(parts[2]);
             } catch (Exception e) {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put("error",
-                          "REPORT_AP command requires GID and AP GID");
+                jsobj.put("error", "REPORT_AP command requires GID and AP GID");
 
                 out.println(jsobj.toString());
                 response.close();
@@ -76,17 +74,17 @@ public class ReportAPCommand extends LocalCommand {
             if (controller.reportAP(GID, AP)) {
                 JSONObject jsobj = new JSONObject();
 
-                jsobj.put("msg", GID + " reports AP " + AP);
+                jsobj.put("msg", GID+" reports AP "+AP);
                 jsobj.put("success", Boolean.TRUE);
                 out.println(jsobj.toString());
                 response.close();
 
                 return true;
             } else {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put("error", "Incorrect GID number " + GID);
+                jsobj.put("error", "Incorrect GID number "+GID);
 
                 out.println(jsobj.toString());
                 response.close();
@@ -94,16 +92,15 @@ public class ReportAPCommand extends LocalCommand {
                 return false;
             }
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
     }
 
 }

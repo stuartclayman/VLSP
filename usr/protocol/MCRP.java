@@ -172,6 +172,7 @@ public class MCRP implements Protocol {
         public final static int ERROR = 401;
     }
 
+
     /*
      * Port of a Router
      */
@@ -212,6 +213,7 @@ public class MCRP implements Protocol {
         public final static int ERROR = 403;
     }
 
+
     /**
      * Get the weight of a port on the router.
      */
@@ -230,6 +232,7 @@ public class MCRP implements Protocol {
         public final static int ERROR = 403;
     }
 
+
     /**
      * Get the address of a remote router of a port on the router.
      */
@@ -238,6 +241,9 @@ public class MCRP implements Protocol {
         public final static int CODE = 247;
         public final static int ERROR = 403;
     }
+
+
+
 
     /*
      * Global Controller commands - 250 - 269
@@ -252,6 +258,7 @@ public class MCRP implements Protocol {
         public final static int CODE = 250;
         public final static int ERROR = 410;
     }
+
 
     /**
      * Get the network connectivity graph managed by the GlobalController
@@ -282,6 +289,7 @@ public class MCRP implements Protocol {
         public final static int CODE = 271;
         public final static int ERROR = 421;
     }
+
 
     /** Local controller joins routers */
 
@@ -413,6 +421,15 @@ public class MCRP implements Protocol {
         public final static int CODE = 288;
     }
 
+    /**  Request to Local Controller to set a link weight */
+
+    public final static class SET_LINK_WEIGHT {
+        public final static String CMD = "SET_LINK_WEIGHT";
+        public final static int CODE = 289;
+    }
+
+
+
     /*
      * Spare - 290 - 299
      */
@@ -426,4 +443,6 @@ public class MCRP implements Protocol {
         public final static int CODE = 400;
         public final static int ERROR = 400;
     }
+
+
 }

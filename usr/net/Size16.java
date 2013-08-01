@@ -1,5 +1,6 @@
 package usr.net;
 
+
 /**
  * For addresses that are 16 bytes long.
  */
@@ -8,10 +9,7 @@ public abstract class Size16 implements Address {
     protected byte[] bytes = new byte[16];
 
     // an EMPTY address
-    public final static byte[] EMPTY =
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    };
+    public final static byte[] EMPTY = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     /**
      * Get the size in bytes of an instantiation of an Size4 Address.
@@ -65,8 +63,7 @@ public abstract class Size16 implements Address {
                 return Integer.toHexString(b & 0xFF);
             }
         } else {
-            return Integer.toHexString(a & 0xFF) + Integer.toHexString(
-                b & 0xFF);
+            return Integer.toHexString(a & 0xFF) + Integer.toHexString(b & 0xFF);
         }
     }
 

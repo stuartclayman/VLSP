@@ -12,9 +12,12 @@ import java.lang.Math;
 /** Implements AP controller which does nothing*/
 
 public class NoAPController implements APController {
+
+
+
     LifeSpanEstimate lse_ = null;
 
-    NoAPController() {
+    NoAPController () {
         lse_ = new LifeSpanEstimate();
     }
 
@@ -39,6 +42,7 @@ public class NoAPController implements APController {
         return 0;
     }
 
+
     /** Add warm up (not real) node*/
     public void addWarmUpNode(long time) {
     }
@@ -54,6 +58,8 @@ public class NoAPController implements APController {
 
     /** Set AP for given gid */
     public void setAP(int gid, int ap, int cost, GlobalController g) {
+
+
     }
 
     /** No score for this function */
@@ -69,6 +75,7 @@ public class NoAPController implements APController {
     /** Controller regular AP update action */
     public void controllerUpdate(long time, GlobalController g) {
         //System.err.println ("Null Controller called");
+
     }
 
     /** Use the controller to remove the least efficient AP */
@@ -83,14 +90,13 @@ public class NoAPController implements APController {
 
     /** Add new access point with ID gid*/
     public void addAccessPoint(long time, int gid, GlobalController g) {
-        Logger.getLogger("log").logln(
-            USR.ERROR, "addAccessPoint called in NoAPController");
+        Logger.getLogger("log").logln(USR.ERROR, "addAccessPoint called in NoAPController");
+
     }
 
     /** Remove access point with ID gid */
     public void removeAccessPoint(long time, int gid) {
-        Logger.getLogger("log").logln(
-            USR.ERROR, "removeAccessPoint called in NoAPController");
+        Logger.getLogger("log").logln(USR.ERROR, "removeAccessPoint called in NoAPController");
     }
 
     /** Add node to network */
@@ -99,43 +105,46 @@ public class NoAPController implements APController {
     }
 
     /** Node has been removed from network and hence can no longer be AP --
-     *  note that access points will  */
+        note that access points will  */
     public void removeNode(long time, int gid) {
         lse_.nodeDeath(time, gid);
+
     }
 
     /** Add link to network */
     public void addLink(long time, int gid1, int gid2) {
+
     }
 
     /** Remove link from network */
     public void removeLink(long time, int gid1, int gid2) {
+
     }
 
     /** Return the mean life of a node -- this only includes
-     * nodes which have died*/
+       nodes which have died*/
     public double meanNodeLife() {
         return lse_.meanNodeLife();
     }
 
     /** Return the mean life of an AP -- this only includes APs which have
-     * died*/
+       died*/
     public double meanAPLife() {
         return 0.0;
     }
 
-    /** Return the mean life of an AP -- this only APs which have not died
-     */
+    /** Return the mean life of an AP -- this only APs which have not died */
     public double meanAPLifeSoFar(long time) {
         return 0.0;
     }
 
     String leadin() {
-        return "NullAPController:";
+        return ("NullAPController:");
     }
 
     /**
-     * /** Create new APInfo */
+       /** Create new APInfo */
+
     public APInfo newAPInfo() {
         return new NullAPInfo();
     }

@@ -9,8 +9,7 @@ import java.io.Serializable;
 /**
  * An IPV4 Address
  */
-public class IPV4Address extends Size4 implements Address,
-Serializable {
+public class IPV4Address extends Size4 implements Address, Serializable {
     InetAddress addr;
 
     /**
@@ -19,9 +18,13 @@ Serializable {
     public IPV4Address(String hostname) throws UnknownHostException {
         addr = InetAddress.getByName(hostname);
         byte[] inetbytes = addr.getAddress();
-
         // copy bytes in
-        System.arraycopy(inetbytes, 0, bytes, 0, 4);
+        //System.arraycopy(inetbytes, 0, bytes, 0, 4);
+        bytes[0] = inetbytes[0];
+        bytes[1] = inetbytes[1];
+        bytes[2] = inetbytes[2];
+        bytes[3] = inetbytes[3];
+        
     }
 
     /**
@@ -30,12 +33,15 @@ Serializable {
     public IPV4Address(byte[] addr)  throws UnknownHostException {
         if (addr.length == 4) {
             // copy bytes in
-            System.arraycopy(addr, 0, bytes, 0, 4);
+            //System.arraycopy(addr, 0, bytes, 0, 4);
+            bytes[0] = addr[0];
+            bytes[1] = addr[1];
+            bytes[2] = addr[2];
+            bytes[3] = addr[3];
+
             this.addr = InetAddress.getByAddress(bytes);
         } else {
-            throw new UnknownHostException(
-                      "InetAddress: wrong length. Expected 4, got "
-                      + addr.length);
+            throw new UnknownHostException("InetAddress: wrong length. Expected 4, got " + addr.length);
         }
     }
 
@@ -45,7 +51,6 @@ Serializable {
     public IPV4Address(int addr) throws UnknownHostException {
         // convert int to byte[]
         ByteBuffer buf = ByteBuffer.wrap(bytes);
-
         buf.putInt(addr);
         this.addr = InetAddress.getByAddress(bytes);
     }
@@ -63,7 +68,6 @@ Serializable {
     public int asInteger() {
         // convert byte[] to int
         ByteBuffer buf = ByteBuffer.wrap(bytes);
-
         return buf.getInt();
     }
 

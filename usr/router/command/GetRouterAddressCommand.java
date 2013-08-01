@@ -17,8 +17,7 @@ public class GetRouterAddressCommand extends RouterCommand {
      * Construct a GetRouterAddressCommand
      */
     public GetRouterAddressCommand() {
-        super(MCRP.GET_ROUTER_ADDRESS.CMD, MCRP.GET_ROUTER_ADDRESS.CODE,
-              MCRP.ERROR.CODE);
+        super(MCRP.GET_ROUTER_ADDRESS.CMD, MCRP.GET_ROUTER_ADDRESS.CODE, MCRP.ERROR.CODE);
     }
 
     /**
@@ -30,6 +29,7 @@ public class GetRouterAddressCommand extends RouterCommand {
 
             Address a = controller.getAddress();
 
+
             JSONObject jsobj = new JSONObject();
             jsobj.put("address", a.asTransmitForm());
 
@@ -38,16 +38,15 @@ public class GetRouterAddressCommand extends RouterCommand {
 
             return true;
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
     }
 
 }

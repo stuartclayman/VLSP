@@ -6,7 +6,9 @@ import usr.net.SocketAddress;
 import usr.net.Datagram;
 import java.net.SocketException;
 import java.net.NoRouteToHostException;
+import usr.net.ClosedByInterruptException;
 import java.util.concurrent.LinkedBlockingQueue;
+
 
 /**
  * An AppSocket acts like a socket, and talks to the
@@ -46,8 +48,7 @@ public class AppSocket {
 
     /**
      * Constructs an AppSocket and binds it to any available port
-     * on the local Router. The socket will be bound to the wildcard
-     *******************************address,
+     * on the local Router. The socket will be bound to the wildcard address,
      * an IP address chosen by the Router.
      */
     public AppSocket(Router r) throws SocketException {
@@ -98,11 +99,8 @@ public class AppSocket {
      */
     public void bind(int port) throws SocketException {
         if (isBound | isConnected) {
-            //throw new SocketException("Cannot bind a socket already "
-            // +
-            //                          (isBound ? "bound" :
-            // (isConnected ?
-            // "connected" : "setup")));
+            //throw new SocketException("Cannot bind a socket already " +
+            //                          (isBound ? "bound" : (isConnected ? "connected" : "setup")));
             appSockMux.removeAppSocket(this);
         }
 
@@ -114,9 +112,7 @@ public class AppSocket {
             isBound = true;
             isClosed = false;
 
-            // Logger.getLogger("log").logln(USR.ERROR, "AppSocket:
-            // bound to
-            // port " + localPort);
+            // Logger.getLogger("log").logln(USR.ERROR, "AppSocket: bound to port " + localPort);
 
             // register with AppSocketMux
             appSockMux.addAppSocket(this);
@@ -127,36 +123,34 @@ public class AppSocket {
         // this was in recieve()
         // but don;t need it on every call
         queue = appSockMux.getQueueForPort(localPort);
+
+
     }
 
     /**
      * Connects the socket to a remote address for this socket. When
-     * a socket is connected to a remote address, packets may only be sent
-     *******************************to
+     * a socket is connected to a remote address, packets may only be sent to
      * or received from that address. By default a datagram socket is not
      * connected.
      */
     public void connect(Address address, int port) {
         if (!isConnected) {
+
             remoteAddress = address;
             remotePort = port;
 
             isConnected = true;
             isClosed = false;
 
-            //Logger.getLogger("log").logln(USR.ERROR, "AppSocket:
-            // connect
-            // to " + remoteAddress + ":" +  remotePort);
+            //Logger.getLogger("log").logln(USR.ERROR, "AppSocket: connect to " + remoteAddress + ":" +  remotePort);
         } else {
-            throw new Error(
-                      "Cannot connect while already connected");
+            throw new Error("Cannot connect while already connected");
         }
     }
 
     /**
      * Connects the socket to a remote address for this socket. When
-     * a socket is connected to a remote address, packets may only be sent
-     *******************************to
+     * a socket is connected to a remote address, packets may only be sent to
      * or received from that address. By default a datagram socket is not
      * connected.
      */
@@ -237,8 +231,7 @@ public class AppSocket {
      * its length, the address of the remote router, and the port number
      * on the remote router.
      */
-    public void send(Datagram dg) throws SocketException,
-    NoRouteToHostException {
+    public void send(Datagram dg) throws SocketException, NoRouteToHostException {
         if (isClosed) {
             throw new SocketException("Socket closed");
         }
@@ -253,9 +246,7 @@ public class AppSocket {
         }
 
         if (appSockMux.sendDatagram(dg) == false) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "AppSocket: forwardDatagram queue full in ASM");
+            Logger.getLogger("log").logln(USR.ERROR, "AppSocket: forwardDatagram queue full in ASM");
         }
     }
 
@@ -276,11 +267,13 @@ public class AppSocket {
         try {
             return queue.take();
         } catch (InterruptedException ie) {
-            // This gets interrupted routinely on shut down
-            // Logger.getLogger("log").logln(
-            //   USR.ERROR, "AppSocket: " + localPort +
-            //   " queue take interrupted");
-            return null;
+            if (isClosed) {
+                Logger.getLogger("log").logln(USR.STDOUT, "AppSocket: port " + localPort + " closed on shutdown");
+                return null;
+            } else {
+                Logger.getLogger("log").logln(USR.ERROR, "AppSocket: port " + localPort + " receive interrupted");
+                throw new ClosedByInterruptException(Integer.toString(localPort));
+            }
         }
     }
 
@@ -290,13 +283,13 @@ public class AppSocket {
      */
     public void disconnect() {
         if (isConnected) {
+
             remoteAddress = null;
             remotePort = 0;
 
             isConnected = false;
 
-            //Logger.getLogger("log").logln(USR.ERROR, "AppSocket:
-            // disconnect");
+            //Logger.getLogger("log").logln(USR.ERROR, "AppSocket: disconnect");
         }
     }
 
@@ -305,6 +298,7 @@ public class AppSocket {
      */
     public void close() {
         if (!isClosed) {
+
             appSockMux.removeAppSocket(this);
 
             isClosed = true;
@@ -312,6 +306,7 @@ public class AppSocket {
             if (takeThread != null) {
                 takeThread.interrupt();
             }
+
         }
     }
 
@@ -319,10 +314,9 @@ public class AppSocket {
      * toString.
      */
     public String toString() {
-        return "Socket[" + (isBound ? "bound " : "")
-               + (isConnected ? "connected " : "") + "addr="
-               + localAddress
-               + " port=" + remotePort + " localport=" + localPort + "]";
+        return "Socket[" + (isBound ? "bound " : "") + (isConnected ? "connected " : "") + "addr=" + localAddress + " port=" +
+               remotePort + " localport=" + localPort + "]";
+
     }
 
 }

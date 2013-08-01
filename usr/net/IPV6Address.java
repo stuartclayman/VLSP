@@ -10,8 +10,7 @@ import java.io.Serializable;
 /**
  * An IPV4 Address
  */
-public class IPV6Address extends Size16 implements Address,
-Serializable {
+public class IPV6Address extends Size16 implements Address, Serializable {
     InetAddress addr;
 
     /**
@@ -20,7 +19,6 @@ Serializable {
     public IPV6Address(String hostname) throws UnknownHostException {
         this.addr = InetAddress.getByName(hostname);
         byte[] inetbytes = addr.getAddress();
-
         // copy bytes in
         System.arraycopy(inetbytes, 0, bytes, 0, 16);
     }
@@ -34,9 +32,7 @@ Serializable {
             System.arraycopy(addr, 0, bytes, 0, 16);
             this.addr = InetAddress.getByAddress(bytes);
         } else {
-            throw new UnknownHostException(
-                      "InetAddress: wrong length. Expected 16, got "
-                      + addr.length);
+            throw new UnknownHostException("InetAddress: wrong length. Expected 16, got " + addr.length);
         }
     }
 
@@ -46,7 +42,6 @@ Serializable {
     public IPV6Address(int addr) throws UnknownHostException {
         // convert int to byte[]
         ByteBuffer buf = ByteBuffer.wrap(bytes);
-
         buf.position(12);
         buf.put((byte)(addr >> 24 & 0xFF));
         buf.put((byte)(addr >> 16 & 0xFF));
@@ -67,8 +62,7 @@ Serializable {
      * Get IPV6Address as an Integer.
      */
     public int asInteger() {
-        throw new UnsupportedOperationException(
-                  "IPV6Address does not support asInteger()");
+        throw new UnsupportedOperationException("IPV6Address does not support asInteger()");
     }
 
     /**
@@ -82,9 +76,7 @@ Serializable {
      * Compare this Address to another one
      */
     public int compareTo(Object other) {
-        throw new
-              UnsupportedOperationException(
-                  "IPV6Address does not support compareTo");
+        throw new UnsupportedOperationException("IPV6Address does not support compareTo");
     }
 
     /**
@@ -96,7 +88,7 @@ Serializable {
             byte[] me = this.asByteArray();
             byte[] other = addr.asByteArray();
 
-            for (int i = 0; i < 16; i++) {
+            for (int i = 0; i<16; i++) {
                 if (me[i] != other[i]) {
                     return false;
                 }
@@ -123,7 +115,7 @@ Serializable {
         int i3 = buf.getInt();
         int i4 = buf.getInt();
 
-        int sum = i1 + i2 + i3 + i4;
+        int sum = i1+ i2 + i3 + i4;
 
         return sum;
     }

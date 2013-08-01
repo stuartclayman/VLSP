@@ -50,11 +50,12 @@ public class RouterApp2 {
 
             // and we want to connect to address 1 : port 5555
             sendSocket.connect(new GIDAddress(1), 5555);
+
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          "RouterApp2 exception: " + e);
+            Logger.getLogger("log").logln(USR.ERROR, "RouterApp2 exception: " + e);
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -70,12 +71,10 @@ public class RouterApp2 {
 
             datagram = DatagramFactory.newDatagram(buffer);
 
+
             try {
                 sendSocket.send(datagram);
-
-                //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " +
-                // datagram + " with " + new
-                // String(datagram.getPayload()));
+                //Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + datagram + " with " + new String(datagram.getPayload()));
             } catch (SocketException se) {
                 return;
             }
@@ -95,6 +94,7 @@ public class RouterApp2 {
 
             count = scanner.nextInt();
         }
+
 
         RouterApp2 app2 = new RouterApp2();
 
