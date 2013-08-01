@@ -16,131 +16,163 @@ import java.util.concurrent.*;
  * The GetRouterStatsCommand command.
  */
 public class GetRouterStatsCommand extends LocalCommand implements
-Callable<Boolean>
-{
-// the original command
-String command;
-Response response;
-PrintStream out;
+Callable<Boolean> {
+    // the original command
+    String command;
+    Response response;
+    PrintStream out;
 
-/**
- * Construct a GetRouterStatsCommand.
- */
-public GetRouterStatsCommand(){
-    super(MCRP.GET_ROUTER_STATS.CMD);
-}
+    /**
+     * Construct a GetRouterStatsCommand.
+     */
+    public GetRouterStatsCommand() {
+        super(MCRP.GET_ROUTER_STATS.CMD);
+    }
 
-/**
- * Evaluate the Command.
- */
-public boolean evaluate(Request request,
-    Response response)                        {
-    try {
-        PrintStream out = response.getPrintStream();
-
-        // get full request string
-        String path = java.net.URLDecoder.decode(
-            request.getPath().getPath(), "UTF-8");
-        // strip off /command
-        String value = path.substring(9);
-
-        // save values for future
-        this.command = value;
-        this.response = response;
-        this.out = out;
-
-        // create an Executor pool
-        ExecutorService pool = Executors.newCachedThreadPool();
-
-        // run GET_ROUTER_STATS collection in separate thread
-        Future<Boolean> future = pool.submit(this);
-
-        // wait for result
-        boolean result = false;
-
+    /**
+     * Evaluate the Command.
+     */
+    public boolean evaluate(Request request, Response response) {
         try {
-            result = future.get();             // use future
-        } catch (ExecutionException ex) {
-            response.setCode(404);
+            PrintStream out = response.getPrintStream();
 
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("error",
-                "GetRouterStatsCommand: ExecutionException " +
-                ex);
+            // get full request string
+            String path = java.net.URLDecoder.decode(
+                    request.getPath().getPath(), "UTF-8");
 
-            out.println(jsobj.toString());
-            response.close();
+            // strip off /command
+            String value = path.substring(9);
 
-            return false;
-        } catch (InterruptedException ie) {
-            response.setCode(404);
+            // save values for future
+            this.command = value;
+            this.response = response;
+            this.out = out;
 
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("error",
-                "GetRouterStatsCommand: InterruptedException " + ie);
-            out.println(jsobj.toString());
-            response.close();
+            // create an Executor pool
+            ExecutorService pool = Executors.newCachedThreadPool();
 
-            return false;
-        }
+            // run GET_ROUTER_STATS collection in separate thread
+            Future<Boolean> future = pool.submit(this);
 
-        // shutdown pool
-        pool.shutdown();
+            // wait for result
+            boolean result = false;
 
-        return result;
-    } catch (IOException ioe) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + ioe.getMessage());
-    } catch (JSONException jex) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + jex.getMessage());
-    }
-    finally {
-        return false;
-    }
-}
-
-public Boolean call(){
-    try {
-        // the result list
-        List<String> list;
-
-        // get arg for specified router
-        String [] args = command.split(" ");
-
-        if (args.length == 1) {
-            // no args so get data for all routers
-
-            // Get controller to do the work
-            // and get stats for the router
-            list = controller.getRouterStats();
-
-            if (list == null) {
-                // no router with that name
+            try {
+                result = future.get(); // use future
+            } catch (ExecutionException ex) {
                 response.setCode(404);
 
                 JSONObject jsobj = new JSONObject();
                 jsobj.put("error",
-                    "No routers on this LocalController");
+                          "GetRouterStatsCommand: ExecutionException "
+                          + ex);
 
                 out.println(jsobj.toString());
                 response.close();
 
                 return false;
-            }
-        } else if (args.length == 2) {
-            Scanner sc = new Scanner(args[1]);
-            int routerID;
+            } catch (InterruptedException ie) {
+                response.setCode(404);
 
-            if (sc.hasNextInt()) {
-                routerID = sc.nextInt();
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error",
+                          "GetRouterStatsCommand: InterruptedException " + ie);
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+            }
+
+            // shutdown pool
+            pool.shutdown();
+
+            return result;
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + jex.getMessage());
+        }
+
+        finally {
+            return false;
+        }
+    }
+
+    public Boolean call() {
+        try {
+            // the result list
+            List<String> list;
+
+            // get arg for specified router
+            String [] args = command.split(" ");
+
+            if (args.length == 1) {
+                // no args so get data for all routers
+
+                // Get controller to do the work
+                // and get stats for the router
+                list = controller.getRouterStats();
+
+                if (list == null) {
+                    // no router with that name
+                    response.setCode(404);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("error",
+                              "No routers on this LocalController");
+
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return false;
+                }
+            } else if (args.length == 2) {
+                Scanner sc = new Scanner(args[1]);
+                int routerID;
+
+                if (sc.hasNextInt()) {
+                    routerID = sc.nextInt();
+                } else {
+                    response.setCode(404);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put(
+                        "error",
+                        "Argument for GET_ROUTER_STATS command must be int");
+
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return false;
+                }
+
+                // Get controller to do the work
+                // and get stats for the router
+                list = controller.getRouterStats(routerID);
+
+                if (list == null) {
+                    // no router with that name
+                    response.setCode(404);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put(
+                        "error", "No router with ID " + routerID
+                        + " on this LocalController");
+
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return false;
+                }
             } else {
                 response.setCode(404);
 
                 JSONObject jsobj = new JSONObject();
                 jsobj.put(
                     "error",
-                    "Argument for GET_ROUTER_STATS command must be int");
+                    "Expected 2 arguments GET_ROUTER_STATS [router_id]");
 
                 out.println(jsobj.toString());
                 response.close();
@@ -148,62 +180,33 @@ public Boolean call(){
                 return false;
             }
 
-            // Get controller to do the work
-            // and get stats for the router
-            list = controller.getRouterStats(routerID);
-
-            if (list == null) {
-                // no router with that name
-                response.setCode(404);
-
-                JSONObject jsobj = new JSONObject();
-                jsobj.put(
-                    "error", "No router with ID " + routerID +
-                    " on this LocalController");
-
-                out.println(jsobj.toString());
-                response.close();
-
-                return false;
-            }
-        } else {
-            response.setCode(404);
+            // now return the list
+            int size = list.size();
 
             JSONObject jsobj = new JSONObject();
-            jsobj.put(
-                "error",
-                "Expected 2 arguments GET_ROUTER_STATS [router_id]");
+
+            for (int r = 0; r < size; r++) {
+                // pick out the r-th stat
+                jsobj.put(Integer.toString(r), list.get(r));
+            }
+
+            jsobj.put("size", size);
 
             out.println(jsobj.toString());
             response.close();
 
-            return false;
+            return true;
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + jex.getMessage());
         }
 
-        // now return the list
-        int size = list.size();
-
-        JSONObject jsobj = new JSONObject();
-
-        for (int r = 0; r < size; r++)
-            // pick out the r-th stat
-            jsobj.put(Integer.toString(r), list.get(r));
-
-        jsobj.put("size", size);
-
-        out.println(jsobj.toString());
-        response.close();
-
-        return true;
-    } catch (IOException ioe) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + ioe.getMessage());
-    } catch (JSONException jex) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + jex.getMessage());
+        finally {
+            return false;
+        }
     }
-    finally {
-        return false;
-    }
-}
+
 }

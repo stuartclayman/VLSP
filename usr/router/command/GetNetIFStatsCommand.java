@@ -17,79 +17,82 @@ import us.monoid.json.*;
 /**
  * The GET_NETIF_STATS command.
  */
-public class GetNetIFStatsCommand extends RouterCommand
-{
-/**
- * Construct a GetNetIFStatsCommand.
- */
-public GetNetIFStatsCommand(){
-    super(MCRP.GET_NETIF_STATS.CMD, MCRP.GET_NETIF_STATS.CODE,
-          MCRP.ERROR.CODE);
-}
+public class GetNetIFStatsCommand extends RouterCommand {
+    /**
+     * Construct a GetNetIFStatsCommand.
+     */
+    public GetNetIFStatsCommand() {
+        super(MCRP.GET_NETIF_STATS.CMD, MCRP.GET_NETIF_STATS.CODE,
+              MCRP.ERROR.CODE);
+    }
 
-/**
- * Evaluate the Command.
- */
-public boolean evaluate(Request request,
-    Response response)                        {
-    try {
-        PrintStream out = response.getPrintStream();
+    /**
+     * Evaluate the Command.
+     */
+    public boolean evaluate(Request request, Response response) {
+        try {
+            PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = new JSONObject();
+            JSONObject jsobj = new JSONObject();
 
-        List<RouterPort> ports = controller.listPorts();
-        int count = 0;
-        NetStats stats = null;
-        String statsString;
+            List<RouterPort> ports = controller.listPorts();
+            int count = 0;
+            NetStats stats = null;
+            String statsString;
 
-        // do localnet first
-        NetIF localNetIF = controller.getLocalNetIF();
-        if (localNetIF != null) {
-            stats = localNetIF.getStats();
+            // do localnet first
+            NetIF localNetIF = controller.getLocalNetIF();
 
-            // put out netif name
-            statsString = localNetIF.getRemoteRouterName() + " " +
-                          localNetIF.getName() + " " + stats.toString();
+            if (localNetIF != null) {
+                stats = localNetIF.getStats();
 
-            jsobj.put(Integer.toString(count), statsString);
-            count++;
-        }
+                // put out netif name
+                statsString = localNetIF.getRemoteRouterName() + " "
+                    + localNetIF.getName() + " " +
+                    stats.toString();
 
-        for (RouterPort rp : ports) {
-            if (rp.equals(RouterPort.EMPTY)) {
-                continue;
-            } else {
-                NetIF netIF = rp.getNetIF();
-                if (netIF != null) {
-                    stats = netIF.getStats();
+                jsobj.put(Integer.toString(count), statsString);
+                count++;
+            }
 
-                    // put out netif name
-                    statsString = netIF.getRemoteRouterName() +
-                                  " " + netIF.getName() + " " +
-                                  stats.toString();
+            for (RouterPort rp : ports) {
+                if (rp.equals(RouterPort.EMPTY)) {
+                    continue;
+                } else {
+                    NetIF netIF = rp.getNetIF();
 
-                    //jsobj.put(netIF.getRemoteRouterName(),
-                    // statsString);
-                    jsobj.put(Integer.toString(count), statsString);
-                    count++;
+                    if (netIF != null) {
+                        stats = netIF.getStats();
+
+                        // put out netif name
+                        statsString = netIF.getRemoteRouterName()
+                            + " " + netIF.getName() + " "
+                            + stats.toString();
+
+                        //jsobj.put(netIF.getRemoteRouterName(),
+                        // statsString);
+                        jsobj.put(Integer.toString(count), statsString);
+                        count++;
+                    }
                 }
             }
+
+            jsobj.put("size", count);
+            out.println(jsobj.toString());
+            response.close();
+
+            return true;
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + jex.getMessage());
         }
 
-        jsobj.put("size", count);
-        out.println(jsobj.toString());
-        response.close();
+        finally {
+            return false;
+        }
+    }
 
-        return true;
-    } catch (IOException ioe) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + ioe.getMessage());
-    } catch (JSONException jex) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + jex.getMessage());
-    }
-    finally {
-        return false;
-    }
-}
 }

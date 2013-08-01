@@ -1,8 +1,4 @@
 package usr.router;
 
-
-public interface RouteSelectionPolicy
-{
-    
-    
+public interface RouteSelectionPolicy {
 }

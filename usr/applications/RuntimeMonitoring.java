@@ -8,11 +8,10 @@ import java.util.Map;
  * the getMonitoringData() method and extract some useful data from the
  * application.
  */
-public interface RuntimeMonitoring
-{
-/**
- * Return a map of data.
- * Label -> Value
- */
-public Map<String, String> getMonitoringData();
+public interface RuntimeMonitoring {
+    /**
+     * Return a map of data.
+     * Label -> Value
+     */
+    public Map<String, String> getMonitoringData();
 }

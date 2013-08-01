@@ -22,7 +22,7 @@ import us.monoid.json.*;
 import eu.reservoir.monitoring.core.*;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.
-       UDPDataPlaneConsumerWithNames;
+    UDPDataPlaneConsumerWithNames;
 import eu.reservoir.monitoring.appl.BasicConsumer;
 import java.net.InetSocketAddress;
 import java.lang.reflect.Constructor;
@@ -32,1742 +32,1878 @@ import java.lang.reflect.Constructor;
  * contacts LocalControllers to set up virtual routers and then
  * gives set up and tear down instructions directly to them.
  */
-public class GlobalController implements ComponentController
-{
-private ControlOptions options_;        // Options affecting the
-                                        // simulation
+public class GlobalController implements ComponentController {
+    private ControlOptions options_;      // Options affecting the
+                                          // simulation
 
-// Options structure which is given to each router.
-private RouterOptions routerOptions_ = null;
+    // Options structure which is given to each router.
+    private RouterOptions routerOptions_ = null;
 
-private String xmlFile_;                // name of XML file containing
-                                        // config
-private LocalHostInfo myHostInfo_;   // Information about the localhosts
-private boolean listening_;             
-private GlobalControllerManagementConsole console_ = null;
-private ArrayList <LocalControllerInteractor> localControllers_ =
-    null;
-private HashMap<String,
-    ProcessWrapper> childProcessWrappers_ = null;
-private ArrayList <String> childNames_ = null;          
-        // names of child processes
+    private String xmlFile_;              // name of XML file containing
+                                          // config
+    private LocalHostInfo myHostInfo_;    // Information about the
+                                          // localhosts
+    private boolean listening_;
+    private GlobalControllerManagementConsole console_ = null;
+    private ArrayList<LocalControllerInteractor> localControllers_
+        = null;
+    private HashMap<String,
+                    ProcessWrapper> childProcessWrappers_ = null;
+    private ArrayList<String> childNames_ = null;
 
-private AbstractNetwork network_= null;
+    // names of child processes
 
-// Map connections LocalControllerInfo for given LCs to the appropriate
-// interactors
-private HashMap <LocalControllerInfo,
-    LocalControllerInteractor> interactorMap_ = null;
-// Map is used to store vacant ports on local controllers
-private HashMap <LocalControllerInfo, PortPool> portPools_ = null;
+    private AbstractNetwork network_ = null;
 
-// Map is from router Id to information one which machine router is
-// stored on.
-private HashMap <Integer, BasicRouterInfo> routerIdMap_ = null;
+    // Map connections LocalControllerInfo for given LCs to the appropriate
+    // interactors
+    private HashMap<LocalControllerInfo,
+                    LocalControllerInteractor> interactorMap_ = null;
 
-// A map of routerID links to LinkInfo objects
-private HashMap<Integer, LinkInfo> linkInfo = null;
+    // Map is used to store vacant ports on local controllers
+    private HashMap<LocalControllerInfo, PortPool> portPools_ = null;
 
-// A Map if appID to routerID
-// i.e the router the app is running on
-private HashMap<Integer, Integer> appInfo = null;
+    // Map is from router Id to information one which machine router is
+    // stored on.
+    private HashMap<Integer, BasicRouterInfo> routerIdMap_ = null;
 
-private int aliveCount = 0;     // Counts number of live nodes running.
+    // A map of routerID links to LinkInfo objects
+    private HashMap<Integer, LinkInfo> linkInfo = null;
 
-private EventScheduler scheduler_ = null;
-// Class holds scheduler for event list
+    // A Map if appID to routerID
+    // i.e the router the app is running on
+    private HashMap<Integer, Integer> appInfo = null;
 
-private long simulationTime_= 0;
+    private int aliveCount = 0;   // Counts number of live nodes
+                                  // running.
 
+    private EventScheduler scheduler_ = null;
 
-private int noLinks_ = 0;      // number of links in network
+    // Class holds scheduler for event list
 
-// Variables relate to traffic output of statistics
-private ArrayList <OutputType> trafficOutputRequests_ = null;
-private String routerStats_ = "";
-private int statsCount_ = 0;
-private ArrayList <Long> trafficOutputTime_ = null;
-private HashMap<String, int []> trafficLinkCounts_ = null;
+    private long simulationTime_ = 0;
 
-private ArrayList <OutputType> eventOutput_= null;
+    private int noLinks_ = 0;    // number of links in network
 
-private Thread ProcessOutputThread_;
+    // Variables relate to traffic output of statistics
+    private ArrayList<OutputType> trafficOutputRequests_ = null;
+    private String routerStats_ = "";
+    private int statsCount_ = 0;
+    private ArrayList<Long> trafficOutputTime_ = null;
+    private HashMap<String, int []> trafficLinkCounts_ = null;
 
-// Number of aggregation point controllers
-private int noControllers_ = 0;
+    private ArrayList<OutputType> eventOutput_ = null;
 
-// Thread name
-private String myName = "GlobalController";
+    private Thread ProcessOutputThread_;
 
-// Controller assigns aggregation points
-private APController APController_ = null;
+    // Number of aggregation point controllers
+    private int noControllers_ = 0;
 
-// Used in shut down routines
-private boolean isActive_ = false;
+    // Thread name
+    private String myName = "GlobalController";
 
-// Object used in emulation simply to wait
-private Object runLoop_;
+    // Controller assigns aggregation points
+    private APController APController_ = null;
 
-// Doing Lattice monitoring ?
-boolean latticeMonitoring = false;
+    // Used in shut down routines
+    private boolean isActive_ = false;
 
-// A monitoring address
-InetSocketAddress monitoringAddress;
-int monitoringPort = 22997;
-int monitoringTimeout = 1;
+    // Object used in emulation simply to wait
+    private Object runLoop_;
 
-// A BasicConsumer for the stats of a Router
-BasicConsumer dataConsumer;
+    // Doing Lattice monitoring ?
+    boolean latticeMonitoring = false;
 
-// and the Reporters that handle the incoming measurements
-// Label -> Reporter
-HashMap<String, Reporter> reporterMap;
+    // A monitoring address
+    InetSocketAddress monitoringAddress;
+    int monitoringPort = 22997;
+    int monitoringTimeout = 1;
 
-// A Semaphore to have single access to some operations
-Semaphore semaphore;
+    // A BasicConsumer for the stats of a Router
+    BasicConsumer dataConsumer;
 
-/**
- * Main entry point.
- */
-public static void main(String[] args){
-    if (args.length != 1) {
-        System.err.println("Command line must specify " +
-            "XML file to read and nothing else.");
-        System.exit(-1);
-    }
-    GlobalController gControl = new GlobalController();
-    gControl.xmlFile_ = args[0];
-    gControl.init();
-    Logger.getLogger("log").logln(USR.STDOUT,
-        gControl.leadin() +
-        "Global controller session complete");
-    System.out.flush();
-}
+    // and the Reporters that handle the incoming measurements
+    // Label -> Reporter
+    HashMap<String, Reporter> reporterMap;
 
-/**
- * Construct a GlobalController -- this constructor contains things
- * which apply whether we are simulation or emulation
- */
-public GlobalController (){
-}
+    // A Semaphore to have single access to some operations
+    Semaphore semaphore;
 
-/** Basic intialisation for the global controller */
-private void init(){
-    // allocate a new logger
-    Logger logger = Logger.getLogger("log");
-
-    // tell it to output to stdout and tell it what to pick up
-    // it will actually output things where the log has bit
-    // USR.STDOUT set
-
-    // tell it to output to stderr and tell it what to pick up
-    // it will actually output things where the log has bit
-    // USR.ERROR set
-    logger.addOutput(System.err, new BitMask(USR.ERROR));
-    logger.addOutput(System.out, new BitMask(USR.STDOUT));
-    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Hello");
-
-
-    network_= new AbstractNetwork();
-    linkInfo = new HashMap<Integer, LinkInfo>();
-    appInfo = new HashMap<Integer, Integer>();
-    options_ = new ControlOptions(xmlFile_);
-    routerOptions_ = options_.getRouterOptions();
-    
-    eventOutput_= options_.getEventOutput();
-
-    // create a semaphore with 1 element to ensure
-    // single access to some key code blocks
-    semaphore = new Semaphore(1);
-    
-    runLoop_= new Object();
-
-    // Redirect ouptut for error and normal output if requested in
-    // router options file
-    String fileName = routerOptions_.getOutputFile();
-    if (!fileName.equals("")) {
-        if (routerOptions_.getOutputFileAddName())
-            fileName += "_" + leadinFname();
-        File output = new File(fileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(output, true);
-            PrintWriter pw = new PrintWriter(fos, true);
-            logger.removeOutput(System.out);
-            logger.addOutput(pw, new BitMask(USR.STDOUT));
-        } catch (Exception e) {
-            System.err.println("Cannot output to file");
-            System.err.println(fileName);
+    /**
+     * Main entry point.
+     */
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.err.println("Command line must specify "
+                               + "XML file to read and nothing else.");
             System.exit(-1);
         }
-    }
-    String errorName = routerOptions_.getErrorFile();
-    if (!errorName.equals("")) {
-        if (routerOptions_.getOutputFileAddName())
-            errorName += "_" + leadinFname();
-        File output = new File(fileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(output, true);
-            PrintWriter pw = new PrintWriter(fos, true);
-            logger.removeOutput(System.err);
-            logger.addOutput(pw, new BitMask(USR.ERROR));
-        } catch (Exception e) {
-            System.err.println("Cannot output to file");
-            System.err.println(fileName);
-            System.exit(-1);
-        }
-    }
 
-    // Set up AP controller
-    APController_ = ConstructAPController.constructAPController(
-        routerOptions_);
-
-    try {
-        myHostInfo_ = new LocalHostInfo(options_.getGlobalPort());
-    } catch (Exception e) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + e.getMessage());
-        System.exit(-1);
-    }
-
-    if (options_.latticeMonitoring())
-        latticeMonitoring = true;
-
-    if (latticeMonitoring) {
+        GlobalController gControl = new GlobalController();
+        gControl.xmlFile_ = args[0];
+        gControl.init();
         Logger.getLogger("log").logln(USR.STDOUT,
-            leadin() + "Starting monitoring");
-
-        // setup DataConsumer
-        dataConsumer = new BasicConsumer();
-        // and reporterList
-        reporterMap = new HashMap<String, Reporter>();
-
-        // now start the reporters
-        setupReporters(options_.getConsumerInfo());
-
-        // start monitoring
-        // listening on the GlobalController address
-        String gcAddress = "localhost";
-
-        try {
-            gcAddress = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException uhe) {
-        }
-
-        monitoringAddress = new InetSocketAddress(gcAddress,
-            monitoringPort);
-        startMonitoringConsumer(monitoringAddress);
+                                      gControl.leadin()
+                                      + "Global controller session complete");
+        System.out.flush();
     }
-    // Set up specific details if this is actually emulation not
-    // simulation
-    if (!options_.isSimulation())
-        initEmulation();
 
-    //Initialise events for schedules
-    scheduler_ = new EventScheduler(options_.isSimulation(), this);
-    options_.initialEvents(scheduler_, this);
-    // Clear output files where needed
-    for (OutputType o : options_.getOutputs()) {
-        if (o.clearOutputFile()) {
-            File f = new File(o.getFileName());
-            f.delete();
-        }
+    /**
+     * Construct a GlobalController -- this constructor contains things
+     * which apply whether we are simulation or emulation
+     */
+    public GlobalController() {
     }
-    
-    if (options_.getWarmUpPeriod() > 0) {
-        for (EventEngine e: options_.getEngines()) {
-            if (e instanceof ProbabilisticEventEngine) {
-                ((ProbabilisticEventEngine)e).warmUp(
-                    options_.getWarmUpPeriod(),APController_, this);
+
+    /** Basic intialisation for the global controller */
+    private void init() {
+        // allocate a new logger
+        Logger logger = Logger.getLogger("log");
+
+        // tell it to output to stdout and tell it what to pick up
+        // it will actually output things where the log has bit
+        // USR.STDOUT set
+
+        // tell it to output to stderr and tell it what to pick up
+        // it will actually output things where the log has bit
+        // USR.ERROR set
+        logger.addOutput(System.err, new BitMask(USR.ERROR));
+        logger.addOutput(System.out, new BitMask(USR.STDOUT));
+
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Hello");
+
+        network_ = new AbstractNetwork();
+        linkInfo = new HashMap<Integer, LinkInfo>();
+        appInfo = new HashMap<Integer, Integer>();
+        options_ = new ControlOptions(xmlFile_);
+        routerOptions_ = options_.getRouterOptions();
+
+        eventOutput_ = options_.getEventOutput();
+
+        // create a semaphore with 1 element to ensure
+        // single access to some key code blocks
+        semaphore = new Semaphore(1);
+
+        runLoop_ = new Object();
+
+        // Redirect ouptut for error and normal output if requested in
+        // router options file
+        String fileName = routerOptions_.getOutputFile();
+
+        if (!fileName.equals("")) {
+            if (routerOptions_.getOutputFileAddName()) {
+                fileName += "_" + leadinFname();
             }
-        }
-    }
-    
-    if (options_.isSimulation()) {
-        runSimulation(); 
-    } else {
-        runEmulation();
-    }
-}
 
-
-
-/** Runs a simulation loop --- gets events and executes them in order.
- */
- 
-private void runSimulation() 
-{
-    isActive_= true;
-    while (isActive_) {
-        Event ev= scheduler_.getFirstEvent();
-        simulationTime_= ev.getTime();
-        if (ev == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+
-                "Ran out of events to schedule");
-        }
-        try {
-            executeEvent(ev);
-        } catch (InstantiationException ine) {
-            isActive_= false;
-        } catch (InterruptedException ie) {
-            isActive_= false;
-        } catch (TimeoutException te) {
-            isActive_= false;
-        }
-    }
-    shutDown();
-}
-
-
-/** Runs an emulation loop -- this spawns the scheduler as an independent
- *  process then waits.  The scheduler sends events back into the
- *  main loop
- */
- 
-private void runEmulation() 
-{
-    isActive_= true;
-    // Start Scheduler as thread
-    Thread t;
-    synchronized (runLoop_) {
-        t= new Thread(scheduler_);
-        t.start();
-        while(isActive_) {
+            File output = new File(fileName);
             try {
-                runLoop_.wait();
-            } catch (InterruptedException ie) {
-            } catch (IllegalMonitorStateException ims) {
+                FileOutputStream fos = new FileOutputStream(output, true);
+                PrintWriter pw = new PrintWriter(fos, true);
+                logger.removeOutput(System.out);
+                logger.addOutput(pw, new BitMask(USR.STDOUT));
+            } catch (Exception e) {
+                System.err.println("Cannot output to file");
+                System.err.println(fileName);
+                System.exit(-1);
             }
         }
-    }
-    scheduler_.wakeWait(); // Interrupt the scheduler to close it
-    if (t.isAlive()) {
-        scheduler_.wakeWait();
-        try {
-            t.join();
-        } catch (InterruptedException ie) {
-        }
-    }
-    shutDown();
-}
 
+        String errorName = routerOptions_.getErrorFile();
 
-/** Sets isActive_ to false ending the simulation */
-public void deactivate()
-{
-    isActive_= false;
-    if (!options_.isSimulation()) {
-        synchronized(runLoop_) {
-            runLoop_.notify();
-        }
-    }
-}
-    
+        if (!errorName.equals("")) {
+            if (routerOptions_.getOutputFileAddName()) {
+                errorName += "_" + leadinFname();
+            }
 
-/**
- * Initialisation if we are emulating on hardware.
- */
-private void initEmulation(){
-    childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
-    childNames_ = new ArrayList<String>();
-    routerIdMap_ = new HashMap<Integer, BasicRouterInfo>();
-    console_ = new GlobalControllerManagementConsole(
-        this, myHostInfo_.getPort());
-    console_.start();
-    portPools_ = new HashMap<LocalControllerInfo, PortPool>();
-    noControllers_ = options_.noControllers();
-    LocalControllerInfo lh;
-    for (int i = 0; i < noControllers_; i++) {
-        lh = options_.getController(i);
-        portPools_.put(lh,
-            new PortPool(lh.getLowPort(), lh.getHighPort()));
-    }
-    if (options_.startLocalControllers()) {
-        Logger.getLogger("log").logln(USR.STDOUT,
-            leadin() + "Starting Local Controllers");
-        startLocalControllers();
-    }
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() +
-        "Checking existence of local Controllers");
-    checkAllControllers();
-}
-
-/**
- * Set up the reporters
- */
-private void setupReporters(HashMap<String,
-        String>reporterInfoMap){
-    // skip through the map, instantiate a Probe and set its data
-    // rate
-    for (Map.Entry<String,
-             String> entry : reporterInfoMap.entrySet()) {
-        String reporterClassName = entry.getValue();
-        String label = entry.getKey();
-
-        try {
-            // Now convert the class name to a Class
-            // get Class object
-            // WAS Class<Reporter> cc =
-            // (Class<Reporter>)Class.forName(reporterClassName);
-
-            // Replaced with following 2 lines
-            Class<?> c = (Class<?>)Class.forName(reporterClassName);
-            Class<? extends Reporter> cc = c.asSubclass(
-                Reporter.class );
-
-            // find Constructor for when arg is GlobalController
-            Constructor<? extends Reporter> cons =
-                (Constructor<? extends Reporter>)cc.
-                getDeclaredConstructor(GlobalController.class );
-
-            Reporter reporter = (Reporter)cons.newInstance(this);
-            reporterMap.put(label, reporter);
-
-            Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() +
-                "Added reporter: " + reporter);
-        } catch (ClassNotFoundException cnfe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() +
-                "Class not found " +
-                reporterClassName);
-        } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() +
-                "Cannot instantiate class " +
-                reporterClassName);
-        }
-    }
-}
-
-/** checks if events can be simulated */
-public boolean isActive()
-{
-    return isActive_;
-}
-
-/** bail out of simulation relatively gracefully */
-public void bailOut()
-{
-    Logger.getLogger("log").logln(USR.ERROR,
-        leadin() + "Bailing out of run!");
-    shutDown();
-    Logger.getLogger("log").logln(USR.ERROR,
-        leadin() + "Exit after bailout");
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() + "Bailing out of run!");
-}
-
-/** Execute an event, return a JSON object with information about it
- * throws Instantiation if creation fails
- * Interrupted if acquisition of lock interrupted
- * Timeout if acquisition timesout*/
-public JSONObject executeEvent(Event e) throws
-        InstantiationException, InterruptedException, TimeoutException 
-{
-    
-    try {
-        // Wait to aquire a lock -- only one event at once
-        //
-        boolean acquired = semaphore.tryAcquire(
-            options_.getMaxLag(), TimeUnit.MILLISECONDS);
-        if (!acquired) throw new TimeoutException(
-                "GlobalController lagging too much");
-        if (!isActive_) {
-            throw new InterruptedException ("Run finished!");
-        }
-        Object extraParms = null;
-        e.preceedEvent(scheduler_, this);
-        Logger.getLogger("log").logln(USR.STDOUT, "EVENT: " + e);
-        JSONObject js = null;
-        js = e.execute(this);
-        for (OutputType t: eventOutput_) {
-            produceEventOutput(e,js,t);
-        }
-        e.followEvent(scheduler_, js, this);
-        return js;
-    } finally {
-        semaphore.release();
-    }
-}
-
-/** Convenience function to create JSON object from error string*/
-static public JSONObject commandError(String error)
-{
-    JSONObject jsobj = new JSONObject();
-
-    try {
-        jsobj.put("msg", "ERROR: " + error);
-    } catch (Exception e) {
-        Logger.getLogger("log").logln(
-            USR.ERROR, "JSON creation error in commandError");
-    }
-    return jsobj;
-}
-
-/** Event for start Simulation */
-public void startSimulation(long time){
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() +
-        "Start of simulation event at: " +
-        time + " " + System.currentTimeMillis());
-    for (OutputType o : options_.getOutputs())
-        if (o.getTimeType() == OutputType.AT_START)
-            produceOutput(time, o);
-}
-
-/** Event for end Simulation */
-public void endSimulation(long time){
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() +
-        "End of simulation event at " + time +
-        " " + System.currentTimeMillis());
-
-    for (OutputType o : options_.getOutputs())
-        if (o.getTimeType() == OutputType.AT_END)
-            produceOutput(time, o);
-    shutDown();
-}
-
-/** Register existence of router */
-public void registerRouter(int rId){
-    network_.addNode(rId);
-}
-
-/** Unregister a router and all links from structures in
- *  GlobalController*/
-public void unregisterRouter(int rId)
-{
-    int[] out = getOutLinks(rId);
-    APController_.removeNode(getElapsedTime(), rId);
-    for (int i = out.length - 1; i >= 0; i--) {
-        unregisterLink(rId, out[i]);
-    }
-    network_.removeNode(rId);
-}
-
-/** Find some router info
-*/
-public BasicRouterInfo findRouterInfo(int rId){
-    return routerIdMap_.get(rId);
-}
-
-public void addRouterInfo(int id, BasicRouterInfo br)
-{
-    routerIdMap_.put(id, br);
-}
-
-/** remove id from basic router info*/
-public void removeBasicRouterInfo(int rId) 
-{
-    routerIdMap_.remove(rId);
-}
-
-/** Return the local controller attached to a router id*/
-public LocalControllerInteractor getLocalController(int rId)
-{
-    BasicRouterInfo br= findRouterInfo(rId);
-    if (br == null)
-        return null;
-    return interactorMap_.get(br.getLocalControllerInfo());
-}
-
-/** Return the local controller attached to router info*/
-public LocalControllerInteractor getLocalController(BasicRouterInfo br)
-{
-    return interactorMap_.get(br.getLocalControllerInfo());
-}
-
-/** Return the local controller attached to router info*/
-public LocalControllerInteractor getLocalController(LocalControllerInfo lcinf)
-{
-    return interactorMap_.get(lcinf);
-}
-
-
-public LocalControllerInfo getLeastUsedLC()
-
-{  
-    
-    LocalControllerInfo leastUsed = options_.getController(0);
-    
-    double minUse = leastUsed.getUsage();
-    double thisUsage;
-    for (int i = 1; i < noControllers_; i++) {
-        LocalControllerInfo lc= options_.getController(i);
-        thisUsage = lc.getUsage();
-        // Logger.getLogger("log").logln(USR.STDOUT, i+" Usage
-        // "+thisUsage);
-        if (thisUsage == 0.0) {
-            leastUsed = lc;
-            break;
-        }
-        if (thisUsage < minUse) {
-            minUse = thisUsage;
-            leastUsed = lc;
-        }
-    }
-    if (minUse >= 1.0) {
-        return null;
-    }
-    return leastUsed;
-}
-
-
-
-/** Get the port pool associated with a local controller */
-public PortPool getPortPool(LocalControllerInfo lci) 
-{
-    return portPools_.get(lci);
-}
-
-public void latticeMonitorRouterRemoval(BasicRouterInfo br)
-{
-    // tell reporter that this router is gone
-    if (latticeMonitoring) {
-        String routerName = br.getName();
-        for (Reporter reporter : reporterMap.values()) {
-            if (reporter instanceof RouterDeletedNotification) {
-                ((RouterDeletedNotification)reporter).
-                routerDeleted(routerName);
+            File output = new File(fileName);
+            try {
+                FileOutputStream fos = new FileOutputStream(output, true);
+                PrintWriter pw = new PrintWriter(fos, true);
+                logger.removeOutput(System.err);
+                logger.addOutput(pw, new BitMask(USR.ERROR));
+            } catch (Exception e) {
+                System.err.println("Cannot output to file");
+                System.err.println(fileName);
+                System.exit(-1);
             }
         }
-    }
-}
 
-/**
- * Find some router info, given a router address or a router name
- */
-public BasicRouterInfo findRouterInfo(String value){
-    // skip through all the BasicRouterInfo objects
-    for (BasicRouterInfo info : (Collection<BasicRouterInfo>)
-         routerIdMap_.values()) {
-        if (info.getAddress() !=
-            null && info.getAddress().equals(value))
-            // we found a match
-            return info;
-        else if (info.getName() !=
-                 null && info.getName().equals(value))
-            // we found a match
-            return info;
-    }
-    // we got here and found nothing
-    return null;
-}
+        // Set up AP controller
+        APController_ = ConstructAPController.constructAPController(
+                routerOptions_);
 
-/**
- * List all RouterInfo.
- */
-public Collection<BasicRouterInfo> getAllRouterInfo(){
-    return routerIdMap_.values();
-}
-
-/**
- * Get the number of routers
- */
-public int getRouterCount(){
-    return network_.getNoNodes();
-}
-
-/**
- * Is the router ID valid.
- */
-public boolean isValidRouterID(int rId){
-    return network_.nodeExists(rId);
-}
-
-/**
- * Find link info
- */
-public LinkInfo findLinkInfo(int linkID){
-    return linkInfo.get(linkID);
-}
-
-/**
- * Set LinkInfo
- */
-public void setLinkInfo(Integer linkID, LinkInfo linkinf) {
-    linkInfo.put(linkID, linkinf);
-}
-
-/**
- * List all LinkInfo
- */
-public Collection<LinkInfo> getAllLinkInfo(){
-    return linkInfo.values();
-}
-
-/**
- * Is the link ID valid.
- */
-public boolean isValidLinkID(int lId){
-    if (linkInfo.containsKey(lId))
-        return true;
-    else
-        return false;
-}
-
-/** Register a link with structures necessary in Global
- * Controller */
-public void registerLink(int router1Id, int router2Id){
-    network_.addLink(router1Id, router2Id);
-}
-
-/* Return a list of outlinks from a router */
-public int [] getOutLinks(int routerId){
-    return network_.getOutLinks(routerId);
-}
-
-
-/**
- * Get the number of links
- */
-public int getLinkCount(){
-    return noLinks_;
-}
-
-/**
- * Is a router directly connected to another one
- */
-public boolean isConnected(int routerId, int other){
-    int [] links = getOutLinks(routerId);
-
-    for (int p = 0; p < links.length; p++)
-        if (links[p] == other)
-            return true;
-    return false;
-}
-
-/* Return a list of link costs from a router -- must be used in
- *  parallel get getOutLinks to id link nos*/
-public int [] getLinkCosts(int routerId){
-    return network_.getLinkCosts(routerId);
-}
-
-
-
-/** Create pair of integers with first integer smallest */
-private Pair <Integer, Integer> makeRouterPair(int r1,
-    int r2)            {
-    Pair <Integer, Integer> rpair;
-    if (r1 < r2)
-        rpair = new Pair<Integer, Integer>(r1, r2);
-    else
-        rpair = new Pair<Integer, Integer>(r2, r1);
-    return rpair;
-}
-
-/** Create pair of integers  */
-static public Pair <Integer, Integer> makePair(int r1, int r2){
-    return new Pair<Integer, Integer>(r1, r2);
-}
-
-/** Remove a link with structures necessary in Global
- * Controller */
-public void unregisterLink(int router1Id, int router2Id){
-    network_.removeLink(router1Id, router2Id);
-    APController_.removeLink(getElapsedTime(), router1Id, router2Id);
-}
-
-/** Remove info about link from linkInfo struct */
-public void removeLinkInfo(Integer id) 
-{
-    linkInfo.remove(id);
-}
-
-
-/**
- * Find some app info
- */
-public BasicRouterInfo findAppInfo(int appId){
-    int routerID = appInfo.get(appId);
-    BasicRouterInfo bri = routerIdMap_.get(routerID);
-    return bri;
-}
-
-// FIXME write this
-public boolean appStop(int appId){
-    Logger.getLogger("log").logln(USR.ERROR,
-        "No way yet to stop applications");
-    return false;
-}
-
-/**
- * Run an application on a Router.
- * Returns the app ID
- */
-public int appStart(int routerID, String className, String[] args)                               
-{
-    // return +ve no for valid id
-    // return -1 for no start - cant find LocalController
-    BasicRouterInfo br = routerIdMap_.get(routerID);
-    if (br == null) {
-        return -1;
-    }
-    LocalControllerInteractor lci = interactorMap_.get(
-        br.getLocalControllerInfo());
-    if (lci == null)
-        return -1;
-    int i;
-    int MAX_TRIES = 5;
-    Integer appID = -1;
-
-    for (i = 0; i < MAX_TRIES; i++) {
         try {
-            // appStart returns a JSONObject
-            // something like: {"aid":1,"startTime":1340614768099,
-            // "name":"/R4/App/usr.applications.RecvDataRate/1"}
-
-            JSONObject response = lci.appStart(routerID, className,
-                args);
-
-            // consturct an ID from the routerID and the appID
-            Pair<Integer,Integer> idPair = 
-                    new Pair<Integer, Integer>(routerID, 
-                        (Integer)response.get("aid"));
-            appID = idPair.hashCode();
-            String appName = (String)response.get("name");
-
-            // Add app to BasicRouterInfo
-            br.addApplication(appID, appName);
-
-            // and set info as
-            // ["id": 46346535, "time" : "00:14:52", "aid" : 1,
-            // "startime" : 1331119233159, "state": "RUNNING",
-            // "classname" : "usr.applications.Send", "args" : "[4,
-            // 3000, 250000, -d, 250, -i, 10]" ]
-            Map<String, Object>dataMap = new HashMap<String, Object>();
-            dataMap.put("time", "00:00:00");
-            dataMap.put("id", appID);
-            dataMap.put("aid", (Integer)response.get("aid"));
-            dataMap.put("startime", (Long)response.get("startTime"));
-            dataMap.put("runtime", 0);
-            dataMap.put("classname", className);
-            dataMap.put("args", Arrays.asList(args).toString());
-            dataMap.put("state", "STARTED");
-
-            br.setApplicationData(appName, dataMap);
-            // add app to app info
-            appInfo.put(appID, routerID);
-            return appID;
-        } catch (JSONException je) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() + " failed to start app " + className + " on " 
-                + routerID + " try " + i + " with Exception " + je);
-        } catch (IOException io) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() + " failed to start app " + className + " on " 
-                + routerID + " try " + i + " with Exception " + io);
-        }
-    }
-    Logger.getLogger("log").logln(USR.ERROR,
-        leadin() + " failed to start app " + className +
-        " on " + routerID + " giving up ");
-    return -1;
-}
-
-/** Request router stats */
-public void requestRouterStats(){
-    try {
-        // Get all LocalControllers
-        for (LocalControllerInteractor lci : localControllers_)
-            lci.requestRouterStats();
-    } catch (IOException e) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + "Could not get stats");
-        Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-    } catch (JSONException e) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + "Could not get stats");
-        Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-    }
-}
-
-/**
- * Get the router stats -- method is blocking
- */
-public List<String> compileRouterStats(){
-    try {
-        List<String> result = new ArrayList<String>();
-
-        // Get all LocalControllers
-        for (LocalControllerInteractor lci : localControllers_) {
-            List<String> routerStats = lci.getRouterStats();
-
-            if (routerStats != null)
-                result.addAll(routerStats);
-        }
-
-        return result;
-    } catch (IOException e) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + "Could not get stats");
-        Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-        return null;
-    } catch (JSONException e) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + "Could not get stats");
-        Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-        return null;
-    }
-}
-
-/*
- * Shutdown
- */
-void shutDown(){
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() + "SHUTDOWN CALLED!");
-    if (!options_.isSimulation()) {
-        // stop monitoring
-        if (latticeMonitoring)
-            stopMonitoringConsumer();
-        //ThreadTools.findAllThreads("GC pre
-        // killAllControllers:");
-        killAllControllers();
-        //ThreadTools.findAllThreads("GC post
-        // killAllControllers:");
-        Logger.getLogger("log").logln(USR.STDOUT,
-            leadin() + "Pausing.");
-        try {
-            Thread.sleep(10);
+            myHostInfo_ = new LocalHostInfo(options_.getGlobalPort());
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR,
-                leadin() + e.getMessage());
+                                          leadin() + e.getMessage());
             System.exit(-1);
         }
-        //ThreadTools.findAllThreads("GC post checkMessages:");
-        Logger.getLogger("log").logln(USR.STDOUT,
-            leadin() + "Stopping console");
-        console_.stop();
-        //ThreadTools.findAllThreads("GC post stop console:");
-    }
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() +
-        "All stopped, shut down now!");
-}
 
-/** Produce some output */
-public void produceOutput(long time, OutputType o){
-    File f;
-    FileOutputStream s = null;
-    PrintStream p = null;
-
-    try {
-        f = new File(o.getFileName());
-        s = new FileOutputStream(f, true);
-        p = new PrintStream(s, true);
-    } catch (Exception e) {
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-            "Cannot open " + o.getFileName() +
-            " for output " + e.getMessage());
-        return;
-    }
-    o.makeOutput(time, p, this);
-    // Schedule next output time
-    if (o.getTimeType() == OutputType.AT_INTERVAL) {
-        OutputEvent e = new OutputEvent(time + o.getTime(), null, o);
-        scheduler_.addEvent(e);
-    }
-    p.close();
-    try {
-        s.close();
-    } catch (IOException ex) {
-    }
-}
-
-
-/** Produce some output */
-public void produceEventOutput(Event ev, JSONObject response, 
-        OutputType o)
-{
-    File f;
-    FileOutputStream s = null;
-    PrintStream p = null;
-
-    try {
-        f = new File(o.getFileName());
-        s = new FileOutputStream(f, true);
-        p = new PrintStream(s, true);
-    } catch (Exception e) {
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + 
-            "Cannot open " + o.getFileName() +
-            " for output " + e.getMessage());
-        return;
-    }
-    o.makeEventOutput(ev, response, p, this);
- 
-    p.close();
-    try {
-        s.close();
-    } catch (IOException ex) {
-    }
-}
-
-public HashMap<String, int []> getTrafficLinkCounts(){
-    return trafficLinkCounts_;
-}
-
-/** When output for traffic is requested then queue requests for traffic
- * from
- * routers */
-public void checkTrafficOutputRequests(long time,
-    OutputType o)                      {
-    if (options_.isSimulation()) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            "Request for output of traffic makes sense only"
-            +" in context of emulation");
-        return;
-    }
-    if (trafficOutputRequests_ == null) {
-        trafficOutputRequests_ = new ArrayList<OutputType>();
-        trafficOutputTime_ = new ArrayList<Long>();
-    }
-    trafficOutputRequests_.add(o);
-    trafficOutputTime_.add(time);
-    /** If requests already sent then just add it to the output
-     * request
-     * queue
-     * rather than sending a fruther request */
-    if (trafficOutputRequests_.size() > 1)
-        return;
-    //  Make request for stats
-    requestRouterStats();
-}
-
-/** Receiver router traffic -- if it completes a set then output it */
-public void receiveRouterStats(String stats){
-    synchronized (routerStats_) {
-        statsCount_++;
-
-        routerStats_ = routerStats_.concat(stats);
-        // System.err.println("Stat count is "+statsCount_);
-        if (statsCount_ < localControllers_.size()) {           
-            // Not got all stats yet
-            return;
+        if (options_.latticeMonitoring()) {
+            latticeMonitoring = true;
         }
-        //System.err.println("Enough"+routerStats_);
+
+        if (latticeMonitoring) {
+            Logger.getLogger("log").logln(USR.STDOUT,
+                                          leadin() + "Starting monitoring");
+
+            // setup DataConsumer
+            dataConsumer = new BasicConsumer();
+
+            // and reporterList
+            reporterMap = new HashMap<String, Reporter>();
+
+            // now start the reporters
+            setupReporters(options_.getConsumerInfo());
+
+            // start monitoring
+            // listening on the GlobalController address
+            String gcAddress = "localhost";
+
+            try {
+                gcAddress = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException uhe) {
+            }
+
+            monitoringAddress = new InetSocketAddress(gcAddress,
+                                                      monitoringPort);
+            startMonitoringConsumer(monitoringAddress);
+        }
+
+        // Set up specific details if this is actually emulation not
+        // simulation
+        if (!options_.isSimulation()) {
+            initEmulation();
+        }
+
+        //Initialise events for schedules
+        scheduler_ = new SimpleEventScheduler(options_.isSimulation(), this);
+        options_.initialEvents(scheduler_, this);
+
+        // Clear output files where needed
+        for (OutputType o : options_.getOutputs()) {
+            if (o.clearOutputFile()) {
+                File f = new File(o.getFileName());
+                f.delete();
+            }
+        }
+
+        if (options_.getWarmUpPeriod() > 0) {
+            for (EventEngine e : options_.getEngines()) {
+                if (e instanceof ProbabilisticEventEngine) {
+                    ((ProbabilisticEventEngine)e).warmUp(
+                        options_.getWarmUpPeriod(), APController_, this);
+                }
+            }
+        }
+
+        if (options_.isSimulation()) {
+            runSimulation();
+        } else {
+            runEmulation();
+        }
+    }
+
+    /** Runs a simulation loop --- gets events and executes them in order.
+     */
+
+    private void runSimulation() {
+        isActive_ = true;
+
+        while (isActive_) {
+            Event ev = scheduler_.getFirstEvent();
+            simulationTime_ = ev.getTime();
+
+            if (ev == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()
+                                              + "Ran out of events to schedule");
+            }
+
+            try {
+                executeEvent(ev);
+            } catch (InstantiationException ine) {
+                isActive_ = false;
+            } catch (InterruptedException ie) {
+                isActive_ = false;
+            } catch (TimeoutException te) {
+                isActive_ = false;
+            }
+        }
+
+        shutDown();
+    }
+
+    /** Runs an emulation loop -- this spawns the scheduler as an
+     * independent
+     *  process then waits.  The scheduler sends events back into the
+     *  main loop
+     */
+
+    private void runEmulation() {
+        isActive_ = true;
+
+        // Start Scheduler as thread
+        Thread t;
+        synchronized (runLoop_) {
+            t = new Thread((Runnable)scheduler_);
+            t.start();
+
+            while (isActive_) {
+                try {
+                    runLoop_.wait();
+                } catch (InterruptedException ie) {
+                } catch (IllegalMonitorStateException ims) {
+                }
+            }
+        }
+        scheduler_.wakeWait(); // Interrupt the scheduler to close it
+
+        if (t.isAlive()) {
+            scheduler_.wakeWait();
+            try {
+                t.join();
+            } catch (InterruptedException ie) {
+            }
+        }
+
+        shutDown();
+    }
+
+    /** Sets isActive_ to false ending the simulation */
+    public void deactivate() {
+        isActive_ = false;
+
+        if (!options_.isSimulation()) {
+            synchronized (runLoop_) {
+                runLoop_.notify();
+            }
+        }
+    }
+
+    /**
+     * Initialisation if we are emulating on hardware.
+     */
+    private void initEmulation() {
+        childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
+        childNames_ = new ArrayList<String>();
+        routerIdMap_ = new HashMap<Integer, BasicRouterInfo>();
+        console_ = new GlobalControllerManagementConsole(
+                this, myHostInfo_.getPort());
+        console_.start();
+        portPools_ = new HashMap<LocalControllerInfo, PortPool>();
+        noControllers_ = options_.noControllers();
+        LocalControllerInfo lh;
+
+        for (int i = 0; i < noControllers_; i++) {
+            lh = options_.getController(i);
+            portPools_.put(lh,
+                           new PortPool(lh.getLowPort(), lh.getHighPort()));
+        }
+
+        if (options_.startLocalControllers()) {
+            Logger.getLogger("log").logln(USR.STDOUT,
+                                          leadin() + "Starting Local Controllers");
+            startLocalControllers();
+        }
+
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin()
+                                      + "Checking existence of local Controllers");
+        checkAllControllers();
+    }
+
+    /**
+     * Set up the reporters
+     */
+    private void setupReporters(HashMap<String,
+                                        String> reporterInfoMap) {
+        // skip through the map, instantiate a Probe and set its data
+        // rate
+        for (Map.Entry<String,
+                       String> entry : reporterInfoMap.entrySet()) {
+            String reporterClassName = entry.getValue();
+            String label = entry.getKey();
+
+            try {
+                // Now convert the class name to a Class
+                // get Class object
+                // WAS Class<Reporter> cc =
+                // (Class<Reporter>)Class.forName(reporterClassName);
+
+                // Replaced with following 2 lines
+                Class<?> c =
+                    (Class<?> )Class.forName(reporterClassName);
+                Class<? extends Reporter> cc = c.asSubclass(
+                        Reporter.class);
+
+                // find Constructor for when arg is GlobalController
+                Constructor<? extends Reporter> cons
+                    = (Constructor<? extends Reporter> )cc.
+                        getDeclaredConstructor(GlobalController.class);
+
+                Reporter reporter = (Reporter)cons.newInstance(this);
+                reporterMap.put(label, reporter);
+
+                Logger.getLogger("log").logln(USR.STDOUT,
+                                              leadin()
+                                              + "Added reporter: " + reporter);
+            } catch (ClassNotFoundException cnfe) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin()
+                                              + "Class not found "
+                                              + reporterClassName);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin()
+                                              + "Cannot instantiate class "
+                                              + reporterClassName);
+            }
+        }
+    }
+
+    /** checks if events can be simulated */
+    public boolean isActive() {
+        return isActive_;
+    }
+
+    /** bail out of simulation relatively gracefully */
+    public void bailOut() {
+        Logger.getLogger("log").logln(USR.ERROR,
+                                      leadin() + "Bailing out of run!");
+        shutDown();
+        Logger.getLogger("log").logln(USR.ERROR,
+                                      leadin() + "Exit after bailout");
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin() + "Bailing out of run!");
+    }
+
+    /** Execute an event, return a JSON object with information about it
+     * throws Instantiation if creation fails
+     * Interrupted if acquisition of lock interrupted
+     * Timeout if acquisition timesout*/
+    public JSONObject executeEvent(Event e) throws
+    InstantiationException, InterruptedException, TimeoutException {
+        try {
+            // Wait to aquire a lock -- only one event at once
+            //
+            boolean acquired = semaphore.tryAcquire(
+                    options_.getMaxLag(), TimeUnit.MILLISECONDS);
+
+            if (!acquired) {
+                throw new TimeoutException(
+                          "GlobalController lagging too much");
+            }
+
+            if (!isActive_) {
+                throw new InterruptedException("Run finished!");
+            }
+
+            Object extraParms = null;
+            e.preceedEvent(scheduler_, this);
+            Logger.getLogger("log").logln(USR.STDOUT, "EVENT: " + e);
+            JSONObject js = null;
+            js = e.execute(this);
+
+            for (OutputType t : eventOutput_) {
+                produceEventOutput(e, js, t);
+            }
+
+            e.followEvent(scheduler_, js, this);
+            return js;
+        } finally {
+            semaphore.release();
+        }
+    }
+
+    /** Convenience function to create JSON object from error string*/
+    static public JSONObject commandError(String error) {
+        JSONObject jsobj = new JSONObject();
+
+        try {
+            jsobj.put("msg", "ERROR: " + error);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(
+                USR.ERROR, "JSON creation error in commandError");
+        }
+
+        return jsobj;
+    }
+
+    /** Event for start Simulation */
+    public void startSimulation(long time) {
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin()
+                                      + "Start of simulation event at: "
+                                      + time + " " + System.currentTimeMillis());
+
+        for (OutputType o : options_.getOutputs()) {
+            if (o.getTimeType() == OutputType.AT_START) {
+                produceOutput(time, o);
+            }
+        }
+    }
+
+    /** Event for end Simulation */
+    public void endSimulation(long time) {
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin()
+                                      + "End of simulation event at " + time
+                                      + " " + System.currentTimeMillis());
+
+        for (OutputType o : options_.getOutputs()) {
+            if (o.getTimeType() == OutputType.AT_END) {
+                produceOutput(time, o);
+            }
+        }
+
+        shutDown();
+    }
+
+    /** Register existence of router */
+    public void registerRouter(int rId) {
+        network_.addNode(rId);
+    }
+
+    /** Unregister a router and all links from structures in
+     *  GlobalController*/
+    public void unregisterRouter(int rId) {
+        int[] out = getOutLinks(rId);
+        APController_.removeNode(getElapsedTime(), rId);
+
+        for (int i = out.length - 1; i >= 0; i--) {
+            unregisterLink(rId, out[i]);
+        }
+
+        network_.removeNode(rId);
+    }
+
+    /** Find some router info
+     */
+    public BasicRouterInfo findRouterInfo(int rId) {
+        return routerIdMap_.get(rId);
+    }
+
+    public void addRouterInfo(int id, BasicRouterInfo br) {
+        routerIdMap_.put(id, br);
+    }
+
+    /** remove id from basic router info*/
+    public void removeBasicRouterInfo(int rId) {
+        routerIdMap_.remove(rId);
+    }
+
+    /** Return the local controller attached to a router id*/
+    public LocalControllerInteractor getLocalController(int rId) {
+        BasicRouterInfo br = findRouterInfo(rId);
+
+        if (br == null) {
+            return null;
+        }
+
+        return interactorMap_.get(br.getLocalControllerInfo());
+    }
+
+    /** Return the local controller attached to router info*/
+    public LocalControllerInteractor getLocalController(BasicRouterInfo br) {
+        return interactorMap_.get(br.getLocalControllerInfo());
+    }
+
+    /** Return the local controller attached to router info*/
+    public LocalControllerInteractor getLocalController(LocalControllerInfo lcinf) {
+        return interactorMap_.get(lcinf);
+    }
+
+    public LocalControllerInfo getLeastUsedLC() {
+        LocalControllerInfo leastUsed = options_.getController(0);
+
+        double minUse = leastUsed.getUsage();
+        double thisUsage;
+
+        for (int i = 1; i < noControllers_; i++) {
+            LocalControllerInfo lc = options_.getController(i);
+            thisUsage = lc.getUsage();
+
+            // Logger.getLogger("log").logln(USR.STDOUT, i+" Usage
+            // "+thisUsage);
+            if (thisUsage == 0.0) {
+                leastUsed = lc;
+                break;
+            }
+
+            if (thisUsage < minUse) {
+                minUse = thisUsage;
+                leastUsed = lc;
+            }
+        }
+
+        if (minUse >= 1.0) {
+            return null;
+        }
+
+        return leastUsed;
+    }
+
+    /** Get the port pool associated with a local controller */
+    public PortPool getPortPool(LocalControllerInfo lci) {
+        return portPools_.get(lci);
+    }
+
+    public void latticeMonitorRouterRemoval(BasicRouterInfo br) {
+        // tell reporter that this router is gone
+        if (latticeMonitoring) {
+            String routerName = br.getName();
+
+            for (Reporter reporter : reporterMap.values()) {
+                if (reporter instanceof RouterDeletedNotification) {
+                    ((RouterDeletedNotification)reporter).
+                    routerDeleted(routerName);
+                }
+            }
+        }
+    }
+
+    /**
+     * Find some router info, given a router address or a router name
+     */
+    public BasicRouterInfo findRouterInfo(String value) {
+        // skip through all the BasicRouterInfo objects
+        for (BasicRouterInfo info : (Collection<BasicRouterInfo> )
+             routerIdMap_.values()) {
+            if (info.getAddress() !=
+                null &&info.getAddress().equals(value)) {
+                // we found a match
+                return info;
+            } else if (info.getName() !=
+                       null &&info.getName().equals(value)) {
+                // we found a match
+                return info;
+            }
+        }
+
+        // we got here and found nothing
+        return null;
+    }
+
+    /**
+     * List all RouterInfo.
+     */
+    public Collection<BasicRouterInfo> getAllRouterInfo() {
+        return routerIdMap_.values();
+    }
+
+    /**
+     * Get the number of routers
+     */
+    public int getRouterCount() {
+        return network_.getNoNodes();
+    }
+
+    /**
+     * Is the router ID valid.
+     */
+    public boolean isValidRouterID(int rId) {
+        return network_.nodeExists(rId);
+    }
+
+    /**
+     * Find link info
+     */
+    public LinkInfo findLinkInfo(int linkID) {
+        return linkInfo.get(linkID);
+    }
+
+    /**
+     * Set LinkInfo
+     */
+    public void setLinkInfo(Integer linkID, LinkInfo linkinf) {
+        linkInfo.put(linkID, linkinf);
+    }
+
+    /**
+     * List all LinkInfo
+     */
+    public Collection<LinkInfo> getAllLinkInfo() {
+        return linkInfo.values();
+    }
+
+    /**
+     * Is the link ID valid.
+     */
+    public boolean isValidLinkID(int lId) {
+        if (linkInfo.containsKey(lId)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /** Register a link with structures necessary in Global
+     * Controller */
+    public void registerLink(int router1Id, int router2Id) {
+        network_.addLink(router1Id, router2Id);
+    }
+
+    /* Return a list of outlinks from a router */
+    public int [] getOutLinks(int routerId) {
+        return network_.getOutLinks(routerId);
+    }
+
+    /**
+     * Get the number of links
+     */
+    public int getLinkCount() {
+        return noLinks_;
+    }
+
+    /**
+     * Is a router directly connected to another one
+     */
+    public boolean isConnected(int routerId, int other) {
+        int [] links = getOutLinks(routerId);
+
+        for (int p = 0; p < links.length; p++) {
+            if (links[p] == other) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /* Return a list of link costs from a router -- must be used in
+     *  parallel get getOutLinks to id link nos*/
+    public int [] getLinkCosts(int routerId) {
+        return network_.getLinkCosts(routerId);
+    }
+
+    /** Create pair of integers with first integer smallest */
+    private Pair<Integer, Integer> makeRouterPair(int r1, int r2) {
+        Pair<Integer, Integer> rpair;
+
+        if (r1 < r2) {
+            rpair = new Pair<Integer, Integer>(r1, r2);
+        } else {
+            rpair = new Pair<Integer, Integer>(r2, r1);
+        }
+
+        return rpair;
+    }
+
+    /** Create pair of integers  */
+    static public Pair<Integer, Integer> makePair(int r1, int r2) {
+        return new Pair<Integer, Integer>(r1, r2);
+    }
+
+    /** Remove a link with structures necessary in Global
+     * Controller */
+    public void unregisterLink(int router1Id, int router2Id) {
+        network_.removeLink(router1Id, router2Id);
+        APController_.removeLink(getElapsedTime(), router1Id, router2Id);
+    }
+
+    /** Remove info about link from linkInfo struct */
+    public void removeLinkInfo(Integer id) {
+        linkInfo.remove(id);
+    }
+
+    /**
+     * Find some app info
+     */
+    public BasicRouterInfo findAppInfo(int appId) {
+        int routerID = appInfo.get(appId);
+        BasicRouterInfo bri = routerIdMap_.get(routerID);
+
+        return bri;
+    }
+
+    // FIXME write this
+    public boolean appStop(int appId) {
+        Logger.getLogger("log").logln(USR.ERROR,
+                                      "No way yet to stop applications");
+        return false;
+    }
+
+    /**
+     * Run an application on a Router.
+     * Returns the app ID
+     */
+    public int appStart(int routerID, String className, String[] args) {
+        // return +ve no for valid id
+        // return -1 for no start - cant find LocalController
+        BasicRouterInfo br = routerIdMap_.get(routerID);
+
+        if (br == null) {
+            return -1;
+        }
+
+        LocalControllerInteractor lci = interactorMap_.get(
+                br.getLocalControllerInfo());
+
+        if (lci == null) {
+            return -1;
+        }
+
+        int i;
+        int MAX_TRIES = 5;
+        Integer appID = -1;
+
+        for (i = 0; i < MAX_TRIES; i++) {
+            try {
+                // appStart returns a JSONObject
+                // something like: {"aid":1,"startTime":1340614768099,
+                // "name":"/R4/App/usr.applications.RecvDataRate/1"}
+
+                JSONObject response = lci.appStart(routerID, className,
+                                                   args);
+
+                // consturct an ID from the routerID and the appID
+                Pair<Integer, Integer> idPair
+                    = new Pair<Integer, Integer>(routerID,
+                                                 (Integer)response.get("aid"));
+                appID = idPair.hashCode();
+                String appName = (String)response.get("name");
+
+                // Add app to BasicRouterInfo
+                br.addApplication(appID, appName);
+
+                // and set info as
+                // ["id": 46346535, "time" : "00:14:52", "aid" : 1,
+                // "startime" : 1331119233159, "state": "RUNNING",
+                // "classname" : "usr.applications.Send", "args" : "[4,
+                // 3000, 250000, -d, 250, -i, 10]" ]
+                Map<String, Object> dataMap = new HashMap<String, Object>();
+                dataMap.put("time", "00:00:00");
+                dataMap.put("id", appID);
+                dataMap.put("aid", (Integer)response.get("aid"));
+                dataMap.put("startime", (Long)response.get("startTime"));
+                dataMap.put("runtime", 0);
+                dataMap.put("classname", className);
+                dataMap.put("args", Arrays.asList(args).toString());
+                dataMap.put("state", "STARTED");
+
+                br.setApplicationData(appName, dataMap);
+
+                // add app to app info
+                appInfo.put(appID, routerID);
+                return appID;
+            } catch (JSONException je) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin() + " failed to start app " + className + " on "
+                                              + routerID + " try " + i + " with Exception " + je);
+            } catch (IOException io) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin() + " failed to start app " + className + " on "
+                                              + routerID + " try " + i + " with Exception " + io);
+            }
+        }
+
+        Logger.getLogger("log").logln(USR.ERROR,
+                                      leadin() + " failed to start app " + className
+                                      + " on " + routerID + " giving up ");
+        return -1;
+    }
+
+    /** Request router stats */
+    public void requestRouterStats() {
+        try {
+            // Get all LocalControllers
+            for (LocalControllerInteractor lci : localControllers_) {
+                lci.requestRouterStats();
+            }
+        } catch (IOException e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+        } catch (JSONException e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * Get the router stats -- method is blocking
+     */
+    public List<String> compileRouterStats() {
+        try {
+            List<String> result = new ArrayList<String>();
+
+            // Get all LocalControllers
+            for (LocalControllerInteractor lci : localControllers_) {
+                List<String> routerStats = lci.getRouterStats();
+
+                if (routerStats != null) {
+                    result.addAll(routerStats);
+                }
+            }
+
+            return result;
+        } catch (IOException e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+            return null;
+        } catch (JSONException e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+            return null;
+        }
+    }
+
+    /*
+     * Shutdown
+     */
+    void shutDown() {
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin() + "SHUTDOWN CALLED!");
+
+        if (!options_.isSimulation()) {
+            // stop monitoring
+            if (latticeMonitoring) {
+                stopMonitoringConsumer();
+            }
+
+            //ThreadTools.findAllThreads("GC pre
+            // killAllControllers:");
+            killAllControllers();
+
+            //ThreadTools.findAllThreads("GC post
+            // killAllControllers:");
+            Logger.getLogger("log").logln(USR.STDOUT,
+                                          leadin() + "Pausing.");
+            try {
+                Thread.sleep(10);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin() + e.getMessage());
+                System.exit(-1);
+            }
+
+            //ThreadTools.findAllThreads("GC post checkMessages:");
+            Logger.getLogger("log").logln(USR.STDOUT,
+                                          leadin() + "Stopping console");
+            console_.stop();
+
+            //ThreadTools.findAllThreads("GC post stop console:");
+        }
+
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin()
+                                      + "All stopped, shut down now!");
+    }
+
+    /** Produce some output */
+    public void produceOutput(long time, OutputType o) {
         File f;
         FileOutputStream s = null;
         PrintStream p = null;
-        for (int i = 0; i < trafficOutputRequests_.size(); i++) {
-            OutputType o = trafficOutputRequests_.get(i);
-            try {
-                f = new File(o.getFileName());
-                s = new FileOutputStream(f, true);
-                p = new PrintStream(s, true);
-            } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                    leadin() + "Cannot open " + o.getFileName() +
-                    " for output " + e.getMessage());
-                return;
-            }
-            OutputTraffic ot = (OutputTraffic)o.getOutputClass();
-            ot.produceOutput(trafficOutputTime_.get(i), p, o, this);
+
+        try {
+            f = new File(o.getFileName());
+            s = new FileOutputStream(f, true);
+            p = new PrintStream(s, true);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()
+                                          + "Cannot open " + o.getFileName()
+                                          + " for output " + e.getMessage());
+            return;
         }
-        //    System.err.println("Requests done");
-        trafficOutputRequests_ = new ArrayList<OutputType>();
-        trafficOutputTime_ = new ArrayList<Long>();
-        statsCount_ = 0;
-        
-        NetStatsEvent nse= new NetStatsEvent(getElapsedTime(),
-            routerStats_);
-        addEvent(nse);
-        routerStats_ = "";
-        //    System.err.println("Finished here");
+
+        o.makeOutput(time, p, this);
+
+        // Schedule next output time
+        if (o.getTimeType() == OutputType.AT_INTERVAL) {
+            OutputEvent e = new OutputEvent(time + o.getTime(), null, o);
+            scheduler_.addEvent(e);
+        }
+
         p.close();
         try {
             s.close();
         } catch (IOException ex) {
         }
-        
     }
-}
 
-/** Accessor function for routerStats_*/
-public String getRouterStats(){
-    return routerStats_;
-}
+    /** Produce some output */
+    public void produceEventOutput(Event ev, JSONObject response, OutputType o) {
+        File f;
+        FileOutputStream s = null;
+        PrintStream p = null;
 
-/**
- * Start listening for router stats using monitoring framework.
- */
-public synchronized void startMonitoringConsumer(InetSocketAddress addr)
-{
-    // check to see if the monitoring is already connected and
-    // running
-    if (dataConsumer.isConnected())
-        // if it is, stop it first
-        stopMonitoringConsumer();
-    // set up DataPlane
-    DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(
-        addr);
-    dataConsumer.setDataPlane(inputDataPlane);
-    // set the reporter
-    dataConsumer.clearReporters();
-    // add probes
-    for (Reporter reporter : reporterMap.values())
-        dataConsumer.addReporter(reporter);
-    // and connect
-    boolean connected = dataConsumer.connect();
-    if (!connected) {
-        System.err.println(
-            "Cannot startMonitoringConsumer on " + addr +
-            ". Address probably in use. Exiting.");
-        System.exit(1);
-    }
-}
+        try {
+            f = new File(o.getFileName());
+            s = new FileOutputStream(f, true);
+            p = new PrintStream(s, true);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()
+                                          + "Cannot open " + o.getFileName()
+                                          + " for output " + e.getMessage());
+            return;
+        }
 
-/**
- * Stop monitoring.
- */
-public synchronized void stopMonitoringConsumer(){
-    if (dataConsumer.isConnected()) {
-        dataConsumer.clearReporters();         // was setReporter(null);
+        o.makeEventOutput(ev, response, p, this);
 
-        dataConsumer.disconnect();
-    }
-}
-
-/**
- * Get the Reporter list of the monitoring data
- */
-public List<Reporter> getReporterList(){
-    List<Reporter> list = new ArrayList<Reporter>();
-    list.addAll(reporterMap.values());
-    return list;
-}
-
-/**
- * Find reporter by label
- */
-public Reporter findByLabel(String label){
-    return reporterMap.get(label);
-}
-
-/**
- * Find reporter by Interface Class
- */
-public Reporter findByInterface(Class inter){
-    // skip through each Reporter
-    for (Reporter reporter :  reporterMap.values()) {
-        // skip through each Interface
-        for (Class<?>rI : reporter.getClass().getInterfaces()) {
-            if (rI.isAssignableFrom(inter))
-                return reporter;
+        p.close();
+        try {
+            s.close();
+        } catch (IOException ex) {
         }
     }
-    return null;
-}
 
-private void startLocalControllers(){
-    Iterator i = options_.getControllersIterator();
-    Process child = null;
+    public HashMap<String, int []> getTrafficLinkCounts() {
+        return trafficLinkCounts_;
+    }
 
-    while (i.hasNext()) {
-        LocalControllerInfo lh = (LocalControllerInfo)i.next();
-        String [] cmd = options_.localControllerStartCommand(lh);
-        try {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() +
-                "Starting process " +
-                Arrays.asList(cmd));
-            child = new ProcessBuilder(cmd).start();
-        } catch (IOException e) {
+    /** When output for traffic is requested then queue requests for traffic
+     * from
+     * routers */
+    public void checkTrafficOutputRequests(long time, OutputType o) {
+        if (options_.isSimulation()) {
             Logger.getLogger("log").logln(USR.ERROR,
-                leadin() +
-                "Unable to execute remote command "
-                +
-                Arrays.asList(cmd));
-            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-            System.exit(-1);
+                                          leadin()
+                                          + "Request for output of traffic makes sense only"
+                                          + " in context of emulation");
+            return;
         }
 
-        String procName = lh.getName() + ":" + lh.getPort();
-        childNames_.add(procName);
-        childProcessWrappers_.put(procName,
-            new ProcessWrapper(child, procName));
-
-        try {
-            Thread.sleep(100);             // Simple wait is to
-            // ensure controllers start up
-        }catch (java.lang.InterruptedException e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                leadin() +
-                "initVirtualRouters Got interrupt!");
-            System.exit(-1);
+        if (trafficOutputRequests_ == null) {
+            trafficOutputRequests_ = new ArrayList<OutputType>();
+            trafficOutputTime_ = new ArrayList<Long>();
         }
+
+        trafficOutputRequests_.add(o);
+        trafficOutputTime_.add(time);
+
+        /** If requests already sent then just add it to the output
+         * request
+         * queue
+         * rather than sending a fruther request */
+        if (trafficOutputRequests_.size() > 1) {
+            return;
+        }
+
+        //  Make request for stats
+        requestRouterStats();
     }
-}
 
-/**
- * An alive message has been received from the host specified
- * in LocalHostInfo.
- */
-public void aliveMessage(LocalHostInfo lh){
-    aliveCount += 1;
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() +
-        "Received alive count from " +
-        lh.getName() + ":" + lh.getPort());
-}
+    /** Receiver router traffic -- if it completes a set then output it */
+    public void receiveRouterStats(String stats) {
+        synchronized (routerStats_) {
+            statsCount_++;
 
+            routerStats_ = routerStats_.concat(stats);
 
-/**
- * Get the simulation start time.
- * This is the time the simulation actually started.
- */
-public long getStartTime(){
-    if (options_.isSimulation())
-        return 0;
-    return scheduler_.getStartTime();
-}
+            // System.err.println("Stat count is "+statsCount_);
+            if (statsCount_ < localControllers_.size()) {
+                // Not got all stats yet
+                return;
+            }
 
+            //System.err.println("Enough"+routerStats_);
+            File f;
+            FileOutputStream s = null;
+            PrintStream p = null;
 
-/**
- * Get the simulation elapsed time.
- * This is the elapsed time within the simulation.
- */
-public long getElapsedTime(){
-    return scheduler_.getElapsedTime();
-}
-
-/**
- * Is the global controller running in simulation mode
- */
- 
-public boolean isSimulation() {
-    return options_.isSimulation();
-}
-
-/**
- * Convert an elasped time, in milliseconds, into a string.
- * Converts something like 35432 into 35:43
- */
-public String elapsedToString(long elapsedTime){
-    long millis = (elapsedTime % 1000) / 10;
-
-    long rawSeconds = elapsedTime / 1000;
-    long seconds = rawSeconds % 60;
-    long minutes = rawSeconds / 60;
-
-    StringBuilder builder = new StringBuilder();
-
-    if (minutes < 10)
-        builder.append("0");
-    builder.append(minutes);
-
-    builder.append(":");
-    if (seconds < 10)
-        builder.append("0");
-    builder.append(seconds);
-
-    builder.append(":");
-    if (millis < 10)
-        builder.append("0");
-    builder.append(millis);
-    return builder.toString();
-}
-
-/**
- * Get the ManagementConsole this ComponentController interacts with.
- */
-public ManagementConsole getManagementConsole(){
-    return console_;
-}
-
-/**
- * Get the APController
- */
-public APController getAPController(){
-    return APController_;
-}
-
-/**
- * Check all controllers listed are functioning and
- * creates interactors with the LocalControllers.
- */
-private void checkAllControllers(){
-    // try 20 times, with 500 millisecond gap
-    int MAX_TRIES = 20;
-    int tries = 0;
-    int millis = 500;
-    boolean isOK = false;
-
-    localControllers_ = new ArrayList<LocalControllerInteractor>();
-    interactorMap_ =
-        new HashMap<LocalControllerInfo,
-            LocalControllerInteractor>();
-    LocalControllerInteractor inter = null;
-
-    // lopp a bit and try and talk to the LocalControllers
-    for (tries = 0; tries < MAX_TRIES; tries++) {
-        // sleep a bit
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ie) {
-        }
-
-        // visit every LocalController
-        for (int i = 0; i < noControllers_; i++) {
-            LocalControllerInfo lh = options_.getController(i);
-
-            if (interactorMap_.get(lh) == null) {
-                // we have not seen this LocalController before
-                // try and connect
+            for (int i = 0; i < trafficOutputRequests_.size(); i++) {
+                OutputType o = trafficOutputRequests_.get(i);
                 try {
-                    Logger.getLogger("log").logln(USR.STDOUT,
-                        leadin() +
-                        "Trying to make connection to "
-                        +
-                        lh.getName() + " " +
-                        lh.getPort());
-                    inter = new LocalControllerInteractor(lh);
-
-                    localControllers_.add(inter);
-                    interactorMap_.put(lh, inter);
-                    inter.checkLocalController(myHostInfo_);
-
-                    if (options_.getRouterOptionsString() != "")
-                        inter.setConfigString(
-                            options_.getRouterOptionsString());
-
-                    // tell the LocalController to start monitoring
-                    // TODO: make more robust
-                    // only work if address is real
-                    // and/ or there is a consumer
-                    if (latticeMonitoring) {
-                        Logger.getLogger("log").logln(USR.STDOUT,
-                            leadin() +
-                            "Setting  monitoring address: "
-                            +
-                            monitoringAddress
-                            + " timeout: " +
-                            monitoringTimeout);
-                        inter.monitoringStart(monitoringAddress,
-                            monitoringTimeout);
-                    }
+                    f = new File(o.getFileName());
+                    s = new FileOutputStream(f, true);
+                    p = new PrintStream(s, true);
                 } catch (Exception e) {
                     Logger.getLogger("log").logln(USR.ERROR,
-                        leadin() +
-                        "Exception from " +
-                        lh + ". " +
-                        e.getMessage());
-                    e.printStackTrace();
-                    bailOut();
+                                                  leadin() + "Cannot open " + o.getFileName()
+                                                  + " for output " + e.getMessage());
                     return;
+                }
+
+                OutputTraffic ot = (OutputTraffic)o.getOutputClass();
+                ot.produceOutput(trafficOutputTime_.get(i), p, o, this);
+            }
+
+            //    System.err.println("Requests done");
+            trafficOutputRequests_ = new ArrayList<OutputType>();
+            trafficOutputTime_ = new ArrayList<Long>();
+            statsCount_ = 0;
+
+            NetStatsEvent nse = new NetStatsEvent(getElapsedTime(),
+                                                  routerStats_);
+            addEvent(nse);
+            routerStats_ = "";
+
+            //    System.err.println("Finished here");
+            p.close();
+            try {
+                s.close();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
+    /** Accessor function for routerStats_*/
+    public String getRouterStats() {
+        return routerStats_;
+    }
+
+    /**
+     * Start listening for router stats using monitoring framework.
+     */
+    public synchronized void startMonitoringConsumer(InetSocketAddress addr) {
+        // check to see if the monitoring is already connected and
+        // running
+        if (dataConsumer.isConnected()) {
+            // if it is, stop it first
+            stopMonitoringConsumer();
+        }
+
+        // set up DataPlane
+        DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(
+                addr);
+        dataConsumer.setDataPlane(inputDataPlane);
+
+        // set the reporter
+        dataConsumer.clearReporters();
+
+        // add probes
+        for (Reporter reporter : reporterMap.values()) {
+            dataConsumer.addReporter(reporter);
+        }
+
+        // and connect
+        boolean connected = dataConsumer.connect();
+
+        if (!connected) {
+            System.err.println(
+                "Cannot startMonitoringConsumer on " + addr
+                + ". Address probably in use. Exiting.");
+            System.exit(1);
+        }
+    }
+
+    /**
+     * Stop monitoring.
+     */
+    public synchronized void stopMonitoringConsumer() {
+        if (dataConsumer.isConnected()) {
+            dataConsumer.clearReporters(); // was setReporter(null);
+
+            dataConsumer.disconnect();
+        }
+    }
+
+    /**
+     * Get the Reporter list of the monitoring data
+     */
+    public List<Reporter> getReporterList() {
+        List<Reporter> list = new ArrayList<Reporter>();
+        list.addAll(reporterMap.values());
+        return list;
+    }
+
+    /**
+     * Find reporter by label
+     */
+    public Reporter findByLabel(String label) {
+        return reporterMap.get(label);
+    }
+
+    /**
+     * Find reporter by Interface Class
+     */
+    public Reporter findByInterface(Class inter) {
+        // skip through each Reporter
+        for (Reporter reporter :  reporterMap.values()) {
+            // skip through each Interface
+            for (Class<?> rI : reporter.getClass().getInterfaces()) {
+                if (rI.isAssignableFrom(inter)) {
+                    return reporter;
                 }
             }
         }
 
-        // check if we have connected to all of them
-        // check if the no of controllers == the no of interactors
-        // if so, we dont have to do all lopps
-        if (noControllers_ == localControllers_.size()) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() +
-                "All LocalControllers connected after "
-                +
-                (tries + 1) + " tries");
-            isOK = true;
-            break;
+        return null;
+    }
+
+    private void startLocalControllers() {
+        Iterator i = options_.getControllersIterator();
+        Process child = null;
+
+        while (i.hasNext()) {
+            LocalControllerInfo lh = (LocalControllerInfo)i.next();
+            String [] cmd = options_.localControllerStartCommand(lh);
+            try {
+                Logger.getLogger("log").logln(USR.STDOUT,
+                                              leadin()
+                                              + "Starting process "
+                                              + Arrays.asList(cmd));
+                child = new ProcessBuilder(cmd).start();
+            } catch (IOException e) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin()
+                                              + "Unable to execute remote command "
+                                              +
+                                              Arrays.asList(cmd));
+                Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+                System.exit(-1);
+            }
+
+            String procName = lh.getName() + ":" + lh.getPort();
+            childNames_.add(procName);
+            childProcessWrappers_.put(procName,
+                                      new ProcessWrapper(child, procName));
+
+            try {
+                Thread.sleep(100); // Simple wait is to
+                // ensure controllers start up
+            } catch (java.lang.InterruptedException e) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin()
+                                              + "initVirtualRouters Got interrupt!");
+                System.exit(-1);
+            }
         }
     }
 
-    // if we did all loops and it's not OK
-    if (!isOK) {
-        // couldnt reach all LocalControllers
-        // We can keep a list of failures if we need to.
+    /**
+     * An alive message has been received from the host specified
+     * in LocalHostInfo.
+     */
+    public void aliveMessage(LocalHostInfo lh) {
+        aliveCount += 1;
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin()
+                                      + "Received alive count from "
+                                      + lh.getName() + ":" + lh.getPort());
+    }
+
+    /**
+     * Get the simulation start time.
+     * This is the time the simulation actually started.
+     */
+    public long getStartTime() {
+        if (options_.isSimulation()) {
+            return 0;
+        }
+
+        return scheduler_.getStartTime();
+    }
+
+    /**
+     * Get the simulation elapsed time.
+     * This is the elapsed time within the simulation.
+     */
+    public long getElapsedTime() {
+        return scheduler_.getElapsedTime();
+    }
+
+    /**
+     * Is the global controller running in simulation mode
+     */
+
+    public boolean isSimulation() {
+        return options_.isSimulation();
+    }
+
+    /**
+     * Convert an elasped time, in milliseconds, into a string.
+     * Converts something like 35432 into 35:43
+     */
+    public String elapsedToString(long elapsedTime) {
+        long millis = (elapsedTime % 1000) / 10;
+
+        long rawSeconds = elapsedTime / 1000;
+        long seconds = rawSeconds % 60;
+        long minutes = rawSeconds / 60;
+
+        StringBuilder builder = new StringBuilder();
+
+        if (minutes < 10) {
+            builder.append("0");
+        }
+
+        builder.append(minutes);
+
+        builder.append(":");
+
+        if (seconds < 10) {
+            builder.append("0");
+        }
+
+        builder.append(seconds);
+
+        builder.append(":");
+
+        if (millis < 10) {
+            builder.append("0");
+        }
+
+        builder.append(millis);
+        return builder.toString();
+    }
+
+    /**
+     * Get the ManagementConsole this ComponentController interacts with.
+     */
+    public ManagementConsole getManagementConsole() {
+        return console_;
+    }
+
+    /**
+     * Get the APController
+     */
+    public APController getAPController() {
+        return APController_;
+    }
+
+    /**
+     * Check all controllers listed are functioning and
+     * creates interactors with the LocalControllers.
+     */
+    private void checkAllControllers() {
+        // try 20 times, with 500 millisecond gap
+        int MAX_TRIES = 20;
+        int tries = 0;
+        int millis = 500;
+        boolean isOK = false;
+
+        localControllers_ = new ArrayList<LocalControllerInteractor>();
+        interactorMap_
+            = new HashMap<LocalControllerInfo,
+                          LocalControllerInteractor>();
+        LocalControllerInteractor inter = null;
+
+        // lopp a bit and try and talk to the LocalControllers
+        for (tries = 0; tries < MAX_TRIES; tries++) {
+            // sleep a bit
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException ie) {
+            }
+
+            // visit every LocalController
+            for (int i = 0; i < noControllers_; i++) {
+                LocalControllerInfo lh = options_.getController(i);
+
+                if (interactorMap_.get(lh) == null) {
+                    // we have not seen this LocalController before
+                    // try and connect
+                    try {
+                        Logger.getLogger("log").logln(USR.STDOUT,
+                                                      leadin()
+                                                      + "Trying to make connection to "
+                                                      +
+                                                      lh.getName() + " "
+                                                      + lh.getPort());
+                        inter = new LocalControllerInteractor(lh);
+
+                        localControllers_.add(inter);
+                        interactorMap_.put(lh, inter);
+                        inter.checkLocalController(myHostInfo_);
+
+                        if (options_.getRouterOptionsString() != "") {
+                            inter.setConfigString(
+                                options_.getRouterOptionsString());
+                        }
+
+                        // tell the LocalController to start monitoring
+                        // TODO: make more robust
+                        // only work if address is real
+                        // and/ or there is a consumer
+                        if (latticeMonitoring) {
+                            Logger.getLogger("log").logln(USR.STDOUT,
+                                                          leadin()
+                                                          + "Setting  monitoring address: "
+                                                          +
+                                                          monitoringAddress
+                                                          + " timeout: "
+                                                          + monitoringTimeout);
+                            inter.monitoringStart(monitoringAddress,
+                                                  monitoringTimeout);
+                        }
+                    } catch (Exception e) {
+                        Logger.getLogger("log").logln(USR.ERROR,
+                                                      leadin()
+                                                      + "Exception from "
+                                                      + lh + ". "
+                                                      + e.getMessage());
+                        e.printStackTrace();
+                        bailOut();
+                        return;
+                    }
+                }
+            }
+
+            // check if we have connected to all of them
+            // check if the no of controllers == the no of interactors
+            // if so, we dont have to do all lopps
+            if (noControllers_ == localControllers_.size()) {
+                Logger.getLogger("log").logln(USR.STDOUT,
+                                              leadin()
+                                              + "All LocalControllers connected after "
+                                              +
+                                              (tries + 1) + " tries");
+                isOK = true;
+                break;
+            }
+        }
+
+        // if we did all loops and it's not OK
+        if (!isOK) {
+            // couldnt reach all LocalControllers
+            // We can keep a list of failures if we need to.
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin()
+                                          + "Can't talk to all LocalControllers");
+            bailOut();
+            return;
+        }
+
+        // Wait to see if we have all controllers.
+        for (int i = 0; i < options_.getControllerWaitTime(); i++) {
+            if (aliveCount == noControllers_) {
+                Logger.getLogger("log").logln(USR.STDOUT,
+                                              leadin()
+                                              + "All controllers responded with alive message.");
+                return;
+            }
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+            }
+        }
+
         Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            "Can't talk to all LocalControllers");
+                                      leadin() + "Only " + aliveCount
+                                      + " from " + noControllers_
+                                      + " local Controllers responded.");
         bailOut();
         return;
     }
 
-    // Wait to see if we have all controllers.
-    for (int i = 0; i < options_.getControllerWaitTime(); i++) {
-        if (aliveCount == noControllers_) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                leadin() +
-                "All controllers responded with alive message.");
+    /**
+     * Send shutdown message to all controllers
+     */
+    private void killAllControllers() {
+        if (localControllers_ == null) {
             return;
         }
+
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin() + "Stopping all controllers");
+        LocalControllerInteractor inter;
+
+        for (int i = 0; i < localControllers_.size(); i++) {
+            inter = localControllers_.get(i);
+            try {
+                inter.shutDown();
+
+                //ThreadTools.findAllThreads("GC post kill :" + i);
+            } catch (IOException e) {
+                System.err.println(
+                    leadin()
+                    + "Cannot send shut down to local Controller");
+                System.err.println(e.getMessage());
+            } catch (JSONException e) {
+                System.err.println(
+                    leadin()
+                    + "Cannot send shut down to local Controller");
+                System.err.println(e.getMessage());
+            }
+        }
+
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin()
+                                      + "Stop messages sent to all controllers");
+
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin()
+                                      + "Stopping process wrappers");
+        Collection<ProcessWrapper> pws
+            = (Collection<ProcessWrapper> )childProcessWrappers_.
+                values();
+
+        for (ProcessWrapper pw : pws) {
+            pw.stop();
+        }
+    }
+
+    /** Return the weight from link1 to link2 or 0 if no link*/
+    public int getLinkWeight(int l1, int l2) {
+        return network_.getLinkWeight(l1, l2);
+    }
+
+    public void setAP(int gid, int AP) {
+        //System.out.println("setAP called");
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin() + " router " + gid
+                                      + " now has access point " + AP);
+
+        if (options_.isSimulation()) {
+            return;
+        }
+
+        BasicRouterInfo br = routerIdMap_.get(gid);
+
+        if (br == null) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin()
+                                          + " unable to find router " + gid
+                                          + " in router map");
+            return;
+        }
+
+        LocalControllerInteractor lci = interactorMap_.get
+                (br.getLocalControllerInfo());
+
+        if (lci == null) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin()
+                                          + " unable to find router " + gid
+                                          + " in interactor map");
+            return;
+        }
+
         try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
+            lci.setAP(gid, AP);
+            APInformEvent aie =
+                new APInformEvent(getElapsedTime(), gid, AP);
+            scheduler_.addEvent(aie);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin()
+                                          + " unable to set AP for router "
+                                          + gid);
         }
     }
-    Logger.getLogger("log").logln(USR.ERROR,
-        leadin() + "Only " + aliveCount +
-        " from " + noControllers_ +
-        " local Controllers responded.");
-    bailOut();
-    return;
-}
 
-/**
- * Send shutdown message to all controllers
- */
-private void killAllControllers(){
-    if (localControllers_ == null)
-        return;
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() + "Stopping all controllers");
-    LocalControllerInteractor inter;
-    for (int i = 0; i < localControllers_.size(); i++) {
-        inter = localControllers_.get(i);
-        try {
-            inter.shutDown();
+    public void addEvent(Event e) {
+        scheduler_.addEvent(e);
+    }
 
-            //ThreadTools.findAllThreads("GC post kill :" + i);
-        } catch (IOException e) {
-            System.err.println(
-                leadin() +
-                "Cannot send shut down to local Controller");
-            System.err.println(e.getMessage());
-        } catch (JSONException e) {
-            System.err.println(
-                leadin() +
-                "Cannot send shut down to local Controller");
-            System.err.println(e.getMessage());
+    /** Router GID reports a connection to access point AP */
+    public boolean reportAP(int gid, int AP) {
+        Logger.getLogger("log").logln(USR.ERROR,
+                                      leadin() + "TODO write reportAP");
+        return true;
+    }
+
+    public void addAPNode(long time, int rId) {
+        APController_.addNode(time, rId);
+    }
+
+    public void addAPLink(long time, int router1Id, int router2Id) {
+        APController_.addLink(time, router1Id, router2Id);
+    }
+
+    public boolean isLatticeMonitoring() {
+        return latticeMonitoring;
+    }
+
+    public long getMaximumLag() {
+        return options_.getMaxLag();
+    }
+
+    /** Accessor function for ControlOptions structure options_ */
+    public ControlOptions getOptions() {
+        return options_;
+    }
+
+    public int getMaxRouterId() {
+        return network_.getLargestRouterId();
+    }
+
+    /** FIXME -- improve this */
+    public int getNextNodeId() {
+        return network_.getLargestRouterId();
+    }
+
+    public boolean connectedNetwork() {
+        return options_.connectedNetwork();
+    }
+
+    public boolean allowIsolatedNodes() {
+        return options_.allowIsolatedNodes();
+    }
+
+    public int getAPControllerConsiderTime() {
+        return routerOptions_.getControllerConsiderTime();
+    }
+
+    /** Accessor function for routerList */
+    public ArrayList<Integer> getRouterList() {
+        return network_.getNodeList();
+    }
+
+    /** Return id of ith router */
+    public int getRouterId(int i) {
+        return network_.getNodeId(i);
+    }
+
+    /** Check if node is in network*/
+    public boolean isRouterAlive(int i) {
+        return network_.nodeExists(i);
+    }
+
+    /** Number of routers in simulation */
+    public int getNoRouters() {
+        return network_.getNoNodes();
+    }
+
+    /** Number of links in simulation */
+    public int getNoLinks() {
+        return network_.getNoLinks();
+    }
+
+    /** Access function for abstract network */
+    public AbstractNetwork getAbstractNetwork() {
+        return network_;
+    }
+
+    /** Check network for isolated nodes and connect them if possible */
+    public void checkIsolated(long time) {
+        for (int i : network_.getNodeList()) {
+            checkIsolated(time, i);
         }
     }
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() +
-        "Stop messages sent to all controllers");
 
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() +
-        "Stopping process wrappers");
-    Collection <ProcessWrapper> pws =
-        (Collection<ProcessWrapper>)childProcessWrappers_.
-        values();
-    for (ProcessWrapper pw : pws)
-        pw.stop();
-}
+    /** Check if given node is isolated and connect it if possible */
+    public void checkIsolated(long time, int gid) {
+        int [] links = network_.getOutLinks(gid);
+        int nRouters = network_.getNoNodes();
 
-/** Return the weight from link1 to link2 or 0 if no link*/
-public int getLinkWeight(int l1, int l2){
-    return network_.getLinkWeight(l1,l2);
-}
-public void setAP(int gid, int AP){
-    
-    //System.out.println("setAP called");
-    Logger.getLogger("log").logln(USR.STDOUT,
-        leadin() + " router " + gid +
-        " now has access point " + AP);
-    if (options_.isSimulation())
-        return;
-    BasicRouterInfo br = routerIdMap_.get(gid);
-    if (br == null) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            " unable to find router " + gid +
-            " in router map");
-        return;
-    }
-    LocalControllerInteractor lci = interactorMap_.get
-                                        (br.getLocalControllerInfo());
-    if (lci == null) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            " unable to find router " + gid +
-            " in interactor map");
-        return;
-    }
-    try {
-        lci.setAP(gid, AP);
-        APInformEvent aie= new APInformEvent(getElapsedTime(),gid,AP);
-        scheduler_.addEvent(aie);
+        if (nRouters == 1) { // One node is allowed to be isolated
+            return;
+        }
 
-    } catch (Exception e) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() +
-            " unable to set AP for router " +
-            gid);
-    }
-}
+        if (links.length > 0) {
+            return;
+        }
 
-public void addEvent(Event e)
-{
-    scheduler_.addEvent(e);
-}
+        // Node is isolated.
+        while (true) {
+            int i = (int)Math.floor(Math.random() * nRouters);
+            int dest = network_.getNodeId(i);
 
-/** Router GID reports a connection to access point AP */
-public boolean reportAP(int gid, int AP){
-    Logger.getLogger("log").logln(USR.ERROR,
-        leadin() + "TODO write reportAP");
-    return true;
-}
-
-
-
-public void addAPNode(long time, int rId)
-{
-    APController_.addNode(time, rId);
-}
-
-public void addAPLink(long time, int router1Id, int router2Id)
-{
-    APController_.addLink(time, router1Id, router2Id);
-}
-
-public boolean isLatticeMonitoring(){
-    return latticeMonitoring;
-}
-
-public long getMaximumLag() {
-    return options_.getMaxLag();
-}
-
-/** Accessor function for ControlOptions structure options_ */
-public ControlOptions getOptions(){
-    return options_;
-}
-
-public int getMaxRouterId() {
-    return network_.getLargestRouterId();
-}
-
-/** FIXME -- improve this */
-public int getNextNodeId() {
-    return network_.getLargestRouterId();
-}
-
-public boolean connectedNetwork(){
-    return options_.connectedNetwork();
-}
-
-public boolean allowIsolatedNodes(){
-    return options_.allowIsolatedNodes();
-}
-
-public int getAPControllerConsiderTime(){
-    return routerOptions_.getControllerConsiderTime();
-}
-
-/** Accessor function for routerList */
-public ArrayList<Integer> getRouterList(){
-    return network_.getNodeList();
-}
-
-/** Return id of ith router */
-public int getRouterId(int i){
-    return network_.getNodeId(i);
-}
-
-/** Check if node is in network*/
-public boolean isRouterAlive(int i) {
-    return network_.nodeExists(i);
-}
-
-/** Number of routers in simulation */
-public int getNoRouters(){
-    return network_.getNoNodes();
-}
-
-/** Number of links in simulation */
-public int getNoLinks(){
-    return network_.getNoLinks();
-}
-
-/** Access function for abstract network */
-public AbstractNetwork getAbstractNetwork() {
-    return network_;
-}
-
-/** Check network for isolated nodes and connect them if possible */
-public void checkIsolated(long time){
-    for (int i : network_.getNodeList())
-        checkIsolated(time, i);
-}
-
-/** Check if given node is isolated and connect it if possible */
-public void checkIsolated(long time, int gid){
-    int [] links = network_.getOutLinks(gid);
-    int nRouters = network_.getNoNodes();
-    if (nRouters == 1)     // One node is allowed to be isolated
-        return;
-    if (links.length > 0)
-        return;
-    // Node is isolated.
-    while (true) {
-        int i = (int)Math.floor(Math.random() * nRouters);
-        int dest = network_.getNodeId(i);
-        if (dest != gid) {
-            StartLinkEvent.startLink(this,time, gid, dest, 1, null);
-            break;
+            if (dest != gid) {
+                StartLinkEvent.startLink(this, time, gid, dest, 1, null);
+                break;
+            }
         }
     }
-}
 
-/** Make sure network is connected*/
-public void connectNetwork(long time){
-    int nRouters = network_.getNoNodes();
-    int largestRouterId= network_.getLargestRouterId();
-    if (nRouters <= 1)
-        return;
-    // Boolean arrays are larger than needed but this is fast
-    boolean [] visited = new boolean[largestRouterId+1];
-    boolean [] visiting = new boolean[largestRouterId+1];
-    for (int i = 0; i < largestRouterId+1; i++) {
-        visited[i] = true;
-        visiting[i] = false;
-    }
-    for (int i = 0; i < nRouters; i++)
-        visited[network_.getNodeId(i)] = false;
-    int [] toVisit = new int[nRouters];
-    int toVisitCtr = 1;
-    toVisit[0] = network_.getNodeId(0);
-    int noVisited = 0;
-    while (noVisited < nRouters) {
-        //System.err.println("NoVisited = "+noVisited+" /
-        // "+nRouters);
-        if (toVisitCtr == 0) {          
-            // Not visited everything so make a new link
-            // Choose i1 th visited and i2 th unvisited
-            int i1 = (int)Math.floor(Math.random() * noVisited);
-            int i2 =
-                (int)Math.floor(Math.random() *
-                    (nRouters - noVisited));
-            int l1 = -1;
-            int l2 = -1;
-            for (int i = 0; i < nRouters; i++) {
-                int tmpNode = network_.getNodeId(i);
-                if (visited[tmpNode] && i1 >= 0) {
-                    if (i1 == 0)
-                        l1 = tmpNode;
-                    i1--;
-                } else if (!visited[tmpNode] && i2 >= 0) {
-                    if (i2 == 0)
-                        l2 = tmpNode;
-                    i2--;
+    /** Make sure network is connected*/
+    public void connectNetwork(long time) {
+        int nRouters = network_.getNoNodes();
+        int largestRouterId = network_.getLargestRouterId();
+
+        if (nRouters <= 1) {
+            return;
+        }
+
+        // Boolean arrays are larger than needed but this is fast
+        boolean [] visited = new boolean[largestRouterId + 1];
+        boolean [] visiting = new boolean[largestRouterId + 1];
+
+        for (int i = 0; i < largestRouterId + 1; i++) {
+            visited[i] = true;
+            visiting[i] = false;
+        }
+
+        for (int i = 0; i < nRouters; i++) {
+            visited[network_.getNodeId(i)] = false;
+        }
+
+        int [] toVisit = new int[nRouters];
+        int toVisitCtr = 1;
+        toVisit[0] = network_.getNodeId(0);
+        int noVisited = 0;
+
+        while (noVisited < nRouters) {
+            //System.err.println("NoVisited = "+noVisited+" /
+            // "+nRouters);
+            if (toVisitCtr == 0) {
+                // Not visited everything so make a new link
+                // Choose i1 th visited and i2 th unvisited
+                int i1 = (int)Math.floor(Math.random() * noVisited);
+                int i2
+                    = (int)Math.floor(Math.random()
+                                      * (nRouters - noVisited));
+                int l1 = -1;
+                int l2 = -1;
+
+                for (int i = 0; i < nRouters; i++) {
+                    int tmpNode = network_.getNodeId(i);
+
+                    if (visited[tmpNode] && (i1 >= 0)) {
+                        if (i1 == 0) {
+                            l1 = tmpNode;
+                        }
+
+                        i1--;
+                    } else if (!visited[tmpNode] && (i2 >= 0)) {
+                        if (i2 == 0) {
+                            l2 = tmpNode;
+                        }
+
+                        i2--;
+                    }
+
+                    if ((i1 < 0) && (i2 < 0)) {
+                        break;
+                    }
                 }
-                if (i1 < 0 && i2 < 0)
-                    break;
-            }
-            if (l1 == -1 || l2 == -1) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                    leadin() +  "Error in network connection "
-                    + l1 + " " + l2);
-                bailOut();
-                return;
-            }
-            StartLinkEvent.startLink(this, time, l1, l2, 1, null);
-            toVisitCtr++;
-            toVisit[0] = l2;
-        }
-        toVisitCtr--;
-        int node = toVisit[toVisitCtr];
-        visited[node] = true;
-        noVisited++;
-        for (int l : network_.getOutLinks(node)) {
-            if (visited[l] == false && visiting[l] == false) {
-                toVisit[toVisitCtr] = l;
-                visiting[l] = true;
-                toVisitCtr++;
-            }
-        }
-    }
-}
 
-/** Make sure network is connected from r1 to r2*/
-public void connectNetwork(long time, int r1, int r2){
-    int nRouters = network_.getNoNodes();
-    int maxRouterId= network_.getLargestRouterId();
-    if (nRouters <= 1)
-        return;
-    // Boolean arrays are larger than needed but this is fast
-    boolean [] visited = new boolean[maxRouterId+1];
-    boolean [] visiting = new boolean[maxRouterId+1];
-    for (int i = 0; i < maxRouterId+1; i++) {
-        visited[i] = true;
-        visiting[i] = false;
-    }
-    for (int i = 0; i < nRouters; i++) {
-        int rId= network_.getNodeId(i);
-        visited[rId] = false;
-    }
-    int [] toVisit = new int[nRouters];
-    int toVisitCtr = 1;
-    toVisit[0] = r1;
-    int noVisited = 1;
-    while (noVisited < nRouters) {
-        if (toVisitCtr == 0) {          
-            // Not visited everything so make a new link
-            // Choose i1 th visited and i2 th unvisited
-            int i1 = (int)Math.floor(Math.random() * noVisited);
-            int i2 =
-                (int)Math.floor(Math.random() *
-                    (nRouters - noVisited));
-            int l1 = -1;
-            int l2 = -1;
-            for (int i = 0; i < nRouters; i++) {
-                int tmpNode = network_.getNodeId(i);
-                if (visited[tmpNode] && i1 >= 0) {
-                    if (i1 == 0)
-                        l1 = tmpNode;
-                    i1--;
-                } else if (!visited[tmpNode] && i2 >= 0) {
-                    if (i2 == 0)
-                        l2 = tmpNode;
-                    i2--;
+                if ((l1 == -1) || (l2 == -1)) {
+                    Logger.getLogger("log").logln(USR.ERROR,
+                                                  leadin() + "Error in network connection "
+                                                  + l1 + " " + l2);
+                    bailOut();
+                    return;
                 }
-                if (i1 < 0 && i2 < 0)
-                    break;
-            }
-            if (l1 == -1 || l2 == -1) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                    leadin() +
-                    "Error in network connection "
-                    + l1 + " " + l2);
-                bailOut();
-                return;
-            }
-            StartLinkEvent.startLink(this,time, l1, l2, 1, null);
-            toVisitCtr++;
-            toVisit[0] = l2;
-        }
-        toVisitCtr--;
-        int node = toVisit[toVisitCtr];
-        visited[node] = true;
-        noVisited++;
-        for (int l : getOutLinks(node)) {
-            if (l == r2)                // We have a connection
-                return;
-            if (visited[l] == false && visiting[l] == false) {
-                toVisit[toVisitCtr] = l;
-                visiting[l] = true;
+
+                StartLinkEvent.startLink(this, time, l1, l2, 1, null);
                 toVisitCtr++;
+                toVisit[0] = l2;
+            }
+
+            toVisitCtr--;
+            int node = toVisit[toVisitCtr];
+            visited[node] = true;
+            noVisited++;
+
+            for (int l : network_.getOutLinks(node)) {
+                if ((visited[l] == false) && (visiting[l] == false)) {
+                    toVisit[toVisitCtr] = l;
+                    visiting[l] = true;
+                    toVisitCtr++;
+                }
             }
         }
     }
-}
 
+    /** Make sure network is connected from r1 to r2*/
+    public void connectNetwork(long time, int r1, int r2) {
+        int nRouters = network_.getNoNodes();
+        int maxRouterId = network_.getLargestRouterId();
 
+        if (nRouters <= 1) {
+            return;
+        }
 
+        // Boolean arrays are larger than needed but this is fast
+        boolean [] visited = new boolean[maxRouterId + 1];
+        boolean [] visiting = new boolean[maxRouterId + 1];
 
-/**
- * Get the name of this GlobalController.
- */
-public String getName(){
-    if (myHostInfo_ == null)
-        return myName;
-    return myName + ":" + myHostInfo_.getPort();
-}
+        for (int i = 0; i < maxRouterId + 1; i++) {
+            visited[i] = true;
+            visiting[i] = false;
+        }
 
-String leadinFname(){
-    return "GC";
-}
+        for (int i = 0; i < nRouters; i++) {
+            int rId = network_.getNodeId(i);
+            visited[rId] = false;
+        }
 
-/**
- * Create the String to print out before a message
- */
-String leadin(){
-    final String GC = "GC: ";
+        int [] toVisit = new int[nRouters];
+        int toVisitCtr = 1;
+        toVisit[0] = r1;
+        int noVisited = 1;
 
-    return getName() + " " + GC;
-}
+        while (noVisited < nRouters) {
+            if (toVisitCtr == 0) {
+                // Not visited everything so make a new link
+                // Choose i1 th visited and i2 th unvisited
+                int i1 = (int)Math.floor(Math.random() * noVisited);
+                int i2
+                    = (int)Math.floor(Math.random()
+                                      * (nRouters - noVisited));
+                int l1 = -1;
+                int l2 = -1;
+
+                for (int i = 0; i < nRouters; i++) {
+                    int tmpNode = network_.getNodeId(i);
+
+                    if (visited[tmpNode] && (i1 >= 0)) {
+                        if (i1 == 0) {
+                            l1 = tmpNode;
+                        }
+
+                        i1--;
+                    } else if (!visited[tmpNode] && (i2 >= 0)) {
+                        if (i2 == 0) {
+                            l2 = tmpNode;
+                        }
+
+                        i2--;
+                    }
+
+                    if ((i1 < 0) && (i2 < 0)) {
+                        break;
+                    }
+                }
+
+                if ((l1 == -1) || (l2 == -1)) {
+                    Logger.getLogger("log").logln(USR.ERROR,
+                                                  leadin()
+                                                  + "Error in network connection "
+                                                  + l1 + " " + l2);
+                    bailOut();
+                    return;
+                }
+
+                StartLinkEvent.startLink(this, time, l1, l2, 1, null);
+                toVisitCtr++;
+                toVisit[0] = l2;
+            }
+
+            toVisitCtr--;
+            int node = toVisit[toVisitCtr];
+            visited[node] = true;
+            noVisited++;
+
+            for (int l : getOutLinks(node)) {
+                if (l == r2) {                                   // We
+                                                                 // have
+                                                                 // a
+                                                                 // connection
+
+                    return;
+                }
+
+                if ((visited[l] == false) && (visiting[l] == false)) {
+                    toVisit[toVisitCtr] = l;
+                    visiting[l] = true;
+                    toVisitCtr++;
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the name of this GlobalController.
+     */
+    public String getName() {
+        if (myHostInfo_ == null) {
+            return myName;
+        }
+
+        return myName + ":" + myHostInfo_.getPort();
+    }
+
+    String leadinFname() {
+        return "GC";
+    }
+
+    /**
+     * Create the String to print out before a message
+     */
+    String leadin() {
+        final String GC = "GC: ";
+
+        return getName() + " " + GC;
+    }
+
 }

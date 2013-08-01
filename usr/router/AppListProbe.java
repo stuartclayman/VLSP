@@ -19,218 +19,219 @@ import java.util.Map;
  * A probe that talks to a Router can collects the stats
  * for each executing App.
  */
-public class AppListProbe extends RouterProbe implements Probe
-{
-// The TableHeader for the table of stats
-TableHeader statsHeader;
+public class AppListProbe extends RouterProbe implements Probe {
+    // The TableHeader for the table of stats
+    TableHeader statsHeader;
 
-// Save table, so we only send different ones
-DefaultTable savedT = null;
+    // Save table, so we only send different ones
+    DefaultTable savedT = null;
 
-/**
- * Construct a AppListProbe
- */
-public AppListProbe(RouterController cont){
-    setController(cont);
+    /**
+     * Construct a AppListProbe
+     */
+    public AppListProbe(RouterController cont) {
+        setController(cont);
 
-    // set probe name
-    setName(cont.getName() + ".appList");
-    // set data rate
-    setDataRate(new EveryNSeconds(10));
+        // set probe name
+        setName(cont.getName() + ".appList");
 
-    // Define the header. Has:
-    // Name
-    // ThreadName
-    // ClassName
-    // State
-    statsHeader = new DefaultTableHeader()
-                  .add("AID", ProbeAttributeType.INTEGER)
-                  .add("StartTime", ProbeAttributeType.LONG)
-                  .add("RunTime", ProbeAttributeType.INTEGER)
-                  .add("State", ProbeAttributeType.STRING)
-                  .add("ClassName", ProbeAttributeType.STRING)
-                  .add("Args", ProbeAttributeType.STRING)
-                  .add("Name", ProbeAttributeType.STRING)
-                  .add("RuntimeKeys", ProbeAttributeType.LIST)
-                  .add("RuntimeValues", ProbeAttributeType.LIST)
-    ;
+        // set data rate
+        setDataRate(new EveryNSeconds(10));
 
-    //add("ThreadName", ProbeAttributeType.STRING);
+        // Define the header. Has:
+        // Name
+        // ThreadName
+        // ClassName
+        // State
+        statsHeader = new DefaultTableHeader()
+            .add("AID", ProbeAttributeType.INTEGER)
+            .add("StartTime", ProbeAttributeType.LONG)
+            .add("RunTime", ProbeAttributeType.INTEGER)
+            .add("State", ProbeAttributeType.STRING)
+            .add("ClassName", ProbeAttributeType.STRING)
+            .add("Args", ProbeAttributeType.STRING)
+            .add("Name", ProbeAttributeType.STRING)
+            .add("RuntimeKeys", ProbeAttributeType.LIST)
+            .add("RuntimeValues", ProbeAttributeType.LIST)
+        ;
 
-    // setup the probe attributes
-    // The router name
-    // The table of stats
-    addProbeAttribute(new DefaultProbeAttribute(0, "RouterName",
-            ProbeAttributeType.
-            STRING, "name"));
-    addProbeAttribute(new TableProbeAttribute(1, "Data",
-            statsHeader));
-}
+        //add("ThreadName", ProbeAttributeType.STRING);
 
-/**
- * Collect a measurement.
- */
-public ProbeMeasurement collect(){
-    //System.out.println("AppListProbe: collect()");
+        // setup the probe attributes
+        // The router name
+        // The table of stats
+        addProbeAttribute(new DefaultProbeAttribute(0, "RouterName",
+                                                    ProbeAttributeType.
+                                                    STRING, "name"));
+        addProbeAttribute(new TableProbeAttribute(1, "Data",
+                                                  statsHeader));
+    }
 
-    // get list of apps
-    Collection<ApplicationHandle> appList = getController().appList();
+    /**
+     * Collect a measurement.
+     */
+    public ProbeMeasurement collect() {
+        //System.out.println("AppListProbe: collect()");
 
-    if (appList == null || appList.size() == 0) {
-        // no apps to report
-        return null;
-    } else {
-        try {
-            // collate measurement values
-            ArrayList<ProbeValue> list = new ArrayList<ProbeValue>();
+        // get list of apps
+        Collection<ApplicationHandle> appList = getController().appList();
 
-            // add router name
-            list.add(new DefaultProbeValue(0,
-                    getController().getName()));
+        if ((appList == null) || (appList.size() == 0)) {
+            // no apps to report
+            return null;
+        } else {
+            try {
+                // collate measurement values
+                ArrayList<ProbeValue> list = new ArrayList<ProbeValue>();
 
-            // now allocate a table
-            DefaultTable statsTable = new DefaultTable();
-            statsTable.defineTable(statsHeader);
+                // add router name
+                list.add(new DefaultProbeValue(0,
+                                               getController().getName()));
 
-            // visit each App
-            for (ApplicationHandle ah : appList) {
-                // create a row for ApplicationHandle data
-                TableRow appHRow = new DefaultTableRow();
+                // now allocate a table
+                DefaultTable statsTable = new DefaultTable();
+                statsTable.defineTable(statsHeader);
 
-                // AID
-                appHRow.add(new DefaultTableValue(ah.getID()));
+                // visit each App
+                for (ApplicationHandle ah : appList) {
+                    // create a row for ApplicationHandle data
+                    TableRow appHRow = new DefaultTableRow();
 
-                // StartTime
-                appHRow.add(new DefaultTableValue(ah.getStartTime()));
+                    // AID
+                    appHRow.add(new DefaultTableValue(ah.getID()));
 
-                // RunTime
-                appHRow.add(new DefaultTableValue((int)(System.
-                                                        currentTimeMillis()
-                                                        - ah.
-                                                        getStartTime())));
+                    // StartTime
+                    appHRow.add(new DefaultTableValue(ah.getStartTime()));
 
-                // State
-                appHRow.add(new DefaultTableValue(ah.getState().
-                        toString()));
+                    // RunTime
+                    appHRow.add(new DefaultTableValue((int)(System.
+                                                            currentTimeMillis()
+                                                            - ah.
+                                                            getStartTime())));
 
-                // ClassName
-                appHRow.add(new DefaultTableValue(ah.getApplication()
-                        .
-                        getClass().getName()));
+                    // State
+                    appHRow.add(new DefaultTableValue(ah.getState().
+                                                      toString()));
 
-                // Args
-                appHRow.add(new DefaultTableValue(Arrays.asList(ah.
-                            getArgs())
-                        .toString()));
+                    // ClassName
+                    appHRow.add(new DefaultTableValue(ah.getApplication()
+                                                      .
+                                                      getClass().getName()));
 
-                // Name
-                appHRow.add(new DefaultTableValue(ah.getName()));
+                    // Args
+                    appHRow.add(new DefaultTableValue(Arrays.asList(ah.
+                                                                    getArgs())
+                                                      .toString()));
 
-                // check if we should get run time monitoring data
-                if (ah.getApplication() instanceof
-                    RuntimeMonitoring) {
-                    // yes
-                    MList keys = new DefaultMList(
-                        ProbeAttributeType.STRING);
-                    MList values = new DefaultMList(
-                        ProbeAttributeType.STRING);
+                    // Name
+                    appHRow.add(new DefaultTableValue(ah.getName()));
 
-                    // get the data
-                    Map<String,
-                        String> theMap =
-                        ((RuntimeMonitoring)ah.getApplication())
-                        .
-                        getMonitoringData();
+                    // check if we should get run time monitoring data
+                    if (ah.getApplication() instanceof
+                        RuntimeMonitoring) {
+                        // yes
+                        MList keys = new DefaultMList(
+                                ProbeAttributeType.STRING);
+                        MList values = new DefaultMList(
+                                ProbeAttributeType.STRING);
 
-                    // add the keys and values
-                    for (Map.Entry<String,
-                             String> entry : theMap.entrySet()) {
-                        keys.add(entry.getKey());
-                        values.add(entry.getValue());
+                        // get the data
+                        Map<String,
+                            String> theMap
+                            = ((RuntimeMonitoring)ah.getApplication())
+                                .
+                                getMonitoringData();
+
+                        // add the keys and values
+                        for (Map.Entry<String,
+                                       String> entry : theMap.entrySet()) {
+                            keys.add(entry.getKey());
+                            values.add(entry.getValue());
+                        }
+
+                        appHRow.add(new DefaultTableValue(keys));
+                        appHRow.add(new DefaultTableValue(values));
+                    } else {
+                        // no
+                        appHRow.add(new DefaultTableValue(new
+                                                          DefaultMList(
+                                                              ProbeAttributeType
+                                                              .STRING)));
+                        appHRow.add(new DefaultTableValue(new
+                                                          DefaultMList(
+                                                              ProbeAttributeType
+                                                              .STRING)));
                     }
 
-                    appHRow.add(new DefaultTableValue(keys));
-                    appHRow.add(new DefaultTableValue(values));
-                } else {
-                    // no
-                    appHRow.add(new DefaultTableValue(new
-                            DefaultMList(
-                                ProbeAttributeType
-                                .STRING)));
-                    appHRow.add(new DefaultTableValue(new
-                            DefaultMList(
-                                ProbeAttributeType
-                                .STRING)));
+                    // add this row to the table
+                    statsTable.addRow(appHRow);
                 }
 
-                // add this row to the table
-                statsTable.addRow(appHRow);
-            }
+                list.add(new DefaultProbeValue(1, statsTable));
 
-            list.add(new DefaultProbeValue(1, statsTable));
-
-            // TODO: do the following as a ProbeFilter.
-            // if the tables are the same, don not send a new
-            // measurement
-            if (tablesEqual(savedT, statsTable)) {
-                // nothing to send
+                // TODO: do the following as a ProbeFilter.
+                // if the tables are the same, don not send a new
+                // measurement
+                if (tablesEqual(savedT, statsTable)) {
+                    // nothing to send
+                    return null;
+                } else {
+                    // set the type to be: AppList
+                    ProducerMeasurement lastestM
+                        = new ProducerMeasurement(
+                                this, list, "AppList");
+                    savedT = statsTable;
+                    return lastestM;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
                 return null;
-            } else {
-                // set the type to be: AppList
-                ProducerMeasurement lastestM =
-                    new ProducerMeasurement(
-                        this, list, "AppList");
-                savedT = statsTable;
-                return lastestM;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
         }
     }
-}
 
-/**
- * Are tables equal
- */
-private boolean tablesEqual(Table t1, Table t2){
-    // check all the rows
+    /**
+     * Are tables equal
+     */
+    private boolean tablesEqual(Table t1, Table t2) {
+        // check all the rows
 
-    if (t1 == null || t2 == null) {
-        return false;
-    } else {
-        // get sizes
-        int t1Rows = t1.getRowCount();
-        int t2Rows = t2.getRowCount();
-
-        if (t1Rows != t2Rows) {
-            // different size - must be different
+        if ((t1 == null) || (t2 == null)) {
             return false;
         } else {
-            // same size - check rows
-            for (int r = 0; r < t1Rows; r++) {
-                // see if the rows are equal
-                TableRow t1Row = t1.getRow(r);
-                TableRow t2Row = t2.getRow(r);
+            // get sizes
+            int t1Rows = t1.getRowCount();
+            int t2Rows = t2.getRowCount();
 
-                int size = t1Row.size();
+            if (t1Rows != t2Rows) {
+                // different size - must be different
+                return false;
+            } else {
+                // same size - check rows
+                for (int r = 0; r < t1Rows; r++) {
+                    // see if the rows are equal
+                    TableRow t1Row = t1.getRow(r);
+                    TableRow t2Row = t2.getRow(r);
 
-                for (int e = 0; e < size; e++) {
-                    TableValue t1V = t1Row.get(e);
-                    TableValue t2V = t2Row.get(e);
+                    int size = t1Row.size();
 
-                    if (!t1V.getValue().equals(t2V.getValue())) {
-                        // a value is different - therefore table
-                        // must
-                        // be different
-                        return false;
+                    for (int e = 0; e < size; e++) {
+                        TableValue t1V = t1Row.get(e);
+                        TableValue t2V = t2Row.get(e);
+
+                        if (!t1V.getValue().equals(t2V.getValue())) {
+                            // a value is different - therefore table
+                            // must
+                            // be different
+                            return false;
+                        }
                     }
                 }
-            }
 
-            // all the rows are the same
-            return true;
+                // all the rows are the same
+                return true;
+            }
         }
     }
-}
+
 }

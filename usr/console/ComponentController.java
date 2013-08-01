@@ -6,15 +6,14 @@ package usr.console;
  * in the UserSpaceRouting system.
  * It interacts with a ManagementConsole.
  */
-public interface ComponentController
-{
-/**
- * Get the ManagementConsole this ComponentController interacts with.
- */
-public ManagementConsole getManagementConsole();
+public interface ComponentController {
+    /**
+     * Get the ManagementConsole this ComponentController interacts with.
+     */
+    public ManagementConsole getManagementConsole();
 
-/**
- * Get the name of the component.
- */
-public String getName();
+    /**
+     * Get the name of the component.
+     */
+    public String getName();
 }

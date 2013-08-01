@@ -17,102 +17,105 @@ import java.util.Scanner;
  * GET_PORT_NAME port
  * GET_PORT_NAME port0
  */
-public class GetPortNameCommand extends RouterCommand
-{
-/**
- * Construct a GetPortNameCommand.
- */
-public GetPortNameCommand(){
-    super(MCRP.GET_PORT_NAME.CMD, MCRP.GET_PORT_NAME.CODE,
-          MCRP.GET_PORT_NAME.ERROR);
-}
+public class GetPortNameCommand extends RouterCommand {
+    /**
+     * Construct a GetPortNameCommand.
+     */
+    public GetPortNameCommand() {
+        super(MCRP.GET_PORT_NAME.CMD, MCRP.GET_PORT_NAME.CODE,
+              MCRP.GET_PORT_NAME.ERROR);
+    }
 
-/**
- * Evaluate the Command.
- */
-public boolean evaluate(Request request,
-    Response response)                        {
-    try {
-        PrintStream out = response.getPrintStream();
+    /**
+     * Evaluate the Command.
+     */
+    public boolean evaluate(Request request, Response response) {
+        try {
+            PrintStream out = response.getPrintStream();
 
-        // get full request string
-        String path = java.net.URLDecoder.decode(
-            request.getPath().getPath(), "UTF-8");
-        // strip off /command
-        String value = path.substring(9);
-        // strip off COMMAND
-        String rest =
-            value.substring(MCRP.GET_PORT_NAME.CMD.length()).
-            trim();
+            // get full request string
+            String path = java.net.URLDecoder.decode(
+                    request.getPath().getPath(), "UTF-8");
 
-        String[] parts = rest.split(" ");
+            // strip off /command
+            String value = path.substring(9);
 
-        if (parts.length == 1) {
-            String routerPortName = parts[0];
+            // strip off COMMAND
+            String rest
+                = value.substring(MCRP.GET_PORT_NAME.CMD.length()).
+                    trim();
 
-            // find port
-            String portNo;
+            String[] parts = rest.split(" ");
 
-            if (routerPortName.startsWith("port"))
-                portNo = routerPortName.substring(4);
-            else
-                portNo = routerPortName;
+            if (parts.length == 1) {
+                String routerPortName = parts[0];
 
-            Scanner scanner = new Scanner(portNo);
-            int p = scanner.nextInt();
-            RouterPort routerPort = controller.getPort(p);
+                // find port
+                String portNo;
 
-            if (routerPort == null || routerPort ==
-                RouterPort.EMPTY) {
+                if (routerPortName.startsWith("port")) {
+                    portNo = routerPortName.substring(4);
+                } else {
+                    portNo = routerPortName;
+                }
+
+                Scanner scanner = new Scanner(portNo);
+                int p = scanner.nextInt();
+                RouterPort routerPort = controller.getPort(p);
+
+                if ((routerPort == null) || (routerPort ==
+                                             RouterPort.EMPTY)) {
+                    response.setCode(404);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("error",
+                              getName() + " invalid port "
+                              + routerPortName);
+
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return false;
+                } else {
+                    // get name on netIF in port
+                    NetIF netIF = routerPort.getNetIF();
+                    String name = netIF.getName();
+                    JSONObject jsobj = new JSONObject();
+
+                    if (name != null) {
+                        jsobj.put("name", name);
+                        out.println(jsobj.toString());
+                    } else {
+                        jsobj.put("name", "");
+                        out.println(jsobj.toString());
+                    }
+
+                    response.close();
+
+                    return true;
+                }
+            } else {
                 response.setCode(404);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put("error",
-                    getName() + " invalid port " +
-                    routerPortName);
+                jsobj.put("error", getName() + " wrong no of args ");
 
                 out.println(jsobj.toString());
                 response.close();
 
                 return false;
-            } else {
-                // get name on netIF in port
-                NetIF netIF = routerPort.getNetIF();
-                String name = netIF.getName();
-                JSONObject jsobj = new JSONObject();
-
-                if (name != null) {
-                    jsobj.put("name", name);
-                    out.println(jsobj.toString());
-                } else {
-                    jsobj.put("name", "");
-                    out.println(jsobj.toString());
-                }
-
-                response.close();
-
-                return true;
             }
-        } else {
-            response.setCode(404);
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + jex.getMessage());
+        }
 
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("error", getName() + " wrong no of args ");
-
-            out.println(jsobj.toString());
-            response.close();
-
+        finally {
             return false;
         }
-    } catch (IOException ioe) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + ioe.getMessage());
-    } catch (JSONException jex) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + jex.getMessage());
     }
-    finally {
-        return false;
-    }
-}
+
 }

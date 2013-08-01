@@ -8,18 +8,16 @@ import usr.logging.*;
 import usr.events.*;
 import us.monoid.json.*;
 
-public interface EventEngine
-{
-/** Initial events to add to schedule */
-public void startStopEvents(EventScheduler s, GlobalController g);
+public interface EventEngine {
+    /** Initial events to add to schedule */
+    public void startStopEvents(EventScheduler s, GlobalController g);
 
-/** Initial events to add to schedule */
-public void initialEvents(EventScheduler s, GlobalController g);
+    /** Initial events to add to schedule */
+    public void initialEvents(EventScheduler s, GlobalController g);
 
-/** Add or remove events following a simulation event */
-public void preceedEvent(Event e, EventScheduler s, GlobalController g);
+    /** Add or remove events following a simulation event */
+    public void preceedEvent(Event e, EventScheduler s, GlobalController g);
 
-/** Add or remove events following a simulation event */
-public void followEvent(Event e, EventScheduler s, JSONObject response,
-    GlobalController g);
+    /** Add or remove events following a simulation event */
+    public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g);
 }

@@ -12,36 +12,31 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /** Class to output network stuff */
-public class OutputStartLinkEvent implements OutputFunction
-{
-/** In fact this only requests output -- actual output occurs later */
-public void makeOutput(long t, PrintStream p, OutputType o,
-    GlobalController gc)
-{
-    
-}
-
-public void makeEventOutput(Event event, JSONObject result, 
-    PrintStream s, OutputType out, GlobalController gc)
-{
-    if (!(event instanceof StartLinkEvent)) 
-        return;
-    int rId1;
-    int rId2;
-    try {
-        rId1= (Integer)result.get("router1");
-        rId2= (Integer)result.get("router2");
-    } catch (JSONException je) {
-        return;
+public class OutputStartLinkEvent implements OutputFunction {
+    /** In fact this only requests output -- actual output occurs later */
+    public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
     }
-    s.println(gc.elapsedToString(gc.getElapsedTime())
-                + ANSI.BLUE + " CREATE LINK " + rId1 +
-                " TO " + rId2 + ANSI.RESET_COLOUR);
-}
 
+    public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
+        if (!(event instanceof StartLinkEvent)) {
+            return;
+        }
 
-public void parseExtraXML(Node n) throws SAXException
-{
-}
+        int rId1;
+        int rId2;
+        try {
+            rId1 = (Integer)result.get("router1");
+            rId2 = (Integer)result.get("router2");
+        } catch (JSONException je) {
+            return;
+        }
+
+        s.println(gc.elapsedToString(gc.getElapsedTime())
+                  + ANSI.BLUE + " CREATE LINK " + rId1
+                  + " TO " + rId2 + ANSI.RESET_COLOUR);
+    }
+
+    public void parseExtraXML(Node n) throws SAXException {
+    }
 
 }

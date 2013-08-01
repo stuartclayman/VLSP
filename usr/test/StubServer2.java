@@ -19,201 +19,213 @@ import java.nio.channels.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class StubServer2 implements NetIFListener
-{
-final static int PORT_NUMBER = 4433;
+public class StubServer2 implements NetIFListener {
+    final static int PORT_NUMBER = 4433;
 
-static BitMask normal;
-static BitMask error;
-boolean running = true;
-TCPNetIF netIF;
-ConnectionOverTCP connection;
-ServerSocket serverSocket;
-// and channel
-ServerSocketChannel channel;
-Logger logger;
+    static BitMask normal;
+    static BitMask error;
+    boolean running = true;
+    TCPNetIF netIF;
+    ConnectionOverTCP connection;
+    ServerSocket serverSocket;
 
-// total no of Datagrams in
-int count = 0;
-// last time count
-int lastTimeCount = 0;
-// no per second
-int diffs = 0;
-LinkedBlockingQueue<Datagram> datagramQueue_;
+    // and channel
+    ServerSocketChannel channel;
+    Logger logger;
 
-public StubServer2(int listenPort) throws IOException {
-    normal = new BitMask();
-    normal.set(1);
-    error = new BitMask();
-    error.set(2);
+    // total no of Datagrams in
+    int count = 0;
 
-    // allocate a new logger
-    logger = new Logger("log");
-    // tell it to output to stdout
-    // and tell it what to pick up
-    // it will actually output things where the log has bit 1 set
-    logger.addOutput(System.out, normal);
-    // tell it to output to stderr
-    // and tell it what to pick up
-    // it will actually output things where the log has bit 2 set
-    logger.addOutput(System.err, error);
-    datagramQueue_ = new  LinkedBlockingQueue<Datagram> ();
+    // last time count
+    int lastTimeCount = 0;
 
-    // initialise the socket
-    try {
-        channel = ServerSocketChannel.open();
-        serverSocket = channel.socket();
-        serverSocket.bind(new InetSocketAddress(listenPort));
+    // no per second
+    int diffs = 0;
+    LinkedBlockingQueue<Datagram> datagramQueue_;
 
-        TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
+    public StubServer2(int listenPort) throws IOException {
+        normal = new BitMask();
+        normal.set(1);
+        error = new BitMask();
+        error.set(2);
 
-        netIF = new TCPNetIF(dst, this);
-        netIF.connect();
-        logger.log(
-            error,
-            "StubServer: Listening on port: " + listenPort +
-            "\n");
-    } catch (IOException ioe) {
-        logger.log(
-            error, "StubServer: Cannot listen on port: " +
-            listenPort +
-            "\n"); throw ioe;
+        // allocate a new logger
+        logger = new Logger("log");
+
+        // tell it to output to stdout
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 1 set
+        logger.addOutput(System.out, normal);
+
+        // tell it to output to stderr
+        // and tell it what to pick up
+        // it will actually output things where the log has bit 2 set
+        logger.addOutput(System.err, error);
+        datagramQueue_ = new  LinkedBlockingQueue<Datagram>();
+
+        // initialise the socket
+        try {
+            channel = ServerSocketChannel.open();
+            serverSocket = channel.socket();
+            serverSocket.bind(new InetSocketAddress(listenPort));
+
+            TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
+
+            netIF = new TCPNetIF(dst, this);
+            netIF.connect();
+            logger.log(
+                error,
+                "StubServer: Listening on port: " + listenPort
+                + "\n");
+        } catch (IOException ioe) {
+            logger.log(
+                error, "StubServer: Cannot listen on port: "
+                + listenPort
+                + "\n");
+            throw ioe;
+        }
     }
-}
 
-/**
- * Can route a Datagram
- */
-public NetIF getRoute(Datagram d){
-    return null;
-}
+    /**
+     * Can route a Datagram
+     */
+    public NetIF getRoute(Datagram d) {
+        return null;
+    }
 
-/**
- * Fake interface
- */
-public FabricDevice getRouteFabric(Datagram d) throws
-NoRouteToHostException {       throw new NoRouteToHostException();
-}
+    /**
+     * Fake interface
+     */
+    public FabricDevice getRouteFabric(Datagram d) throws
+    NoRouteToHostException {
+        throw new NoRouteToHostException();
+    }
 
-/** Accept all traffic*/
-public boolean ourAddress(Address a){
-    return true;
-}
+    /** Accept all traffic*/
+    public boolean ourAddress(Address a) {
+        return true;
+    }
 
-/**
- * get name
- */
-public String getName(){
-    return netIF.getName();
-}
+    /**
+     * get name
+     */
+    public String getName() {
+        return netIF.getName();
+    }
 
-public synchronized boolean datagramArrived(NetIF netIF,
-    Datagram datagram)                  {
-    datagramQueue_.add(datagram);
-    notifyAll();
-    return true;
-}
+    public synchronized boolean datagramArrived(NetIF netIF, Datagram datagram) {
+        datagramQueue_.add(datagram);
+        notifyAll();
+        return true;
+    }
 
-/** Deal with TTL expire */
-public void TTLDrop(Datagram dg){
-}
+    /** Deal with TTL expire */
+    public void TTLDrop(Datagram dg) {
+    }
 
-/** A datagram device has closed and must be removed */
-public void closedDevice(DatagramDevice dd){
-}
+    /** A datagram device has closed and must be removed */
+    public void closedDevice(DatagramDevice dd) {
+    }
 
-/**
- * Read stuff
- */
-void readALot() throws IOException {
-    Datagram datagram;
+    /**
+     * Read stuff
+     */
+    void readALot() throws IOException {
+        Datagram datagram;
 
-    Timer timer = new Timer();
-    TimerTask task = new TimerTask()
-    {
-        public void run(){
-            if (running) {
-                diffs = count - lastTimeCount;
-                Logger.getLogger("log").logln(
-                    USR.ERROR, "Task count: " + count +
-                    " diff: " +
-                    diffs);
-                lastTimeCount = count;
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            public void run() {
+                if (running) {
+                    diffs = count - lastTimeCount;
+                    Logger.getLogger("log").logln(
+                        USR.ERROR, "Task count: " + count
+                        + " diff: "
+                        + diffs);
+                    lastTimeCount = count;
+                }
             }
-        }
 
-        public boolean cancel(){
-            logger.log(error, "cancel @ " + count);
-            if (running)
-                running = false;
+            public boolean cancel() {
+                logger.log(error, "cancel @ " + count);
 
-            return running;
-        }
-
-        public long scheduledExecutionTime(){
-            logger.log(error, "scheduledExecutionTime:");
-            return 0;
-        }
-    };
-
-    timer.schedule(task, 1000, 1000);
-
-    long t0 = System.currentTimeMillis();
-    synchronized (this) {
-        while (running || datagramQueue_.size() > 0) {
-            // check if Protocol.CONTROL
-            datagram = datagramQueue_.poll();
-            if (datagram == null) {
-                try {
-                    wait();
-                } catch (java.lang.InterruptedException e) {
+                if (running) {
+                    running = false;
                 }
 
-                continue;
-            }
-            if (datagram.getProtocol() == Protocol.CONTROL) {
-                Logger.getLogger("log").logln(USR.STDOUT,
-                    "Got control packet");
-                break;
+                return running;
             }
 
-            logger.log(normal, count + ". ");
-            logger.log(normal,
-                "HL: " + datagram.getHeaderLength() +
-                " TL: " + datagram.getTotalLength() +
-                " From: " + datagram.getSrcAddress() +
-                " To: " + datagram.getDstAddress() +
-                ". ");
-            byte[] payload = datagram.getPayload();
+            public long scheduledExecutionTime() {
+                logger.log(error, "scheduledExecutionTime:");
+                return 0;
+            }
 
-            if (payload == null)
-                logger.log(normal, "No payload");
-            else
-                logger.log(normal, new String(payload));
-            logger.log(normal, "\n");
+        };
 
-            count++;
+        timer.schedule(task, 1000, 1000);
+
+        long t0 = System.currentTimeMillis();
+        synchronized (this) {
+            while (running || datagramQueue_.size() > 0) {
+                // check if Protocol.CONTROL
+                datagram = datagramQueue_.poll();
+
+                if (datagram == null) {
+                    try {
+                        wait();
+                    } catch (java.lang.InterruptedException e) {
+                    }
+
+                    continue;
+                }
+
+                if (datagram.getProtocol() == Protocol.CONTROL) {
+                    Logger.getLogger("log").logln(USR.STDOUT,
+                                                  "Got control packet");
+                    break;
+                }
+
+                logger.log(normal, count + ". ");
+                logger.log(normal,
+                           "HL: " + datagram.getHeaderLength()
+                           + " TL: " + datagram.getTotalLength()
+                           + " From: " + datagram.getSrcAddress()
+                           + " To: " + datagram.getDstAddress()
+                           + ". ");
+                byte[] payload = datagram.getPayload();
+
+                if (payload == null) {
+                    logger.log(normal, "No payload");
+                } else {
+                    logger.log(normal, new String(payload));
+                }
+
+                logger.log(normal, "\n");
+
+                count++;
+            }
         }
+        long t1 = System.currentTimeMillis();
+
+        long elapsed = t1 - t0;
+        int secs = (int)elapsed / 1000;
+        int millis = (int)elapsed % 1000;
+
+        NumberFormat millisFormat = new DecimalFormat("000");
+        logger.log(
+            error, "elapsed[" + count + "] = " + secs + ":"
+            + millisFormat.format(millis) + "\n");
+
+        timer.cancel();
+
+        netIF.close();
     }
-    long t1 = System.currentTimeMillis();
 
-    long elapsed = t1 - t0;
-    int secs = (int)elapsed / 1000;
-    int millis = (int)elapsed % 1000;
+    public static void main(String[] args) throws IOException {
+        StubServer2 server = new StubServer2(PORT_NUMBER);
 
-    NumberFormat millisFormat = new DecimalFormat("000");
-    logger.log(
-        error, "elapsed[" + count + "] = " + secs + ":" +
-        millisFormat.format(millis) + "\n");
+        server.readALot();
+    }
 
-    timer.cancel();
-
-    netIF.close();
-}
-
-public static void main(String[] args) throws IOException {
-    StubServer2 server = new StubServer2(PORT_NUMBER);
-
-    server.readALot();
-}
 }

@@ -14,92 +14,93 @@ import us.monoid.json.*;
  * The REPORT_AP command selets whether a router is or is not
  * an aggregation point
  */
-public class ReportAPCommand extends GlobalCommand
-{
-/**
- * Construct a ReportAPCommand
- */
-public ReportAPCommand(){
-    super(MCRP.REPORT_AP.CMD);
-}
+public class ReportAPCommand extends GlobalCommand {
+    /**
+     * Construct a ReportAPCommand
+     */
+    public ReportAPCommand() {
+        super(MCRP.REPORT_AP.CMD);
+    }
 
-/**
- * Evaluate the Command.
- */
-public boolean evaluate(Request request,
-    Response response)                        {
-    try {
-        PrintStream out = response.getPrintStream();
+    /**
+     * Evaluate the Command.
+     */
+    public boolean evaluate(Request request, Response response) {
+        try {
+            PrintStream out = response.getPrintStream();
 
-        // get full request string
-        String path = java.net.URLDecoder.decode(
-            request.getPath().getPath(), "UTF-8");
-        // strip off /command
-        String value = path.substring(9);
+            // get full request string
+            String path = java.net.URLDecoder.decode(
+                    request.getPath().getPath(), "UTF-8");
 
-        String[] parts = value.split(" ");
+            // strip off /command
+            String value = path.substring(9);
 
-        if (parts.length != 3) {
-            response.setCode(404);
+            String[] parts = value.split(" ");
 
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("error",
-                "REPORT_AP command requires GID and AP GID");
-
-            out.println(jsobj.toString());
-            response.close();
-
-            return false;
-        } else {
-            int GID;
-            int AP;
-            try {
-                GID = Integer.parseInt(parts[1]);
-                AP = Integer.parseInt(parts[2]);
-            } catch (Exception e) {
+            if (parts.length != 3) {
                 response.setCode(404);
 
                 JSONObject jsobj = new JSONObject();
                 jsobj.put("error",
-                    "REPORT_AP command requires GID and AP GID");
+                          "REPORT_AP command requires GID and AP GID");
 
                 out.println(jsobj.toString());
                 response.close();
 
                 return false;
-            }
-
-            if (controller.reportAP(GID, AP)) {
-                JSONObject jsobj = new JSONObject();
-
-                jsobj.put("gid", GID);
-                jsobj.put("ap", AP);
-                jsobj.put("msg", GID + " reports AP " + AP);
-                out.println(jsobj.toString());
-                response.close();
-
-                return true;
             } else {
-                response.setCode(404);
+                int GID;
+                int AP;
+                try {
+                    GID = Integer.parseInt(parts[1]);
+                    AP = Integer.parseInt(parts[2]);
+                } catch (Exception e) {
+                    response.setCode(404);
 
-                JSONObject jsobj = new JSONObject();
-                jsobj.put("error", "Incorrect GID number " + GID);
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("error",
+                              "REPORT_AP command requires GID and AP GID");
 
-                out.println(jsobj.toString());
-                response.close();
+                    out.println(jsobj.toString());
+                    response.close();
 
-                return false;
+                    return false;
+                }
+
+                if (controller.reportAP(GID, AP)) {
+                    JSONObject jsobj = new JSONObject();
+
+                    jsobj.put("gid", GID);
+                    jsobj.put("ap", AP);
+                    jsobj.put("msg", GID + " reports AP " + AP);
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return true;
+                } else {
+                    response.setCode(404);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("error", "Incorrect GID number " + GID);
+
+                    out.println(jsobj.toString());
+                    response.close();
+
+                    return false;
+                }
             }
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + jex.getMessage());
         }
-    } catch (IOException ioe) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + ioe.getMessage());
-    } catch (JSONException jex) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + jex.getMessage());
+
+        finally {
+            return false;
+        }
     }
-    finally {
-        return false;
-    }
-}
+
 }

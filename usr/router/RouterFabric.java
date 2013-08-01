@@ -7,95 +7,93 @@ import usr.net.*;
 /**
  * A RouterFabric within UserSpaceRouting.
  */
-public interface RouterFabric extends NetIFListener
-{
-/**
- * Add a Network Interface to this Router.
- */
-public RouterPort addNetIF(NetIF netIF);
+public interface RouterFabric extends NetIFListener {
+    /**
+     * Add a Network Interface to this Router.
+     */
+    public RouterPort addNetIF(NetIF netIF);
 
-/**
- * Remove a Network Interface from this Router.
- */
-public boolean removeNetIF(NetIF netIF);
+    /**
+     * Remove a Network Interface from this Router.
+     */
+    public boolean removeNetIF(NetIF netIF);
 
-/**
- * Get the local NetIF that has the sockets.
- */
-public NetIF getLocalNetIF();
+    /**
+     * Get the local NetIF that has the sockets.
+     */
+    public NetIF getLocalNetIF();
 
-/**
- * Get port N.
- */
-public RouterPort getPort(int p);
+    /**
+     * Get port N.
+     */
+    public RouterPort getPort(int p);
 
-/**
- * Get a list of all the ports with Network Interfaces.
- */
-public List<RouterPort> listPorts();
+    /**
+     * Get a list of all the ports with Network Interfaces.
+     */
+    public List<RouterPort> listPorts();
 
-/**
- * Get a list of all connected Network Interfaces
- */
-public List<NetIF> listNetIF();
+    /**
+     * Get a list of all connected Network Interfaces
+     */
+    public List<NetIF> listNetIF();
 
-/** Return the interface which connects to a given host */
-public NetIF findNetIF(String host);
+    /** Return the interface which connects to a given host */
+    public NetIF findNetIF(String host);
 
-/**
- * Close ports
- */
-public void closePorts();
+    /**
+     * Close ports
+     */
+    public void closePorts();
 
-/** 
- * Send goodbye message to all ports
- */
-public void sendGoodbye();
+    /**
+     * Send goodbye message to all ports
+     */
+    public void sendGoodbye();
 
-/**
- * Close port.
- */
-public void closePort(RouterPort port);
+    /**
+     * Close port.
+     */
+    public void closePort(RouterPort port);
 
-/**
- * initialisation
- */
-public boolean init();
+    /**
+     * initialisation
+     */
+    public boolean init();
 
-/**
- * Start me up.
- */
-public boolean start();
+    /**
+     * Start me up.
+     */
+    public boolean start();
 
-/**
- * Stop the RouterController.
- */
-public boolean stop();
+    /**
+     * Stop the RouterController.
+     */
+    public boolean stop();
 
-/**
- * Get the Router this Fabric is part of
- */
-public Router getRouter();
+    /**
+     * Get the Router this Fabric is part of
+     */
+    public Router getRouter();
 
-/**
- * Create a new empty routing table
- */
-public RoutingTable newRoutingTable();
+    /**
+     * Create a new empty routing table
+     */
+    public RoutingTable newRoutingTable();
 
-/**
- * Create a new routing table from a transmitted byte[]
- */
-public RoutingTable decodeRoutingTable(byte[] bytes,
-    NetIF netif) throws
-Exception;
+    /**
+     * Create a new routing table from a transmitted byte[]
+     */
+    public RoutingTable decodeRoutingTable(byte[] bytes, NetIF netif) throws
+    Exception;
 
-/** List Routing table */
+    /** List Routing table */
 
-public RoutingTable getRoutingTable();
+    public RoutingTable getRoutingTable();
 
-/** Ping a given id -- expect a response */
-public boolean ping(Address addr);
+    /** Ping a given id -- expect a response */
+    public boolean ping(Address addr);
 
-/** Echo -- send datagram to id */
-public boolean echo(Address addr);
+    /** Echo -- send datagram to id */
+    public boolean echo(Address addr);
 }

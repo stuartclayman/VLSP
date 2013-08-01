@@ -8,29 +8,25 @@ import usr.logging.*;
 import usr.events.*;
 import us.monoid.json.*;
 
-public class NullEventEngine implements EventEngine
-{
-/** Contructor */
-public NullEventEngine(){
-}
+public class NullEventEngine implements EventEngine {
+    /** Contructor */
+    public NullEventEngine() {
+    }
 
-/** Initial events to add to schedule */
-public void startStopEvents(EventScheduler s,
-    GlobalController g)                      {
-}
+    /** Initial events to add to schedule */
+    public void startStopEvents(EventScheduler s, GlobalController g) {
+    }
 
-/** Initial events to add to schedule */
-public void initialEvents(EventScheduler s,
-    GlobalController g)                        {
-}
+    /** Initial events to add to schedule */
+    public void initialEvents(EventScheduler s, GlobalController g) {
+    }
 
-/** Add or remove events following a simulation event */
-public void preceedEvent(Event e, EventScheduler s,
-    GlobalController g)                          {
-}
+    /** Add or remove events following a simulation event */
+    public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
+    }
 
-/** Add or remove events following a simulation event */
-public void followEvent(Event e, EventScheduler s, JSONObject js,
-    GlobalController g)                          {
-}
+    /** Add or remove events following a simulation event */
+    public void followEvent(Event e, EventScheduler s, JSONObject js, GlobalController g) {
+    }
+
 }

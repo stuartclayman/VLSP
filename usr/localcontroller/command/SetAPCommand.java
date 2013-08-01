@@ -17,93 +17,94 @@ import us.monoid.json.*;
  * The SET_AP command selets whether a router is or is not
  * an aggregation point
  */
-public class SetAPCommand extends LocalCommand
-{
-/**
- * Construct a SetAddressCommand.
- */
-public SetAPCommand(){
-    super(MCRP.SET_AP.CMD);
-}
+public class SetAPCommand extends LocalCommand {
+    /**
+     * Construct a SetAddressCommand.
+     */
+    public SetAPCommand() {
+        super(MCRP.SET_AP.CMD);
+    }
 
-/**
- * Evaluate the Command.
- */
-public boolean evaluate(Request request,
-    Response response)                        {
-    try {
-        PrintStream out = response.getPrintStream();
-
-        // get full request string
-        String path = java.net.URLDecoder.decode(
-            request.getPath().getPath(), "UTF-8");
-        // strip off /command
-        String value = path.substring(9);
-
-        String[] parts = value.split(" ");
-
-        if (parts.length != 3) {
-            response.setCode(404);
-
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("error",
-                "SET_AP command requires GID and AP GID");
-
-            out.println(jsobj.toString());
-            response.close();
-
-            return false;
-        }
-
-        // process args
-        int GID;
-        int AP;
+    /**
+     * Evaluate the Command.
+     */
+    public boolean evaluate(Request request, Response response) {
         try {
-            GID = Integer.parseInt(parts[1]);
-            AP = Integer.parseInt(parts[2]);
-        } catch (Exception e) {
-            response.setCode(404);
+            PrintStream out = response.getPrintStream();
 
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("error",
-                "SET_AP command requires GID and AP GID");
+            // get full request string
+            String path = java.net.URLDecoder.decode(
+                    request.getPath().getPath(), "UTF-8");
 
-            out.println(jsobj.toString());
-            response.close();
+            // strip off /command
+            String value = path.substring(9);
 
-            return false;
+            String[] parts = value.split(" ");
+
+            if (parts.length != 3) {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error",
+                          "SET_AP command requires GID and AP GID");
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+            }
+
+            // process args
+            int GID;
+            int AP;
+            try {
+                GID = Integer.parseInt(parts[1]);
+                AP = Integer.parseInt(parts[2]);
+            } catch (Exception e) {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error",
+                          "SET_AP command requires GID and AP GID");
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+            }
+
+            // set AP
+            if (controller.setAP(GID, AP)) {
+                JSONObject jsobj = new JSONObject();
+
+                jsobj.put("msg", GID + " has set AP to " + AP);
+                jsobj.put("success", Boolean.TRUE);
+                out.println(jsobj.toString());
+                response.close();
+
+                return true;
+            } else {
+                response.setCode(404);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "Incorrect GID number " + GID);
+
+                out.println(jsobj.toString());
+                response.close();
+
+                return false;
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + ioe.getMessage());
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          leadin() + jex.getMessage());
         }
 
-        // set AP
-        if (controller.setAP(GID, AP)) {
-            JSONObject jsobj = new JSONObject();
-
-            jsobj.put("msg", GID + " has set AP to " + AP);
-            jsobj.put("success", Boolean.TRUE);
-            out.println(jsobj.toString());
-            response.close();
-
-            return true;
-        } else {
-            response.setCode(404);
-
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("error", "Incorrect GID number " + GID);
-
-            out.println(jsobj.toString());
-            response.close();
-
+        finally {
             return false;
         }
-    } catch (IOException ioe) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + ioe.getMessage());
-    } catch (JSONException jex) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            leadin() + jex.getMessage());
     }
-    finally {
-        return false;
-    }
-}
+
 }

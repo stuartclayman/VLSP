@@ -11,241 +11,264 @@ import java.io.*;
 import usr.events.*;
 import us.monoid.json.*;
 
-public class ScriptEngine implements EventEngine
-{
-int timeToEnd_;
-// the time of the last event seen during parsing events
-int lastEventTime = 0;
+public class ScriptEngine implements EventEngine {
+    int timeToEnd_;
 
-// all the events
-ArrayList<Event> events_ = null;
+    // the time of the last event seen during parsing events
+    int lastEventTime = 0;
 
-/** Contructor from Parameter string */
-public ScriptEngine(int time, String parms){
-    timeToEnd_ = time * 1000;
-    readScript(parms);
-}
+    // all the events
+    ArrayList<Event> events_ = null;
 
-/** Initial events to add to schedule */
-public void initialEvents(EventScheduler s,
-    GlobalController g)                        {
-    for (Event e : events_)
+    /** Contructor from Parameter string */
+    public ScriptEngine(int time, String parms) {
+        timeToEnd_ = time * 1000;
+        readScript(parms);
+    }
+
+    /** Initial events to add to schedule */
+    public void initialEvents(EventScheduler s, GlobalController g) {
+        for (Event e : events_) {
+            s.addEvent(e);
+        }
+    }
+
+    public void startStopEvents(EventScheduler s, GlobalController g) {
+        // simulation start
+        StartSimulationEvent e0 = new StartSimulationEvent(0, this);
+
+        s.addEvent(e0);
+
+        // simulation end
+        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_, this);
         s.addEvent(e);
-}
-
-public void startStopEvents(EventScheduler s,
-    GlobalController g)                      {
-    // simulation start
-    StartSimulationEvent e0 = new StartSimulationEvent(0, this);
-
-    s.addEvent(e0);
-
-    // simulation end
-    EndSimulationEvent e = new EndSimulationEvent(timeToEnd_, this);
-    s.addEvent(e);
-}
-
-/** Add or remove events following a simulation event */
-public void preceedEvent(Event e, EventScheduler s,
-    GlobalController g)                          {
-}
-
-/** Add or remove events following a simulation event */
-public void followEvent(Event e, EventScheduler s, JSONObject response,
-    GlobalController g)                          {
-}
-
-private void readScript(String fname){
-    events_ = new ArrayList<Event>();
-    Scanner scanner = null;
-
-    try {
-        StringBuilder text = new StringBuilder();
-        String NL = System.getProperty("line.separator");
-        scanner = new Scanner(new File(fname));
-        while (scanner.hasNextLine()) {
-            Event e = parseEventLine(scanner.nextLine() + NL);
-            if (e != null)
-                events_.add(e);
-        }
-    }catch (Exception e) {
-        Logger.getLogger("log").logln(USR.ERROR,
-            "Cannot parse event list " + fname);
-        System.exit(-1);
     }
-    finally {
-        scanner.close();
+
+    /** Add or remove events following a simulation event */
+    public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
     }
-}
 
-private Event parseEventLine(String s){
-    //System.err.println("ScriptEngine: input line: " + s);
+    /** Add or remove events following a simulation event */
+    public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
+    }
 
-    // first we remove the comments
-    String noComments = s.replaceFirst("//.*", "").trim();
+    private void readScript(String fname) {
+        events_ = new ArrayList<Event>();
+        Scanner scanner = null;
 
-    if (noComments.equals(""))
-        return null;
+        try {
+            StringBuilder text = new StringBuilder();
+            String NL = System.getProperty("line.separator");
+            scanner = new Scanner(new File(fname));
 
-    // now process
-    String [] args = noComments.split("\\s+");
-    if (args.length < 2)
-        return null;
-    try {
-        //System.err.println("ScriptEngine: process args: " +
-        // Arrays.asList(args));
+            while (scanner.hasNextLine()) {
+                Event e = parseEventLine(scanner.nextLine() + NL);
 
-        // get the time
-        // eith absolute as 12000 or relative +2000
-        int time = 0;
-
-        if (args[0].startsWith("+")) {
-            // relative
-            String noPlus = args[0].substring(1);
-            int relTime = Integer.parseInt(noPlus);
-            time = lastEventTime + relTime;
-            lastEventTime = time;
-        } else {
-            // absolute
-            time = Integer.parseInt(args[0]);
-            lastEventTime = time;
-        }
-
-        String type = args[1].trim();
-
-        if (type.equals("START_ROUTER")) {
-            if (args.length == 2) {
-                return new StartRouterEvent(time, this);
-            } else if (args.length == 3) {
-                String address = args[2].trim();
-                return new StartRouterEvent(time, this, address, null);
-            } else if (args.length == 4) {
-                String address = args[2].trim();
-                String name = args[3].trim();
-
-                return new StartRouterEvent(time, this, address,
-                    name);
-            } else { throw new Exception(
-                         "START_ROUTER requires router id or no arg "
-                         +
-                         s +
-                         " => " + noComments + " args.length = " +
-                         args.length); }
-        } else if (type.equals("START_LINK")) {
-            if (args.length < 4 || args.length >
-                6) {throw new Exception(
-                        "START_LINK requires two router ids "
-                        +
-                        s +
-                        " plus optional weight and name");
-            } else {
-                // process links
-                String addStr1 = args[2].trim();
-                String addStr2 = args[3].trim();
-
-                Scanner a1Scanner = new Scanner(addStr1);
-                Scanner a2Scanner = new Scanner(addStr2);
-                int addr1 = 0;
-                int addr2 = 0;
-                StartLinkEvent e;
-                if (a1Scanner.hasNextInt() &&
-                    a2Scanner.hasNextInt()) {
-                    // both args are ints
-                    addr1 = a1Scanner.nextInt();
-                    addr2 = a2Scanner.nextInt();
-                    e = new StartLinkEvent(time, this, addr1, addr2);
-                } else {
-                    e = new StartLinkEvent(time, this, addStr1,
-                        addStr2);
+                if (e != null) {
+                    events_.add(e);
                 }
+            }
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR,
+                                          "Cannot parse event list " + fname);
+            System.exit(-1);
+        }
 
-                if (args.length == 5) {
-                    // time START_LINK r1 r2 weight
-                    int weight;
-                    try {
-                        weight = Integer.parseInt(args[4].trim());
-                    } catch (Exception ex) { throw new Exception(
-                                                 "Cannot interpret weight as integer in "
-                                                 +
-                                                 s);
+        finally {
+            scanner.close();
+        }
+    }
+
+    private Event parseEventLine(String s) {
+        //System.err.println("ScriptEngine: input line: " + s);
+
+        // first we remove the comments
+        String noComments = s.replaceFirst("//.*", "").trim();
+
+        if (noComments.equals("")) {
+            return null;
+        }
+
+        // now process
+        String [] args = noComments.split("\\s+");
+
+        if (args.length < 2) {
+            return null;
+        }
+
+        try {
+            //System.err.println("ScriptEngine: process args: " +
+            // Arrays.asList(args));
+
+            // get the time
+            // eith absolute as 12000 or relative +2000
+            int time = 0;
+
+            if (args[0].startsWith("+")) {
+                // relative
+                String noPlus = args[0].substring(1);
+                int relTime = Integer.parseInt(noPlus);
+                time = lastEventTime + relTime;
+                lastEventTime = time;
+            } else {
+                // absolute
+                time = Integer.parseInt(args[0]);
+                lastEventTime = time;
+            }
+
+            String type = args[1].trim();
+
+            if (type.equals("START_ROUTER")) {
+                if (args.length == 2) {
+                    return new StartRouterEvent(time, this);
+                } else if (args.length == 3) {
+                    String address = args[2].trim();
+                    return new StartRouterEvent(time, this, address, null);
+                } else if (args.length == 4) {
+                    String address = args[2].trim();
+                    String name = args[3].trim();
+
+                    return new StartRouterEvent(time, this, address,
+                                                name);
+                } else {
+                    throw new Exception(
+                              "START_ROUTER requires router id or no arg "
+                              +
+                              s
+                              + " => " + noComments + " args.length = "
+                              + args.length);
+                }
+            } else if (type.equals("START_LINK")) {
+                if ((args.length < 4) || (args.length >
+                                          6)) {
+                    throw new Exception(
+                              "START_LINK requires two router ids "
+                              +
+                              s
+                              + " plus optional weight and name");
+                } else {
+                    // process links
+                    String addStr1 = args[2].trim();
+                    String addStr2 = args[3].trim();
+
+                    Scanner a1Scanner = new Scanner(addStr1);
+                    Scanner a2Scanner = new Scanner(addStr2);
+                    int addr1 = 0;
+                    int addr2 = 0;
+                    StartLinkEvent e;
+
+                    if (a1Scanner.hasNextInt()
+                        && a2Scanner.hasNextInt()) {
+                        // both args are ints
+                        addr1 = a1Scanner.nextInt();
+                        addr2 = a2Scanner.nextInt();
+                        e =
+                            new StartLinkEvent(time, this, addr1, addr2);
+                    } else {
+                        e = new StartLinkEvent(time, this, addStr1,
+                                               addStr2);
                     }
-                    e.setWeight(weight);
-                } else if (args.length == 6) {
-                    e.setName(args[5]);
+
+                    if (args.length == 5) {
+                        // time START_LINK r1 r2 weight
+                        int weight;
+                        try {
+                            weight = Integer.parseInt(args[4].trim());
+                        } catch (Exception ex) {
+                            throw new Exception(
+                                      "Cannot interpret weight as integer in "
+                                      +
+                                      s);
+                        }
+
+                        e.setWeight(weight);
+                    } else if (args.length == 6) {
+                        e.setName(args[5]);
+                    }
+
+                    return e;
                 }
-                return e;
-            }
-        } else if (type.equals("END_ROUTER")) {
-            if (args.length != 3) {throw new Exception(
-                                       "END_ROUTER requires router id "
-                                       + s);
-            } else {
-                String arg2 = args[2].trim();
-
-                Scanner arg2Scanner = new Scanner(arg2);
-
-                if (arg2Scanner.hasNextInt()) {
-                    // arg is int
-                    int r = arg2Scanner.nextInt();
-                    return new EndRouterEvent(time, this, r);
+            } else if (type.equals("END_ROUTER")) {
+                if (args.length != 3) {
+                    throw new Exception(
+                              "END_ROUTER requires router id "
+                              + s);
                 } else {
-                    // arg is String
-                    return new EndRouterEvent(time, this, arg2);
+                    String arg2 = args[2].trim();
+
+                    Scanner arg2Scanner = new Scanner(arg2);
+
+                    if (arg2Scanner.hasNextInt()) {
+                        // arg is int
+                        int r = arg2Scanner.nextInt();
+                        return new EndRouterEvent(time, this, r);
+                    } else {
+                        // arg is String
+                        return new EndRouterEvent(time, this, arg2);
+                    }
                 }
-            }
-        } else if (type.equals("END_LINK")) {
-            if (args.length != 4) {throw new Exception(
-                                       "END_LINK requires 2 router ids "
-                                       + s);
-            } else {
-                String arg2 = args[2].trim();
-                String arg3 = args[3].trim();
-
-                Scanner arg2Scanner = new Scanner(arg2);
-                Scanner arg3Scanner = new Scanner(arg3);
-
-                if (arg2Scanner.hasNextInt() &&
-                    arg3Scanner.hasNextInt()) {
-                    // both args are ints
-                    int l1 = arg2Scanner.nextInt();
-                    int l2 = arg3Scanner.nextInt();
-                    return new EndLinkEvent(time, this, l1, l2);
+            } else if (type.equals("END_LINK")) {
+                if (args.length != 4) {
+                    throw new Exception(
+                              "END_LINK requires 2 router ids "
+                              + s);
                 } else {
-                    return new EndLinkEvent(time, this, arg2, arg3);
-                }
-            }
-        } else if (type.equals("END_SIMULATION")) {
-            return new EndSimulationEvent(time, this);
-        } else if (type.equals("ON_ROUTER")) {
-            if (args.length < 4) {throw new Exception(
-                                      "ON_ROUTER requires router_id AND className, plus optional args");
-            } else {
-                // eliminate time and ON_ROUTER
-                String[] cmdArgs = new String[args.length - 4];
+                    String arg2 = args[2].trim();
+                    String arg3 = args[3].trim();
 
-                for (int a = 4; a < args.length; a++)
-                    cmdArgs[a - 4] = args[a];
-                String args2 = args[2].trim();
-                Scanner arg2Scanner = new Scanner(args2);
-                if (arg2Scanner.hasNextInt()) {
-                    int rno = arg2Scanner.nextInt();
-                    return new OnRouterEvent(time, this, rno,
-                        args[3],
-                        cmdArgs);
+                    Scanner arg2Scanner = new Scanner(arg2);
+                    Scanner arg3Scanner = new Scanner(arg3);
+
+                    if (arg2Scanner.hasNextInt()
+                        && arg3Scanner.hasNextInt()) {
+                        // both args are ints
+                        int l1 = arg2Scanner.nextInt();
+                        int l2 = arg3Scanner.nextInt();
+                        return new EndLinkEvent(time, this, l1, l2);
+                    } else {
+                        return new EndLinkEvent(time, this, arg2, arg3);
+                    }
+                }
+            } else if (type.equals("END_SIMULATION")) {
+                return new EndSimulationEvent(time, this);
+            } else if (type.equals("ON_ROUTER")) {
+                if (args.length < 4) {
+                    throw new Exception(
+                              "ON_ROUTER requires router_id AND className, plus optional args");
                 } else {
-                    return new OnRouterEvent(time, this, args[2],
-                        args[3],
-                        cmdArgs);
+                    // eliminate time and ON_ROUTER
+                    String[] cmdArgs = new String[args.length - 4];
+
+                    for (int a = 4; a < args.length; a++) {
+                        cmdArgs[a - 4] = args[a];
+                    }
+
+                    String args2 = args[2].trim();
+                    Scanner arg2Scanner = new Scanner(args2);
+
+                    if (arg2Scanner.hasNextInt()) {
+                        int rno = arg2Scanner.nextInt();
+                        return new OnRouterEvent(time, this, rno,
+                                                 args[3],
+                                                 cmdArgs);
+                    } else {
+                        return new OnRouterEvent(time, this, args[2],
+                                                 args[3],
+                                                 cmdArgs);
+                    }
                 }
             }
-        } throw new Exception(
-            "Unrecognised event in script line " + s);
-    } catch (Exception ex) {
-        Logger.getLogger("log").logln(
-            USR.ERROR, "Cannot read simulation script line " + s);
-        Logger.getLogger("log").logln(USR.ERROR, ex.getMessage());
-        System.exit(-1);
+
+            throw new Exception(
+                      "Unrecognised event in script line " + s);
+        } catch (Exception ex) {
+            Logger.getLogger("log").logln(
+                USR.ERROR, "Cannot read simulation script line " + s);
+            Logger.getLogger("log").logln(USR.ERROR, ex.getMessage());
+            System.exit(-1);
+        }
+
+        return null;
     }
-    return null;
-}
+
 }

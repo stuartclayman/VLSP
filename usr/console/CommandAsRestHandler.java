@@ -9,78 +9,77 @@ import java.io.IOException;
  * An abstraxct base class for all RequestHandlers.
  */
 public class CommandAsRestHandler extends AbstractRequestHandler
-implements RequestHandler
-{
-public CommandAsRestHandler(){
-}
-
-/**
- * Handle a request and send a response.
- */
-public void  handle(Request request,
-    Response response)                    {
-    try {
-        long time = System.currentTimeMillis();
-
-        response.set("Content-Type", "application/json");
-        response.set("Server", "Router/1.0 (Simple 4.0)");
-        response.setDate("Date", time);
-        response.setDate("Last-Modified", time);
-
-        String path = request.getPath().getPath();
-
-        String value = path.substring(9);
-
-        //System.out.println("value: " + value);
-
-        value = java.net.URLDecoder.decode(value, "UTF-8");
-
-        //System.out.println("decode value: " + value);
-
-        // find the command
-        int endOfCommand = value.indexOf(' ');
-        String commandName;
-
-        // get the command from the input
-        if (endOfCommand == -1) {
-            // if there is no space the whole input is the command
-            // name
-            commandName = value;
-        } else {
-            // from 0 to first space
-            commandName = value.substring(0, endOfCommand);
-        }
-
-        System.out.println(
-            getClass().getName() + " command: " + commandName);
-
-        // now lookup the command
-        RestCommand command =
-            (RestCommand)getManagementConsole().find(
-                commandName);
-        boolean result;
-
-        if (command != null) {
-            // we got a command
-        } else {
-            //fetch the UnknownCommand
-            command = (RestCommand)getManagementConsole().find(
-                "__UNKNOWN__");
-        }
-
-        // and evaluate the input
-        try {
-            result = command.evaluate(request, response);
-        } catch (Exception e) {
-            // try and send generic error code
-            e.printStackTrace();
-        }
-
-        // the evaluator will handle the response
-        // check if the response is closed
-        response.close();
-    } catch (IOException ioe) {
-        System.err.println(ioe.getMessage());
+implements RequestHandler {
+    public CommandAsRestHandler() {
     }
-}
+
+    /**
+     * Handle a request and send a response.
+     */
+    public void handle(Request request, Response response) {
+        try {
+            long time = System.currentTimeMillis();
+
+            response.set("Content-Type", "application/json");
+            response.set("Server", "Router/1.0 (Simple 4.0)");
+            response.setDate("Date", time);
+            response.setDate("Last-Modified", time);
+
+            String path = request.getPath().getPath();
+
+            String value = path.substring(9);
+
+            //System.out.println("value: " + value);
+
+            value = java.net.URLDecoder.decode(value, "UTF-8");
+
+            //System.out.println("decode value: " + value);
+
+            // find the command
+            int endOfCommand = value.indexOf(' ');
+            String commandName;
+
+            // get the command from the input
+            if (endOfCommand == -1) {
+                // if there is no space the whole input is the command
+                // name
+                commandName = value;
+            } else {
+                // from 0 to first space
+                commandName = value.substring(0, endOfCommand);
+            }
+
+            System.out.println(
+                getClass().getName() + " command: " + commandName);
+
+            // now lookup the command
+            RestCommand command
+                = (RestCommand)getManagementConsole().find(
+                        commandName);
+            boolean result;
+
+            if (command != null) {
+                // we got a command
+            } else {
+                //fetch the UnknownCommand
+                command = (RestCommand)getManagementConsole().find(
+                        "__UNKNOWN__");
+            }
+
+            // and evaluate the input
+            try {
+                result = command.evaluate(request, response);
+            } catch (Exception e) {
+                // try and send generic error code
+                e.printStackTrace();
+            }
+
+            // the evaluator will handle the response
+            // check if the response is closed
+            response.close();
+        } catch (IOException ioe) {
+            System.err.println(ioe.getMessage());
+        }
+    }
+
 }
