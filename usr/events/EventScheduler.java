@@ -3,7 +3,7 @@ package usr.events;
 import us.monoid.json.JSONObject;
 import usr.globalcontroller.GlobalController;
 
-public interface EventScheduler  {
+public interface EventScheduler extends Runnable {
 
     /** Return the time since the start of the simulation*/
     public long getElapsedTime();
