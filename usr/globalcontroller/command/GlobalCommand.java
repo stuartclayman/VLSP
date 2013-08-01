@@ -13,7 +13,7 @@ import org.simpleframework.http.Request;
  */
 public abstract class GlobalCommand extends AbstractRestCommand {
     // The ManagementConsole
-    GlobalControllerManagementConsole managementConsole;
+    ManagementConsole managementConsole;
 
     // The RouterController
     GlobalController controller = null;
@@ -43,7 +43,7 @@ public abstract class GlobalCommand extends AbstractRestCommand {
      * Set the ManagementConsole this is a command for.
      */
     public void setManagementConsole(ManagementConsole mc) {
-        managementConsole = (GlobalControllerManagementConsole)mc;
+        managementConsole = (ManagementConsole)mc;
         controller = (GlobalController)managementConsole.getAssociated();
     }
 
@@ -52,4 +52,6 @@ public abstract class GlobalCommand extends AbstractRestCommand {
      * Returns false if there is a problem responding down the channel
      */
     public abstract boolean evaluate(Request request, Response response);
+
+
 }

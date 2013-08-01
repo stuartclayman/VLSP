@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.io.IOException;
 import us.monoid.json.*;
 
+
 /**
  * The ON_ROUTER command.
  */
@@ -24,25 +25,22 @@ public class OnRouterCommand extends GlobalCommand {
      * Evaluate the Command.
      */
     public boolean evaluate(Request request, Response response) {
+
         try {
             PrintStream out = response.getPrintStream();
 
             // get full request string
-            String path = java.net.URLDecoder.decode(
-                    request.getPath().getPath(), "UTF-8");
-
+            String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
             // strip off /command
             String value = path.substring(9);
 
             String [] args = value.split(" ");
 
             if (args.length < 4) {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put(
-                    "error",
-                    "Expected three or more arguments for ON_ROUTER Command: ON_ROUTER router_id className args");
+                jsobj.put("error", "Expected three or more arguments for ON_ROUTER Command: ON_ROUTER router_id className args");
 
                 out.println(jsobj.toString());
                 response.close();
@@ -55,11 +53,10 @@ public class OnRouterCommand extends GlobalCommand {
                 if (sc.hasNextInt()) {
                     routerID = sc.nextInt();
                 } else {
-                    response.setCode(404);
+                    response.setCode(302);
 
                     JSONObject jsobj = new JSONObject();
-                    jsobj.put("error",
-                              "Argument for ON_ROUTER command must be int");
+                    jsobj.put("error", "Argument for ON_ROUTER command must be int");
 
                     out.println(jsobj.toString());
                     response.close();
@@ -73,13 +70,14 @@ public class OnRouterCommand extends GlobalCommand {
                 String[] cmdArgs = new String[args.length - 3];
 
                 for (int a = 3; a < args.length; a++) {
-                    cmdArgs[a - 3] = args[a];
+                    cmdArgs[a-3] = args[a];
                 }
 
-                int appID = controller.appStart(routerID, className,
-                                                cmdArgs);
+
+                int appID = controller.appStart(routerID, className, cmdArgs);
 
                 if (appID >= 0) {
+
                     JSONObject jsobj = new JSONObject();
                     jsobj.put("id", appID);
                     out.println(jsobj.toString());
@@ -87,7 +85,7 @@ public class OnRouterCommand extends GlobalCommand {
 
                     return true;
                 } else {
-                    response.setCode(404);
+                    response.setCode(302);
 
                     JSONObject jsobj = new JSONObject();
                     jsobj.put("error", "ON_ROUTER. ERROR with " + value);
@@ -99,16 +97,16 @@ public class OnRouterCommand extends GlobalCommand {
                 }
             }
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
+
     }
 
 }

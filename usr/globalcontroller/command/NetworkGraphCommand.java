@@ -35,9 +35,7 @@ public class NetworkGraphCommand extends GlobalCommand {
             PrintStream out = response.getPrintStream();
 
             // get full request string
-            String path = java.net.URLDecoder.decode(
-                    request.getPath().getPath(), "UTF-8");
-
+            String path = java.net.URLDecoder.decode(request.getPath().getPath(), "UTF-8");
             // strip off /command
             String value = path.substring(9);
 
@@ -46,11 +44,10 @@ public class NetworkGraphCommand extends GlobalCommand {
             if (args.length == 2) {
                 graphStyle = args[1];
             } else {
-                response.setCode(404);
+                response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put("error",
-                          "Expected 1 argument for NetworkGraphCommand");
+                jsobj.put("error", "Expected 1 argument for NetworkGraphCommand");
 
                 out.println(jsobj.toString());
                 response.close();
@@ -58,9 +55,11 @@ public class NetworkGraphCommand extends GlobalCommand {
                 return false;
             }
 
+
             // allocate PrintStream
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(baos);
+
 
             // get the network in the PrintStream
             OutputNetwork on = new OutputNetwork();
@@ -79,16 +78,16 @@ public class NetworkGraphCommand extends GlobalCommand {
 
             return true;
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + ioe.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + jex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
         finally {
             return false;
         }
+
+
     }
 
 }

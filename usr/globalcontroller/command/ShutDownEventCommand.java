@@ -12,12 +12,13 @@ import java.util.concurrent.*;
 
 /**
  * A ShutDownCommand
+ * This creates an EndSimulationEvent.
  */
-public class ShutDownCommand extends GlobalCommand {
+public class ShutDownEventCommand extends GlobalCommand {
     /**
-     * Construct a ShutDownCommand
+     * Construct a ShutDownEventCommand
      */
-    public ShutDownCommand() {
+    public ShutDownEventCommand() {
         super(MCRP.SHUT_DOWN.CMD);
     }
 
