@@ -16,8 +16,7 @@ import java.util.HashMap;
  * a NetIFStatsProbe embedded in each Router.
  * It shows the cumulative traffic across the network.
  */
-public class NetIFStatsCumulativeReporter implements Reporter,
-RouterDeletedNotification, TrafficInfo {
+public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNotification, TrafficInfo {
     GlobalController globalController;
 
     // A HashMap of RouterName -> latest measurement
@@ -45,28 +44,13 @@ RouterDeletedNotification, TrafficInfo {
      * ProbeValue 0: String =
      * Router-1
      * ProbeValue 1: Table =
-     * name | InBytes | InPackets | InErrors | InDropped | InDataBytes |
-     *******************************InDataPackets | OutBytes | OutPackets |
-     *****************OutErrors
-     *|
-     *|*|*|*|*|*|*|*|*|*|************OutDropped
-     *|
-     *|*|*|*|*|*|*|*|*|*|*|*|********OutDataBytes | OutDataPackets | InQueue
-     *||
-     *||*||*||*||*||*|*|*|*|*|*|*|*|*|BiggestInQueue
-     *||
-     *||*||*||*||*||*||*||*|*|*|****OutQueue
-     *|
-     *|*|*|*|*|*|*|*|*|*|*|*|*|*|***BiggestOutQueue |
-     * Router-1 localnet | 2548 | 13 | 0 | 0 | 2548 | 13 | 10584 | 54 | 0 |
-     *******************************0 | 10584 | 54 | 0 | 1 | 0 | 0 |
-     * Router-4 /Router-1/Connection-3 | 2925 | 18 | 0 | 0 | 2548 | 13 | 292
-     *| 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
-     * Router-5 /Router-1/Connection-4 | 3351 | 19 | 0 | 0 | 3136 | 16 | 308
-     *| 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
-     * Router-7 /Router-1/Connection-5 | 1314 | 8 | 0 | 0 | 1176 | 6 | 178 |
-     *******************************2 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
-     *
+     * name | InBytes | InPackets | InErrors | InDropped | InDataBytes | InDataPackets | OutBytes | OutPackets | OutErrors |
+     *OutDropped | OutDataBytes | OutDataPackets | InQueue | BiggestInQueue | OutQueue | BiggestOutQueue |
+     * Router-1 localnet | 2548 | 13 | 0 | 0 | 2548 | 13 | 10584 | 54 | 0 | 0 | 10584 | 54 | 0 | 1 | 0 | 0 |
+     * Router-4 /Router-1/Connection-3 | 2925 | 18 | 0 | 0 | 2548 | 13 | 292 | 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
+     * Router-5 /Router-1/Connection-4 | 3351 | 19 | 0 | 0 | 3136 | 16 | 308 | 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
+     * Router-7 /Router-1/Connection-5 | 1314 | 8 | 0 | 0 | 1176 | 6 | 178 | 2 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
+
      */
     public void report(Measurement m) {
         if (m.getType().equals("NetIFStats")) {
@@ -89,14 +73,12 @@ RouterDeletedNotification, TrafficInfo {
                 measurements.put(routerName, table);
             }
 
-            Logger.getLogger("log").logln(1 << 7,
-                                          tableToString(table, false, true));
+            Logger.getLogger("log").logln(1<<7, tableToString(table, false, true));
 
             // Calculate volume of traffic - in and out
             //int volume = calculateTraffic(table);
 
-            //System.out.println("Traffic for " + routerName + " = " +
-            // volume);
+            //System.out.println("Traffic for " + routerName + " = " + volume);
 
             // Any dropped ?
             //printAnyDropped(routerName, table);
@@ -105,6 +87,7 @@ RouterDeletedNotification, TrafficInfo {
             if (count % 100 == 0) {
                 System.out.println("Total = " + calculateTotalTraffic());
             }
+
         } else {
             // not what we handle
         }
@@ -126,7 +109,7 @@ RouterDeletedNotification, TrafficInfo {
             int rows = table.getRowCount();
 
             // skip row 0, which is localhost
-            for (int r = 1; r < rows; r++) {
+            for (int r = 1; r< rows; r++) {
                 TableRow row = table.getRow(r);
 
                 // get name
@@ -166,9 +149,8 @@ RouterDeletedNotification, TrafficInfo {
             measurements.remove(routerName);
         }
 
-        System.out.println(
-            "Deleted router: " + routerName + " Lost data "
-            + calculateTraffic(oldData));
+        System.out.println("Deleted router: " + routerName + " Lost data " + calculateTraffic(oldData));
+
     }
 
     /**
@@ -183,13 +165,12 @@ RouterDeletedNotification, TrafficInfo {
             int rows = table.getRowCount();
 
             // skip row 0, which is localhost
-            for (int r = 1; r < rows; r++) {
+            for (int r = 1; r< rows; r++) {
                 TableRow row = table.getRow(r);
 
                 // in bytes
                 TableValue tableValue = row.get(1);
                 int inBytes = (Integer)tableValue.getValue();
-
                 // out bytes
                 tableValue = row.get(5);
                 int outBytes = (Integer)tableValue.getValue();
@@ -204,24 +185,24 @@ RouterDeletedNotification, TrafficInfo {
     /**
      * Caluclaute total traffic.
      */
-    protected int calculateTotalTraffic() {
-        int volume = 0;
+    protected long calculateTotalTraffic() {
+        long volume = 0;
 
         for (String routerName : measurements.keySet()) {
             Table routerData = measurements.get(routerName);
             volume += calculateTraffic(routerData);
         }
 
-        System.out.println("Total volume = " + volume);
+        System.out.println("NetIFStatsCumulativeReporter: Total volume = " + volume);
 
-        int lost = 0;
+        long lost = 0;
 
         for (String routerName : old.keySet()) {
             Table routerData = old.get(routerName);
             lost += calculateTraffic(routerData);
         }
 
-        System.out.println("Total lost = " + lost);
+        System.out.println("NetIFStatsCumulativeReporter: Total lost = " + lost);
 
         return lost + volume;
     }
@@ -232,7 +213,7 @@ RouterDeletedNotification, TrafficInfo {
     private void printAnyDropped(String routerName, Table table) {
         int rows = table.getRowCount();
 
-        for (int r = 0; r < rows; r++) {
+        for (int r = 0; r< rows; r++) {
             TableRow row = table.getRow(r);
 
             // name
@@ -247,7 +228,7 @@ RouterDeletedNotification, TrafficInfo {
             tableValue = row.get(10);
             int outDropped = (Integer)tableValue.getValue();
 
-            if ((inDropped > 0) || (outDropped > 0)) {
+            if (inDropped > 0 || outDropped > 0) {
                 System.out.print("Dropped: " + linkName);
 
                 if (inDropped > 0) {
@@ -257,10 +238,10 @@ RouterDeletedNotification, TrafficInfo {
                 if (outDropped > 0) {
                     System.out.print(" Out = " + outDropped);
                 }
-
                 System.out.println();
             }
         }
+
     }
 
     /**
@@ -283,13 +264,11 @@ RouterDeletedNotification, TrafficInfo {
         // output header
         if (withHeader) {
             if (withTime) {
-                builder.append(globalController.elapsedToString(
-                                   elapsed) + " ");
+                builder.append(globalController.elapsedToString(elapsed) + " ");
             }
 
-            for (int c = 0; c < cols; c++) {
-                TableAttribute headerAttr
-                    = table.getColumnDefinitions().get(c);
+            for (int c = 0; c<cols; c++) {
+                TableAttribute headerAttr = table.getColumnDefinitions().get(c);
                 builder.append(headerAttr.getName() + " | ");
             }
 
@@ -299,33 +278,28 @@ RouterDeletedNotification, TrafficInfo {
         // now print out values
         int rows = table.getRowCount();
 
-        for (int r = 0; r < rows; r++) {
+        for (int r = 0; r< rows; r++) {
             if (withTime) {
-                builder.append(globalController.elapsedToString(
-                                   elapsed) + " ");
+                builder.append(globalController.elapsedToString(elapsed) + " ");
             }
 
             TableRow row = table.getRow(r);
 
-            for (int c = 0; c < cols; c++) {
+            for (int c = 0; c<cols; c++) {
                 TableValue tableValue = row.get(c);
 
                 switch (c) {
-                case 0: {                     // NetIF name col
-                    if (tableValue.getValue().toString().endsWith(
-                            "localnet")) {
-                        builder.append(coloured(ANSI.MAGENTA,
-                                                tableValue.getValue()));
+                case 0: {        // NetIF name col
+                    if (tableValue.getValue().toString().endsWith("localnet")) {
+                        builder.append(coloured(ANSI.MAGENTA, tableValue.getValue()));
                     } else {
-                        builder.append(coloured(ANSI.BLUE,
-                                                tableValue.getValue()));
+                        builder.append(coloured(ANSI.BLUE, tableValue.getValue()));
                     }
-
                     builder.append(" | ");
                     break;
                 }
 
-                case 4:       // Dropped cols
+                case 4:         // Dropped cols
                 case 10:
                     Integer dropped = (Integer)tableValue.getValue();
 
@@ -336,7 +310,6 @@ RouterDeletedNotification, TrafficInfo {
                     } else {
                         builder.append(dropped);
                     }
-
                     builder.append(" | ");
                     break;
 
@@ -345,9 +318,9 @@ RouterDeletedNotification, TrafficInfo {
                     break;
                 }
             }
-
             builder.append("\n");
         }
+
 
         return builder.toString();
     }
@@ -375,32 +348,33 @@ RouterDeletedNotification, TrafficInfo {
         // header
         builder.append(globalController.elapsedToString(elapsed) + " ");
 
-        for (int c = 0; c < cols; c++) {
-            TableAttribute headerAttr
-                = table.getColumnDefinitions().get(c);
+        for (int c = 0; c<cols; c++) {
+            TableAttribute headerAttr = table.getColumnDefinitions().get(c);
             builder.append(headerAttr.getName() + " | ");
         }
 
         builder.append("\n");
 
+
+
         // now print out values
         int rows = table.getRowCount();
 
-        for (int r = 0; r < rows; r++) {
-            builder.append(globalController.elapsedToString(
-                               elapsed) + " ");
+        for (int r = 0; r< rows; r++) {
+            builder.append(globalController.elapsedToString(elapsed) + " ");
 
             TableRow row = table.getRow(r);
 
-            for (int c = 0; c < cols; c++) {
+            for (int c = 0; c<cols; c++) {
                 TableValue tableValue = row.get(c);
                 builder.append(tableValue.getValue() + " | ");
             }
-
             builder.append("\n");
         }
 
+
         return builder.toString();
+
     }
 
 }

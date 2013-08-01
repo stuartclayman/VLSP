@@ -20,6 +20,7 @@ import java.util.HashMap;
 public class RouterAppsReporter implements Reporter {
     GlobalController globalController;
 
+
     // count of no of measurements
     int count = 0;
 
@@ -36,17 +37,12 @@ public class RouterAppsReporter implements Reporter {
      * ProbeValue 0: String =
      * Router-1
      * ProbeValue 1: Table =
-     * ID | StartTime | RunTime | State | ClassName | Args | Name |
-     *******************************RuntimeKeys | RuntimeValues
-     * 1 | 1331298150361 | 10000 | RUNNING | usr.applications.Send | [4,
-     *******************************3000, 250000, -d, 250, -i, 10] |
-     * R1 / App / usr.applications.Send / 1
-     * |
-     * | * | ****[]
-     * | []
+     * ID | StartTime | RunTime | State | ClassName | Args | Name | RuntimeKeys | RuntimeValues
+     * 1 | 1331298150361 | 10000 | RUNNING | usr.applications.Send | [4, 3000, 250000, -d, 250, -i, 10] | /R1/App/usr.applications.Send/1 | [] | []
      */
     public void report(Measurement m) {
         if (m.getType().equals("AppList")) {
+
             List<ProbeValue> values = m.getValues();
 
             // ProbeValue 0 is the router name
@@ -58,20 +54,21 @@ public class RouterAppsReporter implements Reporter {
             Table table = (Table)pv1.getValue();
 
             // print out to channel 10
-            //Logger.getLogger("log").logln(USR.STDOUT, routerName +
-            // ":\n" +
-            // appListToString(table));
+            //Logger.getLogger("log").logln(USR.STDOUT, routerName + ":\n" + appListToString(table));
 
             /*
              * Patch values into BasicRouterInfo table
              */
 
             // find the BasicRouterInfo for the named router
-            BasicRouterInfo routerInfo
-                = globalController.findRouterInfo(
-                        routerName);
+            BasicRouterInfo routerInfo = globalController.findRouterInfo(routerName);
 
-            updateRouterAppInfo(routerInfo, table);
+            if (routerInfo == null) {
+                Logger.getLogger("log").logln(USR.ERROR, routerName + ": has no BasicRouterInfo. Probably shutdown");
+            } else {
+                updateRouterAppInfo(routerInfo, table);
+            }
+
         } else {
             // not what we were expecting
         }
@@ -89,7 +86,7 @@ public class RouterAppsReporter implements Reporter {
         // now process rows
         int rows = table.getRowCount();
 
-        for (int r = 0; r < rows; r++) {
+        for (int r = 0; r< rows; r++) {
             TableRow row = table.getRow(r);
 
             // Name is field 6
@@ -100,28 +97,24 @@ public class RouterAppsReporter implements Reporter {
 
             // visit every column except 6
             // and the last 2
-            for (int c = 0; c < (cols - 2); c++) {
+            for (int c = 0; c< (cols-2); c++) {
                 if (c == 6) {
                     continue;
                 } else {
-                    infoMap.put(header.get(c).getName(), row.get(
-                                    c).getValue());
+                    infoMap.put(header.get(c).getName(), row.get(c).getValue());
+
                 }
             }
 
             // now convert last 2 lists into a map
-            HashMap<String,
-                    String> appMonitoringData
-                = new HashMap<String, String>();
+            HashMap<String, String> appMonitoringData = new HashMap<String, String>();
 
             MList keys = (MList)row.get(7).getValue();
             MList values = (MList)row.get(8).getValue();
 
             for (int pos = 0; pos < keys.size(); pos++) {
-                appMonitoringData.put((String)keys.get(pos).getValue(),
-                                      (String)values.get(pos).getValue());
+                appMonitoringData.put((String)keys.get(pos).getValue(), (String)values.get(pos).getValue());
             }
-
             // add the map into the infoMap
             infoMap.put("MonitoringData", appMonitoringData);
 
@@ -146,32 +139,33 @@ public class RouterAppsReporter implements Reporter {
         // header
         builder.append(globalController.elapsedToString(elapsed) + " ");
 
-        for (int c = 0; c < cols; c++) {
-            TableAttribute headerAttr
-                = table.getColumnDefinitions().get(c);
+        for (int c = 0; c<cols; c++) {
+            TableAttribute headerAttr = table.getColumnDefinitions().get(c);
             builder.append(headerAttr.getName() + " | ");
         }
 
         builder.append("\n");
 
+
+
         // now print out values
         int rows = table.getRowCount();
 
-        for (int r = 0; r < rows; r++) {
-            builder.append(globalController.elapsedToString(
-                               elapsed) + " ");
+        for (int r = 0; r< rows; r++) {
+            builder.append(globalController.elapsedToString(elapsed) + " ");
 
             TableRow row = table.getRow(r);
 
-            for (int c = 0; c < cols; c++) {
+            for (int c = 0; c<cols; c++) {
                 TableValue tableValue = row.get(c);
                 builder.append(tableValue.getValue() + " | ");
             }
-
             builder.append("\n");
         }
 
+
         return builder.toString();
+
     }
 
 }
