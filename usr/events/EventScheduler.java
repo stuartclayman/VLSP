@@ -11,6 +11,11 @@ public interface EventScheduler extends Runnable {
     /** Return start time */
     public long getStartTime();
 
+    /** Get the current time into the simulation.
+     * It is important to note that this can be called between events.
+     */
+    public long getSimulationTime();
+
     /** Adds an event to the schedule in time order
      */
     public void addEvent(Event e);

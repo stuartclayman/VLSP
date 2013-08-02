@@ -22,8 +22,7 @@ import us.monoid.web.*;
 import us.monoid.json.*;
 import eu.reservoir.monitoring.core.*;
 import eu.reservoir.monitoring.core.plane.DataPlane;
-import eu.reservoir.monitoring.distribution.udp.
-    UDPDataPlaneConsumerWithNames;
+import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneConsumerWithNames;
 import eu.reservoir.monitoring.appl.BasicConsumer;
 import java.net.InetSocketAddress;
 import java.lang.reflect.Constructor;
@@ -34,16 +33,13 @@ import java.lang.reflect.Constructor;
  * gives set up and tear down instructions directly to them.
  */
 public class GlobalController implements ComponentController {
-    private ControlOptions options_;      // Options affecting the
-                                          // simulation
+    private ControlOptions options_;      // Options affecting the simulation
 
     // Options structure which is given to each router.
     private RouterOptions routerOptions_ = null;
 
-    private String xmlFile_;              // name of XML file containing
-                                          // config
-    private LocalHostInfo myHostInfo_;    // Information about the
-                                          // localhosts
+    private String xmlFile_;              // name of XML file containing config
+    private LocalHostInfo myHostInfo_;    // Information about the localhosts
     private boolean listening_;
     private GlobalControllerManagementConsole console_ = null;
     private ArrayList<LocalControllerInteractor> localControllers_
@@ -56,10 +52,8 @@ public class GlobalController implements ComponentController {
 
     private AbstractNetwork network_ = null;
 
-    // Map connections LocalControllerInfo for given LCs to the appropriate
-    // interactors
-    private HashMap<LocalControllerInfo,
-                    LocalControllerInteractor> interactorMap_ = null;
+    // Map connections LocalControllerInfo for given LCs to the appropriate interactors
+    private HashMap<LocalControllerInfo, LocalControllerInteractor> interactorMap_ = null;
 
     // Map is used to store vacant ports on local controllers
     private HashMap<LocalControllerInfo, PortPool> portPools_ = null;
@@ -68,6 +62,9 @@ public class GlobalController implements ComponentController {
     // stored on.
     private HashMap<Integer, BasicRouterInfo> routerIdMap_ = null;
 
+    // A list of all the routers that have been shutdown
+    private ArrayList<BasicRouterInfo> shutdownRouters_ = null;
+
     // A map of routerID links to LinkInfo objects
     private HashMap<Integer, LinkInfo> linkInfo = null;
 
@@ -75,12 +72,14 @@ public class GlobalController implements ComponentController {
     // i.e the router the app is running on
     private HashMap<Integer, Integer> appInfo = null;
 
-    private int aliveCount = 0;   // Counts number of live nodes
-                                  // running.
+    // A list of agg points
+    private ArrayList<Integer> apList = null;
+    // A map of routerID to the agg point for that router
+    private HashMap<Integer, Integer> apInfo = null;
 
-    private EventScheduler scheduler_ = null;
+    private int aliveCount = 0;   // Counts number of live nodes running.
 
-    // Class holds scheduler for event list
+    private EventScheduler scheduler_ = null;    // Class holds scheduler for event list
 
     private long simulationTime_ = 0;
 
@@ -126,6 +125,9 @@ public class GlobalController implements ComponentController {
     // and the Reporters that handle the incoming measurements
     // Label -> Reporter
     HashMap<String, Reporter> reporterMap;
+
+    // The probes
+    ArrayList<Probe> probeList = null;
 
     // A Semaphore to have single access to some operations
     Semaphore semaphore;
@@ -174,8 +176,11 @@ public class GlobalController implements ComponentController {
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Hello");
 
         network_ = new AbstractNetwork();
+        shutdownRouters_ = new ArrayList<BasicRouterInfo>();
         linkInfo = new HashMap<Integer, LinkInfo>();
         appInfo = new HashMap<Integer, Integer>();
+        apList = new ArrayList<Integer>();
+        apInfo = new HashMap<Integer, Integer>();
         options_ = new ControlOptions(xmlFile_);
         routerOptions_ = options_.getRouterOptions();
 
@@ -269,6 +274,10 @@ public class GlobalController implements ComponentController {
 
             monitoringAddress = new InetSocketAddress(gcAddress,
                                                       monitoringPort);
+
+            probeList = new ArrayList<Probe>();
+
+
             startMonitoringConsumer(monitoringAddress);
         }
 
@@ -587,12 +596,87 @@ public class GlobalController implements ComponentController {
 
     public void addRouterInfo(int id, BasicRouterInfo br) {
         routerIdMap_.put(id, br);
+
+        informRouterStarted(br.getName());
     }
 
     /** remove id from basic router info*/
     public void removeBasicRouterInfo(int rId) {
+        // remove all LinkInfo objects that refer to this router.
+        Collection<LinkInfo> links = findLinkInfoByRouter(rId);
+
+        for (LinkInfo lInfo : links) {
+            linkInfo.remove(lInfo.getLinkID());
+        }
+
+        // remove agg point info
+        if (apList.contains(rId)) {
+            apList.remove(Integer.valueOf(rId)); // need to pass in object
+        }
+        apInfo.remove(rId);
+
+        // remove router from BasicRouterInfo map
         routerIdMap_.remove(rId);
+
+        // now add it to shutdown routers
+        shutdownRouters_.add(new BasicRouterInfo(rId, getSimulationTime()));
+
+        // inform anyone that a Router has Ended
+        BasicRouterInfo rInfo = findRouterInfo(rId);
+        informRouterEnded(rInfo.getName());
+
+
     }
+
+    /**
+     * Called after a router is started.
+     */
+    protected void informRouterStarted(String name) {
+        // tell reporter that this router is created
+        if (latticeMonitoring) {
+            String routerName = name;
+
+            // tell all Reporters thar router is deleted
+            for (Reporter reporter : reporterMap.values()) {
+                if (reporter instanceof RouterCreatedNotification) {
+                    ((RouterCreatedNotification)reporter).routerCreated(routerName);
+                }
+            }
+
+            // tell all Probes thar router is created
+            for (Probe probe : probeList) {
+                if (probe instanceof RouterCreatedNotification) {
+                    ((RouterCreatedNotification)probe).routerCreated(routerName);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Called after a router is ended.
+     */
+    protected void informRouterEnded(String name)  {
+        // tell reporter that this router is gone
+        if (latticeMonitoring) {
+            String routerName = name;
+
+            // tell all Reporters thar router is deleted
+            for (Reporter reporter : reporterMap.values()) {
+                if (reporter instanceof RouterDeletedNotification) {
+                    ((RouterDeletedNotification)reporter).routerDeleted(routerName);
+                }
+            }
+
+            // tell all Probes thar router is deleted
+            for (Probe probe : probeList) {
+                if (probe instanceof RouterDeletedNotification) {
+                    ((RouterDeletedNotification)probe).routerDeleted(routerName);
+                }
+            }
+        }
+    }
+
 
     /** Return the local controller attached to a router id*/
     public LocalControllerInteractor getLocalController(int rId) {
@@ -708,6 +792,13 @@ public class GlobalController implements ComponentController {
     }
 
     /**
+     * List all shutdown routers
+     */
+    public ArrayList<BasicRouterInfo> getShutdownRouters() {
+        return shutdownRouters_;
+    }
+
+    /**
      * Find link info
      */
     public LinkInfo findLinkInfo(int linkID) {
@@ -720,6 +811,25 @@ public class GlobalController implements ComponentController {
     public void setLinkInfo(Integer linkID, LinkInfo linkinf) {
         linkInfo.put(linkID, linkinf);
     }
+
+    /**
+     * Find links for Router.
+     */
+    public Collection<LinkInfo> findLinkInfoByRouter(int routerID) {
+        ArrayList<LinkInfo> result = new ArrayList<LinkInfo>();
+
+        for (LinkInfo lInfo : linkInfo.values()) {
+            Pair<Integer, Integer> routers = lInfo.getEndPoints();
+
+            if (routers.getFirst() == routerID || routers.getSecond() == routerID) {
+                // same router
+                result.add(lInfo);
+            }
+        }
+
+        return result;
+    }
+
 
     /**
      * List all LinkInfo
@@ -1160,8 +1270,7 @@ public class GlobalController implements ComponentController {
         }
 
         // set up DataPlane
-        DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(
-                addr);
+        DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(addr);
         dataConsumer.setDataPlane(inputDataPlane);
 
         // set the reporter
@@ -1297,6 +1406,13 @@ public class GlobalController implements ComponentController {
      */
     public long getElapsedTime() {
         return scheduler_.getElapsedTime();
+    }
+
+    /** Get the current time into the simulation.
+     * It is important to note that this can be called between events
+     */
+    public long getSimulationTime() {
+        return scheduler_.getSimulationTime();
     }
 
     /**
@@ -1536,6 +1652,24 @@ public class GlobalController implements ComponentController {
         return network_.getLinkWeight(l1, l2);
     }
 
+    /**
+     * List all APs
+     */
+    public ArrayList<Integer> getAPs() {
+        return apList;
+    }
+
+    /**
+     * Get the nominated AP for a router
+     */
+    public int getAP(int gid) {
+        if (apInfo.containsKey(gid)) {
+            return apInfo.get(gid);
+        } else {
+            return 0;
+        }
+    }
+
     public void setAP(int gid, int AP) {
         //System.out.println("setAP called");
         Logger.getLogger("log").logln(USR.STDOUT,
@@ -1556,8 +1690,7 @@ public class GlobalController implements ComponentController {
             return;
         }
 
-        LocalControllerInteractor lci = interactorMap_.get
-                (br.getLocalControllerInfo());
+        LocalControllerInteractor lci = interactorMap_.get(br.getLocalControllerInfo());
 
         if (lci == null) {
             Logger.getLogger("log").logln(USR.ERROR,
@@ -1569,8 +1702,18 @@ public class GlobalController implements ComponentController {
 
         try {
             lci.setAP(gid, AP);
-            APInformEvent aie =
-                new APInformEvent(getElapsedTime(), gid, AP);
+
+            // save data
+            apInfo.put(gid, AP);
+
+            if (gid == AP) {
+                apList.add(gid);
+            } else {
+                apList.remove(Integer.valueOf(gid));
+            }
+
+
+            APInformEvent aie = new APInformEvent(getElapsedTime(), gid, AP);
             scheduler_.addEvent(aie);
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR,

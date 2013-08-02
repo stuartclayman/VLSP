@@ -101,12 +101,27 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
             return lastEventTime_ - simulationStartTime_;
         }
 
-        return System.currentTimeMillis() - simulationStartTime_;
+        return simulationTime_ - simulationStartTime_;
     }
 
     /** Return start time */
     public long getStartTime() {
         return simulationStartTime_;
+    }
+
+    /** Get the current time into the simulation.
+     * It is important to note that this can be called between events,
+     * therefore simulationTime_ needs to be updated as needed.
+     */
+    public long getSimulationTime() {
+        long current = System.currentTimeMillis();
+
+        if (current - simulationTime_ > 1000)  {   // more than 1 second out
+            simulationTime_ = current;
+        }
+
+
+        return simulationTime_;
     }
 
     /** Return first event from schedule
