@@ -30,30 +30,25 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
         defineRequestHandler("/router/[0-9]+/app/.*", new AppRestHandler());
 
         // setup default /router/id/link/ handler
-        // sclayman 20130801 TEMP COMMENT defineRequestHandler("/router/[0-9]+/link/.*", new RouterLinkRestHandler());
+        defineRequestHandler("/router/[0-9]+/link/.*", new RouterLinkRestHandler());
 
         // setup default /router/id/link_stats handler
         defineRequestHandler("/router/[0-9]+/link_stats.*", new RouterRestHandler());
 
         // setup default /ap/ handler
-        // sclayman 20130801 TEMP COMMENT defineRequestHandler("/ap/", new AggPointRestHandler());
+        defineRequestHandler("/ap/", new AggPointRestHandler());
 
         // setup default /removed/ handler
-        // sclayman 20130801 TEMP COMMENT defineRequestHandler("/removed/", new RemovedRestHandler());
-
-        // setup  /kbdata/ handler which handles callbacks
-        // from the knowledgeblock
-        //defineRequestHandler("/kbdata/.*", new KBDataHandler());
+        defineRequestHandler("/removed/", new RemovedRestHandler());
 
         // setup  /graph/ handler which gathers version of
         // virtual network as a graph - e.g. a dot file
-        // sclayman 20130801 TEMP COMMENT defineRequestHandler("/graph/", new GraphRestHandler());
+        defineRequestHandler("/graph/", new GraphRestHandler());
 
         register(new UnknownCommand());
         register(new LocalOKCommand());
         register(new QuitCommand());
         register(new ShutDownEventCommand());
-        //register(new NetworkGraphCommand());
         register(new ReportAPCommand());
         register(new OnRouterCommand());
         register(new GetRouterStatsCommand());

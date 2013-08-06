@@ -23,7 +23,12 @@ import us.monoid.json.*;
 import eu.reservoir.monitoring.core.*;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneConsumerWithNames;
+import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneForwardingConsumerWithNames;
+import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
 import eu.reservoir.monitoring.appl.BasicConsumer;
+import eu.reservoir.monitoring.appl.BasicDataSource;
+import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
+import eu.reservoir.monitoring.appl.datarate.EveryNMilliseconds;
 import java.net.InetSocketAddress;
 import java.lang.reflect.Constructor;
 
@@ -60,7 +65,7 @@ public class GlobalController implements ComponentController {
 
     // Map is from router Id to information one which machine router is
     // stored on.
-    private HashMap<Integer, BasicRouterInfo> routerIdMap_ = null;
+    private ConcurrentHashMap<Integer, BasicRouterInfo> routerIdMap_ = null;
 
     // A list of all the routers that have been shutdown
     private ArrayList<BasicRouterInfo> shutdownRouters_ = null;
@@ -119,12 +124,18 @@ public class GlobalController implements ComponentController {
     int monitoringPort = 22997;
     int monitoringTimeout = 1;
 
+    // Forwarding address
+    InetSocketAddress forwardAddress;
+
     // A BasicConsumer for the stats of a Router
     BasicConsumer dataConsumer;
 
     // and the Reporters that handle the incoming measurements
     // Label -> Reporter
     HashMap<String, Reporter> reporterMap;
+
+    // A BasicDataSource for the lifecycle of a Router
+    BasicDataSource dataSource = null;
 
     // The probes
     ArrayList<Probe> probeList = null;
@@ -136,19 +147,41 @@ public class GlobalController implements ComponentController {
      * Main entry point.
      */
     public static void main(String[] args) {
-        if (args.length != 1) {
+        if (args.length < 1 || args.length > 2) {
             System.err.println("Command line must specify "
                                + "XML file to read and nothing else.");
             System.exit(-1);
         }
 
+        try {
+            GlobalController gControl = new GlobalController();
+
+            if (args.length > 1) {
+                String flag = args[0];
+
+                gControl.setStartupFile(args[1]);
+                gControl.init();
+            } else {
+                gControl.setStartupFile(args[0]);
+                gControl.init();
+            }
+
+            gControl.start();
+
+
+            Logger.getLogger("log").logln(USR.STDOUT, gControl.leadin() + "Simulation complete");
+            System.out.flush();
+
+        } catch (Throwable t) {
+            System.exit(1);
+        }
+        /*
         GlobalController gControl = new GlobalController();
         gControl.xmlFile_ = args[0];
         gControl.init();
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      gControl.leadin()
-                                      + "Global controller session complete");
+        Logger.getLogger("log").logln(USR.STDOUT, gControl.leadin() + "Global controller session complete");
         System.out.flush();
+        */
     }
 
     /**
@@ -159,7 +192,7 @@ public class GlobalController implements ComponentController {
     }
 
     /** Basic intialisation for the global controller */
-    private void init() {
+    protected void init() {
         // allocate a new logger
         Logger logger = Logger.getLogger("log");
 
@@ -235,14 +268,12 @@ public class GlobalController implements ComponentController {
         }
 
         // Set up AP controller
-        APController_ = ConstructAPController.constructAPController(
-                routerOptions_);
+        APController_ = ConstructAPController.constructAPController(routerOptions_);
 
         try {
             myHostInfo_ = new LocalHostInfo(options_.getGlobalPort());
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + e.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             System.exit(-1);
         }
 
@@ -251,8 +282,7 @@ public class GlobalController implements ComponentController {
         }
 
         if (latticeMonitoring) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "Starting monitoring");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting monitoring");
 
             // setup DataConsumer
             dataConsumer = new BasicConsumer();
@@ -272,13 +302,24 @@ public class GlobalController implements ComponentController {
             } catch (UnknownHostException uhe) {
             }
 
-            monitoringAddress = new InetSocketAddress(gcAddress,
-                                                      monitoringPort);
+            monitoringAddress = new InetSocketAddress(gcAddress, monitoringPort);
 
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Starting monitoring on " + monitoringAddress);
+
+            // Forwarding address
+            forwardAddress = new InetSocketAddress(gcAddress, monitoringPort + 1);
+
+            startMonitoringConsumer(monitoringAddress);
+
+
+            /* set up probes to send out data */
+
+            // setup DataSource
+            dataSource = new BasicDataSource(getName() + ".dataSource");
             probeList = new ArrayList<Probe>();
 
 
-            startMonitoringConsumer(monitoringAddress);
+            startMonitoringProducer(forwardAddress);
         }
 
         // Set up specific details if this is actually emulation not
@@ -308,6 +349,9 @@ public class GlobalController implements ComponentController {
             }
         }
 
+    }
+
+    public void start() {
         if (options_.isSimulation()) {
             runSimulation();
         } else {
@@ -326,8 +370,7 @@ public class GlobalController implements ComponentController {
             simulationTime_ = ev.getTime();
 
             if (ev == null) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin()
-                                              + "Ran out of events to schedule");
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Ran out of events to schedule");
             }
 
             try {
@@ -344,10 +387,8 @@ public class GlobalController implements ComponentController {
         shutDown();
     }
 
-    /** Runs an emulation loop -- this spawns the scheduler as an
-     * independent
-     *  process then waits.  The scheduler sends events back into the
-     *  main loop
+    /** Runs an emulation loop -- this spawns the scheduler as an independent
+     *  process then waits.  The scheduler sends events back into the  main loop
      */
 
     private void runEmulation() {
@@ -361,12 +402,15 @@ public class GlobalController implements ComponentController {
 
             while (isActive_) {
                 try {
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "runLoop_ wait");
                     runLoop_.wait();
                 } catch (InterruptedException ie) {
                 } catch (IllegalMonitorStateException ims) {
                 }
             }
         }
+
+
         scheduler_.wakeWait(); // Interrupt the scheduler to close it
 
         if (t.isAlive()) {
@@ -397,10 +441,8 @@ public class GlobalController implements ComponentController {
     private void initEmulation() {
         childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
         childNames_ = new ArrayList<String>();
-        routerIdMap_ = new HashMap<Integer, BasicRouterInfo>();
-        console_ = new GlobalControllerManagementConsole(
-                this, myHostInfo_.getPort());
-        console_.start();
+        routerIdMap_ = new ConcurrentHashMap<Integer, BasicRouterInfo>();
+        startConsole();
         portPools_ = new HashMap<LocalControllerInfo, PortPool>();
         noControllers_ = options_.noControllers();
         LocalControllerInfo lh;
@@ -412,14 +454,11 @@ public class GlobalController implements ComponentController {
         }
 
         if (options_.startLocalControllers()) {
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "Starting Local Controllers");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting Local Controllers");
             startLocalControllers();
         }
 
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin()
-                                      + "Checking existence of local Controllers");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Checking existence of local Controllers");
         checkAllControllers();
     }
 
@@ -455,19 +494,11 @@ public class GlobalController implements ComponentController {
                 Reporter reporter = (Reporter)cons.newInstance(this);
                 reporterMap.put(label, reporter);
 
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin()
-                                              + "Added reporter: " + reporter);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Added reporter: " + reporter);
             } catch (ClassNotFoundException cnfe) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin()
-                                              + "Class not found "
-                                              + reporterClassName);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Class not found " + reporterClassName);
             } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin()
-                                              + "Cannot instantiate class "
-                                              + reporterClassName);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot instantiate class " + reporterClassName);
             }
         }
     }
@@ -477,23 +508,35 @@ public class GlobalController implements ComponentController {
         return isActive_;
     }
 
+    /**
+     * Start the console.
+     */
+    protected void startConsole() {
+        console_ = new GlobalControllerManagementConsole(this, myHostInfo_.getPort());
+        console_.start();
+    }
+
+    /**
+     * Stop the console.
+     */
+    protected void stopConsole() {
+        console_.stop();
+    }
+
+
     /** bail out of simulation relatively gracefully */
     public void bailOut() {
-        Logger.getLogger("log").logln(USR.ERROR,
-                                      leadin() + "Bailing out of run!");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Bailing out of run!");
         shutDown();
-        Logger.getLogger("log").logln(USR.ERROR,
-                                      leadin() + "Exit after bailout");
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin() + "Bailing out of run!");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exit after bailout");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Bailing out of run!");
     }
 
     /** Execute an event, return a JSON object with information about it
      * throws Instantiation if creation fails
      * Interrupted if acquisition of lock interrupted
      * Timeout if acquisition timesout*/
-    public JSONObject executeEvent(Event e) throws
-    InstantiationException, InterruptedException, TimeoutException {
+    public JSONObject executeEvent(Event e) throws InstantiationException, InterruptedException, TimeoutException {
         try {
             // Wait to aquire a lock -- only one event at once
             //
@@ -501,8 +544,7 @@ public class GlobalController implements ComponentController {
                     options_.getMaxLag(), TimeUnit.MILLISECONDS);
 
             if (!acquired) {
-                throw new TimeoutException(
-                          "GlobalController lagging too much");
+                throw new TimeoutException("GlobalController lagging too much");
             }
 
             if (!isActive_) {
@@ -533,8 +575,7 @@ public class GlobalController implements ComponentController {
         try {
             jsobj.put("msg", "ERROR: " + error);
         } catch (Exception e) {
-            Logger.getLogger("log").logln(
-                USR.ERROR, "JSON creation error in commandError");
+            Logger.getLogger("log").logln(USR.ERROR, "JSON creation error in commandError");
         }
 
         return jsobj;
@@ -542,9 +583,7 @@ public class GlobalController implements ComponentController {
 
     /** Event for start Simulation */
     public void startSimulation(long time) {
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin()
-                                      + "Start of simulation event at: "
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Start of simulation event at: "
                                       + time + " " + System.currentTimeMillis());
 
         for (OutputType o : options_.getOutputs()) {
@@ -556,9 +595,7 @@ public class GlobalController implements ComponentController {
 
     /** Event for end Simulation */
     public void endSimulation(long time) {
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin()
-                                      + "End of simulation event at " + time
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of simulation event at " + time
                                       + " " + System.currentTimeMillis());
 
         for (OutputType o : options_.getOutputs()) {
@@ -588,10 +625,48 @@ public class GlobalController implements ComponentController {
         network_.removeNode(rId);
     }
 
+    /**
+     * End router
+     */
+    protected void endRouter(long time, int routerId) {
+        EndRouterEvent ev = new EndRouterEvent(time, null, routerId);
+        addEvent(ev);
+    }
+
     /** Find some router info
      */
     public BasicRouterInfo findRouterInfo(int rId) {
         return routerIdMap_.get(rId);
+    }
+
+    /**
+     * Find some router info, given a router address or a router name
+     * and return a JSONObject
+     */
+    public JSONObject findRouterInfoAsJSON(int routerID) throws JSONException {
+        BasicRouterInfo bri = findRouterInfo(routerID);
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("time", bri.getTime());
+        jsobj.put("routerID", bri.getId());
+        jsobj.put("name", bri.getName());
+        jsobj.put("address", bri.getAddress());
+        jsobj.put("mgmtPort", bri.getManagementPort());
+        jsobj.put("r2rPort", bri.getRoutingPort());
+
+        // now get all outlinks
+        JSONArray outArr = new JSONArray();
+        int [] outLinks = getOutLinks(routerID);
+
+        for (int outLink : outLinks) {
+            outArr.put(outLink);
+        }
+
+        jsobj.put("links", outArr);
+
+        return jsobj;
+
     }
 
     public void addRouterInfo(int id, BasicRouterInfo br) {
@@ -709,8 +784,7 @@ public class GlobalController implements ComponentController {
             LocalControllerInfo lc = options_.getController(i);
             thisUsage = lc.getUsage();
 
-            // Logger.getLogger("log").logln(USR.STDOUT, i+" Usage
-            // "+thisUsage);
+            // Logger.getLogger("log").logln(USR.STDOUT, i+" Usage "+thisUsage);
             if (thisUsage == 0.0) {
                 leastUsed = lc;
                 break;
@@ -778,6 +852,56 @@ public class GlobalController implements ComponentController {
     }
 
     /**
+     * List all RouterInfo as a JSON object
+     */
+    public JSONObject getAllRouterInfoAsJSON(String detail) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();
+        JSONArray detailArray = new JSONArray();
+
+        for (BasicRouterInfo info : getAllRouterInfo()) {
+            int routerID = info.getId();
+
+            array.put(routerID);
+
+            if (detail.equals("all")) {
+                // add a detailed record
+                JSONObject record = new JSONObject();
+                record.put("time", info.getTime());
+                record.put("routerID", info.getId());
+                record.put("name", info.getName());
+                record.put("address", info.getAddress());
+                record.put("mgmtPort", info.getManagementPort());
+                record.put("r2rPort", info.getRoutingPort());
+
+                // now get all outlinks
+                JSONArray outArr = new JSONArray();
+                int [] outLinks = getOutLinks(routerID);
+
+                for (int outLink : outLinks) {
+                    outArr.put(outLink);
+                }
+
+                record.put("links", outArr);
+
+
+
+                detailArray.put(record);
+
+            }
+        }
+
+        jsobj.put("type", "router");
+        jsobj.put("list", array);
+
+        if (detail.equals("all")) {
+            jsobj.put("detail", detailArray);
+        }
+
+        return jsobj;
+    }
+
+    /**
      * Get the number of routers
      */
     public int getRouterCount() {
@@ -799,10 +923,55 @@ public class GlobalController implements ComponentController {
     }
 
     /**
+     * List all shutdown routers
+     */
+    public JSONObject listShutdownRoutersAsJSON() throws JSONException {
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();
+
+        for (BasicRouterInfo info : getShutdownRouters()) {
+            JSONObject obj = new JSONObject();
+            obj.put("routerID", info.getId());
+            obj.put("time", info.getTime());
+
+            array.put(obj);
+        }
+
+        jsobj.put("type", "shutdown");
+        jsobj.put("list", array);
+
+        return jsobj;
+    }
+
+    /**
      * Find link info
      */
     public LinkInfo findLinkInfo(int linkID) {
         return linkInfo.get(linkID);
+    }
+
+    /**
+     * Find link info
+     * and return a JSONObject
+     */
+    public JSONObject findLinkInfoAsJSON(int linkID) throws JSONException {
+        LinkInfo li = findLinkInfo(linkID);
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("time", li.getTime());
+        jsobj.put("linkID", li.getLinkID());
+        jsobj.put("linkName", li.getLinkName());
+        jsobj.put("weight", li.getLinkWeight());
+        // now get connected nodes
+        JSONArray nodes = new JSONArray();
+
+        nodes.put((Integer)li.getEndPoints().getFirst());
+        nodes.put((Integer)li.getEndPoints().getSecond());
+
+        jsobj.put("nodes", nodes);
+
+        return jsobj;
     }
 
     /**
@@ -839,6 +1008,49 @@ public class GlobalController implements ComponentController {
     }
 
     /**
+     * List all LinkInfo as a JSONObject
+     */
+    public JSONObject getAllLinkInfoAsJSON(String detail) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();
+        JSONArray detailArray = new JSONArray();
+
+        for (LinkInfo info : getAllLinkInfo()) {
+            array.put(info.getLinkID());
+
+            if (detail.equals("all")) {
+                // add a detailed record
+                JSONObject record = new JSONObject();
+                record.put("time", info.getTime());
+                record.put("id", info.getLinkID());
+                record.put("name", info.getLinkName());
+                record.put("weight", info.getLinkWeight());
+
+                // now get connected nodes
+                JSONArray nodes = new JSONArray();
+
+                nodes.put((Integer)info.getEndPoints().getFirst());
+                nodes.put((Integer)info.getEndPoints().getSecond());
+
+                record.put("nodes", nodes);
+
+
+                detailArray.put(record);
+
+            }
+        }
+
+        jsobj.put("type", "link");
+        jsobj.put("list", array);
+
+        if (detail.equals("all")) {
+            jsobj.put("detail", detailArray);
+        }
+
+        return jsobj;
+    }
+
+    /**
      * Is the link ID valid.
      */
     public boolean isValidLinkID(int lId) {
@@ -848,6 +1060,127 @@ public class GlobalController implements ComponentController {
             return false;
         }
     }
+
+    /**
+     * Get router stats info, given a router address
+     * and return a JSONObject
+     */
+    public JSONObject getRouterLinkStatsAsJSON(int routerID) throws JSONException {
+        // Find the traffic reporter
+        // This is done by asking the GlobalController for 
+        // a class that implements TrafficInfo.
+        // It is this class that has the current traffic info.
+        TrafficInfo reporter = (TrafficInfo)findByInterface(TrafficInfo.class);
+
+
+        // Get all links for router with ID routerID
+        Collection<LinkInfo> links = findLinkInfoByRouter(routerID);
+
+        // result object
+        JSONObject jsobj = new JSONObject();
+
+        // array for links
+        JSONArray linkArr = new JSONArray();
+        // array for stats
+        JSONArray statArr = new JSONArray();
+
+
+        // get outlinks
+        int [] outLinks = getOutLinks(routerID);
+
+        for (int outLink : outLinks) {
+            // add link
+            linkArr.put(outLink);
+
+            // now get link stat info
+            String router1Name = findRouterInfo(routerID).getName();
+            String router2Name = findRouterInfo(outLink).getName();
+
+            // get trafffic for link i -> j as router1Name => router2Name
+            List<Object> iToj = reporter.getTraffic(router1Name, router2Name);
+
+            // now convert list to JSON
+            JSONArray linkStats = new JSONArray();
+
+            for (Object obj : iToj) {
+                linkStats.put(obj);
+            }
+
+            // and add to statArr
+            statArr.put(linkStats);
+
+        }
+
+        jsobj.put("type", "link_stats");
+        jsobj.put("routerID", routerID);
+        jsobj.put("links", linkArr);
+        jsobj.put("link_stats", statArr);
+
+        return jsobj;
+
+    }
+
+    /**
+     * Get router stats info, given a router address and a destination router
+     * and return a JSONObject
+     */
+    public JSONObject getRouterLinkStatsAsJSON(int routerID, int dstID) throws JSONException {
+        // Find the traffic reporter
+        // This is done by asking the GlobalController for 
+        // a class that implements TrafficInfo.
+        // It is this class that has the current traffic info.
+        TrafficInfo reporter = (TrafficInfo)findByInterface(TrafficInfo.class);
+
+
+        // Get all links for router with ID routerID
+        Collection<LinkInfo> links = findLinkInfoByRouter(routerID);
+
+        // result object
+        JSONObject jsobj = new JSONObject();
+
+        // array for links
+        JSONArray linkArr = new JSONArray();
+        // array for stats
+        JSONArray statArr = new JSONArray();
+
+
+        // get outlinks
+        int [] outLinks = getOutLinks(routerID);
+
+        for (int outLink : outLinks) {
+            if (outLink == dstID) {
+                // add link
+                linkArr.put(outLink);
+
+                // now get link stat info
+                String router1Name = findRouterInfo(routerID).getName();
+                String router2Name = findRouterInfo(outLink).getName();
+
+                // get trafffic for link i -> j as router1Name => router2Name
+                List<Object> iToj = reporter.getTraffic(router1Name, router2Name);
+
+                // now convert list to JSON
+                JSONArray linkStats = new JSONArray();
+
+                for (Object obj : iToj) {
+                    linkStats.put(obj);
+                }
+
+                // and add to statArr
+                statArr.put(linkStats);
+
+            }
+        }
+
+        jsobj.put("type", "link_stats");
+        jsobj.put("routerID", routerID);
+        jsobj.put("links", linkArr);
+        jsobj.put("link_stats", statArr);
+
+        return jsobj;
+
+    }
+
 
     /** Register a link with structures necessary in Global
      * Controller */
@@ -928,10 +1261,53 @@ public class GlobalController implements ComponentController {
         return bri;
     }
 
+
+    /**
+     * Find some app info, given an app ID
+     * and returns a JSONObject.
+     */
+    public JSONObject findAppInfoAsJSON(int appID) throws JSONException {
+        BasicRouterInfo bri = findAppInfo(appID);
+
+        System.out.println("AppID: " + appID + " -> " + "BasicRouterInfo: " + bri);
+
+        String appName = bri.getAppName(appID);
+
+        System.out.println("AppID: " + appID + " -> " + "AppName: " + appName);
+
+        Map<String, Object> data = bri.getApplicationData(appName);
+
+        System.out.println("AppName: " + appName + " => " + "data: " + data);
+
+
+        JSONObject jsobj = new JSONObject();
+        jsobj.put("routerID", bri.getId());
+        jsobj.put("appID", appID);
+        jsobj.put("appName", appName);
+
+        jsobj.put("args", data.get("Args"));
+        jsobj.put("classname", data.get("ClassName"));
+        jsobj.put("starttime", data.get("StartTime"));
+        jsobj.put("runtime", data.get("RunTime"));
+
+        /*
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            String k = entry.getKey();
+            Object v = entry.getValue();
+
+            if (k.equals("classname") || k.equals("args") || k.equals("startime") ) {
+                // store the value
+                jsobj.put(k, v);
+            }
+        }
+        */
+        return jsobj;
+    }
+
+
     // FIXME write this
     public boolean appStop(int appId) {
-        Logger.getLogger("log").logln(USR.ERROR,
-                                      "No way yet to stop applications");
+        Logger.getLogger("log").logln(USR.ERROR, "No way yet to stop applications");
         return false;
     }
 
@@ -999,18 +1375,15 @@ public class GlobalController implements ComponentController {
                 appInfo.put(appID, routerID);
                 return appID;
             } catch (JSONException je) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin() + " failed to start app " + className + " on "
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + " failed to start app " + className + " on "
                                               + routerID + " try " + i + " with Exception " + je);
             } catch (IOException io) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin() + " failed to start app " + className + " on "
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + " failed to start app " + className + " on "
                                               + routerID + " try " + i + " with Exception " + io);
             }
         }
 
-        Logger.getLogger("log").logln(USR.ERROR,
-                                      leadin() + " failed to start app " + className
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + " failed to start app " + className
                                       + " on " + routerID + " giving up ");
         return -1;
     }
@@ -1023,12 +1396,10 @@ public class GlobalController implements ComponentController {
                 lci.requestRouterStats();
             }
         } catch (IOException e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not get stats");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
         } catch (JSONException e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not get stats");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
         }
     }
@@ -1051,13 +1422,11 @@ public class GlobalController implements ComponentController {
 
             return result;
         } catch (IOException e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not get stats");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             return null;
         } catch (JSONException e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + "Could not get stats");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not get stats");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             return null;
         }
@@ -1066,43 +1435,52 @@ public class GlobalController implements ComponentController {
     /*
      * Shutdown
      */
-    void shutDown() {
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin() + "SHUTDOWN CALLED!");
+    protected void shutDown() {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "SHUTDOWN CALLED!");
 
         if (!options_.isSimulation()) {
+
+            // stop all Routers
+            long time = getSimulationTime() - getStartTime();
+            for (int routerId : new ArrayList<Integer>(getRouterList())) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "SHUTDOWN router " + routerId);
+
+                endRouter(time, routerId);
+            }
+
+
             // stop monitoring
             if (latticeMonitoring) {
                 stopMonitoringConsumer();
+                stopMonitoringProducer();
             }
 
-            //ThreadTools.findAllThreads("GC pre
-            // killAllControllers:");
+            //ThreadTools.findAllThreads("GC pre killAllControllers:");
             killAllControllers();
 
-            //ThreadTools.findAllThreads("GC post
-            // killAllControllers:");
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "Pausing.");
+            //ThreadTools.findAllThreads("GC post killAllControllers:");
+            /*
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Pausing.");
+
             try {
                 Thread.sleep(10);
             } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin() + e.getMessage());
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
                 System.exit(-1);
             }
+            */
 
             //ThreadTools.findAllThreads("GC post checkMessages:");
-            Logger.getLogger("log").logln(USR.STDOUT,
-                                          leadin() + "Stopping console");
-            console_.stop();
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
+
+            stopConsole();
 
             //ThreadTools.findAllThreads("GC post stop console:");
         }
 
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin()
-                                      + "All stopped, shut down now!");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All stopped, shut down now!");
+
+
     }
 
     /** Produce some output */
@@ -1116,8 +1494,7 @@ public class GlobalController implements ComponentController {
             s = new FileOutputStream(f, true);
             p = new PrintStream(s, true);
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()
-                                          + "Cannot open " + o.getFileName()
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot open " + o.getFileName()
                                           + " for output " + e.getMessage());
             return;
         }
@@ -1148,8 +1525,7 @@ public class GlobalController implements ComponentController {
             s = new FileOutputStream(f, true);
             p = new PrintStream(s, true);
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()
-                                          + "Cannot open " + o.getFileName()
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot open " + o.getFileName()
                                           + " for output " + e.getMessage());
             return;
         }
@@ -1172,9 +1548,7 @@ public class GlobalController implements ComponentController {
      * routers */
     public void checkTrafficOutputRequests(long time, OutputType o) {
         if (options_.isSimulation()) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "Request for output of traffic makes sense only"
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for output of traffic makes sense only"
                                           + " in context of emulation");
             return;
         }
@@ -1224,8 +1598,7 @@ public class GlobalController implements ComponentController {
                     s = new FileOutputStream(f, true);
                     p = new PrintStream(s, true);
                 } catch (Exception e) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin() + "Cannot open " + o.getFileName()
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot open " + o.getFileName()
                                                   + " for output " + e.getMessage());
                     return;
                 }
@@ -1239,8 +1612,7 @@ public class GlobalController implements ComponentController {
             trafficOutputTime_ = new ArrayList<Long>();
             statsCount_ = 0;
 
-            NetStatsEvent nse = new NetStatsEvent(getElapsedTime(),
-                                                  routerStats_);
+            NetStatsEvent nse = new NetStatsEvent(getElapsedTime(), routerStats_);
             addEvent(nse);
             routerStats_ = "";
 
@@ -1270,8 +1642,12 @@ public class GlobalController implements ComponentController {
         }
 
         // set up DataPlane
-        DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(addr);
+        DataPlane inputDataPlane = new UDPDataPlaneForwardingConsumerWithNames(addr, forwardAddress);
+        // WITH NO FORAWRDING. DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(addr);
+
         dataConsumer.setDataPlane(inputDataPlane);
+
+        
 
         // set the reporter
         dataConsumer.clearReporters();
@@ -1285,9 +1661,7 @@ public class GlobalController implements ComponentController {
         boolean connected = dataConsumer.connect();
 
         if (!connected) {
-            System.err.println(
-                "Cannot startMonitoringConsumer on " + addr
-                + ". Address probably in use. Exiting.");
+            System.err.println("Cannot startMonitoringConsumer on " + addr + ". Address probably in use. Exiting.");
             System.exit(1);
         }
     }
@@ -1301,6 +1675,73 @@ public class GlobalController implements ComponentController {
 
             dataConsumer.disconnect();
         }
+    }
+
+    /**
+     * Start producing router stats using monitoring framework.
+     */
+    public synchronized void startMonitoringProducer(InetSocketAddress addr) {
+        // set up DataPlane
+        DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
+        dataSource.setDataPlane(outputDataPlane);
+
+        // now setup a RouterLifecycleProbe to send out details
+        // of the creation and shutdown of each Router
+
+        Probe p = new RouterLifecycleProbe(this);
+        probeList.add(p);
+
+        // add probes
+        for (Probe probe : probeList) {
+            dataSource.addProbe(probe);  // this does registerProbe and activateProbe
+        }
+
+        // and connect
+        boolean connected = dataSource.connect();
+
+        if (!connected) {
+            System.err.println("Cannot startMonitoringProducer on " + addr + ". Address probably in use. Exiting.");
+            System.exit(1);
+        }
+
+        // turn on probes
+        for (Probe probe : probeList) {
+            Logger.getLogger("log").logln(USR.STDOUT,
+                                          leadin() + " data source: " +  dataSource.getName() + " turn on probe " +
+                                          probe.getName());
+
+            dataSource.turnOnProbe(probe);
+        }
+
+        System.out.println(leadin() + "Setup DataSource: " + dataSource);
+
+    }
+
+    /**
+     * Stop monitoring Producer.
+     */
+    public synchronized void stopMonitoringProducer() {
+        if (dataSource.isConnected()) {
+            // turn off probes
+            for (Probe probe : probeList) {
+                Logger.getLogger("log").logln(USR.STDOUT,
+                                              leadin() + " data source: " +  dataSource.getName() + " turn off probe " +
+                                              probe.getName());
+
+                dataSource.turnOffProbe(probe);
+
+            }
+
+            // disconnect
+            dataSource.disconnect();
+
+            // remove probes
+            for (Probe probe : probeList) {
+                dataSource.removeProbe(probe);
+            }
+
+        }
+
     }
 
     /**
@@ -1344,33 +1785,22 @@ public class GlobalController implements ComponentController {
             LocalControllerInfo lh = (LocalControllerInfo)i.next();
             String [] cmd = options_.localControllerStartCommand(lh);
             try {
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin()
-                                              + "Starting process "
-                                              + Arrays.asList(cmd));
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting process " + Arrays.asList(cmd));
                 child = new ProcessBuilder(cmd).start();
             } catch (IOException e) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin()
-                                              + "Unable to execute remote command "
-                                              +
-                                              Arrays.asList(cmd));
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute remote command " + Arrays.asList(cmd));
                 Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
                 System.exit(-1);
             }
 
             String procName = lh.getName() + ":" + lh.getPort();
             childNames_.add(procName);
-            childProcessWrappers_.put(procName,
-                                      new ProcessWrapper(child, procName));
+            childProcessWrappers_.put(procName, new ProcessWrapper(child, procName));
 
             try {
-                Thread.sleep(100); // Simple wait is to
-                // ensure controllers start up
+                Thread.sleep(100); // Simple wait is to ensure controllers start up
             } catch (java.lang.InterruptedException e) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin()
-                                              + "initVirtualRouters Got interrupt!");
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "startLocalControllers Got interrupt!");
                 System.exit(-1);
             }
         }
@@ -1382,10 +1812,7 @@ public class GlobalController implements ComponentController {
      */
     public void aliveMessage(LocalHostInfo lh) {
         aliveCount += 1;
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin()
-                                      + "Received alive count from "
-                                      + lh.getName() + ":" + lh.getPort());
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Received alive count from " + lh.getName() + ":" + lh.getPort());
     }
 
     /**
@@ -1507,12 +1934,8 @@ public class GlobalController implements ComponentController {
                     // we have not seen this LocalController before
                     // try and connect
                     try {
-                        Logger.getLogger("log").logln(USR.STDOUT,
-                                                      leadin()
-                                                      + "Trying to make connection to "
-                                                      +
-                                                      lh.getName() + " "
-                                                      + lh.getPort());
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Trying to make connection to "
+                                                      + lh.getName() + " " + lh.getPort());
                         inter = new LocalControllerInteractor(lh);
 
                         localControllers_.add(inter);
@@ -1520,8 +1943,7 @@ public class GlobalController implements ComponentController {
                         inter.checkLocalController(myHostInfo_);
 
                         if (options_.getRouterOptionsString() != "") {
-                            inter.setConfigString(
-                                options_.getRouterOptionsString());
+                            inter.setConfigString(options_.getRouterOptionsString());
                         }
 
                         // tell the LocalController to start monitoring
@@ -1529,22 +1951,11 @@ public class GlobalController implements ComponentController {
                         // only work if address is real
                         // and/ or there is a consumer
                         if (latticeMonitoring) {
-                            Logger.getLogger("log").logln(USR.STDOUT,
-                                                          leadin()
-                                                          + "Setting  monitoring address: "
-                                                          +
-                                                          monitoringAddress
-                                                          + " timeout: "
-                                                          + monitoringTimeout);
-                            inter.monitoringStart(monitoringAddress,
-                                                  monitoringTimeout);
+                            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Setting  monitoring address: " + monitoringAddress + " timeout: " + monitoringTimeout);
+                            inter.monitoringStart(monitoringAddress, monitoringTimeout);
                         }
                     } catch (Exception e) {
-                        Logger.getLogger("log").logln(USR.ERROR,
-                                                      leadin()
-                                                      + "Exception from "
-                                                      + lh + ". "
-                                                      + e.getMessage());
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exception from " + lh + ". " + e.getMessage());
                         e.printStackTrace();
                         bailOut();
                         return;
@@ -1556,11 +1967,7 @@ public class GlobalController implements ComponentController {
             // check if the no of controllers == the no of interactors
             // if so, we dont have to do all lopps
             if (noControllers_ == localControllers_.size()) {
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin()
-                                              + "All LocalControllers connected after "
-                                              +
-                                              (tries + 1) + " tries");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All LocalControllers connected after " + (tries + 1) + " tries");
                 isOK = true;
                 break;
             }
@@ -1570,9 +1977,7 @@ public class GlobalController implements ComponentController {
         if (!isOK) {
             // couldnt reach all LocalControllers
             // We can keep a list of failures if we need to.
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "Can't talk to all LocalControllers");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Can't talk to all LocalControllers");
             bailOut();
             return;
         }
@@ -1580,9 +1985,7 @@ public class GlobalController implements ComponentController {
         // Wait to see if we have all controllers.
         for (int i = 0; i < options_.getControllerWaitTime(); i++) {
             if (aliveCount == noControllers_) {
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin()
-                                              + "All controllers responded with alive message.");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All controllers responded with alive message.");
                 return;
             }
 
@@ -1592,10 +1995,8 @@ public class GlobalController implements ComponentController {
             }
         }
 
-        Logger.getLogger("log").logln(USR.ERROR,
-                                      leadin() + "Only " + aliveCount
-                                      + " from " + noControllers_
-                                      + " local Controllers responded.");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Only " + aliveCount
+                                      + " from " + noControllers_ + " local Controllers responded.");
         bailOut();
         return;
     }
@@ -1608,8 +2009,7 @@ public class GlobalController implements ComponentController {
             return;
         }
 
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin() + "Stopping all controllers");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping all controllers");
         LocalControllerInteractor inter;
 
         for (int i = 0; i < localControllers_.size(); i++) {
@@ -1631,16 +2031,10 @@ public class GlobalController implements ComponentController {
             }
         }
 
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin()
-                                      + "Stop messages sent to all controllers");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stop messages sent to all controllers");
 
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin()
-                                      + "Stopping process wrappers");
-        Collection<ProcessWrapper> pws
-            = (Collection<ProcessWrapper> )childProcessWrappers_.
-                values();
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping process wrappers");
+        Collection<ProcessWrapper> pws = (Collection<ProcessWrapper> )childProcessWrappers_.values();
 
         for (ProcessWrapper pw : pws) {
             pw.stop();
@@ -1672,9 +2066,7 @@ public class GlobalController implements ComponentController {
 
     public void setAP(int gid, int AP) {
         //System.out.println("setAP called");
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin() + " router " + gid
-                                      + " now has access point " + AP);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router " + gid + " now has access point " + AP);
 
         if (options_.isSimulation()) {
             return;
@@ -1683,9 +2075,7 @@ public class GlobalController implements ComponentController {
         BasicRouterInfo br = routerIdMap_.get(gid);
 
         if (br == null) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + " unable to find router " + gid
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to find router " + gid
                                           + " in router map");
             return;
         }
@@ -1693,9 +2083,7 @@ public class GlobalController implements ComponentController {
         LocalControllerInteractor lci = interactorMap_.get(br.getLocalControllerInfo());
 
         if (lci == null) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + " unable to find router " + gid
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to find router " + gid
                                           + " in interactor map");
             return;
         }
@@ -1716,10 +2104,7 @@ public class GlobalController implements ComponentController {
             APInformEvent aie = new APInformEvent(getElapsedTime(), gid, AP);
             scheduler_.addEvent(aie);
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + " unable to set AP for router "
-                                          + gid);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to set AP for router " + gid);
         }
     }
 
@@ -1729,8 +2114,7 @@ public class GlobalController implements ComponentController {
 
     /** Router GID reports a connection to access point AP */
     public boolean reportAP(int gid, int AP) {
-        Logger.getLogger("log").logln(USR.ERROR,
-                                      leadin() + "TODO write reportAP");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "TODO write reportAP");
         return true;
     }
 
@@ -1901,9 +2285,7 @@ public class GlobalController implements ComponentController {
                 }
 
                 if ((l1 == -1) || (l2 == -1)) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin() + "Error in network connection "
-                                                  + l1 + " " + l2);
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
                     bailOut();
                     return;
                 }
@@ -1990,10 +2372,7 @@ public class GlobalController implements ComponentController {
                 }
 
                 if ((l1 == -1) || (l2 == -1)) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin()
-                                                  + "Error in network connection "
-                                                  + l1 + " " + l2);
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
                     bailOut();
                     return;
                 }
@@ -2009,11 +2388,7 @@ public class GlobalController implements ComponentController {
             noVisited++;
 
             for (int l : getOutLinks(node)) {
-                if (l == r2) {                                   // We
-                                                                 // have
-                                                                 // a
-                                                                 // connection
-
+                if (l == r2) {                                   // We have a connection
                     return;
                 }
 
@@ -2035,6 +2410,13 @@ public class GlobalController implements ComponentController {
         }
 
         return myName + ":" + myHostInfo_.getPort();
+    }
+
+    /**
+     * Set the startup file
+     */
+    public void setStartupFile(String file) {
+        xmlFile_ = file;
     }
 
     String leadinFname() {

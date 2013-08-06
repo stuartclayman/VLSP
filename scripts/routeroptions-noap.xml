@@ -1,0 +1,41 @@
+<RouterOptions>
+  <!--
+    <Output>
+        <FileName>output</FileName>
+        <ExtendedName>true</ExtendedName>
+    </Output>
+    -->
+    <!--
+    <Output>
+	<FileName>output.txt</FileName>
+	<ExtendedFileName>true</ExtendedFileName>
+	<ErrorName>error.txt</ErrorName>
+    </Output>
+    -->
+    <RoutingParameters>
+        <MaxCheckTime>30000</MaxCheckTime>  <!-- was 60000 -->
+        <MinNetIFUpdateTime>5000</MinNetIFUpdateTime>
+        <MaxNetIFUpdateTime>15000</MaxNetIFUpdateTime>
+        <AddressType>usr.net.GIDAddress</AddressType>
+        <MaxDist>8096</MaxDist>
+    </RoutingParameters>
+    <APManager>
+        <Name>None</Name>   <!-- Name>Null / None / Pressure / Random / HotSpot </Name> -->
+        <ControllerConsiderTime>0</ControllerConsiderTime>
+    </APManager> 
+
+
+    <Monitoring>
+      <LatticeMonitoring>true</LatticeMonitoring>
+      <Probe>
+        <Name>usr.router.NetIFStatsProbe</Name>
+        <Rate>1000</Rate>
+      </Probe>
+      <Probe>
+        <Name>usr.router.AppListProbe</Name>
+        <Rate>1000</Rate>
+      </Probe>
+    </Monitoring>
+
+</RouterOptions>
+
