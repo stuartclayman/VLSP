@@ -190,17 +190,29 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
     /** Adds an event to the schedule in time order
      */
     public void addEvent(Event e) {
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Time: " + e.getTime() + " Event " + e );
+
         long time = e.getTime();
 
         for (int i = 0; i < schedule_.size(); i++) {
             if (schedule_.get(i).getTime() > time) {
                 // Add at given position in list
                 schedule_.add(i, e);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event position " +  i);
                 return;
             }
         }
 
         schedule_.add(e);   // Add at end of list
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event position " +  "END");
     }
+
+    /**
+     * Create the String to print out before a message
+     */
+    String leadin() {
+        return "SEvSch: ";
+    }
+
 
 }

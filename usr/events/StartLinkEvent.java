@@ -28,6 +28,15 @@ public class StartLinkEvent extends AbstractEvent {
         numbersSet_ = true;
     }
 
+    public StartLinkEvent(long time, EventEngine eng, int r1, int r2, int w) {
+        time_ = time;
+        engine_ = eng;
+        router1_ = r1;
+        router2_ = r2;
+        weight_ = w;
+        numbersSet_ = true;
+    }
+
     public StartLinkEvent(long time, EventEngine eng, String add1, String add2) {
         time_ = time_;
         engine_ = eng;
@@ -111,8 +120,7 @@ public class StartLinkEvent extends AbstractEvent {
         linkName_ = s;
     }
 
-    public JSONObject execute(GlobalController gc) throws
-    InstantiationException {
+    public JSONObject execute(GlobalController gc) throws InstantiationException {
         if (!numbersSet_) {
             setRouterNumbers(address1_, address2_, gc);
         }
@@ -223,8 +231,7 @@ public class StartLinkEvent extends AbstractEvent {
 
     /**
      * Send commands to start virtual link
-     * Args are: router1 ID, router2 ID, the weight for the link, a name for
-     *******************************the link
+     * Args are: router1 ID, router2 ID, the weight for the link, a name for the link
      */
     static private int startVirtualLink(GlobalController gc, int router1Id, int router2Id, int weight, String name) {
         BasicRouterInfo br1, br2;

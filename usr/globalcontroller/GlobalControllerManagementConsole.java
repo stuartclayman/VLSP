@@ -50,7 +50,6 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
         register(new QuitCommand());
         register(new ShutDownEventCommand());
         register(new ReportAPCommand());
-        register(new OnRouterCommand());
         register(new GetRouterStatsCommand());
         register(new SendRouterStatsCommand());
     }

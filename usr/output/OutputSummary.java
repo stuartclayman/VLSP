@@ -19,7 +19,7 @@ class OutputSummary implements OutputFunction {
             o.setFirst(false);
         }
         APController apc = gc.getAPController();
-        s.print(gc.getNoRouters()+" "+gc.getLinkCount()+" "+
+        s.print(gc.getNoRouters()+" "+gc.getNoLinks()+" "+
                 apc.getNoAPs());
         apc.controllerUpdate(time, gc);
         s.print(" "+apc.APTrafficEstimate(gc));

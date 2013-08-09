@@ -12,8 +12,7 @@ public abstract class AbstractEvent implements Event {
     protected EventEngine engine_;
 
     /** Execute the event and return a JSON object with information*/
-    public abstract JSONObject execute(GlobalController gc)
-    throws InstantiationException;
+    public abstract JSONObject execute(GlobalController gc) throws InstantiationException;
 
     /** Return event as string*/
     public abstract String toString();

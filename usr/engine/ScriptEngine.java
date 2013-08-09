@@ -248,13 +248,9 @@ public class ScriptEngine implements EventEngine {
 
                     if (arg2Scanner.hasNextInt()) {
                         int rno = arg2Scanner.nextInt();
-                        return new OnRouterEvent(time, this, rno,
-                                                 args[3],
-                                                 cmdArgs);
+                        return new AppStartEvent(time, this, rno, args[3], cmdArgs);
                     } else {
-                        return new OnRouterEvent(time, this, args[2],
-                                                 args[3],
-                                                 cmdArgs);
+                        return new AppStartEvent(time, this, args[2], args[3], cmdArgs);
                     }
                 }
             }

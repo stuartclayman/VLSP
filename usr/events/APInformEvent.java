@@ -37,9 +37,7 @@ public class APInformEvent extends AbstractEvent {
             json.put("router", (Integer)routerNo_);
             json.put("AP", (Integer)AP_);
         } catch (JSONException js) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in EndRouterEvent should not occur");
+            Logger.getLogger("log").logln(USR.ERROR, "JSONException in APInformEvent should not occur");
         }
 
         return json;

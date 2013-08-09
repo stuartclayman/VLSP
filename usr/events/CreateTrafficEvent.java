@@ -74,19 +74,18 @@ public class CreateTrafficEvent extends AbstractEvent {
         fromArgs[2] = bytes;
         toArgs[1] = bytes;
         fromArgs[3] = rate;
-        int start1 = gc.appStart(toRouter, "usr.applications.Receive",
-                                 toArgs);
-        int start2 = -1;
+        JSONObject start1 = gc.appStart(toRouter, "usr.applications.Receive", toArgs);
+        JSONObject start2 = null;
 
-        if (start1 > 0) {
-            start2 = gc.appStart(fromRouter, "usr.applications.Transfer",
-                                 fromArgs);
+        if (start1 != null) {
+            start2 = gc.appStart(fromRouter, "usr.applications.Transfer", fromArgs);
         } else {
-            gc.appStop(start1);
+            // nothing to stop - it hasnt started yet
+            // gc.appStop(start1);
         }
 
         try {
-            if (start2 >= 0) {
+            if (start2 != null) {
                 json.put("success", true);
                 json.put("msg",
                          "traffic added between routers " + from + " " + to);

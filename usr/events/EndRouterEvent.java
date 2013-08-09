@@ -15,8 +15,7 @@ public class EndRouterEvent extends AbstractEvent {
     String address_ = null;
     boolean routerNumSet_ = true;
 
-    public EndRouterEvent(long time, EventEngine eng, String address, GlobalController gc) throws
-    InstantiationException {
+    public EndRouterEvent(long time, EventEngine eng, String address, GlobalController gc) throws InstantiationException {
         time_ = time;
         engine_ = eng;
         initNumber(address, gc);
@@ -60,8 +59,7 @@ public class EndRouterEvent extends AbstractEvent {
         return str;
     }
 
-    private void initNumber(String address, GlobalController gc) throws
-    InstantiationException {
+    private void initNumber(String address, GlobalController gc) throws InstantiationException {
         BasicRouterInfo rInfo = gc.findRouterInfo(address);
 
         if (rInfo == null) {
@@ -72,8 +70,7 @@ public class EndRouterEvent extends AbstractEvent {
         routerNo_ = rInfo.getId();
     }
 
-    public JSONObject execute(GlobalController gc) throws
-    InstantiationException {
+    public JSONObject execute(GlobalController gc) throws InstantiationException {
         if (!routerNumSet_) {
             initNumber(address_, gc);
         }
@@ -94,9 +91,10 @@ public class EndRouterEvent extends AbstractEvent {
                 json.put("msg", "Could not shut down router " + getName());
             }
         } catch (JSONException js) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in EndRouterEvent should not occur");
+            Logger.getLogger("log").logln(USR.ERROR, "JSONException in EndRouterEvent should not occur");
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, "Exception in EndRouterEvent should not occur");
+            e.printStackTrace();
         }
 
         return json;
@@ -143,12 +141,15 @@ public class EndRouterEvent extends AbstractEvent {
         }
 
         LocalControllerInteractor lci = gc.getLocalController(br);
+
         int MAX_TRIES = 5;
-        int i;
+        int i = 0;
+        JSONObject endObj = null;
 
         for (i = 0; i < MAX_TRIES; i++) {
             try {
-                lci.endRouter(br.getHost(), br.getManagementPort());
+                //Logger.getLogger("log").logln(USR.ERROR, leadin() + " i = " +  i + " lci.endRouter ");
+                endObj = lci.endRouter(br.getHost(), br.getManagementPort());
                 break;
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()
@@ -167,8 +168,8 @@ public class EndRouterEvent extends AbstractEvent {
         pp.freePort(br.getManagementPort());
         pp.freePort(br.getRoutingPort());
         lcinf.delRouter();
-        gc.removeBasicRouterInfo(rId);
-        gc.latticeMonitorRouterRemoval(br);
+        gc.removeRouterInfo(rId);
+
         return true;
     }
 

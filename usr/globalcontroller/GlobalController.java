@@ -88,8 +88,6 @@ public class GlobalController implements ComponentController {
 
     private long simulationTime_ = 0;
 
-    private int noLinks_ = 0;    // number of links in network
-
     // Variables relate to traffic output of statistics
     private ArrayList<OutputType> trafficOutputRequests_ = null;
     private String routerStats_ = "";
@@ -532,16 +530,17 @@ public class GlobalController implements ComponentController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Bailing out of run!");
     }
 
-    /** Execute an event, return a JSON object with information about it
-     * throws Instantiation if creation fails
-     * Interrupted if acquisition of lock interrupted
-     * Timeout if acquisition timesout*/
-    public JSONObject executeEvent(Event e) throws InstantiationException, InterruptedException, TimeoutException {
+
+    /** Do an Operation protected by a Semaphore.
+     * Return a JSON object with information about it
+     * throws InstantiationException if creation fails
+     * InterruptedException if acquisition of lock interrupted
+     * TimeoutException if acquisition timesout*/
+    public JSONObject semaphoredOperation(Operation op) throws Exception {
         try {
             // Wait to aquire a lock -- only one event at once
             //
-            boolean acquired = semaphore.tryAcquire(
-                    options_.getMaxLag(), TimeUnit.MILLISECONDS);
+            boolean acquired = semaphore.tryAcquire(options_.getMaxLag(), TimeUnit.MILLISECONDS);
 
             if (!acquired) {
                 throw new TimeoutException("GlobalController lagging too much");
@@ -551,20 +550,56 @@ public class GlobalController implements ComponentController {
                 throw new InterruptedException("Run finished!");
             }
 
-            Object extraParms = null;
-            e.preceedEvent(scheduler_, this);
-            Logger.getLogger("log").logln(USR.STDOUT, "EVENT: " + e);
             JSONObject js = null;
-            js = e.execute(this);
+            
+            js = op.call();
 
-            for (OutputType t : eventOutput_) {
-                produceEventOutput(e, js, t);
-            }
-
-            e.followEvent(scheduler_, js, this);
             return js;
         } finally {
             semaphore.release();
+        }
+    }
+
+    /** Execute an event, 
+     * return a JSON object with information about it
+     * throws Instantiation if creation fails
+     * Interrupted if acquisition of lock interrupted
+     * Timeout if acquisition timesout
+     */
+    public JSONObject executeEvent(Event ev) throws InstantiationException, InterruptedException, TimeoutException {
+
+        try {
+            // Get a 'final' handle on the Event
+            final Event e = ev;
+            // Get a 'final' handle on the GlobalController
+            final GlobalController gc = this;
+
+            // Define the Operation body
+            // the method 'call()' is called by semaphoredOperation()
+            Operation execute = new Operation() {
+                    public JSONObject call() throws InstantiationException, InterruptedException, TimeoutException {
+                        Object extraParms = null;
+                        e.preceedEvent(scheduler_, gc);
+                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT: " + e);
+                        JSONObject js = null;
+                        js = e.execute(gc);
+
+                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT: execute -> " + js);
+
+                        for (OutputType t : eventOutput_) {
+                            produceEventOutput(e, js, t);
+                        }
+
+                        e.followEvent(scheduler_, js, gc);
+                        return js;
+                    } 
+                };
+
+            // Do the Operation in the semaphore code block
+            JSONObject jsobj = semaphoredOperation(execute);
+            return jsobj;
+        } catch (Exception ex) {
+            throw new InstantiationException(ex.getMessage());
         }
     }
 
@@ -605,151 +640,6 @@ public class GlobalController implements ComponentController {
         }
 
         shutDown();
-    }
-
-    /** Register existence of router */
-    public void registerRouter(int rId) {
-        network_.addNode(rId);
-    }
-
-    /** Unregister a router and all links from structures in
-     *  GlobalController*/
-    public void unregisterRouter(int rId) {
-        int[] out = getOutLinks(rId);
-        APController_.removeNode(getElapsedTime(), rId);
-
-        for (int i = out.length - 1; i >= 0; i--) {
-            unregisterLink(rId, out[i]);
-        }
-
-        network_.removeNode(rId);
-    }
-
-    /**
-     * End router
-     */
-    protected void endRouter(long time, int routerId) {
-        EndRouterEvent ev = new EndRouterEvent(time, null, routerId);
-        addEvent(ev);
-    }
-
-    /** Find some router info
-     */
-    public BasicRouterInfo findRouterInfo(int rId) {
-        return routerIdMap_.get(rId);
-    }
-
-    /**
-     * Find some router info, given a router address or a router name
-     * and return a JSONObject
-     */
-    public JSONObject findRouterInfoAsJSON(int routerID) throws JSONException {
-        BasicRouterInfo bri = findRouterInfo(routerID);
-
-        JSONObject jsobj = new JSONObject();
-
-        jsobj.put("time", bri.getTime());
-        jsobj.put("routerID", bri.getId());
-        jsobj.put("name", bri.getName());
-        jsobj.put("address", bri.getAddress());
-        jsobj.put("mgmtPort", bri.getManagementPort());
-        jsobj.put("r2rPort", bri.getRoutingPort());
-
-        // now get all outlinks
-        JSONArray outArr = new JSONArray();
-        int [] outLinks = getOutLinks(routerID);
-
-        for (int outLink : outLinks) {
-            outArr.put(outLink);
-        }
-
-        jsobj.put("links", outArr);
-
-        return jsobj;
-
-    }
-
-    public void addRouterInfo(int id, BasicRouterInfo br) {
-        routerIdMap_.put(id, br);
-
-        informRouterStarted(br.getName());
-    }
-
-    /** remove id from basic router info*/
-    public void removeBasicRouterInfo(int rId) {
-        // remove all LinkInfo objects that refer to this router.
-        Collection<LinkInfo> links = findLinkInfoByRouter(rId);
-
-        for (LinkInfo lInfo : links) {
-            linkInfo.remove(lInfo.getLinkID());
-        }
-
-        // remove agg point info
-        if (apList.contains(rId)) {
-            apList.remove(Integer.valueOf(rId)); // need to pass in object
-        }
-        apInfo.remove(rId);
-
-        // remove router from BasicRouterInfo map
-        routerIdMap_.remove(rId);
-
-        // now add it to shutdown routers
-        shutdownRouters_.add(new BasicRouterInfo(rId, getSimulationTime()));
-
-        // inform anyone that a Router has Ended
-        BasicRouterInfo rInfo = findRouterInfo(rId);
-        informRouterEnded(rInfo.getName());
-
-
-    }
-
-    /**
-     * Called after a router is started.
-     */
-    protected void informRouterStarted(String name) {
-        // tell reporter that this router is created
-        if (latticeMonitoring) {
-            String routerName = name;
-
-            // tell all Reporters thar router is deleted
-            for (Reporter reporter : reporterMap.values()) {
-                if (reporter instanceof RouterCreatedNotification) {
-                    ((RouterCreatedNotification)reporter).routerCreated(routerName);
-                }
-            }
-
-            // tell all Probes thar router is created
-            for (Probe probe : probeList) {
-                if (probe instanceof RouterCreatedNotification) {
-                    ((RouterCreatedNotification)probe).routerCreated(routerName);
-                }
-            }
-        }
-
-    }
-
-    /**
-     * Called after a router is ended.
-     */
-    protected void informRouterEnded(String name)  {
-        // tell reporter that this router is gone
-        if (latticeMonitoring) {
-            String routerName = name;
-
-            // tell all Reporters thar router is deleted
-            for (Reporter reporter : reporterMap.values()) {
-                if (reporter instanceof RouterDeletedNotification) {
-                    ((RouterDeletedNotification)reporter).routerDeleted(routerName);
-                }
-            }
-
-            // tell all Probes thar router is deleted
-            for (Probe probe : probeList) {
-                if (probe instanceof RouterDeletedNotification) {
-                    ((RouterDeletedNotification)probe).routerDeleted(routerName);
-                }
-            }
-        }
     }
 
 
@@ -808,19 +698,193 @@ public class GlobalController implements ComponentController {
         return portPools_.get(lci);
     }
 
-    public void latticeMonitorRouterRemoval(BasicRouterInfo br) {
+
+
+    /**
+     * Start a router
+     */
+    public JSONObject startRouter(String address, String name) {
+        try {
+            StartRouterEvent ev = new StartRouterEvent(getElapsedTime(), null, address, name);
+            JSONObject jsobj = executeEvent(ev);
+            return jsobj;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Register existence of router */
+    public void registerRouter(int rId) {
+        network_.addNode(rId);
+
+        // inform about all routers
+        informAllRouters();
+
+    }
+
+    /** Unregister a router and all links from structures in
+     *  GlobalController*/
+    public void unregisterRouter(int rId) {
+        int[] out = getOutLinks(rId);
+        APController_.removeNode(getElapsedTime(), rId);
+
+        for (int i = out.length - 1; i >= 0; i--) {
+            unregisterLink(rId, out[i]);
+        }
+
+        network_.removeNode(rId);
+
+        // inform about all routers
+        informAllRouters();
+
+
+    }
+
+    /**
+     * End router
+     */
+    public JSONObject endRouter(int routerId) {
+        try {
+            EndRouterEvent ev = new EndRouterEvent(getElapsedTime(), null, routerId);
+            JSONObject jsobj = executeEvent(ev);
+            return jsobj;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Find some router info
+     */
+    public BasicRouterInfo findRouterInfo(int rId) {
+        return routerIdMap_.get(rId);
+    }
+
+    /**
+     * Find some router info, given a router address or a router name
+     * and return a JSONObject
+     */
+    public JSONObject findRouterInfoAsJSON(int routerID) throws JSONException {
+        BasicRouterInfo bri = findRouterInfo(routerID);
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("time", bri.getTime());
+        jsobj.put("routerID", bri.getId());
+        jsobj.put("name", bri.getName());
+        jsobj.put("address", bri.getAddress());
+        jsobj.put("mgmtPort", bri.getManagementPort());
+        jsobj.put("r2rPort", bri.getRoutingPort());
+
+        // now get all outlinks
+        JSONArray outArr = new JSONArray();
+        int [] outLinks = getOutLinks(routerID);
+
+        for (int outLink : outLinks) {
+            outArr.put(outLink);
+        }
+
+        jsobj.put("links", outArr);
+
+        return jsobj;
+
+    }
+
+    /** add some router info */
+    public void addRouterInfo(int id, BasicRouterInfo br) {
+        routerIdMap_.put(id, br);
+
+        informRouterStarted(br.getName());
+    }
+
+    /** remove some router info*/
+    public void removeRouterInfo(int rId) {
+        BasicRouterInfo rInfo = findRouterInfo(rId);
+
+        // remove all LinkInfo objects that refer to this router.
+        Collection<LinkInfo> links = findLinkInfoByRouter(rId);
+
+        for (LinkInfo lInfo : links) {
+            linkInfo.remove(lInfo.getLinkID());
+        }
+
+        // remove agg point info
+        if (apList.contains(rId)) {
+            apList.remove(Integer.valueOf(rId)); // need to pass in object
+        }
+        apInfo.remove(rId);
+
+        // remove router from BasicRouterInfo map
+        routerIdMap_.remove(rId);
+
+        // now add it to shutdown routers
+        shutdownRouters_.add(new BasicRouterInfo(rId, getSimulationTime()));
+
+        // inform anyone that a Router has Ended
+        informRouterEnded(rInfo.getName());
+
+    }
+
+    /**
+     * Called after a router is started.
+     */
+    protected void informRouterStarted(String name) {
+        // tell reporter that this router is created
+        if (latticeMonitoring) {
+            String routerName = name;
+
+            // tell all Reporters thar router is deleted
+            for (Reporter reporter : reporterMap.values()) {
+                if (reporter instanceof RouterCreatedNotification) {
+                    ((RouterCreatedNotification)reporter).routerCreated(routerName);
+                }
+            }
+
+            // tell all Probes thar router is created
+            for (Probe probe : probeList) {
+                if (probe instanceof RouterCreatedNotification) {
+                    ((RouterCreatedNotification)probe).routerCreated(routerName);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Called after a router is ended.
+     */
+    protected void informRouterEnded(String name)  {
         // tell reporter that this router is gone
         if (latticeMonitoring) {
-            String routerName = br.getName();
+            String routerName = name;
 
+            // tell all Reporters thar router is deleted
             for (Reporter reporter : reporterMap.values()) {
                 if (reporter instanceof RouterDeletedNotification) {
-                    ((RouterDeletedNotification)reporter).
-                    routerDeleted(routerName);
+                    ((RouterDeletedNotification)reporter).routerDeleted(routerName);
+                }
+            }
+
+            // tell all Probes thar router is deleted
+            for (Probe probe : probeList) {
+                if (probe instanceof RouterDeletedNotification) {
+                    ((RouterDeletedNotification)probe).routerDeleted(routerName);
                 }
             }
         }
     }
+
+    /**
+     * Called to give a snapshot of all the routers
+     */
+    protected void informAllRouters() {
+    }
+
+    /**
+     * Called to give a snapshot of all the links
+     */
+    protected void informAllLinks() {
+    }
+
 
     /**
      * Find some router info, given a router address or a router name
@@ -943,11 +1007,47 @@ public class GlobalController implements ComponentController {
         return jsobj;
     }
 
+
+    /**
+     * Start a link
+     */
+    public JSONObject startLink(int r1, int r2, int weight) {
+        try {
+            StartLinkEvent ev = new StartLinkEvent(getElapsedTime(), null, r1, r2, weight);
+            JSONObject jsobj = executeEvent(ev);
+            return jsobj;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * End a link
+     */
+    public JSONObject endLink(int r1, int r2, int weight) {
+        try {
+            EndLinkEvent ev = new EndLinkEvent(getElapsedTime(), null, r1, r2);
+            JSONObject jsobj = executeEvent(ev);
+            return jsobj;
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
+     
+
     /**
      * Find link info
      */
     public LinkInfo findLinkInfo(int linkID) {
         return linkInfo.get(linkID);
+    }
+
+    /**
+     * Set LinkInfo
+     */
+    public void setLinkInfo(Integer linkID, LinkInfo linkinf) {
+        linkInfo.put(linkID, linkinf);
     }
 
     /**
@@ -972,13 +1072,6 @@ public class GlobalController implements ComponentController {
         jsobj.put("nodes", nodes);
 
         return jsobj;
-    }
-
-    /**
-     * Set LinkInfo
-     */
-    public void setLinkInfo(Integer linkID, LinkInfo linkinf) {
-        linkInfo.put(linkID, linkinf);
     }
 
     /**
@@ -1186,18 +1279,15 @@ public class GlobalController implements ComponentController {
      * Controller */
     public void registerLink(int router1Id, int router2Id) {
         network_.addLink(router1Id, router2Id);
+
+        // inform
+        informAllRouters();
+        informAllLinks();
     }
 
     /* Return a list of outlinks from a router */
     public int [] getOutLinks(int routerId) {
         return network_.getOutLinks(routerId);
-    }
-
-    /**
-     * Get the number of links
-     */
-    public int getLinkCount() {
-        return noLinks_;
     }
 
     /**
@@ -1244,12 +1334,44 @@ public class GlobalController implements ComponentController {
     public void unregisterLink(int router1Id, int router2Id) {
         network_.removeLink(router1Id, router2Id);
         APController_.removeLink(getElapsedTime(), router1Id, router2Id);
+
+        // inform
+        informAllRouters();
+        informAllLinks();
     }
 
     /** Remove info about link from linkInfo struct */
     public void removeLinkInfo(Integer id) {
         linkInfo.remove(id);
     }
+
+    /** Return the weight from link1 to link2 or 0 if no link*/
+    public int getLinkWeight(int l1, int l2) {
+        return network_.getLinkWeight(l1, l2);
+    }
+
+
+    /**
+     * External and static access to start an Application
+     */
+    public  JSONObject appStart(int routerID, String className, String[] args) {
+        try {
+            AppStartEvent ev = new AppStartEvent(getElapsedTime(), null, routerID, className, args);
+            JSONObject jsobj = executeEvent(ev);
+            return jsobj;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    /**
+     * register an app
+     */
+    public void registerApp(int appID, int routerID) {
+        appInfo.put(appID, routerID);
+    }
+
 
     /**
      * Find some app info
@@ -1305,88 +1427,24 @@ public class GlobalController implements ComponentController {
     }
 
 
+    /**
+     * Is the app ID valid.
+     */
+    public boolean isValidAppID(int appId) {
+        if (appInfo.get(appId) == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
     // FIXME write this
     public boolean appStop(int appId) {
         Logger.getLogger("log").logln(USR.ERROR, "No way yet to stop applications");
         return false;
     }
 
-    /**
-     * Run an application on a Router.
-     * Returns the app ID
-     */
-    public int appStart(int routerID, String className, String[] args) {
-        // return +ve no for valid id
-        // return -1 for no start - cant find LocalController
-        BasicRouterInfo br = routerIdMap_.get(routerID);
-
-        if (br == null) {
-            return -1;
-        }
-
-        LocalControllerInteractor lci = interactorMap_.get(
-                br.getLocalControllerInfo());
-
-        if (lci == null) {
-            return -1;
-        }
-
-        int i;
-        int MAX_TRIES = 5;
-        Integer appID = -1;
-
-        for (i = 0; i < MAX_TRIES; i++) {
-            try {
-                // appStart returns a JSONObject
-                // something like: {"aid":1,"startTime":1340614768099,
-                // "name":"/R4/App/usr.applications.RecvDataRate/1"}
-
-                JSONObject response = lci.appStart(routerID, className,
-                                                   args);
-
-                // consturct an ID from the routerID and the appID
-                Pair<Integer, Integer> idPair
-                    = new Pair<Integer, Integer>(routerID,
-                                                 (Integer)response.get("aid"));
-                appID = idPair.hashCode();
-                String appName = (String)response.get("name");
-
-                // Add app to BasicRouterInfo
-                br.addApplication(appID, appName);
-
-                // and set info as
-                // ["id": 46346535, "time" : "00:14:52", "aid" : 1,
-                // "startime" : 1331119233159, "state": "RUNNING",
-                // "classname" : "usr.applications.Send", "args" : "[4,
-                // 3000, 250000, -d, 250, -i, 10]" ]
-                Map<String, Object> dataMap = new HashMap<String, Object>();
-                dataMap.put("time", "00:00:00");
-                dataMap.put("id", appID);
-                dataMap.put("aid", (Integer)response.get("aid"));
-                dataMap.put("startime", (Long)response.get("startTime"));
-                dataMap.put("runtime", 0);
-                dataMap.put("classname", className);
-                dataMap.put("args", Arrays.asList(args).toString());
-                dataMap.put("state", "STARTED");
-
-                br.setApplicationData(appName, dataMap);
-
-                // add app to app info
-                appInfo.put(appID, routerID);
-                return appID;
-            } catch (JSONException je) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + " failed to start app " + className + " on "
-                                              + routerID + " try " + i + " with Exception " + je);
-            } catch (IOException io) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + " failed to start app " + className + " on "
-                                              + routerID + " try " + i + " with Exception " + io);
-            }
-        }
-
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + " failed to start app " + className
-                                      + " on " + routerID + " giving up ");
-        return -1;
-    }
 
     /** Request router stats */
     public void requestRouterStats() {
@@ -1441,11 +1499,10 @@ public class GlobalController implements ComponentController {
         if (!options_.isSimulation()) {
 
             // stop all Routers
-            long time = getSimulationTime() - getStartTime();
             for (int routerId : new ArrayList<Integer>(getRouterList())) {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "SHUTDOWN router " + routerId);
 
-                endRouter(time, routerId);
+                endRouter(routerId);
             }
 
 
@@ -2041,15 +2098,11 @@ public class GlobalController implements ComponentController {
         }
     }
 
-    /** Return the weight from link1 to link2 or 0 if no link*/
-    public int getLinkWeight(int l1, int l2) {
-        return network_.getLinkWeight(l1, l2);
-    }
-
     /**
      * List all APs
      */
     public ArrayList<Integer> getAPs() {
+        //return new ArrayList(new HashSet(apInfo.values()));
         return apList;
     }
 
@@ -2064,48 +2117,32 @@ public class GlobalController implements ComponentController {
         }
     }
 
-    public void setAP(int gid, int AP) {
+    public JSONObject setAP(int gid, int AP) {
         //System.out.println("setAP called");
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router " + gid + " now has access point " + AP);
 
         if (options_.isSimulation()) {
-            return;
-        }
-
-        BasicRouterInfo br = routerIdMap_.get(gid);
-
-        if (br == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to find router " + gid
-                                          + " in router map");
-            return;
-        }
-
-        LocalControllerInteractor lci = interactorMap_.get(br.getLocalControllerInfo());
-
-        if (lci == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to find router " + gid
-                                          + " in interactor map");
-            return;
+            return null;
         }
 
         try {
-            lci.setAP(gid, AP);
-
-            // save data
-            apInfo.put(gid, AP);
-
-            if (gid == AP) {
-                apList.add(gid);
-            } else {
-                apList.remove(Integer.valueOf(gid));
-            }
-
-
-            APInformEvent aie = new APInformEvent(getElapsedTime(), gid, AP);
-            scheduler_.addEvent(aie);
+            SetAggPointEvent ev = new SetAggPointEvent(getElapsedTime(), null, gid, AP);
+            JSONObject jsobj = executeEvent(ev);
+            return jsobj;
         } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to set AP for router " + gid);
+            return null;
         }
+    }
+
+    public void registerAggPoint(int gid, int AP) {
+        apInfo.put(gid, AP);
+
+        if (gid == AP) {
+            apList.add(gid);
+        } else {
+            apList.remove(Integer.valueOf(gid));
+        }
+
     }
 
     public void addEvent(Event e) {

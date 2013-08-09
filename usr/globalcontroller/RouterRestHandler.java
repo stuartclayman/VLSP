@@ -11,7 +11,7 @@ import us.monoid.json.*;
 import java.util.Scanner;
 import java.io.PrintStream;
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.TimeoutException;
 import usr.events.*;
 
 /**
@@ -139,13 +139,15 @@ public class RouterRestHandler extends BasicRequestHandler {
 
         /* do work */
 
+        // start a router, and get it's ID
+        // WAS int rID = controller_.startRouter(System.currentTimeMillis(), address, name);
+
         boolean success = true;
         String failMessage = null;
         JSONObject jsobj = null;
+
         try {
-            StartRouterEvent ev = new StartRouterEvent
-                (
-                    controller_.getElapsedTime(), null, address, name);
+            StartRouterEvent ev = new StartRouterEvent(controller_.getElapsedTime(), null, address, name);
             jsobj = controller_.executeEvent(ev);
 
             if (jsobj.get("success").equals(false)) {
@@ -160,8 +162,7 @@ public class RouterRestHandler extends BasicRequestHandler {
             failMessage = "Unexplained failure executing startRouter";
         } catch (TimeoutException to) {
             success = false;
-            failMessage =
-                "Semaphore timeout in global controller -- too busy";
+            failMessage = "Semaphore timeout in global controller -- too busy";
         }
 
         if (success) {
@@ -175,6 +176,7 @@ public class RouterRestHandler extends BasicRequestHandler {
         } else {
             complain(response, "Error creating router: " + failMessage);
         }
+
     }
 
     /**
@@ -186,23 +188,46 @@ public class RouterRestHandler extends BasicRequestHandler {
         String name = request.getPath().getName();
         Scanner sc = new Scanner(name);
 
+        JSONObject jsobj = null;
+        boolean success = true;
+        String failMessage = null;
+
         if (sc.hasNextInt()) {
             int id = sc.nextInt();
 
             // if it exists, stop it, otherwise complain
             if (controller_.isValidRouterID(id)) {
                 // delete a router
-                controller_.endRouter(System.currentTimeMillis(), id);
+                // WAS controller_.endRouter(System.currentTimeMillis(), id);
 
-                // and send them back as the return value
-                PrintStream out = response.getPrintStream();
+                try {
+                    EndRouterEvent ev = new EndRouterEvent(controller_.getElapsedTime(), null, id);
+                    jsobj = controller_.executeEvent(ev);
 
-                JSONObject jsobj = new JSONObject();
+                } catch (InterruptedException ie) {
+                    success = false;
+                    failMessage = "Signal interrupted in global controller";
+                } catch (InstantiationException ine) {
+                    success = false;
+                    failMessage = "Unexplained failure executing delereRouter";
+                } catch (TimeoutException to) {
+                    success = false;
+                    failMessage = "Semaphore timeout in global controller -- too busy";
+                }
 
-                jsobj.put("routerID", id);
-                jsobj.put("status", "deleted");
+                if (success) {
+                    // now lookup all the saved details
+                    // and send them back as the return value
+                    PrintStream out = response.getPrintStream();
 
-                out.println(jsobj.toString());
+                    //jsobj.put("routerID", id);
+                    //jsobj.put("status", "deleted");
+
+                    out.println(jsobj.toString());
+                } else {
+                    complain(response, "Error deleting Router router: " + failMessage);
+                }
+
             } else {
                 complain(response, "deleteRouter arg is not valid router id: " + name);
             }

@@ -21,8 +21,7 @@ public class ListRoutersEvent extends AbstractEvent {
         return str;
     }
 
-    public JSONObject execute(GlobalController gc)
-    throws InstantiationException {
+    public JSONObject execute(GlobalController gc) throws InstantiationException {
         JSONObject jsobj = new JSONObject();
         JSONArray array = new JSONArray();
 
@@ -36,9 +35,7 @@ public class ListRoutersEvent extends AbstractEvent {
             jsobj.put("type", "router");
             jsobj.put("list", array);
         } catch (JSONException je) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in StartLinkEvent should not occur");
+            Logger.getLogger("log").logln(USR.ERROR, "JSONException in StartLinkEvent should not occur");
         }
 
         return jsobj;

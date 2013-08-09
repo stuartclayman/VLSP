@@ -100,10 +100,9 @@ RouterDeletedNotification, TrafficInfo {
                 measurements.put(routerName, table);
             }
 
-            NetStatsEvent nse = new NetStatsEvent(
-                    globalController.getElapsedTime(),
-                    tableToString(table, false, true));
-            globalController.addEvent(nse);
+            // sclayman 20130808 THIS IS A RECEIVER OF DATA. DONT CALL EVENT
+            // sclayman 20130808 NetStatsEvent nse = new NetStatsEvent(globalController.getElapsedTime(), tableToString(table, false, true));
+            // sclayman 20130808 globalController.addEvent(nse);
 
             // Calculate volume of traffic - in and out
             //int volume = calculateTraffic(table);

@@ -2,7 +2,7 @@
   <GlobalController>
      <Port>8888</Port>
      <StartLocalControllers>true</StartLocalControllers>
-     <ConnectedNetwork>true</ConnectedNetwork>
+     <ConnectedNetwork>false</ConnectedNetwork>
      <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass> -->
      <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualization</VisualizationClass>
 

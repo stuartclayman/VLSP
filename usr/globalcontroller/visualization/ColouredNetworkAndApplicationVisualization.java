@@ -98,7 +98,8 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
         s.printf("%02d:%02d:%02d", minutes, secs, hundreths);
         s.print(" hosts=" + routerLocations.keySet().size());
         s.print(" routers=" + noRouters);
-        s.print(" links=" + gc.getLinkCount());
+        s.print(" links=" + gc.getNoLinks
+());
         s.println("\";");
 
         // visit each host
