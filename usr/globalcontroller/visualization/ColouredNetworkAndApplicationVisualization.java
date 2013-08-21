@@ -31,6 +31,7 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
     /**
      * Visualize the current topology of the network.
      */
+     @SuppressWarnings("unchecked")
     public void visualize(PrintStream s) {
 
         HashMap<String, ArrayList<BasicRouterInfo> > routerLocations = new HashMap<String, ArrayList<BasicRouterInfo> >();
@@ -210,17 +211,23 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
                         String nodeName = processAppName(app);
 
                         // Get the application measurement data from the app itself
-                        Map<String, Object> applicationData = routerInfo.getApplicationData(app);
+                        
+                        Map<String, Object> applicationData = 
+                            routerInfo.getApplicationData(app);
                         // and get the MonitoringData from the applicationData
+                       
                         Map<String, String> monitoringData = null;
 
                         if (applicationData != null) {
-                            monitoringData = (Map<String, String> )applicationData.get("MonitoringData");
+                            
+                            monitoringData = 
+                                (Map<String,String>)
+                                applicationData.get("MonitoringData");
                         }
 
                         // convert the map to a string
                         String monString = "";
-
+                        
                         if (monitoringData != null) {
                             for (Map.Entry<String, String> entry : monitoringData.entrySet()) {
                                 monString += (entry.getKey() + "=" + entry.getValue() + " ");

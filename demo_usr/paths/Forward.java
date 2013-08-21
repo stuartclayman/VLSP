@@ -295,13 +295,13 @@ public class Forward implements Application, Reconfigure {
 
 
         try {
-            usrReaderFuture = executer.submit((Callable)usrReader);
+            usrReaderFuture = executer.submit((Callable <?>)usrReader);
 
-            usrForwarderFuture = executer.submit((Callable)usrForwarder);
+            usrForwarderFuture = executer.submit((Callable <?>)usrForwarder);
 
-            mPortFuture = executer.submit((Callable)mPort);
+            mPortFuture = executer.submit((Callable <?>)mPort);
 
-            mListenerFuture = executer.submit((Callable)mListener);
+            mListenerFuture = executer.submit((Callable <?>)mListener);
 
         } catch (Exception e) {
             Logger.getLogger("log").log(USR.ERROR, e.getMessage());
@@ -393,7 +393,7 @@ public class Forward implements Application, Reconfigure {
 
 
         try {
-            usrForwarderFuture = executer.submit((Callable)usrForwarder);
+            usrForwarderFuture = executer.submit((Callable <?>)usrForwarder);
         } catch (Exception e) {
             return new ApplicationResponse(false, "Cannot submit task: " + e.getMessage());
         }

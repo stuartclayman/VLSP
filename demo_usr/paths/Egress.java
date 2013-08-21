@@ -287,13 +287,13 @@ public class Egress implements Application, Reconfigure {
 
 
         try {
-            usrReaderFuture = executer.submit((Callable)usrReader);
+            usrReaderFuture = executer.submit((Callable <?>)usrReader);
 
-            udpForwarderFuture = executer.submit((Callable)udpForwarder);
+            udpForwarderFuture = executer.submit((Callable <?>)udpForwarder);
 
-            mPortFuture = executer.submit((Callable)mPort);
+            mPortFuture = executer.submit((Callable <?>)mPort);
 
-            mListenerFuture = executer.submit((Callable)mListener);
+            mListenerFuture = executer.submit((Callable <?>)mListener);
 
         } catch (Exception e) {
             Logger.getLogger("log").log(USR.ERROR, e.getMessage());
@@ -385,7 +385,7 @@ public class Egress implements Application, Reconfigure {
 
 
         try {
-            udpForwarderFuture = executer.submit((Callable)udpForwarder);
+            udpForwarderFuture = executer.submit((Callable <?>)udpForwarder);
         } catch (Exception e) {
             return new ApplicationResponse(false, "Cannot submit task: " + e.getMessage());
         }

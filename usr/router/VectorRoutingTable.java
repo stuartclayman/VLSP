@@ -73,7 +73,8 @@ public class VectorRoutingTable implements RoutingTable {
         // Each entry is encoded by addressSize bytes
         //System.err.println("Creating routing table to send");
 
-        Collection<VectorRoutingTableEntry> rtes = (Collection<VectorRoutingTableEntry> )getEntries();
+        Collection<VectorRoutingTableEntry> rtes = 
+            getEntries();
         int count = rtes.size();
         //int entrySize = rtes.iterator().next().size();
 
@@ -179,8 +180,8 @@ public class VectorRoutingTable implements RoutingTable {
     /**
      * Get all the RoutingTable entries.
      */
-    public synchronized Collection<? extends RoutingTableEntry> getEntries() {
-        return (Collection<? extends RoutingTableEntry> )table_.values();
+    public synchronized Collection<VectorRoutingTableEntry> getEntries() {
+        return (Collection<VectorRoutingTableEntry> )table_.values();
     }
 
     /** Return the interface on which to send a packet to a given address
@@ -244,7 +245,8 @@ public class VectorRoutingTable implements RoutingTable {
     public synchronized boolean mergeTables(RoutingTable table2, NetIF inter, RouterOptions options) {
         // Logger.getLogger("log").logln(USR.ERROR, "MERGING TABLES");
         boolean changed = false;
-        Collection<VectorRoutingTableEntry> es = (Collection<VectorRoutingTableEntry> )table2.getEntries();
+        Collection<VectorRoutingTableEntry> es = 
+            ((VectorRoutingTable)table2).getEntries();
 
         // there are no entries
         if (es == null) {
@@ -256,7 +258,7 @@ public class VectorRoutingTable implements RoutingTable {
 
         // only process entries if inter is not null
         if (inter != null) {
-            for (VectorRoutingTableEntry e : (Collection<VectorRoutingTableEntry> )getEntries()) {
+            for (VectorRoutingTableEntry e : getEntries()) {
                 // If this entry is on the same interface we are getting
                 // info from but route is longer or no entry then assume
                 // we need updating
@@ -302,7 +304,8 @@ public class VectorRoutingTable implements RoutingTable {
         }
 
         // Add new entries as appropriate
-        for (VectorRoutingTableEntry e : (Collection<VectorRoutingTableEntry> )table2.getEntries()) {
+        for (VectorRoutingTableEntry e : 
+            ((VectorRoutingTable)table2).getEntries()) {
             if (mergeEntry(e, inter, options)) {
                 changed = true;
             }
@@ -447,7 +450,7 @@ public class VectorRoutingTable implements RoutingTable {
         //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NET IF CALLED");
         ArrayList<Address> toRemove = new ArrayList<Address>();
 
-        for (VectorRoutingTableEntry e : (Collection<VectorRoutingTableEntry> )getEntries()) {
+        for (VectorRoutingTableEntry e : getEntries()) {
             //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO REMOVE "+e.getAddress());
             if (netif.equals(e.getNetIF())) {
                 Address addr = e.getAddress();
@@ -519,7 +522,7 @@ public class VectorRoutingTable implements RoutingTable {
         StringBuilder table = new StringBuilder();
         table.append("\n");
 
-        for (VectorRoutingTableEntry e : (Collection<VectorRoutingTableEntry> )getEntries()) {
+        for (VectorRoutingTableEntry e : getEntries()) {
             table.append(e.showTransmitted());
             table.append("\n");
         }
@@ -536,7 +539,7 @@ public class VectorRoutingTable implements RoutingTable {
         StringBuilder table = new StringBuilder();
         table.append("\n");
 
-        Collection<VectorRoutingTableEntry> rtes = (Collection<VectorRoutingTableEntry> )getEntries();
+        Collection<VectorRoutingTableEntry> rtes = getEntries();
 
         for (VectorRoutingTableEntry e : rtes) {
             table.append(e.toString());

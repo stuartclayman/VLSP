@@ -543,7 +543,7 @@ public class GlobalController implements ComponentController {
             boolean acquired = semaphore.tryAcquire(options_.getMaxLag(), TimeUnit.MILLISECONDS);
 
             if (!acquired) {
-                throw new TimeoutException("GlobalController lagging too much");
+                throw new TimeoutException(leadin()+"GlobalController lagging too much");
             }
 
             if (!isActive_) {
@@ -1391,15 +1391,17 @@ public class GlobalController implements ComponentController {
     public JSONObject findAppInfoAsJSON(int appID) throws JSONException {
         BasicRouterInfo bri = findAppInfo(appID);
 
-        System.out.println("AppID: " + appID + " -> " + "BasicRouterInfo: " + bri);
+        Logger.getLogger("log").logln(USR.STDOUT,"AppID: " + appID + " -> " + "BasicRouterInfo: " + bri);
 
         String appName = bri.getAppName(appID);
 
-        System.out.println("AppID: " + appID + " -> " + "AppName: " + appName);
+        Logger.getLogger("log").logln(USR.STDOUT,
+            "AppID: " + appID + " -> " + "AppName: " + appName);
 
         Map<String, Object> data = bri.getApplicationData(appName);
 
-        System.out.println("AppName: " + appName + " => " + "data: " + data);
+        Logger.getLogger("log").logln(USR.STDOUT,
+            "AppName: " + appName + " => " + "data: " + data);
 
 
         JSONObject jsobj = new JSONObject();

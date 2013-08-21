@@ -105,8 +105,8 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * Get all the RoutingTable entries.
      */
-    public synchronized Collection<? extends RoutingTableEntry> getEntries() {
-        return (Collection<? extends RoutingTableEntry> )table_.values();
+    public synchronized Collection<SimpleRoutingTableEntry> getEntries() {
+        return (Collection<SimpleRoutingTableEntry> )table_.values();
     }
 
     /** Return the interface on which to send a packet to a given address
@@ -171,7 +171,8 @@ public class SimpleRoutingTable implements RoutingTable {
         //Logger.getLogger("log").logln(USR.STDOUT, "MERGING TABLES");
 
         boolean changed = false;
-        Collection<SimpleRoutingTableEntry> es = (Collection<SimpleRoutingTableEntry> )table2.getEntries();
+        Collection<SimpleRoutingTableEntry> es = 
+            ((SimpleRoutingTable)table2).getEntries();
 
         // there are no entries
         if (es == null) {
@@ -225,7 +226,7 @@ public class SimpleRoutingTable implements RoutingTable {
         }
 
         // Add new entries as appropriate
-        for (SimpleRoutingTableEntry e : (Collection<SimpleRoutingTableEntry> )table2.getEntries()) {
+        for (SimpleRoutingTableEntry e : ((SimpleRoutingTable) table2).getEntries()) {
             if (mergeEntry(e, inter, options)) {
                 changed = true;
             }

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import usr.logging.*;
 
 /**
  * A probe that talks to a Router and passes on the current lifecycle
@@ -47,14 +48,14 @@ public class RouterLifecycleProbe extends AbstractProbe implements Probe, Router
      * Set the started lifecycle
      */
     public void beginThreadBody() {
-        System.err.println("RouterLifecycleProbe: started");
+        Logger.getLogger("log").logln(USR.STDOUT,"RouterLifecycleProbe: started");
     }
 
     /**
      * Set the stopped lifecycle
      */
     public void endThreadBody() {
-        System.err.println("RouterLifecycleProbe: stopped");
+        Logger.getLogger("log").logln(USR.STDOUT,"RouterLifecycleProbe: stopped");
 
     }
 
@@ -90,12 +91,14 @@ public class RouterLifecycleProbe extends AbstractProbe implements Probe, Router
             } else {
 
                 if (lifecycleValue.equals("STARTED")) {
-                    System.err.println(getName() + " lifecycleValue is STARTED for " + routerName);
+                    Logger.getLogger("log").logln(USR.STDOUT,
+                        getName() + " lifecycleValue is STARTED for " + routerName);
                     ProducerMeasurement lastestM = measure();
                     return lastestM;
 
                 } else if (lifecycleValue.equals("STOPPED")) {
-                    System.err.println(getName() + " lifecycleValue is STOPPED for " + routerName);
+                    Logger.getLogger("log").logln(USR.STDOUT,
+                        getName() + " lifecycleValue is STOPPED for " + routerName);
 
                     ProducerMeasurement lastestM = measure();
                     return lastestM;

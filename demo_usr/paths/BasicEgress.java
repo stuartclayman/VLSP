@@ -231,9 +231,9 @@ public class BasicEgress implements Application {
 
 
         try {
-            usrReaderFuture = executer.submit((Callable)usrReader);
+            usrReaderFuture = executer.submit((Callable <?>)usrReader);
 
-            udpForwarderFuture = executer.submit((Callable)udpForwarder);
+            udpForwarderFuture = executer.submit((Callable <?>)udpForwarder);
 
         } catch (Exception e) {
             Logger.getLogger("log").log(USR.ERROR, e.getMessage());

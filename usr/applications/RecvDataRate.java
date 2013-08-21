@@ -161,11 +161,11 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
     /**
      * Return a map of monitoring data.
      */
-    public Map<String, String> getMonitoringData() {
-        Map theMap = new HashMap<String, String>();
+    public HashMap<String, String> getMonitoringData() {
+        HashMap <String,String>theMap = new HashMap<String, String>();
 
-        theMap.put("diffs", Integer.toString(diffs));
-        theMap.put("count", Integer.toString(count));
+        theMap.put((String)"diffs", (String)Integer.toString(diffs));
+        theMap.put((String)"count", (String)Integer.toString(count));
 
         return theMap;
     }

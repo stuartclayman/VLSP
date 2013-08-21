@@ -65,13 +65,14 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
             }
 
             long lag = System.currentTimeMillis() - expectedStart;
+            System.err.println("Lag is "+lag);
 
             if (lag > controller_.getMaximumLag()) {
                 Logger.getLogger("log").logln(USR.ERROR,
-                                              "Global Controller problem -- "
-                                              + "lag is greater than allowed in options "
-                                              + " allowed: " + controller_.getMaximumLag() + " saw " +
-                                              lag);
+                        leadin()+"Global Controller problem -- "
+                        + "lag is greater than allowed in options "
+                        + " allowed: " + controller_.getMaximumLag() + " saw " +
+                        lag);
                 controller_.deactivate();
             }
 
@@ -149,9 +150,9 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
         try {
             long timeout = time - now;
             Logger.getLogger("log").logln(USR.STDOUT,
-                                          "EVENT: " + "<"
-                                          + lastEventLength_ + "> " + (now - simulationStartTime_) + " @ "
-                                          + now + " waiting " + timeout);
+                "EVENT: " + "<"
+                + lastEventLength_ + "> " + (now - simulationStartTime_) + " @ "
+                + now + " waiting " + timeout);
             synchronized (waitCounter_) {
                 waitCounter_.wait(timeout);
             }
@@ -190,7 +191,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
     /** Adds an event to the schedule in time order
      */
     public void addEvent(Event e) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Time: " + e.getTime() + " Event " + e );
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
+            "Adding Event at time: " + e.getTime() + " Event " + e );
 
         long time = e.getTime();
 
@@ -198,13 +200,13 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
             if (schedule_.get(i).getTime() > time) {
                 // Add at given position in list
                 schedule_.add(i, e);
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Event position " +  i);
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Event position " +  i);
                 return;
             }
         }
 
         schedule_.add(e);   // Add at end of list
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Event position " +  "END");
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Event position " +  "END");
     }
 
     /**

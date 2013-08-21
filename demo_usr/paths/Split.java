@@ -349,7 +349,8 @@ public class Split implements Application {
          */
         LinkedBlockingDeque<Datagram> queue = new LinkedBlockingDeque<Datagram>();
         ExecutorService executer = Executors.newFixedThreadPool(1);
-        Future future = executer.submit(new ReadThread(inSocket, queue));
+        Future future = executer.submit((Callable <?>)
+            new ReadThread(inSocket, queue));
 
 
 
