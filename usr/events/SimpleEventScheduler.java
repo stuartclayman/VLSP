@@ -190,7 +190,7 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
     /** Adds an event to the schedule in time order
      */
     public void addEvent(Event e) {
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Time: " + e.getTime() + " Event " + e );
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Time: " + e.getTime() + " Event " + e );
 
         long time = e.getTime();
 
@@ -198,13 +198,13 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
             if (schedule_.get(i).getTime() > time) {
                 // Add at given position in list
                 schedule_.add(i, e);
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event position " +  i);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Event position " +  i);
                 return;
             }
         }
 
         schedule_.add(e);   // Add at end of list
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event position " +  "END");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Event position " +  "END");
     }
 
     /**
