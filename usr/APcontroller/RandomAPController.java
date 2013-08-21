@@ -22,7 +22,6 @@ public class RandomAPController extends NullAPController {
     /** Controller regular AP update action */
     public void controllerUpdate(long time, GlobalController g) {
         super.controllerUpdate(time, g);
-
         if (gotMinAPs(g)) {
             if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
                 int no = noToRemove(g);

@@ -48,6 +48,9 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
             long expectedStart = 0;
 
             if (ev == null) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              "Run out of events to process");
+                controller_.deactivate();
                 waitForever();
             } else {
                 expectedStart = ev.getTime() + simulationStartTime_;
@@ -58,14 +61,11 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
                 break;
             }
 
-            if (ev == null) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              "Run out of events to process");
-                controller_.deactivate();
-            }
+            
 
             long lag = System.currentTimeMillis() - expectedStart;
-            System.err.println("Lag is "+lag);
+            Logger.getLogger("log").logln(USR.STDOUT,
+                        leadin()+"Lag is "+lag+" starting event "+ev);
 
             if (lag > controller_.getMaximumLag()) {
                 Logger.getLogger("log").logln(USR.ERROR,
@@ -93,6 +93,9 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
                                               + "scheduler in time");
                 controller_.deactivate();
             }
+            lag = System.currentTimeMillis() - expectedStart;
+            Logger.getLogger("log").logln(USR.STDOUT,
+                        leadin()+"Lag is "+lag+" finishing event "+ev);
         }
     }
 

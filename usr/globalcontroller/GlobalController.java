@@ -2120,20 +2120,7 @@ public class GlobalController implements ComponentController {
     }
 
     public JSONObject setAP(int gid, int AP) {
-        //System.out.println("setAP called");
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router " + gid + " now has access point " + AP);
-
-        if (options_.isSimulation()) {
-            return null;
-        }
-
-        try {
-            SetAggPointEvent ev = new SetAggPointEvent(getElapsedTime(), null, gid, AP);
-            JSONObject jsobj = executeEvent(ev);
-            return jsobj;
-        } catch (Exception e) {
-            return null;
-        }
+        return SetAggPointEvent.setAP(gid,AP,this);
     }
 
     public void registerAggPoint(int gid, int AP) {

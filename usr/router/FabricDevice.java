@@ -462,7 +462,7 @@ public class FabricDevice implements FabricDeviceInterface {
         try {
             f = getRouteFabric(dh.datagram);
         } catch (NoRouteToHostException e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoRouteToHostException for transferDatagram " + dh.datagram);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "NoRouteToHostException for transferDatagram " + dh.datagram);
             throw (e);
         }
 
@@ -472,10 +472,10 @@ public class FabricDevice implements FabricDeviceInterface {
             try {
                 return f.addToOutQueue(dh, waker);
             } catch (java.net.NoRouteToHostException e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "NoRouteToHostException for transferDatagram " + dh.datagram);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "NoRouteToHostException for transferDatagram " + dh.datagram);
                 return false;
             } catch (usr.net.InterfaceBlockedException ex) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "InterfaceBlockedException for transferDatagram " + dh.datagram);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "InterfaceBlockedException for transferDatagram " + dh.datagram);
 
                 synchronized (waker) {
                     waker.await(250); 
@@ -595,7 +595,7 @@ class InQueueHandler implements Runnable {
             try {
                 f = fabricDevice_.getRouteFabric(dh.datagram);
             } catch (NoRouteToHostException e) { //  Cannot route
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + " inDroppedPacketNR: InQueueHandler run() NoRouteToHostException for " + dh.datagram);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + " inDroppedPacketNR: InQueueHandler run() NoRouteToHostException for " + dh.datagram);
 
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
                 //Logger.getLogger("log").logln(USR.ERROR, leadin()+"Cannot route " + dh.datagram);
@@ -626,7 +626,7 @@ class InQueueHandler implements Runnable {
                     }
                     break;
                 } catch (NoRouteToHostException e) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "InQueueHandler run NoRouteToHostException");
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "InQueueHandler run NoRouteToHostException");
                     fabricDevice_.inDroppedPacketNR(dh.datagram);
                     break;
                 } catch (InterfaceBlockedException ex) {
