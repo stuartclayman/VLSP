@@ -18,7 +18,7 @@
     <echo message="------ Compiling application"/>
     <mkdir dir="${classes}"/>
     <javac debug="on" srcdir="${sources}" classpath="${external.jars}"
-           target="1.7" includeantruntime="false">
+            includeantruntime="false">
       <!-- destdir="${classes}" -->
       <include name="usr/**" />
       <include name="plugins_usr/**" />
