@@ -88,8 +88,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             time = (long)(nodeCreateDist_.getVariate() * 1000);
         } catch (ProbException x) {
             Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + " Error generating trafficArriveDist variate");
+                leadin() + " Error generating trafficArriveDist variate");
             time = 0;
         }
 
@@ -107,7 +106,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
 
         if ((nodeDeathDist_ == null) || (nodeCreateDist_ == null)) {
             Logger.getLogger("log").logln(USR.ERROR, "WarmUpPeriod option "
-                                          + "does not make sense without node death and create dists");
+                 + "does not make sense without node death and create dists");
             return;
         }
 
@@ -131,8 +130,8 @@ public class ProbabilisticEventEngine extends NullEventEngine {
                     1000;
             } catch (ProbException e) {
                 Logger.getLogger("log").logln(USR.ERROR,
-                                              "Exception thrown in ProbabilisticEventEngine.warmUp "
-                                              + e.getMessage());
+                    "Exception thrown in ProbabilisticEventEngine.warmUp "
+                     + e.getMessage());
                 return;
             }
 
