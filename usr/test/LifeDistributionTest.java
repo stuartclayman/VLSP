@@ -77,7 +77,7 @@ public class LifeDistributionTest {
             System.exit(-1);
         }
 
-        LifeSpanEstimate e = new LifeSpanEstimate();
+        LifeSpanEstimate e = LifeSpanEstimate.getLifeSpanEstimate();
         //double y= e.erf(0.9);
         //System.out.println("Erf 0.5 ="+ y);
         //System.out.println("Inverse ="+ e.inverf(y));

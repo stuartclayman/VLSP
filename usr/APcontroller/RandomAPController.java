@@ -57,7 +57,7 @@ public class RandomAPController extends NullAPController {
             for (Integer node : nodes) {
                 scores[node] = 1.0;
             }
-            ArrayList<Integer> picked = lse_.pickNByScore(no, scores,
+            ArrayList<Integer> picked = pickNByScore(no, scores,
                                                           nodes, true, time);
 
             for (Integer p : picked) {
@@ -91,7 +91,7 @@ public class RandomAPController extends NullAPController {
             for (Integer node : nodes) {
                 scores[node] = 1.0;
             }
-            ArrayList<Integer> picked = lse_.pickNByScore(no, scores,
+            ArrayList<Integer> picked = pickNByScore(no, scores,
                                                           nodes, false, time);
 
             for (Integer p : picked) {

@@ -19,12 +19,14 @@ public class LifeSpanEstimate {
     HashMap<Integer, Long> births_;    // birth time of nodes which are alive
     ArrayList<Integer> APDeaths_;     // Same for Agg Points
     HashMap<Integer, Long> APBirths_;
-    RouterOptions options_;     // Options for simulations
+    RouterOptions options_ = null;     // Options for simulations
     ArrayList<Integer> KMTime_ = null;
     ArrayList<Double> KMProb_ = null;
     int T_;
     double mu_ = 0.0;      // Parameters of lognormal tail fit
     double sigma_ = 0.0;
+
+    static LifeSpanEstimate mainLSE_= null;
 
     static final int MIN_DEATHS = 5;
     static final int MIN_LIVE = 0;
@@ -37,92 +39,68 @@ public class LifeSpanEstimate {
     static final double TAIL_MISS_PERCENT = 0.0;    // Per centage of KM
     // estimator points to be used to fit lognormal parms
 
-
-    public LifeSpanEstimate(RouterOptions o) {
+    private LifeSpanEstimate(RouterOptions o) {
         options_ = o;
-        deaths_ = new ArrayList<Integer>();
-        births_ = new HashMap<Integer, Long>();
-        APDeaths_ = new ArrayList<Integer>();
-        APBirths_ = new HashMap<Integer, Long>();
+        commonInit();
     }
 
-    public LifeSpanEstimate() {
+    private LifeSpanEstimate() {
         options_ = null;
-        deaths_ = new ArrayList<Integer>();
-        births_ = new HashMap<Integer, Long>();
-
-        APDeaths_ = new ArrayList<Integer>();
-        APBirths_ = new HashMap<Integer, Long>();
-    }
-
-    /* Given a list of nodes, scores and lifetimes, pick n of them
-     * with the highest score, possibly with weighting due to lifespan
-     */
-    public ArrayList<Integer> pickNByScore(int N, double[] score, ArrayList<Integer> nodes, boolean max, long time) {
-        int noReturn = Math.min(nodes.size(), N);
-        ArrayList<Integer> picked = new ArrayList<Integer>();
-        double [] fixedScore;
-
-        if (options_ != null && options_.getAPLifeBias() >= 0.0) {
-            fixedScore = weightScoresByLife(nodes, score, time);
-        } else {
-            fixedScore = score;
-        }
-
-        for (int i = 0; i< noReturn; i++) {
-            double bestScore = 0.0;
-            int bestNode = -1;
-
-            for (Integer n : nodes) {
-                if (picked.contains(n)) {
-                    continue;
-                }
-
-                if (bestNode == -1 || (max && fixedScore[n] > bestScore) ||
-                    (!max & fixedScore[n] < bestScore)) {
-                    bestScore = fixedScore[n];
-                    bestNode = n;
-                }
-            }
-            picked.add(bestNode);
-            //System.err.println("Picked "+bestNode+" score "+bestScore+" max "+max);
-        }
-        return picked;
+        commonInit();
     }
 
     /**
+     * Wrapper for constructor allows user to get a new lifespan estimator or reuse an existing one
+     * @param RouterOptions
+     * @return LifeSpanEstimate
+     */
+    public static LifeSpanEstimate getLifeSpanEstimate(RouterOptions o) {
+    	if (mainLSE_ == null) {
+    		mainLSE_= new LifeSpanEstimate(o);
+    	} else {
+    		mainLSE_.setOptions(o);
+    	}
+    	return mainLSE_;
+    }
+
+    private void setOptions(RouterOptions o)
+    {
+    	options_= o;
+    }
+
+    /**
+     * Wrapper for constructor allows user to get a new lifespan estimator or reuse an existing one
+     * @param RouterOptions
+     * @return LifeSpanEstimate
+     */
+    public static LifeSpanEstimate getLifeSpanEstimate() {
+    	if (mainLSE_ == null) {
+    		mainLSE_= new LifeSpanEstimate();
+    	}
+    	return mainLSE_;
+    }
+
+    private void commonInit() {
+        deaths_ = new ArrayList<Integer>();
+        births_ = new HashMap<Integer, Long>();
+
+        APDeaths_ = new ArrayList<Integer>();
+        APBirths_ = new HashMap<Integer, Long>();
+    }
+
+    public double getAPLifeBias()
+    {
+    	return options_.getAPLifeBias();
+    }
+
+    /** Update lifespan estimates as result of latest data
      *
      */
-    double [] weightScoresByLife(ArrayList<Integer> nodes, double [] score, long time) {
-        nodes.size();
-        double [] lifeEstimates = new double[score.length];
-        double lifeBias = options_.getAPLifeBias();
-
-        // Prepare for the lifespan estimates
-        sortDeaths();
-        updateKMEstimate(time);
-        fitTail();
-        // Now get life Estimates for each node
-        double maxEstimate = 0.0;
-
-        for (Integer node : nodes) {
-            int lifeSoFar = getNodeLife(node, time);
-            lifeEstimates[node] = getKMTailLifeEst(lifeSoFar)- lifeSoFar;
-
-            if (lifeEstimates[node] > maxEstimate) {
-                maxEstimate = lifeEstimates[node];
-            }
-        }
-
-        for (Integer node : nodes) {
-            //System.err.println("Score was "+score[node]);
-            score[node] *= Math.pow(lifeEstimates[node]/maxEstimate, lifeBias);
-/*			System.err.println("Score is now "+score[node]);
-                  System.err.println("Node "+node+" life so far "+getNodeLife(node,time)+
-                " estimate "+lifeEstimates[node]+" factor "+ Math.pow(lifeEstimates[node]/maxEstimate, lifeBias));*/
-        }
-
-        return score;
+    public void updateEstimates(long time)
+    {
+    	sortDeaths();
+    	updateKMEstimate(time);
+    	fitTail();
     }
 
     /** Plot (return co-ords of a graph of the Kaplan--Meier Estimator */

@@ -62,7 +62,7 @@ public class HotSpotAPController extends NullAPController {
         for (int e : elect) {
             scores[e] = getHotSpotScore(e, g);
         }
-        ArrayList<Integer> picked = lse_.pickNByScore(no, scores,
+        ArrayList<Integer> picked = pickNByScore(no, scores,
                                                       elect, false, time);
 
         for (Integer p : picked) {
@@ -85,7 +85,7 @@ public class HotSpotAPController extends NullAPController {
         for (int e : elect) {
             scores[e] = getHotSpotScore(e, g);
         }
-        ArrayList<Integer> picked = lse_.pickNByScore(no, scores,
+        ArrayList<Integer> picked = pickNByScore(no, scores,
                                                       elect, true, time);
 
         for (Integer p : picked) {

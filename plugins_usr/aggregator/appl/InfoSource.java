@@ -345,8 +345,8 @@ public ApplicationResponse init(String[] args){
 
             case 'd': {
                 Scanner scd = new Scanner(argValue);
-                scd.close();
                 int t = scd.nextInt();
+                scd.close();
                 setInitialDelay(t);
                 break;
             }

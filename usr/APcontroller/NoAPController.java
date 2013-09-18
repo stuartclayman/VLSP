@@ -18,7 +18,7 @@ public class NoAPController implements APController {
     LifeSpanEstimate lse_ = null;
 
     NoAPController () {
-        lse_ = new LifeSpanEstimate();
+        lse_ = LifeSpanEstimate.getLifeSpanEstimate();
     }
 
     /** Return number of access points */

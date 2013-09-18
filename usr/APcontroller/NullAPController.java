@@ -29,7 +29,7 @@ public class NullAPController implements APController {
         APCosts_ = new ArrayList<Integer>();
         APs_.add(0);    // Make arrays offset 1
         APCosts_.add(0);
-        lse_ = new LifeSpanEstimate(o);
+        lse_ = LifeSpanEstimate.getLifeSpanEstimate(o);
         options_ = o;
     }
 
@@ -60,6 +60,73 @@ public class NullAPController implements APController {
         return truth;
     }
 
+    /* Given a list of nodes, scores and lifetimes, pick n of them
+     * with the highest score, possibly with weighting due to lifespan
+     */
+    public ArrayList<Integer> pickNByScore(int N, double[] score, ArrayList<Integer> nodes, boolean max, long time) {
+        int noReturn = Math.min(nodes.size(), N);
+        ArrayList<Integer> picked = new ArrayList<Integer>();
+        double [] fixedScore;
+
+        if (options_ != null && options_.getAPLifeBias() >= 0.0) {
+            fixedScore = weightScoresByLife(nodes, score, time);
+        } else {
+            fixedScore = score;
+        }
+
+        for (int i = 0; i< noReturn; i++) {
+            double bestScore = 0.0;
+            int bestNode = -1;
+
+            for (Integer n : nodes) {
+                if (picked.contains(n)) {
+                    continue;
+                }
+
+                if (bestNode == -1 || (max && fixedScore[n] > bestScore) ||
+                    (!max & fixedScore[n] < bestScore)) {
+                    bestScore = fixedScore[n];
+                    bestNode = n;
+                }
+            }
+            picked.add(bestNode);
+            //System.err.println("Picked "+bestNode+" score "+bestScore+" max "+max);
+        }
+        return picked;
+    }
+
+    /**
+     *
+     */
+    private double [] weightScoresByLife(ArrayList<Integer> nodes, double [] score, long time) {
+        nodes.size();
+        double [] lifeEstimates = new double[score.length];
+        double lifeBias = lse_.getAPLifeBias();
+
+        // Prepare for the lifespan estimates
+        lse_.updateEstimates(time);
+        // Now get life Estimates for each node
+        double maxEstimate = 0.0;
+
+        for (Integer node : nodes) {
+            int lifeSoFar = lse_.getNodeLife(node, time);
+            lifeEstimates[node] = lse_.getKMTailLifeEst(lifeSoFar)- lifeSoFar;
+
+            if (lifeEstimates[node] > maxEstimate) {
+                maxEstimate = lifeEstimates[node];
+            }
+        }
+
+        for (Integer node : nodes) {
+            //System.err.println("Score was "+score[node]);
+            score[node] *= Math.pow(lifeEstimates[node]/maxEstimate, lifeBias);
+/*			System.err.println("Score is now "+score[node]);
+                  System.err.println("Node "+node+" life so far "+getNodeLife(node,time)+
+                " estimate "+lifeEstimates[node]+" factor "+ Math.pow(lifeEstimates[node]/maxEstimate, lifeBias));*/
+        }
+
+        return score;
+    }
     /** Return AP for given gid (or 0 if none) */
     @Override
 	public int getAP(int gid) {

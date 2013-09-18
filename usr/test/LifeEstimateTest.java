@@ -77,7 +77,7 @@ public class LifeEstimateTest {
             System.exit(-1);
         }
 
-        LifeSpanEstimate e = new LifeSpanEstimate();
+        LifeSpanEstimate e = LifeSpanEstimate.getLifeSpanEstimate();
         //System.err.println("Gamma (1.2) "+MathFunctions.completeGamma(1.2));
         //System.err.println("Gamma (0.5) "+MathFunctions.completeGamma(0.5));
         //System.err.println("LowerGamma (0.5,1.2) "+MathFunctions.incompleteLowerGamma(0.5,1.2));
