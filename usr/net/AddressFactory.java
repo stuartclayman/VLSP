@@ -1,8 +1,9 @@
 package usr.net;
 
-import usr.logging.*;
-import java.util.ArrayList;
 import java.lang.reflect.Constructor;
+
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /**
  * The AddressFactory will create a new Address object based on

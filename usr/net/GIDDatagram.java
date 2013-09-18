@@ -1,8 +1,6 @@
 package usr.net;
 
 import java.nio.ByteBuffer;
-import usr.logging.*;
-import java.net.UnknownHostException;
 
 /**
  * A simple implementation of a GID Datagram.

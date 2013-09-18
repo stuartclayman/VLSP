@@ -1,11 +1,12 @@
 package usr.router.command;
 
-import usr.console.*;
-import cc.clayman.console.ManagementConsole;
-import usr.logging.*;
-import usr.router.*;
-import org.simpleframework.http.Response;
 import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
+import usr.console.AbstractRestCommand;
+import usr.router.RouterController;
+import usr.router.RouterManagementConsole;
+import cc.clayman.console.ManagementConsole;
 
 /**
  * A Command processes a command handled by the ManagementConsole

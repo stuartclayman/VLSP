@@ -3,10 +3,12 @@
  */
 package usr.events;
 
-import usr.logging.*;
-import java.util.*;
-import java.util.concurrent.*;
-import usr.globalcontroller.*;
+import java.util.ArrayList;
+import java.util.concurrent.TimeoutException;
+
+import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 public class SimpleEventScheduler implements EventScheduler, Runnable {
     private ArrayList<Event> schedule_ = null;

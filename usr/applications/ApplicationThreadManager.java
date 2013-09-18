@@ -1,7 +1,9 @@
 package usr.applications;
 
-import usr.logging.*;
 import java.util.HashMap;
+
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /**
  * A Thread Manager for USR Applications.

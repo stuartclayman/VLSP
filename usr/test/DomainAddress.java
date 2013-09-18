@@ -1,13 +1,14 @@
 package usr.test;
 
-import java.nio.ByteBuffer;
-import usr.logging.*;
-import usr.net.*;
-import java.util.Scanner;
-import java.util.regex.MatchResult;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.Scanner;
+import java.util.regex.MatchResult;
+
+import usr.net.Address;
+import usr.net.Size4;
 
 /**
  * An Domain Address.

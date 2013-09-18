@@ -1,9 +1,9 @@
 package usr.APcontroller;
 
-import java.util.*;
-import usr.logging.*;
-import usr.router.Router;
+import java.util.ArrayList;
+
 import usr.globalcontroller.GlobalController;
+import usr.router.Router;
 import usr.router.RouterOptions;
 
 /** Implements PressureAP Controller -- default actions are from NullAPController*/

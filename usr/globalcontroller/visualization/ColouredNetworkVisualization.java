@@ -1,13 +1,13 @@
 package usr.globalcontroller.visualization;
 
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import usr.common.BasicRouterInfo;
 import usr.globalcontroller.GlobalController;
 import usr.globalcontroller.TrafficInfo;
-import usr.common.*;
-import usr.APcontroller.*;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.io.PrintStream;
 
 
 /**

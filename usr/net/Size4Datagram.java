@@ -1,8 +1,6 @@
 package usr.net;
 
 import java.nio.ByteBuffer;
-import usr.logging.*;
-import java.net.UnknownHostException;
 
 /**
  * An abstract Foundation class for Datagrams that use Size4 addresses.

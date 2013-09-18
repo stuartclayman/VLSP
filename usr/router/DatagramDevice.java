@@ -1,11 +1,8 @@
 package usr.router;
-import java.net.*;
+import java.net.NoRouteToHostException;
+
 import usr.net.Address;
-import usr.logging.*;
 import usr.net.Datagram;
-import java.util.Map;
-import java.net.Socket;
-import java.io.IOException;
 
 /**
  * A Minimal version of netIF for devices which can ship packets but

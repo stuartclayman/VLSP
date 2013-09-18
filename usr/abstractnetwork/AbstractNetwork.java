@@ -1,9 +1,8 @@
 package usr.abstractnetwork;
 
-import java.lang.*;
-import java.util.*;
-import java.io.*;
-import java.net.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This is a simple representation of an abstract network

@@ -1,17 +1,6 @@
 package usr.router;
 
-import java.util.List;
-import usr.logging.*;
-import java.util.ArrayList;
-import usr.net.*;
-import java.net.*;
-import usr.protocol.Protocol;
-import java.nio.ByteBuffer;
-import java.lang.*;
-import java.util.*;
-import java.net.NoRouteToHostException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import usr.logging.Logger;
 
 /**
  * A RouterFabric within UserSpaceRouting.

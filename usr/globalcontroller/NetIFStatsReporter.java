@@ -2,15 +2,18 @@
 
 package usr.globalcontroller;
 
-import usr.router.*;
-import usr.logging.*;
-import usr.common.ANSI;
-import eu.reservoir.monitoring.core.*;
-import eu.reservoir.monitoring.core.table.*;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
-import usr.events.*;
+import java.util.List;
+
+import usr.common.ANSI;
+import eu.reservoir.monitoring.core.Measurement;
+import eu.reservoir.monitoring.core.ProbeValue;
+import eu.reservoir.monitoring.core.Reporter;
+import eu.reservoir.monitoring.core.table.Table;
+import eu.reservoir.monitoring.core.table.TableAttribute;
+import eu.reservoir.monitoring.core.table.TableRow;
+import eu.reservoir.monitoring.core.table.TableValue;
 
 /**
  * A NetIFStatsReporter collects measurements sent by

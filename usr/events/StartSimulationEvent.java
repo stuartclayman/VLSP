@@ -1,10 +1,11 @@
 package usr.events;
 
-import usr.logging.*;
-import java.lang.*;
-import usr.globalcontroller.*;
-import usr.engine.*;
-import us.monoid.json.*;
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.engine.EventEngine;
+import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class StartSimulationEvent extends AbstractEvent {

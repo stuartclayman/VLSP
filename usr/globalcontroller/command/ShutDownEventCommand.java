@@ -1,14 +1,17 @@
 package usr.globalcontroller.command;
 
-import usr.protocol.MCRP;
-import usr.logging.*;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.Request;
-import java.io.PrintStream;
 import java.io.IOException;
-import us.monoid.json.*;
-import usr.events.*;
-import java.util.concurrent.*;
+import java.io.PrintStream;
+import java.util.concurrent.TimeoutException;
+
+import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
+import us.monoid.json.JSONObject;
+import usr.events.EndSimulationEvent;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.protocol.MCRP;
 
 /**
  * A ShutDownCommand

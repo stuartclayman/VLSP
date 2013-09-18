@@ -1,8 +1,10 @@
 package demo_usr.viewer;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
 import demo_usr.httpd.NanoHTTPD;
-import java.io.*;
-import java.util.*;
 
 /**
  * An example of subclassing NanoHTTPD to make a custom HTTP server.

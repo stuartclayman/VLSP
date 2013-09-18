@@ -1,16 +1,18 @@
 package usr.router;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.protocol.Protocol;
-import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.net.NoRouteToHostException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.HashMap;
-import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.net.Datagram;
+import usr.protocol.Protocol;
 
 /**
  * The AppSocketMux class allocates pseudo sockets as as application

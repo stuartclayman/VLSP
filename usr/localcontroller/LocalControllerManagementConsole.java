@@ -1,12 +1,24 @@
 package usr.localcontroller;
 
-import usr.console.*;
-import usr.logging.*;
-import java.net.*;
-import usr.localcontroller.command.*;
-import java.nio.channels.SocketChannel;
-import usr.common.LocalHostInfo;
-import usr.common.BasicRouterInfo;
+import usr.console.ComponentController;
+import usr.console.USRRestConsole;
+import usr.localcontroller.command.ConnectRoutersCommand;
+import usr.localcontroller.command.EndLinkCommand;
+import usr.localcontroller.command.EndRouterCommand;
+import usr.localcontroller.command.GetRouterStatsCommand;
+import usr.localcontroller.command.LocalCheckCommand;
+import usr.localcontroller.command.MonitoringStartCommand;
+import usr.localcontroller.command.MonitoringStopCommand;
+import usr.localcontroller.command.NewRouterCommand;
+import usr.localcontroller.command.OnRouterCommand;
+import usr.localcontroller.command.QuitCommand;
+import usr.localcontroller.command.ReportAPCommand;
+import usr.localcontroller.command.RequestRouterStatsCommand;
+import usr.localcontroller.command.RouterConfigCommand;
+import usr.localcontroller.command.SetAPCommand;
+import usr.localcontroller.command.SetLinkWeightCommand;
+import usr.localcontroller.command.ShutDownCommand;
+import usr.localcontroller.command.UnknownCommand;
 
 /**
  * A ManagementConsole listens for the LocalController.

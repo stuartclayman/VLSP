@@ -1,13 +1,6 @@
 package usr.router;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.protocol.Protocol;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.nio.ByteBuffer;
-import java.util.concurrent.LinkedBlockingQueue;
+import usr.net.Datagram;
 
 /** A Fabric Device takes in packets from a DatagramDevice and
    eventually outputs them to a DatagramDevice -- the packets should

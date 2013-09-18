@@ -1,7 +1,7 @@
 package usr.console;
 
-import org.simpleframework.http.Response;
 import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
 
 /**
  * A Command object processes a command handled by the ManagementConsole

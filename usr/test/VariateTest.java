@@ -1,19 +1,17 @@
 package usr.test;
 
 
-import rgc.probdistributions.*;
-import usr.logging.*;
+import java.io.File;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.*;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import java.io.*;
-import rgc.mathfunctions.MathFunctions;
+
+import rgc.probdistributions.ProbDistribution;
 
 public class VariateTest {
     public static void main(String[] args) {

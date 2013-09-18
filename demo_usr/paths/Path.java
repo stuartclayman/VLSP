@@ -1,8 +1,10 @@
 package demo_usr.paths;
 
-import us.monoid.json.*;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
 import demo_usr.rest.VimClient;
 
 /**

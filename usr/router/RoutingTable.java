@@ -1,8 +1,8 @@
 package usr.router;
 
-import java.util.*;
-import usr.logging.*;
-import usr.net.*;
+import java.util.Collection;
+
+import usr.net.Address;
 
 public interface RoutingTable {
 

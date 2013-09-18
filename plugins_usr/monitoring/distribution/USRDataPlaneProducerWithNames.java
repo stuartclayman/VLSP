@@ -5,19 +5,21 @@
 
 package plugins_usr.monitoring.distribution;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutput;
+
 import usr.net.SocketAddress;
-import eu.reservoir.monitoring.core.Measurement;
-import eu.reservoir.monitoring.core.DataSourceDelegate;
 import eu.reservoir.monitoring.core.DataSourceDelegateInteracter;
+import eu.reservoir.monitoring.core.ID;
 import eu.reservoir.monitoring.core.ProbeMeasurement;
 import eu.reservoir.monitoring.core.TypeException;
-import eu.reservoir.monitoring.core.ID;
-import eu.reservoir.monitoring.core.plane.*;
-import eu.reservoir.monitoring.distribution.*;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.DataOutput;
-import java.io.IOException;
+import eu.reservoir.monitoring.core.plane.DataPlane;
+import eu.reservoir.monitoring.core.plane.DataPlaneMessage;
+import eu.reservoir.monitoring.core.plane.MeasurementMessage;
+import eu.reservoir.monitoring.distribution.MeasurementEncoder;
+import eu.reservoir.monitoring.distribution.MeasurementEncoderWithNames;
+import eu.reservoir.monitoring.distribution.Transmitting;
+import eu.reservoir.monitoring.distribution.XDRDataOutputStream;
 
 /**
  * A USRDataPlaneProducerWithNames is a DataPlane implementation

@@ -5,9 +5,18 @@
 
 package plugins_usr.aggregator.appl;
 
-import eu.reservoir.monitoring.core.*;
-import java.util.*;
+import java.util.ArrayList;
+
 import eu.reservoir.monitoring.appl.host.linux.CPUDev;
+import eu.reservoir.monitoring.core.AbstractProbe;
+import eu.reservoir.monitoring.core.DefaultProbeAttribute;
+import eu.reservoir.monitoring.core.DefaultProbeValue;
+import eu.reservoir.monitoring.core.Probe;
+import eu.reservoir.monitoring.core.ProbeAttributeType;
+import eu.reservoir.monitoring.core.ProbeMeasurement;
+import eu.reservoir.monitoring.core.ProbeValue;
+import eu.reservoir.monitoring.core.ProducerMeasurement;
+import eu.reservoir.monitoring.core.Rational;
 
 /**
  * A probe to get cpu info on a Linux system.

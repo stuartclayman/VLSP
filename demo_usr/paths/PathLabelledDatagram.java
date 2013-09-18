@@ -1,7 +1,11 @@
 package demo_usr.paths;
 
-import usr.net.*;
 import java.nio.ByteBuffer;
+
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.net.Datagram;
+import usr.net.Size4;
 
 /**
  * A PathLabelledDatagram holds all the original datagram payload

@@ -1,9 +1,7 @@
 package usr.net;
 
 import java.io.IOException;
-import usr.logging.*;
 import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 /**

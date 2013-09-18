@@ -1,14 +1,16 @@
 package usr.globalcontroller.command;
 
-import usr.protocol.MCRP;
-import usr.logging.*;
-import java.util.Scanner;
-import java.net.UnknownHostException;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.Request;
-import java.io.PrintStream;
 import java.io.IOException;
-import us.monoid.json.*;
+import java.io.PrintStream;
+
+import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.protocol.MCRP;
 
 /**
  * The REPORT_AP command selets whether a router is or is not

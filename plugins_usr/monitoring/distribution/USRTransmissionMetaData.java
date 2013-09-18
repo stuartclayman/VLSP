@@ -5,9 +5,10 @@
 
 package plugins_usr.monitoring.distribution;
 
-import usr.net.*;
-import eu.reservoir.monitoring.distribution.MetaData;
 import java.io.Serializable;
+
+import usr.net.Address;
+import eu.reservoir.monitoring.distribution.MetaData;
 
 /**
  * Information about a transmission.

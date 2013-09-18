@@ -1,17 +1,13 @@
 package usr.output;
 
-import usr.logging.*;
-import java.util.*;
 import java.io.PrintStream;
-import usr.globalcontroller.GlobalController;
-import usr.globalcontroller.GlobalController;
-import usr.events.*;
-import us.monoid.json.*;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
+
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.w3c.dom.*;
+
+import us.monoid.json.JSONObject;
+import usr.events.Event;
+import usr.globalcontroller.GlobalController;
 
 /** Class to output network stuff */
 public class OutputStabilityMetrics implements OutputFunction {

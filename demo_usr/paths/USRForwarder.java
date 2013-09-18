@@ -1,20 +1,16 @@
 package demo_usr.paths;
 
-import usr.net.*;
-import usr.logging.*;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.net.UnknownHostException;
-import java.net.SocketException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.Scanner;
-import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.CountDownLatch;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.Datagram;
+import usr.net.SocketAddress;
 
 
 /**

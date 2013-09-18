@@ -2,18 +2,32 @@
 
 package usr.router;
 
-import usr.router.*;
-import usr.applications.ApplicationHandle;
-import usr.applications.RuntimeMonitoring;
-import eu.reservoir.monitoring.core.*;
-import eu.reservoir.monitoring.core.list.*;
-import eu.reservoir.monitoring.core.table.*;
-import eu.reservoir.monitoring.appl.datarate.*;
-import java.util.Collection;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
+
+import usr.applications.ApplicationHandle;
+import usr.applications.RuntimeMonitoring;
+import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
+import eu.reservoir.monitoring.core.DefaultProbeAttribute;
+import eu.reservoir.monitoring.core.DefaultProbeValue;
+import eu.reservoir.monitoring.core.Probe;
+import eu.reservoir.monitoring.core.ProbeAttributeType;
+import eu.reservoir.monitoring.core.ProbeMeasurement;
+import eu.reservoir.monitoring.core.ProbeValue;
+import eu.reservoir.monitoring.core.ProducerMeasurement;
+import eu.reservoir.monitoring.core.list.DefaultMList;
+import eu.reservoir.monitoring.core.list.MList;
+import eu.reservoir.monitoring.core.table.DefaultTable;
+import eu.reservoir.monitoring.core.table.DefaultTableHeader;
+import eu.reservoir.monitoring.core.table.DefaultTableRow;
+import eu.reservoir.monitoring.core.table.DefaultTableValue;
+import eu.reservoir.monitoring.core.table.Table;
+import eu.reservoir.monitoring.core.table.TableHeader;
+import eu.reservoir.monitoring.core.table.TableProbeAttribute;
+import eu.reservoir.monitoring.core.table.TableRow;
+import eu.reservoir.monitoring.core.table.TableValue;
 
 /**
  * A probe that talks to a Router can collects the stats

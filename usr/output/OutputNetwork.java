@@ -1,13 +1,19 @@
 package usr.output;
 
 import java.io.PrintStream;
-import usr.globalcontroller.GlobalController;
-import usr.globalcontroller.visualization.*;
-import usr.events.Event;
-import java.lang.reflect.*;
-import us.monoid.json.*;
-import org.xml.sax.SAXException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
+import us.monoid.json.JSONObject;
+import usr.events.Event;
+import usr.globalcontroller.GlobalController;
+import usr.globalcontroller.visualization.ShowAPCostsVisualization;
+import usr.globalcontroller.visualization.ShowAPScoreVisualization;
+import usr.globalcontroller.visualization.ShowAPVisualization;
+import usr.globalcontroller.visualization.Visualization;
 
 /** Class to output network stuff */
 public class OutputNetwork implements OutputFunction {

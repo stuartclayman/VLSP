@@ -1,10 +1,12 @@
 package usr.APcontroller;
 
-import java.util.*;
-import usr.router.RouterController;
+import java.util.ArrayList;
+
 import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.router.RouterController;
 import usr.router.RouterOptions;
-import usr.logging.*;
 
 /** Implements Random AP Controller -- default actions are from NullAPController*/
 

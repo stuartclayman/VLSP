@@ -1,13 +1,19 @@
 package demo_usr.paths;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.applications.*;
-import java.net.UnknownHostException;
-import java.net.SocketException;
 import java.util.Scanner;
-import java.nio.ByteBuffer;
-import us.monoid.json.*;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.applications.Application;
+import usr.applications.ApplicationResponse;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.net.DatagramSocket;
+import usr.net.SocketAddress;
 
 /**
  * An application for adapting an Egress node

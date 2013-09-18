@@ -1,12 +1,8 @@
 package usr.router;
 
-import java.net.*;
-import usr.net.Address;
-import usr.logging.*;
-import usr.net.Datagram;
-import java.util.Map;
-import java.net.Socket;
 import java.io.IOException;
+
+import usr.net.Address;
 
 /**
  * A Network Interface for a Router.

@@ -1,21 +1,22 @@
 package usr.interactor;
 
-import usr.protocol.MCRP;
-import usr.logging.*;
-import usr.common.ANSI;
-import usr.net.Address;
-import usr.net.AddressFactory;
-import java.net.Socket;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.net.URI;
-import java.io.*;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Scanner;
-import us.monoid.web.*;
-import us.monoid.json.*;
+import java.util.List;
+
+import us.monoid.json.JSONArray;
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import us.monoid.web.Resty;
+import usr.common.ANSI;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.protocol.MCRP;
 
 
 /**

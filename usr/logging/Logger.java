@@ -1,18 +1,14 @@
 // Logger.java
 
 package usr.logging;
-import usr.logging.*;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.io.PrintWriter;
-import java.io.PrintStream;
-import java.io.IOException;
-import java.nio.channels.ByteChannel;
-import java.nio.ByteBuffer;
+import java.util.Map;
 
 
 /**

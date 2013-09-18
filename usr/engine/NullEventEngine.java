@@ -3,10 +3,10 @@
 
 package usr.engine;
 
-import usr.globalcontroller.*;
-import usr.logging.*;
-import usr.events.*;
-import us.monoid.json.*;
+import us.monoid.json.JSONObject;
+import usr.events.Event;
+import usr.events.EventScheduler;
+import usr.globalcontroller.GlobalController;
 
 public class NullEventEngine implements EventEngine {
     /** Contructor */

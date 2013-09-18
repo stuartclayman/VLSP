@@ -1,14 +1,14 @@
 package usr.applications;
 
-import usr.logging.*;
-import usr.router.*;
-import java.util.HashMap;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Collection;
-import java.util.concurrent.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.router.Router;
 
 /**
  * The ApplicationManager is reponsible for starting and stopping

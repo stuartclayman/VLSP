@@ -1,8 +1,8 @@
 package usr.router;
 
 import java.util.List;
-import usr.logging.*;
-import usr.net.*;
+
+import usr.net.Address;
 
 /**
  * A RouterFabric within UserSpaceRouting.

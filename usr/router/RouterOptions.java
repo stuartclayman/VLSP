@@ -2,21 +2,31 @@
  */
 package usr.router;
 
-import usr.logging.*;
-import java.io.*;
+import java.io.File;
+import java.io.StringReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.lang.reflect.*;
-import usr.engine.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.*;
-import usr.net.DatagramFactory;
-import javax.xml.parsers.DocumentBuilderFactory;
+
 import javax.xml.parsers.DocumentBuilder;
-import org.xml.sax.SAXException;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import rgc.xmlparse.*;
-import usr.net.*;
+
+import rgc.xmlparse.ReadXMLUtils;
+import rgc.xmlparse.XMLNoTagException;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
 import usr.protocol.Protocol;
 
 

@@ -5,11 +5,16 @@
 
 package plugins_usr.monitoring.distribution;
 
-import usr.net.*;
-import eu.reservoir.monitoring.distribution.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import usr.net.Address;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.net.DatagramSocket;
+import usr.net.SocketAddress;
+import eu.reservoir.monitoring.distribution.Transmitting;
 
 /**
  * This is a USR transmitter for monitoring messages

@@ -1,36 +1,29 @@
 package usr.router;
 
-import usr.console.*;
-import cc.clayman.console.ManagementConsole;
-import usr.logging.*;
-import usr.applications.ApplicationHandle;
-import usr.applications.ApplicationResponse;
-import usr.applications.ApplicationManager;
-import usr.applications.Ping;
-import java.util.Scanner;
-import java.util.Queue;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Collection;
+import java.lang.reflect.Constructor;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.concurrent.*;
-import java.net.*;
-import java.io.*;
-import java.nio.*;
-import java.nio.charset.Charset;
-import java.nio.channels.SocketChannel;
-import usr.protocol.*;
-import usr.net.*;
-import usr.APcontroller.*;
-import eu.reservoir.monitoring.core.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import usr.APcontroller.APController;
+import usr.APcontroller.APInfo;
+import usr.APcontroller.ConstructAPController;
+import usr.applications.ApplicationHandle;
+import usr.applications.ApplicationManager;
+import usr.applications.ApplicationResponse;
+import usr.console.ComponentController;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import cc.clayman.console.ManagementConsole;
+import eu.reservoir.monitoring.appl.BasicDataSource;
+import eu.reservoir.monitoring.appl.datarate.EveryNMilliseconds;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
-import eu.reservoir.monitoring.appl.BasicDataSource;
-import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
-import eu.reservoir.monitoring.appl.datarate.EveryNMilliseconds;
-import java.net.InetSocketAddress;
-import java.lang.reflect.Constructor;
 
 
 /**

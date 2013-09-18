@@ -1,13 +1,16 @@
 package usr.APcontroller;
 
-import java.util.*;
-import usr.logging.*;
-import usr.router.Router;
-import usr.globalcontroller.GlobalController;
-import usr.router.RouterOptions;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+import rgc.mathfunctions.MathFunctions;
+import rgc.probdistributions.ProbElement;
 import usr.common.Pair;
-import rgc.mathfunctions.*;
-import rgc.probdistributions.*;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.router.RouterOptions;
 /** Produces estimates of life spans given information about node births
    and deaths*/
 

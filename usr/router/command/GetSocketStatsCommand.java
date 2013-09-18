@@ -1,19 +1,22 @@
 package usr.router.command;
 
-import usr.protocol.MCRP;
-import usr.logging.*;
-import usr.router.RouterPort;
-import usr.router.NetIF;
-import usr.router.NetStats;
-import usr.router.AppSocketMux;
-import usr.net.Address;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
-import org.simpleframework.http.Response;
+
 import org.simpleframework.http.Request;
-import java.io.PrintStream;
-import java.io.IOException;
-import us.monoid.json.*;
+import org.simpleframework.http.Response;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.protocol.MCRP;
+import usr.router.AppSocketMux;
+import usr.router.NetIF;
+import usr.router.NetStats;
+import usr.router.RouterPort;
 
 /**
  * The GET_SOCKET_STATS command.

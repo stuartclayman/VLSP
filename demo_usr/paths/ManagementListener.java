@@ -1,16 +1,13 @@
 package demo_usr.paths;
 
-import usr.net.*;
-import usr.logging.*;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.net.UnknownHostException;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.CountDownLatch;
-import us.monoid.json.*;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import us.monoid.json.JSONObject;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Datagram;
 
 
 /**

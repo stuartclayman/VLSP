@@ -1,10 +1,8 @@
 package usr.events;
 
-import usr.logging.*;
-import java.lang.*;
-import usr.globalcontroller.*;
-import usr.engine.*;
-import us.monoid.json.*;
+import us.monoid.json.JSONObject;
+import usr.engine.EventEngine;
+import usr.globalcontroller.GlobalController;
 
 /** Class represents a global controller event*/
 public abstract class AbstractEvent implements Event {

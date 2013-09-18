@@ -1,18 +1,14 @@
 package demo_usr.paths;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.applications.*;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.net.UnknownHostException;
 import java.net.SocketException;
-import usr.net.ClosedByInterruptException;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.ClosedByInterruptException;
+import usr.net.DatagramSocket;
 
 /**
  * This class reads USR Datagrams from a USR DatagramSocket

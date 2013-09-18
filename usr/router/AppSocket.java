@@ -1,13 +1,15 @@
 package usr.router;
 
-import usr.net.Address;
-import usr.logging.*;
-import usr.net.SocketAddress;
-import usr.net.Datagram;
-import java.net.SocketException;
 import java.net.NoRouteToHostException;
-import usr.net.ClosedByInterruptException;
+import java.net.SocketException;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.ClosedByInterruptException;
+import usr.net.Datagram;
+import usr.net.SocketAddress;
 
 
 /**

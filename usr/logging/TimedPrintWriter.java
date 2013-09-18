@@ -2,8 +2,8 @@
 
 package usr.logging;
 
-import java.io.PrintWriter;
 import java.io.FileOutputStream;
+import java.io.PrintWriter;
 
 /**
  * A class that adds a time before each println.

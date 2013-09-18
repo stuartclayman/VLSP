@@ -1,17 +1,23 @@
 package usr.router;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.common.ANSI;
-import usr.protocol.Protocol;
-import java.io.*;
-import java.net.*;
-import java.util.Map;
-import java.util.HashMap;
+import java.io.IOException;
+import java.net.NoRouteToHostException;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.CountDownLatch;
+
+import usr.common.ANSI;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.ConnectionOverTCP;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.net.DatagramPatch;
+import usr.net.TCPEndPointDst;
+import usr.net.TCPEndPointSrc;
+import usr.protocol.Protocol;
 
 /**
  * A Network Interface for a Router using TCP

@@ -1,7 +1,5 @@
 package usr.APcontroller;
 
-import java.util.*;
-import usr.router.Router;
 
 /** This interface is used to provide a router with the extra
    information required for a particular AP Controller */

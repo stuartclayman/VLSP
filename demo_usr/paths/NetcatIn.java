@@ -1,15 +1,17 @@
 package demo_usr.paths;
 
-import usr.logging.*;
-import usr.applications.*;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.net.UnknownHostException;
-import java.net.SocketException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.util.Scanner;
+
+import usr.applications.Application;
+import usr.applications.ApplicationResponse;
+import usr.logging.BitMask;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 
 /**

@@ -1,12 +1,14 @@
 package usr.router;
 
-import usr.net.*;
-import usr.logging.*;
-import java.util.Scanner;
-import java.net.*;
-import java.nio.channels.*;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.channels.ServerSocketChannel;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.TCPEndPointDst;
 
 /**
  * A RouterConnections accepts new connections from exisiting routers.

@@ -1,14 +1,16 @@
 package usr.output;
 
-import usr.globalcontroller.*;
-import usr.logging.*;
 import java.io.PrintStream;
-import usr.events.*;
-import us.monoid.json.*;
-import org.w3c.dom.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import java.lang.reflect.*;
+
+import us.monoid.json.JSONObject;
+import usr.events.Event;
+import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
 
 /** This class produces output from the simulation */
 

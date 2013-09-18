@@ -5,18 +5,20 @@
 
 package plugins_usr.monitoring.distribution;
 
-import usr.net.*;
-import eu.reservoir.monitoring.core.Measurement;
-import eu.reservoir.monitoring.core.MeasurementReporting;
-import eu.reservoir.monitoring.core.MeasurementReceiver;
-import eu.reservoir.monitoring.core.ConsumerMeasurement;
-import eu.reservoir.monitoring.core.ID;
-import eu.reservoir.monitoring.core.TypeException;
-import eu.reservoir.monitoring.core.plane.*;
-import eu.reservoir.monitoring.distribution.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+
+import usr.net.SocketAddress;
+import eu.reservoir.monitoring.core.ID;
+import eu.reservoir.monitoring.core.Measurement;
+import eu.reservoir.monitoring.core.MeasurementReceiver;
+import eu.reservoir.monitoring.core.MeasurementReporting;
+import eu.reservoir.monitoring.core.TypeException;
+import eu.reservoir.monitoring.core.plane.DataPlane;
+import eu.reservoir.monitoring.core.plane.DataPlaneMessage;
+import eu.reservoir.monitoring.distribution.MetaData;
+import eu.reservoir.monitoring.distribution.Receiving;
 
 public abstract class AbstractUSRDataPlaneConsumer implements DataPlane,
                       MeasurementReporting, Receiving

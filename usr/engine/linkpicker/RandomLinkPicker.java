@@ -1,9 +1,12 @@
 /** Interface choses n links using some rule*/
 
 package usr.engine.linkpicker;
-import java.util.*;
-import usr.globalcontroller.*;
-import org.w3c.dom.*;
+import java.util.ArrayList;
+import java.util.Random;
+
+import org.w3c.dom.Node;
+
+import usr.globalcontroller.GlobalController;
 
 public class RandomLinkPicker implements NodeLinkPicker {
     Random rand;

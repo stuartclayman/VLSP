@@ -1,15 +1,15 @@
 package usr.applications;
 
-import usr.net.*;
-import usr.logging.*;
-import java.nio.ByteBuffer;
-import java.net.UnknownHostException;
 import java.net.SocketException;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.HashMap;
-import java.util.Map;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Datagram;
+import usr.net.DatagramSocket;
 
 /**
  * An application for Receiving some data

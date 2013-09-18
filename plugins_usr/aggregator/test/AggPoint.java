@@ -5,27 +5,47 @@
 
 package plugins_usr.aggregator.test;
 
-import usr.router.Router;
-import usr.net.*;
-import usr.interactor.RouterInteractor;
-import plugins_usr.monitoring.distribution.
-       USRDataPlaneConsumerWithNames;
-import plugins_usr.monitoring.distribution.
-       USRDataPlaneProducerWithNames;
-import eu.reservoir.aggregator.*;
-import eu.reservoir.monitoring.core.*;
-import eu.reservoir.monitoring.core.plane.DataPlane;
-import eu.reservoir.monitoring.distribution.*;
-//import eu.reservoir.monitoring.im.*;
-import eu.reservoir.monitoring.appl.DynamicControl;
-import com.timeindexing.time.*;
-import com.timeindexing.basic.*;
+import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Scanner;
-import java.io.Serializable;
-import java.io.File;
+
+import plugins_usr.monitoring.distribution.USRDataPlaneConsumerWithNames;
+import plugins_usr.monitoring.distribution.USRDataPlaneProducerWithNames;
+import usr.interactor.RouterInteractor;
+import usr.net.Address;
+import usr.net.GIDAddress;
+import usr.net.SocketAddress;
+import usr.router.Router;
+
+import com.timeindexing.basic.AbsolutePosition;
+import com.timeindexing.basic.EndPointInterval;
+import com.timeindexing.basic.Interval;
+import com.timeindexing.basic.Position;
+import com.timeindexing.time.Second;
+import com.timeindexing.time.TimeDirection;
+
+import eu.reservoir.aggregator.Aggregate;
+import eu.reservoir.aggregator.AggregateFn;
+import eu.reservoir.aggregator.AggregationPoint;
+import eu.reservoir.aggregator.AggregatorMeasurement;
+import eu.reservoir.aggregator.Chooser;
+import eu.reservoir.aggregator.ChooserResult;
+import eu.reservoir.aggregator.Extractor;
+import eu.reservoir.aggregator.Filter;
+import eu.reservoir.aggregator.Forwarder;
+import eu.reservoir.aggregator.SleepSeconds;
+import eu.reservoir.aggregator.Timing;
+import eu.reservoir.monitoring.core.DefaultProbeAttribute;
+import eu.reservoir.monitoring.core.DefaultProbeValue;
+import eu.reservoir.monitoring.core.Measurement;
+import eu.reservoir.monitoring.core.ProbeAttribute;
+import eu.reservoir.monitoring.core.ProbeAttributeType;
+import eu.reservoir.monitoring.core.ProbeValue;
+import eu.reservoir.monitoring.core.plane.DataPlane;
+//import eu.reservoir.monitoring.im.*;
 
 /**
  * Main AggregationPoint.

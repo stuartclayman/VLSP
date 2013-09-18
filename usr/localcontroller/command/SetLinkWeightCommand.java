@@ -1,14 +1,18 @@
 package usr.localcontroller.command;
 
-import usr.protocol.MCRP;
-import usr.logging.*;
-import usr.common.LocalHostInfo;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.Request;
-import java.io.PrintStream;
 import java.io.IOException;
-import us.monoid.json.*;
+import java.io.PrintStream;
 import java.net.UnknownHostException;
+
+import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.common.LocalHostInfo;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.protocol.MCRP;
 
 /**
  * The SetLinkWeight command.

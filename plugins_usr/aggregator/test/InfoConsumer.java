@@ -5,21 +5,28 @@
 
 package plugins_usr.aggregator.test;
 
-import usr.router.Router;
-import usr.net.*;
-import usr.net.GIDAddress;
-import plugins_usr.monitoring.distribution.
-       USRDataPlaneConsumerWithNames;
-import eu.reservoir.monitoring.core.*;
-import eu.reservoir.monitoring.core.plane.DataPlane;
-import eu.reservoir.monitoring.distribution.*;
-import java.util.Scanner;
-import java.util.Properties;
 import java.io.File;
 import java.io.Serializable;
-import com.timeindexing.index.*;
-import com.timeindexing.time.MillisecondTimestamp;
+import java.util.Properties;
+import java.util.Scanner;
+
+import plugins_usr.monitoring.distribution.USRDataPlaneConsumerWithNames;
+import usr.net.Address;
+import usr.net.GIDAddress;
+import usr.net.SocketAddress;
+import usr.router.Router;
+
 import com.timeindexing.data.SerializableItem;
+import com.timeindexing.index.IndexType;
+import com.timeindexing.index.IndexView;
+import com.timeindexing.index.TimeIndexException;
+import com.timeindexing.index.TimeIndexFactory;
+import com.timeindexing.time.MillisecondTimestamp;
+
+import eu.reservoir.monitoring.core.AbstractDataConsumer;
+import eu.reservoir.monitoring.core.Measurement;
+import eu.reservoir.monitoring.core.Reporter;
+import eu.reservoir.monitoring.core.plane.DataPlane;
 
 /**
  * An InfoConsumer that can receive measurements.

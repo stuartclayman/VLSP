@@ -1,7 +1,8 @@
 package usr.globalcontroller.visualization;
 
-import usr.globalcontroller.GlobalController;
 import java.io.PrintStream;
+
+import usr.globalcontroller.GlobalController;
 
 /**
  * An interface for all visualizers that will generate a visualization

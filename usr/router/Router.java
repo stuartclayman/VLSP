@@ -1,17 +1,17 @@
 package usr.router;
 
-import usr.logging.*;
-import usr.net.Datagram;
-import usr.net.Address;
-import usr.net.AddressFactory;
-import usr.net.DatagramFactory;
-import usr.protocol.Protocol;
-import usr.applications.ApplicationResponse;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Scanner;
-import java.nio.ByteBuffer;
-import java.io.*;
-import java.util.*;
+
+import usr.applications.ApplicationResponse;
+import usr.logging.BitMask;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
 
 /**
  * A Router within UserSpaceRouting.

@@ -1,12 +1,14 @@
 package usr.test;
 
-import usr.net.*;
-import usr.logging.*;
-import java.io.*;
-import java.net.*;
-import java.text.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.ConnectionOverUDP;
+import usr.net.Datagram;
+import usr.net.UDPEndPointDst;
 
 public class StubUDPRecv {
     final static int PORT_NUMBER = 14433;

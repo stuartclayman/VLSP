@@ -3,23 +3,28 @@
 
 package usr.engine;
 
-import usr.globalcontroller.*;
-import rgc.xmlparse.*;
-import rgc.probdistributions.*;
-import usr.logging.*;
-import usr.common.Pair;
-import usr.APcontroller.*;
-import usr.events.*;
-import us.monoid.json.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.w3c.dom.Document;
-import org.w3c.dom.*;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import java.io.*;
-import java.util.*;
-import java.lang.*;
+
+import rgc.probdistributions.ProbDistribution;
+import rgc.probdistributions.ProbException;
+import rgc.xmlparse.ReadXMLUtils;
+import rgc.xmlparse.XMLNoTagException;
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.events.EndLinkEvent;
+import usr.events.EndRouterEvent;
+import usr.events.Event;
+import usr.events.EventScheduler;
+import usr.events.StartLinkEvent;
+import usr.events.StartRouterEvent;
+import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /**
  * This engine uses probability distribtions to add events into the

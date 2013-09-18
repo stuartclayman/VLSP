@@ -5,20 +5,19 @@
 
 package plugins_usr.monitoring.test;
 
-import eu.reservoir.demo.JavaMemoryProbe;
-import eu.reservoir.demo.InfraProbe;
-import usr.router.Router;
-import usr.net.SocketAddress;
-import usr.net.*;
+import java.util.Scanner;
+
+import plugins_usr.monitoring.distribution.USRDataPlaneProducerWithNames;
 import usr.interactor.RouterInteractor;
-import plugins_usr.monitoring.distribution.
-       USRDataPlaneProducerWithNames;
+import usr.net.Address;
+import usr.net.GIDAddress;
+import usr.net.SocketAddress;
+import usr.router.Router;
+import eu.reservoir.demo.InfraProbe;
 import eu.reservoir.monitoring.appl.BasicDataSource;
+import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
 import eu.reservoir.monitoring.core.DataSource;
 import eu.reservoir.monitoring.core.Probe;
-import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
-import java.net.InetAddress;
-import java.util.Scanner;
 
 /**
  * This monitor sends java runtime data  uses a USR Data Plane.

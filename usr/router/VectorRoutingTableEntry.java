@@ -1,10 +1,11 @@
 package usr.router;
 
-import usr.net.*;
-import usr.logging.*;
-import java.util.Vector;
-import java.util.List;
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Vector;
+
+import usr.net.Address;
+import usr.net.AddressFactory;
 
 /**
  * An entry in a routing table that has a vector of topologies.

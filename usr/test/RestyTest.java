@@ -1,9 +1,15 @@
 package usr.test;
 
-import us.monoid.web.*;
-import us.monoid.json.*;
-import static us.monoid.web.Resty.*;
+import static us.monoid.web.Resty.content;
+import static us.monoid.web.Resty.delete;
+import static us.monoid.web.Resty.form;
+import static us.monoid.web.Resty.put;
+
 import java.io.IOException;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import us.monoid.web.Resty;
 
 /**
  * Test some calls to GlobalController using Resty

@@ -1,9 +1,13 @@
 package usr.router;
 
-import java.util.*;
 import java.nio.ByteBuffer;
-import usr.logging.*;
-import usr.net.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
 
 /** Class holds a routing table deals with getting updated routing
    tables

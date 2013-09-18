@@ -1,15 +1,16 @@
 package usr.output;
 
-import usr.logging.*;
-import java.util.*;
-import java.io.*;
-import usr.globalcontroller.GlobalController;
-import usr.events.*;
-import us.monoid.json.*;
-import usr.common.*;
-import org.w3c.dom.*;
+import java.io.PrintStream;
+
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.common.ANSI;
+import usr.events.APInformEvent;
+import usr.events.Event;
+import usr.globalcontroller.GlobalController;
 
 /** Class to output network stuff */
 public class OutputAPInformEvent implements OutputFunction {

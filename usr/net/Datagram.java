@@ -1,7 +1,5 @@
 package usr.net;
 
-import usr.net.Address;
-import usr.logging.*;
 
 /**
  * A Datagram.

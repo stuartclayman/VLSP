@@ -5,30 +5,46 @@
  */
 package usr.globalcontroller;
 
-import usr.logging.*;
-import usr.globalcontroller.visualization.Visualization;
-import usr.localcontroller.LocalControllerInfo;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
-import java.io.*;
-import usr.engine.*;
-import usr.events.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.*;
-import usr.output.OutputType;
-import java.lang.reflect.Constructor;
-import javax.xml.parsers.DocumentBuilderFactory;
+
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import usr.engine.*;
-import rgc.xmlparse.*;
-import rgc.probdistributions.*;
+
+import rgc.xmlparse.ReadXMLUtils;
+import rgc.xmlparse.XMLNoTagException;
+import usr.engine.EmptyEventEngine;
+import usr.engine.EventEngine;
+import usr.engine.EventEngineException;
+import usr.engine.ProbabilisticEventEngine;
+import usr.engine.ScriptEngine;
+import usr.engine.TestEventEngine;
+import usr.events.EventScheduler;
+import usr.events.OutputEvent;
+import usr.events.QueryAPEvent;
+import usr.events.StartSimulationEvent;
+import usr.globalcontroller.visualization.Visualization;
+import usr.localcontroller.LocalControllerInfo;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.output.OutputType;
 import usr.router.RouterOptions;
-import java.lang.reflect.InvocationTargetException;
 
 public class ControlOptions {
     private ArrayList<LocalControllerInfo> localControllers_;

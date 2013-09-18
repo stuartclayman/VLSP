@@ -1,10 +1,14 @@
 /** Interface choses n links using some rule*/
 
 package usr.engine.linkpicker;
-import java.util.*;
-import usr.common.*;
-import usr.globalcontroller.*;
-import org.w3c.dom.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+
+import org.w3c.dom.Node;
+
+import usr.common.Pair;
+import usr.globalcontroller.GlobalController;
 
 public class LifetimeLinkPicker implements NodeLinkPicker {
     Random rand_;

@@ -1,8 +1,7 @@
 package usr.net;
 
-import java.nio.ByteBuffer;
-import usr.logging.*;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 
 /**
  * A simple implementation of a IPV4 Datagram.

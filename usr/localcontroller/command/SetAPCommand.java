@@ -1,17 +1,16 @@
 package usr.localcontroller.command;
 
-import usr.protocol.MCRP;
-import usr.logging.*;
-import usr.router.RouterManagementConsole;
-import usr.router.RouterPort;
-import usr.router.NetIF;
-import usr.net.*;
-import java.util.Scanner;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.Request;
-import java.io.PrintStream;
 import java.io.IOException;
-import us.monoid.json.*;
+import java.io.PrintStream;
+
+import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.protocol.MCRP;
 
 /**
  * The SET_AP command selets whether a router is or is not

@@ -1,10 +1,11 @@
 package usr.router;
 
-import usr.logging.*;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
-import usr.common.ThreadTools;
+import java.util.List;
+
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /**
  * The RouterDirectory has a reference to the Router that

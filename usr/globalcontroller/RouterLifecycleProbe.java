@@ -2,19 +2,18 @@
 
 package usr.globalcontroller;
 
-import usr.router.*;
-import usr.applications.ApplicationHandle;
-import usr.applications.RuntimeMonitoring;
-import eu.reservoir.monitoring.core.*;
-import eu.reservoir.monitoring.core.list.*;
-import eu.reservoir.monitoring.core.table.*;
-import eu.reservoir.monitoring.appl.datarate.*;
-import java.util.Collection;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import usr.logging.*;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import eu.reservoir.monitoring.core.AbstractProbe;
+import eu.reservoir.monitoring.core.DefaultProbeAttribute;
+import eu.reservoir.monitoring.core.DefaultProbeValue;
+import eu.reservoir.monitoring.core.Probe;
+import eu.reservoir.monitoring.core.ProbeAttributeType;
+import eu.reservoir.monitoring.core.ProbeMeasurement;
+import eu.reservoir.monitoring.core.ProbeValue;
+import eu.reservoir.monitoring.core.ProducerMeasurement;
 
 /**
  * A probe that talks to a Router and passes on the current lifecycle

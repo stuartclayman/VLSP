@@ -1,18 +1,18 @@
 package usr.router.command;
 
-import usr.protocol.MCRP;
+import java.io.IOException;
+import java.io.PrintStream;
+
+import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.logging.Logger;
+import usr.logging.USR;
 import usr.net.Address;
 import usr.net.AddressFactory;
-import usr.logging.*;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.Request;
-import java.io.PrintStream;
-import java.io.IOException;
-import us.monoid.json.*;
-import usr.router.RouterPort;
-import usr.router.NetIF;
-import usr.net.*;
-import java.util.Scanner;
+import usr.protocol.MCRP;
 
 
 /**

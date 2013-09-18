@@ -1,7 +1,8 @@
 package usr.globalcontroller.visualization;
 
-import usr.globalcontroller.GlobalController;
 import java.io.PrintStream;
+
+import usr.globalcontroller.GlobalController;
 
 /**
  * A plain view of the current network topology.

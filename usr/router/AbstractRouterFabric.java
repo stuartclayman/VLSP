@@ -1,18 +1,20 @@
 package usr.router;
 
-import java.util.List;
-import usr.logging.*;
-import java.util.ArrayList;
-import usr.net.*;
-import java.net.*;
-import usr.protocol.Protocol;
-import java.nio.ByteBuffer;
-import java.lang.*;
-import java.util.*;
 import java.net.NoRouteToHostException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Semaphore;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.protocol.Protocol;
 
 /**
  * The main abstract code for a RouterFabric within UserSpaceRouting.

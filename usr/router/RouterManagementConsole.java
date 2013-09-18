@@ -1,16 +1,41 @@
 package usr.router;
 
-import usr.net.Address;
-import usr.logging.*;
-import usr.console.*;
-import usr.router.command.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.io.*;
-import java.net.*;
-import java.nio.channels.*;
-import java.nio.*;
-import java.nio.charset.Charset;
+import usr.console.ComponentController;
+import usr.console.USRRestConsole;
+import usr.router.command.AppListCommand;
+import usr.router.command.AppStartCommand;
+import usr.router.command.AppStopCommand;
+import usr.router.command.CreateConnectionCommand;
+import usr.router.command.EchoCommand;
+import usr.router.command.EndLinkCommand;
+import usr.router.command.GetConnectionPortCommand;
+import usr.router.command.GetNameCommand;
+import usr.router.command.GetNetIFStatsCommand;
+import usr.router.command.GetPortAddressCommand;
+import usr.router.command.GetPortNameCommand;
+import usr.router.command.GetPortRemoteAddressCommand;
+import usr.router.command.GetPortRemoteRouterCommand;
+import usr.router.command.GetPortWeightCommand;
+import usr.router.command.GetRouterAddressCommand;
+import usr.router.command.GetSocketStatsCommand;
+import usr.router.command.IncomingConnectionCommand;
+import usr.router.command.ListConnectionsCommand;
+import usr.router.command.ListRoutingTableCommand;
+import usr.router.command.MonitoringStartCommand;
+import usr.router.command.MonitoringStopCommand;
+import usr.router.command.PingCommand;
+import usr.router.command.ReadOptionsFileCommand;
+import usr.router.command.ReadOptionsStringCommand;
+import usr.router.command.RouterOKCommand;
+import usr.router.command.RunCommand;
+import usr.router.command.SetAPCommand;
+import usr.router.command.SetLinkWeightCommand;
+import usr.router.command.SetNameCommand;
+import usr.router.command.SetPortAddressCommand;
+import usr.router.command.SetPortWeightCommand;
+import usr.router.command.SetRouterAddressCommand;
+import usr.router.command.ShutDownCommand;
+import usr.router.command.UnknownCommand;
 
 /**
  * A ManagementConsole listens for connections

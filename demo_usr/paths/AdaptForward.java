@@ -1,13 +1,7 @@
 package demo_usr.paths;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.applications.*;
-import java.net.UnknownHostException;
-import java.net.SocketException;
-import java.util.Scanner;
-import java.nio.ByteBuffer;
-import us.monoid.json.*;
+import usr.applications.Application;
+import usr.applications.ApplicationResponse;
 
 /**
  * An application for adapting a Forward node

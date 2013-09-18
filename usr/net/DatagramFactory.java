@@ -1,10 +1,12 @@
 package usr.net;
 
-import usr.protocol.Protocol;
-import usr.logging.*;
-import java.util.ArrayList;
-import java.nio.ByteBuffer;
 import java.lang.reflect.Constructor;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.protocol.Protocol;
 
 /**
  * The DatagramFactory will create a new datagram based on

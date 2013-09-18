@@ -1,10 +1,10 @@
 package usr.common;
 
-import usr.localcontroller.LocalControllerInfo;
-import usr.logging.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import usr.localcontroller.LocalControllerInfo;
 
 /**
  * Class provides simple information that the global and local

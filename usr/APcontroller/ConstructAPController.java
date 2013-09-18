@@ -1,7 +1,8 @@
 package usr.APcontroller;
 
 
-import usr.logging.*;
+import usr.logging.Logger;
+import usr.logging.USR;
 import usr.router.RouterOptions;
 
 /** Wrapper to construct appropriate AP controller object */

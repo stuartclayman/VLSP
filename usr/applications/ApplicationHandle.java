@@ -1,6 +1,7 @@
 package usr.applications;
 
-import usr.logging.*;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 
 /**

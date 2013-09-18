@@ -1,6 +1,5 @@
 package usr.applications;
 
-import usr.logging.*;
 
 /**
  * An application response holds a boolean which determines

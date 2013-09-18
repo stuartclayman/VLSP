@@ -1,11 +1,11 @@
 package usr.test;
 
-import usr.router.Router;
 import usr.interactor.RouterInteractor;
-import usr.logging.*;
-import usr.net.*;
-import java.util.Scanner;
-import java.io.IOException;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.AddressFactory;
+import usr.net.IPV4Address;
+import usr.router.Router;
 
 /**
  * Test Router startup and simple AppSocket.

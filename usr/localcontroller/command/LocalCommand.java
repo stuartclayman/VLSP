@@ -1,11 +1,12 @@
 package usr.localcontroller.command;
 
-import usr.localcontroller.*;
-import usr.logging.*;
-import usr.console.*;
-import cc.clayman.console.ManagementConsole;
-import org.simpleframework.http.Response;
 import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
+import usr.console.AbstractRestCommand;
+import usr.localcontroller.LocalController;
+import usr.localcontroller.LocalControllerManagementConsole;
+import cc.clayman.console.ManagementConsole;
 
 /**
  * A Command processes a command handled by the ManagementConsole

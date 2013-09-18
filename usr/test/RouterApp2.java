@@ -1,14 +1,16 @@
 package usr.test;
 
-import usr.router.Router;
-import usr.logging.*;
-import usr.router.AppSocket;
-import usr.net.*;
-import usr.interactor.RouterInteractor;
-import usr.protocol.Protocol;
-import java.util.Scanner;
-import java.nio.ByteBuffer;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.util.Scanner;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.net.GIDAddress;
+import usr.router.AppSocket;
+import usr.router.Router;
 
 /**
  * Test Router startup and simple AppSocket.

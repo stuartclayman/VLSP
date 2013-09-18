@@ -1,14 +1,15 @@
 package usr.globalcontroller.visualization;
 
-import usr.globalcontroller.GlobalController;
-import usr.globalcontroller.TrafficInfo;
-import usr.common.BasicRouterInfo;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import usr.common.BasicRouterInfo;
+import usr.globalcontroller.GlobalController;
+import usr.globalcontroller.TrafficInfo;
 
 
 /**

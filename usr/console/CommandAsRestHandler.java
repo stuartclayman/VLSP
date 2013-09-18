@@ -1,9 +1,10 @@
 package usr.console;
 
-import usr.logging.*;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.Request;
 import java.io.IOException;
+
+import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
 import cc.clayman.console.BasicRequestHandler;
 import cc.clayman.console.ManagementConsole;
 

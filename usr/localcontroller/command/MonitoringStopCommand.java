@@ -1,14 +1,16 @@
 package usr.localcontroller.command;
 
-import usr.protocol.MCRP;
-import usr.logging.*;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.Request;
-import java.io.PrintStream;
 import java.io.IOException;
-import us.monoid.json.*;
-import java.util.Scanner;
-import java.net.InetSocketAddress;
+import java.io.PrintStream;
+
+import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.protocol.MCRP;
 
 /**
  * The MONITORING_STOP command stops monitoring

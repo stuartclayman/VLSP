@@ -1,16 +1,21 @@
 package usr.router.command;
 
-import usr.protocol.MCRP;
-import usr.logging.*;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.Request;
-import java.io.PrintStream;
 import java.io.IOException;
-import us.monoid.json.*;
-import usr.router.RouterPort;
-import usr.router.NetIF;
-import usr.net.*;
+import java.io.PrintStream;
 import java.util.Scanner;
+
+import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.protocol.MCRP;
+import usr.router.NetIF;
+import usr.router.RouterPort;
 
 /**
  * The SET_PORT_ADDRESS command.

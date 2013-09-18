@@ -1,13 +1,13 @@
 package usr.net;
 
-import usr.protocol.Protocol;
-import usr.logging.*;
-import java.net.Socket;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.ByteBuffer;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.SocketChannel;
+
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /**
  * Create a connection that sends data

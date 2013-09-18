@@ -1,7 +1,6 @@
 // LogInput.java
 
 package usr.logging;
-import usr.logging.*;
 
 /**
  * An interface for objects that will act as input for a logger.

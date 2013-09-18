@@ -5,14 +5,13 @@
 
 package plugins_usr.monitoring.appl;
 
-import usr.applications.*;
-import usr.net.SocketAddress;
-import usr.net.GIDAddress;
-import plugins_usr.monitoring.distribution.
-       USRDataPlaneConsumerWithNames;
-import eu.reservoir.monitoring.appl.BasicConsumer;
 import java.util.Scanner;
-import java.util.Properties;
+
+import plugins_usr.monitoring.distribution.USRDataPlaneConsumerWithNames;
+import usr.applications.Application;
+import usr.applications.ApplicationResponse;
+import usr.net.SocketAddress;
+import eu.reservoir.monitoring.appl.BasicConsumer;
 
 /**
  * This receives measurements from a USR Data Plane.

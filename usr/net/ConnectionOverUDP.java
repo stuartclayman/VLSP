@@ -1,10 +1,9 @@
 package usr.net;
 
-import java.net.DatagramSocket;
-import usr.logging.*;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
 /**

@@ -1,13 +1,17 @@
 package usr.output;
 
-import usr.logging.*;
-import java.util.*;
 import java.io.PrintStream;
-import usr.globalcontroller.GlobalController;
-import usr.events.Event;
-import us.monoid.json.*;
-import org.xml.sax.SAXException;
+import java.util.HashMap;
+import java.util.Hashtable;
+
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
+import us.monoid.json.JSONObject;
+import usr.events.Event;
+import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /** Class to output network stuff */
 public class OutputTraffic implements OutputFunction {

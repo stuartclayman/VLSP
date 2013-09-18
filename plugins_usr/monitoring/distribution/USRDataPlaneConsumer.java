@@ -7,8 +7,8 @@ package plugins_usr.monitoring.distribution;
 
 import usr.net.SocketAddress;
 import eu.reservoir.monitoring.core.MeasurementReporting;
-import eu.reservoir.monitoring.distribution.Receiving;
 import eu.reservoir.monitoring.core.plane.DataPlane;
+import eu.reservoir.monitoring.distribution.Receiving;
 
 public class USRDataPlaneConsumer extends USRDataPlaneConsumerWithNames
 implements DataPlane, MeasurementReporting, Receiving

@@ -1,23 +1,29 @@
 package usr.test;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.router.NetIF;
-import usr.router.TCPNetIF;
-import usr.router.DatagramDevice;
-import usr.protocol.Protocol;
-import usr.logging.*;
-import usr.router.FabricDevice;
-import usr.router.NetIFListener;
-import java.io.*;
-import java.net.*;
-import java.text.*;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.NoRouteToHostException;
+import java.net.ServerSocket;
+import java.nio.channels.ServerSocketChannel;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.nio.ByteBuffer;
-import java.nio.channels.*;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import usr.logging.BitMask;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.ConnectionOverTCP;
+import usr.net.Datagram;
+import usr.net.TCPEndPointDst;
+import usr.protocol.Protocol;
+import usr.router.DatagramDevice;
+import usr.router.FabricDevice;
+import usr.router.NetIF;
+import usr.router.NetIFListener;
+import usr.router.TCPNetIF;
 
 public class StubServer2 implements NetIFListener {
     final static int PORT_NUMBER = 4433;

@@ -1,10 +1,18 @@
 package demo_usr.viewer;
 
-import usr.interactor.GlobalControllerInteractor;
-import java.net.UnknownHostException;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
-import us.monoid.json.*;
+import java.net.UnknownHostException;
+
+import us.monoid.json.JSONException;
+import usr.interactor.GlobalControllerInteractor;
 
 /**
  * A viewer of the network.

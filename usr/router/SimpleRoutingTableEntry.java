@@ -1,8 +1,9 @@
 package usr.router;
 
-import usr.net.*;
-import usr.logging.*;
 import java.nio.ByteBuffer;
+
+import usr.net.Address;
+import usr.net.AddressFactory;
 
 /**
  * An entry in a routing table.

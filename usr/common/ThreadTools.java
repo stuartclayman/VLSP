@@ -1,6 +1,7 @@
 package usr.common;
 
-import usr.logging.*;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 public class ThreadTools {
     // can turn on printing with:

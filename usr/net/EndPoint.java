@@ -1,7 +1,6 @@
 package usr.net;
 
 import java.io.IOException;
-import usr.logging.*;
 
 /**
  * An End Point of a Connection.

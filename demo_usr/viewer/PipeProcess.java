@@ -1,8 +1,9 @@
 package demo_usr.viewer;
 
-import usr.common.ProcessWrapper;
-import java.lang.reflect.Field;
 import java.io.IOException;
+import java.lang.reflect.Field;
+
+import usr.common.ProcessWrapper;
 
 /**
  * A process that runs down the end of a pipe.

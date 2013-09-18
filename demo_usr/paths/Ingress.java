@@ -1,24 +1,22 @@
 package demo_usr.paths;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.applications.*;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.net.UnknownHostException;
-import java.net.SocketException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Scanner;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.CountDownLatch;
-import us.monoid.json.JSONObject;
+
 import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.applications.Application;
+import usr.applications.ApplicationResponse;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.net.SocketAddress;
 
 
 /**

@@ -1,13 +1,17 @@
 package usr.test;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.protocol.Protocol;
-import java.io.*;
-import java.net.*;
-import java.util.Scanner;
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.util.Scanner;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.ConnectionOverUDP;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.net.IPV4Address;
+import usr.net.UDPEndPointSrc;
 
 public class StubUDPSend {
     final static int PORT_NUMBER = 14433;

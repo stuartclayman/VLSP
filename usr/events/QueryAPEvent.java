@@ -1,11 +1,11 @@
 package usr.events;
 
-import usr.logging.*;
-import java.lang.*;
-import usr.globalcontroller.*;
-import usr.engine.*;
-import usr.APcontroller.*;
-import us.monoid.json.*;
+import us.monoid.json.JSONObject;
+import usr.APcontroller.APController;
+import usr.engine.EventEngine;
+import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class QueryAPEvent extends AbstractEvent {

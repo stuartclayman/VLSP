@@ -1,9 +1,8 @@
 package usr.router;
-import usr.net.Datagram;
-import usr.net.Address;
 import java.net.NoRouteToHostException;
 
-import usr.logging.*;
+import usr.net.Address;
+import usr.net.Datagram;
 /**
  * Interface is for "glue" to hold together netifs -- it allows routing between them
  */

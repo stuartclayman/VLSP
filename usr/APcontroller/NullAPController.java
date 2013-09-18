@@ -1,13 +1,13 @@
 package usr.APcontroller;
 
-import java.util.*;
-import usr.router.RouterController;
-import usr.globalcontroller.GlobalController;
-import usr.router.RouterOptions;
-import usr.globalcontroller.ControlOptions;
-import usr.logging.*;
+import java.util.ArrayList;
+
 import usr.common.Pair;
-import java.lang.Math;
+import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.router.RouterController;
+import usr.router.RouterOptions;
 
 /** Implements Random AP Controller */
 

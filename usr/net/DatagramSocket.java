@@ -1,11 +1,11 @@
 package usr.net;
 
+import java.net.NoRouteToHostException;
+import java.net.SocketException;
+
 import usr.router.AppSocket;
-import usr.logging.*;
 import usr.router.Router;
 import usr.router.RouterDirectory;
-import java.net.SocketException;
-import java.net.NoRouteToHostException;
 
 /**
  * A DatagramSocket looks similar to a Java DatagramSocket.

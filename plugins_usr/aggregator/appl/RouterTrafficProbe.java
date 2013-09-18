@@ -5,11 +5,26 @@
 
 package plugins_usr.aggregator.appl;
 
-import eu.reservoir.monitoring.core.*;
-import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
-import java.util.*;
-import usr.router.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import usr.common.Pair;
+import usr.router.NetIF;
+import usr.router.NetStats;
+import usr.router.Router;
+import usr.router.RouterController;
+import usr.router.RouterDirectory;
+import usr.router.RouterPort;
+import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
+import eu.reservoir.monitoring.core.AbstractProbe;
+import eu.reservoir.monitoring.core.DefaultProbeAttribute;
+import eu.reservoir.monitoring.core.DefaultProbeValue;
+import eu.reservoir.monitoring.core.Probe;
+import eu.reservoir.monitoring.core.ProbeAttributeType;
+import eu.reservoir.monitoring.core.ProbeMeasurement;
+import eu.reservoir.monitoring.core.ProbeValue;
+import eu.reservoir.monitoring.core.ProducerMeasurement;
 
 /**
  * A probe that talks to a Router and collects the traffic.

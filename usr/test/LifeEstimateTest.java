@@ -1,20 +1,20 @@
 package usr.test;
 
-import rgc.xmlparse.*;
-import rgc.probdistributions.*;
-import usr.logging.*;
-import java.util.*;
+import java.io.File;
 
-import usr.APcontroller.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.*;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import java.io.*;
+
+import rgc.probdistributions.ProbDistribution;
+import usr.APcontroller.LifeSpanEstimate;
+import usr.logging.BitMask;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 
 public class LifeEstimateTest {

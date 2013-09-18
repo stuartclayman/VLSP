@@ -1,7 +1,5 @@
 package usr.events;
 
-import us.monoid.json.JSONObject;
-import usr.globalcontroller.GlobalController;
 
 public interface EventScheduler extends Runnable {
 

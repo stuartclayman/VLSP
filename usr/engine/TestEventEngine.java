@@ -3,11 +3,13 @@
 
 package usr.engine;
 
-import usr.globalcontroller.*;
-import usr.common.Pair;
-import usr.logging.*;
-import us.monoid.json.*;
-import usr.events.*;
+import us.monoid.json.JSONObject;
+import usr.events.EndSimulationEvent;
+import usr.events.Event;
+import usr.events.EventScheduler;
+import usr.events.StartRouterEvent;
+import usr.events.StartSimulationEvent;
+import usr.globalcontroller.GlobalController;
 
 public class TestEventEngine implements EventEngine {
     int timeToEnd_;

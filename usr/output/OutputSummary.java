@@ -1,12 +1,14 @@
 package usr.output;
 
 import java.io.PrintStream;
-import usr.globalcontroller.GlobalController;
+
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
+import us.monoid.json.JSONObject;
 import usr.APcontroller.APController;
 import usr.events.Event;
-import us.monoid.json.*;
-import org.xml.sax.SAXException;
-import org.w3c.dom.Node;
+import usr.globalcontroller.GlobalController;
 
 /** Class to output summary stats  */
 class OutputSummary implements OutputFunction {

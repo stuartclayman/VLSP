@@ -1,13 +1,17 @@
 package usr.router;
 
-import usr.net.*;
-import usr.logging.*;
+import java.net.NoRouteToHostException;
+import java.util.NoSuchElementException;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Datagram;
+import usr.net.InterfaceBlockedException;
 import usr.protocol.Protocol;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.nio.ByteBuffer;
-import java.util.concurrent.*;
 
 /** A fabric device is a device with an Inbound and an outbound queue.
    Inboud is "towards fabric" and Outbound is "from fabric" -- see diagram

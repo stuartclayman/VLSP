@@ -1,9 +1,6 @@
 package usr.test;
 
-import us.monoid.web.*;
-import us.monoid.json.*;
-import static us.monoid.web.Resty.*;
-import java.io.IOException;
+import us.monoid.json.JSONObject;
 import demo_usr.rest.VimClient;
 
 /**

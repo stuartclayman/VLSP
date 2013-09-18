@@ -1,13 +1,10 @@
 package usr.events;
 
-import usr.logging.*;
-import java.lang.*;
-import usr.globalcontroller.*;
-import usr.localcontroller.*;
-import usr.engine.*;
-import usr.common.*;
-import us.monoid.json.*;
-import usr.interactor.*;
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class NetStatsEvent extends AbstractEvent {

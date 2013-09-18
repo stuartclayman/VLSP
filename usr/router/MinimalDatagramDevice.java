@@ -1,11 +1,10 @@
 package usr.router;
-import java.net.*;
+import java.net.NoRouteToHostException;
+
+import usr.logging.Logger;
+import usr.logging.USR;
 import usr.net.Address;
-import usr.logging.*;
 import usr.net.Datagram;
-import java.util.Map;
-import java.net.Socket;
-import java.io.IOException;
 
 /**
  * A Minimal version of datagram device -- given an address and a fabric device

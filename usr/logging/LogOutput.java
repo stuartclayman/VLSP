@@ -1,7 +1,6 @@
 // LogOutput.java
 
 package usr.logging;
-import usr.logging.*;
 
 /**
  * An interface for objects that will do output for a logger.

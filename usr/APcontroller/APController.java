@@ -1,8 +1,9 @@
 package usr.APcontroller;
 
-import java.util.*;
-import usr.router.RouterController;
+import java.util.List;
+
 import usr.globalcontroller.GlobalController;
+import usr.router.RouterController;
 
 /** Interface for aggregation point controller types */
 

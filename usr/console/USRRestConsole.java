@@ -1,8 +1,10 @@
 package usr.console;
 
 import java.util.HashMap;
-import cc.clayman.console.*;
-import usr.logging.*;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import cc.clayman.console.AbstractRestConsole;
 
 /**
  * A ManagementConsole listens for REST requests

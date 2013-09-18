@@ -1,9 +1,13 @@
 // ProcessWrapper.java
 
 package usr.common;
-import usr.logging.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
-import java.io.*;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 /**
  * This class wraps a Process

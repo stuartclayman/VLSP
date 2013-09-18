@@ -1,9 +1,9 @@
 // LoggingOutputStream.java
 
 package usr.logging;
-import usr.logging.*;
-
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * A LoggingOutputStream acts as a gateway between OutputStreams

@@ -1,11 +1,8 @@
 package usr.test;
 
-import us.monoid.web.*;
-import us.monoid.json.*;
-import static us.monoid.web.Resty.*;
-import java.io.IOException;
-import demo_usr.rest.VimClient;
+import us.monoid.json.JSONObject;
 import demo_usr.paths.Path;
+import demo_usr.rest.VimClient;
 
 /**
  * Test some calls to GlobalController using Resty

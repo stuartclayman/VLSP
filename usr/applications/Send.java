@@ -1,9 +1,14 @@
 package usr.applications;
 
-import usr.net.*;
-import usr.logging.*;
-import java.nio.ByteBuffer;
 import java.util.Scanner;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.net.DatagramSocket;
 
 /**
  * An application for Sending some data

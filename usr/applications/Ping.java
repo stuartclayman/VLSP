@@ -1,9 +1,15 @@
 package usr.applications;
 
-import usr.net.*;
-import usr.logging.*;
-import java.nio.ByteBuffer;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.net.DatagramSocket;
 import usr.protocol.Protocol;
 
 /**

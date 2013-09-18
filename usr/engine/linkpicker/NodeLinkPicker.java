@@ -1,9 +1,11 @@
 /** Interface choses n links using some rule*/
 
 package usr.engine.linkpicker;
-import java.util.*;
-import usr.globalcontroller.*;
-import org.w3c.dom.*;
+import java.util.ArrayList;
+
+import org.w3c.dom.Node;
+
+import usr.globalcontroller.GlobalController;
 
 public interface NodeLinkPicker {
     /** Return an array of several nodes from a list which will

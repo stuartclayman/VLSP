@@ -2,15 +2,21 @@
 
 package usr.globalcontroller;
 
-import usr.logging.*;
-import usr.common.ANSI;
-import usr.common.BasicRouterInfo;
-import eu.reservoir.monitoring.core.*;
-import eu.reservoir.monitoring.core.table.*;
-import eu.reservoir.monitoring.core.list.MList;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import usr.common.BasicRouterInfo;
+import usr.logging.Logger;
+import usr.logging.USR;
+import eu.reservoir.monitoring.core.Measurement;
+import eu.reservoir.monitoring.core.ProbeValue;
+import eu.reservoir.monitoring.core.Reporter;
+import eu.reservoir.monitoring.core.list.MList;
+import eu.reservoir.monitoring.core.table.Table;
+import eu.reservoir.monitoring.core.table.TableAttribute;
+import eu.reservoir.monitoring.core.table.TableHeader;
+import eu.reservoir.monitoring.core.table.TableRow;
+import eu.reservoir.monitoring.core.table.TableValue;
 
 /**
  * A RouterAppsReporter collects measurements sent by

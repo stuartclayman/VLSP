@@ -1,13 +1,11 @@
 package usr.test;
 
-import usr.router.Router;
-import usr.logging.*;
-import usr.router.AppSocket;
-import usr.net.GIDAddress;
-import usr.net.IPV4Address;
+import usr.logging.Logger;
+import usr.logging.USR;
 import usr.net.Datagram;
-import usr.net.GIDDatagram;
-import java.util.Scanner;
+import usr.net.IPV4Address;
+import usr.router.AppSocket;
+import usr.router.Router;
 
 /**
  * Test Router startup and simple AppSocket.

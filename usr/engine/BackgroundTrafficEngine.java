@@ -3,22 +3,27 @@
 
 package usr.engine;
 
-import usr.globalcontroller.*;
-import rgc.xmlparse.*;
-import rgc.probdistributions.*;
-import usr.logging.*;
-import usr.events.*;
+import java.io.File;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.*;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import java.io.*;
-import java.util.*;
-import us.monoid.json.*;
+
+import rgc.probdistributions.ProbDistribution;
+import rgc.probdistributions.ProbException;
+import us.monoid.json.JSONObject;
+import usr.events.CreateTrafficEvent;
+import usr.events.EndSimulationEvent;
+import usr.events.Event;
+import usr.events.EventScheduler;
+import usr.events.StartSimulationEvent;
+import usr.globalcontroller.GlobalController;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 public class BackgroundTrafficEngine implements EventEngine {
     long timeToEnd_;    // Time before end of simulation

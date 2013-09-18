@@ -1,8 +1,10 @@
 package usr.test;
 
-import usr.router.Router;
-import usr.logging.*;
 import java.util.Scanner;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.router.Router;
 
 /**
  * Test ROuter startup.

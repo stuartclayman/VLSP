@@ -1,12 +1,16 @@
 package demo_usr.paths;
 
-import usr.net.*;
-import usr.logging.*;
-import usr.applications.*;
-import java.nio.ByteBuffer;
-import java.net.UnknownHostException;
 import java.net.SocketException;
 import java.util.Scanner;
+
+import usr.applications.Application;
+import usr.applications.ApplicationResponse;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
+import usr.net.DatagramSocket;
 
 /**
  * An application for Receiving some data

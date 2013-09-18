@@ -1,7 +1,5 @@
 package usr.common;
 import java.io.IOException;
-
-import usr.logging.*;
 /**
    Given a range of ports returns one or
  */

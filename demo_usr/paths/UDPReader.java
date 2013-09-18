@@ -1,18 +1,17 @@
 package demo_usr.paths;
 
-import usr.net.*;
-import usr.logging.*;
 import java.io.IOException;
-import java.net.UnknownHostException;
-import java.net.SocketException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.DatagramPacket;
+import java.net.SocketException;
+import java.nio.channels.DatagramChannel;
 import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.CountDownLatch;
-import java.nio.channels.*;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Datagram;
+import usr.net.DatagramFactory;
 
 /**
  * This class reads data from a UDP socket, converts the UDP packet

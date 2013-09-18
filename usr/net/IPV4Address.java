@@ -1,10 +1,9 @@
 package usr.net;
 
+import java.io.Serializable;
 import java.net.InetAddress;
-import usr.logging.*;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.io.Serializable;
 
 /**
  * An IPV4 Address

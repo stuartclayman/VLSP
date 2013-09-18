@@ -1,18 +1,20 @@
 package usr.interactor;
 
-import usr.protocol.MCRP;
-import usr.logging.*;
-import java.net.Socket;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.io.*;
-import usr.common.LocalHostInfo;
-import usr.common.ANSI;
-import java.util.List;
 import java.util.ArrayList;
-import us.monoid.web.*;
-import us.monoid.json.*;
+import java.util.List;
+
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import us.monoid.web.Resty;
+import usr.common.ANSI;
+import usr.common.LocalHostInfo;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.protocol.MCRP;
 
 /**
  * This class implements the MCRP protocol and acts as a client
