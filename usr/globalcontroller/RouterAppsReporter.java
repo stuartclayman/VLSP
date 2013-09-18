@@ -133,7 +133,8 @@ public class RouterAppsReporter implements Reporter {
     /**
      * Print AppList data
      */
-    private String appListToString(Table table) {
+    @SuppressWarnings("unused")
+	private String appListToString(Table table) {
         StringBuilder builder = new StringBuilder();
 
         // get the time

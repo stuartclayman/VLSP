@@ -318,7 +318,8 @@ RouterDeletedNotification, TrafficInfo {
     /**
      * Any dropped ?
      */
-    private void printAnyDropped(String routerName, Table table) {
+    @SuppressWarnings("unused")
+	private void printAnyDropped(String routerName, Table table) {
         int rows = table.getRowCount();
 
         for (int r = 0; r < rows; r++) {
@@ -355,7 +356,8 @@ RouterDeletedNotification, TrafficInfo {
     /**
      * Print the table
      */
-    private void printTable(Table table) {
+    @SuppressWarnings("unused")
+	private void printTable(Table table) {
         System.out.println(tableToString(table, true, false));
     }
 
@@ -451,7 +453,8 @@ RouterDeletedNotification, TrafficInfo {
     /**
      * Print AppList data
      */
-    private String appListToString(Table table) {
+    @SuppressWarnings("unused")
+	private String appListToString(Table table) {
         StringBuilder builder = new StringBuilder();
 
         // get the time

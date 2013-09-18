@@ -70,10 +70,10 @@ TypeException {
         MessageType mType = MessageType.lookup(type);
 
         // delegate read to right object
-        if (mType == null)
+        if (mType == null) {
             //System.err.println("type = " + type);
             return;
-
+        }
         // get seq no
         int seq = dataIn.readInt();
 

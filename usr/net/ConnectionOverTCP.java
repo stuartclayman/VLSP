@@ -388,7 +388,8 @@ public class ConnectionOverTCP implements Connection {
     /**
      * Get the channel.
      */
-    private SocketChannel getChannel() {
+    @SuppressWarnings("unused")
+	private SocketChannel getChannel() {
         return endPoint.getSocket().getChannel();
     }
 
