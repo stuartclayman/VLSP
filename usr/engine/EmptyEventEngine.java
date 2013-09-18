@@ -15,6 +15,7 @@ public class EmptyEventEngine extends NullEventEngine {
     /** Contructor from Parameter string */
     public EmptyEventEngine(int time, String parms) {
         timeToEnd_ = time * 1000;
+        System.err.println("Empty engine ends "+time);
     }
 
     /** Initial events to add to schedule */

@@ -7,6 +7,7 @@ import usr.common.PortPool;
 import usr.engine.EventEngine;
 import usr.globalcontroller.GlobalController;
 import usr.interactor.LocalControllerInteractor;
+import usr.lifeEstimate.LifetimeEstimate;
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -79,7 +80,7 @@ public class EndRouterEvent extends AbstractEvent {
             initNumber(address_, gc);
         }
 
-        boolean success = endRouter(routerNo_, gc);
+        boolean success = endRouter(routerNo_, gc, time_);
         JSONObject json = new JSONObject();
         try {
             if (success) {
@@ -116,7 +117,7 @@ public class EndRouterEvent extends AbstractEvent {
     }
 
     /** Event to end a router -- returns true for success */
-    public boolean endRouter(int routerId, GlobalController gc) {
+    public boolean endRouter(int routerId, GlobalController gc, long time) {
         boolean success;
 
         if (gc.isSimulation()) {
@@ -125,9 +126,12 @@ public class EndRouterEvent extends AbstractEvent {
         } else {
             success = endEmulatedRouter(routerId, gc);
         }
+        if (LifetimeEstimate.usingLifetimeEstimate()) {
+        	LifetimeEstimate.getLifetimeEstimate().nodeDeath(time, routerId);
+        }
 
         if (success) {
-            gc.unregisterRouter(routerId);
+            gc.unregisterRouter(routerId, time);
         }
 
         return success;
@@ -135,6 +139,7 @@ public class EndRouterEvent extends AbstractEvent {
 
     /** remove a router in simulation*/
     private void endSimulationRouter(int rId, GlobalController gc) {
+
     }
 
     /** Send shutdown to an emulated router */

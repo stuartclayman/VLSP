@@ -171,7 +171,7 @@ public class AggPointRestHandler extends BasicRequestHandler {
 
         // if it exists, stop it, otherwise complain
         if (gc.isValidRouterID(routerID) && gc.isValidRouterID(apID)) {
-            gc.setAP(routerID, apID);
+            gc.setAP(gc.getElapsedTime(),routerID, apID);
 
             // and send back a the return value
             PrintStream out = response.getPrintStream();

@@ -991,9 +991,8 @@ public class ControlOptions {
     public void initialEvents(EventScheduler s, GlobalController g) {
         // If no engines simply start simulation
         if (engines_.size() == 0) {
-            StartSimulationEvent sse = new StartSimulationEvent(0, null);
-            s.addEvent(sse);
-            return;
+        	//Default engine -- start up and run for a long time
+            engines_.add(new EmptyEventEngine(1000000,""));
         }
 
         engines_.get(0).startStopEvents(s, g);

@@ -89,17 +89,11 @@ public class StartRouterEvent extends AbstractEvent {
 
     public static int startRouter(GlobalController gc, long time, String address, String name) {
         int rId = gc.getNextNodeId();
-
-        if (gc.isSimulation()) {
-            return rId;
+        if (!gc.isSimulation()) {
+        	if (doRouterStart(gc, rId, address, name) == false) {
+                return -1;
+            }
         }
-
-        if (doRouterStart(gc, rId, address, name) == false) {
-            //  System.err.println("Did not start");
-            // gc.unregisterRouter(rId);
-            return -1;
-        }
-
         gc.registerRouter(rId);
         gc.addAPNode(time, rId);
 

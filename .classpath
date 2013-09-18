@@ -14,5 +14,5 @@
 	<classpathentry kind="lib" path="libs/rgcxmlparse.jar"/>
 	<classpathentry kind="lib" path="libs/simple-4.1.21.jar"/>
 	<classpathentry kind="lib" path="libs/timeindex-20130121.jar"/>
-	<classpathentry kind="output" path="classes"/>
+	<classpathentry kind="output" path=""/>
 </classpath>

@@ -8,7 +8,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 import usr.router.RouterController;
 import usr.router.RouterOptions;
-import usr.lifeEstimate.LifeSpanEstimate;
+import usr.lifeEstimate.LifetimeEstimate;
 
 /** Implements Random AP Controller */
 
@@ -21,7 +21,7 @@ public class NullAPController implements APController {
     boolean changedAPs_ = false;
     ArrayList<Integer> APs_ = null;    // APs indexed by router
     ArrayList<Integer> APCosts_ = null;  // Costs to each AP
-    LifeSpanEstimate lse_ = null;
+    LifetimeEstimate lse_ = null;
 
     NullAPController (RouterOptions o) {
         APGIDs_ = new ArrayList<Integer>();
@@ -29,7 +29,7 @@ public class NullAPController implements APController {
         APCosts_ = new ArrayList<Integer>();
         APs_.add(0);    // Make arrays offset 1
         APCosts_.add(0);
-        lse_ = LifeSpanEstimate.getLifeSpanEstimate(o);
+        lse_ = LifetimeEstimate.getLifetimeEstimate(o);
         options_ = o;
     }
 
@@ -152,14 +152,14 @@ public class NullAPController implements APController {
     }
 
     /** Set AP for given gid */
-    public void setAP(int gid, int ap, int cost, GlobalController g) {
+    public void setAP(long time,int gid, int ap, int cost, GlobalController g) {
         Integer thisAP = APs_.get(gid);
 
         //System.out.println("SETAP CALLED");
         if (thisAP == null) {
             APs_.set(gid, ap);
             APCosts_.set(gid, cost);
-            g.setAP(gid, ap);
+            g.setAP(time, gid, ap);
         } else {
 
             APCosts_.set(gid, cost);
@@ -169,7 +169,7 @@ public class NullAPController implements APController {
                 thisAP = ap;
                 APs_.set(gid, ap);
                 //System.out.println("Calling g");
-                g.setAP(gid, ap);
+                g.setAP(time, gid, ap);
             }
         }
 
@@ -197,7 +197,7 @@ public class NullAPController implements APController {
             if (closest == null) {
                 addAccessPoint(time, i, g);
             } else {
-                setAP(i, closest.getFirst(), closest.getSecond(), g);
+                setAP(time,i, closest.getFirst(), closest.getSecond(), g);
             }
         }
         changedNet_ = false;
@@ -250,7 +250,7 @@ public class NullAPController implements APController {
         }
         lse_.newAP(time, gid);
         APGIDs_.add(gid);
-        setAP(gid, gid, 0, g);
+        setAP(time,gid, gid, 0, g);
     }
 
     /** Remove access point with ID gid */
@@ -367,11 +367,9 @@ public class NullAPController implements APController {
         changedNet_ = true;
     }
 
-    /** Node has been removed from network and hence can no longer be AP --
-        note that access points will  */
+    /** Node has been removed from network and hence can no longer be AP */
     @Override
 	public void removeNode(long time, int gid) {
-        lse_.nodeDeath(time, gid);
         changedNet_ = true;
 
         int index = APGIDs_.indexOf(gid);

@@ -311,7 +311,7 @@ public class StartLinkEvent extends AbstractEvent {
         if (i == MAX_TRIES) {
             Logger.getLogger("log").logln(USR.ERROR,
                                           leadin() + "Giving up on linking");
-            gc.bailOut();
+            gc.shutDown();
         }
 
         return linkID;

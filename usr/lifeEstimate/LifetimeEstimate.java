@@ -14,7 +14,7 @@ import usr.router.RouterOptions;
 /** Produces estimates of life spans given information about node births
    and deaths*/
 
-public class LifeSpanEstimate {
+public class LifetimeEstimate {
     ArrayList<Integer> deaths_;     // lifespan of nodes which are dead
     HashMap<Integer, Long> births_;    // birth time of nodes which are alive
     ArrayList<Integer> APDeaths_;     // Same for Agg Points
@@ -26,7 +26,7 @@ public class LifeSpanEstimate {
     double mu_ = 0.0;      // Parameters of lognormal tail fit
     double sigma_ = 0.0;
 
-    static LifeSpanEstimate mainLSE_= null;
+    static LifetimeEstimate mainLSE_= null;
 
     static final int MIN_DEATHS = 5;
     static final int MIN_LIVE = 0;
@@ -39,12 +39,12 @@ public class LifeSpanEstimate {
     static final double TAIL_MISS_PERCENT = 0.0;    // Per centage of KM
     // estimator points to be used to fit lognormal parms
 
-    private LifeSpanEstimate(RouterOptions o) {
+    private LifetimeEstimate(RouterOptions o) {
         options_ = o;
         commonInit();
     }
 
-    private LifeSpanEstimate() {
+    private LifetimeEstimate() {
         options_ = null;
         commonInit();
     }
@@ -54,13 +54,22 @@ public class LifeSpanEstimate {
      * @param RouterOptions
      * @return LifeSpanEstimate
      */
-    public static LifeSpanEstimate getLifeSpanEstimate(RouterOptions o) {
+    public static LifetimeEstimate getLifetimeEstimate(RouterOptions o) {
     	if (mainLSE_ == null) {
-    		mainLSE_= new LifeSpanEstimate(o);
+    		mainLSE_= new LifetimeEstimate(o);
     	} else {
     		mainLSE_.setOptions(o);
     	}
     	return mainLSE_;
+    }
+
+    /**
+     *
+     * @return true if a lifetime estimator is being used
+     */
+    public static boolean usingLifetimeEstimate()
+    {
+    	return (mainLSE_ != null);
     }
 
     private void setOptions(RouterOptions o)
@@ -73,9 +82,9 @@ public class LifeSpanEstimate {
      * @param RouterOptions
      * @return LifeSpanEstimate
      */
-    public static LifeSpanEstimate getLifeSpanEstimate() {
+    public static LifetimeEstimate getLifetimeEstimate() {
     	if (mainLSE_ == null) {
-    		mainLSE_= new LifeSpanEstimate();
+    		mainLSE_= new LifetimeEstimate();
     	}
     	return mainLSE_;
     }
@@ -278,7 +287,7 @@ public class LifeSpanEstimate {
         return (int)(time-birth);
     }
 
-    /** A node dies -- register this */
+    /** An AP dies -- register this */
     public void APDeath(long time, int gid) {
         int lifeTime = (int)(time - APBirths_.get(gid) );
         APBirths_.remove(gid);

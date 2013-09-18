@@ -46,8 +46,8 @@ import usr.events.OutputEvent;
 import usr.events.SetAggPointEvent;
 import usr.events.SimpleEventScheduler;
 import usr.events.StartLinkEvent;
-import usr.events.StartRouterEvent;
 import usr.interactor.LocalControllerInteractor;
+import usr.lifeEstimate.LifetimeEstimate;
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.BitMask;
 import usr.logging.Logger;
@@ -388,7 +388,6 @@ public class GlobalController implements ComponentController {
 
     private void runSimulation() {
         isActive_ = true;
-
         while (isActive_) {
             Event ev = scheduler_.getFirstEvent();
 
@@ -400,10 +399,13 @@ public class GlobalController implements ComponentController {
             try {
                 executeEvent(ev);
             } catch (InstantiationException ine) {
+            	Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not instantiate"+ine);
                 isActive_ = false;
             } catch (InterruptedException ie) {
+            	Logger.getLogger("log").logln(USR.ERROR, leadin() + "Interrupted event"+ie);
                 isActive_ = false;
             } catch (TimeoutException te) {
+            	Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event got timeout"+te);
                 isActive_ = false;
             }
         }
@@ -417,7 +419,6 @@ public class GlobalController implements ComponentController {
 
     private void runEmulation() {
         isActive_ = true;
-
         // Start Scheduler as thread
         Thread t;
         synchronized (runLoop_) {
@@ -545,15 +546,6 @@ public class GlobalController implements ComponentController {
      */
     protected void stopConsole() {
         console_.stop();
-    }
-
-
-    /** bail out of simulation relatively gracefully */
-    public void bailOut() {
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Bailing out of run!");
-        shutDown();
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exit after bailout");
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Bailing out of run!");
     }
 
 
@@ -726,23 +718,9 @@ public class GlobalController implements ComponentController {
 
 
 
-    /**
-     * Start a router
-     */
-    public JSONObject startRouter(String address, String name) {
-        try {
-            StartRouterEvent ev = new StartRouterEvent(getElapsedTime(), null, address, name);
-            JSONObject jsobj = executeEvent(ev);
-            return jsobj;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     /** Register existence of router */
     public void registerRouter(int rId) {
         network_.addNode(rId);
-
         // inform about all routers
         informAllRouters();
 
@@ -750,10 +728,9 @@ public class GlobalController implements ComponentController {
 
     /** Unregister a router and all links from structures in
      *  GlobalController*/
-    public void unregisterRouter(int rId) {
+    public void unregisterRouter(int rId, long time) {
         int[] out = getOutLinks(rId);
         APController_.removeNode(getElapsedTime(), rId);
-
         for (int i = out.length - 1; i >= 0; i--) {
             unregisterLink(rId, out[i]);
         }
@@ -769,7 +746,7 @@ public class GlobalController implements ComponentController {
     /**
      * End router
      */
-    public JSONObject endRouter(int routerId) {
+    public JSONObject sendRouter(int routerId) {
         try {
             EndRouterEvent ev = new EndRouterEvent(getElapsedTime(), null, routerId);
             JSONObject jsobj = executeEvent(ev);
@@ -782,6 +759,7 @@ public class GlobalController implements ComponentController {
     /** Find some router info
      */
     public BasicRouterInfo findRouterInfo(int rId) {
+
         return routerIdMap_.get(rId);
     }
 
@@ -1505,7 +1483,7 @@ public class GlobalController implements ComponentController {
     /*
      * Shutdown
      */
-    protected void shutDown() {
+    public void shutDown() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "SHUTDOWN CALLED!");
 
         if (!options_.isSimulation()) {
@@ -1513,8 +1491,14 @@ public class GlobalController implements ComponentController {
             // stop all Routers
             for (int routerId : new ArrayList<Integer>(getRouterList())) {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "SHUTDOWN router " + routerId);
-
-                endRouter(routerId);
+                try {
+                	EndRouterEvent re= new EndRouterEvent(getElapsedTime(),null,routerId);
+                	// Execution is not through semaphore in shutDown since we have shutDown
+                	re.execute(this);
+                } catch (InstantiationException e) {
+                	// TODO Auto-generated catch block
+                	e.printStackTrace();
+                }
             }
 
 
@@ -2027,7 +2011,7 @@ public class GlobalController implements ComponentController {
                     } catch (Exception e) {
                         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exception from " + lh + ". " + e.getMessage());
                         e.printStackTrace();
-                        bailOut();
+                        shutDown();
                         return;
                     }
                 }
@@ -2048,7 +2032,7 @@ public class GlobalController implements ComponentController {
             // couldnt reach all LocalControllers
             // We can keep a list of failures if we need to.
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Can't talk to all LocalControllers");
-            bailOut();
+            shutDown();
             return;
         }
 
@@ -2067,7 +2051,7 @@ public class GlobalController implements ComponentController {
 
         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Only " + aliveCount
                                       + " from " + noControllers_ + " local Controllers responded.");
-        bailOut();
+        shutDown();
         return;
     }
 
@@ -2130,13 +2114,15 @@ public class GlobalController implements ComponentController {
         }
     }
 
-    public JSONObject setAP(int gid, int AP) {
-        return SetAggPointEvent.setAP(gid,AP,this);
+    public JSONObject setAP(long time,int gid, int AP) {
+        return SetAggPointEvent.setAP(time,gid,AP,this);
     }
 
-    public void registerAggPoint(int gid, int AP) {
+    public void registerAggPoint(long time,int gid, int AP) {
         apInfo.put(gid, AP);
-
+        if (LifetimeEstimate.usingLifetimeEstimate()) {
+        	LifetimeEstimate.getLifetimeEstimate().newAP(time, gid);
+        }
         if (gid == AP) {
             apList.add(gid);
         } else {
@@ -2323,7 +2309,7 @@ public class GlobalController implements ComponentController {
 
                 if ((l1 == -1) || (l2 == -1)) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
-                    bailOut();
+                    shutDown();
                     return;
                 }
 
@@ -2410,7 +2396,7 @@ public class GlobalController implements ComponentController {
 
                 if ((l1 == -1) || (l2 == -1)) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
-                    bailOut();
+                    shutDown();
                     return;
                 }
 

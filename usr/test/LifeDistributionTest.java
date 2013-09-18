@@ -11,7 +11,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import rgc.probdistributions.ProbDistribution;
-import usr.lifeEstimate.LifeSpanEstimate;
+import usr.lifeEstimate.LifetimeEstimate;
 import usr.logging.BitMask;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -77,7 +77,7 @@ public class LifeDistributionTest {
             System.exit(-1);
         }
 
-        LifeSpanEstimate e = LifeSpanEstimate.getLifeSpanEstimate();
+        LifetimeEstimate e = LifetimeEstimate.getLifetimeEstimate();
         //double y= e.erf(0.9);
         //System.out.println("Erf 0.5 ="+ y);
         //System.out.println("Inverse ="+ e.inverf(y));

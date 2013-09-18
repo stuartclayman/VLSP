@@ -29,16 +29,16 @@ public class SetAggPointEvent extends AbstractEvent {
 
     @Override
 	public JSONObject execute(GlobalController gc) {
-        JSONObject json= setAP(routerNo_, AP_, gc);
+        JSONObject json= setAP(time_,routerNo_, AP_, gc);
 
         return json;
     }
 
-    public static JSONObject setAP(int gid, int AP, GlobalController gc) {
+    public static JSONObject setAP(long time, int gid, int AP, GlobalController gc) {
         //System.out.println("setAP called");
-        
+
         JSONObject json= new JSONObject();
-        
+
         try {
             json.put("success", (Boolean)false);
             json.put("msg", "SetAggPoint Event "+gid+" "+AP);
@@ -50,31 +50,19 @@ public class SetAggPointEvent extends AbstractEvent {
                 "JSONException in SetAggPointEvent should not occur");
         }
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router " + gid + " now has access point " + AP);
-
-        BasicRouterInfo br = gc.findRouterInfo(gid);
-
-        if (br == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to find router " + gid
-                                          + " in router map");
-            return json;
+        if (!gc.isSimulation()) {
+        	if (!callSetAP(gid,AP,gc)) {
+                try {
+                    json.put("success", (Boolean)false);
+                } catch (Exception e) {
+                    Logger.getLogger("log").logln(
+                        USR.ERROR,
+                        "JSONException in SetAggPointEvent should not occur");
+                }
+                return json;
+        	}
         }
-
-        LocalControllerInteractor lci = gc.getLocalController(br);
-
-        if (lci == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to find router " + gid
-                                          + " in interactor map");
-            return json;
-        }
-
-        try {
-            lci.setAP(gid, AP);
-
-            // save data
-            gc.registerAggPoint(gid, AP);
-        } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to set AP for router " + gid);
-        }
+        gc.registerAggPoint(time,gid, AP);
         try {
             json.put("success", (Boolean)true);
         } catch (Exception e) {
@@ -84,6 +72,36 @@ public class SetAggPointEvent extends AbstractEvent {
         }
         return json;
     }
+
+    private static boolean callSetAP (int gid, int AP, GlobalController gc) {
+        BasicRouterInfo br = gc.findRouterInfo(gid);
+
+        if (br == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to find router " + gid
+                                          + " in router map");
+            return false;
+        }
+
+        LocalControllerInteractor lci = gc.getLocalController(br);
+
+        if (lci == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to find router " + gid
+                                          + " in interactor map");
+            return false;
+        }
+
+        try {
+            lci.setAP(gid, AP);
+
+            // save data
+
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " unable to set AP for router " + gid);
+            return false;
+        }
+        return true;
+    }
+
 
     private static String leadin() {
         return "SetAggPt: ";

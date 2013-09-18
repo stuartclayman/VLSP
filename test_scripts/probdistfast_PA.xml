@@ -29,7 +29,10 @@
                  <Parameter>1.0</Parameter>
             </ProbElement>
       </LinkCreateDist>
-      <Parameters>
-          <PreferentialAttachment>true</PreferentialAttachment>
-      </Parameters>
+    <LinkPicker>
+            <Name>
+                usr.engine.linkpicker.PreferentialLinkPicker
+            </Name>
+      </LinkPicker>
+
 </ProbabilisticEngine>

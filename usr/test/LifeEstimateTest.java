@@ -11,7 +11,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import rgc.probdistributions.ProbDistribution;
-import usr.lifeEstimate.LifeSpanEstimate;
+import usr.lifeEstimate.LifetimeEstimate;
 import usr.logging.BitMask;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -77,7 +77,7 @@ public class LifeEstimateTest {
             System.exit(-1);
         }
 
-        LifeSpanEstimate e = LifeSpanEstimate.getLifeSpanEstimate();
+        LifetimeEstimate e = LifetimeEstimate.getLifetimeEstimate();
         //System.err.println("Gamma (1.2) "+MathFunctions.completeGamma(1.2));
         //System.err.println("Gamma (0.5) "+MathFunctions.completeGamma(0.5));
         //System.err.println("LowerGamma (0.5,1.2) "+MathFunctions.incompleteLowerGamma(0.5,1.2));

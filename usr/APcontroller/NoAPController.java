@@ -7,7 +7,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 import usr.router.RouterController;
 
-import usr.lifeEstimate.LifeSpanEstimate;
+import usr.lifeEstimate.LifetimeEstimate;
 
 /** Implements AP controller which does nothing*/
 
@@ -15,10 +15,10 @@ public class NoAPController implements APController {
 
 
 
-    LifeSpanEstimate lse_ = null;
+    LifetimeEstimate lse_ = null;
 
     NoAPController () {
-        lse_ = LifeSpanEstimate.getLifeSpanEstimate();
+        lse_ = LifetimeEstimate.getLifetimeEstimate();
     }
 
     /** Return number of access points */
@@ -123,8 +123,6 @@ public class NoAPController implements APController {
         note that access points will  */
     @Override
 	public void removeNode(long time, int gid) {
-        lse_.nodeDeath(time, gid);
-
     }
 
     /** Add link to network */
