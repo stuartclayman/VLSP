@@ -1,4 +1,4 @@
-package usr.APcontroller;
+package usr.lifeEstimate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,7 +58,7 @@ public class LifeSpanEstimate {
     /* Given a list of nodes, scores and lifetimes, pick n of them
      * with the highest score, possibly with weighting due to lifespan
      */
-    ArrayList<Integer> pickNByScore(int N, double[] score, ArrayList<Integer> nodes, boolean max, long time) {
+    public ArrayList<Integer> pickNByScore(int N, double[] score, ArrayList<Integer> nodes, boolean max, long time) {
         int noReturn = Math.min(nodes.size(), N);
         ArrayList<Integer> picked = new ArrayList<Integer>();
         double [] fixedScore;
@@ -267,7 +267,7 @@ public class LifeSpanEstimate {
         births_.remove(gid);
 
         // Keep list of deaths ordered
-        for (int i = 0; i < deaths_.size(); i++) { 
+        for (int i = 0; i < deaths_.size(); i++) {
             if (deaths_.get(i) >= lifeTime) {
                 deaths_.add(i, lifeTime);
                 return;
@@ -306,7 +306,7 @@ public class LifeSpanEstimate {
         APBirths_.remove(gid);
 
         // Keep list of deaths ordered
-        for (int i = 0; i < APDeaths_.size(); i++) { 
+        for (int i = 0; i < APDeaths_.size(); i++) {
             if (APDeaths_.get(i) >= lifeTime) {
                 APDeaths_.add(i, lifeTime);
                 return;

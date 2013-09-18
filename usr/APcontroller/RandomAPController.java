@@ -1,7 +1,6 @@
 package usr.APcontroller;
 
 import java.util.ArrayList;
-
 import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;

@@ -7,6 +7,8 @@ import usr.logging.Logger;
 import usr.logging.USR;
 import usr.router.RouterController;
 
+import usr.lifeEstimate.LifeSpanEstimate;
+
 /** Implements AP controller which does nothing*/
 
 public class NoAPController implements APController {

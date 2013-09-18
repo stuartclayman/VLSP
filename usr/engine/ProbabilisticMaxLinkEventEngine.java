@@ -27,8 +27,9 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /**
- * This engine uses probability distribtions to add events into the
- * event library
+ * This engine uses probability distributions to add events into the
+ * event library -- in this case Links have a Minimum and Maximum number of links
+ * They would like
  */
 public class ProbabilisticMaxLinkEventEngine extends
 ProbabilisticEventEngine {
@@ -48,7 +49,8 @@ ProbabilisticEventEngine {
         pendingLinks_ = new HashMap<Integer, ArrayList<Integer> >();
     }
 
-    public void precedeEvent(Event e, EventScheduler s, GlobalController g) {
+    @Override
+    public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
         if (e instanceof EndRouterEvent) {
             precedeEndRouter((EndRouterEvent)e, s, g);
         } else if (e instanceof EndLinkEvent) {
