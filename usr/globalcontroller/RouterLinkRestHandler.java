@@ -30,7 +30,8 @@ public class RouterLinkRestHandler extends BasicRequestHandler {
     /**
      * Handle a request and send a response.
      */
-    public boolean handle(Request request, Response response) {
+    @Override
+	public boolean handle(Request request, Response response) {
         // get GlobalController
         gc = (GlobalController)getManagementConsole().getAssociated();
 
@@ -57,15 +58,14 @@ public class RouterLinkRestHandler extends BasicRequestHandler {
 
             // get the path
             Path path = request.getPath();
-            String directory = path.getDirectory();
+            path.getDirectory();
             String name = path.getName();
             String[] segments = path.getSegments();
 
             // Get the method
             String method = request.getMethod();
 
-            // Get the Query
-            Query query = request.getQuery();
+            request.getQuery();
 
             // and evaluate the input
             if (method.equals("POST")) {
@@ -134,8 +134,11 @@ public class RouterLinkRestHandler extends BasicRequestHandler {
         scanner = new Scanner(routerValue);
 
         if (scanner.hasNextInt()) {
+
             routerID = scanner.nextInt();
+            scanner.close();
         } else {
+        	scanner.close();
             badRequest(response, "arg router id is not an Integer");
             response.close();
             return;
@@ -246,7 +249,9 @@ public class RouterLinkRestHandler extends BasicRequestHandler {
 
         if (scanner.hasNextInt()) {
             routerID = scanner.nextInt();
+            scanner.close();
         } else {
+        	scanner.close();
             badRequest(response, "arg router id is not an Integer");
             response.close();
             return;
@@ -269,7 +274,9 @@ public class RouterLinkRestHandler extends BasicRequestHandler {
 
         if (scanner.hasNextInt()) {
             linkID = scanner.nextInt();
+            scanner.close();
         } else {
+        	scanner.close();
             badRequest(response, "arg link id is not an Integer");
             response.close();
             return;

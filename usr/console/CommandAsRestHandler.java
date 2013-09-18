@@ -18,7 +18,8 @@ public class CommandAsRestHandler extends BasicRequestHandler  {
     /**
      * Handle a request and send a response.
      */
-    public boolean handle(Request request, Response response) {
+    @Override
+	public boolean handle(Request request, Response response) {
         try {
             long time = System.currentTimeMillis();
 
@@ -56,8 +57,6 @@ public class CommandAsRestHandler extends BasicRequestHandler  {
             ManagementConsole mc = getManagementConsole();
             USRRestConsole rc = (USRRestConsole)mc;
             RestCommand command = (RestCommand)rc.find(commandName);
-            boolean result;
-
             if (command != null) {
                 // we got a command
             } else {
@@ -67,7 +66,7 @@ public class CommandAsRestHandler extends BasicRequestHandler  {
 
             // and evaluate the input
             try {
-                result = command.evaluate(request, response);
+                command.evaluate(request, response);
 
             } catch (Exception e) {
                 // try and send generic error code

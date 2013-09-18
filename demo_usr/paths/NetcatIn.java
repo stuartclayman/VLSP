@@ -17,7 +17,7 @@ import usr.logging.USR;
 /**
  * An application which is a netcat source for UDP data.
  * It listens on stdin and forwards packets to
- * a UDP address:port combination. 
+ * a UDP address:port combination.
  * Optional args:
  * -i inter packet delay (in milliseconds)
  * -d start-up delay (in milliseconds)
@@ -46,7 +46,8 @@ public class NetcatIn implements Application {
      * NetcatIn udp-addr:udp-port
      *
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         Scanner scanner;
 
         if (args.length >= 1) {
@@ -76,10 +77,12 @@ public class NetcatIn implements Application {
                 scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
-
+                scanner.close();
                 // Construct a SocketAddress
                 udpAddr = new InetSocketAddress(addr, port);
 
@@ -173,7 +176,8 @@ public class NetcatIn implements Application {
     /**
      * Start application
      */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up outbound socket
             // don't bind() or connect() so we can set src and dst addr and port
@@ -192,10 +196,11 @@ public class NetcatIn implements Application {
     }
 
 
-    /** 
+    /**
      * Stop the application
      */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
 
         if (outSocket != null) {
@@ -213,7 +218,8 @@ public class NetcatIn implements Application {
      * Run the NetcatIn application
      *
      */
-    public void run()  {
+    @Override
+	public void run()  {
         java.net.DatagramPacket outDatagram = null;
 
         byte[] udpBuffer = new byte[8192];
@@ -236,7 +242,7 @@ public class NetcatIn implements Application {
             while (running) {
 
                 // read data from stdin
-                int read = bis.read(data, 0, sendSize); 
+                int read = bis.read(data, 0, sendSize);
 
 
                 if (read == -1) {
@@ -265,7 +271,7 @@ public class NetcatIn implements Application {
                 // get dst address and port
                 InetAddress dstAddr = udpAddr.getAddress();
                 int dstPort = udpAddr.getPort();
-                
+
                 // set the dst address and port
                 // the src addr and port will be set in send()
                 outDatagram.setAddress(dstAddr);
@@ -276,7 +282,7 @@ public class NetcatIn implements Application {
                     outSocket.send(outDatagram);
 
 
-                    // Inter Packet Delay 
+                    // Inter Packet Delay
                     if (interPacketDelay > 0) {
                         Thread.sleep(interPacketDelay);
                     } else if (interPacketDelay < 0) {

@@ -22,7 +22,7 @@ import usr.net.SocketAddress;
 /**
  * An application which is an Ingress point for UDP data.
  * It listens on a UDP port and forwards packets to
- * a USR address:port combination. 
+ * a USR address:port combination.
  * <p>
  * Ingress udp-port usr-addr:usr-port [optionals]
  * Optional args:
@@ -53,11 +53,11 @@ public class Ingress implements Application, Reconfigure {
 
     // UDP Reader
     UDPReader udpReader;
-    Future udpReaderFuture;
+    Future<?> udpReaderFuture;
 
     // USR Forwarder
     USRForwarder usrForwarder;
-    Future usrForwarderFuture;
+    Future<?> usrForwarderFuture;
 
     // Management interface
 
@@ -65,11 +65,11 @@ public class Ingress implements Application, Reconfigure {
 
     // ManagementPort
     ManagementPort mPort;
-    Future mPortFuture;
+    Future<?> mPortFuture;
 
     // ManagementListener
     ManagementListener mListener;
-    Future mListenerFuture;
+    Future<?> mListenerFuture;
 
     /**
      * Forward data from a UDP port to a USR port.
@@ -83,7 +83,8 @@ public class Ingress implements Application, Reconfigure {
      * Ingress udp-port usr-addr:usr-port [optionals]
      *
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         Scanner scanner;
 
         if (args.length >= 2) {
@@ -93,10 +94,12 @@ public class Ingress implements Application, Reconfigure {
             scanner = new Scanner(udpString);
             if (scanner.hasNextInt()) {
                 udpPort = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad UDP port " + args[0]);
             }
-
+            scanner.close();
             // get addr:path next
 
             String next = args[1];
@@ -123,7 +126,9 @@ public class Ingress implements Application, Reconfigure {
                 scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
 
@@ -201,7 +206,8 @@ public class Ingress implements Application, Reconfigure {
     /**
      * Start application
      */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         queue = new LinkedBlockingDeque<usr.net.Datagram>();
 
         try {
@@ -258,10 +264,11 @@ public class Ingress implements Application, Reconfigure {
         return new ApplicationResponse(false,  msg);
     }
 
-    /** 
+    /**
      * Stop the application
      */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
 
         udpReaderFuture.cancel(true);
@@ -284,7 +291,8 @@ public class Ingress implements Application, Reconfigure {
      * Run the Ingress application
      *
      */
-    public void run()  {
+    @Override
+	public void run()  {
         // Start Delay
         if (startDelay > 0) {
             try {
@@ -293,7 +301,7 @@ public class Ingress implements Application, Reconfigure {
             }
         }
 
-        /* 
+        /*
          * Start the supporting threads that actually reads from the UDP socket
          * and forwards to the USR socket
          */
@@ -319,7 +327,7 @@ public class Ingress implements Application, Reconfigure {
             latch.await();
         } catch (InterruptedException ie) {
         }
-  
+
 
         udpReader.await();
         usrForwarder.await();
@@ -337,7 +345,8 @@ public class Ingress implements Application, Reconfigure {
     /**
      * Process a reconfiguration
      */
-    public Object process(JSONObject jsobj) {
+    @Override
+	public Object process(JSONObject jsobj) {
 
         /* get new USR address */
 
@@ -370,10 +379,12 @@ public class Ingress implements Application, Reconfigure {
                 Scanner scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
-
+                scanner.close();
                 // Construct a SocketAddress
                 newUsrAddr = new SocketAddress(addr, port);
 
@@ -408,7 +419,7 @@ public class Ingress implements Application, Reconfigure {
             return new ApplicationResponse(false, "Cannot submit task: " + e.getMessage());
         }
 
-        
+
         return new ApplicationResponse(true, "started");
     }
 

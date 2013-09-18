@@ -29,7 +29,8 @@ public class CreateConnectionCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+	@Override
+	public boolean evaluate(Request request, Response response) {
         try {
             // Call CreateConnection
             CreateConnection creator = new CreateConnection(controller, request, response);
@@ -43,9 +44,7 @@ public class CreateConnectionCommand extends RouterCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
     }
 
 }

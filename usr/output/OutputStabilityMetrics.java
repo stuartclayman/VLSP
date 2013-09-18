@@ -14,7 +14,8 @@ public class OutputStabilityMetrics implements OutputFunction {
     private boolean first_ = true;
 
     /** In fact this only requests output -- actual output occurs later */
-    public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
+    @Override
+	public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
         if (first_) {
             p.println("Time Nodes Links d_bar d_max");
             first_ = false;
@@ -25,11 +26,13 @@ public class OutputStabilityMetrics implements OutputFunction {
                   + gc.getAbstractNetwork().getdmax());
     }
 
-    public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
+    @Override
+	public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
         makeOutput(event.getTime(), s, out, gc);
     }
 
-    public void parseExtraXML(Node n) throws SAXException {
+    @Override
+	public void parseExtraXML(Node n) throws SAXException {
     }
 
     /**

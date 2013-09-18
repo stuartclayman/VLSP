@@ -32,7 +32,8 @@ public class Transfer implements Application {
      * Initialisation for Send.
      * Send address port count
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         if (args.length != 4) {
             return new ApplicationResponse(false, "Need arguments addr port, bytes, rate");
         }
@@ -56,7 +57,8 @@ public class Transfer implements Application {
     }
 
     /** Start application with argument  */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up socket
             socket = new DatagramSocket();
@@ -79,14 +81,16 @@ public class Transfer implements Application {
     }
 
     /** Implement graceful shut down */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
         closeDown();
         return new ApplicationResponse(true, "");
     }
 
     /** Run the ping application */
-    public void run() {
+    @Override
+	public void run() {
         Datagram datagram = null;
         int MTU = 1500;
         byte [] blank = new byte[MTU];

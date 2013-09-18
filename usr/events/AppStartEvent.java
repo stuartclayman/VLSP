@@ -49,7 +49,8 @@ public class AppStartEvent extends AbstractEvent {
         setRouterNo(addr, gc);
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         String str = "AppStart " + time_ + getName();
 
         return str;
@@ -83,7 +84,8 @@ public class AppStartEvent extends AbstractEvent {
         routerNo_ = rInfo.getId();
     }
 
-    public JSONObject execute(GlobalController gc) throws InstantiationException {
+    @Override
+	public JSONObject execute(GlobalController gc) throws InstantiationException {
         if (!routerNumSet_) {
             setRouterNo(address_, gc);
         }
@@ -110,7 +112,7 @@ public class AppStartEvent extends AbstractEvent {
                 String appName = bri.getAppName(appID);
                 Map<String, Object> data = bri.getApplicationData(appName);
                 json.put("id", appID);
-                json.put("aid", (Integer)data.get("aid"));
+                json.put("aid", data.get("aid"));
                 json.put("name", appName);
                 json.put("routerID", bri.getId());
                 json.put("msg", "Started Application on router " + getName());
@@ -176,8 +178,8 @@ public class AppStartEvent extends AbstractEvent {
                 Map<String, Object> dataMap = new HashMap<String, Object>();
                 dataMap.put("time", "00:00:00");
                 dataMap.put("id", appID);
-                dataMap.put("aid", (Integer)response.get("aid"));
-                dataMap.put("startime", (Long)response.get("startTime"));
+                dataMap.put("aid", response.get("aid"));
+                dataMap.put("startime", response.get("startTime"));
                 dataMap.put("runtime", 0);
                 dataMap.put("classname", className);
                 dataMap.put("args", Arrays.asList(args).toString());

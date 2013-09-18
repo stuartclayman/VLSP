@@ -20,7 +20,7 @@ import usr.net.DatagramSocket;
 /**
  * An application which is an BasicEgress point for UDP data.
  * It listens on a USR port and forwards packets to
- * a UDP address:port combination. 
+ * a UDP address:port combination.
  * <p>
  * BasicEgress usr-port udp-addr:udp-port [optinals]
  * Optional args:
@@ -45,11 +45,11 @@ public class BasicEgress implements Application {
 
     // USR Reader
     USRReader usrReader;
-    Future usrReaderFuture;
+    Future<?>  usrReaderFuture;
 
     // UDP Forwarder
     UDPForwarder udpForwarder;
-    Future udpForwarderFuture;
+    Future<?>  udpForwarderFuture;
 
     public BasicEgress() {
         latch = new CountDownLatch(1);
@@ -60,7 +60,8 @@ public class BasicEgress implements Application {
      * BasicEgress usr-port udp-addr:udp-port [optinals]
      *
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         Scanner scanner;
 
         if (args.length >= 2) {
@@ -70,10 +71,12 @@ public class BasicEgress implements Application {
             scanner = new Scanner(usrString);
             if (scanner.hasNextInt()) {
                 usrPort = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad USR port " + args[0]);
             }
-
+            scanner.close();
             // get addr:path next
 
             String next = args[1];
@@ -100,7 +103,9 @@ public class BasicEgress implements Application {
                 scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
 
@@ -167,7 +172,8 @@ public class BasicEgress implements Application {
     /**
      * Start application
      */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             LinkedBlockingDeque<usr.net.Datagram> queue = new LinkedBlockingDeque<usr.net.Datagram>();
 
@@ -190,10 +196,11 @@ public class BasicEgress implements Application {
     }
 
 
-    /** 
+    /**
      * Stop the application
      */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
 
         usrReaderFuture.cancel(true);
@@ -212,7 +219,8 @@ public class BasicEgress implements Application {
      * Run the BasicEgress application
      *
      */
-    public void run()  {
+    @Override
+	public void run()  {
         // Start Delay
         if (startDelay > 0) {
             try {
@@ -221,7 +229,7 @@ public class BasicEgress implements Application {
             }
         }
 
-        /* 
+        /*
          * Start the supporting threads that actually reads from the UDP socket
          * and forwards to the USR socket
          */
@@ -243,7 +251,7 @@ public class BasicEgress implements Application {
             latch.await();
         } catch (InterruptedException ie) {
         }
-  
+
 
 
         usrReader.await();

@@ -86,7 +86,6 @@ public class LifeDistributionTest {
         //System.out.println("Inverse ="+ e.inverfc(y));
         noTests = Integer.parseInt(args[1]);
         int [] lifeSpans = new int[noTests];
-        double tot = 0;
         int maxL = 0;
 
         for (i = 0; i < noTests; i++) {
@@ -106,26 +105,15 @@ public class LifeDistributionTest {
         // System.err.println("MaxL="+maxL+" end time "+endTime);
         int lifeStep = endTime/noTests;
         int time = 0;
-        int alive = 0;
-        int outlast = 0;
-        int deaths = 0;
-
         for (i = 0; i < noTests; i++) {
             e.newNode(time, i);
 
             if (lifeSpans[i] > endTime) {
-                outlast += 1;
             }
 
             if (time + lifeSpans[i] < endTime) {
                 e.nodeDeath(time + lifeSpans[i], i);
-                //  System.err.println("Death at time "+time+" life span "+lifeSpans[i]+
-                //    " end Time "+endTime);
-                deaths++;
             } else {
-                //   System.err.println("Node born at time "+time+" life span "+lifeSpans[i]+
-                //   " outlasts end Time "+endTime);
-                alive += 1;
             }
             time += lifeStep;
         }

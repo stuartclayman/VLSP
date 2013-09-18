@@ -38,7 +38,8 @@ public class Send implements Application {
      * -d start-up delay (in milliseconds)
      * -s size of send buffer (in bytes)
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         if (args.length >= 3) {
             // try address
             try {
@@ -53,7 +54,9 @@ public class Send implements Application {
 
             if (scanner.hasNextInt()) {
                 port = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad port " + args[1]);
             }
 
@@ -62,7 +65,9 @@ public class Send implements Application {
 
             if (scanner.hasNextInt()) {
                 count = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad count " + args[2]);
             }
 
@@ -132,7 +137,8 @@ public class Send implements Application {
     }
 
     /** Start application with argument  */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up socket
             socket = new DatagramSocket();
@@ -152,7 +158,8 @@ public class Send implements Application {
     }
 
     /** Implement graceful shut down */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
 
         if (socket != null) {
@@ -165,7 +172,8 @@ public class Send implements Application {
     }
 
     /** Run the Send application */
-    public void run() {
+    @Override
+	public void run() {
         Datagram datagram = null;
 
         // Start Delay

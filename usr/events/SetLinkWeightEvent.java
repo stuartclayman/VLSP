@@ -11,7 +11,6 @@ import usr.common.Pair;
 import usr.engine.EventEngine;
 import usr.globalcontroller.GlobalController;
 import usr.interactor.LocalControllerInteractor;
-import usr.localcontroller.LocalControllerInfo;
 import usr.logging.Logger;
 import usr.logging.USR;
 
@@ -30,13 +29,15 @@ public class SetLinkWeightEvent extends AbstractEvent {
         weight_ = weight;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         String str = "SetLinkWeightEvent " + time_ + " " + router1_ + " " + router2_ + " " + weight_;
 
         return str;
     }
 
-    public JSONObject execute(GlobalController gc) throws InstantiationException {
+    @Override
+	public JSONObject execute(GlobalController gc) throws InstantiationException {
         int linkID = setLinkWeight(router1_, router2_, weight_, gc);
 
         JSONObject jsobj = new JSONObject();
@@ -66,7 +67,6 @@ public class SetLinkWeightEvent extends AbstractEvent {
     protected int setLinkWeight(int router1Id, int router2Id, int weight, GlobalController gc) {
 
         BasicRouterInfo br1, br2;
-        LocalControllerInfo lc1, lc2;
         LocalControllerInteractor lci1, lci2;
 
 
@@ -84,8 +84,8 @@ public class SetLinkWeightEvent extends AbstractEvent {
         }
         //Logger.getLogger("log").logln(USR.STDOUT, "Got router Ids"+br1.getHost()+br2.getHost());
 
-        lc1 = br1.getLocalControllerInfo();
-        lc2 = br2.getLocalControllerInfo();
+        br1.getLocalControllerInfo();
+        br2.getLocalControllerInfo();
         //Logger.getLogger("log").logln(USR.STDOUT, "Got LC");
         lci1 = gc.getLocalController(br1);
         lci2 = gc.getLocalController(br2);
@@ -95,9 +95,9 @@ public class SetLinkWeightEvent extends AbstractEvent {
 
         try {
             // set weight at router1 end
-            lci1.setLinkWeight(br1.getHost(), br1.getManagementPort(), br2.getAddress(), weight); 
+            lci1.setLinkWeight(br1.getHost(), br1.getManagementPort(), br2.getAddress(), weight);
             // set weight at router2 end
-            lci2.setLinkWeight(br2.getHost(), br2.getManagementPort(), br1.getAddress(), weight); 
+            lci2.setLinkWeight(br2.getHost(), br2.getManagementPort(), br1.getAddress(), weight);
         } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() +
                                               "Cannot set weight on link between routers "+router1Id+" "+router2Id);
@@ -117,7 +117,7 @@ public class SetLinkWeightEvent extends AbstractEvent {
         // link with the new weight
 
         // Create Pair<router1Id, router2Id>
-        Pair<Integer, Integer> endPoints = gc.makePair(router1Id, router2Id);
+        Pair<Integer, Integer> endPoints = GlobalController.makePair(router1Id, router2Id);
         // and determine linkID
         int linkID = endPoints.hashCode();
 

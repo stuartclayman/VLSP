@@ -23,14 +23,16 @@ public class ColouredNetworkVisualization implements Visualization {
     /**
      * Set the GlobalController this Visualization gets data from.
      */
-    public void setGlobalController(GlobalController gc) {
+    @Override
+	public void setGlobalController(GlobalController gc) {
         this.gc = gc;
     }
 
     /**
      * Visualize the current topology of the network.
      */
-    public void visualize(PrintStream s) {
+    @Override
+	public void visualize(PrintStream s) {
 
         HashMap<String, ArrayList<BasicRouterInfo> > routerLocations = new HashMap<String, ArrayList<BasicRouterInfo> >();
 

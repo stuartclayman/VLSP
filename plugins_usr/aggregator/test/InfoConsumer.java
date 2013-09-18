@@ -108,6 +108,7 @@ public void start(){
 /**
  * Receiver of a measurment.
  */
+@Override
 public void report(Measurement m){
     System.out.println(m);
 
@@ -222,8 +223,10 @@ public static void main(String[] args){
                 String[] parts = argValue.split("/");
                 Scanner sc = new Scanner(parts[0]);
                 int addr = sc.nextInt();
+                sc.close();
                 sc = new Scanner(parts[1]);
                 int port = sc.nextInt();
+                sc.close();
                 Address gidAddr = new GIDAddress(addr);
 
                 SocketAddress newInputAddr = new SocketAddress(

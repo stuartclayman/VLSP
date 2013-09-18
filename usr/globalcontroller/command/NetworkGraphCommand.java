@@ -30,7 +30,8 @@ public class NetworkGraphCommand extends GlobalCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
         String graphStyle = null;
 
         try {
@@ -85,9 +86,7 @@ public class NetworkGraphCommand extends GlobalCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
 
     }

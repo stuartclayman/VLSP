@@ -33,7 +33,8 @@ public class SetPortAddressCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
         try {
             PrintStream out = response.getPrintStream();
 
@@ -62,6 +63,7 @@ public class SetPortAddressCommand extends RouterCommand {
 
                 Scanner scanner = new Scanner(portNo);
                 int p = scanner.nextInt();
+                scanner.close();
                 RouterPort routerPort = controller.getPort(p);
 
                 if (routerPort == null || routerPort == RouterPort.EMPTY) {
@@ -125,9 +127,7 @@ public class SetPortAddressCommand extends RouterCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
 
     }

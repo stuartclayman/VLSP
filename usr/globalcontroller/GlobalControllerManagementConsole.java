@@ -22,7 +22,8 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
         initialise(port);
     }
 
-    public void registerCommands() {
+    @Override
+	public void registerCommands() {
 
         // setup default /router/ handler
         defineRequestHandler("/router/", new RouterRestHandler());

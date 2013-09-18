@@ -56,7 +56,8 @@ public class BackgroundTrafficEngine implements EventEngine {
     }
 
     /** Initial events to add to schedule */
-    public void startStopEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void startStopEvents(EventScheduler s, GlobalController g) {
         // simulation start
         StartSimulationEvent e0 = new StartSimulationEvent(0, this);
 
@@ -68,16 +69,19 @@ public class BackgroundTrafficEngine implements EventEngine {
     }
 
     /** Initial events to add to schedule */
-    public void initialEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void initialEvents(EventScheduler s, GlobalController g) {
         startNewConnection(0, s, g);
     }
 
     /** Add or remove events following a simulation event */
-    public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
+    @Override
+	public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
     }
 
     /** Add or remove events following a simulation event */
-    public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
+    @Override
+	public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
         startNewConnection(e.getTime(), s, g);
     }
 

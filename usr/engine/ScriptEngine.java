@@ -37,13 +37,15 @@ public class ScriptEngine implements EventEngine {
     }
 
     /** Initial events to add to schedule */
-    public void initialEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void initialEvents(EventScheduler s, GlobalController g) {
         for (Event e : events_) {
             s.addEvent(e);
         }
     }
 
-    public void startStopEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void startStopEvents(EventScheduler s, GlobalController g) {
         // simulation start
         StartSimulationEvent e0 = new StartSimulationEvent(0, this);
 
@@ -55,11 +57,13 @@ public class ScriptEngine implements EventEngine {
     }
 
     /** Add or remove events following a simulation event */
-    public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
+    @Override
+	public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
     }
 
     /** Add or remove events following a simulation event */
-    public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
+    @Override
+	public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
     }
 
     private void readScript(String fname) {
@@ -67,7 +71,7 @@ public class ScriptEngine implements EventEngine {
         Scanner scanner = null;
 
         try {
-            StringBuilder text = new StringBuilder();
+            new StringBuilder();
             String NL = System.getProperty("line.separator");
             scanner = new Scanner(new File(fname));
 
@@ -172,6 +176,8 @@ public class ScriptEngine implements EventEngine {
                         // both args are ints
                         addr1 = a1Scanner.nextInt();
                         addr2 = a2Scanner.nextInt();
+                        a1Scanner.close();
+                        a2Scanner.close();
                         e =
                             new StartLinkEvent(time, this, addr1, addr2);
                     } else {
@@ -211,9 +217,11 @@ public class ScriptEngine implements EventEngine {
                     if (arg2Scanner.hasNextInt()) {
                         // arg is int
                         int r = arg2Scanner.nextInt();
+                        arg2Scanner.close();
                         return new EndRouterEvent(time, this, r);
                     } else {
                         // arg is String
+                    	arg2Scanner.close();
                         return new EndRouterEvent(time, this, arg2);
                     }
                 }
@@ -234,8 +242,12 @@ public class ScriptEngine implements EventEngine {
                         // both args are ints
                         int l1 = arg2Scanner.nextInt();
                         int l2 = arg3Scanner.nextInt();
+                        arg2Scanner.close();
+                        arg3Scanner.close();
                         return new EndLinkEvent(time, this, l1, l2);
                     } else {
+                    	arg2Scanner.close();
+                    	arg3Scanner.close();
                         return new EndLinkEvent(time, this, arg2, arg3);
                     }
                 }
@@ -258,8 +270,10 @@ public class ScriptEngine implements EventEngine {
 
                     if (arg2Scanner.hasNextInt()) {
                         int rno = arg2Scanner.nextInt();
+                        arg2Scanner.close();
                         return new AppStartEvent(time, this, rno, args[3], cmdArgs);
                     } else {
+                    	arg2Scanner.close();
                         return new AppStartEvent(time, this, args[2], args[3], cmdArgs);
                     }
                 }

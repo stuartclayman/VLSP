@@ -81,6 +81,7 @@ public class StubUDPSend {
             Scanner scanner = new Scanner(args[0]);
 
             count = scanner.nextInt();
+            scanner.close();
         }
 
         if (args.length == 2) {
@@ -88,6 +89,7 @@ public class StubUDPSend {
             Scanner scanner = new Scanner(args[1]);
 
             port = scanner.nextInt();
+            scanner.close();
         }
 
         StubUDPSend client = new StubUDPSend("localhost", port);

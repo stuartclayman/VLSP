@@ -17,11 +17,13 @@ public class QueryAPEvent extends AbstractEvent {
         apc_ = ap;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return new String("QueryAPController " + time_);
     }
 
-    public JSONObject execute(GlobalController gc) throws
+    @Override
+	public JSONObject execute(GlobalController gc) throws
     InstantiationException {
         apc_.controllerUpdate(time_, gc);
         JSONObject jsobj = new JSONObject();
@@ -38,7 +40,8 @@ public class QueryAPEvent extends AbstractEvent {
     }
 
     /** Perform logic which follows an event */
-    public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
+    @Override
+	public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
         super.followEvent(s, response, g);
         long newTime = time_ + g.getAPControllerConsiderTime();
         QueryAPEvent e = new QueryAPEvent(newTime, engine_, apc_);

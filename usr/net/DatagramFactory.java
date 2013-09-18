@@ -62,10 +62,10 @@ public class DatagramFactory {
             dfi = list.get(protocol);
 
             if (payload == null) {
-                Datagram dg = (Datagram)dfi.cons0.newInstance();
+                Datagram dg = dfi.cons0.newInstance();
                 return dg;
             } else {
-                Datagram dg = (Datagram)dfi.cons1.newInstance(payload);
+                Datagram dg = dfi.cons1.newInstance(payload);
                 dg.setTTL(initialTTL_);
                 dg.setProtocol(protocol);
                 return dg;
@@ -130,15 +130,15 @@ class DatagramFactoryInfo {
             className = name;
 
             // get Class object
-            Class<?> c = (Class<?> )Class.forName(className);
+            Class<?> c = Class.forName(className);
 
             final Class<? extends Datagram> xc = c.asSubclass(Datagram.class );
             // find Constructor for when arg is null
-            cons0 = (Constructor<? extends Datagram> )xc.getDeclaredConstructor();
+            cons0 = xc.getDeclaredConstructor();
 
 
             // get Consturctor for when arg is ByteBuffer
-            cons1 = (Constructor<? extends Datagram> )xc.getDeclaredConstructor(ByteBuffer.class );
+            cons1 = xc.getDeclaredConstructor(ByteBuffer.class );
 
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "DatagramFactoryInfo: Exception: " + e);

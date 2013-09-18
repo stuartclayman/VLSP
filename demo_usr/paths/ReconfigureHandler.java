@@ -13,7 +13,8 @@ public class ReconfigureHandler implements ManagementHandler {
     public ReconfigureHandler(Reconfigure r) {
         this.reconfigure = r;
     }
-    public Object process(JSONObject jsobj) {
+    @Override
+	public Object process(JSONObject jsobj) {
         Object result =  reconfigure.process(jsobj);
 
         if (result instanceof ApplicationResponse) {

@@ -316,10 +316,9 @@ public class RouterOptions {
         // Process DatagramType
         String dgtype = "";
         try {
-            Class<? extends Datagram> defaultDatagram;
             dgtype = ReadXMLUtils.parseSingleString(rp, "DatagramType", "RoutingParameters", true);
             ReadXMLUtils.removeNode(rp, "DatagramType", "RoutingParameters");
-            defaultDatagram = Class.forName(dgtype).asSubclass(Datagram.class );
+            Class.forName(dgtype).asSubclass(Datagram.class );
             DatagramFactory.setClassForProtocol(dgtype, Protocol.DATA);
             DatagramFactory.setClassForProtocol(dgtype, Protocol.CONTROL);
         } catch (ClassNotFoundException e) {
@@ -337,10 +336,9 @@ public class RouterOptions {
         try {
             String existing = AddressFactory.getClassForAddress();
 
-            Class<? extends Address> addressClass;
             addrtype = ReadXMLUtils.parseSingleString(rp, "AddressType", "RoutingParameters", true);
             ReadXMLUtils.removeNode(rp, "AddressType", "RoutingParameters");
-            addressClass = Class.forName(addrtype).asSubclass(Address.class );
+            Class.forName(addrtype).asSubclass(Address.class );
 
             if (existing == null ||  !existing.equals(addrtype)) {
                 AddressFactory.setClassForAddress(addrtype);

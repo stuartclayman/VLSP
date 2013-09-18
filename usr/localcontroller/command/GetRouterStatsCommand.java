@@ -38,7 +38,8 @@ public class GetRouterStatsCommand extends LocalCommand implements Callable<Bool
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
 
         try {
             PrintStream out = response.getPrintStream();
@@ -100,14 +101,13 @@ public class GetRouterStatsCommand extends LocalCommand implements Callable<Bool
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
 
     }
 
-    public Boolean call() {
+    @Override
+	public Boolean call() {
         try {
             // the result list
             List<String> list;
@@ -149,10 +149,10 @@ public class GetRouterStatsCommand extends LocalCommand implements Callable<Bool
 
                     out.println(jsobj.toString());
                     response.close();
-
+                    sc.close();
                     return false;
                 }
-
+                sc.close();
                 // Get controller to do the work
                 // and get stats for the router
                 list = controller.getRouterStats(routerID);
@@ -207,9 +207,7 @@ public class GetRouterStatsCommand extends LocalCommand implements Callable<Bool
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
 
 

@@ -46,6 +46,7 @@ public LinuxMem(String name){
 /**
  * Collect a measurement.
  */
+@Override
 public ProbeMeasurement collect(){
     // create a list for the result
     ArrayList<ProbeValue> list = new ArrayList<ProbeValue>(1);
@@ -56,12 +57,10 @@ public ProbeMeasurement collect(){
         try {
             int memTotal = memDev.getCurrentValue("MemTotal");
             int memFree = memDev.getCurrentValue("MemFree");
-            int cached = memDev.getCurrentValue("Cached");
-            int buffers = memDev.getCurrentValue("Buffers");
+            //int cached = memDev.getCurrentValue("Cached");
+            //int buffers = memDev.getCurrentValue("Buffers");
 
             int used = memTotal - memFree;
-            int reallyUsed = used - (cached + buffers);
-
             // now collect up the results
             list.add(new DefaultProbeValue(0, (float)used));
 

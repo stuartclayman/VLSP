@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 
+import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.applications.ApplicationHandle;
 import usr.applications.ApplicationResponse;
@@ -29,7 +30,8 @@ public class AppStartCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
         PrintStream out;
 
         try {
@@ -95,19 +97,19 @@ public class AppStartCommand extends RouterCommand {
             e.printStackTrace();
 
             response.setCode(302);
+            try {
+            	JSONObject jsobj = new JSONObject();
+            	jsobj.put("error", "Exception " + e.getClass().getName());
 
-            JSONObject jsobj = new JSONObject();
-            jsobj.put("error", "Exception " + e.getClass().getName());
+            	out.println(jsobj.toString());
+            	response.close();
+            } catch (IOException ie) {
 
-            out.println(jsobj.toString());
-            response.close();
+            } catch (JSONException je) {
 
-            return false;
-
-        } finally {
+            }
             return false;
         }
-
 
     }
 

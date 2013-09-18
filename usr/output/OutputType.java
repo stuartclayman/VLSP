@@ -179,7 +179,8 @@ public class OutputType {
     /**
      * To String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuilder builder = new StringBuilder();
 
         builder.append(outputFunction_.toString());

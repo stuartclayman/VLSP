@@ -9,7 +9,11 @@ import java.nio.ByteBuffer;
  * An IPV4 Address
  */
 public class IPV4Address extends Size4 implements Address, Serializable {
-    InetAddress addr;
+    /**
+	 *
+	 */
+	private static final long serialVersionUID = 2090554822014106211L;
+	InetAddress addr;
 
     /**
      * Create a IPV4Address from a hostname
@@ -23,7 +27,7 @@ public class IPV4Address extends Size4 implements Address, Serializable {
         bytes[1] = inetbytes[1];
         bytes[2] = inetbytes[2];
         bytes[3] = inetbytes[3];
-        
+
     }
 
     /**
@@ -57,14 +61,16 @@ public class IPV4Address extends Size4 implements Address, Serializable {
     /**
      * Get IPV4Address as an InetAddress
      */
-    public InetAddress asInetAddress() {
+    @Override
+	public InetAddress asInetAddress() {
         return addr;
     }
 
     /**
      * Get IPV4Address as an Integer.
      */
-    public int asInteger() {
+    @Override
+	public int asInteger() {
         // convert byte[] to int
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         return buf.getInt();
@@ -73,14 +79,16 @@ public class IPV4Address extends Size4 implements Address, Serializable {
     /**
      * Address in transmittable form
      */
-    public String asTransmitForm() {
+    @Override
+	public String asTransmitForm() {
         return numericToTextFormat(bytes);
     }
 
     /**
      * Compare this Address to another one
      */
-    public int compareTo(Object other) {
+    @Override
+	public int compareTo(Object other) {
         int val1 = this.asInteger();
         int val2 = ((Address)other).asInteger();
 
@@ -96,7 +104,8 @@ public class IPV4Address extends Size4 implements Address, Serializable {
     /**
      * Equals
      */
-    public boolean equals(Object obj) {
+    @Override
+	public boolean equals(Object obj) {
         if (obj instanceof Address) {
             Address addr = (Address)obj;
             return addr.asInteger() == this.asInteger();
@@ -108,7 +117,8 @@ public class IPV4Address extends Size4 implements Address, Serializable {
     /**
      * To String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return numericToTextFormat(bytes);
     }
 

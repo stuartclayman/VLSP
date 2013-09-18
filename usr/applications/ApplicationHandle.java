@@ -114,7 +114,8 @@ public class ApplicationHandle implements Runnable {
     /**
      * This run() delegates to Application run()
      */
-    public void run() {
+    @Override
+	public void run() {
         Logger.getLogger("log").logln(USR.STDOUT, "ApplicationHandle: entering run: " + app);
 
         if (getState() == ApplicationHandle.AppState.RUNNING) {

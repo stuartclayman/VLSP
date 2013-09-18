@@ -24,12 +24,14 @@ public abstract class AbstractRestCommand implements RestCommand {
      * Evaluate the Command.
      * Returns false if there is a problem responding down the channel
      */
-    public abstract boolean evaluate(Request request, Response response);
+    @Override
+	public abstract boolean evaluate(Request request, Response response);
 
     /**
      * Get the name of command as a string.
      */
-    public String getName() {
+    @Override
+	public String getName() {
         return name;
     }
 
@@ -43,17 +45,20 @@ public abstract class AbstractRestCommand implements RestCommand {
     /**
      * Get the ManagementConsole this is a command for.
      */
-    public abstract ManagementConsole getManagementConsole();
+    @Override
+	public abstract ManagementConsole getManagementConsole();
 
     /**
      * Set the ManagementConsole this is a command for.
      */
-    public abstract void setManagementConsole(ManagementConsole mc);  // to be set in particular subclasses
+    @Override
+	public abstract void setManagementConsole(ManagementConsole mc);  // to be set in particular subclasses
 
     /**
      * Hash code
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         return name.hashCode();
     }
 

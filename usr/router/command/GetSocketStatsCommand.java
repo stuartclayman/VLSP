@@ -2,7 +2,6 @@ package usr.router.command;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.List;
 import java.util.Map;
 
 import org.simpleframework.http.Request;
@@ -16,7 +15,6 @@ import usr.protocol.MCRP;
 import usr.router.AppSocketMux;
 import usr.router.NetIF;
 import usr.router.NetStats;
-import usr.router.RouterPort;
 
 /**
  * The GET_SOCKET_STATS command.
@@ -32,13 +30,14 @@ public class GetSocketStatsCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
         try {
             PrintStream out = response.getPrintStream();
 
             JSONObject jsobj = new JSONObject();
 
-            List<RouterPort> ports = controller.listPorts();
+            controller.listPorts();
             int count = 0;
 
             // get local NetIF
@@ -92,9 +91,7 @@ public class GetSocketStatsCommand extends RouterCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
     }
 
 }

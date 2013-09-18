@@ -15,20 +15,22 @@ public class NetStatsEvent extends AbstractEvent {
         stats_ = stats;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         String str;
 
         str = "NetStats: " + time_ + " stats " + stats_;
         return str;
     }
 
-    public JSONObject execute(GlobalController gc) {
+    @Override
+	public JSONObject execute(GlobalController gc) {
         JSONObject json = new JSONObject();
 
         try {
             json.put("success", (Boolean)true);
             json.put("msg", "Stats " + stats_);
-            json.put("netstats", (String)stats_);
+            json.put("netstats", stats_);
         } catch (JSONException js) {
             Logger.getLogger("log").logln(
                 USR.ERROR,

@@ -52,39 +52,39 @@ class Teemu2 extends RestyTest {
 
 
             JSONObject l1 = test.createLink(router1, router2, 10);
-            int link1 = (Integer)l1.get("linkID");
+            l1.get("linkID");
             System.out.println("l1 = " + l1);
 
             JSONObject l2 = test.createLink(router1, router3, 10);
-            int link2 = (Integer)l2.get("linkID");
+            l2.get("linkID");
             System.out.println("l2 = " + l2);
 
             JSONObject l3 = test.createLink(router2, router4, 10);
-            int link3 = (Integer)l3.get("linkID");
+            l3.get("linkID");
             System.out.println("l3 = " + l3);
 
             JSONObject l4 = test.createLink(router3, router5, 10);
-            int link4 = (Integer)l4.get("linkID");
+            l4.get("linkID");
             System.out.println("l4 = " + l4);
 
             JSONObject l5 = test.createLink(router4, router6, 10);
-            int link5 = (Integer)l5.get("linkID");
+            l5.get("linkID");
             System.out.println("l5 = " + l5);
 
             JSONObject l6 = test.createLink(router5, router6, 10);
-            int link6 = (Integer)l6.get("linkID");
+            l6.get("linkID");
             System.out.println("l6 = " + l6);
 
             JSONObject l7 = test.createLink(router4, router7, 10);
-            int link7 = (Integer)l7.get("linkID");
+            l7.get("linkID");
             System.out.println("l7 = " + l7);
 
             JSONObject l8 = test.createLink(router5, router7, 10);
-            int link8 = (Integer)l8.get("linkID");
+            l8.get("linkID");
             System.out.println("l8 = " + l8);
 
             JSONObject lSto1 = test.createLink(routerS, router1, 10);
-            int linkSto1 = (Integer)lSto1.get("linkID");
+            lSto1.get("linkID");
             System.out.println("lSto1 = " + lSto1);
 
 
@@ -126,21 +126,21 @@ class Teemu2 extends RestyTest {
 
             Thread.sleep(60000 * 20);
 
-            JSONObject r1D = test.deleteRouter(router1);
+            test.deleteRouter(router1);
 
-            JSONObject r2D = test.deleteRouter(router2);
+            test.deleteRouter(router2);
 
-            JSONObject r3D = test.deleteRouter(router3);
+            test.deleteRouter(router3);
 
-            JSONObject r4D = test.deleteRouter(router4);
+            test.deleteRouter(router4);
 
-            JSONObject r5D = test.deleteRouter(router5);
+            test.deleteRouter(router5);
 
-            JSONObject r6D = test.deleteRouter(router6);
+            test.deleteRouter(router6);
 
-            JSONObject r7D = test.deleteRouter(router7);
+            test.deleteRouter(router7);
 
-            JSONObject rSD = test.deleteRouter(routerS);
+            test.deleteRouter(routerS);
 
         } catch (Exception e) {
         }

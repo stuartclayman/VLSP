@@ -59,7 +59,8 @@ public class GIDDatagram extends Size4Datagram implements Datagram, DatagramPatc
      * This forcible returns a GIDAddress, irrespective
      * of the AddressFactory settings.
      */
-    public Address getSrcAddress() {
+    @Override
+	public Address getSrcAddress() {
         // get 4 bytes for address
         byte[] address = new byte[4];
         fullDatagram.position(10);
@@ -76,7 +77,8 @@ public class GIDDatagram extends Size4Datagram implements Datagram, DatagramPatc
      * This forcible returns a GIDAddress, irrespective
      * of the AddressFactory settings.
      */
-    public Address getDstAddress() {
+    @Override
+	public Address getDstAddress() {
         // get 4 bytes for address
         //if (dstAddr == null)
         //   return null;

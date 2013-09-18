@@ -15,7 +15,8 @@ public class RandomLinkPicker implements NodeLinkPicker {
         rand = new Random();
     }
 
-    public ArrayList<Integer> pickNLinks(ArrayList<Integer> nodes, GlobalController g, int noLinks, int node) {
+    @Override
+	public ArrayList<Integer> pickNLinks(ArrayList<Integer> nodes, GlobalController g, int noLinks, int node) {
         ArrayList<Integer> picked = new ArrayList<Integer>();
 
         for (int i = 0; i < noLinks; i++) {
@@ -30,7 +31,8 @@ public class RandomLinkPicker implements NodeLinkPicker {
         return picked;
     }
 
-    public int pickLink(ArrayList<Integer> nodes, GlobalController g, int node) {
+    @Override
+	public int pickLink(ArrayList<Integer> nodes, GlobalController g, int node) {
         if (nodes.size() == 0) {
             return -1;
         }
@@ -39,7 +41,8 @@ public class RandomLinkPicker implements NodeLinkPicker {
         return nodes.remove(newLink);
     }
 
-    public void parseExtraXML(Node linkpicker) {
+    @Override
+	public void parseExtraXML(Node linkpicker) {
     }
 
 }

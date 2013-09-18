@@ -30,21 +30,24 @@ public class AdaptForward extends AdaptIngress implements Application {
      * -d start-up delay (in milliseconds)
      * -v verbose
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         return super.init(args);
     }
 
     /**
      * Start application
      */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         return super.start();
     }
 
     /**
      * Implement graceful shut down 
      */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         return super.stop();
     }
 
@@ -52,7 +55,8 @@ public class AdaptForward extends AdaptIngress implements Application {
     /** 
      * Run the application 
      */
-    public void run() {
+    @Override
+	public void run() {
         super.run();
     }
 

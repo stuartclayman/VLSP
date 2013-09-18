@@ -14,10 +14,12 @@ import usr.globalcontroller.GlobalController;
 /** Class to output network stuff */
 public class OutputNetStatsEvent implements OutputFunction {
     /** In fact this only requests output -- actual output occurs later */
-    public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
+    @Override
+	public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
     }
 
-    public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
+    @Override
+	public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
         if (!(event instanceof NetStatsEvent)) {
             return;
         }
@@ -32,7 +34,8 @@ public class OutputNetStatsEvent implements OutputFunction {
         s.println(netstats);
     }
 
-    public void parseExtraXML(Node n) throws SAXException {
+    @Override
+	public void parseExtraXML(Node n) throws SAXException {
     }
 
 }

@@ -9,7 +9,8 @@ import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class StartSimulationEvent extends AbstractEvent {
-    public String toString() {
+    @Override
+	public String toString() {
         String str;
 
         str = "StartSimulation: " + time_;
@@ -21,7 +22,8 @@ public class StartSimulationEvent extends AbstractEvent {
         engine_ = eng;
     }
 
-    public JSONObject execute(GlobalController gc) throws
+    @Override
+	public JSONObject execute(GlobalController gc) throws
     InstantiationException {
         gc.startSimulation(time_);
         JSONObject json = new JSONObject();

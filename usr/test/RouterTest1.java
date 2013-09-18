@@ -20,14 +20,17 @@ public class RouterTest1 {
             int mPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
+            sc.close();
             router = new Router(mPort, "Router-" + mPort + "-" + (mPort+1));
         } else if (args.length == 2) {
             int mPort = 0;
             int r2rPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
+            sc.close();
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
+            sc.close();
             router = new Router(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
         } else {
             help();

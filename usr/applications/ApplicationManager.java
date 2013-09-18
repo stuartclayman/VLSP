@@ -98,13 +98,13 @@ public class ApplicationManager {
 
         try {
             // get Class object
-            clazz = (Class<?> )Class.forName(className);
+            clazz = Class.forName(className);
 
             // check if the class implements the right interface
             // it is an Application
             try {
                 Class<? extends Application> appClazz = clazz.asSubclass(Application.class );
-                cons0 = (Constructor<? extends Application> )appClazz.getDeclaredConstructor();
+                cons0 = appClazz.getDeclaredConstructor();
             } catch (ClassCastException cce) {
                 // it is not an Application, so we cant run it
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "class " + className + " is not at Application");
@@ -112,7 +112,7 @@ public class ApplicationManager {
             }
 
             // create an instance of the Application
-            Application app = (Application)cons0.newInstance();
+            Application app = cons0.newInstance();
 
             appID++;
 

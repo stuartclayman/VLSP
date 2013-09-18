@@ -6,7 +6,6 @@ import java.util.TimerTask;
 
 import usr.logging.Logger;
 import usr.logging.USR;
-import usr.net.Datagram;
 import usr.net.IPV4Address;
 import usr.router.AppSocket;
 import usr.router.Router;
@@ -55,7 +54,8 @@ public class RouterApp1SD {
             timerTask = new TimerTask() {
                 boolean running = true;
 
-                public void run() {
+                @Override
+				public void run() {
                     if (running) {
                         diffs = count - lastTimeCount;
                         Logger.getLogger("log").logln(USR.STDOUT, "Task count: " + count + " diff: "  + diffs);
@@ -63,7 +63,8 @@ public class RouterApp1SD {
                     }
                 }
 
-                public boolean cancel() {
+                @Override
+				public boolean cancel() {
                     Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
 
                     if (running) {
@@ -74,7 +75,8 @@ public class RouterApp1SD {
                     return running;
                 }
 
-                public long scheduledExecutionTime() {
+                @Override
+				public long scheduledExecutionTime() {
                     Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
                     return 0;
                 }
@@ -101,10 +103,8 @@ public class RouterApp1SD {
      * Read stuff
      */
     void readALot() {
-        Datagram datagram;
-
         try {
-            while ((datagram = socket.receive()) != null) {
+            while ((socket.receive()) != null) {
                 count++;
             }
         } catch (SocketException se) {

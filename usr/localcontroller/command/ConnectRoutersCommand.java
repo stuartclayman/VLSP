@@ -27,7 +27,8 @@ public class ConnectRoutersCommand extends LocalCommand {
     /**
      * Evaluate the Command CONNECT_ROUTERS Router1 Router2 Weight [Name]
      */
-    public boolean evaluate(Request request, Response response) {
+	@Override
+	public boolean evaluate(Request request, Response response) {
 
         try {
             PrintStream out = response.getPrintStream();
@@ -118,9 +119,7 @@ public class ConnectRoutersCommand extends LocalCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
 
     }

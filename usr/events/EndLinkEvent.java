@@ -35,7 +35,7 @@ public class EndLinkEvent extends AbstractEvent {
 
     public EndLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc)
     throws InstantiationException {
-        time_ = time_;
+        time_ = time;
         engine_ = eng;
         addr1_ = add1;
         addr2_ = add2;
@@ -58,7 +58,8 @@ public class EndLinkEvent extends AbstractEvent {
         return router2_;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         String str = "EndLinkEvent " + time_ + getName();
 
         return str;
@@ -97,7 +98,8 @@ public class EndLinkEvent extends AbstractEvent {
     }
 
     /** Perform logic which follows an event */
-    public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
+    @Override
+	public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
         super.followEvent(s, response, g);
 
         if (g.connectedNetwork()) {
@@ -108,7 +110,8 @@ public class EndLinkEvent extends AbstractEvent {
         }
     }
 
-    public JSONObject execute(GlobalController gc) throws
+    @Override
+	public JSONObject execute(GlobalController gc) throws
     InstantiationException {
         if (!routerNumsSet_) {
             initNumbers(addr1_, addr2_, gc);
@@ -178,7 +181,7 @@ public class EndLinkEvent extends AbstractEvent {
             try {
                 lci.endLink(br1.getHost(),
                             br1.getManagementPort(), br2.getAddress());
-                Pair<Integer, Integer> pair = gc.makePair(rId1, rId2);
+                Pair<Integer, Integer> pair = GlobalController.makePair(rId1, rId2);
                 Integer linkID = pair.hashCode();
                 gc.removeLinkInfo(linkID);
 

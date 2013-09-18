@@ -57,7 +57,8 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
      * Router-7 /Router-1/Connection-5 | 1314 | 8 | 0 | 0 | 1176 | 6 | 178 | 2 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
 
      */
-    public void report(Measurement m) {
+    @Override
+	public void report(Measurement m) {
         if (m.getType().equals("NetIFStats")) {
             count++;
 
@@ -103,7 +104,8 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
      * @param routerSrc the name of source router
      * @param routerDst the name of dest router
      */
-    public List<Object> getTraffic(String routerSrc, String routerDst) {
+    @Override
+	public List<Object> getTraffic(String routerSrc, String routerDst) {
         Table table = measurements.get(routerSrc);
 
         if (table == null) {
@@ -145,7 +147,8 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
     /**
      * Tell this reporter that a router has been deleted
      */
-    public void routerDeleted(String routerName) {
+    @Override
+	public void routerDeleted(String routerName) {
         Table oldData = null;
 
         synchronized (measurements) {

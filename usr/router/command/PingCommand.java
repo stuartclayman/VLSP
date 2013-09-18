@@ -29,7 +29,8 @@ public class PingCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
         Address addr;
 
         try {
@@ -97,9 +98,7 @@ public class PingCommand extends RouterCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
     }
 
 }

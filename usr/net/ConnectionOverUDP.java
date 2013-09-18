@@ -51,7 +51,8 @@ public class ConnectionOverUDP implements Connection {
     /**
      * Connect.
      */
-    public boolean connect() throws IOException {
+    @Override
+	public boolean connect() throws IOException {
         endPoint.connect();
 
         DatagramSocket socket = endPoint.getSocket();
@@ -66,14 +67,16 @@ public class ConnectionOverUDP implements Connection {
     /**
      * Get the Address for this connection.
      */
-    public Address getAddress() {
+    @Override
+	public Address getAddress() {
         return localAddress;
     }
 
     /**
      * Set the Address for this connection.
      */
-    public Connection setAddress(Address addr) {
+    @Override
+	public Connection setAddress(Address addr) {
         localAddress = addr;
         return this;
     }
@@ -81,7 +84,8 @@ public class ConnectionOverUDP implements Connection {
     /**
      * Send a Datagram.
      */
-    public boolean sendDatagram(Datagram dg) {
+    @Override
+	public boolean sendDatagram(Datagram dg) {
         DatagramSocket socket = getSocket();
 
         // set the address
@@ -120,11 +124,12 @@ public class ConnectionOverUDP implements Connection {
     /**
      * Read a Datagram.
      */
-    public Datagram readDatagram() {
+    @Override
+	public Datagram readDatagram() {
         DatagramSocket socket = getSocket();
 
         try {
-            int startPosition = buffer.position();
+            buffer.position();
             int count = 0;
             short totalLen = 0;
 
@@ -163,7 +168,8 @@ public class ConnectionOverUDP implements Connection {
     /**
      * Get the EndPoint of this Connection.
      */
-    public EndPoint getEndPoint() {
+    @Override
+	public EndPoint getEndPoint() {
         return endPoint;
     }
 
@@ -177,7 +183,8 @@ public class ConnectionOverUDP implements Connection {
     /**
      * To String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return endPoint.toString();
     }
 

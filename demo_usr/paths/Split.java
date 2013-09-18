@@ -7,7 +7,6 @@ import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import usr.applications.Application;
@@ -80,7 +79,8 @@ public class Split implements Application {
      * Split usrPort -path 1 addr1:port -path 2 addr2:port [-path i nexthost:port] -split 0.4 0.6 [optional ratios] [optionals]
      *
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         int argc = args.length;
         int current = 0;
         int pathCount = 0;
@@ -95,10 +95,12 @@ public class Split implements Application {
             scanner = new Scanner(usrString);
             if (scanner.hasNextInt()) {
                 usrPort = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad USR port " + args[0]);
             }
-
+            scanner.close();
 
             while (true) {
                 // skip through N path specifiers
@@ -113,14 +115,16 @@ public class Split implements Application {
                     scanner = new Scanner(pathString);
                     if (scanner.hasNextInt()) {
                         pathNo = scanner.nextInt();
+                        scanner.close();
                     } else {
+                    	scanner.close();
                         return new ApplicationResponse(false, "Bad pathNo " + args[current+1]);
                     }
 
                     // check path no looks ok
                     if ((pathCount > 0 && pathNo <= lastPath) || (pathCount > 0 && pathNo > (lastPath + 1))) {
                         return new ApplicationResponse(false, "Bad sequence for pathNo " + pathNo);
-                    } 
+                    }
 
                     lastPath = pathNo;
 
@@ -151,7 +155,9 @@ public class Split implements Application {
                         scanner = new Scanner(addrParts[1]);
                         if (scanner.hasNextInt()) {
                             port = scanner.nextInt();
+                            scanner.close();
                         } else {
+                        	scanner.close();
                             return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                         }
 
@@ -188,7 +194,9 @@ public class Split implements Application {
                                 // add ratio to ratio table
                                 ratios.add(ratio);
                                 current++;
+                                scanner.close();
                             } else {
+                            	scanner.close();
                                 return new ApplicationResponse(false, "Bad ratio " + args[current]);
                             }
                         }
@@ -198,7 +206,7 @@ public class Split implements Application {
                         for (int r=0; r<ratios.size(); r++) {
                             sum += ratios.get(r);
                         }
-                        
+
                         if (sum != 1.0) {
                             return new ApplicationResponse(false, "Ratios do not add up to 1.0");
                         }
@@ -289,14 +297,15 @@ public class Split implements Application {
         }
     }
 
-    /** 
-     * Start application 
+    /**
+     * Start application
      */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up inbound socket
             inSocket = new DatagramSocket();
-            
+
             inSocket.bind(usrPort);
 
             // set up outbound socket
@@ -315,10 +324,11 @@ public class Split implements Application {
         return new ApplicationResponse(true, "");
     }
 
-    /** 
+    /**
      * Stop the application
      */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         // interrupt queue.take()
         Thread.currentThread().interrupt();
 
@@ -345,16 +355,17 @@ public class Split implements Application {
      * Run the Forward application
      *
      */
-    public void run()  {
+    @Override
+	public void run()  {
         Datagram inDatagram = null;
         Datagram outDatagram = null;
 
-        /* 
+        /*
          * Start the supporting thread that actually reads from the socket.
          */
         LinkedBlockingDeque<Datagram> queue = new LinkedBlockingDeque<Datagram>();
         ExecutorService executer = Executors.newFixedThreadPool(1);
-        Future future = executer.submit((Callable <?>)
+        executer.submit((Callable <?>)
             new ReadThread(inSocket, queue));
 
 
@@ -395,16 +406,16 @@ public class Split implements Application {
 
                 // now create a USR Datagram
                 outDatagram = DatagramFactory.newDatagram(data);
-                int outDataLength = data.length;
+
 
                 //System.err.println("Ingress OUT " + count + " recv: " +  outDataLength + " volume: " + volume + " at " + System.currentTimeMillis());
 
                 // get dst address and port
                 // this is set using a split - once per datagram
                 // rather than being set outside of the loop
-                
 
-                // we get a random number and determine which element 
+
+                // we get a random number and determine which element
                 // of the pathForwardingTable to get
                 int pathForwardingTableOffset = findNextForwardingPath();
 
@@ -412,7 +423,7 @@ public class Split implements Application {
 
                 Address dstAddr = usrAddr.getAddress();
                 int dstPort = usrAddr.getPort();
-                
+
                 // set the dst address and port
                 // the src addr and port will be set in send()
                 // this will set based on a split
@@ -424,7 +435,7 @@ public class Split implements Application {
                 try {
                     outSocket.send(outDatagram);
 
-                    // Inter Packet Delay 
+                    // Inter Packet Delay
                     if (interPacketDelay > 0) {
                         Thread.sleep(interPacketDelay);
                     }
@@ -481,7 +492,7 @@ public class Split implements Application {
      */
     void printInfo() {
         System.out.println("usrPort: " + usrPort);
-        
+
         for (int p=0; p < pathForwardingTable.size(); p++) {
             System.out.println("path " + p + " -> " + pathForwardingTable.get(p) + " ratio: " +
                                ratios.get(p));
@@ -491,7 +502,7 @@ public class Split implements Application {
     /**
      * Read Datagrams from a DatagramSocket
      */
-    class ReadThread implements Callable {
+    class ReadThread implements Callable <Object> {
         DatagramSocket socket;
         LinkedBlockingDeque<Datagram> queue;
         boolean running = false;
@@ -506,20 +517,19 @@ public class Split implements Application {
         }
 
 
-        public Object call() {
+        @Override
+		public Object call() {
             // allocate a Datagram
             Datagram inDatagram = null;
 
-            int count = 0;
 
-            //Thread.currentThread().setPriority( Thread.NORM_PRIORITY - 2); 
+
+            //Thread.currentThread().setPriority( Thread.NORM_PRIORITY - 2);
 
             try {
                 while (running) {
                     // read a USR Datagram
                     inDatagram = inSocket.receive();
-                    count++;
-
                     queue.add(inDatagram);
 
                     //System.err.println("ReadThread IN  " + count + " recv: " +  inDatagram.getLength());
@@ -558,7 +568,7 @@ public class Split implements Application {
         if (!initR.isSuccess()) {
             System.out.println(initR.getMessage());
             return;
-        } 
+        }
 
         nc.printInfo();
 

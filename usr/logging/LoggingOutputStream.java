@@ -46,14 +46,16 @@ public class LoggingOutputStream extends OutputStream {
     /**
      * The write method needed for an OutputStream.
      */
-    public void write(int b) throws IOException {
+    @Override
+	public void write(int b) throws IOException {
         buffer.write(b);
     }
 
     /**
      * Flush this OutputStream.
      */
-    public void flush() throws IOException {
+    @Override
+	public void flush() throws IOException {
         doLogging(buffer.toString());
         buffer.reset();
     }

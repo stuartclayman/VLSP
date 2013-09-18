@@ -10,12 +10,14 @@ public class RandomAPInfo implements APInfo {
     }
 
     /** Returns true if this router is an AP Controller */
-    public boolean isAPController() {
+    @Override
+	public boolean isAPController() {
         return controller_;
     }
 
     /** Sets whether this router is an AP Controller */
-    public void setAPController(boolean controller) {
+    @Override
+	public void setAPController(boolean controller) {
         controller_ = controller;
     }
 

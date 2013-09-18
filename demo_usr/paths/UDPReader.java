@@ -17,7 +17,7 @@ import usr.net.DatagramFactory;
  * This class reads data from a UDP socket, converts the UDP packet
  * to a USR datagram and then sends it to a queue.
  */
-public class UDPReader implements Callable {
+public class UDPReader implements Callable <Object>{
     java.net.DatagramSocket inSocket;
     int udpPort;
     LinkedBlockingDeque<usr.net.Datagram> queue;
@@ -25,7 +25,7 @@ public class UDPReader implements Callable {
 
     int count = 0;
 
-    // verbose 
+    // verbose
     int verbose = 0;
 
     // Latch for end synchronization
@@ -61,7 +61,8 @@ public class UDPReader implements Callable {
     }
 
 
-    public Object call() {
+    @Override
+	public Object call() {
         // allocate a DatagramPacket
         java.net.DatagramPacket inDatagram = null;
 
@@ -98,7 +99,7 @@ public class UDPReader implements Callable {
                 byte [] data = new byte[inDatagram.getLength()];
                 System.arraycopy(inDatagram.getData(), 0, data, 0, inDatagram.getLength());
 
-                // copy 
+                // copy
 
                 // now create a USR Datagram
                 Datagram queueDatagram = DatagramFactory.newDatagram(data);

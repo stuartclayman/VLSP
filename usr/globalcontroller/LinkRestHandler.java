@@ -31,7 +31,8 @@ public class LinkRestHandler extends BasicRequestHandler {
     /**
      * Handle a request and send a response.
      */
-    public boolean  handle(Request request, Response response) {
+    @Override
+	public boolean  handle(Request request, Response response) {
         // get GlobalController
         controller_ = (GlobalController)getManagementConsole().getAssociated();
 
@@ -58,15 +59,14 @@ public class LinkRestHandler extends BasicRequestHandler {
 
             // get the path
             Path path = request.getPath();
-            String directory = path.getDirectory();
+            path.getDirectory();
             String name = path.getName();
             String[] segments = path.getSegments();
 
             // Get the method
             String method = request.getMethod();
 
-            // Get the Query
-            Query query = request.getQuery();
+            request.getQuery();
 
             // and evaluate the input
             if (method.equals("POST")) {
@@ -146,7 +146,9 @@ public class LinkRestHandler extends BasicRequestHandler {
 
             if (scanner.hasNextInt()) {
                 router1 = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 complain(response, "arg router1 is not an Integer");
                 response.close();
                 return;
@@ -163,9 +165,11 @@ public class LinkRestHandler extends BasicRequestHandler {
 
             if (scanner.hasNextInt()) {
                 router2 = scanner.nextInt();
+                scanner.close();
             } else {
                 complain(response, "arg router2 is not an Integer");
                 response.close();
+                scanner.close();
                 return;
             }
         } else {
@@ -182,9 +186,11 @@ public class LinkRestHandler extends BasicRequestHandler {
 
             if (scanner.hasNextInt()) {
                 weight = scanner.nextInt();
+                scanner.close();
             } else {
                 complain(response, "arg weight is not an Integer");
                 response.close();
+                scanner.close();
                 return;
             }
         }
@@ -265,7 +271,7 @@ public class LinkRestHandler extends BasicRequestHandler {
 
         if (sc.hasNextInt()) {
             int id = sc.nextInt();
-
+            sc.close();
             int router1, router2;
 
             // if it exists, stop it, otherwise complain
@@ -341,7 +347,9 @@ public class LinkRestHandler extends BasicRequestHandler {
 
             if (scanner.hasNextInt()) {
                 weight = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 complain(response, "arg weight is not an Integer");
                 response.close();
                 return;
@@ -358,7 +366,7 @@ public class LinkRestHandler extends BasicRequestHandler {
 
         if (sc.hasNextInt()) {
             int id = sc.nextInt();
-
+            sc.close();
             int router1, router2;
 
             // if it exists, stop it, otherwise complain
@@ -465,7 +473,7 @@ public class LinkRestHandler extends BasicRequestHandler {
 
         if (sc.hasNextInt()) {
             int linkID = sc.nextInt();
-
+            sc.close();
             // if it exists, get data, otherwise complain
             if (!controller_.isValidLinkID(linkID)) {
                 complain(response, " arg is not valid link id: " + name);

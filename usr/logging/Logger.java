@@ -68,7 +68,8 @@ public class Logger implements Logging {
     /**
      * Log a message using a Strng.
      */
-    public void log(BitMask mask, String msg) {
+    @Override
+	public void log(BitMask mask, String msg) {
         doLog(mask, msg, false);
     }
 
@@ -76,14 +77,16 @@ public class Logger implements Logging {
      * Log a message using a Strng.
      * Add a trailing newline.
      */
-    public void logln(BitMask mask, String msg) {
+    @Override
+	public void logln(BitMask mask, String msg) {
         doLog(mask, msg, true);
     }
 
     /**
      * Log using a LogInput object.
      */
-    public void log(BitMask mask, LogInput obj) {
+    @Override
+	public void log(BitMask mask, LogInput obj) {
         doLog(mask, obj, false);
     }
 
@@ -112,7 +115,8 @@ public class Logger implements Logging {
     /**
      * Add output to a printwriter
      */
-    public Logger addOutput(PrintWriter w) {
+    @Override
+	public Logger addOutput(PrintWriter w) {
         addOutputLog(w, new BitMask());
         return this;
     }
@@ -120,7 +124,8 @@ public class Logger implements Logging {
     /**
      * Add output to a printstream.
      */
-    public Logger addOutput(PrintStream s) {
+    @Override
+	public Logger addOutput(PrintStream s) {
         addOutputLog(s, new BitMask());
         return this;
     }
@@ -128,7 +133,8 @@ public class Logger implements Logging {
     /**
      * Add output to a ByteChannel.
      */
-    public Logger addOutput(ByteChannel ch) {
+    @Override
+	public Logger addOutput(ByteChannel ch) {
         addOutputLog(ch, new BitMask());
         return this;
     }
@@ -136,7 +142,8 @@ public class Logger implements Logging {
     /**
      * Add output to an LogOutput object.
      */
-    public Logger addOutput(LogOutput eo) {
+    @Override
+	public Logger addOutput(LogOutput eo) {
         addOutputLog(eo, new BitMask());
         return this;
     }
@@ -204,7 +211,7 @@ public class Logger implements Logging {
         if (outputs == null) {
             return null;
         } else {
-            return (BitMask)outputs.get(output);
+            return outputs.get(output);
         }
     }
 
@@ -251,13 +258,13 @@ public class Logger implements Logging {
             return;
         }
 
-        Iterator outputI = outputs.keySet().iterator();
+        Iterator<Object> outputI = outputs.keySet().iterator();
 
         while (outputI.hasNext()) {
             Object anOutput = outputI.next();
 
             // get mask for output
-            BitMask aMask = (BitMask)outputs.get(anOutput);
+            BitMask aMask = outputs.get(anOutput);
 
             // check if we need to send to it
             BitMask acceptMask = aMask.and(mask);

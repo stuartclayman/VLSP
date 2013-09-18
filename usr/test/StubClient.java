@@ -47,8 +47,6 @@ public class StubClient implements NetIFListener {
             netIF.setName("StubClient");
             netIF.setRemoteRouterAddress(new GIDAddress(555));
             netIF.connect();
-            int i;
-
             Logger.getLogger("log").logln(USR.ERROR, "StubClient: Connected to: " + host);
 
 
@@ -90,23 +88,27 @@ public class StubClient implements NetIFListener {
     }
 
     /** Deal with TTL expire */
-    public void TTLDrop(Datagram dg) {
+    @Override
+	public void TTLDrop(Datagram dg) {
     }
 
     /** A datagram device has closed and must be removed */
-    public void closedDevice(DatagramDevice dd) {
+    @Override
+	public void closedDevice(DatagramDevice dd) {
 
     }
 
     /**
      * Fake interface
      */
-    public FabricDevice getRouteFabric(Datagram d) {
+    @Override
+	public FabricDevice getRouteFabric(Datagram d) {
         return netIF.getFabricDevice();
     }
 
     /** Client does not accept incoming traffic and has no address */
-    public boolean ourAddress(Address a) {
+    @Override
+	public boolean ourAddress(Address a) {
         return false;
     }
 
@@ -120,7 +122,8 @@ public class StubClient implements NetIFListener {
     /**
      * get name
      */
-    public String getName() {
+    @Override
+	public String getName() {
         return netIF.getName();
     }
 
@@ -133,6 +136,7 @@ public class StubClient implements NetIFListener {
             Scanner scanner = new Scanner(args[0]);
 
             count = scanner.nextInt();
+            scanner.close();
         }
 
         if (args.length == 2) {
@@ -140,6 +144,7 @@ public class StubClient implements NetIFListener {
             Scanner scanner = new Scanner(args[1]);
 
             port = scanner.nextInt();
+            scanner.close();
         }
 
         StubClient client = new StubClient("localhost", port);

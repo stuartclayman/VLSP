@@ -59,7 +59,8 @@ public class RouterManagementConsole extends USRRestConsole {
         return _routerController;
     }
 
-    public void registerCommands() {
+    @Override
+	public void registerCommands() {
         register(new UnknownCommand());
         register(new ShutDownCommand());
         register(new GetNameCommand());

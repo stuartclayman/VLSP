@@ -38,7 +38,8 @@ public class TCPEndPointSrc implements TCPEndPoint {
     /**
      * Connect
      */
-    public boolean connect() throws IOException {
+    @Override
+	public boolean connect() throws IOException {
         if (isConnected) {
             throw new IOException("Cannot connect again to: " + socket);
         } else {
@@ -67,14 +68,16 @@ public class TCPEndPointSrc implements TCPEndPoint {
     /**
      * Get the Socket.
      */
-    public Socket getSocket() {
+    @Override
+	public Socket getSocket() {
         return socket;
     }
 
     /**
      * TO String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         if (socket == null) {
             return host + ":" + port + " ? ";
         } else {

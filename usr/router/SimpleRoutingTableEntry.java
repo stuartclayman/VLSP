@@ -46,11 +46,13 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         //System.err.println("NEW ENTRY CREATED "+toString());
     }
 
-    public Address getAddress() {
+    @Override
+	public Address getAddress() {
         return address_;
     }
 
-    public NetIF getNetIF() {
+    @Override
+	public NetIF getNetIF() {
         return inter_;
     }
 
@@ -59,7 +61,8 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
         inter_ = i;
     }
 
-    public int getCost() {
+    @Override
+	public int getCost() {
         return cost_;
     }
 
@@ -82,7 +85,8 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     /**
      * The size in bytes of a RoutingTableEntry.
      */
-    public int size() {
+    @Override
+	public int size() {
         // the size of the address, plus 4 for the cost
         return address_.asByteArray().length + 4;
     }
@@ -102,7 +106,8 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     /**
      * SHow only data transmitted
      */
-    public String showTransmitted() {
+    @Override
+	public String showTransmitted() {
         String entry = "[ ";
 
         entry += addressAsString(address_) + " W(" + cost_+ ") ";
@@ -114,7 +119,8 @@ public class SimpleRoutingTableEntry implements RoutingTableEntry {
     }
 
     /** Entry represented as string */
-    public String toString() {
+    @Override
+	public String toString() {
         String entry = "[ ";
 
         if (inter_ == null) {

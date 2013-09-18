@@ -8,7 +8,6 @@ import java.util.TimerTask;
 
 import usr.logging.Logger;
 import usr.logging.USR;
-import usr.net.Datagram;
 import usr.net.DatagramSocket;
 
 /**
@@ -45,14 +44,17 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
      * Initialisation for Recv.
      * Recv port
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         if (args.length == 1) {
             // try port
             Scanner scanner = new Scanner(args[0]);
 
             if (scanner.hasNextInt()) {
                 port = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad port " + args[1]);
             }
 
@@ -64,7 +66,8 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
     }
 
     /** Start application with argument  */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up socket
             socket = new DatagramSocket();
@@ -82,7 +85,8 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
         timerTask = new TimerTask() {
             boolean running = true;
 
-            public void run() {
+            @Override
+			public void run() {
                 if (running) {
                     diffs = count - lastTimeCount;
                     lastTime = System.currentTimeMillis();
@@ -97,7 +101,8 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
                 }
             }
 
-            public boolean cancel() {
+            @Override
+			public boolean cancel() {
                 Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
 
                 if (running) {
@@ -108,7 +113,8 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
                 return running;
             }
 
-            public long scheduledExecutionTime() {
+            @Override
+			public long scheduledExecutionTime() {
                 Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
                 return 0;
             }
@@ -129,7 +135,8 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
     }
 
     /** Implement graceful shut down */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         Logger.getLogger("log").logln(USR.STDOUT, "Recv stop");
 
         running = false;
@@ -144,11 +151,10 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
     }
 
     /** Run the ping application */
-    public void run() {
-        Datagram datagram;
-
+    @Override
+	public void run() {
         try {
-            while ((datagram = socket.receive()) != null) {
+            while ((socket.receive()) != null) {
                 count++;
             }
         } catch (SocketException se) {
@@ -161,11 +167,12 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
     /**
      * Return a map of monitoring data.
      */
-    public HashMap<String, String> getMonitoringData() {
+    @Override
+	public HashMap<String, String> getMonitoringData() {
         HashMap <String,String>theMap = new HashMap<String, String>();
 
-        theMap.put((String)"diffs", (String)Integer.toString(diffs));
-        theMap.put((String)"count", (String)Integer.toString(count));
+        theMap.put("diffs", Integer.toString(diffs));
+        theMap.put("count", Integer.toString(count));
 
         return theMap;
     }

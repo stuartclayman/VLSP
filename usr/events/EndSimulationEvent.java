@@ -13,11 +13,13 @@ public class EndSimulationEvent extends AbstractEvent {
         engine_ = eng;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return new String("EndSimulation " + time_);
     }
 
-    public JSONObject execute(GlobalController gc) throws
+    @Override
+	public JSONObject execute(GlobalController gc) throws
     InstantiationException {
         JSONObject jsobj = new JSONObject();
 

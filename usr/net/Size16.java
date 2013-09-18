@@ -14,14 +14,16 @@ public abstract class Size16 implements Address {
     /**
      * Get the size in bytes of an instantiation of an Size4 Address.
      */
-    public int size() {
+    @Override
+	public int size() {
         return 16;
     }
 
     /**
      * Get Size4 Address as a byte[]
      */
-    public byte[] asByteArray() {
+    @Override
+	public byte[] asByteArray() {
         return bytes;
     }
 
@@ -67,7 +69,8 @@ public abstract class Size16 implements Address {
         }
     }
 
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         return asInteger();
     }
 

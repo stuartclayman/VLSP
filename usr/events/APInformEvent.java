@@ -17,14 +17,16 @@ public class APInformEvent extends AbstractEvent {
         routerNo_ = rid;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         String str;
 
         str = "APInform: " + time_ + " router " + routerNo_ + " AP " + AP_;
         return str;
     }
 
-    public JSONObject execute(GlobalController gc) {
+    @Override
+	public JSONObject execute(GlobalController gc) {
         JSONObject json = new JSONObject();
 
         try {

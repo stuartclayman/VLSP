@@ -32,7 +32,8 @@ public class SetPortWeightCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
         try {
             PrintStream out = response.getPrintStream();
 
@@ -61,6 +62,7 @@ public class SetPortWeightCommand extends RouterCommand {
                 Scanner scanner = new Scanner(portNo);
                 int p = scanner.nextInt();
                 RouterPort routerPort = controller.getPort(p);
+                scanner.close();
 
                 if (routerPort == null || routerPort == RouterPort.EMPTY) {
                     response.setCode(302);
@@ -128,9 +130,7 @@ public class SetPortWeightCommand extends RouterCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
     }
 

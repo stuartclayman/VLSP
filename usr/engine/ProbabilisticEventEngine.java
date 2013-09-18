@@ -84,7 +84,8 @@ public class ProbabilisticEventEngine extends NullEventEngine {
     }
 
     /** Start up and shut down events */
-    public void startStopEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void startStopEvents(EventScheduler s, GlobalController g) {
         // simulation start
         StartSimulationEvent e0 = new StartSimulationEvent(0, this);
 
@@ -96,7 +97,8 @@ public class ProbabilisticEventEngine extends NullEventEngine {
     }
 
     /** Initial events to add to schedule */
-    public void initialEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void initialEvents(EventScheduler s, GlobalController g) {
         // Start initial router
         long time;
 
@@ -165,7 +167,8 @@ public class ProbabilisticEventEngine extends NullEventEngine {
     }
 
     /** Add or remove events following a simulation event */
-    public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
+    @Override
+	public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
         if (e instanceof StartRouterEvent) {
             followRouter((StartRouterEvent)e, s, response, g);
         }
@@ -456,7 +459,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
         }
 
         try {
-            Class[] args = new Class[0];
+            Class<?>[] args = new Class<?>[0];
             Constructor<?> c = lpclass.getConstructor(args);
             Object[] arglist = new Object[0];
             linkPicker_ = (NodeLinkPicker)c.newInstance(arglist);

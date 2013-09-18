@@ -114,11 +114,13 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
         }
     }
 
-    public Address getAddress() {
+    @Override
+	public Address getAddress() {
         return address_;
     }
 
-    public NetIF getNetIF() {
+    @Override
+	public NetIF getNetIF() {
         return interfaces_.get(topology);
     }
 
@@ -131,7 +133,8 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
         interfaces_.set(topol, i);
     }
 
-    public int getCost() {
+    @Override
+	public int getCost() {
         return costs_.get(topology);
     }
 
@@ -154,7 +157,8 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
     /**
      * The size in bytes of a RoutingTableEntry.
      */
-    public int size() {
+    @Override
+	public int size() {
         // the size of the address, plus 4 for the cost of each topology entry
         return address_.asByteArray().length + (4 * totalTopology);
     }
@@ -179,7 +183,8 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
     /**
      * SHow only data transmitted
      */
-    public String showTransmitted() {
+    @Override
+	public String showTransmitted() {
         String entry = "[ ";
 
         entry += addressAsString(address_);
@@ -195,7 +200,8 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
     }
 
     /** Entry represented as string */
-    public String toString() {
+    @Override
+	public String toString() {
         String entry = "[ ";
 
         if (interfaces_ == null) {

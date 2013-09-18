@@ -2,7 +2,7 @@ package usr.net;
 
 import java.net.InetAddress;
 
-public interface Address extends Comparable {
+public interface Address extends Comparable <Object> {
     /**
      * Get the size in bytes of an instantiation of an Address.
      */

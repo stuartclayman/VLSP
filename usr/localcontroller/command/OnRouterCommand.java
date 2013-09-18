@@ -27,7 +27,8 @@ public class OnRouterCommand extends LocalCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
 
         try {
             PrintStream out = response.getPrintStream();
@@ -56,6 +57,7 @@ public class OnRouterCommand extends LocalCommand {
 
                 if (sc.hasNextInt()) {
                     routerID = sc.nextInt();
+                    sc.close();
                 } else {
                     response.setCode(302);
 
@@ -64,7 +66,7 @@ public class OnRouterCommand extends LocalCommand {
 
                     out.println(jsobj.toString());
                     response.close();
-
+                    sc.close();
                     return false;
                 }
 
@@ -106,9 +108,7 @@ public class OnRouterCommand extends LocalCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
     }
 

@@ -15,10 +15,12 @@ import usr.globalcontroller.GlobalController;
 /** Class to output network stuff */
 public class OutputEndRouterEvent implements OutputFunction {
     /** In fact this only requests output -- actual output occurs later */
-    public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
+    @Override
+	public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
     }
 
-    public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
+    @Override
+	public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
         //System.err.println("STOP EVENT "+ event.getClass().toString());
         if (!(event instanceof EndRouterEvent)) {
             return;
@@ -35,7 +37,8 @@ public class OutputEndRouterEvent implements OutputFunction {
                   + ANSI.RED + " STOP ROUTER " + rId + ANSI.RESET_COLOUR);
     }
 
-    public void parseExtraXML(Node n) throws SAXException {
+    @Override
+	public void parseExtraXML(Node n) throws SAXException {
     }
 
 }

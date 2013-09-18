@@ -22,7 +22,8 @@ public class PressureAPController extends NullAPController {
     }
 
     /** Controller regular AP update action */
-    public void controllerUpdate(long time, GlobalController g) {
+    @Override
+	public void controllerUpdate(long time, GlobalController g) {
         super.controllerUpdate(time, g);
 
         if (gotMinAPs(g)) {
@@ -42,7 +43,8 @@ public class PressureAPController extends NullAPController {
     }
 
     /** Use the controller to remove the least efficient AP using Pressure alg*/
-    public void controllerRemove(long time, GlobalController g) {
+    @Override
+	public void controllerRemove(long time, GlobalController g) {
         System.err.println("To write");
     }
 
@@ -82,7 +84,8 @@ public class PressureAPController extends NullAPController {
     }
 
     /** No score for this function */
-    public int getScore(long time, int gid, GlobalController g) {
+    @Override
+	public int getScore(long time, int gid, GlobalController g) {
         if (isAP(gid)) {
             return getAPPressure(gid, g);
         } else {

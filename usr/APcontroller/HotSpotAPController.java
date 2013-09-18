@@ -23,7 +23,8 @@ public class HotSpotAPController extends NullAPController {
     }
 
     /** Controller regular AP update action */
-    public void controllerUpdate(long time, GlobalController g) {
+    @Override
+	public void controllerUpdate(long time, GlobalController g) {
         super.controllerUpdate(time, g);
 
         if (gotMinAPs(g)) {
@@ -42,7 +43,8 @@ public class HotSpotAPController extends NullAPController {
     }
 
     /** Use the controller to remove the least efficient AP using HotSpot alg*/
-    public void controllerRemove(long time, GlobalController g) {
+    @Override
+	public void controllerRemove(long time, GlobalController g) {
         System.err.println("To write");
     }
 
@@ -92,7 +94,8 @@ public class HotSpotAPController extends NullAPController {
     }
 
     /** Accessor for hot spot score */
-    public int getScore(long tim, int gid, GlobalController g) {
+    @Override
+	public int getScore(long tim, int gid, GlobalController g) {
         return getHotSpotScore(gid, g);
     }
 

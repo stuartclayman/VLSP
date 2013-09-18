@@ -9,6 +9,7 @@ import org.simpleframework.http.Response;
 
 import us.monoid.json.JSONObject;
 import usr.events.EndSimulationEvent;
+import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.protocol.MCRP;
@@ -28,7 +29,8 @@ public class ShutDownEventCommand extends GlobalCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
         try {
             PrintStream out = response.getPrintStream();
 
@@ -40,14 +42,14 @@ public class ShutDownEventCommand extends GlobalCommand {
             try {
                 jsobj = controller.executeEvent(shutdown);
             } catch (InterruptedException ie) {
-                jsobj = controller.commandError(
+                jsobj = GlobalController.commandError(
                         "Semaphor acquisition interrupted "
                         + ie.getMessage());
             } catch (TimeoutException te) {
-                jsobj = controller.commandError(
+                jsobj = GlobalController.commandError(
                         "Semaphor timeout " + te.getMessage());
             } catch (InstantiationException ise) {
-                jsobj = controller.commandError(
+                jsobj = GlobalController.commandError(
                         "Could not shutdown " + ise.getMessage());
             }
 
@@ -60,9 +62,7 @@ public class ShutDownEventCommand extends GlobalCommand {
                                           leadin() + ioe.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
     }
 
 }

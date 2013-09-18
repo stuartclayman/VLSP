@@ -13,7 +13,8 @@ import usr.globalcontroller.GlobalController;
 /** Class to output summary stats  */
 class OutputSummary implements OutputFunction {
 
-    public void makeOutput(long time, PrintStream s, OutputType o, GlobalController gc) {
+    @Override
+	public void makeOutput(long time, PrintStream s, OutputType o, GlobalController gc) {
 
         if (o.isFirst()) {
 
@@ -30,11 +31,13 @@ class OutputSummary implements OutputFunction {
         s.println();
     }
 
-    public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
+    @Override
+	public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
         makeOutput(event.getTime(), s, out, gc);
     }
 
-    public void parseExtraXML(Node n) throws SAXException {
+    @Override
+	public void parseExtraXML(Node n) throws SAXException {
     }
 
 

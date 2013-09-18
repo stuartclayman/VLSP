@@ -14,7 +14,7 @@ import usr.net.DatagramSocket;
  * This class reads USR Datagrams from a USR DatagramSocket
  * and sends them to a queue
  */
-public class USRReader implements Callable {
+public class USRReader implements Callable <Object>{
     usr.net.DatagramSocket inSocket;
     int usrPort;
     LinkedBlockingDeque<usr.net.Datagram> queue;
@@ -22,7 +22,7 @@ public class USRReader implements Callable {
 
     int count = 0;
 
-    // verbose 
+    // verbose
     int verbose = 0;
 
 
@@ -51,11 +51,10 @@ public class USRReader implements Callable {
     }
 
 
-    public Object call() {
+    @Override
+	public Object call() {
         // allocate a Datagram
         usr.net.Datagram inDatagram = null;
-
-        int count = 0;
 
         try {
             while (running) {
@@ -70,8 +69,6 @@ public class USRReader implements Callable {
                     break;
                 }
 
-
-                count++;
 
                 queue.add(inDatagram);
 

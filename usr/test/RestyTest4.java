@@ -23,7 +23,7 @@ class RestyTest4 extends RestyTest {
 
 
             JSONObject l1 = test.createLink(router1, router2, 10);
-            int link1 = (Integer)l1.get("linkID");
+            l1.get("linkID");
             System.out.println("l1 = " + l1);
 
             // let the routing tables propogate

@@ -37,14 +37,16 @@ public abstract class LocalCommand extends AbstractRestCommand {
     /**
      * Get the ManagementConsole this is a command for.
      */
-    public ManagementConsole getManagementConsole() {
+    @Override
+	public ManagementConsole getManagementConsole() {
         return managementConsole;
     }
 
     /**
      * Set the ManagementConsole this is a command for.
      */
-    public void setManagementConsole(ManagementConsole mc) {
+    @Override
+	public void setManagementConsole(ManagementConsole mc) {
         managementConsole = (LocalControllerManagementConsole)mc;
         controller = (LocalController)managementConsole.getComponentController();
     }
@@ -53,7 +55,8 @@ public abstract class LocalCommand extends AbstractRestCommand {
      * Evaluate the Command.
      * Returns false if there is a problem responding down the channel
      */
-    public abstract boolean evaluate(Request request, Response response);
+    @Override
+	public abstract boolean evaluate(Request request, Response response);
 
 
 }

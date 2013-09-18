@@ -28,7 +28,8 @@ public class ReadOptionsFileCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
         try {
             PrintStream out = response.getPrintStream();
 
@@ -80,9 +81,7 @@ public class ReadOptionsFileCommand extends RouterCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
     }
 

@@ -19,7 +19,7 @@ import usr.net.SocketAddress;
  * An application for adapting an Egress node
  * to send to a new UDP port.
  * It sends a message to the Egress node listening
- * on a Management port on usrAddr:usrPort 
+ * on a Management port on usrAddr:usrPort
  * and informs it to update the forwarding
  * UDP address  udp-addr:udp-port.
  * <p>
@@ -54,7 +54,8 @@ public class AdaptEgress implements Application {
      * -d start-up delay (in milliseconds)
      * -v verbose
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         if (args.length >= 2) {
             Scanner scanner;
 
@@ -84,10 +85,12 @@ public class AdaptEgress implements Application {
                 scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
-
+                scanner.close();
                 // Construct a SocketAddress
                 mgmtUsrAddr = new SocketAddress(addr, port);
 
@@ -115,12 +118,13 @@ public class AdaptEgress implements Application {
                     scanner = new Scanner(udpPort);
                     if (scanner.hasNextInt()) {
                         inetPort = scanner.nextInt();
+                        scanner.close();
                     } else {
+                    	scanner.close();
                         return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                     }
 
-                    // Construct a SocketAddress
-                    java.net.InetSocketAddress inetSocketAddr = new java.net.InetSocketAddress(inetAddr, inetPort);
+                    new java.net.InetSocketAddress(inetAddr, inetPort);
 
                 } catch (Exception e) {
                     return new ApplicationResponse(false, "UnknownHost " + addrParts[0]);
@@ -184,7 +188,8 @@ public class AdaptEgress implements Application {
     }
 
     /** Start application with argument  */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up socket
             socket = new DatagramSocket();
@@ -211,7 +216,8 @@ public class AdaptEgress implements Application {
     }
 
     /** Implement graceful shut down */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
 
         if (socket != null) {
@@ -225,7 +231,8 @@ public class AdaptEgress implements Application {
     }
 
     /** Run the Send application */
-    public void run() {
+    @Override
+	public void run() {
         Datagram datagram = null;
 
         // Start Delay
@@ -277,7 +284,7 @@ public class AdaptEgress implements Application {
         }
 
         Logger.getLogger("log").logln(USR.ERROR, "AdaptEgress: end of run()");
-        
+
     }
 
 }

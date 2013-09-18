@@ -71,7 +71,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     /**
      * Initialisation
      */
-    public boolean init() {
+    @Override
+	public boolean init() {
         table_ = newRoutingTable();
         int limit = 32;
         ports = new ArrayList<RouterPort>(limit);
@@ -97,7 +98,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     /**
      * Start me up.
      */
-    public boolean start() {
+    @Override
+	public boolean start() {
         table_.setListener(this);
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
@@ -121,7 +123,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     /**
      * Stop the RouterFabric.
      */
-    public boolean stop() {
+    @Override
+	public boolean stop() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router fabric stop");
         // stop RoutingTableTransmitter thread
         routingTableTransmitter.terminate();
@@ -159,35 +162,40 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     /**
      * Get the Router this Fabric is part of
      */
-    public Router getRouter() {
+    @Override
+	public Router getRouter() {
         return router;
     }
 
     /**
      * Get the local NetIF that has the sockets.
      */
-    public NetIF getLocalNetIF() {
+    @Override
+	public NetIF getLocalNetIF() {
         return localNetIF;
     }
 
     /**
      * Get port N.
      */
-    public RouterPort getPort(int p) {
+    @Override
+	public RouterPort getPort(int p) {
         return ports.get(p);
     }
 
     /**
      * Get a list of all the ports with Network Interfaces.
      */
-    public List<RouterPort> listPorts() {
+    @Override
+	public List<RouterPort> listPorts() {
         return ports;
     }
 
     /**
      * Close ports.
      */
-    public void closePorts() {
+    @Override
+	public void closePorts() {
         //Logger.getLogger("log").logln(USR.ERROR, "Local NetIF close");
         if (localNetIF != null) {
             closeLocalNetIF();
@@ -228,7 +236,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     /**
      * Close port.
      */
-    public void closePort(RouterPort port) {
+    @Override
+	public void closePort(RouterPort port) {
         if (port.equals(RouterPort.EMPTY)) {
             // nothing to do
         } else {
@@ -274,7 +283,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     }
 
     /** Is this datagram for us */
-    public boolean ourAddress(Address addr) {
+    @Override
+	public boolean ourAddress(Address addr) {
         //Logger.getLogger("log").logln(USR.STDOUT, "DATAGRAM WITH NULL ADDRESS");
         if (addr == null ) {
             return true;
@@ -329,7 +339,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     }
 
     /** Get the Fabric Device which this packet should be sent to */
-    public FabricDevice getRouteFabric(Datagram dg) throws NoRouteToHostException {
+    @Override
+	public FabricDevice getRouteFabric(Datagram dg) throws NoRouteToHostException {
 
         if (ourAddress(dg.getDstAddress())) {
             if (dg.getDstPort() == 0 || dg.getProtocol() == Protocol.CONTROL) {
@@ -370,7 +381,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     }
 
     /** Return a TTL expired datagram unless this is a TTL expired datagram */
-    public void TTLDrop(Datagram dg) {
+    @Override
+	public void TTLDrop(Datagram dg) {
         // Can't return datagram with no source
         if (ourAddress(dg.getSrcAddress())) {
             return;
@@ -422,7 +434,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     }
 
     /** Datagram which has arrived is ours */
-    public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
+    @Override
+	public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " receiveOurDatagram ");
         if (running == false) {  // If we're not running simply pretend to have received it
@@ -594,7 +607,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
         }
     }
 
-    public void sendGoodbye() {
+    @Override
+	public void sendGoodbye() {
         ArrayList<Address> addresses = new ArrayList<Address>();
         Address me = router.getAddress();
 
@@ -761,7 +775,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     /**
      * Return the routing table
      */
-    public RoutingTable getRoutingTable() {
+    @Override
+	public RoutingTable getRoutingTable() {
         return table_;
     }
 
@@ -794,7 +809,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
      * or a connection name
      * @return null if none exists*/
 
-    public NetIF findNetIF(String name) {
+    @Override
+	public NetIF findNetIF(String name) {
         synchronized (ports) {
             int limit = ports.size();
 
@@ -846,7 +862,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     /**
      * Set the netIF weight associated with a link to a certain router name
      */
-    public boolean setNetIFWeight(String name, int weight) {
+    @Override
+	public boolean setNetIFWeight(String name, int weight) {
         NetIF netIF = findNetIF(name);
 
         if (netIF == null) {
@@ -865,18 +882,21 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
     /**
      */
-    public void setNetIFListener(NetIFListener l) {
+    @Override
+	public void setNetIFListener(NetIFListener l) {
         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Call to setNETIFListener illegal");
     }
 
-    public NetIFListener getNetIFListener() {
+    @Override
+	public NetIFListener getNetIFListener() {
         return this;
     }
 
     /**
      * Get a list of all connected Network Interfaces
      */
-    public List<NetIF> listNetIF() {
+    @Override
+	public List<NetIF> listNetIF() {
         ArrayList<NetIF> list = new ArrayList<NetIF>();
         int limit = ports.size();
 
@@ -920,7 +940,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     }
 
     /** Ping command received */
-    public boolean ping (Address dst) {
+    @Override
+	public boolean ping (Address dst) {
         //Address dst = AddressFactory.newAddress(id);
         byte[] buffer = new byte[1];
         buffer[0] = 'P';
@@ -935,33 +956,40 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
         return true;
     }
 
-    public Address getAddress() {
+    @Override
+	public Address getAddress() {
         return address_;
     }
 
-    public void setAddress(Address a) {
+    @Override
+	public void setAddress(Address a) {
         address_ = a;
     }
 
-    public String getName() {
+    @Override
+	public String getName() {
         return name_;
     }
 
-    public void setName(String n) {
+    @Override
+	public void setName(String n) {
         name_ = n;
     }
 
-    public FabricDevice getFabricDevice() {
+    @Override
+	public FabricDevice getFabricDevice() {
         return fabricDevice_;
     }
 
-    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
+    @Override
+	public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
         // SC 20130620
         // dg.setSrcAddress(router.getAddress());
         return enqueueDatagram(dg);
     }
 
-    public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
+    @Override
+	public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
         try {
             return fabricDevice_.addToInQueue(dg, this);
         } catch (NoRouteToHostException e) {
@@ -970,7 +998,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     }
 
     /** Echo command received */
-    public boolean echo (Address addr) {
+    @Override
+	public boolean echo (Address addr) {
         return echo(addr, 0);
     }
 
@@ -996,7 +1025,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     /**
      * Add a Network Interface to this Router.
      */
-    public RouterPort addNetIF(NetIF netIF) {
+    @Override
+	public RouterPort addNetIF(NetIF netIF) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "addNetIF NetIF: " + netIF.getName() + " " + netIF.getAddress() );
 
         try {
@@ -1066,7 +1096,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
      * Remove a Network Interface from this Router.
      * synchronized to prevent multiple calls
      */
-    public boolean removeNetIF(NetIF netIF) {
+    @Override
+	public boolean removeNetIF(NetIF netIF) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "removeNetIF NetIF: " + netIF.getName() + " " + getAddress() );
 
         //synchronized (ports) {  // this can lock up on link end
@@ -1177,7 +1208,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
         }
     }
 
-    public void closedDevice(DatagramDevice dd) {
+    @Override
+	public void closedDevice(DatagramDevice dd) {
         if (dd instanceof NetIF) {
             remoteRemoveNetIF((NetIF)dd);
             return;
@@ -1238,7 +1270,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
          * It occasionally checks to see if it needs to
          * send a routing table.
          */
-        public void run() {
+        @Override
+		public void run() {
             running = true;
 
             long nextUpdateTime;

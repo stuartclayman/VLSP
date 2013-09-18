@@ -77,7 +77,6 @@ public class GlobalController implements ComponentController {
 
     private String xmlFile_;              // name of XML file containing config
     private LocalHostInfo myHostInfo_;    // Information about the localhosts
-    private boolean listening_;
     private GlobalControllerManagementConsole console_ = null;
     private ArrayList<LocalControllerInteractor> localControllers_
         = null;
@@ -118,7 +117,6 @@ public class GlobalController implements ComponentController {
 
     private EventScheduler scheduler_ = null;    // Class holds scheduler for event list
 
-    private long simulationTime_ = 0;
 
     // Variables relate to traffic output of statistics
     private ArrayList<OutputType> trafficOutputRequests_ = null;
@@ -128,8 +126,6 @@ public class GlobalController implements ComponentController {
     private HashMap<String, int []> trafficLinkCounts_ = null;
 
     private ArrayList<OutputType> eventOutput_ = null;
-
-    private Thread ProcessOutputThread_;
 
     // Number of aggregation point controllers
     private int noControllers_ = 0;
@@ -187,8 +183,6 @@ public class GlobalController implements ComponentController {
             GlobalController gControl = new GlobalController();
 
             if (args.length > 1) {
-                String flag = args[0];
-
                 gControl.setStartupFile(args[1]);
                 gControl.init();
             } else {
@@ -397,10 +391,10 @@ public class GlobalController implements ComponentController {
 
         while (isActive_) {
             Event ev = scheduler_.getFirstEvent();
-            simulationTime_ = ev.getTime();
 
             if (ev == null) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Ran out of events to schedule");
+                break;
             }
 
             try {
@@ -427,7 +421,7 @@ public class GlobalController implements ComponentController {
         // Start Scheduler as thread
         Thread t;
         synchronized (runLoop_) {
-            t = new Thread((Runnable)scheduler_);
+            t = new Thread(scheduler_);
             t.start();
 
             while (isActive_) {
@@ -512,16 +506,16 @@ public class GlobalController implements ComponentController {
 
                 // Replaced with following 2 lines
                 Class<?> c =
-                    (Class<?> )Class.forName(reporterClassName);
+                    Class.forName(reporterClassName);
                 Class<? extends Reporter> cc = c.asSubclass(
                         Reporter.class);
 
                 // find Constructor for when arg is GlobalController
                 Constructor<? extends Reporter> cons
-                    = (Constructor<? extends Reporter> )cc.
-                        getDeclaredConstructor(GlobalController.class);
+                    = cc.
+				    getDeclaredConstructor(GlobalController.class);
 
-                Reporter reporter = (Reporter)cons.newInstance(this);
+                Reporter reporter = cons.newInstance(this);
                 reporterMap.put(label, reporter);
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Added reporter: " + reporter);
@@ -583,7 +577,7 @@ public class GlobalController implements ComponentController {
             }
 
             JSONObject js = null;
-            
+
             js = op.call();
 
             return js;
@@ -592,7 +586,7 @@ public class GlobalController implements ComponentController {
         }
     }
 
-    /** Execute an event, 
+    /** Execute an event,
      * return a JSON object with information about it
      * throws Instantiation if creation fails
      * Interrupted if acquisition of lock interrupted
@@ -609,8 +603,8 @@ public class GlobalController implements ComponentController {
             // Define the Operation body
             // the method 'call()' is called by semaphoredOperation()
             Operation execute = new Operation() {
-                    public JSONObject call() throws InstantiationException, InterruptedException, TimeoutException {
-                        Object extraParms = null;
+                    @Override
+					public JSONObject call() throws InstantiationException, InterruptedException, TimeoutException {
                         e.preceedEvent(scheduler_, gc);
                         Logger.getLogger("log").logln(USR.STDOUT, "EVENT: " + e);
                         JSONObject js = null;
@@ -624,7 +618,7 @@ public class GlobalController implements ComponentController {
 
                         e.followEvent(scheduler_, js, gc);
                         return js;
-                    } 
+                    }
                 };
 
             // Do the Operation in the semaphore code block
@@ -923,8 +917,7 @@ public class GlobalController implements ComponentController {
      */
     public BasicRouterInfo findRouterInfo(String value) {
         // skip through all the BasicRouterInfo objects
-        for (BasicRouterInfo info : (Collection<BasicRouterInfo> )
-             routerIdMap_.values()) {
+        for (BasicRouterInfo info : routerIdMap_.values()) {
             if (info.getAddress() !=
                 null &&info.getAddress().equals(value)) {
                 // we found a match
@@ -1066,7 +1059,7 @@ public class GlobalController implements ComponentController {
         }
 
     }
-     
+
 
     /**
      * Find link info
@@ -1098,8 +1091,8 @@ public class GlobalController implements ComponentController {
         // now get connected nodes
         JSONArray nodes = new JSONArray();
 
-        nodes.put((Integer)li.getEndPoints().getFirst());
-        nodes.put((Integer)li.getEndPoints().getSecond());
+        nodes.put(li.getEndPoints().getFirst());
+        nodes.put(li.getEndPoints().getSecond());
 
         jsobj.put("nodes", nodes);
 
@@ -1154,8 +1147,8 @@ public class GlobalController implements ComponentController {
                 // now get connected nodes
                 JSONArray nodes = new JSONArray();
 
-                nodes.put((Integer)info.getEndPoints().getFirst());
-                nodes.put((Integer)info.getEndPoints().getSecond());
+                nodes.put(info.getEndPoints().getFirst());
+                nodes.put(info.getEndPoints().getSecond());
 
                 record.put("nodes", nodes);
 
@@ -1192,14 +1185,13 @@ public class GlobalController implements ComponentController {
      */
     public JSONObject getRouterLinkStatsAsJSON(int routerID) throws JSONException {
         // Find the traffic reporter
-        // This is done by asking the GlobalController for 
+        // This is done by asking the GlobalController for
         // a class that implements TrafficInfo.
         // It is this class that has the current traffic info.
         TrafficInfo reporter = (TrafficInfo)findByInterface(TrafficInfo.class);
 
 
-        // Get all links for router with ID routerID
-        Collection<LinkInfo> links = findLinkInfoByRouter(routerID);
+        findLinkInfoByRouter(routerID);
 
         // result object
         JSONObject jsobj = new JSONObject();
@@ -1251,14 +1243,13 @@ public class GlobalController implements ComponentController {
      */
     public JSONObject getRouterLinkStatsAsJSON(int routerID, int dstID) throws JSONException {
         // Find the traffic reporter
-        // This is done by asking the GlobalController for 
+        // This is done by asking the GlobalController for
         // a class that implements TrafficInfo.
         // It is this class that has the current traffic info.
         TrafficInfo reporter = (TrafficInfo)findByInterface(TrafficInfo.class);
 
 
-        // Get all links for router with ID routerID
-        Collection<LinkInfo> links = findLinkInfoByRouter(routerID);
+        findLinkInfoByRouter(routerID);
 
         // result object
         JSONObject jsobj = new JSONObject();
@@ -1341,19 +1332,6 @@ public class GlobalController implements ComponentController {
      *  parallel get getOutLinks to id link nos*/
     public int [] getLinkCosts(int routerId) {
         return network_.getLinkCosts(routerId);
-    }
-
-    /** Create pair of integers with first integer smallest */
-    private Pair<Integer, Integer> makeRouterPair(int r1, int r2) {
-        Pair<Integer, Integer> rpair;
-
-        if (r1 < r2) {
-            rpair = new Pair<Integer, Integer>(r1, r2);
-        } else {
-            rpair = new Pair<Integer, Integer>(r2, r1);
-        }
-
-        return rpair;
     }
 
     /** Create pair of integers  */
@@ -1738,7 +1716,7 @@ public class GlobalController implements ComponentController {
 
         dataConsumer.setDataPlane(inputDataPlane);
 
-        
+
 
         // set the reporter
         dataConsumer.clearReporters();
@@ -1854,7 +1832,7 @@ public class GlobalController implements ComponentController {
     /**
      * Find reporter by Interface Class
      */
-    public Reporter findByInterface(Class inter) {
+    public Reporter findByInterface(Class <?> inter) {
         // skip through each Reporter
         for (Reporter reporter :  reporterMap.values()) {
             // skip through each Interface
@@ -1869,11 +1847,11 @@ public class GlobalController implements ComponentController {
     }
 
     private void startLocalControllers() {
-        Iterator i = options_.getControllersIterator();
+        Iterator<LocalControllerInfo> i = options_.getControllersIterator();
         Process child = null;
 
         while (i.hasNext()) {
-            LocalControllerInfo lh = (LocalControllerInfo)i.next();
+            LocalControllerInfo lh = i.next();
             String [] cmd = options_.localControllerStartCommand(lh);
             try {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting process " + Arrays.asList(cmd));
@@ -1981,7 +1959,8 @@ public class GlobalController implements ComponentController {
     /**
      * Get the ManagementConsole this ComponentController interacts with.
      */
-    public ManagementConsole getManagementConsole() {
+    @Override
+	public ManagementConsole getManagementConsole() {
         return console_;
     }
 
@@ -2125,7 +2104,7 @@ public class GlobalController implements ComponentController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stop messages sent to all controllers");
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping process wrappers");
-        Collection<ProcessWrapper> pws = (Collection<ProcessWrapper> )childProcessWrappers_.values();
+        Collection<ProcessWrapper> pws = childProcessWrappers_.values();
 
         for (ProcessWrapper pw : pws) {
             pw.stop();
@@ -2462,7 +2441,8 @@ public class GlobalController implements ComponentController {
     /**
      * Get the name of this GlobalController.
      */
-    public String getName() {
+    @Override
+	public String getName() {
         if (myHostInfo_ == null) {
             return myName;
         }

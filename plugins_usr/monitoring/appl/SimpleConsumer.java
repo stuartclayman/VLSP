@@ -34,10 +34,12 @@ public SimpleConsumer(){
 /**
  * Init.
  */
+@Override
 public ApplicationResponse init(String[] args){
     if (args.length == 1) {
         Scanner sc = new Scanner(args[0]);
         dataPort = sc.nextInt();
+        sc.close();
         return new ApplicationResponse(true, "");
     } else {
         return new ApplicationResponse(false,
@@ -48,6 +50,7 @@ public ApplicationResponse init(String[] args){
 /**
  * Start.
  */
+@Override
 public ApplicationResponse start(){
     try {
         // set up a BasicConsumer
@@ -71,6 +74,7 @@ public ApplicationResponse start(){
 /**
  * Stop.
  */
+@Override
 public ApplicationResponse stop(){
     consumer.disconnect();
 
@@ -81,6 +85,7 @@ public ApplicationResponse stop(){
     return new ApplicationResponse(true, "");
 }
 
+@Override
 public void run(){
     try {
         synchronized (this) {

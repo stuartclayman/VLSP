@@ -103,14 +103,16 @@ public class LocalHostInfo {
         highPort_ = high;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return hostName_ + ":" + port_;
     }
 
     /**
      * Check if this is equal to another LocalHostInfo
      */
-    public boolean equals(Object obj) {
+    @Override
+	public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }

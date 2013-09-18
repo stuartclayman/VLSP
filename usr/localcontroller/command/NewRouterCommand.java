@@ -27,7 +27,8 @@ public class NewRouterCommand extends LocalCommand {
     /**
      * Evaluate the Command.  NEW_ROUTER id mcrpPort r2rPort [address] [name]
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
 
         try {
             PrintStream out = response.getPrintStream();
@@ -117,9 +118,7 @@ public class NewRouterCommand extends LocalCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
     }
 

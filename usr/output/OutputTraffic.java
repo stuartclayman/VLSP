@@ -17,16 +17,19 @@ import usr.logging.USR;
 public class OutputTraffic implements OutputFunction {
 
     /** In fact this only requests output -- actual output occurs later */
-    public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
+    @Override
+	public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
         gc.checkTrafficOutputRequests(t, o);
 
     }
 
-    public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
+    @Override
+	public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
         makeOutput(event.getTime(), s, out, gc);
     }
 
-    public void parseExtraXML(Node n) throws SAXException {
+    @Override
+	public void parseExtraXML(Node n) throws SAXException {
     }
 
     public void produceOutput(long t, PrintStream p, OutputType o, GlobalController gc) {

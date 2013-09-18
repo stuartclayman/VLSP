@@ -121,6 +121,7 @@ public class RouterApp1C {
             Scanner scanner = new Scanner(args[0]);
 
             count = scanner.nextInt();
+            scanner.close();
         } else if (args.length == 2) {
             host = args[0];
 
@@ -128,6 +129,7 @@ public class RouterApp1C {
             Scanner scanner = new Scanner(args[1]);
 
             count = scanner.nextInt();
+            scanner.close();
         }
 
 

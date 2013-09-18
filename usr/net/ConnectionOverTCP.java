@@ -62,7 +62,8 @@ public class ConnectionOverTCP implements Connection {
     /**
      * Connect.
      */
-    public boolean connect() throws IOException {
+    @Override
+	public boolean connect() throws IOException {
         endPoint.connect();
 
         Socket socket = endPoint.getSocket();
@@ -102,14 +103,16 @@ public class ConnectionOverTCP implements Connection {
     /**
      * Get the Address for this connection.
      */
-    public Address getAddress() {
+    @Override
+	public Address getAddress() {
         return localAddress;
     }
 
     /**
      * Set the Address for this connection.
      */
-    public Connection setAddress(Address addr) {
+    @Override
+	public Connection setAddress(Address addr) {
         localAddress = addr;
         return this;
     }
@@ -117,7 +120,8 @@ public class ConnectionOverTCP implements Connection {
     /** Send datagram down channel -- must be synchronized to prevent close occuring
      * when this is working
      */
-    public synchronized boolean sendDatagram(Datagram dg) throws IOException, ClosedByInterruptException {
+    @Override
+	public synchronized boolean sendDatagram(Datagram dg) throws IOException, ClosedByInterruptException {
         //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: send(" + outCounter + ")");
         if (dg == null) {
             Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: received null datagram");
@@ -170,7 +174,8 @@ public class ConnectionOverTCP implements Connection {
     /**
      * Read a Datagram.
      */
-    public Datagram readDatagram() throws IOException {
+    @Override
+	public Datagram readDatagram() throws IOException {
         Datagram dg;
 
         dg = decodeDatagram();
@@ -368,7 +373,8 @@ public class ConnectionOverTCP implements Connection {
     /**
      * Get the EndPoint of this Connection.
      */
-    public EndPoint getEndPoint() {
+    @Override
+	public EndPoint getEndPoint() {
         return endPoint;
     }
 
@@ -389,7 +395,8 @@ public class ConnectionOverTCP implements Connection {
     /**
      * To String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return endPoint.toString() + " " + getSocket().toString();
     }
 

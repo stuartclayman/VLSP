@@ -30,7 +30,8 @@ public class AppRestHandler extends BasicRequestHandler {
     /**
      * Handle a request and send a response.
      */
-    public boolean handle(Request request, Response response) {
+    @Override
+	public boolean handle(Request request, Response response) {
         // get GlobalController
         controller_ = (GlobalController)getManagementConsole().getAssociated();
 
@@ -57,15 +58,14 @@ public class AppRestHandler extends BasicRequestHandler {
 
             // get the path
             Path path = request.getPath();
-            String directory = path.getDirectory();
+            path.getDirectory();
             String name = path.getName();
             String[] segments = path.getSegments();
 
             // Get the method
             String method = request.getMethod();
 
-            // Get the Query
-            Query query = request.getQuery();
+            request.getQuery();
 
             // and evaluate the input
             if (method.equals("POST")) {
@@ -145,7 +145,9 @@ public class AppRestHandler extends BasicRequestHandler {
 
         if (scanner.hasNextInt()) {
             routerID = scanner.nextInt();
+            scanner.close();
         } else {
+        	scanner.close();
             badRequest(response, "arg routerID is not an Integer");
             response.close();
             return;
@@ -242,8 +244,10 @@ public class AppRestHandler extends BasicRequestHandler {
 
         if (scanner.hasNextInt()) {
             routerID = scanner.nextInt();
+            scanner.close();
 
         } else {
+        	scanner.close();
             badRequest(response, "arg routerID is not an Integer");
             response.close();
             return;
@@ -286,7 +290,6 @@ public class AppRestHandler extends BasicRequestHandler {
         int routerID;
         int appID;
 
-        Scanner scanner;
 
         // get the path - path len == 4
         Path path = request.getPath();
@@ -296,16 +299,17 @@ public class AppRestHandler extends BasicRequestHandler {
         // it is 2nd element of segments
         String routerValue = segments[1];
 
-        scanner = new Scanner(routerValue);
+        Scanner scanner = new Scanner(routerValue);
 
         if (scanner.hasNextInt()) {
             routerID = scanner.nextInt();
+            scanner.close();
         } else {
+        	scanner.close();
             badRequest(response, "arg router id is not an Integer");
             response.close();
             return;
         }
-
         // if it exists, get data, otherwise complain
         if (!controller_.isValidRouterID(routerID)) {
             badRequest(response, " arg is not valid router id: " + routerValue);
@@ -323,7 +327,9 @@ public class AppRestHandler extends BasicRequestHandler {
 
         if (scanner.hasNextInt()) {
             appID = scanner.nextInt();
+            scanner.close();
         } else {
+        	scanner.close();
             badRequest(response, "arg app id is not an Integer");
             response.close();
             return;

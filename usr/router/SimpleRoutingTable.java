@@ -50,7 +50,7 @@ public class SimpleRoutingTable implements RoutingTable {
         if (t != 'T') {
             throw new Exception("SimpleRoutingTable: tried to construct a RoutingTable with invalid data");
         } else {
-            int count = wrapper.getShort();
+            wrapper.getShort();
             int entrySize = wrapper.getShort();
 
             if (entrySize == 0) {
@@ -83,7 +83,8 @@ public class SimpleRoutingTable implements RoutingTable {
     }
 
     /** remove address from table.  Return true if address was in table*/
-    public boolean removeAddress(Address addr) {
+    @Override
+	public boolean removeAddress(Address addr) {
         SimpleRoutingTableEntry en = table_.remove(addr);
  
         if (en == null) {
@@ -95,27 +96,31 @@ public class SimpleRoutingTable implements RoutingTable {
  
 
     /** Set the NetIFListener */
-    public void setListener(NetIFListener l) {
+    @Override
+	public void setListener(NetIFListener l) {
         listener_ = l;
     }
 
     /**
      * The size of the RoutingTable.
      */
-    public synchronized int size() {
+    @Override
+	public synchronized int size() {
         return table_.size();
     }
 
     /**
      * Get all the RoutingTable entries.
      */
-    public synchronized Collection<SimpleRoutingTableEntry> getEntries() {
-        return (Collection<SimpleRoutingTableEntry> )table_.values();
+    @Override
+	public synchronized Collection<SimpleRoutingTableEntry> getEntries() {
+        return table_.values();
     }
 
     /** Return the interface on which to send a packet to a given address
        or null if not known */
-    public synchronized NetIF getInterface(Address addr) {
+    @Override
+	public synchronized NetIF getInterface(Address addr) {
 
         if (addr == null) {
             return null;
@@ -131,7 +136,8 @@ public class SimpleRoutingTable implements RoutingTable {
 
     /** A new network interface arrives -- add to
        routing table if necessary return true if change was made */
-    public synchronized boolean addNetIF(NetIF inter, RouterOptions options) {
+    @Override
+	public synchronized boolean addNetIF(NetIF inter, RouterOptions options) {
         Logger.getLogger("log").logln(USR.STDOUT, "SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table before = " + this);
 
@@ -171,7 +177,8 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * Merge a RoutingTable into this one.
      */
-    public synchronized boolean mergeTables(RoutingTable table2, NetIF inter, RouterOptions options) {
+    @Override
+	public synchronized boolean mergeTables(RoutingTable table2, NetIF inter, RouterOptions options) {
         //Logger.getLogger("log").logln(USR.STDOUT, "MERGING TABLES");
 
         boolean changed = false;
@@ -188,7 +195,7 @@ public class SimpleRoutingTable implements RoutingTable {
 
         // only process entries if inter is not null
         if (inter != null) {
-            for (SimpleRoutingTableEntry e : (Collection<SimpleRoutingTableEntry>) getEntries()) {
+            for (SimpleRoutingTableEntry e : getEntries()) {
                 // If this entry is on the same interface we are getting
                 // info from but route is longer or no entry then assume
                 // we need updating
@@ -239,7 +246,8 @@ public class SimpleRoutingTable implements RoutingTable {
     }
 
     /** Get an entry from the table */
-    public synchronized SimpleRoutingTableEntry getEntry(Address a) {
+    @Override
+	public synchronized SimpleRoutingTableEntry getEntry(Address a) {
         return table_.get(a);
     }
 
@@ -333,12 +341,13 @@ public class SimpleRoutingTable implements RoutingTable {
 
     /** Removes a network interface from a router returns true if
        routing table has changed*/
-    public synchronized boolean removeNetIF(NetIF netif) {
+    @Override
+	public synchronized boolean removeNetIF(NetIF netif) {
         boolean changed = false;
         //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NET IF CALLED");
         ArrayList<Address> toRemove = new ArrayList<Address>();
 
-        for (SimpleRoutingTableEntry e : (Collection<SimpleRoutingTableEntry> )getEntries()) {
+        for (SimpleRoutingTableEntry e : getEntries()) {
             //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO REMOVE "+e.getAddress());
             if (netif.equals(e.getNetIF())) {
                 Address addr = e.getAddress();
@@ -356,10 +365,11 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * Sets a weight on a link on the specified NetIF.
      */
-    public boolean setNetIFWeight(NetIF inter, int weight) {
+    @Override
+	public boolean setNetIFWeight(NetIF inter, int weight) {
         boolean changed = false;
 
-        for (SimpleRoutingTableEntry e : (Collection<SimpleRoutingTableEntry> )getEntries()) {
+        for (SimpleRoutingTableEntry e : getEntries()) {
             if (inter.equals(e.getNetIF())) {
                 //Logger.getLogger("log").logln(USR.STDOUT, "SimpleRoutingTable set weight on " + e);
 
@@ -390,11 +400,12 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * SHow only data transmitted
      */
-    public synchronized String showTransmitted() {
+    @Override
+	public synchronized String showTransmitted() {
         StringBuilder table = new StringBuilder();
         table.append("\n");
 
-        for (SimpleRoutingTableEntry e : (Collection<SimpleRoutingTableEntry> )getEntries()) {
+        for (SimpleRoutingTableEntry e : getEntries()) {
             table.append(e.showTransmitted());
             table.append("\n");
         }
@@ -407,11 +418,12 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * To string
      */
-    public synchronized String toString() {
+    @Override
+	public synchronized String toString() {
         StringBuilder table = new StringBuilder();
         table.append("\n");
 
-        Collection<SimpleRoutingTableEntry> rtes = (Collection<SimpleRoutingTableEntry> )getEntries();
+        Collection<SimpleRoutingTableEntry> rtes = getEntries();
 
         for (SimpleRoutingTableEntry e : rtes) {
             table.append(e.toString());
@@ -425,7 +437,8 @@ public class SimpleRoutingTable implements RoutingTable {
     /**
      * To byte[]
      */
-    public synchronized byte[] toBytes() {
+    @Override
+	public synchronized byte[] toBytes() {
 
         // TODO add T to start
         // add size of each entry
@@ -434,7 +447,7 @@ public class SimpleRoutingTable implements RoutingTable {
         // Each entry is encoded by addressSize bytes
         //System.err.println("Creating routing table to send");
 
-        Collection<SimpleRoutingTableEntry> rtes = (Collection<SimpleRoutingTableEntry> )getEntries();
+        Collection<SimpleRoutingTableEntry> rtes = getEntries();
         int count = rtes.size();
         //int entrySize = rtes.iterator().next().size();
 

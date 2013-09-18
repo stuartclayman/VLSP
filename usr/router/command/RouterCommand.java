@@ -36,14 +36,16 @@ public abstract class RouterCommand extends AbstractRestCommand {
     /**
      * Get the ManagementConsole this is a command for.
      */
-    public ManagementConsole getManagementConsole() {
+    @Override
+	public ManagementConsole getManagementConsole() {
         return managementConsole;
     }
 
     /**
      * Set the ManagementConsole this is a command for.
      */
-    public void setManagementConsole(ManagementConsole mc) {
+    @Override
+	public void setManagementConsole(ManagementConsole mc) {
         managementConsole = (RouterManagementConsole)mc;
         controller = (RouterController)managementConsole.getComponentController();
     }
@@ -52,7 +54,8 @@ public abstract class RouterCommand extends AbstractRestCommand {
      * Evaluate the Command.
      * Returns false if there is a problem responding down the channel
      */
-    public abstract boolean evaluate(Request request, Response response);
+    @Override
+	public abstract boolean evaluate(Request request, Response response);
 
 
 

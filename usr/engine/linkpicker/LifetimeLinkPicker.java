@@ -19,7 +19,8 @@ public class LifetimeLinkPicker implements NodeLinkPicker {
         rand_= new Random();
     }
     
-    public ArrayList <Integer> pickNLinks(ArrayList<Integer> nodes,
+    @Override
+	public ArrayList <Integer> pickNLinks(ArrayList<Integer> nodes,
         GlobalController g, int noLinks, int node)
     {
         ArrayList<Integer> picked= new ArrayList<Integer>();
@@ -32,7 +33,8 @@ public class LifetimeLinkPicker implements NodeLinkPicker {
         return picked;
     }
     
-    public int pickLink(ArrayList<Integer> nodes, GlobalController g,
+    @Override
+	public int pickLink(ArrayList<Integer> nodes, GlobalController g,
         int node)
     {
         return 0;
@@ -44,7 +46,8 @@ public class LifetimeLinkPicker implements NodeLinkPicker {
         Collections.sort(lifetimes_);
     }
     
-    public void parseExtraXML(Node linkpicker)
+    @Override
+	public void parseExtraXML(Node linkpicker)
     {
         
     }

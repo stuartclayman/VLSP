@@ -17,6 +17,10 @@ import eu.reservoir.monitoring.distribution.MetaData;
 public class USRTransmissionMetaData implements MetaData,
 Serializable
 {
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1691130993336441614L;
 public final int length;
 public final Address srcIPAddr;
 public final Address dstIPAddr;
@@ -33,6 +37,7 @@ public USRTransmissionMetaData(int l, Address sia, Address dia){
 /**
  * USRTransmissionMetaData to string.
  */
+@Override
 public String toString(){
     return dstIPAddr + ": " + srcIPAddr + " => " + length;
 }

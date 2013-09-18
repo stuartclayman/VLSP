@@ -27,7 +27,8 @@ public abstract class USRRestConsole extends AbstractRestConsole {
     /**
      * Construct a ManagementConsole, given a specific port.
      */
-    public void initialise (int port) {
+    @Override
+	public void initialise (int port) {
         super.initialise(port);
 
         // setup default /command handler
@@ -38,7 +39,8 @@ public abstract class USRRestConsole extends AbstractRestConsole {
     /**
      * Start the ManagementConsole.
      */
-    public boolean start() {
+    @Override
+	public boolean start() {
         // check the UnknownCommand exists
         Command unknown = commandMap.get("__UNKNOWN__");
 

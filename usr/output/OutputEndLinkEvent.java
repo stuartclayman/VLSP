@@ -15,10 +15,12 @@ import usr.globalcontroller.GlobalController;
 /** Class to output network stuff */
 public class OutputEndLinkEvent implements OutputFunction {
     /** In fact this only requests output -- actual output occurs later */
-    public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
+    @Override
+	public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
     }
 
-    public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
+    @Override
+	public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
         if (!(event instanceof EndLinkEvent)) {
             return;
         }
@@ -37,7 +39,8 @@ public class OutputEndLinkEvent implements OutputFunction {
                   + " TO " + rId2 + ANSI.RESET_COLOUR);
     }
 
-    public void parseExtraXML(Node n) throws SAXException {
+    @Override
+	public void parseExtraXML(Node n) throws SAXException {
     }
 
 }

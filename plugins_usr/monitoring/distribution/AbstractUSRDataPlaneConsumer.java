@@ -51,6 +51,7 @@ public AbstractUSRDataPlaneConsumer(SocketAddress addr){
 /**
  * Connect to a delivery mechansim.
  */
+@Override
 public boolean connect(){
     try {
         // only connect if we're not already connected
@@ -76,6 +77,7 @@ public boolean connect(){
 /**
  * Dicconnect from a delivery mechansim.
  */
+@Override
 public boolean disconnect(){
     if (udpReceiver != null) {
         try {
@@ -94,6 +96,7 @@ public boolean disconnect(){
 /**
  * Announce that the plane is up and running
  */
+@Override
 public boolean announce(){
     // do nothing currenty
     return true;
@@ -102,6 +105,7 @@ public boolean announce(){
 /**
  * Un-announce that the plane is up and running
  */
+@Override
 public boolean dennounce(){
     // do nothing currenty
     return true;
@@ -116,6 +120,7 @@ public boolean dennounce(){
  * | data source id (long) | msg type (int) | seq no (int) | payload   |
  * +-------------------------------------------------------------------+
  */
+@Override
 public abstract void received(ByteArrayInputStream bis,
     MetaData metaData) throws
 IOException,
@@ -130,10 +135,12 @@ TypeException;
  * This method is called just after there has been EOF
  * in received from some underlying transport.
  */
+@Override
 public void eof(){
     disconnect();
 }
 
+@Override
 public void error(Exception e){
     System.err.println(
         "DataConsumer: notified of error " + e.getMessage());
@@ -144,6 +151,7 @@ public void error(Exception e){
 /**
  * Send a message.
  */
+@Override
 public int sendData(DataPlaneMessage dpm) throws Exception {
     // currenty do nothing
     return -1;
@@ -153,6 +161,7 @@ public int sendData(DataPlaneMessage dpm) throws Exception {
  * This method is called just after a message
  * has been sent to the underlying transport.
  */
+@Override
 public boolean sentData(int id){
     return false;
 }
@@ -160,6 +169,7 @@ public boolean sentData(int id){
 /**
  * Receiver of a measurment, with an extra object that has context info
  */
+@Override
 public Measurement report(Measurement m){
     //System.err.println("USRDataPlaneConsumer: got " + m);
     measurementReceiver.report(m);
@@ -169,6 +179,7 @@ public Measurement report(Measurement m){
 /**
  * Set the object that will recieve the measurements.
  */
+@Override
 public Object setMeasurementReceiver(MeasurementReceiver mr){
     Object old = measurementReceiver;
 

@@ -46,13 +46,15 @@ public JavaRuntimeMonitor(){
 /**
  * Init.
  */
+@Override
 public ApplicationResponse init(String[] args){
     if (args.length == 2) {
         Scanner sc = new Scanner(args[0]);
         addr = new GIDAddress(sc.nextInt());
-
+        sc.close();
         sc = new Scanner(args[1]);
         dataPort = sc.nextInt();
+        sc.close();
 
         return new ApplicationResponse(true, "");
     } else {
@@ -64,6 +66,7 @@ public ApplicationResponse init(String[] args){
 /**
  * Start.
  */
+@Override
 public ApplicationResponse start(){
     try {
         // set up data source
@@ -93,6 +96,7 @@ public ApplicationResponse start(){
 /**
  * Stop.
  */
+@Override
 public ApplicationResponse stop(){
     ds.deactivateProbe(p);
     ds.removeProbe(p);
@@ -109,6 +113,7 @@ public ApplicationResponse stop(){
 /**
  * Run
  */
+@Override
 public void run(){
     // A DataSource already runs in itws own thread
     // so this one can wait and do nothing.

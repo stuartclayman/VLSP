@@ -22,7 +22,8 @@ public class RandomAPController extends NullAPController {
     }
 
     /** Controller regular AP update action */
-    public void controllerUpdate(long time, GlobalController g) {
+    @Override
+	public void controllerUpdate(long time, GlobalController g) {
         super.controllerUpdate(time, g);
         if (gotMinAPs(g)) {
             if (overMaxAPs(g) && canRemoveAP(g)) {   // Too many APs, remove one
@@ -43,7 +44,8 @@ public class RandomAPController extends NullAPController {
     }
 
     /** Use the controller to remove one random AP controller */
-    public void controllerRemove(long time, GlobalController g) {
+    @Override
+	public void controllerRemove(long time, GlobalController g) {
         System.err.println("To write");
     }
 
@@ -118,13 +120,15 @@ public class RandomAPController extends NullAPController {
         }
     }
 
-    String leadin() {
+    @Override
+	String leadin() {
         return ("RandomAPController:");
     }
 
     /** Create new APInfo */
 
-    public APInfo newAPInfo() {
+    @Override
+	public APInfo newAPInfo() {
         return new RandomAPInfo();
     }
 

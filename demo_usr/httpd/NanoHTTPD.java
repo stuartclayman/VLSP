@@ -76,7 +76,7 @@ import java.util.Vector;
  * (Modified BSD licence)
  */
 
-@SuppressWarnings(value = { "unchecked" })
+@SuppressWarnings(value = { })
 public class NanoHTTPD
 {
 // ==================================================
@@ -105,7 +105,7 @@ public Response serve(String uri,
 {
     System.out.println(method + " '" + uri + "' ");
 
-    Enumeration e = header.propertyNames();
+    Enumeration<?> e = header.propertyNames();
     while (e.hasMoreElements()) {
         String value = (String)e.nextElement();
         System.out.println("  HDR: '" + value + "' = '" +
@@ -227,7 +227,8 @@ public NanoHTTPD(int port) throws IOException {
     myServerSocket = new ServerSocket(myTcpPort);
     myThread = new Thread(new Runnable()
         {
-            public void run()
+            @Override
+			public void run()
             {
                 try{
                     while (true)
@@ -305,6 +306,7 @@ public HTTPSession(Socket s){
     t.start();
 }
 
+@Override
 public void run(){
     try{
         InputStream is = mySocket.getInputStream();
@@ -650,7 +652,7 @@ public int[] getBoundaryPositions(byte[]        b,
     byte[]        boundary)                {
     int matchcount = 0;
     int matchbyte = -1;
-    Vector matchbytes = new Vector();
+    Vector<Integer> matchbytes = new Vector<Integer>();
 
     for (int i = 0; i < b.length; i++) {
         if (b[i] == boundary[matchcount]) {
@@ -670,7 +672,7 @@ public int[] getBoundaryPositions(byte[]        b,
     }
     int[] ret = new int[matchbytes.size()];
     for (int i = 0; i < ret.length; i++)
-        ret[i] = ((Integer)matchbytes.elementAt(i)).intValue();
+        ret[i] = matchbytes.elementAt(i).intValue();
     return ret;
 }
 
@@ -812,7 +814,7 @@ private void sendResponse(String status,
                     new Date()) + "\r\n");
 
         if (header != null) {
-            Enumeration e = header.keys();
+            Enumeration <?>e = header.keys();
             while (e.hasMoreElements()) {
                 String key = (String)e.nextElement();
                 String value = header.getProperty(key);
@@ -995,7 +997,7 @@ public Response serveFile(String uri,
         String mime = null;
         int dot = f.getCanonicalPath().lastIndexOf('.');
         if (dot >= 0)
-            mime = (String)theMimeTypes.get(
+            mime = theMimeTypes.get(
                 f.getCanonicalPath().substring(
                     dot + 1).toLowerCase());
         if (mime == null)
@@ -1033,7 +1035,7 @@ public Response serveFile(String uri,
 /**
  * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
  */
-private static Hashtable theMimeTypes = new Hashtable();
+private static Hashtable<String, String> theMimeTypes = new Hashtable<String, String>();
 static
 {
     StringTokenizer st = new StringTokenizer(

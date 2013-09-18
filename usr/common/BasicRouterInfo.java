@@ -200,7 +200,8 @@ public class BasicRouterInfo {
     /**
      * Check if this is equal to another BasicRouterInfo
      */
-    public boolean equals(Object obj) {
+    @Override
+	public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -223,7 +224,8 @@ public class BasicRouterInfo {
     /**
      * To string
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return getHost() + ":" + getManagementPort() + " % " + getId() +
                " -> " + getName() + "/" + getAddress();
     }

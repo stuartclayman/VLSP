@@ -31,7 +31,8 @@ public class SetRouterAddressCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
         try {
             PrintStream out = response.getPrintStream();
 
@@ -41,8 +42,6 @@ public class SetRouterAddressCommand extends RouterCommand {
             String value = path.substring(9);
             // strip off COMMAND
             String idStr = value.substring(MCRP.SET_ROUTER_ADDRESS.CMD.length()).trim();
-
-            boolean result;
 
             Address addr = null;
             try {
@@ -88,9 +87,7 @@ public class SetRouterAddressCommand extends RouterCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
     }
 
 }

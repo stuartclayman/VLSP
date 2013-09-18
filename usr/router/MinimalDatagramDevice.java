@@ -62,7 +62,8 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
     /**
      * Get the name of this Net Device
      */
-    public String getName() {
+    @Override
+	public String getName() {
         return name_;
     }
 
@@ -77,7 +78,8 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
     /**
      * Set the name of this Net Device
      */
-    public void setName(String name) {
+    @Override
+	public void setName(String name) {
         name_ = name;
 
         if (fabric_!= null) {
@@ -88,27 +90,31 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
     /**
      * Get the Address for this connection.
      */
-    public Address getAddress() {
+    @Override
+	public Address getAddress() {
         return address_;
     }
 
     /** Get the FabricDevice associated with Net Device */
 
-    public FabricDevice getFabricDevice() {
+    @Override
+	public FabricDevice getFabricDevice() {
         return fabric_;
     }
 
     /**
      * Set the Address for this connection.
      */
-    public void setAddress(Address addr) {
+    @Override
+	public void setAddress(Address addr) {
         address_ = addr;
     }
 
     /**
      * Send a Datagram originating at this host (sets src address) and
      */
-    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
+    @Override
+	public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
         dg.setSrcAddress(address_);
         return enqueueDatagram(dg);
     }
@@ -116,7 +122,8 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
     /**
      * forward a datagram (does not set src address)
      */
-    public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
+    @Override
+	public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
         FabricDevice fd = listener_.getRouteFabric(dg);
         return fd.addToInQueue(dg, null);
     }
@@ -130,19 +137,22 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
     /**
      *   Send the datagram onwards to the world
      */
-    public abstract boolean outQueueHandler(Datagram dg, DatagramDevice dd);
+    @Override
+	public abstract boolean outQueueHandler(Datagram dg, DatagramDevice dd);
 
     /**
      * Get the Listener of a NetIF.
      */
-    public NetIFListener getNetIFListener() {
+    @Override
+	public NetIFListener getNetIFListener() {
         return listener_;
     }
 
     /**
      * Set the Listener of NetIF.
      */
-    public void setNetIFListener(NetIFListener l) {
+    @Override
+	public void setNetIFListener(NetIFListener l) {
         listener_ = l;
 
     }

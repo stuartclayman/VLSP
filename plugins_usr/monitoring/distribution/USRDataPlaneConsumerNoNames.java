@@ -46,6 +46,7 @@ public USRDataPlaneConsumerNoNames(SocketAddress addr){
  *
  ***************************+---------------------------------------------------------------------+
  */
+@Override
 public void received(ByteArrayInputStream bis,
     MetaData metaData) throws IOException,
 TypeException {

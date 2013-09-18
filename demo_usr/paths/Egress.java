@@ -21,7 +21,7 @@ import usr.logging.USR;
 /**
  * An application which is an Egress point for UDP data.
  * It listens on a USR port and forwards packets to
- * a UDP address:port combination. 
+ * a UDP address:port combination.
  * <p>
  * Egress usr-port udp-addr:udp-port [optinals]
  * Optional args:
@@ -49,11 +49,11 @@ public class Egress implements Application, Reconfigure {
 
     // USR Reader
     USRReader usrReader;
-    Future usrReaderFuture;
+    Future <?> usrReaderFuture;
 
     // UDP Forwarder
     UDPForwarder udpForwarder;
-    Future udpForwarderFuture;
+    Future <?> udpForwarderFuture;
 
 
     // Management interface
@@ -62,11 +62,11 @@ public class Egress implements Application, Reconfigure {
 
     // ManagementPort
     ManagementPort mPort;
-    Future mPortFuture;
+    Future <?> mPortFuture;
 
     // ManagementListener
     ManagementListener mListener;
-    Future mListenerFuture;
+    Future<?> mListenerFuture;
 
     public Egress() {
         latch = new CountDownLatch(1);
@@ -77,7 +77,8 @@ public class Egress implements Application, Reconfigure {
      * Egress usr-port udp-addr:udp-port [optinals]
      *
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         Scanner scanner;
 
         if (args.length >= 2) {
@@ -87,10 +88,12 @@ public class Egress implements Application, Reconfigure {
             scanner = new Scanner(usrString);
             if (scanner.hasNextInt()) {
                 usrPort = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad USR port " + args[0]);
             }
-
+            scanner.close();
             // get addr:path next
 
             String next = args[1];
@@ -117,7 +120,9 @@ public class Egress implements Application, Reconfigure {
                 scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
 
@@ -184,7 +189,8 @@ public class Egress implements Application, Reconfigure {
     /**
      * Start application
      */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         // Main flow of Datagrams
 
         queue = new LinkedBlockingDeque<usr.net.Datagram>();
@@ -241,10 +247,11 @@ public class Egress implements Application, Reconfigure {
         return new ApplicationResponse(false,  msg);
     }
 
-    /** 
+    /**
      * Stop the application
      */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
 
         usrReaderFuture.cancel(true);
@@ -267,7 +274,8 @@ public class Egress implements Application, Reconfigure {
      * Run the Egress application
      *
      */
-    public void run()  {
+    @Override
+	public void run()  {
         // Start Delay
         if (startDelay > 0) {
             try {
@@ -276,7 +284,7 @@ public class Egress implements Application, Reconfigure {
             }
         }
 
-        /* 
+        /*
          * Start the supporting threads that actually reads from the UDP socket
          * and forwards to the USR socket
          */
@@ -302,7 +310,7 @@ public class Egress implements Application, Reconfigure {
             latch.await();
         } catch (InterruptedException ie) {
         }
-  
+
 
 
         usrReader.await();
@@ -318,7 +326,8 @@ public class Egress implements Application, Reconfigure {
     /**
      * Process a reconfiguration
      */
-    public Object process(JSONObject jsobj) {
+    @Override
+	public Object process(JSONObject jsobj) {
 
         /* get new UDP address */
 
@@ -351,10 +360,12 @@ public class Egress implements Application, Reconfigure {
                 Scanner scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
-
+                scanner.close();
                 // Construct a SocketAddress
                 newUdpAddr = new InetSocketAddress(addr, port);
 
@@ -387,7 +398,7 @@ public class Egress implements Application, Reconfigure {
             return new ApplicationResponse(false, "Cannot submit task: " + e.getMessage());
         }
 
-        
+
         Logger.getLogger("log").logln(USR.ERROR, "queue size = " + queue.size());
 
         return new ApplicationResponse(true, "started");

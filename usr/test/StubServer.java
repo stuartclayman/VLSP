@@ -98,7 +98,8 @@ public class StubServer extends MinimalDatagramDevice implements NetIFListener  
         timerTask = new TimerTask() {
             boolean running = true;
 
-            public void run() {
+            @Override
+			public void run() {
                 if (running) {
                     diffs = count - lastTimeCount;
                     Logger.getLogger("log").logln(USR.ERROR, "Task count: " + count + " diff: "  + diffs);
@@ -106,7 +107,8 @@ public class StubServer extends MinimalDatagramDevice implements NetIFListener  
                 }
             }
 
-            public boolean cancel() {
+            @Override
+			public boolean cancel() {
                 logger.log(error, "cancel @ " + count);
 
                 if (running) {
@@ -117,7 +119,8 @@ public class StubServer extends MinimalDatagramDevice implements NetIFListener  
                 return running;
             }
 
-            public long scheduledExecutionTime() {
+            @Override
+			public long scheduledExecutionTime() {
                 logger.log(error, "scheduledExecutionTime:");
                 return 0;
             }
@@ -136,7 +139,8 @@ public class StubServer extends MinimalDatagramDevice implements NetIFListener  
     /**
      * Route either outbound down the interface or to ourselves.
      */
-    public FabricDevice getRouteFabric(Datagram d) {
+    @Override
+	public FabricDevice getRouteFabric(Datagram d) {
         if (ourAddress(d.getDstAddress())) {
             return getFabricDevice();
         }
@@ -147,7 +151,8 @@ public class StubServer extends MinimalDatagramDevice implements NetIFListener  
     /**
      * A NetIF has a datagram.
      */
-    public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice dd) {
+    @Override
+	public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice dd) {
         // if there is no timer, start one
         if (timer == null) {
             timer = new Timer();
@@ -184,18 +189,21 @@ public class StubServer extends MinimalDatagramDevice implements NetIFListener  
     }
 
     /** Deal with TTL expire */
-    public void TTLDrop(Datagram dg) {
+    @Override
+	public void TTLDrop(Datagram dg) {
     }
 
     /** A datagram device has closed and must be removed */
-    public void closedDevice(DatagramDevice dd) {
+    @Override
+	public void closedDevice(DatagramDevice dd) {
 
     }
 
     /**
      * A NetIF is closing.
      */
-    public void stop() {
+    @Override
+	public void stop() {
         super.stop();
         long t1 = System.currentTimeMillis();
 

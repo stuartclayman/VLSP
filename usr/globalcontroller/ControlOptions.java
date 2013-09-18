@@ -120,12 +120,6 @@ public class ControlOptions {
         consumerInfoMap = new HashMap<String, String>();
     }
 
-    /** Adds information about a new host to the list
-     */
-    private void addNewHost(LocalControllerInfo host) {
-        localControllers_.add(host);
-    }
-
     /** Accessor function for router Options */
 
     public RouterOptions getRouterOptions() {
@@ -358,8 +352,7 @@ public class ControlOptions {
                 USR.STDOUT, "VisualizationClass = "
                 + visualizationClass);
 
-            // try and find class
-            Class<? extends Visualization> visualizer = Class.forName(
+            Class.forName(
                     visualizationClass).asSubclass(Visualization.class);
         } catch (SAXException e) {
             throw new SAXException(
@@ -404,7 +397,7 @@ public class ControlOptions {
             // get Consumers
             try {
                 // First get all nodes called 'Consumer'
-                NodeList consumers = ((Element)el).getElementsByTagName(
+                NodeList consumers = el.getElementsByTagName(
                         "Consumer");
 
                 if (consumers.getLength() != 0) {
@@ -692,7 +685,7 @@ public class ControlOptions {
         }
 
         try {
-            Class[] args = new Class[2];
+            Class <?>[] args = new Class <?>[2];
             args[0] = int.class;
             args[1] = String.class;
             Constructor<?> c = engClass.getConstructor(args);
@@ -738,7 +731,7 @@ public class ControlOptions {
 
         Element hElement = (Element)n.item(0);
         NodeList textFNList = hElement.getChildNodes();
-        String fName = ((Node)textFNList.item(0)).getNodeValue().trim();
+        String fName = textFNList.item(0).getNodeValue().trim();
 
         //Logger.getLogger("log").logln(USR.ERROR, "Read router file
         // "+fName);
@@ -754,13 +747,13 @@ public class ControlOptions {
         String line = null;
         StringBuilder stringBuilder = new StringBuilder();
 
-        String ls = System.getProperty("line.separator");
+        System.getProperty("line.separator");
 
         while ((line = reader.readLine()) != null) {
             stringBuilder.append(line);
             stringBuilder.append(" ");
         }
-
+        reader.close();
         routerOptionsString_ = stringBuilder.toString();
 
         //Logger.getLogger("log").logln(USR.ERROR, "User Options String
@@ -924,7 +917,7 @@ public class ControlOptions {
         return localControllers_.get(i);
     }
 
-    public Iterator getControllersIterator() {
+    public Iterator<LocalControllerInfo> getControllersIterator() {
         return localControllers_.iterator();
     }
 

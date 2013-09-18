@@ -29,7 +29,8 @@ public class UDPEndPointDst implements UDPEndPoint {
     /**
      * Connect
      */
-    public boolean connect() throws IOException {
+    @Override
+	public boolean connect() throws IOException {
         if (isConnected) {
             throw new IOException("Cannot connect again to: " + socket);
         } else {
@@ -48,14 +49,16 @@ public class UDPEndPointDst implements UDPEndPoint {
     /**
      * Get the Socket.
      */
-    public DatagramSocket getSocket() {
+    @Override
+	public DatagramSocket getSocket() {
         return socket;
     }
 
     /**
      * TO String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         if (socket == null) {
             return " @ " + socket.getInetAddress().getHostName() + ":" + port;
         } else {

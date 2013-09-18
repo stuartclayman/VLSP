@@ -27,7 +27,6 @@ import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
 import usr.net.AddressFactory;
-import usr.router.Router;
 import usr.router.RouterOptions;
 import cc.clayman.console.ManagementConsole;
 
@@ -42,16 +41,12 @@ import cc.clayman.console.ManagementConsole;
  */
 public class LocalController implements ComponentController {
     private LocalControllerInfo hostInfo_;
-    private LocalHostInfo globalController_;
     private GlobalControllerInteractor gcInteractor_ = null;
     private LocalControllerManagementConsole console_ = null;
-    private boolean listening_ = true;
     private ArrayList<BasicRouterInfo> routers_ = null;
     private ArrayList<RouterInteractor> routerInteractors_ = null;
-    private ArrayList<Router> routerList_ = null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
     private HashMap<Integer, BasicRouterInfo> routerMap_ = null;
-    private String routerConfig_ = "";  // String contains config for routers
     private String classPath_ = null;
 
     private RouterOptions routerOptions_ = null;
@@ -68,8 +63,6 @@ public class LocalController implements ComponentController {
      * Main entry point.
      */
     public static void main(String[] args) {
-
-        LocalController self_;
 
         if (args.length != 1) {
             Logger.getLogger("log").logln(USR.ERROR, "Command line must specify "+
@@ -90,7 +83,7 @@ public class LocalController implements ComponentController {
             System.exit(-1);
         }
 
-        self_ = new LocalController(port);
+        new LocalController(port);
 
     }
 
@@ -104,7 +97,6 @@ public class LocalController implements ComponentController {
         }
 
         routers_ = new ArrayList<BasicRouterInfo>();
-        routerList_ = new ArrayList<Router>();
         childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
         routerMap_ = new HashMap<Integer, BasicRouterInfo>();
         routerInteractors_ = new ArrayList<RouterInteractor>();
@@ -137,7 +129,8 @@ public class LocalController implements ComponentController {
     /**
      * Get the name of this LocalController.
      */
-    public String getName() {
+    @Override
+	public String getName() {
         return myName + ":" + hostInfo_.getPort();
     }
 
@@ -172,7 +165,7 @@ public class LocalController implements ComponentController {
         }
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping process wrappers");
-        Collection<ProcessWrapper> pws = (Collection<ProcessWrapper> )childProcessWrappers_.values();
+        Collection<ProcessWrapper> pws = childProcessWrappers_.values();
 
         for (ProcessWrapper pw : pws) {
             pw.stop();
@@ -215,7 +208,6 @@ public class LocalController implements ComponentController {
      * Received alive message from GlobalController.
      */
     public void aliveMessage(LocalHostInfo gc) {
-        globalController_ = gc;
         Logger.getLogger("log").logln(USR.STDOUT, "Got alive message from global controller.");
         try {
             Logger.getLogger("log").logln(USR.STDOUT, "Sending to "+gc.getName()+":"+gc.getPort());
@@ -241,7 +233,8 @@ public class LocalController implements ComponentController {
      * Received start new router command
      * @return the name of the router, on success, or null, on failure.
      */
-    public String requestNewRouter (int routerId, int port1, int port2, String address, String name) {
+    @SuppressWarnings("unused")
+	public String requestNewRouter (int routerId, int port1, int port2, String address, String name) {
 
         String routerName;
         Address routerAddress = null;
@@ -290,10 +283,7 @@ public class LocalController implements ComponentController {
         } catch (IOException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute command "+ Arrays.asList(cmd));
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-
-            if (child != null) {
-                child = null;
-            }
+            child = null;
 
             if (pw != null) {
                 pw.stop();
@@ -804,7 +794,8 @@ public class LocalController implements ComponentController {
     /**
      * Get the ManagementConsole this ComponentController interacts with.
      */
-    public ManagementConsole getManagementConsole() {
+    @Override
+	public ManagementConsole getManagementConsole() {
         return console_;
     }
 

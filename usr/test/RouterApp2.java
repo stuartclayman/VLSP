@@ -95,6 +95,7 @@ public class RouterApp2 {
             Scanner scanner = new Scanner(args[0]);
 
             count = scanner.nextInt();
+            scanner.close();
         }
 
 

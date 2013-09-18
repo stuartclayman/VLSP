@@ -58,7 +58,8 @@ public class IPV4Datagram extends Size4Datagram implements Datagram, DatagramPat
     /**
      * Get src address.
      */
-    public Address getSrcAddress() {
+    @Override
+	public Address getSrcAddress() {
         // get 4 bytes for address
         byte[] address = new byte[4];
         fullDatagram.position(10);
@@ -77,7 +78,8 @@ public class IPV4Datagram extends Size4Datagram implements Datagram, DatagramPat
     /**
      * Get dst address.
      */
-    public Address getDstAddress() {
+    @Override
+	public Address getDstAddress() {
         // get 4 bytes for address
         byte[] address = new byte[4];
         fullDatagram.position(14);

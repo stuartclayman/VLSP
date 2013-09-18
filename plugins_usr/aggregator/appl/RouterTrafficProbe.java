@@ -69,6 +69,7 @@ public RouterTrafficProbe(String name){
 /**
  * Collect a measurement.
  */
+@Override
 public ProbeMeasurement collect(){
     try {
         // create a list for the result
@@ -93,7 +94,6 @@ public ProbeMeasurement collect(){
         // total volume  of traffic
         int total = 0;
         NetStats stats = null;
-        String name = null;
         Pair<Integer, Integer>inOut = null;
 
         /*
@@ -117,7 +117,7 @@ public ProbeMeasurement collect(){
             } else {
                 NetIF netIF = rp.getNetIF();
 
-                name = netIF.getName();
+                netIF.getName();
 
                 stats = netIF.getStats();
 

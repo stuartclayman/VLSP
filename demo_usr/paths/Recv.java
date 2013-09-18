@@ -34,16 +34,19 @@ public class Recv implements Application {
      * Initialisation for Recv.
      * Recv port
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         if (args.length == 1) {
             // try port
             Scanner scanner = new Scanner(args[0]);
             if (scanner.hasNextInt()) {
                 port = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad port " + args[1]);
             }
-
+            scanner.close();
             return new ApplicationResponse(true, "");
 
         } else {
@@ -52,11 +55,12 @@ public class Recv implements Application {
     }
 
     /** Start application with argument  */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up inbound socket
             inSocket = new DatagramSocket();
-            
+
             inSocket.bind(port);
 
             // set up outbound socket
@@ -75,7 +79,8 @@ public class Recv implements Application {
     }
 
     /** Implement graceful shut down */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
 
         if (inSocket != null) {
@@ -92,7 +97,8 @@ public class Recv implements Application {
     }
 
     /** Run the ping application */
-    public void run()  {
+    @Override
+	public void run()  {
         Datagram inDatagram;
 
         try {
@@ -116,7 +122,7 @@ public class Recv implements Application {
                 int srcPort = pldg.getSrcPort();
                 Address dstAddr = pldg.getDstAddress();
                 int dstPort = pldg.getDstPort();
-                
+
                 byte[] data = pldg.getPayload();
 
                 // now create a new Datagram

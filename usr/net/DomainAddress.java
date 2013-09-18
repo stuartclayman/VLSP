@@ -13,7 +13,11 @@ import java.util.regex.MatchResult;
  * and 2 bytes/ 16 bits for a host.
  */
 public class DomainAddress extends Size4 implements Address, Serializable {
-    int domainPart;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5297065237202912602L;
+	int domainPart;
     int hostPart;
 
     /**
@@ -34,11 +38,14 @@ public class DomainAddress extends Size4 implements Address, Serializable {
 
             // now convert string parts into shorts
             // need to tweak the bits to ensure they are 'unsigned'
+            scanner.close();
             scanner = new Scanner(part1);
-            domainPart = ((int)0) | (scanner.nextShort() & 0xFFFF);
+            domainPart = (0) | (scanner.nextShort() & 0xFFFF);
+            scanner.close();
 
             scanner = new Scanner(part2);
-            hostPart = ((int)0) | (scanner.nextShort() & 0xFFFF);
+            hostPart = (0) | (scanner.nextShort() & 0xFFFF);
+            scanner.close();
 
 
             // convert int to byte[]
@@ -49,6 +56,7 @@ public class DomainAddress extends Size4 implements Address, Serializable {
 
 
         } else {
+        	scanner.close();
             throw new UnknownHostException("Not a Domain: " + addrStr);
         }
     }
@@ -106,15 +114,17 @@ public class DomainAddress extends Size4 implements Address, Serializable {
     /**
      * Get DomainAddress as an Integer.
      */
-    public int asInteger() {
-        int integerView = (int)((domainPart << 16)) | hostPart;
+    @Override
+	public int asInteger() {
+        int integerView = ((domainPart << 16)) | hostPart;
         return integerView;
     }
 
     /**
      * Get DomainAddress as an InetAddress
      */
-    public InetAddress asInetAddress() {
+    @Override
+	public InetAddress asInetAddress() {
         try {
             return InetAddress.getByAddress(bytes);
         } catch (UnknownHostException uhe) {
@@ -125,14 +135,16 @@ public class DomainAddress extends Size4 implements Address, Serializable {
     /**
      * Address in transmittable form
      */
-    public String asTransmitForm() {
+    @Override
+	public String asTransmitForm() {
         return domainPart + "." + hostPart;
     }
 
     /**
      * Compare this Address to another one
      */
-    public int compareTo(Object other) {
+    @Override
+	public int compareTo(Object other) {
         int val1 = this.asInteger();
         int val2 = ((Address)other).asInteger();
 
@@ -148,7 +160,8 @@ public class DomainAddress extends Size4 implements Address, Serializable {
     /**
      * Equals
      */
-    public boolean equals(Object obj) {
+    @Override
+	public boolean equals(Object obj) {
         if (obj instanceof DomainAddress) {
             DomainAddress addr = (DomainAddress)obj;
             return addr.domainPart == this.domainPart &&
@@ -161,7 +174,8 @@ public class DomainAddress extends Size4 implements Address, Serializable {
     /**
      * To String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return asTransmitForm();
     }
 

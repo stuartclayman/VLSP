@@ -121,14 +121,16 @@ public class BitMask implements Cloneable {
      * The clone of the bit set is another bit set that has exactly
      * the same bits set to true as this mask.
      */
-    public Object clone() {
+    @Override
+	public Object clone() {
         return new BitMask(actual);
     }
 
     /**
      * Equals
      */
-    public boolean equals(Object obj) {
+    @Override
+	public boolean equals(Object obj) {
         if (obj instanceof BitMask) {
             if (actual == ((BitMask)obj).actual) {
                 return true;
@@ -143,7 +145,8 @@ public class BitMask implements Cloneable {
     /**
      * Hash Code.
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         // actual is unique enough
         return actual;
     }
@@ -151,7 +154,8 @@ public class BitMask implements Cloneable {
     /**
      * To String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuilder builder = new StringBuilder();
 
         for (int b = 31; b>=0; b--) {

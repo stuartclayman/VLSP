@@ -108,14 +108,16 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get the length of the data, i.e. the payload length.
      */
-    public int getLength() {
+    @Override
+	public int getLength() {
         return getTotalLength() - getHeaderLength() - getChecksumLength();
     }
 
     /**
      * Get the header len
      */
-    public byte getHeaderLength() {
+    @Override
+	public byte getHeaderLength() {
         // return HEADER_SIZE;
         return fullDatagram.get(4);
     }
@@ -123,28 +125,32 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get the total len
      */
-    public short getTotalLength() {
+    @Override
+	public short getTotalLength() {
         return fullDatagram.getShort(5);
     }
 
     /**
      * Get the checksum size
      */
-    public byte getChecksumLength() {
+    @Override
+	public byte getChecksumLength() {
         return (byte)(CHECKSUM_SIZE & 0xFF);
     }
 
     /**
      * Get the flags
      */
-    public byte getFlags() {
+    @Override
+	public byte getFlags() {
         return fullDatagram.get(7);
     }
 
     /**
      * Get the TTL
      */
-    public int getTTL() {
+    @Override
+	public int getTTL() {
         byte b = fullDatagram.get(8);
         return 0 | (0xFF & b);
     }
@@ -152,7 +158,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Set the TTL
      */
-    public Datagram setTTL(int ttl) {
+    @Override
+	public Datagram setTTL(int ttl) {
         byte b = (byte)(ttl & 0xFF);
         fullDatagram.put(8, b);
         return this;
@@ -161,7 +168,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get the protocol
      */
-    public byte getProtocol() {
+    @Override
+	public byte getProtocol() {
         byte b = fullDatagram.get(9);
         return b;
     }
@@ -169,7 +177,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Set the protocol
      */
-    public Datagram setProtocol(int p) {
+    @Override
+	public Datagram setProtocol(int p) {
         byte b = (byte)(p & 0xFF);
         fullDatagram.put(9, b);
 
@@ -179,7 +188,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get src address.
      */
-    public Address getSrcAddress() {
+    @Override
+	public Address getSrcAddress() {
         // get 4 bytes for address
         byte[] address = new byte[4];
         fullDatagram.position(10);
@@ -195,7 +205,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Set the src address
      */
-    public Datagram setSrcAddress(Address addr) {
+    @Override
+	public Datagram setSrcAddress(Address addr) {
         if (addr != null && !(addr instanceof Size4)) {
             throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in Size4Datagram");
         }
@@ -215,7 +226,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get dst address.
      */
-    public Address getDstAddress() {
+    @Override
+	public Address getDstAddress() {
         // get 4 bytes for address
         byte[] address = new byte[4];
         fullDatagram.position(14);
@@ -231,7 +243,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Set the dst address
      */
-    public Datagram setDstAddress(Address addr) {
+    @Override
+	public Datagram setDstAddress(Address addr) {
         if (addr != null && !(addr instanceof Size4)) {
             throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in Size4Datagram");
         }
@@ -262,8 +275,9 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get src port.
      */
-    public int getSrcPort() {
-        int p = (int)fullDatagram.getShort(20);
+    @Override
+	public int getSrcPort() {
+        int p = fullDatagram.getShort(20);
 
         // convert signed to unsigned
         if (p < 0) {
@@ -276,7 +290,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Set the src port
      */
-    public Datagram setSrcPort(int p) {
+    @Override
+	public Datagram setSrcPort(int p) {
         fullDatagram.putShort(20, (short)p);
 
         return this;
@@ -285,8 +300,9 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get dst port.
      */
-    public int getDstPort() {
-        int p = (int)fullDatagram.getShort(22);
+    @Override
+	public int getDstPort() {
+        int p = fullDatagram.getShort(22);
 
         // convert signed to unsigned
         if (p < 0) {
@@ -299,7 +315,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Set the dst port
      */
-    public Datagram setDstPort(int p) {
+    @Override
+	public Datagram setDstPort(int p) {
         dstPort = p;
         fullDatagram.putShort(22, (short)dstPort);
 
@@ -307,7 +324,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     }
 
     /** Reduce TTL and return true if packet still valid */
-    public boolean TTLReduce() {
+    @Override
+	public boolean TTLReduce() {
         int ttl = getTTL();
         ttl--;
         setTTL(ttl);
@@ -321,7 +339,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get header
      */
-    public byte[] getHeader() {
+    @Override
+	public byte[] getHeader() {
         int headerLen = getHeaderLength();
 
         fullDatagram.position(0);
@@ -336,7 +355,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get payload
      */
-    public byte[] getPayload() {
+    @Override
+	public byte[] getPayload() {
         int headerLen = getHeaderLength();
         int totalLen = getTotalLength();
 
@@ -361,7 +381,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * Get the checksum
      */
-    public byte[] getChecksum() {
+    @Override
+	public byte[] getChecksum() {
         int checksumLen = getChecksumLength();
         int totalLen = getTotalLength();
 
@@ -377,7 +398,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * To ByteBuffer.
      */
-    public ByteBuffer toByteBuffer() {
+    @Override
+	public ByteBuffer toByteBuffer() {
         fullDatagram.rewind();
         return fullDatagram;
     }
@@ -385,7 +407,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * From ByteBuffer.
      */
-    public boolean fromByteBuffer(ByteBuffer b) {
+    @Override
+	public boolean fromByteBuffer(ByteBuffer b) {
         fullDatagram = b;
 
         // Logger.getLogger("log").logln(USR.ERROR, "Size4Datagram fromByteBuffer: fullDatagram = " + fullDatagram.position() + " <
@@ -409,7 +432,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
         // put flags
         byte flags = 0;
-        fullDatagram.put(7, (byte)flags);
+        fullDatagram.put(7, flags);
 
         // put ttl
         // start with default
@@ -417,7 +440,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
 
         // protocol
         byte protocol = 0;
-        fullDatagram.put(9, (byte)protocol);
+        fullDatagram.put(9, protocol);
 
         // put src addr
         fullDatagram.position(10);
@@ -467,7 +490,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
     /**
      * To String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return "( src: " + getSrcAddress() + "/" + getSrcPort() +
                " dst: " + getDstAddress() + "/" + getDstPort() +
                " len: " + getTotalLength() + " proto: " + getProtocol() +

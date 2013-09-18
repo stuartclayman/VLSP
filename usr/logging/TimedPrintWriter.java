@@ -17,7 +17,8 @@ public class TimedPrintWriter extends PrintWriter {
      * Print a String and then terminate the line. This method behaves
      * as though it invokes print(String) and then println().
      */
-    public void println(String x) {
+    @Override
+	public void println(String x) {
         super.println(x);
     }
 

@@ -22,7 +22,7 @@ import usr.net.SocketAddress;
 /**
  * An application which is an Forwarding point for USR data.
  * It listens on a USR port and forwards packets to
- * another USR socket address:port combination. 
+ * another USR socket address:port combination.
  * <p>
  * Forward usr-port usp-addr:usp-port [optionals]
  * Optional args:
@@ -49,11 +49,11 @@ public class Forward implements Application, Reconfigure {
 
     // USR Reader
     USRReader usrReader;
-    Future usrReaderFuture;
+    Future<?> usrReaderFuture;
 
     // USR Forwarder
     USRForwarder usrForwarder;
-    Future usrForwarderFuture;
+    Future<?> usrForwarderFuture;
 
 
     // Management interface
@@ -62,11 +62,11 @@ public class Forward implements Application, Reconfigure {
 
     // ManagementPort
     ManagementPort mPort;
-    Future mPortFuture;
+    Future<?> mPortFuture;
 
     // ManagementListener
     ManagementListener mListener;
-    Future mListenerFuture;
+    Future<?> mListenerFuture;
 
     /**
      * Forward data from one USR port to another USR port.
@@ -80,7 +80,8 @@ public class Forward implements Application, Reconfigure {
      * Forward usr-port usr-addr:usr-port [optinals]
      *
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         Scanner scanner;
 
         if (args.length >= 2) {
@@ -90,10 +91,12 @@ public class Forward implements Application, Reconfigure {
             scanner = new Scanner(usrString);
             if (scanner.hasNextInt()) {
                 usrPort = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad USR port " + args[0]);
             }
-
+            scanner.close();
             // get addr:path next
 
             String next = args[1];
@@ -120,7 +123,9 @@ public class Forward implements Application, Reconfigure {
                 scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
 
@@ -186,7 +191,8 @@ public class Forward implements Application, Reconfigure {
     /**
      * Start application
      */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         queue = new LinkedBlockingDeque<usr.net.Datagram>();
 
         try {
@@ -248,10 +254,11 @@ public class Forward implements Application, Reconfigure {
     }
 
 
-    /** 
+    /**
      * Stop the application
      */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
 
         usrReaderFuture.cancel(true);
@@ -273,7 +280,8 @@ public class Forward implements Application, Reconfigure {
      * Run the Forward application
      *
      */
-    public void run()  {
+    @Override
+	public void run()  {
         // Start Delay
         if (startDelay > 0) {
             try {
@@ -282,7 +290,7 @@ public class Forward implements Application, Reconfigure {
             }
         }
 
-        /* 
+        /*
          * Start the supporting threads that actually reads from the UDP socket
          * and forwards to the USR socket
          */
@@ -308,7 +316,7 @@ public class Forward implements Application, Reconfigure {
             latch.await();
         } catch (InterruptedException ie) {
         }
-  
+
 
         usrReader.await();
         usrForwarder.await();
@@ -322,7 +330,8 @@ public class Forward implements Application, Reconfigure {
     /**
      * Process a reconfiguration
      */
-    public Object process(JSONObject jsobj) {
+    @Override
+	public Object process(JSONObject jsobj) {
 
         /* get new USR address */
 
@@ -355,9 +364,12 @@ public class Forward implements Application, Reconfigure {
                 Scanner scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
+                scanner.close();
 
                 // Construct a SocketAddress
                 newUsrAddr = new SocketAddress(addr, port);
@@ -393,7 +405,7 @@ public class Forward implements Application, Reconfigure {
             return new ApplicationResponse(false, "Cannot submit task: " + e.getMessage());
         }
 
-        
+
         return new ApplicationResponse(true, "started");
     }
 

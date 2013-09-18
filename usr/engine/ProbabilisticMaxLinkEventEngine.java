@@ -57,7 +57,8 @@ ProbabilisticEventEngine {
     }
 
     /** Add or remove events following a simulation event */
-    public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
+    @Override
+	public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
         if (e instanceof StartRouterEvent) {
             StartRouterEvent sre = (StartRouterEvent)e;
             followRouter(sre, s, response, g);
@@ -103,7 +104,7 @@ ProbabilisticEventEngine {
 
         if (routerId >= 0) {
             nlinks = howManyLinks();
-            initMLRouter((StartRouterEvent)e, s, response, g, nlinks);
+            initMLRouter(e, s, response, g, nlinks);
             created = createNLinks(s, routerId, g, now, nlinks);
         }
 

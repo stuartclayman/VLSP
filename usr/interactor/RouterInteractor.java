@@ -7,7 +7,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import us.monoid.web.Resty;
@@ -344,15 +343,14 @@ public class RouterInteractor {
         // now we convert the replies in the response
         // into a list of apps
 
-        // get no of apps
-        String appReplies = (String)response.get("size");
+        response.get("size");
 
         // Logger.getLogger("log").logln(USR.ERROR, "appList: " + appReplies + " replies");
 
         // create a list for the names
         List<String> appNames = new ArrayList<String>();
 
-        JSONArray jsarr = (JSONArray)response.get("list");
+        response.get("list");
 
         return appNames;
 
@@ -509,7 +507,7 @@ public class RouterInteractor {
     public RouterInteractor monitoringStart(InetSocketAddress addr, int howOften) throws IOException, JSONException {
         String toSend = MCRP.MONITORING_START.CMD + " " + addr.getAddress().getHostAddress() + ":" + addr.getPort() + " " +
             howOften;
-        JSONObject response = interact(toSend);
+        interact(toSend);
         return this;
     }
 

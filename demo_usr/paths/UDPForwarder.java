@@ -17,7 +17,7 @@ import usr.net.Datagram;
  * This class gets data from a queue and
  * sends it to a UDP socket.
  */
-public class UDPForwarder implements Callable {
+public class UDPForwarder implements Callable <Object> {
     java.net.DatagramSocket outSocket;
     InetSocketAddress udpAddr;
     LinkedBlockingDeque<usr.net.Datagram> queue;
@@ -40,7 +40,7 @@ public class UDPForwarder implements Callable {
     long startTime = 0;
     long lastTime = 0;
 
-    // verbose 
+    // verbose
     int verbose = 0;
 
     // Latch for end synchronization
@@ -77,7 +77,8 @@ public class UDPForwarder implements Callable {
                     // volume per second
                     long volumePerSecond = 0;
 
-                    public void run() {
+                    @Override
+					public void run() {
                         if (running) {
                             packetsPerSecond = count - lastTimeCount;
                             volumePerSecond = volume - lastTimeVolume;
@@ -97,7 +98,8 @@ public class UDPForwarder implements Callable {
                         }
                     }
 
-                    public boolean cancel() {
+                    @Override
+					public boolean cancel() {
                         //Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
 
                         if (running) {
@@ -108,7 +110,8 @@ public class UDPForwarder implements Callable {
                         return running;
                     }
 
-                    public long scheduledExecutionTime() {
+                    @Override
+					public long scheduledExecutionTime() {
                         //Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
                         return 0;
                     }
@@ -131,7 +134,8 @@ public class UDPForwarder implements Callable {
     }
 
 
-    public Object call() {
+    @Override
+	public Object call() {
         Datagram inDatagram = null;
         java.net.DatagramPacket outDatagram = null;
 
@@ -139,12 +143,12 @@ public class UDPForwarder implements Callable {
             // get dst address and port
             InetAddress dstAddr = udpAddr.getAddress();
             int dstPort = udpAddr.getPort();
-                
+
             while (running) {
 
                 try {
                     do {
-                        inDatagram = queue.take(); 
+                        inDatagram = queue.take();
                         if (inDatagram == null) {
                             Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder IN DatagramPacket is NULL " + count + " volume: " + volume + " at " + System.currentTimeMillis());
                         }

@@ -26,7 +26,7 @@ import usr.net.SocketAddress;
 /**
  * An application which is an Ingress point for UDP data.
  * It listens on a UDP port and forwards packets to
- * a USR address:port combination. 
+ * a USR address:port combination.
  * <p>
  * IngressS udp-port usr-addr:usr-port [optionals]
  * Optional args:
@@ -80,7 +80,8 @@ public class IngressS implements Application {
      * IngressS udp-port usr-addr:usr-port [optionals]
      *
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         Scanner scanner;
 
         if (args.length >= 2) {
@@ -90,10 +91,12 @@ public class IngressS implements Application {
             scanner = new Scanner(udpString);
             if (scanner.hasNextInt()) {
                 udpPort = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad UDP port " + args[0]);
             }
-
+            scanner.close();
             // get addr:path next
 
             String next = args[1];
@@ -120,7 +123,9 @@ public class IngressS implements Application {
                 scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
 
@@ -207,7 +212,8 @@ public class IngressS implements Application {
     /**
      * Start application
      */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up inbound UDP socket
             //inSocket = new java.net.DatagramSocket(udpPort);
@@ -244,7 +250,8 @@ public class IngressS implements Application {
                 // volume per second
                 long volumePerSecond = 0;
 
-                public void run() {
+                @Override
+				public void run() {
                     if (running) {
                         packetsPerSecond = count - lastTimeCount;
                         volumePerSecond = volume - lastTimeVolume;
@@ -264,7 +271,8 @@ public class IngressS implements Application {
                     }
                 }
 
-                public boolean cancel() {
+                @Override
+				public boolean cancel() {
                     //Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
 
                     if (running) {
@@ -275,7 +283,8 @@ public class IngressS implements Application {
                     return running;
                 }
 
-                public long scheduledExecutionTime() {
+                @Override
+				public long scheduledExecutionTime() {
                     //Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
                     return 0;
                 }
@@ -297,10 +306,11 @@ public class IngressS implements Application {
     }
 
 
-    /** 
+    /**
      * Stop the application
      */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         // interrupt select()
         Thread.currentThread().interrupt();
 
@@ -325,7 +335,8 @@ public class IngressS implements Application {
      * Run the Ingress application
      *
      */
-    public void run()  {
+    @Override
+	public void run()  {
         ByteBuffer inDatagramBuffer = null;
         Datagram outDatagram = null;
 
@@ -345,14 +356,14 @@ public class IngressS implements Application {
             // setup Selector on DatagramSocket inSocket
             Selector selector = Selector.open();
             DatagramChannel channel = inSocket.getChannel();
-            SelectionKey selectionKey = channel.register(selector, SelectionKey.OP_READ);
+            channel.register(selector, SelectionKey.OP_READ);
 
             int maxQueueSize = 0;
 
             // get dst address and port
             Address dstAddr = usrAddr.getAddress();
             int dstPort = usrAddr.getPort();
-                
+
 
             while (running) {
 
@@ -383,7 +394,7 @@ public class IngressS implements Application {
 
                     // normalize ByteBuffer
                     inBuffer.flip();
-                    
+
 
                     int size = inBuffer.limit();
 
@@ -430,9 +441,6 @@ public class IngressS implements Application {
                     // now create a USR Datagram
                     // from original data
                     outDatagram = DatagramFactory.newDatagram(inDatagramBuffer);
-                    int outDataLength = outDatagram.getTotalLength() - outDatagram.getHeaderLength() - outDatagram.getChecksumLength();
-
-
                     // set the dst address and port
                     // the src addr and port will be set in send()
                     outDatagram.setDstAddress(dstAddr);
@@ -443,7 +451,7 @@ public class IngressS implements Application {
                     try {
                         outSocket.send(outDatagram);
 
-                        // Inter Packet Delay 
+                        // Inter Packet Delay
                         if (interPacketDelay > 0) {
                             Thread.sleep(interPacketDelay);
                         }

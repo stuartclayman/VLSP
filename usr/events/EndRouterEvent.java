@@ -36,7 +36,8 @@ public class EndRouterEvent extends AbstractEvent {
         routerNo_ = rNo;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         String str;
 
         str = "EndRouter: " + time_ + " " + getName();
@@ -72,7 +73,8 @@ public class EndRouterEvent extends AbstractEvent {
         routerNo_ = rInfo.getId();
     }
 
-    public JSONObject execute(GlobalController gc) throws InstantiationException {
+    @Override
+	public JSONObject execute(GlobalController gc) throws InstantiationException {
         if (!routerNumSet_) {
             initNumber(address_, gc);
         }
@@ -102,7 +104,8 @@ public class EndRouterEvent extends AbstractEvent {
         return json;
     }
 
-    public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
+    @Override
+	public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
         super.followEvent(s, response, g);
 
         if (g.connectedNetwork()) {
@@ -146,12 +149,9 @@ public class EndRouterEvent extends AbstractEvent {
 
         int MAX_TRIES = 5;
         int i = 0;
-        JSONObject endObj = null;
-
         for (i = 0; i < MAX_TRIES; i++) {
             try {
-                //Logger.getLogger("log").logln(USR.ERROR, leadin() + " i = " +  i + " lci.endRouter ");
-                endObj = lci.endRouter(br.getHost(), br.getManagementPort());
+                lci.endRouter(br.getHost(), br.getManagementPort());
                 break;
             } catch (Exception e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()

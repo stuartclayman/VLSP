@@ -281,7 +281,7 @@ public class AbstractNetwork {
             return;
         }
 
-        h.put((Integer)j, (Integer)dist);
+        h.put(j, dist);
     }
 
     private int getDist(int i, int j) {
@@ -299,7 +299,7 @@ public class AbstractNetwork {
             return Integer.MAX_VALUE;
         }
 
-        Integer d = h.get((Integer)j);
+        Integer d = h.get(j);
 
         if (d == null) {
             return Integer.MAX_VALUE;

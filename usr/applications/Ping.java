@@ -31,7 +31,8 @@ public class Ping implements Application {
     /**
      * Initialisation for ping.
      */
-    public ApplicationResponse init(String[] argv) throws NumberFormatException {
+    @Override
+	public ApplicationResponse init(String[] argv) throws NumberFormatException {
 
         if (argv.length != 1) {
             return new ApplicationResponse(false, leadin()+"PING COMMAND REQUIRES ROUTER ADDRESS AS ARGUMENT");
@@ -45,13 +46,15 @@ public class Ping implements Application {
     }
 
     /** Start application with argument  */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         running_ = true;
         return new ApplicationResponse(true, "");
     }
 
     /** Implement graceful shut down */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running_ = false;
 
         if (socket_ != null) {
@@ -64,7 +67,8 @@ public class Ping implements Application {
     }
 
     /** Run the ping application */
-    public void run() {
+    @Override
+	public void run() {
 
         try {
             socket_ = new DatagramSocket();

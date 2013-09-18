@@ -78,7 +78,8 @@ RouterDeletedNotification, TrafficInfo {
      *******************************2 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
      *
      */
-    public void report(Measurement m) {
+    @Override
+	public void report(Measurement m) {
         if (m.getType().equals("NetIFStats")) {
             count++;
 
@@ -130,7 +131,8 @@ RouterDeletedNotification, TrafficInfo {
      * @param routerSrc the name of source router
      * @param routerDst the name of dest router
      */
-    public List<Object> getTraffic(String routerSrc, String routerDst) {
+    @Override
+	public List<Object> getTraffic(String routerSrc, String routerDst) {
         Table tablePrev = previousMeasurements.get(routerSrc);
 
         Table table = measurements.get(routerSrc);
@@ -243,7 +245,8 @@ RouterDeletedNotification, TrafficInfo {
      * /**
      * Tell this reporter that a router has been deleted
      */
-    public void routerDeleted(String routerName) {
+    @Override
+	public void routerDeleted(String routerName) {
         Table oldData = null;
 
         synchronized (measurements) {

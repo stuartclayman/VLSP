@@ -42,7 +42,7 @@ public class StartLinkEvent extends AbstractEvent {
     }
 
     public StartLinkEvent(long time, EventEngine eng, String add1, String add2) {
-        time_ = time_;
+        time_ = time;
         engine_ = eng;
         address1_ = add1;
         address2_ = add2;
@@ -51,7 +51,7 @@ public class StartLinkEvent extends AbstractEvent {
 
     public StartLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc)
     throws InstantiationException {
-        time_ = time_;
+        time_ = time;
         engine_ = eng;
         address1_ = add1;
         address2_ = add2;
@@ -75,7 +75,8 @@ public class StartLinkEvent extends AbstractEvent {
         return router2_;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         String str = "StartLink " + time_ + " " + getName();
 
         return str;
@@ -124,7 +125,8 @@ public class StartLinkEvent extends AbstractEvent {
         linkName_ = s;
     }
 
-    public JSONObject execute(GlobalController gc) throws InstantiationException {
+    @Override
+	public JSONObject execute(GlobalController gc) throws InstantiationException {
         if (!numbersSet_) {
             setRouterNumbers(address1_, address2_, gc);
         }
@@ -279,7 +281,7 @@ public class StartLinkEvent extends AbstractEvent {
                 String connectionName = (String)response.get("name");
 
                 // add Pair<router1Id, router2Id> -> connectionName to  linkNames
-                Pair<Integer, Integer> endPoints = gc.makePair(router1Id, router2Id);
+                Pair<Integer, Integer> endPoints = GlobalController.makePair(router1Id, router2Id);
                 linkID = endPoints.hashCode();
 
                 gc.setLinkInfo(linkID, new LinkInfo(endPoints, connectionName, weight, linkID, gc.getElapsedTime()));

@@ -20,7 +20,8 @@ public class TestEventEngine implements EventEngine {
     }
 
     /** Start up and shut down events */
-    public void startStopEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void startStopEvents(EventScheduler s, GlobalController g) {
         // simulation start
         StartSimulationEvent e0 = new StartSimulationEvent(0, this);
 
@@ -32,18 +33,21 @@ public class TestEventEngine implements EventEngine {
     }
 
     /** Initial events to add to schedule */
-    public void initialEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void initialEvents(EventScheduler s, GlobalController g) {
         StartRouterEvent e2 = new StartRouterEvent(250, this);
 
         s.addEvent(e2);
     }
 
     /** Add or remove events following a simulation event */
-    public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
+    @Override
+	public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
     }
 
     /** Add or remove events following a simulation event */
-    public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
+    @Override
+	public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
     }
 
 }

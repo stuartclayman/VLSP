@@ -16,7 +16,8 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
         rand = new Random();
     }
 
-    public ArrayList<Integer> pickNLinks(ArrayList<Integer> nodes, GlobalController g, int noLinks, int node) {
+    @Override
+	public ArrayList<Integer> pickNLinks(ArrayList<Integer> nodes, GlobalController g, int noLinks, int node) {
         ArrayList<Integer> picked = new ArrayList<Integer>();
         updateNodes(g, nodes);
 
@@ -55,7 +56,8 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
         }
     }
 
-    public int pickLink(ArrayList<Integer> nodes, GlobalController g, int node) {
+    @Override
+	public int pickLink(ArrayList<Integer> nodes, GlobalController g, int node) {
         updateNodes(g, nodes);
         return pickLinkWithoutUpdate();
     }
@@ -86,7 +88,8 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
         return chosen;
     }
 
-    public void parseExtraXML(Node linkpicker) {
+    @Override
+	public void parseExtraXML(Node linkpicker) {
     }
 
 }

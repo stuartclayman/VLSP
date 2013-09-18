@@ -513,28 +513,31 @@ public class Router {
     public static void main(String[] argss) {
         final String[] args = argss;
 
-        RouterEnv router = null;
-
         if (args.length == 1) {
             int mPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
-            router = new RouterEnv(mPort, "Router-" + mPort + "-" + (mPort+1));
+            sc.close();
+            new RouterEnv(mPort, "Router-" + mPort + "-" + (mPort+1));
         } else if (args.length == 2) {
             int mPort = 0;
             int r2rPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
+            sc.close();
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
-            router = new RouterEnv(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
+            sc.close();
+            new RouterEnv(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
         } else if (args.length == 3) {
             int mPort = 0;
             int r2rPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
+            sc.close();
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
+            sc.close();
             String name = args[2];
             Address addr = null;
             try {
@@ -543,17 +546,19 @@ public class Router {
             }
 
             if (addr == null) {
-                router = new RouterEnv(mPort, r2rPort, name);
+                new RouterEnv(mPort, r2rPort, name);
             } else {
-                router = new RouterEnv(mPort, r2rPort, name, addr);
+                new RouterEnv(mPort, r2rPort, name, addr);
             }
         } else if (args.length == 4) {
             int mPort = 0;
             int r2rPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
+            sc.close();
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
+            sc.close();
             String name = args[2];
             Address addr = null;
             try {
@@ -563,7 +568,7 @@ public class Router {
                 help();
             }
 
-            router = new RouterEnv(mPort, r2rPort, name, addr);
+            new RouterEnv(mPort, r2rPort, name, addr);
         } else {
             help();
         }

@@ -85,7 +85,8 @@ String collectorPath = "/tmp/";
 // which is an ArrayList<ProbeValue>
 Extractor onlyProbeValues = new Extractor()
 {
-    public Serializable extract(Measurement m){
+    @Override
+	public Serializable extract(Measurement m){
         //Serializable object = (Serializable)m.getValues();
         Serializable object = (Serializable)m;
 
@@ -103,7 +104,8 @@ Extractor onlyProbeValues = new Extractor()
 // returns value of first one, which is a Number
 Chooser firstValue = new Chooser()
 {
-    public ChooserResult choose(Object obj){
+    @Override
+	public ChooserResult choose(Object obj){
         Measurement m = (Measurement)obj;
 
         //ArrayList<ProbeValue> list = (ArrayList<ProbeValue>)obj;
@@ -127,7 +129,8 @@ enum AggregateFnSpecifer { Average, Variance, SD, Length, Sum, Min,
 // The average function.
 AggregateFn average = new AggregateFn()
 {
-    public AggregatorMeasurement aggregate(
+    @Override
+	public AggregatorMeasurement aggregate(
         Collection<ChooserResult> coll)                               {
         Collection<Number> list = convert(coll);
         Aggregate aggregate = new Aggregate();
@@ -143,7 +146,7 @@ AggregateFn average = new AggregateFn()
             // create a list of ProbeValue
             ArrayList <ProbeValue> pvList =
                 new ArrayList<ProbeValue>();
-            pvList.add((ProbeValue)pv0);
+            pvList.add(pv0);
 
             // Construct the Measurement
             AggregatorMeasurement m = new AggregatorMeasurement(
@@ -160,7 +163,8 @@ AggregateFn average = new AggregateFn()
 // The variance function.
 AggregateFn variance = new AggregateFn()
 {
-    public AggregatorMeasurement aggregate(
+    @Override
+	public AggregatorMeasurement aggregate(
         Collection<ChooserResult> coll)                               {
         Collection<Number> list = convert(coll);
         Aggregate aggregate = new Aggregate();
@@ -175,7 +179,7 @@ AggregateFn variance = new AggregateFn()
             // create a list of ProbeValue
             ArrayList <ProbeValue> pvList =
                 new ArrayList<ProbeValue>();
-            pvList.add((ProbeValue)pv0);
+            pvList.add(pv0);
 
             // Construct the Measurement
             AggregatorMeasurement m = new AggregatorMeasurement(
@@ -192,7 +196,8 @@ AggregateFn variance = new AggregateFn()
 // The standard deviation function.
 AggregateFn sd = new AggregateFn()
 {
-    public AggregatorMeasurement aggregate(
+    @Override
+	public AggregatorMeasurement aggregate(
         Collection<ChooserResult> coll)                               {
         Collection<Number> list = convert(coll);
         Aggregate aggregate = new Aggregate();
@@ -208,7 +213,7 @@ AggregateFn sd = new AggregateFn()
             // create a list of ProbeValue
             ArrayList <ProbeValue> pvList =
                 new ArrayList<ProbeValue>();
-            pvList.add((ProbeValue)pv0);
+            pvList.add(pv0);
 
             // Construct the Measurement
             AggregatorMeasurement m = new AggregatorMeasurement(
@@ -225,7 +230,8 @@ AggregateFn sd = new AggregateFn()
 // The length function.
 AggregateFn length = new AggregateFn()
 {
-    public AggregatorMeasurement aggregate(
+    @Override
+	public AggregatorMeasurement aggregate(
         Collection<ChooserResult> coll)                               {
         Collection<Number> list = convert(coll);
         Aggregate aggregate = new Aggregate();
@@ -241,7 +247,7 @@ AggregateFn length = new AggregateFn()
             // create a list of ProbeValue
             ArrayList <ProbeValue> pvList =
                 new ArrayList<ProbeValue>();
-            pvList.add((ProbeValue)pv0);
+            pvList.add(pv0);
 
             // Construct the Measurement
             AggregatorMeasurement m = new AggregatorMeasurement(
@@ -258,7 +264,8 @@ AggregateFn length = new AggregateFn()
 // The sum function.
 AggregateFn sum = new AggregateFn()
 {
-    public AggregatorMeasurement aggregate(
+    @Override
+	public AggregatorMeasurement aggregate(
         Collection<ChooserResult> coll)                               {
         Collection<Number> list = convert(coll);
         Aggregate aggregate = new Aggregate();
@@ -274,7 +281,7 @@ AggregateFn sum = new AggregateFn()
             // create a list of ProbeValue
             ArrayList <ProbeValue> pvList =
                 new ArrayList<ProbeValue>();
-            pvList.add((ProbeValue)pv0);
+            pvList.add(pv0);
 
             // Construct the Measurement
             AggregatorMeasurement m = new AggregatorMeasurement(
@@ -291,7 +298,8 @@ AggregateFn sum = new AggregateFn()
 // The min function.
 AggregateFn min = new AggregateFn()
 {
-    public AggregatorMeasurement aggregate(
+    @Override
+	public AggregatorMeasurement aggregate(
         Collection<ChooserResult> coll)                               {
         Collection<Number> list = convert(coll);
         Aggregate aggregate = new Aggregate();
@@ -307,7 +315,7 @@ AggregateFn min = new AggregateFn()
             // create a list of ProbeValue
             ArrayList <ProbeValue> pvList =
                 new ArrayList<ProbeValue>();
-            pvList.add((ProbeValue)pv0);
+            pvList.add(pv0);
 
             // Construct the Measurement
             AggregatorMeasurement m = new AggregatorMeasurement(
@@ -324,7 +332,8 @@ AggregateFn min = new AggregateFn()
 // The max function.
 AggregateFn max = new AggregateFn()
 {
-    public AggregatorMeasurement aggregate(
+    @Override
+	public AggregatorMeasurement aggregate(
         Collection<ChooserResult> coll)                               {
         Collection<Number> list = convert(coll);
         Aggregate aggregate = new Aggregate();
@@ -340,7 +349,7 @@ AggregateFn max = new AggregateFn()
             // create a list of ProbeValue
             ArrayList <ProbeValue> pvList =
                 new ArrayList<ProbeValue>();
-            pvList.add((ProbeValue)pv0);
+            pvList.add(pv0);
 
             // Construct the Measurement
             AggregatorMeasurement m = new AggregatorMeasurement(
@@ -374,7 +383,8 @@ enum FilterSpecifer { Always, Percent2, Percent5, Percent10 };
 // i.e. no filtering
 Filter always = new Filter()
 {
-    public boolean filter(Forwarder forwarder,
+    @Override
+	public boolean filter(Forwarder forwarder,
         AggregatorMeasurement m)                                    {
         return true;
     }
@@ -383,7 +393,8 @@ Filter always = new Filter()
 // Filter only returns value if it is different by 5%
 Filter filter5pcTolerance = new Filter()
 {
-    public boolean filter(Forwarder forwarder,
+    @Override
+	public boolean filter(Forwarder forwarder,
         AggregatorMeasurement m)                                    {
         AggregatorMeasurement oldValue = forwarder.getOldValue();
 
@@ -412,7 +423,8 @@ Filter filter5pcTolerance = new Filter()
 // Filter only returns value if it is different by 2%
 Filter filter2pcTolerance = new Filter()
 {
-    public boolean filter(Forwarder forwarder,
+    @Override
+	public boolean filter(Forwarder forwarder,
         AggregatorMeasurement m)                                    {
         AggregatorMeasurement oldValue = forwarder.getOldValue();
 
@@ -450,7 +462,8 @@ Filter filter2pcTolerance = new Filter()
 // Filter only returns value if it is different by 10%
 Filter filter10pcTolerance = new Filter()
 {
-    public boolean filter(Forwarder forwarder,
+    @Override
+	public boolean filter(Forwarder forwarder,
         AggregatorMeasurement m)                                    {
         AggregatorMeasurement oldValue = forwarder.getOldValue();
 
@@ -817,8 +830,10 @@ public static void main(String[] args){
                 String[] parts = argValue.split("/");
                 Scanner sc = new Scanner(parts[0]);
                 int addr = sc.nextInt();
+                sc.close();
                 sc = new Scanner(parts[1]);
                 int port = sc.nextInt();
+                sc.close();
                 Address gidAddr = new GIDAddress(addr);
 
                 SocketAddress newInputAddr = new SocketAddress(
@@ -832,8 +847,10 @@ public static void main(String[] args){
                 String[] parts = argValue.split("/");
                 Scanner sc = new Scanner(parts[0]);
                 int addr = sc.nextInt();
+                sc.close();
                 sc = new Scanner(parts[1]);
                 int port = sc.nextInt();
+                sc.close();
                 Address gidAddr = new GIDAddress(addr);
                 SocketAddress newOutputAddr = new SocketAddress(
                     gidAddr,
@@ -899,6 +916,7 @@ public static void main(String[] args){
             case 't': {
                 Scanner sc = new Scanner(argValue);
                 int t = sc.nextInt();
+                sc.close();
                 aggPoint.setSleepTime(t);
                 break;
             }

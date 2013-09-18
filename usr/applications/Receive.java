@@ -30,14 +30,17 @@ public class Receive implements Application {
      * Initialisation for Receive.
      * Receive port
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         if (args.length == 2) {
             // try port
             Scanner scanner = new Scanner(args[0]);
 
             if (scanner.hasNextInt()) {
                 port_ = scanner.nextInt();
+                scanner.close();
             } else {
+            	scanner.close();
                 return new ApplicationResponse(false, "Bad port " + args[0]);
             }
             bytes_ = Integer.parseInt(args[1]);
@@ -53,7 +56,8 @@ public class Receive implements Application {
     }
 
     /** Start application with argument  */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up socket
             socket = new DatagramSocket();
@@ -80,14 +84,16 @@ public class Receive implements Application {
     }
 
     /** Implement graceful shut down */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
         closeDown();
         return new ApplicationResponse(true, "");
     }
 
     /** Run the ping application */
-    public void run() {
+    @Override
+	public void run() {
         Datagram datagram;
 
         try {

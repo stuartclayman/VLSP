@@ -35,7 +35,7 @@ public class AddressFactory {
     public static Address newAddress(int addr) throws java.net.UnknownHostException {
         Exception finalE = null;
         try {
-            Address address = (Address)consI.newInstance(addr);
+            Address address = consI.newInstance(addr);
             return address;
         } catch (java.lang.reflect.InvocationTargetException e) {
             Throwable e2 = e.getTargetException();
@@ -59,7 +59,7 @@ public class AddressFactory {
      */
     public static Address newAddress(byte[] addr) {
         try {
-            Address address = (Address)consB.newInstance(addr);
+            Address address = consB.newInstance(addr);
             return address;
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + e);
@@ -74,7 +74,7 @@ public class AddressFactory {
     public static Address newAddress(String addr) throws java.net.UnknownHostException  {
         Exception finalE = null;
         try {
-            Address address = (Address)consS.newInstance(addr);
+            Address address = consS.newInstance(addr);
             return address;
         } catch (java.lang.reflect.InvocationTargetException e) {
             Throwable e2 = e.getTargetException();
@@ -111,20 +111,20 @@ public class AddressFactory {
             //System.err.println("AddressFactory: setClassForAddress " + className);
 
             // get Class object
-            Class<?> c = (Class<?> )Class.forName(className);
+            Class<?> c = Class.forName(className);
 
             // get it as more exact type
             Class<? extends Address> xc = c.asSubclass(Address.class );
 
             // find Constructor for when arg is int
-            consI = (Constructor<? extends Address> )xc.getDeclaredConstructor(int.class );
+            consI = xc.getDeclaredConstructor(int.class );
 
 
             // get Consturctor for when arg is byte[]
-            consB = (Constructor<? extends Address> )xc.getDeclaredConstructor(byte[].class );
+            consB = xc.getDeclaredConstructor(byte[].class );
 
             // get Consturctor for when arg is String
-            consS = (Constructor<? extends Address> )xc.getDeclaredConstructor(String.class );
+            consS = xc.getDeclaredConstructor(String.class );
 
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + e);

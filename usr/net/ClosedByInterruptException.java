@@ -4,7 +4,12 @@ import java.net.SocketException;
 
 public class ClosedByInterruptException extends SocketException {
 
-    public ClosedByInterruptException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -724759872977290821L;
+
+	public ClosedByInterruptException() {
         super();
     }
 

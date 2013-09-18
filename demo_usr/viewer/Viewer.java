@@ -444,6 +444,7 @@ public static void main(String[] args){
     }
 }
 
+@SuppressWarnings("unused")
 private static void help(){
     System.err.println(
         "Viewer [-t timeout] [-l layout] [-p web_port] [-h gc_host]");

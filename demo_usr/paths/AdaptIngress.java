@@ -19,7 +19,7 @@ import usr.net.SocketAddress;
  * An application for adapting an Ingress node
  * to send to a new USR port.
  * It sends a message to the Ingress node listening
- * on a Management port on usrAddr:usrPort 
+ * on a Management port on usrAddr:usrPort
  * and informs it to update the forwarding
  * USR address  usr-addr:usr-port.
  * <p>
@@ -54,7 +54,8 @@ public class AdaptIngress implements Application {
      * -d start-up delay (in milliseconds)
      * -v verbose
      */
-    public ApplicationResponse init(String[] args) {
+    @Override
+	public ApplicationResponse init(String[] args) {
         if (args.length >= 2) {
             Scanner scanner;
 
@@ -84,10 +85,12 @@ public class AdaptIngress implements Application {
                 scanner = new Scanner(addrParts[1]);
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
+                    scanner.close();
                 } else {
+                	scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
-
+                scanner.close();
                 // Construct a SocketAddress
                 mgmtUsrAddr = new SocketAddress(addr, port);
 
@@ -115,12 +118,13 @@ public class AdaptIngress implements Application {
                     scanner = new Scanner(usrPort);
                     if (scanner.hasNextInt()) {
                         testPort = scanner.nextInt();
+                        scanner.close();
                     } else {
+                    	scanner.close();
                         return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                     }
 
-                    // Construct a SocketAddress
-                    SocketAddress testSocketAddr = new SocketAddress(testAddr, testPort);
+                    new SocketAddress(testAddr, testPort);
 
                 } catch (Exception e) {
                     return new ApplicationResponse(false, "UnknownHost " + addrParts[0]);
@@ -186,7 +190,8 @@ public class AdaptIngress implements Application {
     /**
      * Start application
      */
-    public ApplicationResponse start() {
+    @Override
+	public ApplicationResponse start() {
         try {
             // set up socket
             socket = new DatagramSocket();
@@ -213,9 +218,10 @@ public class AdaptIngress implements Application {
     }
 
     /**
-     * Implement graceful shut down 
+     * Implement graceful shut down
      */
-    public ApplicationResponse stop() {
+    @Override
+	public ApplicationResponse stop() {
         running = false;
 
         if (socket != null) {
@@ -228,10 +234,11 @@ public class AdaptIngress implements Application {
         return new ApplicationResponse(true, "");
     }
 
-    /** 
-     * Run the application 
+    /**
+     * Run the application
      */
-    public void run() {
+    @Override
+	public void run() {
         Datagram datagram = null;
 
         // Start Delay
@@ -283,7 +290,7 @@ public class AdaptIngress implements Application {
         }
 
         Logger.getLogger("log").logln(USR.ERROR, "AdaptIngress: end of run()");
-        
+
     }
 
 }

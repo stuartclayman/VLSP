@@ -94,19 +94,22 @@ public class StubServer2 implements NetIFListener {
     /**
      * Fake interface
      */
-    public FabricDevice getRouteFabric(Datagram d) throws NoRouteToHostException {
+    @Override
+	public FabricDevice getRouteFabric(Datagram d) throws NoRouteToHostException {
         throw new NoRouteToHostException();
     }
 
     /** Accept all traffic*/
-    public boolean ourAddress(Address a) {
+    @Override
+	public boolean ourAddress(Address a) {
         return true;
     }
 
     /**
      * get name
      */
-    public String getName() {
+    @Override
+	public String getName() {
         return netIF.getName();
     }
 
@@ -117,11 +120,13 @@ public class StubServer2 implements NetIFListener {
     }
 
     /** Deal with TTL expire */
-    public void TTLDrop(Datagram dg) {
+    @Override
+	public void TTLDrop(Datagram dg) {
     }
 
     /** A datagram device has closed and must be removed */
-    public void closedDevice(DatagramDevice dd) {
+    @Override
+	public void closedDevice(DatagramDevice dd) {
 
     }
 
@@ -135,7 +140,8 @@ public class StubServer2 implements NetIFListener {
         TimerTask task = new TimerTask() {
 
 
-            public void run() {
+            @Override
+			public void run() {
                 if (running) {
                     diffs = count - lastTimeCount;
                     Logger.getLogger("log").logln(USR.ERROR, "Task count: " + count + " diff: "  + diffs);
@@ -143,7 +149,8 @@ public class StubServer2 implements NetIFListener {
                 }
             }
 
-            public boolean cancel() {
+            @Override
+			public boolean cancel() {
                 logger.log(error, "cancel @ " + count);
 
                 if (running) {
@@ -154,7 +161,8 @@ public class StubServer2 implements NetIFListener {
                 return running;
             }
 
-            public long scheduledExecutionTime() {
+            @Override
+			public long scheduledExecutionTime() {
                 logger.log(error, "scheduledExecutionTime:");
                 return 0;
             }

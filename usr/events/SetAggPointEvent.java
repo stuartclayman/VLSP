@@ -19,14 +19,16 @@ public class SetAggPointEvent extends AbstractEvent {
         routerNo_ = rid;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         String str;
 
         str = "SetAggPointEvent: " + time_ + " router " + routerNo_ + " AP " + AP_;
         return str;
     }
 
-    public JSONObject execute(GlobalController gc) {
+    @Override
+	public JSONObject execute(GlobalController gc) {
         JSONObject json= setAP(routerNo_, AP_, gc);
 
         return json;

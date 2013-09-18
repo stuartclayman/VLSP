@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.simpleframework.http.Path;
-import org.simpleframework.http.Query;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 
@@ -29,7 +28,8 @@ public class GraphRestHandler extends BasicRequestHandler {
     /**
      * Handle a request and send a response.
      */
-    public boolean  handle(Request request, Response response) {
+    @Override
+	public boolean  handle(Request request, Response response) {
         // get GlobalController
         gc = (GlobalController)getManagementConsole().getAssociated();
 
@@ -54,15 +54,14 @@ public class GraphRestHandler extends BasicRequestHandler {
 
             // get the path
             Path path = request.getPath();
-            String directory = path.getDirectory();
+            path.getDirectory();
             String name = path.getName();
             String[] segments = path.getSegments();
 
             // Get the method
             String method = request.getMethod();
 
-            // Get the Query
-            Query query = request.getQuery();
+            request.getQuery();
 
             // and evaluate the input
             if (method.equals("POST")) {

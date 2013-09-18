@@ -163,7 +163,8 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * Get the name of this RouterController.
      */
-    public String getName() {
+    @Override
+	public String getName() {
         return name;
     }
 
@@ -247,7 +248,8 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * Get the ManagementConsole.
      */
-    public ManagementConsole getManagementConsole() {
+    @Override
+	public ManagementConsole getManagementConsole() {
         return management;
     }
 
@@ -349,7 +351,8 @@ public class RouterController implements ComponentController, Runnable {
      * a router on the address ip_addr/port
      *
      */
-    public void run() {
+    @Override
+	public void run() {
         /** Not needed with rest
 
            // get a handle on the Listener Queue
@@ -796,14 +799,14 @@ public class RouterController implements ComponentController, Runnable {
                 // WAS Class<RouterProbe> cc = (Class<RouterProbe>)Class.forName(probeClassName);
 
                 // Replaced with following 2 lines
-                Class<?> c = (Class<?> )Class.forName(probeClassName);
+                Class<?> c = Class.forName(probeClassName);
                 Class<? extends RouterProbe> cc = c.asSubclass(RouterProbe.class );
 
                 // find Constructor for when arg is RouterController
-                Constructor<? extends RouterProbe> cons = (Constructor<? extends RouterProbe> )cc.getDeclaredConstructor(
+                Constructor<? extends RouterProbe> cons = cc.getDeclaredConstructor(
                         RouterController.class);
 
-                RouterProbe probe = (RouterProbe)cons.newInstance(this);
+                RouterProbe probe = cons.newInstance(this);
 
                 // Set datarate, iff we need to
                 if (datarate > 0) {

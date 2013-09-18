@@ -74,6 +74,7 @@ public InfoConsumer(){
  * -l log path, (default: /tmp/)
  * -n name (default: "info-consumer")
  */
+@Override
 public ApplicationResponse init(String[] args){
     // process args
     int argc = args.length;
@@ -94,10 +95,11 @@ public ApplicationResponse init(String[] args){
                 String[] parts = argValue.split("/");
                 Scanner sc = new Scanner(parts[0]);
                 int addr = sc.nextInt();
+                sc.close();
                 sc = new Scanner(parts[1]);
                 int port = sc.nextInt();
                 Address gidAddr = new GIDAddress(addr);
-
+                sc.close();
                 SocketAddress newInputAddr = new SocketAddress(
                     gidAddr,
                     port);
@@ -148,6 +150,7 @@ public ApplicationResponse init(String[] args){
 /**
  * Start the InfoConsumer.
  */
+@Override
 public ApplicationResponse start(){
     try {
         // create a TimeIndexFactory
@@ -198,6 +201,7 @@ public ApplicationResponse start(){
 /**
  * Stop
  */
+@Override
 public ApplicationResponse stop(){
     dataDomain.disconnect();
 
@@ -219,6 +223,7 @@ public ApplicationResponse stop(){
 /**
  * Run
  */
+@Override
 public void run(){
     // A DataConsumer already runs in itws own thread
     // so this one can wait and do nothing.
@@ -233,6 +238,7 @@ public void run(){
 /**
  * Receiver of a measurment.
  */
+@Override
 public void report(Measurement m){
     Logger.getLogger("log").logln(USR.STDOUT, m.toString());
 

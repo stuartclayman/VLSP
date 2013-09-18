@@ -46,14 +46,16 @@ public class RouterLifecycleProbe extends AbstractProbe implements Probe, Router
     /**
      * Set the started lifecycle
      */
-    public void beginThreadBody() {
+    @Override
+	public void beginThreadBody() {
         Logger.getLogger("log").logln(USR.STDOUT,"RouterLifecycleProbe: started");
     }
 
     /**
      * Set the stopped lifecycle
      */
-    public void endThreadBody() {
+    @Override
+	public void endThreadBody() {
         Logger.getLogger("log").logln(USR.STDOUT,"RouterLifecycleProbe: stopped");
 
     }
@@ -61,7 +63,8 @@ public class RouterLifecycleProbe extends AbstractProbe implements Probe, Router
     /**
      * The named router has been created
      */
-    public void routerCreated(String routerName) {
+    @Override
+	public void routerCreated(String routerName) {
         this.routerName = routerName;
         lifecycleValue = (String)inform("STARTED");
     }
@@ -69,7 +72,8 @@ public class RouterLifecycleProbe extends AbstractProbe implements Probe, Router
     /**
      * The named router has been deleted
      */
-    public void routerDeleted(String routerName) {
+    @Override
+	public void routerDeleted(String routerName) {
         this.routerName = routerName;
         lifecycleValue = (String)inform("STOPPED");
     }
@@ -77,7 +81,8 @@ public class RouterLifecycleProbe extends AbstractProbe implements Probe, Router
     /**
      * Collect a measurement.
      */
-    public ProbeMeasurement collect() {
+    @Override
+	public ProbeMeasurement collect() {
         //lifecycleValue = (String)getLastOnEventData();
 
         try {

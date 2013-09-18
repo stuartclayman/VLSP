@@ -49,6 +49,7 @@ public LinuxCPU(String name){
 /**
  * Collect a measurement.
  */
+@Override
 public ProbeMeasurement collect(){
     // create a list for the result
     ArrayList<ProbeValue> list = new ArrayList<ProbeValue>(1);
@@ -61,7 +62,7 @@ public ProbeMeasurement collect(){
 
             // get amount for idleness
             for (int c = 0; c < cpuCount; c++) {
-                float f = (float)cpuDev.getDeltaValue(
+                float f = cpuDev.getDeltaValue(
                     "cpu" + c + "-idle");
                 System.out.print(c + "=" + f + ", ");
                 idleTotal += f;

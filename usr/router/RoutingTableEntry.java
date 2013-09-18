@@ -19,6 +19,7 @@ public interface RoutingTableEntry {
      */
     public String showTransmitted();
 
-    public String toString();
+    @Override
+	public String toString();
 
 }

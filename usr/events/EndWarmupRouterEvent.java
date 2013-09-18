@@ -19,14 +19,16 @@ public class EndWarmupRouterEvent extends AbstractEvent {
         engine_ = eng;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         String str;
 
         str = "EndWarmupRouter: lasted from " + starttime_ + " to " + time_;
         return str;
     }
 
-    public JSONObject execute(GlobalController gc) {
+    @Override
+	public JSONObject execute(GlobalController gc) {
         JSONObject json = new JSONObject();
         APController ap = gc.getAPController();
 
@@ -42,7 +44,8 @@ public class EndWarmupRouterEvent extends AbstractEvent {
         return json;
     }
 
-    private String leadin() {
+    @SuppressWarnings("unused")
+	private String leadin() {
         return "EWRE: ";
     }
 

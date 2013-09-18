@@ -17,11 +17,13 @@ public class OutputEvent extends AbstractEvent {
         output_ = ot;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return new String("OutputEvent " + time_ + " " + output_);
     }
 
-    public JSONObject execute(GlobalController gc)
+    @Override
+	public JSONObject execute(GlobalController gc)
     throws InstantiationException {
         JSONObject jsobj = new JSONObject();
 

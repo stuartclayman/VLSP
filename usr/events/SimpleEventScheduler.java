@@ -44,7 +44,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
     /** Used if we are in emulation mode
      * Strips off an event, sends it to the global controller for
      * execution */
-    public void run() {
+    @Override
+	public void run() {
         while (true) {
             Event ev = getFirstEvent();
             long expectedStart = 0;
@@ -102,7 +103,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
     }
 
     /** Return the time since the start of the simulation*/
-    public long getElapsedTime() {
+    @Override
+	public long getElapsedTime() {
         if (isSimulation_) {
             return lastEventTime_ - simulationStartTime_;
         }
@@ -111,7 +113,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
     }
 
     /** Return start time */
-    public long getStartTime() {
+    @Override
+	public long getStartTime() {
         return simulationStartTime_;
     }
 
@@ -119,7 +122,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
      * It is important to note that this can be called between events,
      * therefore simulationTime_ needs to be updated as needed.
      */
-    public long getSimulationTime() {
+    @Override
+	public long getSimulationTime() {
         long current = System.currentTimeMillis();
 
         if (current - simulationTime_ > 1000)  {   // more than 1 second out
@@ -132,7 +136,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
 
     /** Return first event from schedule
      */
-    public Event getFirstEvent() {
+    @Override
+	public Event getFirstEvent() {
         if (schedule_.size() == 0) {
             return null;
         }
@@ -187,7 +192,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
     }
 
     /** Interrupt above wait*/
-    public void wakeWait() {
+    @Override
+	public void wakeWait() {
         synchronized (waitCounter_) {
             waitCounter_.notify();
         }
@@ -195,7 +201,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
 
     /** Adds an event to the schedule in time order
      */
-    public void addEvent(Event e) {
+    @Override
+	public void addEvent(Event e) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
             "Adding Event at time: " + e.getTime() + " Event " + e );
 

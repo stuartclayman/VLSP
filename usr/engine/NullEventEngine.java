@@ -14,19 +14,23 @@ public class NullEventEngine implements EventEngine {
     }
 
     /** Initial events to add to schedule */
-    public void startStopEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void startStopEvents(EventScheduler s, GlobalController g) {
     }
 
     /** Initial events to add to schedule */
-    public void initialEvents(EventScheduler s, GlobalController g) {
+    @Override
+	public void initialEvents(EventScheduler s, GlobalController g) {
     }
 
     /** Add or remove events following a simulation event */
-    public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
+    @Override
+	public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
     }
 
     /** Add or remove events following a simulation event */
-    public void followEvent(Event e, EventScheduler s, JSONObject js, GlobalController g) {
+    @Override
+	public void followEvent(Event e, EventScheduler s, JSONObject js, GlobalController g) {
     }
 
 }

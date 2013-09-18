@@ -15,7 +15,7 @@ import usr.net.Datagram;
  * converts it into a JSONObject then calls the passed in ManagementHandler
  * to process the JSONObject.
  */
-public class ManagementListener implements Callable {
+public class ManagementListener implements Callable <Object>{
     LinkedBlockingDeque<usr.net.Datagram> queue;
     boolean running = false;
 
@@ -23,7 +23,7 @@ public class ManagementListener implements Callable {
     // total no of Datagrams in
     int count = 0;
 
-    // verbose 
+    // verbose
     int verbose = 0;
 
 
@@ -50,7 +50,8 @@ public class ManagementListener implements Callable {
     }
 
 
-    public Object call() {
+    @Override
+	public Object call() {
         Datagram inDatagram = null;
 
         try {
@@ -85,7 +86,7 @@ public class ManagementListener implements Callable {
                 Logger.getLogger("log").logln(USR.ERROR, "ManagementListener received " + jsObject);
 
                 handler.process(jsObject);
-                
+
 
             }
 

@@ -16,14 +16,16 @@ public class SimpleRouterFabric extends AbstractRouterFabric implements RouterFa
     /**
      * Create a new empty routing table
      */
-    public RoutingTable newRoutingTable() {
+    @Override
+	public RoutingTable newRoutingTable() {
         return new SimpleRoutingTable();
     }
 
     /**
      * Create a new routing table from a transmitted byte[]
      */
-    public RoutingTable decodeRoutingTable(byte[] bytes, NetIF netif) throws Exception {
+    @Override
+	public RoutingTable decodeRoutingTable(byte[] bytes, NetIF netif) throws Exception {
         RoutingTable table = new SimpleRoutingTable(bytes, netif);
 
         Logger.getLogger("log").logln(1<<6,

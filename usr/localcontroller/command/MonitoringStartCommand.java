@@ -31,7 +31,8 @@ public class MonitoringStartCommand extends LocalCommand {
     /**
      * Evaluate the Command.
      */
-    public boolean evaluate(Request request, Response response) {
+    @Override
+	public boolean evaluate(Request request, Response response) {
 
         try {
             PrintStream out = response.getPrintStream();
@@ -83,6 +84,7 @@ public class MonitoringStartCommand extends LocalCommand {
 
                     try {
                         portNumber = sc.nextInt();
+                        sc.close();
                     } catch (Exception e) {
                         response.setCode(302);
 
@@ -111,7 +113,7 @@ public class MonitoringStartCommand extends LocalCommand {
 
                         out.println(jsobj.toString());
                         response.close();
-
+                        sc.close();
                         return false;
 
                     }
@@ -128,7 +130,7 @@ public class MonitoringStartCommand extends LocalCommand {
                     jsobj.put("success", Boolean.TRUE);
                     out.println(jsobj.toString());
                     response.close();
-
+                    sc.close();
                     return true;
 
                 }
@@ -139,9 +141,7 @@ public class MonitoringStartCommand extends LocalCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
         }
 
-        finally {
-            return false;
-        }
+        return false;
 
 
     }

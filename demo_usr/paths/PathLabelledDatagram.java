@@ -112,7 +112,7 @@ public class PathLabelledDatagram {
      * Get the flow
      */
     public int getFlow() {
-        int f = (int)buffer.getShort(1);
+        int f = buffer.getShort(1);
 
         // convert signed to unsigned
         if (f < 0) {
@@ -188,7 +188,7 @@ public class PathLabelledDatagram {
      * Get the source port
      */
     public int getSrcPort() {
-        int p = (int)buffer.getShort(8);
+        int p = buffer.getShort(8);
 
         // convert signed to unsigned
         if (p < 0) {
@@ -241,7 +241,7 @@ public class PathLabelledDatagram {
      * Get the destination port
      */
     public int getDstPort() {
-        int p = (int)buffer.getShort(14);
+        int p = buffer.getShort(14);
 
         // convert signed to unsigned
         if (p < 0) {

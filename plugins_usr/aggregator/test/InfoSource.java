@@ -88,11 +88,13 @@ enum FilterSpecifer { Always, Percent2, Percent5, Percent10 };
 // i.e. no filtering
 ProbeFilter always = new ProbeFilter()
 {
-    public String getName(){
+    @Override
+	public String getName(){
         return "always";
     }
 
-    public boolean filter(Probe p, Measurement m){
+    @Override
+	public boolean filter(Probe p, Measurement m){
         return true;
     }
 };
@@ -100,11 +102,13 @@ ProbeFilter always = new ProbeFilter()
 // Filter only returns value if the 0th field value is different by 2%
 ProbeFilter filter2pcTolerance = new ProbeFilter()
 {
-    public String getName(){
+    @Override
+	public String getName(){
         return "field0-2%-filter";
     }
 
-    public boolean filter(Probe p, Measurement m){
+    @Override
+	public boolean filter(Probe p, Measurement m){
         List<ProbeValue> list = m.getValues();
         Number n = (Number)list.get(0).getValue();
 
@@ -134,11 +138,13 @@ ProbeFilter filter2pcTolerance = new ProbeFilter()
 // Filter only returns value if the 0th field value is different by 5%
 ProbeFilter filter5pcTolerance = new ProbeFilter()
 {
-    public String getName(){
+    @Override
+	public String getName(){
         return "field0-5%-filter";
     }
 
-    public boolean filter(Probe p, Measurement m){
+    @Override
+	public boolean filter(Probe p, Measurement m){
         List<ProbeValue> list = m.getValues();
         Number n = (Number)list.get(0).getValue();
 
@@ -168,11 +174,13 @@ ProbeFilter filter5pcTolerance = new ProbeFilter()
 // Filter only returns value if the 0th field value is different by 10%
 ProbeFilter filter10pcTolerance = new ProbeFilter()
 {
-    public String getName(){
+    @Override
+	public String getName(){
         return "field0-10%-filter";
     }
 
-    public boolean filter(Probe p, Measurement m){
+    @Override
+	public boolean filter(Probe p, Measurement m){
         List<ProbeValue> list = m.getValues();
         Number n = (Number)list.get(0).getValue();
 
@@ -462,8 +470,10 @@ public static void main(String[] args){
                 String[] parts = argValue.split("/");
                 Scanner sc = new Scanner(parts[0]);
                 int addr = sc.nextInt();
+                sc.close();
                 sc = new Scanner(parts[1]);
                 int port = sc.nextInt();
+                sc.close();
                 Address gidAddr = new GIDAddress(addr);
                 SocketAddress newOutputAddr = new SocketAddress(
                     gidAddr,
@@ -523,6 +533,7 @@ public static void main(String[] args){
             case 't': {
                 Scanner sc = new Scanner(argValue);
                 int t = sc.nextInt();
+                sc.close();
                 infoSource.setSleepTime(t);
                 break;
             }
@@ -560,6 +571,7 @@ public InfoDataSource(IndexView dataIndex){
  * and pass it onto the data source delegate.
  * @return null if something goes wrong
  */
+@Override
 public int notifyMeasurement(Measurement m){
     // do usual notifyMeasurement
     int result = super.notifyMeasurement(m);
@@ -581,7 +593,7 @@ public int notifyMeasurement(Measurement m){
             m.getGroupID(),
             m.getValues());
 
-        Serializable object = (Serializable)cm;
+        Serializable object = cm;
         dataIndex.addItem(new SerializableItem(
                 object), new MillisecondTimestamp());
         return result;

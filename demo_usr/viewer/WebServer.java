@@ -31,6 +31,7 @@ public WebServer(int port) throws IOException {
 /**
  * Serve up a URL.
  */
+@Override
 public Response serve(String uri,
     String method,
     Properties header,
@@ -81,6 +82,7 @@ public Response serve(String uri,
  * Serve up a File.
  * Root is demo_usr/canviz
  */
+@Override
 public Response serveFile(String uri,
     Properties header,
     File homeDir,

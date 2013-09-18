@@ -94,7 +94,7 @@ public class LifeSpanEstimate {
      *
      */
     double [] weightScoresByLife(ArrayList<Integer> nodes, double [] score, long time) {
-        int n = nodes.size();
+        nodes.size();
         double [] lifeEstimates = new double[score.length];
         double lifeBias = options_.getAPLifeBias();
 
@@ -475,8 +475,6 @@ public class LifeSpanEstimate {
         }
         KMTime_ = new ArrayList<Integer>();
         KMProb_ = new ArrayList<Double>();
-        double KMEst = 1.0;
-
         ArrayList<Long> life = new ArrayList<Long> (births_.values());
         //System.out.println("Start "+ni+ " deaths "+deaths_.size()+ " live "+ life.size());
         Collections.sort(life, Collections.reverseOrder());

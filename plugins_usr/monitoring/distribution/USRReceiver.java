@@ -171,6 +171,7 @@ protected boolean receive(){
 /**
  * The Runnable body
  */
+@Override
 public void run(){
     // if we get here the thread must be running
     threadRunning = true;

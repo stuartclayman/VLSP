@@ -46,7 +46,8 @@ public class NetStats implements Cloneable {
     /**
      * Create a copy of a NetStats object.
      */
-    public Object clone() {
+    @Override
+	public Object clone() {
         NetStats theClone = new NetStats();
         System.arraycopy(stats, 0, theClone.stats, 0, 16);
 
@@ -56,7 +57,8 @@ public class NetStats implements Cloneable {
     /**
      * To String
      */
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuilder builder = new StringBuilder();
 
         for (Stat s : Stat.values()) {

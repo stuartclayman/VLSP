@@ -17,7 +17,7 @@ import usr.net.SocketAddress;
  * This class gets data from a queue and
  * sends it to a USR socket.
  */
-public class USRForwarder implements Callable {
+public class USRForwarder implements Callable <Object>{
     usr.net.DatagramSocket outSocket;
     SocketAddress usrAddr;
     LinkedBlockingDeque<usr.net.Datagram> queue;
@@ -40,7 +40,7 @@ public class USRForwarder implements Callable {
     long startTime = 0;
     long lastTime = 0;
 
-    // verbose 
+    // verbose
     int verbose = 0;
 
     // Latch for end synchronization
@@ -77,7 +77,8 @@ public class USRForwarder implements Callable {
                     // volume per second
                     long volumePerSecond = 0;
 
-                    public void run() {
+                    @Override
+					public void run() {
                         if (running) {
                             packetsPerSecond = count - lastTimeCount;
                             volumePerSecond = volume - lastTimeVolume;
@@ -97,7 +98,8 @@ public class USRForwarder implements Callable {
                         }
                     }
 
-                    public boolean cancel() {
+                    @Override
+					public boolean cancel() {
                         //Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
 
                         if (running) {
@@ -108,7 +110,8 @@ public class USRForwarder implements Callable {
                         return running;
                     }
 
-                    public long scheduledExecutionTime() {
+                    @Override
+					public long scheduledExecutionTime() {
                         //Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
                         return 0;
                     }
@@ -130,7 +133,8 @@ public class USRForwarder implements Callable {
     }
 
 
-    public Object call() {
+    @Override
+	public Object call() {
         Datagram inDatagram = null;
         Datagram outDatagram = null;
 
@@ -138,7 +142,7 @@ public class USRForwarder implements Callable {
             // get dst address and port
             Address dstAddr = usrAddr.getAddress();
             int dstPort = usrAddr.getPort();
-                
+
 
             while (running) {
                 // read a USR packet
@@ -167,8 +171,7 @@ public class USRForwarder implements Callable {
                 }
 
                 outDatagram = inDatagram;
-                int outDataLength = outDatagram.getLength();
-                //System.err.println("USRForwarder OUT " + count + " recv: " +  outDataLength + " volume: " + volume + " at " + System.currentTimeMillis());
+                outDatagram.getLength();
 
                 // set the dst address and port
                 // the src addr and port will be set in send()
@@ -180,7 +183,7 @@ public class USRForwarder implements Callable {
 
                     /*
                      * Inter Packet Delay not supported
-                    // Inter Packet Delay 
+                    // Inter Packet Delay
                     if (interPacketDelay > 0) {
                         Thread.sleep(interPacketDelay);
                     }
@@ -194,7 +197,7 @@ public class USRForwarder implements Callable {
                     }
                 }
 
-                long t2 = System.currentTimeMillis();
+                System.currentTimeMillis();
 
             }
 

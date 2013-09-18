@@ -85,7 +85,6 @@ public class LifeEstimateTest {
         //System.err.println("UpperGamma (0.5,0.0) "+MathFunctions.incompleteUpperGamma(0.5,0.0));
         noTests = Integer.parseInt(args[1]);
         int [] lifeSpans = new int[noTests];
-        double tot = 0;
         int maxL = 0;
 
         for (i = 0; i < noTests; i++) {
@@ -105,26 +104,15 @@ public class LifeEstimateTest {
         // System.err.println("MaxL="+maxL+" end time "+endTime);
         int lifeStep = endTime/noTests;
         int time = 0;
-        int alive = 0;
-        int outlast = 0;
-        int deaths = 0;
-
         for (i = 0; i < noTests; i++) {
             e.newNode(time, i);
 
             if (lifeSpans[i] > endTime) {
-                outlast += 1;
             }
 
             if (time + lifeSpans[i] < endTime) {
                 e.nodeDeath(time + lifeSpans[i], i);
-                //  System.err.println("Death at time "+time+" life span "+lifeSpans[i]+
-                //    " end Time "+endTime);
-                deaths++;
             } else {
-                //   System.err.println("Node born at time "+time+" life span "+lifeSpans[i]+
-                //   " outlasts end Time "+endTime);
-                alive += 1;
             }
             time += lifeStep;
         }
@@ -144,7 +132,7 @@ public class LifeEstimateTest {
             int x = (int)dx;
             double actual;
             try {
-                actual = (1000.0*dist.getCondExp((double)x/1000.0));
+                actual = (1000.0*dist.getCondExp(x/1000.0));
             } catch (Exception exe) {
                 System.err.println("getCondExp threw error");
                 actual = 0.0;

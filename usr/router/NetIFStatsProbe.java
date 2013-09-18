@@ -90,7 +90,8 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
     /**
      * Collect a measurement.
      */
-    public ProbeMeasurement collect() {
+    @Override
+	public ProbeMeasurement collect() {
         //System.out.println("NetIFStats: collect()");
 
         try {

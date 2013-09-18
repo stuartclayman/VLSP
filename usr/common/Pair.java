@@ -10,11 +10,13 @@ public class Pair<A extends Comparable<A>, B extends Comparable<B>> implements C
         this.second = second;
     }
 
-     public int compareTo(Pair<A, B> other) {
+     @Override
+	public int compareTo(Pair<A, B> other) {
          return 0;
      }
 
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         int hashFirst = first != null ? first.hashCode() : 0;
         int hashSecond = second != null ? second.hashCode() : 0;
 
@@ -27,9 +29,10 @@ public class Pair<A extends Comparable<A>, B extends Comparable<B>> implements C
 
     }
 
-    public boolean equals(Object other) {
+    @Override
+	public boolean equals(Object other) {
         if (other instanceof Pair) {
-            Pair otherPair = (Pair)other;
+            Pair<?, ?> otherPair = (Pair <?,?>)other;
             return
                 ((  this.first == otherPair.first ||
                     ( this.first != null && otherPair.first != null &&
@@ -42,7 +45,8 @@ public class Pair<A extends Comparable<A>, B extends Comparable<B>> implements C
         return false;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "(" + first + ", " + second + ")";
     }
 

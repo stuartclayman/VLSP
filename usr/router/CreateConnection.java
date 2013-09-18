@@ -86,8 +86,10 @@ public class CreateConnection {
 
         try {
             portNumber = sc.nextInt();
+            sc.close();
         } catch (Exception e) {
             respondError("CREATE_CONNECTION invalid port " + ipParts[1]);
+            sc.close();
             return false;
         }
 
@@ -100,8 +102,10 @@ public class CreateConnection {
 
             try {
                 weight = sc.nextInt();
+                sc.close();
             } catch (Exception e) {
                 respondError("CREATE_CONNECTION invalid weight " + parts[2]);
+                sc.close();
                 return false;
             }
         } else {
@@ -120,7 +124,7 @@ public class CreateConnection {
         /*
          * Connect to management port of remote router.
          */
-
+        sc.close();
         // Create a RouterInteractor to the remote Router
         RouterInteractor interactor = null;
         String routerResponse;
@@ -161,7 +165,7 @@ public class CreateConnection {
 
         // now get connection port
         int connectionPort = scanner.nextInt();
-
+        scanner.close();
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "createConnection: connectionPort at " + host + " is " +
                                       connectionPort);
 

@@ -25,6 +25,7 @@ public PipeProcess(Process proc){
 /**
  * Print out some input.
  */
+@Override
 public void print(String label, String line){
     // could check if label is 'stderr' or 'stdout'
     // and do different things
@@ -43,6 +44,7 @@ public void print(String label, String line){
  * Converts builder to Strng
  * Or set null, if error
  */
+@Override
 public void eof(){
     System.err.println("PipeProcess: EOF");
     if (error)
@@ -54,6 +56,7 @@ public void eof(){
 /**
  * There has been an IO error
  */
+@Override
 public void ioerror(String label, IOException ioe){
     System.err.println(
         "PipeProcess: " + label + " Got IOException " + ioe);
@@ -94,6 +97,7 @@ public String getData(){
 /**
  * Stop the process wrapper.
  */
+@Override
 public void stop(){
     try {
         super.stop();
@@ -104,6 +108,7 @@ public void stop(){
     }
 }
 
+@Override
 protected void destroy(){
 }
 }
