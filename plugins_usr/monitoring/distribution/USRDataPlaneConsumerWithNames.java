@@ -6,7 +6,6 @@
 package plugins_usr.monitoring.distribution;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInput;
 import java.io.IOException;
 
 import usr.net.SocketAddress;
@@ -54,7 +53,7 @@ TypeException {
     //System.out.println("DC: Received " + metaData);
 
     try {
-        DataInput dataIn = new XDRDataInputStream(bis);
+    	XDRDataInputStream dataIn = new XDRDataInputStream(bis);
 
         //System.err.println("DC: datainputstream available = " +
         // dataIn.available());
@@ -71,6 +70,7 @@ TypeException {
 
         // delegate read to right object
         if (mType == null) {
+        	dataIn.close();
             //System.err.println("type = " + type);
             return;
         }

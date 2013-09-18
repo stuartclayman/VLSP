@@ -27,6 +27,7 @@ public class GetRouterAddressCommand extends RouterCommand {
     /**
      * Evaluate the Command.
      */
+	@Override
 	public boolean evaluate(Request request, Response response) {
         try {
             PrintStream out = response.getPrintStream();
