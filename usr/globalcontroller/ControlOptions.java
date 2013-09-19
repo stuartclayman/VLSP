@@ -38,7 +38,6 @@ import usr.engine.TestEventEngine;
 import usr.events.EventScheduler;
 import usr.events.OutputEvent;
 import usr.events.QueryAPEvent;
-import usr.events.StartSimulationEvent;
 import usr.globalcontroller.visualization.Visualization;
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.Logger;
