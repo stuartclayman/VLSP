@@ -45,7 +45,7 @@ public class Router {
      * connections.
      * @param port the port for the management console
      */
-    public Router(int port) {
+    Router(int port) {
         String name = "Router-" + port + "-" + (port+1);
 
         initRouter(port, port+1, name);
@@ -58,7 +58,7 @@ public class Router {
      * @param port the port for the management console
      * @param name the name of the router
      */
-    public Router(int port, String name) {
+    Router(int port, String name) {
         initRouter(port, port+1, name);
     }
 
@@ -69,7 +69,7 @@ public class Router {
      * @param mPort the port for the management console
      * @param r2rPort the port for Router to Router connections
      */
-    public Router(int mPort, int r2rPort) {
+    Router(int mPort, int r2rPort) {
         String name = "Router-" + mPort + "-" + r2rPort;
 
         initRouter(mPort, r2rPort, name);
@@ -83,7 +83,7 @@ public class Router {
      * @param r2rPort the port for Router to Router connections
      * @param name the name of the router
      */
-    public Router(int mPort, int r2rPort, String name ) {
+    Router(int mPort, int r2rPort, String name ) {
         initRouter(mPort, r2rPort, name);
     }
 
@@ -96,7 +96,7 @@ public class Router {
      * @param name the name of the router
      * @param address the Address of the Router
      */
-    public Router(int mPort, int r2rPort, String name, Address address) {
+    Router(int mPort, int r2rPort, String name, Address address) {
         initRouter(mPort, r2rPort, name);
 
         setAddress(address);
@@ -146,7 +146,7 @@ public class Router {
     /**
      * Start the router
      */
-    public boolean start() {
+    boolean start() {
         if (!isActive) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
@@ -178,7 +178,7 @@ public class Router {
     /**
      * Stop the router --- called from internal threads such as management console
      */
-    public boolean stop() {
+    boolean stop() {
         if (isActive) {
             isActive = false;
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
@@ -513,12 +513,14 @@ public class Router {
     public static void main(String[] argss) {
         final String[] args = argss;
 
+        RouterEnv router = null;
+
         if (args.length == 1) {
             int mPort = 0;
             Scanner sc = new Scanner(args[0]);
             mPort = sc.nextInt();
             sc.close();
-            new RouterEnv(mPort, "Router-" + mPort + "-" + (mPort+1));
+            router = new RouterEnv(mPort, "Router-" + mPort + "-" + (mPort+1));
         } else if (args.length == 2) {
             int mPort = 0;
             int r2rPort = 0;
@@ -528,7 +530,7 @@ public class Router {
             sc = new Scanner(args[1]);
             r2rPort = sc.nextInt();
             sc.close();
-            new RouterEnv(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
+            router = new RouterEnv(mPort, r2rPort, "Router-" + mPort + "-" + r2rPort);
         } else if (args.length == 3) {
             int mPort = 0;
             int r2rPort = 0;
@@ -546,9 +548,9 @@ public class Router {
             }
 
             if (addr == null) {
-                new RouterEnv(mPort, r2rPort, name);
+                router = new RouterEnv(mPort, r2rPort, name);
             } else {
-                new RouterEnv(mPort, r2rPort, name, addr);
+                router = new RouterEnv(mPort, r2rPort, name, addr);
             }
         } else if (args.length == 4) {
             int mPort = 0;
@@ -568,7 +570,7 @@ public class Router {
                 help();
             }
 
-            new RouterEnv(mPort, r2rPort, name, addr);
+            router = new RouterEnv(mPort, r2rPort, name, addr);
         } else {
             help();
         }

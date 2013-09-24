@@ -1,9 +1,10 @@
 package usr.net;
 
+import usr.logging.*;
+import java.util.ArrayList;
 import java.lang.reflect.Constructor;
-
-import usr.logging.Logger;
-import usr.logging.USR;
+import usr.router.Router;
+import usr.router.RouterDirectory;
 
 /**
  * The AddressFactory will create a new Address object based on
@@ -132,5 +133,20 @@ public class AddressFactory {
             throw new Error("AddressFactory: config error in AddressFactory.  Cannot configure class data for: " + className);
         }
     }
+
+
+    /**
+     * Get address of current router
+     */
+    public static Address getAddress() {
+        Router r = usr.router.RouterDirectory.getRouter();
+
+        if (r == null) {
+            return null;
+        } else {
+            return r.getAddress();
+        }
+    }
+
 
 }

@@ -1,11 +1,12 @@
 package usr.test;
 
-import usr.interactor.RouterInteractor;
-import usr.logging.Logger;
-import usr.logging.USR;
-import usr.net.AddressFactory;
-import usr.net.IPV4Address;
 import usr.router.Router;
+import usr.router.RouterEnv;
+import usr.interactor.RouterInteractor;
+import usr.logging.*;
+import usr.net.*;
+import java.util.Scanner;
+import java.io.IOException;
 
 /**
  * Test Router startup and simple AppSocket.
@@ -14,6 +15,8 @@ public class MultiRouter1C1S {
     // the Routers
     Router router1 = null;
     Router router2 = null;
+    RouterEnv router1Env = null;
+    RouterEnv router2Env = null;
     RouterInteractor router1Interactor = null;
     RouterInteractor router2Interactor = null;
 
@@ -30,30 +33,32 @@ public class MultiRouter1C1S {
     void setup() {
         try {
             // Router 1
-            router1 = new Router(18181, 19181, "Router-1");
+            router1Env = new RouterEnv(18181, 19181, "Router-1");
+            router1 = router1Env.getRouter();
 
-            if (router1.start()) {
+            if (router1Env.isActive()) {
                 // set up address
                 router1.setAddress(new IPV4Address("192.168.7.1"));
 
                 // talk to router1 ManagementConsole
-                router1Interactor = new RouterInteractor("localhost", 18181);
+                router1Interactor = router1Env.getRouterInteractor();
             } else {
-                router1.stop();
+                router1Env.stop();
                 throw new Exception("router1 will not start");
             }
 
             // Router 2
-            router2 = new Router(18182, 19182, "Router-2");
+            router2Env = new RouterEnv(18182, 19182, "Router-2");
+            router2 = router2Env.getRouter();
 
-            if (router2.start()) {
+            if (router2Env.isActive()) {
                 // set up address
                 router2.setAddress(new IPV4Address("192.168.7.2"));
 
                 // talk to router2 ManagementConsole
-                router2Interactor = new RouterInteractor("localhost", 18182);
+                router2Interactor =  router2Env.getRouterInteractor();
             } else {
-                router2.stop();
+                router2Env.stop();
                 throw new Exception("router2 will not start");
             }
 

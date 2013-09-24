@@ -1,11 +1,12 @@
 package usr.net;
 
-import java.net.NoRouteToHostException;
-import java.net.SocketException;
-
 import usr.router.AppSocket;
+import usr.logging.*;
 import usr.router.Router;
 import usr.router.RouterDirectory;
+import java.net.SocketException;
+import usr.net.SocketTimeoutException;
+import java.net.NoRouteToHostException;
 
 /**
  * A DatagramSocket looks similar to a Java DatagramSocket.
@@ -159,7 +160,7 @@ public class DatagramSocket {
      * the sender's  address, and the port number on the sender's machine.
      * This method blocks until a datagram is received.
      */
-    public Datagram receive() throws SocketException {
+    public Datagram receive() throws SocketException, SocketTimeoutException {
         return socketImpl.receive();
     }
 
@@ -179,10 +180,33 @@ public class DatagramSocket {
     }
 
     /**
+     * Retrive setting for SO_TIMEOUT. 0 returns implies that the option is disabled 
+     * (i.e., timeout of infinity).
+     */
+    public int getSoTimeout() throws SocketException {
+        return socketImpl.getSoTimeout();
+    }
+
+    /**
+     * Enable/disable SO_TIMEOUT with the specified timeout, in
+     * milliseconds. With this option set to a non-zero timeout, a call to
+     * receive() for this DatagramSocket will block for only this amount of
+     * time. If the timeout expires, a java.net.SocketTimeoutException is
+     * raised, though the DatagramSocket is still valid. The option must be
+     * enabled prior to entering the blocking operation to have effect. The
+     * timeout must be &gt; 0. A timeout of zero is interpreted as an infinite
+     * timeout.  
+     * Parameters: timeout - the specified timeout in milliseconds.
+     */
+    public void setSoTimeout(int timeout) throws SocketException {
+        socketImpl.setSoTimeout(timeout);
+    }
+
+
+    /**
      * toString.
      */
-    @Override
-	public String toString() {
+    public String toString() {
         return socketImpl.toString();
     }
 

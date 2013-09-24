@@ -1,24 +1,20 @@
 package usr.test;
 
-import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.Scanner;
-
-import usr.interactor.RouterInteractor;
-import usr.logging.Logger;
-import usr.logging.USR;
-import usr.net.AddressFactory;
-import usr.net.Datagram;
-import usr.net.DatagramFactory;
-import usr.net.DatagramSocket;
-import usr.net.IPV4Address;
 import usr.router.Router;
+import usr.router.RouterEnv;
+import usr.logging.*;
+import usr.net.*;
+import usr.interactor.RouterInteractor;
+import java.util.Scanner;
+import java.nio.ByteBuffer;
+import java.net.SocketException;
 
 /**
  * Test Router startup and simple AppSocket.
  */
 public class RouterApp1C {
     // the router
+    RouterEnv routerEnv = null;
     Router router = null;
 
     // the socket
@@ -34,10 +30,11 @@ public class RouterApp1C {
             int port = 18181;
             int r2r = 18182;
 
-            router = new Router(port, r2r, "Router-1");
+            routerEnv = new RouterEnv(port, r2r, "Router-1");
+            router = routerEnv.getRouter();
 
             // start
-            if (router.start()) {
+            if (routerEnv.isActive()) {
 
                 // set up id
                 router.setAddress(new IPV4Address("192.168.7.1"));  // WAS new GIDAddress(1));
@@ -59,7 +56,7 @@ public class RouterApp1C {
                 socket.connect(  new IPV4Address("192.168.7.2") /* new GIDAddress(2)  */, 3000);
 
             } else {
-                router.stop();
+                routerEnv.stop();
             }
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "RouterApp1C exception: " + e);
@@ -109,7 +106,7 @@ public class RouterApp1C {
     }
 
     void end() {
-        router.stop();
+        routerEnv.stop();
     }
 
     public static void main(String[] args) {
@@ -121,7 +118,6 @@ public class RouterApp1C {
             Scanner scanner = new Scanner(args[0]);
 
             count = scanner.nextInt();
-            scanner.close();
         } else if (args.length == 2) {
             host = args[0];
 
@@ -129,7 +125,6 @@ public class RouterApp1C {
             Scanner scanner = new Scanner(args[1]);
 
             count = scanner.nextInt();
-            scanner.close();
         }
 
 

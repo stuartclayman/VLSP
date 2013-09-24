@@ -1,14 +1,17 @@
 package usr.test;
 
-import java.net.SocketException;
+import usr.router.Router;
+import usr.router.RouterEnv;
+import usr.logging.*;
+import usr.router.AppSocket;
+import usr.net.GIDAddress;
+import usr.net.IPV4Address;
+import usr.net.Datagram;
+import usr.net.GIDDatagram;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import usr.logging.Logger;
-import usr.logging.USR;
-import usr.net.IPV4Address;
-import usr.router.AppSocket;
-import usr.router.Router;
+import java.net.SocketException;
 
 /**
  * Test Router startup and simple AppSocket.
@@ -16,6 +19,7 @@ import usr.router.Router;
 public class RouterApp1SD {
     // the Router
     Router router = null;
+    RouterEnv routerEnv = null;
 
     // the socket
     AppSocket socket;
@@ -36,12 +40,12 @@ public class RouterApp1SD {
             int port = 18191;
             int r2r = 18192;
 
-            router = new Router(port, r2r, "Router-2");
+            routerEnv = new RouterEnv(port, r2r, "Router-2");
+            router = routerEnv.getRouter();
 
-            // start
-            if (router.start()) {
+            // check
+            if (routerEnv.isActive()) {
             } else {
-                router.stop();
             }
 
             // set ID
@@ -54,8 +58,7 @@ public class RouterApp1SD {
             timerTask = new TimerTask() {
                 boolean running = true;
 
-                @Override
-				public void run() {
+                public void run() {
                     if (running) {
                         diffs = count - lastTimeCount;
                         Logger.getLogger("log").logln(USR.STDOUT, "Task count: " + count + " diff: "  + diffs);
@@ -63,8 +66,7 @@ public class RouterApp1SD {
                     }
                 }
 
-                @Override
-				public boolean cancel() {
+                public boolean cancel() {
                     Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
 
                     if (running) {
@@ -75,8 +77,7 @@ public class RouterApp1SD {
                     return running;
                 }
 
-                @Override
-				public long scheduledExecutionTime() {
+                public long scheduledExecutionTime() {
                     Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
                     return 0;
                 }
@@ -103,8 +104,10 @@ public class RouterApp1SD {
      * Read stuff
      */
     void readALot() {
+        Datagram datagram;
+
         try {
-            while ((socket.receive()) != null) {
+            while ((datagram = socket.receive()) != null) {
                 count++;
             }
         } catch (SocketException se) {

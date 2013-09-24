@@ -1,5 +1,7 @@
 package usr.net;
 
+import usr.net.Address;
+import usr.logging.*;
 
 /**
  * A Datagram.
@@ -102,6 +104,11 @@ public interface Datagram {
      * Get payload
      */
     public byte[] getPayload();
+
+    /**
+     * Get payload
+     */
+    public byte[] getData();
 
     /**
      * Get the checksum

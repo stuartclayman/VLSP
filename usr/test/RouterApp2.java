@@ -1,16 +1,15 @@
 package usr.test;
 
-import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.Scanner;
-
-import usr.logging.Logger;
-import usr.logging.USR;
-import usr.net.Datagram;
-import usr.net.DatagramFactory;
-import usr.net.GIDAddress;
-import usr.router.AppSocket;
 import usr.router.Router;
+import usr.router.RouterEnv;
+import usr.logging.*;
+import usr.router.AppSocket;
+import usr.net.*;
+import usr.interactor.RouterInteractor;
+import usr.protocol.Protocol;
+import java.util.Scanner;
+import java.nio.ByteBuffer;
+import java.net.SocketException;
 
 /**
  * Test Router startup and simple AppSocket.
@@ -18,6 +17,7 @@ import usr.router.Router;
 public class RouterApp2 {
     // the router
     Router router = null;
+    RouterEnv routerEnv = null;
 
     // the recv socket
     AppSocket recvSocket;
@@ -33,12 +33,12 @@ public class RouterApp2 {
             int port = 18181;
             int r2r = 18182;
 
-            router = new Router(port, r2r, "Router-1");
+            routerEnv = new RouterEnv(port, r2r, "Router-1");
+            router = routerEnv.getRouter();
 
-            // start
-            if (router.start()) {
+            // check
+            if (routerEnv.isActive()) {
             } else {
-                router.stop();
             }
 
             // set up id
@@ -84,7 +84,7 @@ public class RouterApp2 {
     }
 
     void end() {
-        router.stop();
+        routerEnv.stop();
     }
 
     public static void main(String[] args) {
@@ -95,7 +95,6 @@ public class RouterApp2 {
             Scanner scanner = new Scanner(args[0]);
 
             count = scanner.nextInt();
-            scanner.close();
         }
 
 

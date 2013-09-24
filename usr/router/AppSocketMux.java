@@ -357,12 +357,6 @@ public class AppSocketMux implements NetIF {
     @Override
 	public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
         if (running == true) {
-            // set the source address and port on the Datagram
-            // SC 20130619 removed following - now in TCPNetIF
-            //dg.setSrcAddress(controller.getAddress());
-            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "set Datagram src Address to " + getAddress());
-
-            dg.setSrcAddress(getAddress());
             return enqueueDatagram(dg);
         } else {
             return false;
@@ -401,7 +395,7 @@ public class AppSocketMux implements NetIF {
 
         if (socket == null) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() +
-                                          "Can't deliver to port " + dstPort + " from " + datagram.getSrcAddress() + "/" +
+                                          "Can't deliver to local port " + dstPort + " from " + datagram.getSrcAddress() + "/" +
                                           datagram.getSrcPort());
             return true;  // Returns true as packet is dropped not blocked
         }

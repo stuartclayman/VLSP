@@ -115,7 +115,6 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      */
     @Override
 	public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
-        dg.setSrcAddress(address_);
         return enqueueDatagram(dg);
     }
 

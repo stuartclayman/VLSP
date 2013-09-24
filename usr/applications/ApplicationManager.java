@@ -195,9 +195,10 @@ public class ApplicationManager {
             return new ApplicationResponse(false, "IllegalAccessException " + iae);
 
         } catch (InvocationTargetException ite) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "InvocationTargetException " + ite);
-            return new ApplicationResponse(false, "InvocationTargetException " + ite);
+            Throwable t = ite.getCause();
 
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "InvocationTargetException -> Throwable " + t);
+            return new ApplicationResponse(false, "InvocationTargetException for " + t);
         }
 
     }

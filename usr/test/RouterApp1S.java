@@ -1,14 +1,11 @@
 package usr.test;
 
-import java.net.SocketException;
-
-import usr.logging.Logger;
-import usr.logging.USR;
-import usr.net.AddressFactory;
-import usr.net.Datagram;
-import usr.net.DatagramSocket;
-import usr.net.IPV4Address;
 import usr.router.Router;
+import usr.router.RouterEnv;
+import usr.logging.*;
+import usr.net.*;
+import java.util.Scanner;
+import java.net.SocketException;
 
 /**
  * Test Router startup and simple AppSocket.
@@ -16,6 +13,7 @@ import usr.router.Router;
 public class RouterApp1S {
     // the Router
     Router router = null;
+    RouterEnv routerEnv = null;
 
     // the socket
     DatagramSocket socket;
@@ -29,10 +27,11 @@ public class RouterApp1S {
             int port = 18191;
             int r2r = 18192;
 
-            router = new Router(port, r2r, "Router-2");
+            routerEnv = new RouterEnv(port, r2r, "Router-2");
+            router = routerEnv.getRouter();
 
-            // start
-            if (router.start()) {
+            // check
+            if (routerEnv.isActive()) {
                 // set ID
                 router.setAddress(new IPV4Address("192.168.7.2")); // WAS new GIDAddress(2));
 
@@ -40,7 +39,7 @@ public class RouterApp1S {
                 socket = new DatagramSocket(3000);
 
             } else {
-                router.stop();
+                routerEnv.stop();
             }
 
         } catch (Exception e) {

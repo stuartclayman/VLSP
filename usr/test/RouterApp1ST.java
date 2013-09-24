@@ -1,11 +1,14 @@
 package usr.test;
 
-import usr.logging.Logger;
-import usr.logging.USR;
-import usr.net.Datagram;
-import usr.net.IPV4Address;
-import usr.router.AppSocket;
 import usr.router.Router;
+import usr.router.RouterEnv;
+import usr.logging.*;
+import usr.router.AppSocket;
+import usr.net.GIDAddress;
+import usr.net.IPV4Address;
+import usr.net.Datagram;
+import usr.net.GIDDatagram;
+import java.util.Scanner;
 
 /**
  * Test Router startup and simple AppSocket.
@@ -14,21 +17,22 @@ import usr.router.Router;
 public class RouterApp1ST {
     // the Router
     Router router = null;
+    RouterEnv routerEnv = null;
 
     public RouterApp1ST() {
         try {
             int port = 18191;
             int r2r = 18192;
 
-            router = new Router(port, r2r, "Router-2");
+            routerEnv = new RouterEnv(port, r2r, "Router-2");
+            router = routerEnv.getRouter();
 
             // set ID
             router.setAddress(new IPV4Address("192.168.7.2")); // WAS new GIDAddress(2));
 
-            // start
-            if (router.start()) {
+            // check
+            if (routerEnv.isActive()) {
             } else {
-                router.stop();
             }
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "RouterApp1S exception: " + e);
@@ -63,8 +67,7 @@ class App1S extends Thread {
         router = r;
     }
 
-    @Override
-	public void run() {
+    public void run() {
         try {
             // now set up an AppSocket to receive
             // the socket

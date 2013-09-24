@@ -109,9 +109,9 @@ public class TCPNetIF implements NetIF, Runnable {
     }
 
     /** Run method loops and grabs input from connection to queue in
-       fabricDevice */
+        fabricDevice */
     @Override
-	public void run() {
+    public void run() {
         Datagram datagram = null;
         runWait_ = new Object();
 
@@ -156,7 +156,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Activate
      */
     @Override
-	public boolean connect() throws IOException {
+    public boolean connect() throws IOException {
         boolean conn = connection.connect();
 
         closed = false;
@@ -168,7 +168,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Get the name of this NetIF.
      */
     @Override
-	public String getName() {
+    public String getName() {
         return name;
     }
 
@@ -176,7 +176,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the name of this NetIF.
      */
     @Override
-	public void setName(String n) {
+    public void setName(String n) {
         name = n;
 
         if (fabricDevice_ != null) {
@@ -192,7 +192,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Get the weight of this NetIF.
      */
     @Override
-	public int getWeight() {
+    public int getWeight() {
         return weight;
     }
 
@@ -200,7 +200,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the weight of this NetIF.
      */
     @Override
-	public void setWeight(int w) {
+    public void setWeight(int w) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + " TCPNetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
         weight = w;
     }
@@ -209,7 +209,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Get the ID of this NetIF.
      */
     @Override
-	public int getID() {
+    public int getID() {
         return id;
     }
 
@@ -217,7 +217,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the ID of this NetIF.
      */
     @Override
-	public void setID(int id) {
+    public void setID(int id) {
         this.id = id;
     }
 
@@ -225,7 +225,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Get the Address for this connection.
      */
     @Override
-	public Address getAddress() {
+    public Address getAddress() {
         return address; // WAS connection.getAddress();
     }
 
@@ -233,7 +233,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the Address for this connection.
      */
     @Override
-	public void setAddress(Address addr) {
+    public void setAddress(Address addr) {
         address = addr;
         connection.setAddress(addr);
     }
@@ -242,7 +242,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Get the name of the remote router this NetIF is connected to.
      */
     @Override
-	public String getRemoteRouterName() {
+    public String getRemoteRouterName() {
         return remoteRouterName;
     }
 
@@ -250,7 +250,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the name of the remote router this NetIF is connected to.
      */
     @Override
-	public void setRemoteRouterName(String name) {
+    public void setRemoteRouterName(String name) {
         remoteRouterName = name;
 
     }
@@ -259,7 +259,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Get the Address  of the remote router this NetIF is connected to
      */
     @Override
-	public Address getRemoteRouterAddress() {
+    public Address getRemoteRouterAddress() {
         return remoteRouterAddress;
     }
 
@@ -267,7 +267,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the Address  of the remote router this NetIF is connected to.
      */
     @Override
-	public void setRemoteRouterAddress(Address addr) {
+    public void setRemoteRouterAddress(Address addr) {
         remoteRouterAddress = addr;
     }
 
@@ -282,7 +282,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Get the Listener of this NetIF.
      */
     @Override
-	public NetIFListener getNetIFListener() {
+    public NetIFListener getNetIFListener() {
         return listener;
     }
 
@@ -290,7 +290,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the Listener of this NetIF.
      */
     @Override
-	public void setNetIFListener(NetIFListener l) {
+    public void setNetIFListener(NetIFListener l) {
         if (listener != null) {
             Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: already has a NetIFListener");
         } else {
@@ -306,7 +306,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Get the RouterPort a NetIF is plugIged into.
      */
     @Override
-	public RouterPort getRouterPort() {
+    public RouterPort getRouterPort() {
         return port;
     }
 
@@ -314,20 +314,17 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the RouterPort a NetIF is plugIged into.
      */
     @Override
-	public void setRouterPort(RouterPort rp) {
+    public void setRouterPort(RouterPort rp) {
         port = rp;
     }
 
     /**
      * Send a Datagram -- sets source to this interface and puts the datagram
-       on the incoming queue for this interface
-     */
+     on the incoming queue for this interface
+    */
     @Override
-	public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
+    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
         if (running_ == true) {
-            // set the source address and port on the Datagram
-            // SC 20130619 added following - was in AppSocketMux
-            dg.setSrcAddress(getAddress());
             return enqueueDatagram(dg);
         } else {
             return false;
@@ -338,16 +335,19 @@ public class TCPNetIF implements NetIF, Runnable {
      * Puts a datagram on the incoming queue for this network interface
      */
     @Override
-	public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
+    public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
         return fabricDevice_.blockingAddToInQueue(dg, this);
     }
 
     /** Finally send the datagram onwards */
     @Override
-	public boolean outQueueHandler(Datagram dg, DatagramDevice dd) {
+    public boolean outQueueHandler(Datagram dg, DatagramDevice dd) {
         boolean sent = false;
         try {
-            dg.setSrcAddress(getAddress());
+            if (dg.getSrcAddress() == null) {
+                dg.setSrcAddress(getAddress());
+            }
+
             sent = connection.sendDatagram(dg);
 
             //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " TCPNetIF " + name + " sent " + dg);
@@ -378,10 +378,10 @@ public class TCPNetIF implements NetIF, Runnable {
     }
 
     /** Close a netIF given remote end has called close -- this is done as a
-       spawned process since it would otherwise block out queues which might need
-       to be written to during close*/
+        spawned process since it would otherwise block out queues which might need
+        to be written to during close*/
     @Override
-	public void remoteClose() {
+    public void remoteClose() {
         if (closed) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when remoteClose() called");
             return;
@@ -401,7 +401,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * is closed -- synchronized on "closed" object to prevent lock ups with other sync objects
      */
     @Override
-	public void close() {
+    public void close() {
         synchronized (closed) { // prevent this running twice by blocking
             Logger.getLogger("log").logln(USR.STDOUT, leadin() +"  Close");
 
@@ -462,7 +462,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Is closed.
      */
     @Override
-	public boolean isClosed() {
+    public boolean isClosed() {
         return closed;
     }
 
@@ -495,13 +495,13 @@ public class TCPNetIF implements NetIF, Runnable {
      * Returns a NetStats object.
      */
     @Override
-	public NetStats getStats() {
+    public NetStats getStats() {
         return fabricDevice_.getNetStats();
     }
 
     /** Accessor function for the fabric device associated with this */
     @Override
-	public FabricDevice getFabricDevice() {
+    public FabricDevice getFabricDevice() {
         return fabricDevice_;
     }
 
@@ -509,20 +509,20 @@ public class TCPNetIF implements NetIF, Runnable {
      * To String
      */
     @Override
-	public String toString() {
+    public String toString() {
         Address address = getAddress();
         Address remoteAddress = getRemoteRouterAddress();
 
         String ifName = getRouterPort() == null ? ("No port") : ("if" + Integer.toString(getRouterPort().getPortNo()));
 
         return ifName + " W(" + getWeight() + ") = " +
-               (address == null ? "No_Address" : "" + address) + " => " +
-               //getRemoteRouterName() + " " +
-               (remoteAddress == null ? "No_Remote_Address" : "" + remoteAddress);
+            (address == null ? "No_Address" : "" + address) + " => " +
+            //getRemoteRouterName() + " " +
+            (remoteAddress == null ? "No_Remote_Address" : "" + remoteAddress);
     }
 
     @Override
-	public boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (obj instanceof NetIF) {
             NetIF b = (NetIF)obj;
             return getName().equals(b.getName());
@@ -533,7 +533,7 @@ public class TCPNetIF implements NetIF, Runnable {
     }
 
     @Override
-	public boolean isLocal() {
+    public boolean isLocal() {
         return local_;
     }
 
@@ -553,9 +553,9 @@ public class TCPNetIF implements NetIF, Runnable {
         }
 
         @Override
-		public void run() {
+        public void run() {
             // sclayman synchronized (closed) {
-                netif_.close();
+            netif_.close();
             //}
         }
 

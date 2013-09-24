@@ -276,7 +276,7 @@ class Size16Datagram implements Datagram, DatagramPatch {
      */
     @Override
 	public int getSrcPort() {
-        int p = fullDatagram.getShort(44);
+        int p = (int)fullDatagram.getShort(44);
 
         // convert signed to unsigned
         if (p < 0) {
@@ -301,7 +301,7 @@ class Size16Datagram implements Datagram, DatagramPatch {
      */
     @Override
 	public int getDstPort() {
-        int p = fullDatagram.getShort(46);
+        int p = (int)fullDatagram.getShort(46);
 
         // convert signed to unsigned
         if (p < 0) {
@@ -378,10 +378,18 @@ class Size16Datagram implements Datagram, DatagramPatch {
     }
 
     /**
+     * Get payload
+     */
+    @Override
+    public byte[] getData() {
+        return getPayload();
+    }
+
+    /**
      * Get the checksum
      */
     @Override
-	public byte[] getChecksum() {
+    public byte[] getChecksum() {
         int checksumLen = getChecksumLength();
         int totalLen = getTotalLength();
 
@@ -431,7 +439,7 @@ class Size16Datagram implements Datagram, DatagramPatch {
 
         // put flags
         byte flags = 0;
-        fullDatagram.put(7, flags);
+        fullDatagram.put(7, (byte)flags);
 
         // put ttl
         // start with default
@@ -439,7 +447,7 @@ class Size16Datagram implements Datagram, DatagramPatch {
 
         // protocol
         byte protocol = 0;
-        fullDatagram.put(9, protocol);
+        fullDatagram.put(9, (byte)protocol);
 
         // put src addr
         fullDatagram.position(10);

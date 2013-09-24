@@ -1,16 +1,15 @@
 package usr.router;
 
-import java.net.NoRouteToHostException;
-import java.net.SocketException;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import usr.logging.Logger;
-import usr.logging.USR;
 import usr.net.Address;
-import usr.net.ClosedByInterruptException;
-import usr.net.Datagram;
+import usr.logging.*;
 import usr.net.SocketAddress;
-
+import usr.net.Datagram;
+import java.net.SocketException;
+import usr.net.SocketTimeoutException;
+import java.net.NoRouteToHostException;
+import usr.net.ClosedByInterruptException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An AppSocket acts like a socket, and talks to the
@@ -47,6 +46,9 @@ public class AppSocket {
 
     // The queue to take from
     LinkedBlockingQueue<Datagram> queue;
+
+    // A timeout, if SO_TIMEOUT is set
+    int timeout = 0;
 
     /**
      * Constructs an AppSocket and binds it to any available port
@@ -260,14 +262,24 @@ public class AppSocket {
      *
      * TODO: check if this needs to be synchronized for multiple threads
      */
-    public Datagram receive() throws SocketException {
+    public Datagram receive() throws SocketException, SocketTimeoutException {
         if (isClosed) {
             throw new SocketException("Socket closed");
         }
 
         takeThread = Thread.currentThread();
         try {
-            return queue.take();
+            if (timeout == 0) {
+                return queue.take();
+            } else {
+                Datagram obj = queue.poll(timeout, TimeUnit.MILLISECONDS);
+
+                if (obj != null) {
+                    return obj;
+                } else {
+                    throw new SocketTimeoutException("timeout: " + timeout);
+                }
+            }
         } catch (InterruptedException ie) {
             if (isClosed) {
                 Logger.getLogger("log").logln(USR.STDOUT, "AppSocket: port " + localPort + " closed on shutdown");
@@ -310,6 +322,29 @@ public class AppSocket {
             }
 
         }
+    }
+
+    /**
+     * Retrive setting for SO_TIMEOUT. 0 returns implies that the option is disabled 
+     * (i.e., timeout of infinity).
+     */
+    public int getSoTimeout() throws SocketException {
+        return timeout;
+    }
+
+    /**
+     * Enable/disable SO_TIMEOUT with the specified timeout, in
+     * milliseconds. With this option set to a non-zero timeout, a call to
+     * receive() for this DatagramSocket will block for only this amount of
+     * time. If the timeout expires, a java.net.SocketTimeoutException is
+     * raised, though the DatagramSocket is still valid. The option must be
+     * enabled prior to entering the blocking operation to have effect. The
+     * timeout must be &gt; 0. A timeout of zero is interpreted as an infinite
+     * timeout.  
+     * Parameters: timeout - the specified timeout in milliseconds.
+     */
+    public void setSoTimeout(int timeout) throws SocketException {
+        this.timeout = timeout;
     }
 
     /**

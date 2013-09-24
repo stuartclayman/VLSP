@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
 import usr.interactor.RouterInteractor;
@@ -82,15 +83,6 @@ public class RouterEnv {
     }
 
     /**
-     * Start the router
-     */
-    /*
-       boolean start() {
-        return r.start();
-       }
-     */
-
-    /**
      * Stop the Router and end the Environment
      */
     public boolean stop() {
@@ -107,7 +99,7 @@ public class RouterEnv {
 
         // Execute the Starter
         ExecutorService executer = Executors.newSingleThreadExecutor(new SimpleThreadFactory(name));
-        executer.submit(starter);
+        Future future = executer.submit(starter);
 
         // Get a handle on the Router itself
         return getRouter();
