@@ -4,11 +4,7 @@ import usr.router.Router;
 import usr.router.RouterEnv;
 import usr.logging.*;
 import usr.router.AppSocket;
-import usr.net.GIDAddress;
 import usr.net.IPV4Address;
-import usr.net.Datagram;
-import usr.net.GIDDatagram;
-import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.net.SocketException;
@@ -104,10 +100,9 @@ public class RouterApp1SD {
      * Read stuff
      */
     void readALot() {
-        Datagram datagram;
 
         try {
-            while ((datagram = socket.receive()) != null) {
+            while (socket.receive() != null) {
                 count++;
             }
         } catch (SocketException se) {

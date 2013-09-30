@@ -5,8 +5,6 @@ import usr.router.RouterEnv;
 import usr.logging.*;
 import usr.router.AppSocket;
 import usr.net.*;
-import usr.interactor.RouterInteractor;
-import usr.protocol.Protocol;
 import java.util.Scanner;
 import java.nio.ByteBuffer;
 import java.net.SocketException;

@@ -4,11 +4,8 @@ import usr.router.Router;
 import usr.router.RouterEnv;
 import usr.logging.*;
 import usr.router.AppSocket;
-import usr.net.GIDAddress;
 import usr.net.IPV4Address;
 import usr.net.Datagram;
-import usr.net.GIDDatagram;
-import java.util.Scanner;
 
 /**
  * Test Router startup and simple AppSocket.

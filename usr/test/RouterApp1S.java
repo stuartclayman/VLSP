@@ -4,7 +4,6 @@ import usr.router.Router;
 import usr.router.RouterEnv;
 import usr.logging.*;
 import usr.net.*;
-import java.util.Scanner;
 import java.net.SocketException;
 
 /**

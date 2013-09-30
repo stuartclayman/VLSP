@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
 import usr.interactor.RouterInteractor;
@@ -99,7 +98,7 @@ public class RouterEnv {
 
         // Execute the Starter
         ExecutorService executer = Executors.newSingleThreadExecutor(new SimpleThreadFactory(name));
-        Future future = executer.submit(starter);
+        executer.submit(starter);
 
         // Get a handle on the Router itself
         return getRouter();
@@ -119,7 +118,7 @@ public class RouterEnv {
         Router router = starter.getRouter();
 
         RouterInteractor interactor;
-        
+
         try {
             interactor = new RouterInteractor("localhost", router.getManagementConsolePort());
             return interactor;
@@ -161,8 +160,8 @@ class Starter implements Runnable {
     Object flag = new Object();
     boolean running = false;
 
-    int port1; 
-    int port2; 
+    int port1;
+    int port2;
     String name;
     Router router;
 

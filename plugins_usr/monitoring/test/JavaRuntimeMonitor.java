@@ -5,11 +5,9 @@
 
 package plugins_usr.monitoring.test;
 
-import eu.reservoir.demo.JavaMemoryProbe;
 import eu.reservoir.demo.InfraProbe;
 import usr.router.Router;
 import usr.router.RouterEnv;
-import usr.net.SocketAddress;
 import usr.net.*;
 import usr.interactor.RouterInteractor;
 import plugins_usr.monitoring.distribution.USRDataPlaneProducerWithNames;
@@ -17,7 +15,6 @@ import eu.reservoir.monitoring.appl.BasicDataSource;
 import eu.reservoir.monitoring.core.DataSource;
 import eu.reservoir.monitoring.core.Probe;
 import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
-import java.net.InetAddress;
 import java.util.Scanner;
 
 /**
@@ -48,7 +45,8 @@ public class JavaRuntimeMonitor {
         ds.turnOnProbe(p);
     }
 
-    private void turnOffProbe(Probe p) {
+    @SuppressWarnings("unused")
+	private void turnOffProbe(Probe p) {
         ds.deactivateProbe(p);
         ds.removeProbe(p);
     }

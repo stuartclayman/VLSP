@@ -4,7 +4,12 @@ import java.net.SocketException;
 
 public class SocketTimeoutException extends SocketException {
 
-    public SocketTimeoutException() {
+    /**
+	 *
+	 */
+	private static final long serialVersionUID = 1929904056426428046L;
+
+	public SocketTimeoutException() {
         super();
     }
 

@@ -5,8 +5,6 @@ import usr.router.RouterEnv;
 import usr.interactor.RouterInteractor;
 import usr.logging.*;
 import usr.net.*;
-import java.util.Scanner;
-import java.io.IOException;
 
 /**
  * Test Router startup and simple AppSocket.

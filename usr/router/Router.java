@@ -513,7 +513,8 @@ public class Router {
     public static void main(String[] argss) {
         final String[] args = argss;
 
-        RouterEnv router = null;
+        @SuppressWarnings("unused")
+		RouterEnv router = null;
 
         if (args.length == 1) {
             int mPort = 0;

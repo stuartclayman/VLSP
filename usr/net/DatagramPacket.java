@@ -1,8 +1,5 @@
 package usr.net;
 
-import usr.logging.*;
-import java.util.ArrayList;
-
 
 public class DatagramPacket extends Size4Datagram {
     public DatagramPacket(byte[] payload) {
