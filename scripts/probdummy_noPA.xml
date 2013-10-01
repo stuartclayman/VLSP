@@ -1,4 +1,4 @@
-<ProbabilisticEngine>
+<ProbabilisticEventEngine>
       <NodeBirthDist>
             <ProbElement>
                  <Type>Exponential</Type>
@@ -32,4 +32,4 @@
       <Parameters>
           <PreferentialAttachment>false</PreferentialAttachment>
       </Parameters>
-</ProbabilisticEngine>
+</ProbabilisticEventEngine>

@@ -11,7 +11,7 @@ import usr.events.Event;
 import usr.globalcontroller.GlobalController;
 
 /** Class to output summary stats  */
-class OutputSummary implements OutputFunction {
+public class OutputSummary implements OutputFunction {
 
     @Override
 	public void makeOutput(long time, PrintStream s, OutputType o, GlobalController gc) {

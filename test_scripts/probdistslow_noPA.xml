@@ -1,4 +1,4 @@
-<ProbabilisticEngine>
+<ProbabilisticEventEngine>
       <NodeBirthDist>
             <ProbElement>
                  <Type>Exponential</Type>
@@ -33,4 +33,4 @@
             <Name>usr.engine.linkpicker.PreferentialLinkPicker
             </Name>
       </LinkPicker>
-</ProbabilisticEngine>
+</ProbabilisticEventEngine>

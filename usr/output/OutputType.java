@@ -64,15 +64,19 @@ public class OutputType {
                                            + " must be valid class name implementing OutputFunction");
         } catch (ClassNotFoundException e) {
             throw new java.lang.IllegalArgumentException("Class name " + t +
-                                                         " must be valid class name implementing OutputFunction");
-        } catch (NoSuchMethodException nsme) {
-            throw new java.lang.IllegalArgumentException("Cannot construct" + t);
+                                   " must be valid class name implementing OutputFunction");
+        } catch (NoSuchMethodException ie) {
+            throw new java.lang.IllegalArgumentException("Cannot construct -- No such method " +
+            		ie.getMessage() +" "+ t);
         } catch (InstantiationException ie) {
-            throw new java.lang.IllegalArgumentException("Cannot construct" + t);
+            throw new java.lang.IllegalArgumentException("Cannot construct -- Instantiation exception " +
+            		ie.getMessage() +" " + t);
         } catch (IllegalAccessException ie) {
-            throw new java.lang.IllegalArgumentException("Cannot construct" + t);
+            throw new java.lang.IllegalArgumentException("Cannot construct -- Illegal Argument " +
+            		ie.getMessage() +" "+ t);
         } catch (InvocationTargetException ie) {
-            throw new java.lang.IllegalArgumentException("Cannot construct" + t);
+            throw new java.lang.IllegalArgumentException("Cannot construct -- InvocationTargetException " +
+            		ie.getMessage() +" "+t);
         }
     }
 

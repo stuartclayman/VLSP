@@ -982,7 +982,7 @@ public class ControlOptions {
     }
 
     /** Accessor function for outputs requested from simulation*/
-    ArrayList<OutputType> getOutputs() {
+    public ArrayList<OutputType> getOutputs() {
         return outputs_;
     }
 

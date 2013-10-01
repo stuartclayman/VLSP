@@ -64,7 +64,7 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
                 break;
             }
 
-            
+
 
             long lag = System.currentTimeMillis() - expectedStart;
             Logger.getLogger("log").logln(USR.STDOUT,
@@ -83,8 +83,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
                 controller_.executeEvent(ev);
             } catch (InstantiationException ine) {
                 Logger.getLogger("log").logln(USR.ERROR,
-                                              "Unexpected error in scheduled operation: "
-                                              + ine.getMessage());
+                       "Unexpected error in scheduled operation: "
+                         + ine.getMessage() + "\nEvent: "+ ev.toString());
                 controller_.deactivate();
             } catch (InterruptedException ie) {
                 Logger.getLogger("log").logln(USR.ERROR,
@@ -203,7 +203,7 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
      */
     @Override
 	public void addEvent(Event e) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + 
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() +
             "Adding Event at time: " + e.getTime() + " Event " + e );
 
         long time = e.getTime();

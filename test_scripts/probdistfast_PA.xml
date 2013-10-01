@@ -1,4 +1,4 @@
-<ProbabilisticEngine>
+<ProbabilisticEventEngine>
       <NodeBirthDist>
             <ProbElement>
                  <Type>Exponential</Type>
@@ -35,4 +35,4 @@
             </Name>
       </LinkPicker>
 
-</ProbabilisticEngine>
+</ProbabilisticEventEngine>
