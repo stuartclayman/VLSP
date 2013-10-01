@@ -68,8 +68,8 @@ public class ProbabilisticEventEngine extends NullEventEngine {
     public ProbabilisticEventEngine(int time, String parms) throws
     EventEngineException {
         init(time);
-        Document doc = parseXMLHead(parms);
-        parseXMLMain(doc);
+        Document doc = parseXMLHead(parms,"ProbabilisticEventEngine");
+        parseXMLMain(doc,"ProbabilisticEventEngine");
     }
 
     /** Constructor used from subclasses where XML parse not required*/
@@ -281,7 +281,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
     }
 
     /** Parse the XML to get probability distribution information*/
-    protected Document parseXMLHead(String fName) throws
+    protected Document parseXMLHead(String fName, String basetag) throws
     EventEngineException {
         Document doc;
 
@@ -296,38 +296,38 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             doc.getDocumentElement().normalize();
             String basenode = doc.getDocumentElement().getNodeName();
 
-            if (!basenode.equals("ProbabilisticEngine")) {
+            if (!basenode.equals(basetag)) {
                 throw new
                       SAXException(
-                          "Base tag should be ProbabilisticEngine");
+                          "Base tag should be"+basetag);
             }
         } catch (java.io.FileNotFoundException e) {
             throw new EventEngineException(
-                      "Parsing ProbabilisticEventEngine: Cannot find file " +
+                      "Parsing "+basetag+": Cannot find file " +
                       fName);
         } catch (SAXParseException err) {
             throw new EventEngineException(
-                      "Parsing ProbabilisticEventEngine: error" + ", line "
+                      "Parsing "+basetag+": error" + ", line "
                       + err.getLineNumber() + ", uri " + err.getSystemId());
         } catch (SAXException e) {
             throw new EventEngineException(
-                      "Parsing ProbabilisticEventEngine: Exception in SAX XML parser"
+                      "Parsing "+basetag+": Exception in SAX XML parser"
                       + e.getMessage());
         } catch (Throwable t) {
             throw new EventEngineException(
-                      "Parsing ProbabilisticEventEngine: " + t.getMessage());
+                      "Parsing "+basetag+": " + t.getMessage());
         }
 
         return doc;
     }
 
-    protected void parseXMLMain(Document doc)
+    protected void parseXMLMain(Document doc, String basetag)
     throws EventEngineException {
         try {
             NodeList nbd = doc.getElementsByTagName("NodeBirthDist");
 
             if (nbd.getLength() != 1) {
-                throw new EventEngineException("ProbabilisticEventEngine "
+                throw new EventEngineException(basetag+" "
                                                + "XML must specify exactly one NodeBirthDist");
             }
 
@@ -351,12 +351,12 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             }
 
             ReadXMLUtils.removeNode(lcd.item(0).getParentNode(),
-                                    "LinkCreateDist", "ProbabilisticEngine");
+                                    "LinkCreateDist", basetag);
             NodeList ndd = doc.getElementsByTagName("NodeDeathDist");
             nodeDeathDist_ = ProbDistribution.parseProbDist(ndd,
                                                             "NodeDeathDist");
             ReadXMLUtils.removeNode(ndd.item(0).getParentNode(),
-                                    "NodeDeathDist", "ProbabilisticEngine");
+                                    "NodeDeathDist", basetag);
             NodeList ldd = doc.getElementsByTagName("LinkDeathDist");
             linkDeathDist_ = ProbDistribution.parseProbDist(ldd,
                                                             "LinkDeathDist");
@@ -366,7 +366,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
                 if (misc.getLength() > 1) {
                     throw new SAXException(
                               "Only one Parameters tag allowed in XML for "
-                              + "ProbabilisticEventEngine");
+                              + basetag);
                 }
 
                 if (misc.getLength() == 1) {
@@ -387,7 +387,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
                     Logger.getLogger("log").logln(USR.ERROR,
                                                   leadin() + "Parameters tag deprecated");
                     ReadXMLUtils.removeNode(miscnode.getParentNode(),
-                                            "Parameters", "ProabilisticEngine");
+                                            "Parameters", basetag);
                 }
             } catch (SAXException e) {
                 throw e;
@@ -395,15 +395,15 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             }
         } catch (SAXParseException err) {
             throw new EventEngineException(
-                      "Parsing ProbabilisticEventEngine: error" + ", line "
+                      "Parsing "+basetag+": error" + ", line "
                       + err.getLineNumber() + ", uri " + err.getSystemId());
         } catch (SAXException e) {
             throw new EventEngineException(
-                      "Parsing ProbabilisticEventEngine: Exception in SAX XML parser"
+                      "Parsing "+basetag+": Exception in SAX XML parser"
                       + e.getMessage());
         } catch (Throwable t) {
             throw new EventEngineException(
-                      "Parsing ProbabilisticEventEngine: " + t.getMessage());
+                      "Parsing "+basetag+": " + t.getMessage());
         }
 
         parseLinkPicker(doc);
@@ -417,7 +417,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             if (n.getNodeType() == Node.ELEMENT_NODE) {
                 throw new EventEngineException(
                           "Unrecognised tag constructing "
-                          + "ProbabilisticEventEngine " + n.getNodeName());
+                          +basetag+" " + n.getNodeName());
             }
         }
     }

@@ -5,7 +5,6 @@ package usr.engine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -36,17 +35,19 @@ ProbabilisticEventEngine {
     HashMap<Integer, Integer> routerMaxLinkCount_;
     HashMap<Integer, Integer> routerMinLinkCount_;
     ProbDistribution extraLinkDist_ = null;
-    HashMap<Integer, ArrayList<Integer> > pendingLinks_;
+    HashMap<Integer, ArrayList<Integer> > requestedLinks_; //Requested Links asked for but not yet Event
+    HashMap<Integer, ArrayList<Integer> > pendingLinks_; // Pending link Event in schedule
 
     public ProbabilisticMaxLinkEventEngine(int time, String parms)
     throws EventEngineException {
         super(time);
-        Document doc = parseXMLHead(parms);
+        Document doc = parseXMLHead(parms,"ProbabilisticMaxLinkEventEngine");
         parseXMLExtra(doc);
-        parseXMLMain(doc);
+        parseXMLMain(doc,"ProbabilisticEventEngine");
         routerMaxLinkCount_ = new HashMap<Integer, Integer>();
         routerMinLinkCount_ = new HashMap<Integer, Integer>();
         pendingLinks_ = new HashMap<Integer, ArrayList<Integer> >();
+        requestedLinks_ = new HashMap<Integer, ArrayList<Integer> >();
     }
 
     @Override
@@ -65,11 +66,12 @@ ProbabilisticEventEngine {
             StartRouterEvent sre = (StartRouterEvent)e;
             followRouter(sre, s, response, g);
         } else if (e instanceof StartLinkEvent) {
-            followEndLinkEvent((StartLinkEvent)e, g);
+            followStartLinkEvent((StartLinkEvent)e, g);
         }
     }
 
-    private void followEndLinkEvent(StartLinkEvent e, GlobalController g) {
+    /** After a start link event occurs then remove it from the schedule*/
+    private void followStartLinkEvent(StartLinkEvent e, GlobalController g) {
         try {
             int r1 = e.getRouter1(g);
             int r2 = e.getRouter2(g);
@@ -96,6 +98,8 @@ ProbabilisticEventEngine {
                 USR.ERROR, leadin()
                 + "Error getting address " + e);
         }
+        scheduleRequestedLinks(s, now);
+
     }
 
     private int followRouter(StartRouterEvent e, EventScheduler s, JSONObject response, GlobalController g) {
@@ -127,6 +131,7 @@ ProbabilisticEventEngine {
                 USR.ERROR, leadin()
                 + "Error getting address " + e);
         }
+        scheduleRequestedLinks(s,now);
     }
 
     private void checkRouter(int router, EventScheduler s, GlobalController g, long now) {
@@ -149,16 +154,15 @@ ProbabilisticEventEngine {
                 nodes.add(i);
             }
         }
-
+        // remove nodes already connected
         nodes.remove(nodes.indexOf(routerId));
         int [] outlinks = g.getOutLinks(routerId);
 
         for (Integer l : outlinks) {
             nodes.remove(nodes.indexOf(l));
         }
-
+        // remove links about to be connected to
         ArrayList<Integer> tmp = pendingLinks_.get(routerId);
-
         if (tmp != null) {
             for (int i : tmp) {
                 int t = nodes.indexOf(i);
@@ -169,19 +173,49 @@ ProbabilisticEventEngine {
             }
         }
 
+        // Pink links and schedule
         ArrayList<Integer> picked = linkPicker_.pickNLinks(nodes, g,
                                                            noLinks, routerId);
 
+
         for (int i : picked) {
-            StartLinkEvent e = new StartLinkEvent(now, this, i,
-                                                  routerId);
-            s.addEvent(e);
-            scheduleLink(routerId, i);
+            requestLink(routerId,i);
         }
 
         return picked.size();
     }
 
+    private void scheduleRequestedLinks(EventScheduler s, long now)
+    {
+    	Integer []links= (Integer [])requestedLinks_.keySet().toArray();
+    	for (Integer n1: links) {
+    		for (Integer n2: requestedLinks_.get(n1)) {
+    			makeRequest(n1,n2,s,now);
+    		}
+    	}
+    }
+
+    /** Add a link to the list of those requested -- needed but even tnot yet submitted*/
+    private void requestLink(int l1, int l2) {
+        ArrayList<Integer> tmp = requestedLinks_.get(l1);
+
+        if (tmp == null) {
+            tmp = new ArrayList<Integer>(1);
+            requestedLinks_.put(l1, tmp);
+        }
+
+        tmp.add(l2);
+        tmp = requestedLinks_.get(l2);
+
+        if (tmp == null) {
+            tmp = new ArrayList<Integer>(1);
+            requestedLinks_.put(l2, tmp);
+        }
+
+        tmp.add(l1);
+    }
+
+    /** add a link to the list of those scheduled -- that is event submitted*/
     private void scheduleLink(int l1, int l2) {
         ArrayList<Integer> tmp = pendingLinks_.get(l1);
 
@@ -200,6 +234,19 @@ ProbabilisticEventEngine {
 
         tmp.add(l1);
     }
+
+   /** Move a link from the requested list to the scheduled list */
+    private void makeRequest(int l1, int l2, EventScheduler s, long now) {
+    	StartLinkEvent sle= new StartLinkEvent(now,this,l1,l2);
+    	s.addEvent(sle);
+        ArrayList<Integer> tmp = requestedLinks_.get(l1);
+        tmp.remove(tmp.indexOf(l2));
+        tmp = requestedLinks_.get(l2);
+        tmp.remove(tmp.indexOf(l1));
+        scheduleLink(l1,l2);
+
+    }
+
 
     private void unscheduleLink(int l1, int l2) {
         ArrayList<Integer> tmp = pendingLinks_.get(l1);
