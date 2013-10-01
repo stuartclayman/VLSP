@@ -453,10 +453,6 @@ public class ControlOptions {
             }
 
             ReadXMLUtils.removeNode(gcn, "Monitoring", "GlobalController");
-        } else {
-            Logger.getLogger("log").logln(
-                USR.STDOUT, leadin() +
-                "No GlobalController Monitoring node");
         }
 
         // Check for other unparsed tags
