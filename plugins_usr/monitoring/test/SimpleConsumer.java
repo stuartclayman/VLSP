@@ -44,6 +44,7 @@ public class SimpleConsumer {
         } else if (args.length == 1) {
             Scanner sc = new Scanner(args[0]);
             appPort = sc.nextInt();
+            sc.close();
         } else {
             System.err.println("usage: SimpleConsumer port");
             System.exit(1);

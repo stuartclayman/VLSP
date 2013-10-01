@@ -214,8 +214,10 @@ public class InfoConsumer implements Reporter {
                     String[] parts = argValue.split("/");
                     Scanner sc = new Scanner(parts[0]);
                     int addr = sc.nextInt();
+                    sc.close();
                     sc = new Scanner(parts[1]);
                     int port = sc.nextInt();
+                    sc.close();
                     Address gidAddr = new GIDAddress(addr);
 
                     SocketAddress newInputAddr = new SocketAddress(gidAddr, port);

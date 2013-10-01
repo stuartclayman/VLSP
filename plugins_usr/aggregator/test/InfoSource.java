@@ -449,8 +449,10 @@ public class InfoSource {
                     String[] parts = argValue.split("/");
                     Scanner sc = new Scanner(parts[0]);
                     int addr = sc.nextInt();
+                    sc.close();
                     sc = new Scanner(parts[1]);
                     int port = sc.nextInt();
+                    sc.close();
                     Address gidAddr = new GIDAddress(addr);
                     SocketAddress newOutputAddr = new SocketAddress(gidAddr, port);
                     infoSource.setOutputAddress(newOutputAddr);
@@ -502,6 +504,7 @@ public class InfoSource {
                 case 't': {
                     Scanner sc = new Scanner(argValue);
                     int t = sc.nextInt();
+                    sc.close();
                     infoSource.setSleepTime(t);
                     break;
                 }

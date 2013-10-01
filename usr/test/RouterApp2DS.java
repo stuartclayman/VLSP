@@ -97,6 +97,7 @@ public class RouterApp2DS {
             Scanner scanner = new Scanner(args[0]);
 
             count = scanner.nextInt();
+            scanner.close();
         }
 
 

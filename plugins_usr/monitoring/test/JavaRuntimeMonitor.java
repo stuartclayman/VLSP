@@ -64,9 +64,10 @@ public class JavaRuntimeMonitor {
         } else if (args.length == 2) {
             Scanner sc = new Scanner(args[0]);
             addr = new GIDAddress(sc.nextInt());
-
+            sc.close();
             sc = new Scanner(args[1]);
             appPort = sc.nextInt();
+            sc.close();
 
         } else {
             System.err.println("JavaRuntimeMonitor GID-address port");

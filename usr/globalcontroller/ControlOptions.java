@@ -1023,7 +1023,8 @@ public class ControlOptions {
         return maxLag_;
     }
 
-    private String leadin() {
+    @SuppressWarnings("unused")
+	private String leadin() {
         return "ControlOptions: ";
     }
 

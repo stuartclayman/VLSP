@@ -775,8 +775,11 @@ public class AggPoint {
                     String[] parts = argValue.split("/");
                     Scanner sc = new Scanner(parts[0]);
                     int addr = sc.nextInt();
+                    sc.close();
                     sc = new Scanner(parts[1]);
                     int port = sc.nextInt();
+                    sc.close();
+
                     Address gidAddr = new GIDAddress(addr);
 
                     SocketAddress newInputAddr = new SocketAddress(gidAddr, port);
@@ -788,8 +791,10 @@ public class AggPoint {
                     String[] parts = argValue.split("/");
                     Scanner sc = new Scanner(parts[0]);
                     int addr = sc.nextInt();
+                    sc.close();
                     sc = new Scanner(parts[1]);
                     int port = sc.nextInt();
+                    sc.close();
                     Address gidAddr = new GIDAddress(addr);
                     SocketAddress newOutputAddr = new SocketAddress(gidAddr, port);
                     aggPoint.setOutputAddress(newOutputAddr);
@@ -843,6 +848,7 @@ public class AggPoint {
                 case 't': {
                     Scanner sc = new Scanner(argValue);
                     int t = sc.nextInt();
+                    sc.close();
                     aggPoint.setSleepTime(t);
                     break;
                 }
