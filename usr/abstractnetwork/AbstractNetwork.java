@@ -214,7 +214,9 @@ public class AbstractNetwork {
 
     /** Get the average pair-to-pair distance on the network*/
     public double getdbar() {
+    	System.err.println("Perform floyd");
         performFloydWarshall();
+        System.err.println("Done floyd");
         return dbar_;
     }
 
@@ -227,9 +229,11 @@ public class AbstractNetwork {
         changed_ = false;
         int n = outLinks_.size();
         floydwarshall_ = new ArrayList<Map<Integer, Integer> >(n);
+        System.err.println("outlinks"+n);
 
         for (int i : nodeList_) {
             floydwarshall_.set(i, new HashMap<Integer, Integer>());
+            System.err.println("Set floyd for "+i);
         }
 
         for (int k : nodeList_) {
@@ -292,6 +296,7 @@ public class AbstractNetwork {
         if (i == j) {
             return 0;
         }
+        System.err.println("get floyd for "+i);
 
         Map<Integer, Integer> h = floydwarshall_.get(i);
 
