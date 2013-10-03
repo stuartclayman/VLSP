@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import usr.logging.USR;
+
+import cc.clayman.logging.Logger;
+
 /**
  * This is a simple representation of an abstract network
  * Note that nodes are numbered by integer but all calls to
@@ -26,7 +30,7 @@ public class AbstractNetwork {
     // List of integers which
     // contains the numbers of nodes present
 
-    private ArrayList<Map<Integer, Integer> > floydwarshall_ = null;
+    private HashMap <Integer, Map<Integer, Integer> > floydwarshall_ = null;
 
     int noNodes_ = 0;
     int noLinks_ = 0;
@@ -228,12 +232,13 @@ public class AbstractNetwork {
 
         changed_ = false;
         int n = outLinks_.size();
-        floydwarshall_ = new ArrayList<Map<Integer, Integer> >(n);
+        floydwarshall_ = new HashMap <Integer, Map<Integer, Integer>  > ();
         System.err.println("outlinks"+n);
 
         for (int i : nodeList_) {
-            floydwarshall_.set(i, new HashMap<Integer, Integer>());
-            System.err.println("Set floyd for "+i);
+        	System.err.println("Set floyd for "+i);
+            floydwarshall_.put(i, new HashMap<Integer, Integer>());
+
         }
 
         for (int k : nodeList_) {
@@ -282,6 +287,7 @@ public class AbstractNetwork {
         Map<Integer, Integer> h = floydwarshall_.get(i);
 
         if (h == null) {
+        	Logger.getLogger("log").logln(USR.ERROR,"null found in FloydWarshall");
             return;
         }
 
