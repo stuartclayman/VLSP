@@ -89,7 +89,7 @@ public class ColouredNetworkVisualization implements Visualization {
         // the label of the graph
         s.print("    label=" + "\"snapshot:");
         s.print(" time=");
-        long t = gc.getSimulationTime()-gc.getStartTime();
+        long t = gc.getTime()-gc.getStartTime();
         int totalSecs = (int)t / 1000;
         int millis = (int)t % 1000;
         int hundreths = millis / 10;
@@ -179,7 +179,7 @@ public class ColouredNetworkVisualization implements Visualization {
         }
 
         // Find the traffic reporter
-        // This is done by asking the GlobalController for 
+        // This is done by asking the GlobalController for
         // a class that implements TrafficInfo.
         // It is this class that has the current traffic info.
         TrafficInfo reporter = (TrafficInfo)gc.findByInterface(TrafficInfo.class);

@@ -92,8 +92,7 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
         // the label of the graph
         s.print("    label=" + "\"snapshot:");
         s.print(" time=");
-        //long t = gc.getSimulationCurrentTime() - gc.getSimulationStartTime();
-        long t = System.currentTimeMillis() - gc.getStartTime();
+        long t = gc.getElapsedTime();
         int totalSecs = (int)t / 1000;
         int millis = (int)t % 1000;
         int hundreths = millis / 10;
@@ -214,23 +213,23 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
                         String nodeName = processAppName(app);
 
                         // Get the application measurement data from the app itself
-                        
-                        Map<String, Object> applicationData = 
+
+                        Map<String, Object> applicationData =
                             routerInfo.getApplicationData(app);
                         // and get the MonitoringData from the applicationData
-                       
+
                         Map<String, String> monitoringData = null;
 
                         if (applicationData != null) {
-                            
-                            monitoringData = 
+
+                            monitoringData =
                                 (Map<String,String>)
                                 applicationData.get("MonitoringData");
                         }
 
                         // convert the map to a string
                         String monString = "";
-                        
+
                         if (monitoringData != null) {
                             for (Map.Entry<String, String> entry : monitoringData.entrySet()) {
                                 monString += (entry.getKey() + "=" + entry.getValue() + " ");

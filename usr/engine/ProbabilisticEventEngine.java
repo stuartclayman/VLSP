@@ -25,6 +25,7 @@ import rgc.xmlparse.XMLNoTagException;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.APcontroller.APController;
+import usr.abstractnetwork.AbstractLink;
 import usr.engine.linkpicker.NodeLinkPicker;
 import usr.engine.linkpicker.PreferentialLinkPicker;
 import usr.engine.linkpicker.RandomLinkPicker;
@@ -33,7 +34,6 @@ import usr.events.EndSimulationEvent;
 import usr.events.EndWarmupRouterEvent;
 import usr.events.Event;
 import usr.events.EventScheduler;
-import usr.events.StartLinkEvent;
 import usr.events.StartRouterEvent;
 import usr.events.StartSimulationEvent;
 import usr.globalcontroller.GlobalController;
@@ -256,9 +256,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
         ArrayList<Integer> picked = chooseNLinks(routerId, g, noLinks);
 
         for (int i : picked) {
-            StartLinkEvent e = new StartLinkEvent(now, eng, i,
-                                                  routerId);
-            s.addEvent(e);
+            g.scheduleLink(new AbstractLink(routerId,i),eng,now);
         }
     }
 

@@ -485,7 +485,7 @@ public class FabricDevice implements FabricDeviceInterface {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "InterfaceBlockedException for transferDatagram " + dh.datagram);
 
                 synchronized (waker) {
-                    waker.await(250); 
+                    waker.await(250);
                 }
             }
         }
@@ -662,7 +662,7 @@ class InQueueHandler implements Runnable {
                 latch.await();
             } catch (InterruptedException ie) {
             }
-  
+
             /*
              * try {
              * runThread_.join();
@@ -761,7 +761,7 @@ class OutQueueHandler implements Runnable {
                 latch.await();
             } catch (InterruptedException ie) {
             }
-  
+
             /*
              * try {
              *   outThread_.join();

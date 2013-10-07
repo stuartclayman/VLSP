@@ -76,11 +76,12 @@ public class EndRouterEvent extends AbstractEvent {
 
     @Override
 	public JSONObject execute(GlobalController gc) throws InstantiationException {
+
         if (!routerNumSet_) {
             initNumber(address_, gc);
         }
-
         boolean success = endRouter(routerNo_, gc, time_);
+
         JSONObject json = new JSONObject();
         try {
             if (success) {
@@ -108,11 +109,12 @@ public class EndRouterEvent extends AbstractEvent {
     @Override
 	public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
         super.followEvent(s, response, g);
-
+        // Schedule a check on network connectivity
         if (g.connectedNetwork()) {
-            g.connectNetwork(time_);
+            ConnectNetworkEvent cne= new ConnectNetworkEvent (g.getElapsedTime());
+            s.addEvent(cne);
         } else if (!g.allowIsolatedNodes()) {
-            g.checkIsolated(time_);
+            g.getAbstractNetwork().checkIsolated(time_,g);
         }
     }
 
@@ -121,8 +123,7 @@ public class EndRouterEvent extends AbstractEvent {
         boolean success;
 
         if (gc.isSimulation()) {
-            endSimulationRouter(routerId, gc);
-            success = true;
+        	success = endSimulationRouter(routerId, gc);
         } else {
             success = endEmulatedRouter(routerId, gc);
         }
@@ -138,8 +139,9 @@ public class EndRouterEvent extends AbstractEvent {
     }
 
     /** remove a router in simulation*/
-    private void endSimulationRouter(int rId, GlobalController gc) {
-
+    private boolean endSimulationRouter(int rId, GlobalController gc) {
+    	// Actually this doesn't currently require any action
+    	return true;
     }
 
     /** Send shutdown to an emulated router */

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
+import usr.abstractnetwork.AbstractLink;
 import usr.common.BasicRouterInfo;
 import usr.common.LinkInfo;
 import usr.common.Pair;
@@ -29,6 +30,14 @@ public class StartLinkEvent extends AbstractEvent {
         engine_ = eng;
         router1_ = r1;
         router2_ = r2;
+        numbersSet_ = true;
+    }
+
+    public StartLinkEvent(long time, EventEngine eng, AbstractLink link) {
+        time_ = time;
+        engine_ = eng;
+        router1_ = link.getNode1();
+        router2_ = link.getNode2();
         numbersSet_ = true;
     }
 
@@ -196,7 +205,6 @@ public class StartLinkEvent extends AbstractEvent {
     static public int startLink(GlobalController gc, long time, int router1Id, int router2Id, int weight, String name) {
         // check if this link already exists
         int [] outForRouter1 = gc.getOutLinks(router1Id);
-
         boolean gotIt = false;
 
         for (int i : outForRouter1) {

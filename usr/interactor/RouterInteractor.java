@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import us.monoid.json.JSONException;
@@ -456,15 +457,16 @@ public class RouterInteractor {
         // now we convert the replies in the response
         // into a list of connections
 
-        // get no of netifs
-        Integer netifReplies = (Integer)response.get("size");
+        response.remove("size");
 
         // create a list for the names
         List<String> stats = new ArrayList<String>();
+        //System.err.println("JSON response "+response+"\n"+routerURI+"\n");
+        Iterator <String> itr = response.keys();
+        while(itr.hasNext()) {
+            String key = (String)itr.next();
 
-        for (int n = 0; n < netifReplies; n++) {
-            // pick out the r-th connection
-            stats.add((String)response.get(Integer.toString(n)));
+            stats.add((String)response.getString(key));
         }
 
         return stats;

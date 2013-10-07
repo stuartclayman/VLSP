@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import usr.globalcontroller.GlobalController;
 import usr.logging.USR;
 
-import cc.clayman.logging.Logger;
+import usr.logging.Logger;
 
 /**
  * This is a simple representation of an abstract network
@@ -26,6 +27,8 @@ public class AbstractNetwork {
     // costs of connections in above
 
     private ArrayList<Integer> nodeList_ = null;
+    private ArrayList<AbstractLink> scheduledLinks_ = null;
+    private HashMap<Integer, ArrayList<Integer>> linkFinder_= null;
 
     // List of integers which
     // contains the numbers of nodes present
@@ -48,6 +51,8 @@ public class AbstractNetwork {
         outLinks_.add(new int[0]);
         linkCosts_.add(new int[0]);
         nodeList_ = new ArrayList<Integer>();
+        scheduledLinks_ = new ArrayList<AbstractLink>();
+        linkFinder_= new HashMap<Integer, ArrayList<Integer>>();
     }
 
     /** Add a new node */
@@ -129,6 +134,69 @@ public class AbstractNetwork {
         setLinkCosts(n2, costs2);
     }
 
+
+    /**
+     * A link will be added from node1 to node2 soon -- schedule this
+     * @param node1 first node number
+     * @param node2 second node number
+     */
+    public void scheduleLink(int node1, int node2)
+    {
+        scheduleLink(new AbstractLink(node1,node2));
+    }
+
+    /**
+     * Notify abstract network that a link will be added at a later date.
+     * @param link
+     */
+    public void scheduleLink(AbstractLink link)
+    {
+        scheduledLinks_.add(link);
+        int n1= link.getNode1();
+        int n2= link.getNode2();
+        ArrayList <Integer> lns= linkFinder_.get(n1);
+        if (lns == null) {
+            lns= new ArrayList <Integer> ();
+        }
+        lns.add(n2);
+        lns= linkFinder_.get(n2);
+        if (lns == null) {
+            lns= new ArrayList <Integer> ();
+        }
+        lns.add(n1);
+    }
+
+    /**
+     * A link from node1 to node2 is removed from the schedule
+     * @param node1
+     * @param node2
+     */
+    public void unScheduleLink(int node1, int node2)
+    {
+        AbstractLink l= new AbstractLink(node1,node2);
+        int idx= scheduledLinks_.indexOf(l);
+        if (idx < 0) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Attempt to remove link "+l+" already removed");
+        }
+        scheduledLinks_.remove(idx);
+        ArrayList <Integer> lns= linkFinder_.get(node1);
+        lns.remove(lns.indexOf(node2));
+        lns= linkFinder_.get(node2);
+        lns.remove(lns.indexOf(node1));
+
+    }
+
+
+    /** Check network for isolated nodes and connect them if possible */
+    public AbstractLink checkIsolated(long time, GlobalController gc) {
+        for (int i : getNodeList()) {
+            AbstractLink l = checkIsolated(time, i, gc);
+            if (l != null)
+                return l;
+        }
+        return null;
+    }
+
     /** Add link between n1 and n2 -- cost is 1*/
     public void addLink(int n1, int n2) {
         noLinks_++;
@@ -199,6 +267,18 @@ public class AbstractNetwork {
         return outLinks_.get(n1);
     }
 
+    /* Return a list of outlinks from a router including scheduled but not added*/
+    public int [] getAllOutLinks(int n1) {
+        int [] l= outLinks_.get(n1);
+        ArrayList <Integer> exLinks= linkFinder_.get(n1);
+        if (exLinks == null || exLinks.size() == 0)
+            return l;
+        int [] m= new int[l.length + exLinks.size()];
+        System.arraycopy(l, 0, m, 0, l.length);
+
+        return l;
+    }
+
     /* Return a list of link costs from a router -- must be used in
      *  parallel get getOutLinks to id link nos*/
     public int [] getLinkCosts(int routerId) {
@@ -218,9 +298,7 @@ public class AbstractNetwork {
 
     /** Get the average pair-to-pair distance on the network*/
     public double getdbar() {
-    	System.err.println("Perform floyd");
         performFloydWarshall();
-        System.err.println("Done floyd");
         return dbar_;
     }
 
@@ -231,12 +309,9 @@ public class AbstractNetwork {
         }
 
         changed_ = false;
-        int n = outLinks_.size();
         floydwarshall_ = new HashMap <Integer, Map<Integer, Integer>  > ();
-        System.err.println("outlinks"+n);
 
         for (int i : nodeList_) {
-        	System.err.println("Set floyd for "+i);
             floydwarshall_.put(i, new HashMap<Integer, Integer>());
 
         }
@@ -294,6 +369,206 @@ public class AbstractNetwork {
         h.put(j, dist);
     }
 
+
+    /** Check if given node is isolated return a connecting link if one available */
+    public AbstractLink checkIsolated(long time, int gid, GlobalController gc) {
+        int [] links = getAllOutLinks(gid);
+        int nRouters = getNoNodes();
+
+        if (nRouters == 1) { // One node is allowed to be isolated
+            return null;
+        }
+
+        if (links.length > 0) {
+            return null;
+        }
+
+        // Node is isolated.
+        while (true) {
+            int i = (int)Math.floor(Math.random() * nRouters);
+            int dest = getNodeId(i);
+            if (dest != gid) {
+                return new AbstractLink(dest,gid);
+            }
+        }
+    }
+
+    /** Make sure network is connected*/
+    public AbstractLink connectNetwork (long time, GlobalController gc) {
+        int nRouters = getNoNodes();
+        int largestRouterId = getLargestRouterId();
+
+        if (nRouters <= 1) {
+            return null;
+        }
+
+        // Boolean arrays are larger than needed but this is fast
+        boolean [] visited = new boolean[largestRouterId + 1];
+        boolean [] visiting = new boolean[largestRouterId + 1];
+
+        for (int i = 0; i < largestRouterId + 1; i++) {
+            visited[i] = true;
+            visiting[i] = false;
+        }
+
+        for (int i = 0; i < nRouters; i++) {
+            visited[getNodeId(i)] = false;
+        }
+
+        int [] toVisit = new int[nRouters];
+        int toVisitCtr = 1;
+        toVisit[0] = getNodeId(0);
+        int noVisited = 0;
+
+        while (noVisited < nRouters) {
+            //System.err.println("NoVisited = "+noVisited+" /
+            // "+nRouters);
+            if (toVisitCtr == 0) {
+                // Not visited everything so make a new link
+                // Choose i1 th visited and i2 th unvisited
+                int i1 = (int)Math.floor(Math.random() * noVisited);
+                int i2
+                    = (int)Math.floor(Math.random()
+                                      * (nRouters - noVisited));
+                int l1 = -1;
+                int l2 = -1;
+
+                for (int i = 0; i < nRouters; i++) {
+                    int tmpNode = getNodeId(i);
+
+                    if (visited[tmpNode] && (i1 >= 0)) {
+                        if (i1 == 0) {
+                            l1 = tmpNode;
+                        }
+
+                        i1--;
+                    } else if (!visited[tmpNode] && (i2 >= 0)) {
+                        if (i2 == 0) {
+                            l2 = tmpNode;
+                        }
+
+                        i2--;
+                    }
+
+                    if ((i1 < 0) && (i2 < 0)) {
+                        break;
+                    }
+                }
+
+                if ((l1 == -1) || (l2 == -1)) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
+                    gc.shutDown();
+                    return null;
+                }
+                return new AbstractLink(l1,l2);
+            }
+
+            toVisitCtr--;
+            int node = toVisit[toVisitCtr];
+            visited[node] = true;
+            noVisited++;
+
+            for (int l : getAllOutLinks(node)) {
+                if ((visited[l] == false) && (visiting[l] == false)) {
+                    toVisit[toVisitCtr] = l;
+                    visiting[l] = true;
+                    toVisitCtr++;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Make sure network is connected from r1 to r2*/
+    public AbstractLink connectNetwork(long time, int r1, int r2, GlobalController gc) {
+        int nRouters = getNoNodes();
+        int maxRouterId = getLargestRouterId();
+
+        if (nRouters <= 1) {
+            return null;
+        }
+
+        // Boolean arrays are larger than needed but this is fast
+        boolean [] visited = new boolean[maxRouterId + 1];
+        boolean [] visiting = new boolean[maxRouterId + 1];
+
+        for (int i = 0; i < maxRouterId + 1; i++) {
+            visited[i] = true;
+            visiting[i] = false;
+        }
+
+        for (int i = 0; i < nRouters; i++) {
+            int rId = getNodeId(i);
+            visited[rId] = false;
+        }
+
+        int [] toVisit = new int[nRouters];
+        int toVisitCtr = 1;
+        toVisit[0] = r1;
+        int noVisited = 1;
+
+        while (noVisited < nRouters) {
+            if (toVisitCtr == 0) {
+                // Not visited everything so make a new link
+                // Choose i1 th visited and i2 th unvisited
+                int i1 = (int)Math.floor(Math.random() * noVisited);
+                int i2
+                    = (int)Math.floor(Math.random()
+                                      * (nRouters - noVisited));
+                int l1 = -1;
+                int l2 = -1;
+
+                for (int i = 0; i < nRouters; i++) {
+                    int tmpNode = getNodeId(i);
+
+                    if (visited[tmpNode] && (i1 >= 0)) {
+                        if (i1 == 0) {
+                            l1 = tmpNode;
+                        }
+
+                        i1--;
+                    } else if (!visited[tmpNode] && (i2 >= 0)) {
+                        if (i2 == 0) {
+                            l2 = tmpNode;
+                        }
+
+                        i2--;
+                    }
+
+                    if ((i1 < 0) && (i2 < 0)) {
+                        break;
+                    }
+                }
+
+                if ((l1 == -1) || (l2 == -1)) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
+                    gc.shutDown();
+                    return null;
+                }
+                return new AbstractLink(l1,l2);
+            }
+
+            toVisitCtr--;
+            int node = toVisit[toVisitCtr];
+            visited[node] = true;
+            noVisited++;
+
+            for (int l : getOutLinks(node)) {
+                if (l == r2) {                                   // We have a connection
+                    return null;
+                }
+
+                if ((visited[l] == false) && (visiting[l] == false)) {
+                    toVisit[toVisitCtr] = l;
+                    visiting[l] = true;
+                    toVisitCtr++;
+                }
+            }
+        }
+        return null;
+    }
+
+
     private int getDist(int i, int j) {
         if (i > j) {
             getDist(j, i);
@@ -302,7 +577,6 @@ public class AbstractNetwork {
         if (i == j) {
             return 0;
         }
-        System.err.println("get floyd for "+i);
 
         Map<Integer, Integer> h = floydwarshall_.get(i);
 
@@ -357,6 +631,11 @@ public class AbstractNetwork {
     /** Return id of ith router */
     public int getNodeId(int i) {
         return nodeList_.get(i);
+    }
+
+    private String leadin()
+    {
+        return "AbstractNetwork:";
     }
 
 }

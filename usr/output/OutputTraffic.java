@@ -44,7 +44,7 @@ public class OutputTraffic implements OutputFunction {
             } else if (o.getParameter().equals("Aggregate")) {
                 outputTrafficAggregate(o, t, p, routerStats, gc);
             } else if (o.getParameter().equals("Raw")) {
-                System.err.println ("OUTPUT RAW!");
+
 
                 for (String s : routerStats.split("\\*\\*\\*")) {
                     p.println(t+" "+s);

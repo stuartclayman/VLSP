@@ -35,8 +35,7 @@ public class ShutDownEventCommand extends GlobalCommand {
             PrintStream out = response.getPrintStream();
 
             EndSimulationEvent shutdown
-                = new EndSimulationEvent(
-                        System.currentTimeMillis(), null);
+                = new EndSimulationEvent(0, null);
 
             JSONObject jsobj;
             try {

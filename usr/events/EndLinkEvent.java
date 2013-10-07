@@ -101,12 +101,14 @@ public class EndLinkEvent extends AbstractEvent {
     @Override
 	public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
         super.followEvent(s, response, g);
-
         if (g.connectedNetwork()) {
-            g.connectNetwork(time_, router1_, router2_);
+            ConnectNetworkEvent cne= new ConnectNetworkEvent(router1_,router2_,time_);
+            s.addEvent(cne);
         } else if (!g.allowIsolatedNodes()) {
-            g.checkIsolated(time_, router1_);
-            g.checkIsolated(time_, router2_);
+            CheckIsolatedEvent ce = new CheckIsolatedEvent(router1_, time_);
+            s.addEvent(ce);
+            ce = new CheckIsolatedEvent(router2_, time_);
+            s.addEvent(ce);
         }
     }
 

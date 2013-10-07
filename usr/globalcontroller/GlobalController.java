@@ -26,6 +26,7 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.APcontroller.APController;
 import usr.APcontroller.ConstructAPController;
+import usr.abstractnetwork.AbstractLink;
 import usr.abstractnetwork.AbstractNetwork;
 import usr.common.BasicRouterInfo;
 import usr.common.LinkInfo;
@@ -528,6 +529,18 @@ public class GlobalController implements ComponentController {
         }
     }
 
+    /**
+     * Schedule the creation of a link between two nodes
+     * @param node1 first node
+     * @param node2 second node
+     */
+    public void scheduleLink(AbstractLink link, EventEngine eng, long time)
+    {
+        StartLinkEvent sle= new StartLinkEvent(time, eng, link);
+        scheduler_.addEvent(sle);
+        network_.scheduleLink(link);
+    }
+
     /** checks if events can be simulated */
     public boolean isActive() {
         return isActive_;
@@ -597,18 +610,21 @@ public class GlobalController implements ComponentController {
             Operation execute = new Operation() {
                     @Override
 					public JSONObject call() throws InstantiationException, InterruptedException, TimeoutException {
-                        e.preceedEvent(scheduler_, gc);
-                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT: " + e);
+                    	Logger.getLogger("log").logln(USR.STDOUT, "EVENT preceed: " + e);
+                    	e.preceedEvent(scheduler_, gc);
+                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT execute: " + e);
                         JSONObject js = null;
                         js = e.execute(gc);
 
-                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT: execute -> " + js);
+                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT result:  " + js);
 
                         for (OutputType t : eventOutput_) {
                             produceEventOutput(e, js, t);
                         }
+                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT follow: " + e);
 
                         e.followEvent(scheduler_, js, gc);
+                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT done: " + e);
                         return js;
                     }
                 };
@@ -821,7 +837,7 @@ public class GlobalController implements ComponentController {
         routerIdMap_.remove(rId);
 
         // now add it to shutdown routers
-        shutdownRouters_.add(new BasicRouterInfo(rId, getSimulationTime()));
+        shutdownRouters_.add(new BasicRouterInfo(rId, getTime()));
 
         // inform anyone that a Router has Ended
         informRouterEnded(rInfo.getName());
@@ -1016,6 +1032,7 @@ public class GlobalController implements ComponentController {
      */
     public JSONObject startLink(int r1, int r2, int weight) {
         try {
+            System.err.println("Start link object JSON "+r1+" "+r2);
             StartLinkEvent ev = new StartLinkEvent(getElapsedTime(), null, r1, r2, weight);
             JSONObject jsobj = executeEvent(ev);
             return jsobj;
@@ -1617,13 +1634,15 @@ public class GlobalController implements ComponentController {
         /** If requests already sent then just add it to the output
          * request
          * queue
-         * rather than sending a fruther request */
+         * rather than sending a further request */
         if (trafficOutputRequests_.size() > 1) {
             return;
         }
-
+        //long start= getTime();
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats sent at time "+start);
         //  Make request for stats
         requestRouterStats();
+       // Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats completed at time "+getTime()+ " elapsed (secs) "+((getTime() - start)/1000));
     }
 
     /** Receiver router traffic -- if it completes a set then output it */
@@ -1881,18 +1900,23 @@ public class GlobalController implements ComponentController {
     }
 
     /**
-     * Get the simulation elapsed time.
-     * This is the elapsed time within the simulation.
+     * Get the time since the simulation started
      */
     public long getElapsedTime() {
-        return scheduler_.getElapsedTime();
+    	if (isSimulation()) {
+    		return scheduler_.getElapsedTime();
+    	} else {
+    		return System.currentTimeMillis() - scheduler_.getStartTime();
+    	}
     }
 
-    /** Get the current time into the simulation.
-     * It is important to note that this can be called between events
-     */
-    public long getSimulationTime() {
-        return scheduler_.getSimulationTime();
+    /** Gets the current time (From clock or the time of the last simulation event*/
+    public long getTime() {
+    	if (isSimulation()) {
+    		return scheduler_.getElapsedTime();
+    	} else {
+    		return System.currentTimeMillis();
+    	}
     }
 
     /**
@@ -2213,216 +2237,6 @@ public class GlobalController implements ComponentController {
         return network_;
     }
 
-    /** Check network for isolated nodes and connect them if possible */
-    public void checkIsolated(long time) {
-        for (int i : network_.getNodeList()) {
-            checkIsolated(time, i);
-        }
-    }
-
-    /** Check if given node is isolated and connect it if possible */
-    public void checkIsolated(long time, int gid) {
-        int [] links = network_.getOutLinks(gid);
-        int nRouters = network_.getNoNodes();
-
-        if (nRouters == 1) { // One node is allowed to be isolated
-            return;
-        }
-
-        if (links.length > 0) {
-            return;
-        }
-
-        // Node is isolated.
-        while (true) {
-            int i = (int)Math.floor(Math.random() * nRouters);
-            int dest = network_.getNodeId(i);
-
-            if (dest != gid) {
-                StartLinkEvent.startLink(this, time, gid, dest, 1, null);
-                break;
-            }
-        }
-    }
-
-    /** Make sure network is connected*/
-    public void connectNetwork(long time) {
-        int nRouters = network_.getNoNodes();
-        int largestRouterId = network_.getLargestRouterId();
-
-        if (nRouters <= 1) {
-            return;
-        }
-
-        // Boolean arrays are larger than needed but this is fast
-        boolean [] visited = new boolean[largestRouterId + 1];
-        boolean [] visiting = new boolean[largestRouterId + 1];
-
-        for (int i = 0; i < largestRouterId + 1; i++) {
-            visited[i] = true;
-            visiting[i] = false;
-        }
-
-        for (int i = 0; i < nRouters; i++) {
-            visited[network_.getNodeId(i)] = false;
-        }
-
-        int [] toVisit = new int[nRouters];
-        int toVisitCtr = 1;
-        toVisit[0] = network_.getNodeId(0);
-        int noVisited = 0;
-
-        while (noVisited < nRouters) {
-            //System.err.println("NoVisited = "+noVisited+" /
-            // "+nRouters);
-            if (toVisitCtr == 0) {
-                // Not visited everything so make a new link
-                // Choose i1 th visited and i2 th unvisited
-                int i1 = (int)Math.floor(Math.random() * noVisited);
-                int i2
-                    = (int)Math.floor(Math.random()
-                                      * (nRouters - noVisited));
-                int l1 = -1;
-                int l2 = -1;
-
-                for (int i = 0; i < nRouters; i++) {
-                    int tmpNode = network_.getNodeId(i);
-
-                    if (visited[tmpNode] && (i1 >= 0)) {
-                        if (i1 == 0) {
-                            l1 = tmpNode;
-                        }
-
-                        i1--;
-                    } else if (!visited[tmpNode] && (i2 >= 0)) {
-                        if (i2 == 0) {
-                            l2 = tmpNode;
-                        }
-
-                        i2--;
-                    }
-
-                    if ((i1 < 0) && (i2 < 0)) {
-                        break;
-                    }
-                }
-
-                if ((l1 == -1) || (l2 == -1)) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
-                    shutDown();
-                    return;
-                }
-
-                StartLinkEvent.startLink(this, time, l1, l2, 1, null);
-                toVisitCtr++;
-                toVisit[0] = l2;
-            }
-
-            toVisitCtr--;
-            int node = toVisit[toVisitCtr];
-            visited[node] = true;
-            noVisited++;
-
-            for (int l : network_.getOutLinks(node)) {
-                if ((visited[l] == false) && (visiting[l] == false)) {
-                    toVisit[toVisitCtr] = l;
-                    visiting[l] = true;
-                    toVisitCtr++;
-                }
-            }
-        }
-    }
-
-    /** Make sure network is connected from r1 to r2*/
-    public void connectNetwork(long time, int r1, int r2) {
-        int nRouters = network_.getNoNodes();
-        int maxRouterId = network_.getLargestRouterId();
-
-        if (nRouters <= 1) {
-            return;
-        }
-
-        // Boolean arrays are larger than needed but this is fast
-        boolean [] visited = new boolean[maxRouterId + 1];
-        boolean [] visiting = new boolean[maxRouterId + 1];
-
-        for (int i = 0; i < maxRouterId + 1; i++) {
-            visited[i] = true;
-            visiting[i] = false;
-        }
-
-        for (int i = 0; i < nRouters; i++) {
-            int rId = network_.getNodeId(i);
-            visited[rId] = false;
-        }
-
-        int [] toVisit = new int[nRouters];
-        int toVisitCtr = 1;
-        toVisit[0] = r1;
-        int noVisited = 1;
-
-        while (noVisited < nRouters) {
-            if (toVisitCtr == 0) {
-                // Not visited everything so make a new link
-                // Choose i1 th visited and i2 th unvisited
-                int i1 = (int)Math.floor(Math.random() * noVisited);
-                int i2
-                    = (int)Math.floor(Math.random()
-                                      * (nRouters - noVisited));
-                int l1 = -1;
-                int l2 = -1;
-
-                for (int i = 0; i < nRouters; i++) {
-                    int tmpNode = network_.getNodeId(i);
-
-                    if (visited[tmpNode] && (i1 >= 0)) {
-                        if (i1 == 0) {
-                            l1 = tmpNode;
-                        }
-
-                        i1--;
-                    } else if (!visited[tmpNode] && (i2 >= 0)) {
-                        if (i2 == 0) {
-                            l2 = tmpNode;
-                        }
-
-                        i2--;
-                    }
-
-                    if ((i1 < 0) && (i2 < 0)) {
-                        break;
-                    }
-                }
-
-                if ((l1 == -1) || (l2 == -1)) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
-                    shutDown();
-                    return;
-                }
-
-                StartLinkEvent.startLink(this, time, l1, l2, 1, null);
-                toVisitCtr++;
-                toVisit[0] = l2;
-            }
-
-            toVisitCtr--;
-            int node = toVisit[toVisitCtr];
-            visited[node] = true;
-            noVisited++;
-
-            for (int l : getOutLinks(node)) {
-                if (l == r2) {                                   // We have a connection
-                    return;
-                }
-
-                if ((visited[l] == false) && (visiting[l] == false)) {
-                    toVisit[toVisitCtr] = l;
-                    visiting[l] = true;
-                    toVisitCtr++;
-                }
-            }
-        }
-    }
 
     /**
      * Get the name of this GlobalController.

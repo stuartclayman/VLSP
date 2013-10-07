@@ -46,7 +46,7 @@ public class AggPointRestHandler extends BasicRequestHandler {
 
             System.out.println("REQUEST: " + request.getMethod() + " " +  request.getTarget());
 
-            long time = System.currentTimeMillis();
+            long time = gc.getTime();
 
             response.set("Content-Type", "application/json");
             response.set("Server", "GlobalController/1.0 (SimpleFramework 4.0)");

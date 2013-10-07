@@ -85,6 +85,7 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
                 Logger.getLogger("log").logln(USR.ERROR,
                        "Unexpected error in scheduled operation: "
                          + ine.getMessage() + "\nEvent: "+ ev.toString());
+                ine.printStackTrace();
                 controller_.deactivate();
             } catch (InterruptedException ie) {
                 Logger.getLogger("log").logln(USR.ERROR,
@@ -124,13 +125,6 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
      */
     @Override
 	public long getSimulationTime() {
-        long current = System.currentTimeMillis();
-
-        if (current - simulationTime_ > 1000)  {   // more than 1 second out
-            simulationTime_ = current;
-        }
-
-
         return simulationTime_;
     }
 

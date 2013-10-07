@@ -50,7 +50,7 @@ public class LinkRestHandler extends BasicRequestHandler {
 
             System.out.println("REQUEST: " + request.getMethod() + " " +  request.getTarget());
 
-            long time = System.currentTimeMillis();
+            long time = controller_.getTime();
 
             response.set("Content-Type", "application/json");
             response.set("Server", "GlobalController/1.0 (SimpleFramework 4.0)");
@@ -203,6 +203,7 @@ public class LinkRestHandler extends BasicRequestHandler {
 
         // start a link, and get its ID
         // WAS int linkID = controller_.startLink(System.currentTimeMillis(), router1, router2, weight, linkName);
+        System.err.println("HOw did this ahppen?"+router1+" "+router2);
         StartLinkEvent sle = new StartLinkEvent(controller_.getElapsedTime(), null, router1, router2);
         sle.setWeight(weight);
 

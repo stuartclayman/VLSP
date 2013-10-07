@@ -365,8 +365,7 @@ RouterDeletedNotification, TrafficInfo {
         StringBuilder builder = new StringBuilder();
 
         // get the time
-        long startTime = globalController.getStartTime();
-        long elapsed = System.currentTimeMillis() - startTime;
+        long elapsed = globalController.getElapsedTime();
 
         // get no of cols
         int cols = table.getColumnCount();
@@ -458,8 +457,7 @@ RouterDeletedNotification, TrafficInfo {
         StringBuilder builder = new StringBuilder();
 
         // get the time
-        long startTime = globalController.getStartTime();
-        long elapsed = System.currentTimeMillis() - startTime;
+        long elapsed = globalController.getTime();
 
         // get no of cols
         int cols = table.getColumnCount();

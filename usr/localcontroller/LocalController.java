@@ -689,9 +689,14 @@ public class LocalController implements ComponentController {
 
                 return newList;
 
-            } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+"");
+            } catch (JSONException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"JSON error in getRouterStats()"+" type "+
+                	e.getClass().getName() + "Message:"+e.getMessage());
                 return null;
+            } catch (IOException e) {
+            	Logger.getLogger("log").logln(USR.ERROR, leadin()+"IOError in getRouterStats()"+" type "+
+                    	e.getClass().getName() + "Message:"+e.getMessage());
+            	return null;
             }
 
         }
