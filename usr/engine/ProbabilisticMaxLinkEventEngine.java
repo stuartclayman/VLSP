@@ -174,7 +174,10 @@ ProbabilisticEventEngine {
             routerMaxLinkCount_.put(routerId, nlinks + extraLinks);
         } catch (JSONException ex) {
             Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin() + "Unexpected JSON error in initMLRouter");
+                                          leadin() + "Unexpected JSON error in initMLRouter"+ex.getMessage());
+            Logger.getLogger("log").logln(USR.ERROR,
+                    leadin() + "JSON "+response);
+
             return;
         } catch (ProbException ex) {
             Logger.getLogger("log").logln(USR.ERROR,

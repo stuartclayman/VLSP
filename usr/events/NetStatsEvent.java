@@ -19,7 +19,7 @@ public class NetStatsEvent extends AbstractEvent {
 	public String toString() {
         String str;
 
-        str = "NetStats: " + time_ + " stats " + stats_;
+        str = "NetStats: " + time_;
         return str;
     }
 
