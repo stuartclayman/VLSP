@@ -847,14 +847,16 @@ public class ControlOptions {
     public String [] localControllerStartCommand(LocalControllerInfo lh) {
         if (lh.getName().equals("localhost")) {
             // no need to do remote command
-            String [] cmd = new String[3];
+            String [] cmd = new String[5];
             cmd[0] = "/usr/bin/java";
             cmd[1] = "usr.localcontroller.LocalController";
             cmd[2] = String.valueOf(lh.getPort());
+            cmd[3] = "-Xms32m";
+            cmd[4] = "-Xmx1024m";
             return cmd;
         } else {
             // its a remote command
-            String [] cmd = new String[5];
+            String [] cmd = new String[7];
             cmd[0] = remoteLoginCommand_;
             cmd[1] = remoteLoginFlags_;
 
@@ -877,9 +879,10 @@ public class ControlOptions {
             if (remote == null) {
                 remote = remoteStartController_;
             }
-
-            cmd[3] = remote;
-            cmd[4] = String.valueOf(lh.getPort());
+            cmd[3] = "-Xms32m";
+            cmd[4] = "-Xmx1024m";
+            cmd[5] = remote;
+            cmd[6] = String.valueOf(lh.getPort());
             return cmd;
         }
     }
