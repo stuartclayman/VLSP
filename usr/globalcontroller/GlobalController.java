@@ -616,7 +616,7 @@ public class GlobalController implements ComponentController {
                         JSONObject js = null;
                         js = e.execute(gc);
 
-                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT result:  " + js);
+                        //Logger.getLogger("log").logln(USR.STDOUT, "EVENT result:  " + js);
 
                         for (OutputType t : eventOutput_) {
                             produceEventOutput(e, js, t);
