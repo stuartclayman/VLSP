@@ -262,16 +262,14 @@ public class LocalController implements ComponentController {
         Process child = null;
         ProcessWrapper pw = null;
 
-        String [] cmd = new String[9];
+        String [] cmd = new String[7];
         cmd[0] = "/usr/bin/java";
         cmd[1] = "-cp";
         cmd[2] = classPath_;
-        cmd[3] = "-Xms32m";
-        cmd[4] = "-Xmx1024m";
-        cmd[5] = "usr.router.Router";
-        cmd[6] = String.valueOf(port1);
-        cmd[7] = String.valueOf(port2);
-        cmd[8] = routerName;
+        cmd[3] = "usr.router.Router";
+        cmd[4] = String.valueOf(port1);
+        cmd[5] = String.valueOf(port2);
+        cmd[6] = routerName;
 
         try {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting Router on ports "+port1+" "+port2);
