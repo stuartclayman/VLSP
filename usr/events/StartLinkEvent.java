@@ -24,6 +24,7 @@ public class StartLinkEvent extends AbstractEvent {
     private String address2_ = null;
     private String linkName_ = null;
     private boolean numbersSet_ = false;
+    private boolean scheduled_= false;
 
     public StartLinkEvent(long time, EventEngine eng, int r1, int r2) {
         time_ = time;
@@ -166,7 +167,7 @@ public class StartLinkEvent extends AbstractEvent {
             }
         }
 
-        int linkNo = startLink(gc, time_, r1, r2, weight_, linkName_);
+        int linkNo = startLink(gc, time_, r1, r2, weight_, linkName_, scheduled_);
         boolean success = linkNo >= 0;
         try {
             if (success) {
@@ -202,7 +203,8 @@ public class StartLinkEvent extends AbstractEvent {
     }
 
     /** Event to link two routers  Return -1 for fail or link id*/
-    static public int startLink(GlobalController gc, long time, int router1Id, int router2Id, int weight, String name) {
+    static public int startLink(GlobalController gc, long time, int router1Id, int router2Id,
+               int weight, String name, boolean scheduled) {
         // check if this link already exists
         int [] outForRouter1 = gc.getOutLinks(router1Id);
         boolean gotIt = false;
@@ -230,7 +232,7 @@ public class StartLinkEvent extends AbstractEvent {
             }
 
             // register inside GlobalController
-            gc.registerLink(router1Id, router2Id);
+            gc.registerLink(router1Id, router2Id, scheduled);
 
             // Tell APController about link
             gc.addAPLink(time, router1Id, router2Id);
@@ -323,6 +325,16 @@ public class StartLinkEvent extends AbstractEvent {
         }
 
         return linkID;
+    }
+
+    public void setScheduled()
+    {
+        scheduled_= true;
+    }
+
+    public boolean isScheduled()
+    {
+        return scheduled_;
     }
 
     static private String leadin() {

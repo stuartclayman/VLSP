@@ -33,7 +33,7 @@ public class AbstractNetwork {
     // List of integers which
     // contains the numbers of nodes present
 
-    private HashMap <Integer, Map<Integer, Integer> > floydwarshall_ = null;
+    private HashMap <AbstractLink,Long > floydwarshall_ = null;
 
     int noNodes_ = 0;
     int noLinks_ = 0;
@@ -57,6 +57,7 @@ public class AbstractNetwork {
 
     /** Add a new node */
     public void addNode(int rId) {
+        changed_= true;
         while (outLinks_.size() <= rId) {
             outLinks_.add(new int[0]);
             linkCosts_.add(new int[0]);
@@ -68,6 +69,7 @@ public class AbstractNetwork {
 
     /** Delete a node */
     public void removeNode(int rId) {
+        changed_= true;
         int index = nodeList_.indexOf(rId);
 
         nodeList_.remove(index);
@@ -81,6 +83,8 @@ public class AbstractNetwork {
         int [] costs2;
         int arrayPos = 0;
         noLinks_--;
+
+        changed_= true;
 
         //System.err.println("Remove link from "+n1+" to "+n2);
         out = getOutLinks(n1);
@@ -151,17 +155,20 @@ public class AbstractNetwork {
      */
     public void scheduleLink(AbstractLink link)
     {
+        changed_= true;
         scheduledLinks_.add(link);
         int n1= link.getNode1();
         int n2= link.getNode2();
         ArrayList <Integer> lns= linkFinder_.get(n1);
         if (lns == null) {
-            lns= new ArrayList <Integer> ();
+            linkFinder_.put(n1,new ArrayList <Integer> ());
+            lns= linkFinder_.get(n1);
         }
         lns.add(n2);
         lns= linkFinder_.get(n2);
         if (lns == null) {
-            lns= new ArrayList <Integer> ();
+            linkFinder_.put(n2, new ArrayList <Integer> ());
+            lns= linkFinder_.get(n2);
         }
         lns.add(n1);
     }
@@ -171,8 +178,9 @@ public class AbstractNetwork {
      * @param node1
      * @param node2
      */
-    public void unScheduleLink(int node1, int node2)
+    private void unScheduleLink(int node1, int node2)
     {
+
         AbstractLink l= new AbstractLink(node1,node2);
         int idx= scheduledLinks_.indexOf(l);
         if (idx < 0) {
@@ -180,6 +188,9 @@ public class AbstractNetwork {
         }
         scheduledLinks_.remove(idx);
         ArrayList <Integer> lns= linkFinder_.get(node1);
+        if (lns == null) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error in unschedule link");
+        }
         lns.remove(lns.indexOf(node2));
         lns= linkFinder_.get(node2);
         lns.remove(lns.indexOf(node1));
@@ -198,10 +209,9 @@ public class AbstractNetwork {
     }
 
     /** Add link between n1 and n2 -- cost is 1*/
-    public void addLink(int n1, int n2) {
+    public void addLink(int n1, int n2, boolean scheduled) {
         noLinks_++;
 
-        //System.err.println("Adding link from "+n1+" to "+n2);
         // Add links in both directions
 
         // Add link from n1 to n2
@@ -240,6 +250,9 @@ public class AbstractNetwork {
          *  System.err.print(out2[i]);
          * }
          * System.err.println();*/
+         if (scheduled) {
+             unScheduleLink(n1, n2);
+         }
     }
 
     /** Return the weight from link1 to link2 or 0 if no link*/
@@ -275,8 +288,10 @@ public class AbstractNetwork {
             return l;
         int [] m= new int[l.length + exLinks.size()];
         System.arraycopy(l, 0, m, 0, l.length);
-
-        return l;
+        for (int i= 0; i < exLinks.size(); i++) {
+            m[i+l.length]= exLinks.get(i);
+        }
+        return m;
     }
 
     /* Return a list of link costs from a router -- must be used in
@@ -304,17 +319,30 @@ public class AbstractNetwork {
 
     /** Execute the Floyd Warshall algorithm with unit costs assumed */
     private void performFloydWarshall() {
+
+        if (noNodes_ < 2) {
+            dbar_ = 0.0;
+            dmax_= 0;
+            return;
+        }
+
         if (!changed_) {
             return;
         }
 
         changed_ = false;
-        floydwarshall_ = new HashMap <Integer, Map<Integer, Integer>  > ();
+//        System.err.println("Floyd starts");
+//        for (int i: nodeList_) {
+//            System.err.print("From "+i+"->");
+//                for (int j: getOutLinks(i)) {
+//                    System.err.print(j+" ");
+//                }
+//            System.err.println();
+//        }
 
-        for (int i : nodeList_) {
-            floydwarshall_.put(i, new HashMap<Integer, Integer>());
+        initFloyd();
 
-        }
+
 
         for (int k : nodeList_) {
             for (int i : nodeList_) {
@@ -323,11 +351,12 @@ public class AbstractNetwork {
                         break;
                     }
 
-                    int newDist = getDist(i, k) + getDist(k, j);
+                    long newDist = (long)getDist(i, k) + (long)getDist(k, j);
 
-                    if (newDist < getDist(i, j)) {
-                        setDist(i, j, newDist);
+                    if (newDist < (long)getDist(i, j)) {
+                        setDist(i, j, (int)newDist);
                     }
+
                 }
             }
         }
@@ -341,10 +370,11 @@ public class AbstractNetwork {
                     break;
                 }
 
-                int dist = getDist(i, j);
+                long dist = getDist(i, j);
+
 
                 if (dist > dmax_) {
-                    dmax_ = dist;
+                    dmax_ = (int)dist;
                 }
 
                 dbar_ += dist;
@@ -354,19 +384,35 @@ public class AbstractNetwork {
         dbar_ /= (noNodes_ * (noNodes_ - 1) / 2);
     }
 
-    private void setDist(int i, int j, int dist) {
-        if (i > j) {
-            setDist(j, i, dist);
+    private void initFloyd()
+    {
+        floydwarshall_ = new HashMap <AbstractLink, Long> ();
+        for (int i: nodeList_) {
+            int []out = getOutLinks(i);
+            for (int j= 0; j < out.length; j++) {
+                int l= out[j];
+                if (l > i)
+                    continue;
+                int cost= getLinkCosts(i)[j];
+                setDist(i,l,cost);
+            }
         }
 
-        Map<Integer, Integer> h = floydwarshall_.get(i);
+    }
 
-        if (h == null) {
-        	Logger.getLogger("log").logln(USR.ERROR,"null found in FloydWarshall");
-            return;
+    private long getDist(int i, int j)
+    {
+        if (i == j)
+            return 0;
+        Long dist = floydwarshall_.get(new AbstractLink(i,j));
+        if (dist == null) {
+            return 1000000;
         }
+        return dist;
+    }
 
-        h.put(j, dist);
+    private void setDist(int i, int j, long dist) {
+        floydwarshall_.put(new AbstractLink(i,j),dist);
     }
 
 
@@ -568,30 +614,6 @@ public class AbstractNetwork {
         return null;
     }
 
-
-    private int getDist(int i, int j) {
-        if (i > j) {
-            getDist(j, i);
-        }
-
-        if (i == j) {
-            return 0;
-        }
-
-        Map<Integer, Integer> h = floydwarshall_.get(i);
-
-        if (h == null) {
-            return Integer.MAX_VALUE;
-        }
-
-        Integer d = h.get(j);
-
-        if (d == null) {
-            return Integer.MAX_VALUE;
-        }
-
-        return d;
-    }
 
     /* set list of outlinks from a router */
     private void setOutLinks(int routerId, int []  out) {

@@ -27,6 +27,31 @@ public class AbstractLink implements Comparable <AbstractLink> {
         return s;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + node1_;
+        result = prime * result + node2_;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        AbstractLink other = (AbstractLink) obj;
+        if (node1_ != other.node1_)
+            return false;
+        if (node2_ != other.node2_)
+            return false;
+        return true;
+    }
+    @Override
     public int compareTo (AbstractLink otherLink)
     {
         if (node1_ < otherLink.getNode1()) {
@@ -54,4 +79,6 @@ public class AbstractLink implements Comparable <AbstractLink> {
     public int getNode2() {
         return node2_;
     }
+
+
 }

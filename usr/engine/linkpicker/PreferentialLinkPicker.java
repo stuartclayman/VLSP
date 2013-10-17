@@ -46,6 +46,8 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
 
         for (int node : nodes) {
             int deg = g.getOutLinks(node).length;
+            if (deg == 0)
+                deg= 1;
 
             while (deg >= nodesByDegree_.size()) {
                 nodesByDegree_.add(new ArrayList<Integer>());

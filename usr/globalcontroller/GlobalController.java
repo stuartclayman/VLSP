@@ -38,7 +38,6 @@ import usr.console.ComponentController;
 import usr.engine.EventEngine;
 import usr.engine.ProbabilisticEventEngine;
 import usr.events.AppStartEvent;
-import usr.events.EndLinkEvent;
 import usr.events.EndRouterEvent;
 import usr.events.Event;
 import usr.events.EventScheduler;
@@ -531,14 +530,22 @@ public class GlobalController implements ComponentController {
 
     /**
      * Schedule the creation of a link between two nodes
-     * @param node1 first node
-     * @param node2 second node
      */
     public void scheduleLink(AbstractLink link, EventEngine eng, long time)
     {
         StartLinkEvent sle= new StartLinkEvent(time, eng, link);
+        sle.setScheduled();
         scheduler_.addEvent(sle);
         network_.scheduleLink(link);
+    }
+
+    /**
+     * Schedule the creation of a link between two nodes
+     */
+    public void scheduleLink(int node1, int node2, EventEngine eng, long time)
+    {
+        AbstractLink l = new AbstractLink(node1,node2);
+        scheduleLink(l,eng,time);
     }
 
     /** checks if events can be simulated */
@@ -1027,33 +1034,6 @@ public class GlobalController implements ComponentController {
     }
 
 
-    /**
-     * Start a link
-     */
-    public JSONObject startLink(int r1, int r2, int weight) {
-        try {
-            System.err.println("Start link object JSON "+r1+" "+r2);
-            StartLinkEvent ev = new StartLinkEvent(getElapsedTime(), null, r1, r2, weight);
-            JSONObject jsobj = executeEvent(ev);
-            return jsobj;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
-     * End a link
-     */
-    public JSONObject endLink(int r1, int r2, int weight) {
-        try {
-            EndLinkEvent ev = new EndLinkEvent(getElapsedTime(), null, r1, r2);
-            JSONObject jsobj = executeEvent(ev);
-            return jsobj;
-        } catch (Exception e) {
-            return null;
-        }
-
-    }
 
 
     /**
@@ -1295,8 +1275,8 @@ public class GlobalController implements ComponentController {
 
     /** Register a link with structures necessary in Global
      * Controller */
-    public void registerLink(int router1Id, int router2Id) {
-        network_.addLink(router1Id, router2Id);
+    public void registerLink(int router1Id, int router2Id, boolean scheduled) {
+        network_.addLink(router1Id, router2Id, scheduled);
 
         // inform
         informAllRouters();
