@@ -34,7 +34,7 @@ public class ConnectNetworkEvent extends AbstractEvent {
         }
         try {
             JSONObject js = new JSONObject();
-            js.put("success", (Boolean)false);
+            js.put("success", (Boolean)true);
             if (link == null) {
                 js.put("new_link",(Boolean)false);
                 return js;

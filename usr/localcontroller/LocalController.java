@@ -463,9 +463,15 @@ public class LocalController implements ComponentController {
             String allStats = sb.toString();
             try {
                 gcInteractor_.sendRouterStats(allStats);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+
-                                              "Cannot send stats to global controller "+e.getMessage());
+                                              "IO EXception, cannot send stats to global controller "+e.getMessage());
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Full stats \n:"+
+                         allStats);
+                return false;
+            } catch (JSONException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+
+                        "JSON Excpetion cannot send stats to global controller "+e.getMessage());
                 return false;
             }
 

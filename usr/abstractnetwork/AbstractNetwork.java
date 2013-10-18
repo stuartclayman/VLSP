@@ -2,8 +2,6 @@ package usr.abstractnetwork;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-
 import usr.globalcontroller.GlobalController;
 import usr.logging.USR;
 

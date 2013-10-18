@@ -83,8 +83,8 @@ public class RouterInteractor {
 
         try {
             jsobj = rest.json(uri).toObject();
-
-            Logger.getLogger("log").logln(USR.STDOUT, "R response: " + jsobj.toString());
+            String stri= jsobj.toString();
+            Logger.getLogger("log").logln(USR.STDOUT, "R response: " + stri.substring(0, Math.min(stri.length(),72)));
 
             return jsobj;
         } catch (java.net.ConnectException ce) {

@@ -6,6 +6,8 @@ package usr.events;
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
 import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -80,7 +82,13 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
             }
 
             try {
-                controller_.executeEvent(ev);
+                JSONObject js= controller_.executeEvent(ev);
+                Boolean success= (Boolean)js.get("success");
+                if (! success) {
+                    Logger.getLogger("log").logln(USR.ERROR,
+                            "Event "+ev+" failed");
+                    controller_.deactivate();
+                }
             } catch (InstantiationException ine) {
                 Logger.getLogger("log").logln(USR.ERROR,
                        "Unexpected error in scheduled operation: "
@@ -95,6 +103,10 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
                 Logger.getLogger("log").logln(USR.ERROR,
                                               "Global Controller must be lagging, cannot interrupt "
                                               + "scheduler in time");
+                controller_.deactivate();
+            } catch (JSONException e) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                        "Event "+ev+" failed to return success in JSON");
                 controller_.deactivate();
             }
             lag = System.currentTimeMillis() - expectedStart;

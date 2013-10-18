@@ -617,9 +617,9 @@ public class GlobalController implements ComponentController {
             Operation execute = new Operation() {
                     @Override
 					public JSONObject call() throws InstantiationException, InterruptedException, TimeoutException {
-                    	Logger.getLogger("log").logln(USR.STDOUT, "EVENT preceed: " + e);
+                    	Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT preceed: " + e);
                     	e.preceedEvent(scheduler_, gc);
-                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT execute: " + e);
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT execute: " + e);
                         JSONObject js = null;
                         js = e.execute(gc);
 
@@ -628,10 +628,12 @@ public class GlobalController implements ComponentController {
                         for (OutputType t : eventOutput_) {
                             produceEventOutput(e, js, t);
                         }
-                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT follow: " + e);
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "EVENT follow: " + e);
 
                         e.followEvent(scheduler_, js, gc);
-                        Logger.getLogger("log").logln(USR.STDOUT, "EVENT done: " + e);
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT done: " + e );
+                        String str= js.toString();
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " "+str.substring(0,Math.min(str.length(), 60)));
                         return js;
                     }
                 };
@@ -764,19 +766,6 @@ public class GlobalController implements ComponentController {
         informAllRouters();
 
 
-    }
-
-    /**
-     * End router
-     */
-    public JSONObject sendRouter(int routerId) {
-        try {
-            EndRouterEvent ev = new EndRouterEvent(getElapsedTime(), null, routerId);
-            JSONObject jsobj = executeEvent(ev);
-            return jsobj;
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     /** Find some router info

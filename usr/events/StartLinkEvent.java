@@ -284,10 +284,11 @@ public class StartLinkEvent extends AbstractEvent {
 
         for (i = 0; i < MAX_TRIES; i++) {
             try {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Asking for lci response to link routers");
                 JSONObject response = lci.connectRouters(br1.getHost(), br1.getManagementPort(),
                                                          br2.getHost(), br2.getManagementPort(),
                                                          weight, name);
-
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Got lci response:"+response);
                 String connectionName = (String)response.get("name");
 
                 // add Pair<router1Id, router2Id> -> connectionName to  linkNames
