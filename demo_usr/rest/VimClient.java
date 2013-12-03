@@ -52,7 +52,6 @@ public class VimClient {
         initialize(addr, port);
     }
 
-
     /**
      * Initialize
      */
@@ -71,8 +70,6 @@ public class VimClient {
     public int getPort() {
         return port;
     }
-
-
 
     /**
      * Equivalent of: curl -X POST http://localhost:8888/router/
@@ -121,7 +118,6 @@ public class VimClient {
         throw new Error();
 
     }
-
 
     /**
      * Equivalent of: curl -X POST http://localhost:8888/router/?name=nnn
@@ -218,7 +214,6 @@ public class VimClient {
 
     }
 
-
     /**
      * Equivalent of: curl GET http://localhost:8888/router/?detail=[id | all]
      *
@@ -265,11 +260,10 @@ public class VimClient {
 
     }
 
-
     /**
      * Equivalent of: curl GET http://localhost:8888/router/id
      *
-     * Returns JSONObject:  {"routerID": 2, "address": "2", "name":"Router-2", "links": [1], "mgmtPort": 11003, "r2rPort": 11004,  "time": 1361817254727}
+     * Returns JSONObject:  {"routerID": 2, "address": "2", "name":"Router-2", "links": [1], "mgmtPort": 11003, "r2rPort": 11004, "time": 1361817254727}
      */
     public JSONObject getRouterInfo(int id) {
         try {
@@ -288,7 +282,6 @@ public class VimClient {
         throw new Error();
 
     }
-
 
     /**
      * Equivalent of: curl GET http://localhost:8888/router/id/link_stats
@@ -318,7 +311,6 @@ public class VimClient {
 
     }
 
-
     /**
      * Equivalent of: curl GET http://localhost:8888/router/id/link_stats/dst
      *
@@ -346,7 +338,6 @@ public class VimClient {
         throw new Error();
 
     }
-
 
     /**
      * Equivalent of: curl GET http://localhost:8888/router/count
@@ -393,8 +384,6 @@ public class VimClient {
         throw new Error();
 
     }
-
-
 
     /**
      * Equivalent of: POST http://localhost:8888/link/?router1=1&router2=2
@@ -586,7 +575,6 @@ public class VimClient {
 
     }
 
-
     /**
      * Equivalent of: curl http://localhost:8888/link/count
      *
@@ -609,7 +597,6 @@ public class VimClient {
         throw new Error();
 
     }
-
 
     /**
      * Equivalent of: curl GET http://localhost:8888/router/id/link
@@ -639,7 +626,7 @@ public class VimClient {
      *
      * Returns JSONObject:  {"routerID": 9,"type":" link", "list":[9830481,7078009,6488164]}
      */
-        public JSONObject listRouterLinks(int rid, String attr) {
+    public JSONObject listRouterLinks(int rid, String attr) {
         try {
             String uri = vimURI + "/router/" + rid + "/link/" + "?attr=" + attr;
 
@@ -657,11 +644,10 @@ public class VimClient {
 
     }
 
-
     /**
      * Equivalent of: curl GET http://localhost:8888/router/rid/link/lid
      *
-     * Returns JSONObject:  
+     * Returns JSONObject:
      */
     public JSONObject getRouterLinkInfo(int routerID, int linkID) {
         try {
@@ -680,8 +666,6 @@ public class VimClient {
         throw new Error();
 
     }
-
-
 
     /**
      * Equivalent of: POST http://localhost:8888/router/2/app/?className=usr.applications.Recv&args=4000
@@ -708,6 +692,31 @@ public class VimClient {
 
     }
 
+    /**
+     * Equivalent of:  DELETE http://localhost:8888/router/1/app/262145
+     *
+     * Returns JSONObject: {"status":"done"}
+     */
+    public JSONObject deleteApp(int routerID, int appID) {
+        try {
+            String uri = vimURI + "/router/" + routerID + "/app/" + appID;
+
+            // Delete
+            JSONObject jsobj = rest.json(uri, delete()).toObject();
+
+            return jsobj;
+
+        } catch (IOException ioe) {
+            System.err.println("deleteApp FAILED");
+        } catch (JSONException je) {
+            System.err.println("deleteApp FAILED");
+        }
+
+        throw new Error();
+
+    }
+
+
 
     /**
      * Equivalent of: curl http://localhost:8888/router/2/app/
@@ -733,7 +742,6 @@ public class VimClient {
 
     }
 
-
     /**
      * Equivalent of: curl http://localhost:8888/router/2/app/
      *
@@ -758,7 +766,6 @@ public class VimClient {
 
     }
 
-
     /**
      * Equivalent of: curl GET http://localhost:8888/ap/
      *
@@ -782,7 +789,6 @@ public class VimClient {
 
     }
 
-
     /**
      * Equivalent of: curl GET http://localhost:8888/ap/id
      *
@@ -805,7 +811,6 @@ public class VimClient {
         throw new Error();
 
     }
-
 
     /**
      * Equivalent of: curl -X POST http://localhost:8888/ap/?apID=aaa&routerID=rrr
@@ -831,9 +836,4 @@ public class VimClient {
 
     }
 
-
-
-
-
 }
-

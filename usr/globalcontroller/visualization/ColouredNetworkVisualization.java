@@ -24,7 +24,7 @@ public class ColouredNetworkVisualization implements Visualization {
      * Set the GlobalController this Visualization gets data from.
      */
     @Override
-	public void setGlobalController(GlobalController gc) {
+    public void setGlobalController(GlobalController gc) {
         this.gc = gc;
     }
 
@@ -32,7 +32,7 @@ public class ColouredNetworkVisualization implements Visualization {
      * Visualize the current topology of the network.
      */
     @Override
-	public void visualize(PrintStream s) {
+    public void visualize(PrintStream s) {
 
         HashMap<String, ArrayList<BasicRouterInfo> > routerLocations = new HashMap<String, ArrayList<BasicRouterInfo> >();
 
@@ -188,7 +188,15 @@ public class ColouredNetworkVisualization implements Visualization {
 
         // visit all the edges
         for (int i : gc.getRouterList()) {
+             BasicRouterInfo router1 = gc.findRouterInfo(i);
+
+            if (router1 == null) continue;
+
             for (int j : gc.getOutLinks(i)) {
+                BasicRouterInfo router2 = gc.findRouterInfo(j);
+
+                if (router2 == null) continue;
+
                 if (i < j) {
                     s.print(i+ " -- "+j);
 

@@ -6,6 +6,8 @@ import java.util.List;
 
 import usr.logging.Logger;
 import usr.logging.USR;
+import usr.common.ThreadTools;
+
 
 /**
  * The RouterDirectory has a reference to the Router that
@@ -88,6 +90,7 @@ public class RouterDirectory {
 
         if (r== null) {
             try {
+                ThreadTools.findAllThreads(".. ");
                 throw new Exception("RouterDirectory.getRouter() FAILED");
             } catch (Exception e) {
                 e.printStackTrace();

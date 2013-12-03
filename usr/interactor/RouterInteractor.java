@@ -8,9 +8,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import us.monoid.json.JSONException;
-import us.monoid.json.JSONObject;
-import us.monoid.web.Resty;
+import us.monoid.json.*;
+import us.monoid.web.*;
 import usr.common.ANSI;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -83,8 +82,8 @@ public class RouterInteractor {
 
         try {
             jsobj = rest.json(uri).toObject();
-            String stri= jsobj.toString();
-            Logger.getLogger("log").logln(USR.STDOUT, "R response: " + stri.substring(0, Math.min(stri.length(),72)));
+            String stri = jsobj.toString();
+            Logger.getLogger("log").logln(USR.STDOUT, "R response: " + stri.substring(0, Math.min(stri.length(), 72)));
 
             return jsobj;
         } catch (java.net.ConnectException ce) {
@@ -328,10 +327,17 @@ public class RouterInteractor {
      * Stop an app
      * APP_STOP app_name
      */
-    public String appStop(String appName)  throws IOException, JSONException {
+    public JSONObject appStop(String appName)  throws IOException, JSONException {
+        StringBuilder builder = new StringBuilder();
+        builder.append(MCRP.APP_STOP.CMD);
+        builder.append(" ");
+        builder.append(java.net.URLEncoder.encode(appName, "UTF-8"));
+
+        String toSend = builder.toString();
+
         JSONObject response = interact(MCRP.APP_STOP.CMD);
 
-        return (String)response.get("response");
+        return response;
     }
 
     /**
@@ -344,14 +350,15 @@ public class RouterInteractor {
         // now we convert the replies in the response
         // into a list of apps
 
-        response.get("size");
+        // get no of apps
+        String appReplies = (String)response.get("size");
 
         // Logger.getLogger("log").logln(USR.ERROR, "appList: " + appReplies + " replies");
 
         // create a list for the names
         List<String> appNames = new ArrayList<String>();
 
-        response.get("list");
+        JSONArray jsarr = (JSONArray)response.get("list");
 
         return appNames;
 
@@ -416,7 +423,7 @@ public class RouterInteractor {
     }
 
     /** Set the link weight from this router to the router with a given spec */
-        public JSONObject setLinkWeight(String spec, int weight) throws IOException, JSONException {
+    public JSONObject setLinkWeight(String spec, int weight) throws IOException, JSONException {
         String toSend = MCRP.SET_LINK_WEIGHT.CMD + " "+ spec+" "+weight;
         JSONObject response = interact(toSend);
         return response;
@@ -457,17 +464,32 @@ public class RouterInteractor {
         // now we convert the replies in the response
         // into a list of connections
 
-        response.remove("size");
+        // get no of netifs
+        Integer netifReplies = (Integer)response.get("size");
+
+
+        /* response.remove("size"); */
 
         // create a list for the names
         List<String> stats = new ArrayList<String>();
         //System.err.println("JSON response "+response+"\n"+routerURI+"\n");
-        Iterator <String> itr = response.keys();
-        while(itr.hasNext()) {
+
+        /*
+        Iterator<String> itr = response.keys();
+
+        while (itr.hasNext()) {
             String key = (String)itr.next();
 
             stats.add((String)response.getString(key));
         }
+        */
+
+        for (int n = 0; n < netifReplies; n++) {
+            // pick out the r-th connection
+            stats.add((String)response.get(Integer.toString(n)));
+        }
+
+
 
         return stats;
     }

@@ -81,6 +81,7 @@ public class InfoSource {
         public boolean filter(Probe p, Measurement m) {
             return true;
         }
+
     };
 
     // Filter only returns value if the 0th field value is different by 2%
@@ -91,10 +92,11 @@ public class InfoSource {
 
         public boolean filter(Probe p, Measurement m) {
             List<ProbeValue> list = m.getValues();
-            Number n =  (Number)list.get(0).getValue();
+            Number n = (Number)list.get(0).getValue();
 
             Number oldValue = new Float(0);
             Measurement oldM;
+
             if ((oldM = p.getLastMeasurement()) != null) {
                 oldValue = (Number)oldM.getValues().get(0).getValue();
             }
@@ -114,6 +116,7 @@ public class InfoSource {
                 return true;
             }
         }
+
     };
 
     // Filter only returns value if the 0th field value is different by 5%
@@ -124,10 +127,11 @@ public class InfoSource {
 
         public boolean filter(Probe p, Measurement m) {
             List<ProbeValue> list = m.getValues();
-            Number n =  (Number)list.get(0).getValue();
+            Number n = (Number)list.get(0).getValue();
 
             Number oldValue = new Float(0);
             Measurement oldM;
+
             if ((oldM = p.getLastMeasurement()) != null) {
                 oldValue = (Number)oldM.getValues().get(0).getValue();
             }
@@ -147,6 +151,7 @@ public class InfoSource {
                 return true;
             }
         }
+
     };
 
     // Filter only returns value if the 0th field value is different by 10%
@@ -157,10 +162,11 @@ public class InfoSource {
 
         public boolean filter(Probe p, Measurement m) {
             List<ProbeValue> list = m.getValues();
-            Number n =  (Number)list.get(0).getValue();
+            Number n = (Number)list.get(0).getValue();
 
             Number oldValue = new Float(0);
             Measurement oldM;
+
             if ((oldM = p.getLastMeasurement()) != null) {
                 oldValue = (Number)oldM.getValues().get(0).getValue();
             }
@@ -180,6 +186,7 @@ public class InfoSource {
                 return true;
             }
         }
+
     };
 
     // no default filter
@@ -204,7 +211,7 @@ public class InfoSource {
             // create forwardIndex
             realName = name+"-log";
             File dataIndexPath = new File(collectorPath, realName);
-            indexProperties.setProperty("indexpath",  dataIndexPath.getPath());
+            indexProperties.setProperty("indexpath", dataIndexPath.getPath());
             indexProperties.setProperty("name", realName);
 
             dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
@@ -295,7 +302,6 @@ public class InfoSource {
         return oldSleepTime;
     }
 
-
     /**
      * Get the name of the AggPoint.
      */
@@ -353,6 +359,7 @@ public class InfoSource {
      */
     public ProbeFilter setFilter(FilterSpecifer spec) {
         ProbeFilter old = actualFilter;
+
         switch (spec) {
         case Always:
             actualFilter = always;
@@ -374,7 +381,6 @@ public class InfoSource {
 
         return old;
     }
-
 
     /**
      * Main entry point.
@@ -425,14 +431,13 @@ public class InfoSource {
             System.exit(1);
         }
 
-
         // allocate an InfoSource
         InfoSource infoSource = new InfoSource();
 
         // process args
         int argc = args.length;
 
-        for (int arg=0; arg < argc; arg++) {
+        for (int arg = 0; arg < argc; arg++) {
             String thisArg = args[arg];
 
             // check if its a flag
@@ -491,6 +496,7 @@ public class InfoSource {
                 case 'l': {
                     // assume a file name
                     File potentialPath = new File(argValue);
+
                     // check if directory part exists
                     if (potentialPath.isDirectory() && potentialPath.canWrite()) {
                         infoSource.setCollectionPath(argValue);

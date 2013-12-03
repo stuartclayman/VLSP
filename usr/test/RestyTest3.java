@@ -55,27 +55,27 @@ class RestyTest3  {
             System.out.println("l2 = " + l2);
 
             JSONObject l3 = test.createLink(router2, router4, 10);
-            l3.get("linkID");
+            int link3 = (Integer)l3.get("linkID");
             System.out.println("l3 = " + l3);
 
             JSONObject l4 = test.createLink(router3, router5, 10);
-            l4.get("linkID");
+            int link4 = (Integer)l4.get("linkID");
             System.out.println("l4 = " + l4);
 
             JSONObject l5 = test.createLink(router4, router6, 10);
-            l5.get("linkID");
+            int link5 = (Integer)l5.get("linkID");
             System.out.println("l5 = " + l5);
 
             JSONObject l6 = test.createLink(router5, router6, 10);
-            l6.get("linkID");
+            int link6 = (Integer)l6.get("linkID");
             System.out.println("l6 = " + l6);
 
             JSONObject lSto1 = test.createLink(routerS, router1, 10);
-            lSto1.get("linkID");
+            int linkSto1 = (Integer)lSto1.get("linkID");
             System.out.println("lSto1 = " + lSto1);
 
             JSONObject lDto6 = test.createLink(routerD, router6, 10);
-            lDto6.get("linkID");
+            int linkDtoS = (Integer)lDto6.get("linkID");
             System.out.println("lDto6 = " + lDto6);
 
 
@@ -93,42 +93,24 @@ class RestyTest3  {
             System.out.println("a2 = " + a2);
 
             /* sleep 60 seconds = 1 minute = 60000 ms */
-
-            /* After 2 minutes set a link weight */
             Thread.sleep(120000);
 
-            JSONObject l1W = test.setLinkWeight(link1, 20);
-            System.out.println("l1W = " + l1W);
 
+            JSONObject r1D = test.deleteRouter(router1);
 
-            /* After 1 more minute reset link weight
-               and set a wieght on a different link */
-            Thread.sleep(60000);
+            JSONObject r2D = test.deleteRouter(router2);
 
-            JSONObject l2W = test.setLinkWeight(link2, 20);   // now 20
-            System.out.println("l2W = " + l2W);
-            JSONObject l1WW = test.setLinkWeight(link1, 10);   // back to 10
-            System.out.println("l1WW = " + l1WW);
+            JSONObject r3D = test.deleteRouter(router3);
 
+            JSONObject r4D = test.deleteRouter(router4);
 
+            JSONObject r5D = test.deleteRouter(router5);
 
-            Thread.sleep(300000);
+            JSONObject r6D = test.deleteRouter(router6);
 
-            test.deleteRouter(router1);
+            JSONObject rSD = test.deleteRouter(routerS);
 
-            test.deleteRouter(router2);
-
-            test.deleteRouter(router3);
-
-            test.deleteRouter(router4);
-
-            test.deleteRouter(router5);
-
-            test.deleteRouter(router6);
-
-            test.deleteRouter(routerS);
-
-            test.deleteRouter(routerD);
+            JSONObject rDD = test.deleteRouter(routerD);
 
         } catch (Exception e) {
         } catch (Error err) {

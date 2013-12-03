@@ -15,6 +15,7 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
 import usr.events.AppStartEvent;
+import usr.events.AppStopEvent;
 import cc.clayman.console.BasicRequestHandler;
 
 /**
@@ -31,7 +32,7 @@ public class AppRestHandler extends BasicRequestHandler {
      * Handle a request and send a response.
      */
     @Override
-	public boolean handle(Request request, Response response) {
+    public boolean handle(Request request, Response response) {
         // get GlobalController
         controller_ = (GlobalController)getManagementConsole().getAssociated();
 
@@ -147,7 +148,7 @@ public class AppRestHandler extends BasicRequestHandler {
             routerID = scanner.nextInt();
             scanner.close();
         } else {
-        	scanner.close();
+            scanner.close();
             badRequest(response, "arg routerID is not an Integer");
             response.close();
             return;
@@ -222,6 +223,99 @@ public class AppRestHandler extends BasicRequestHandler {
      * Delete a app given a request and send a response.
      */
     public void deleteApp(Request request, Response response) throws IOException, JSONException {
+        int routerID;
+        int appID;
+
+        Scanner scanner;
+
+        // get the path - path len == 4
+        Path path = request.getPath();
+        String[] segments = path.getSegments();
+
+        // process router ID
+        // it is 2nd element of segments
+        String routerValue = segments[1];
+
+        scanner = new Scanner(routerValue);
+
+        if (scanner.hasNextInt()) {
+            routerID = scanner.nextInt();
+        } else {
+            badRequest(response, "arg router id is not an Integer");
+            response.close();
+            return;
+        }
+
+        // if it exists, get data, otherwise complain
+        if (!controller_.isValidRouterID(routerID)) {
+            badRequest(response, " arg is not valid router id: " + routerValue);
+            response.close();
+            return;
+        }
+
+        // 3rd element == "app"
+
+        // process app ID
+        // it is 4th element of segments
+        String appValue = segments[3];
+
+        scanner = new Scanner(appValue);
+
+        if (scanner.hasNextInt()) {
+            appID = scanner.nextInt();
+        } else {
+            badRequest(response, "arg app id is not an Integer");
+            response.close();
+            return;
+        }
+
+        // if it exists, get data, otherwise complain
+        if (!controller_.isValidAppID(appID)) {
+            badRequest(response, " arg is not valid app id: " + appValue);
+            response.close();
+            return;
+        }
+
+
+        /* do work */
+
+        // Start app
+        // WAS int appID = controller_.appStop(routerID, appID);
+
+
+        boolean success = true;
+        String failMessage = null;
+        JSONObject jsobj = null;
+        try {
+            AppStopEvent ase = new AppStopEvent(controller_.getElapsedTime(), null, routerID, appID);
+            jsobj = controller_.executeEvent(ase);
+
+            if (jsobj.get("success").equals(false)) {
+                success = false;
+                failMessage = (String)jsobj.get("msg");
+            }
+        } catch (InterruptedException ie) {
+            success = false;
+            failMessage = "Signal interrupted in global controller";
+        } catch (InstantiationException ine) {
+            success = false;
+            failMessage = "Unexplained failure executing AppStopEvent";
+        } catch (TimeoutException to) {
+            success = false;
+            failMessage = "Semaphore timeout in global controller -- too busy";
+        }
+
+        if (success) {
+            PrintStream out = response.getPrintStream();
+
+            // WAS JSONObject jsobj = controller_.findAppInfoAsJSON(appID);
+
+            out.println(jsobj.toString());
+        } else {
+            badRequest(response, "Error stopping app " + appID + " on router " + routerID + " " + failMessage);
+            response.close();
+        }
+
     }
 
     /**
@@ -247,12 +341,11 @@ public class AppRestHandler extends BasicRequestHandler {
             scanner.close();
 
         } else {
-        	scanner.close();
+            scanner.close();
             badRequest(response, "arg routerID is not an Integer");
             response.close();
             return;
         }
-
 
         // if it exists, get data, otherwise complain
         if (!controller_.isValidRouterID(routerID)) {
@@ -305,11 +398,12 @@ public class AppRestHandler extends BasicRequestHandler {
             routerID = scanner.nextInt();
             scanner.close();
         } else {
-        	scanner.close();
+            scanner.close();
             badRequest(response, "arg router id is not an Integer");
             response.close();
             return;
         }
+
         // if it exists, get data, otherwise complain
         if (!controller_.isValidRouterID(routerID)) {
             badRequest(response, " arg is not valid router id: " + routerValue);
@@ -329,12 +423,11 @@ public class AppRestHandler extends BasicRequestHandler {
             appID = scanner.nextInt();
             scanner.close();
         } else {
-        	scanner.close();
+            scanner.close();
             badRequest(response, "arg app id is not an Integer");
             response.close();
             return;
         }
-
 
         // if it exists, get data, otherwise complain
         if (!controller_.isValidAppID(appID)) {

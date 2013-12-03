@@ -12,7 +12,7 @@ public class RouterTest1 {
     public static void main(String[] args) {
         RouterEnv routerEnv = null;
         @SuppressWarnings("unused")
-		Router router;
+        Router router;
 
         if (args.length == 0) {
             int port = 15151;

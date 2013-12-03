@@ -7,7 +7,7 @@ import usr.globalcontroller.GlobalController;
 /** Class represents a global controller event*/
 public interface Event {
     /** Execute the event and return a JSON object with information*/
-    public  JSONObject execute(GlobalController gc) throws InstantiationException;
+    public JSONObject execute(GlobalController gc) throws InstantiationException;
 
     /** Accessor function for time*/
     public long getTime();

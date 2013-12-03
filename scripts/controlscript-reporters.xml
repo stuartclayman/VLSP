@@ -45,7 +45,7 @@
   </EventEngine>
 
   <RouterOptions>
-    scripts/routeroptions-noap.xml
+    routeroptions-noap.xml
   </RouterOptions>
 
 </SimOptions>

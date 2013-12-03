@@ -206,7 +206,7 @@ public class AppStartEvent extends AbstractEvent {
     }
 
     private String leadin() {
-        return "GC(AppSE):";
+        return "GC(AppStartEv):";
     }
 
 

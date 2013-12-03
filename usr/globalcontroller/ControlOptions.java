@@ -108,13 +108,11 @@ public class ControlOptions {
         engines_ = new ArrayList<EventEngine>();
         localControllers_ = new ArrayList<LocalControllerInfo>();
         outputs_ = new ArrayList<OutputType>();
-        remoteLoginCommand_ = "/usr/bin/ssh";
+        remoteLoginCommand_ = "ssh";   // WAS /usr/bin/ssh
         remoteLoginFlags_ = "-n";
         Properties prop = System.getProperties();
         remoteStartController_
-            = "java -cp "
-                + prop.getProperty("java.class.path",
-                                   null) + " usr.localcontroller.LocalController";
+            = "java -cp " + prop.getProperty("java.class.path", null) + " usr.localcontroller.LocalController";
         routerOptions_ = new RouterOptions(null);
         consumerInfoMap = new HashMap<String, String>();
     }
@@ -352,7 +350,7 @@ public class ControlOptions {
                 + visualizationClass);
 
             Class.forName(
-                    visualizationClass).asSubclass(Visualization.class);
+                visualizationClass).asSubclass(Visualization.class);
         } catch (SAXException e) {
             throw new SAXException(
                       "Unable to parse class name "
@@ -660,6 +658,11 @@ public class ControlOptions {
                 return eng;
             }
 
+            //if (engine.equals("IKMS")) {
+            //    eng = new IKMSEventEngine(endtime, parms);
+            //    return eng;
+            //}
+
             if (engine.equals("Script")) {
                 eng = new ScriptEngine(endtime, parms);
                 return eng;
@@ -680,7 +683,7 @@ public class ControlOptions {
         }
 
         try {
-            Class <?>[] args = new Class <?>[2];
+            Class<?>[] args = new Class<?>[2];
             args[0] = int.class;
             args[1] = String.class;
             Constructor<?> c = engClass.getConstructor(args);
@@ -847,11 +850,17 @@ public class ControlOptions {
     public String [] localControllerStartCommand(LocalControllerInfo lh) {
         if (lh.getName().equals("localhost")) {
             // no need to do remote command
-            String [] cmd = new String[3];
-            cmd[0] = "/usr/bin/java";
-            cmd[1] = "usr.localcontroller.LocalController";
-            cmd[2] = String.valueOf(lh.getPort());
+            String classpath = System.getProperty("java.class.path");
+
+            String [] cmd = new String[5];
+            cmd[0] = "java";
+            cmd[1] = "-classpath";
+            cmd[2] = classpath;
+            cmd[3] = "usr.localcontroller.LocalController";
+            cmd[4] = String.valueOf(lh.getPort());
+
             return cmd;
+
         } else {
             // its a remote command
             String [] cmd = new String[5];
@@ -985,8 +994,8 @@ public class ControlOptions {
     public void initialEvents(EventScheduler s, GlobalController g) {
         // If no engines simply start simulation
         if (engines_.size() == 0) {
-        	//Default engine -- start up and run for a long time
-            engines_.add(new EmptyEventEngine(1000000,""));
+            //Default engine -- start up and run for a long time
+            engines_.add(new EmptyEventEngine(1000000, ""));
         }
 
         engines_.get(0).startStopEvents(s, g);
@@ -1023,7 +1032,7 @@ public class ControlOptions {
     }
 
     @SuppressWarnings("unused")
-	private String leadin() {
+    private String leadin() {
         return "ControlOptions: ";
     }
 

@@ -14,7 +14,7 @@ import usr.globalcontroller.GlobalController;
 public class OutputSummary implements OutputFunction {
 
     @Override
-	public void makeOutput(long time, PrintStream s, OutputType o, GlobalController gc) {
+    public void makeOutput(long time, PrintStream s, OutputType o, GlobalController gc) {
 
         if (o.isFirst()) {
 
@@ -32,13 +32,12 @@ public class OutputSummary implements OutputFunction {
     }
 
     @Override
-	public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
+    public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
         makeOutput(event.getTime(), s, out, gc);
     }
 
     @Override
-	public void parseExtraXML(Node n) throws SAXException {
+    public void parseExtraXML(Node n) throws SAXException {
     }
-
 
 }

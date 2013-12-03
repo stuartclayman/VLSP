@@ -325,7 +325,7 @@ public class AppSocket {
     }
 
     /**
-     * Retrive setting for SO_TIMEOUT. 0 returns implies that the option is disabled 
+     * Retrive setting for SO_TIMEOUT. 0 returns implies that the option is disabled
      * (i.e., timeout of infinity).
      */
     public int getSoTimeout() throws SocketException {
@@ -340,7 +340,7 @@ public class AppSocket {
      * raised, though the DatagramSocket is still valid. The option must be
      * enabled prior to entering the blocking operation to have effect. The
      * timeout must be &gt; 0. A timeout of zero is interpreted as an infinite
-     * timeout.  
+     * timeout.
      * Parameters: timeout - the specified timeout in milliseconds.
      */
     public void setSoTimeout(int timeout) throws SocketException {
@@ -351,7 +351,7 @@ public class AppSocket {
      * toString.
      */
     @Override
-	public String toString() {
+    public String toString() {
         return "Socket[" + (isBound ? "bound " : "") + (isConnected ? "connected " : "") + "addr=" + localAddress + " port=" +
                remotePort + " localport=" + localPort + "]";
 

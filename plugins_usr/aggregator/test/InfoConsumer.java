@@ -71,7 +71,7 @@ public class InfoConsumer implements Reporter {
             // create forwardIndex
             realName = name+"-log";
             File dataIndexPath = new File(collectorPath, realName);
-            indexProperties.setProperty("indexpath",  dataIndexPath.getPath());
+            indexProperties.setProperty("indexpath", dataIndexPath.getPath());
             indexProperties.setProperty("name", realName);
 
             dataIndex = factory.create(IndexType.EXTERNAL, indexProperties);
@@ -79,7 +79,6 @@ public class InfoConsumer implements Reporter {
             tie.printStackTrace();
             throw new RuntimeException("Cannot create TimeIndex ");
         }
-
 
         // Set up the data listener
         // this is the handler
@@ -108,7 +107,6 @@ public class InfoConsumer implements Reporter {
             System.err.println("Can't add data to time index log " + dataIndex.getName());
         }
     }
-
 
     /**
      * Get the  address for inpput traffic.
@@ -190,14 +188,13 @@ public class InfoConsumer implements Reporter {
             System.exit(2);
         }
 
-
         // allocate an InfoConsumer
         InfoConsumer infoConsumer = new InfoConsumer();
 
         // process args
         int argc = args.length;
 
-        for (int arg=0; arg < argc; arg++) {
+        for (int arg = 0; arg < argc; arg++) {
             String thisArg = args[arg];
 
             // check if its a flag
@@ -228,6 +225,7 @@ public class InfoConsumer implements Reporter {
                 case 'l': {
                     // assume a file name
                     File potentialPath = new File(argValue);
+
                     // check if directory part exists
                     if (potentialPath.isDirectory() && potentialPath.canWrite()) {
                         infoConsumer.setCollectionPath(argValue);

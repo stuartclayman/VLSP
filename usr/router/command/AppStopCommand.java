@@ -29,7 +29,7 @@ public class AppStopCommand extends RouterCommand {
      * Evaluate the Command.
      */
     @Override
-	public boolean evaluate(Request request, Response response) {
+    public boolean evaluate(Request request, Response response) {
 
         try {
             PrintStream out = response.getPrintStream();
@@ -39,13 +39,13 @@ public class AppStopCommand extends RouterCommand {
             // strip off /command
             String value = path.substring(9);
             // strip off COMMAND
-            String rest = value.substring(MCRP.APP_START.CMD.length()).trim();
+            String rest = value.substring(MCRP.APP_STOP.CMD.length()).trim();
 
             if (rest.equals("")) {
                 response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put("error", "APP_START needs application class name");
+                jsobj.put("error", "APP_STOP needs application class name");
 
                 out.println(jsobj.toString());
                 response.close();

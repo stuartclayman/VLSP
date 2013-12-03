@@ -20,8 +20,7 @@ import eu.reservoir.monitoring.core.table.TableValue;
  * a NetIFStatsProbe embedded in each Router.
  * It shows the traffic sent over the network since last time.
  */
-public class NetIFStatsReporter implements Reporter,
-RouterDeletedNotification, TrafficInfo {
+public class NetIFStatsReporter implements Reporter, RouterDeletedNotification, TrafficInfo {
     GlobalController globalController;
 
     // A HashMap of RouterName -> latest measurement
@@ -55,31 +54,15 @@ RouterDeletedNotification, TrafficInfo {
      * ProbeValue 0: String =
      * Router-1
      * ProbeValue 1: Table =
-     * name | InBytes | InPackets | InErrors | InDropped | InDataBytes |
-     *******************************InDataPackets | OutBytes | OutPackets |
-     *****************OutErrors
-     *|
-     *|*|*|*|*|*|*|*|*|*|************OutDropped
-     *|
-     *|*|*|*|*|*|*|*|*|*|*|*|********OutDataBytes | OutDataPackets | InQueue
-     *||
-     *||*||*||*||*||*|*|*|*|*|*|*|*|*|BiggestInQueue
-     *||
-     *||*||*||*||*||*||*||*|*|*|****OutQueue
-     *|
-     *|*|*|*|*|*|*|*|*|*|*|*|*|*|***BiggestOutQueue |
-     * Router-1 localnet | 2548 | 13 | 0 | 0 | 2548 | 13 | 10584 | 54 | 0 |
-     *******************************0 | 10584 | 54 | 0 | 1 | 0 | 0 |
-     * Router-4 /Router-1/Connection-3 | 2925 | 18 | 0 | 0 | 2548 | 13 | 292
-     *| 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
-     * Router-5 /Router-1/Connection-4 | 3351 | 19 | 0 | 0 | 3136 | 16 | 308
-     *| 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
-     * Router-7 /Router-1/Connection-5 | 1314 | 8 | 0 | 0 | 1176 | 6 | 178 |
-     *******************************2 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
+     * name | InBytes | InPackets | InErrors | InDropped | InDataBytes | InDataPackets | OutBytes | OutPackets | OutErrors | OutDropped | OutDataBytes | OutDataPackets | InQueue | BiggestInQueue | OutQueue | BiggestOutQueue |
+     * Router-1 localnet | 2548 | 13 | 0 | 0 | 2548 | 13 | 10584 | 54 | 0 | 0 | 10584 | 54 | 0 | 1 | 0 | 0 |
+     * Router-4 /Router-1/Connection-3 | 2925 | 18 | 0 | 0 | 2548 | 13 | 292 | 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
+     * Router-5 /Router-1/Connection-4 | 3351 | 19 | 0 | 0 | 3136 | 16 | 308 | 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
+     * Router-7 /Router-1/Connection-5 | 1314 | 8 | 0 | 0 | 1176 | 6 | 178 | 2 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
      *
      */
     @Override
-	public void report(Measurement m) {
+    public void report(Measurement m) {
         if (m.getType().equals("NetIFStats")) {
             count++;
 
@@ -97,15 +80,15 @@ RouterDeletedNotification, TrafficInfo {
             //printTable(table);
 
             // GT - save old Measurement
-            previousMeasurements.put(routerName,
-                                     measurements.get(routerName));
+            previousMeasurements.put(routerName, measurements.get(routerName));
 
             synchronized (measurements) {
                 measurements.put(routerName, table);
             }
 
             // sclayman 20130808 THIS IS A RECEIVER OF DATA. DONT CALL EVENT
-            // sclayman 20130808 NetStatsEvent nse = new NetStatsEvent(globalController.getElapsedTime(), tableToString(table, false, true));
+            // sclayman 20130808 NetStatsEvent nse = new NetStatsEvent(globalController.getElapsedTime(), tableToString(table,
+            // false, true));
             // sclayman 20130808 globalController.addEvent(nse);
 
             // Calculate volume of traffic - in and out
@@ -132,7 +115,7 @@ RouterDeletedNotification, TrafficInfo {
      * @param routerDst the name of dest router
      */
     @Override
-	public List<Object> getTraffic(String routerSrc, String routerDst) {
+    public List<Object> getTraffic(String routerSrc, String routerDst) {
         Table tablePrev = previousMeasurements.get(routerSrc);
 
         Table table = measurements.get(routerSrc);
@@ -162,15 +145,8 @@ RouterDeletedNotification, TrafficInfo {
                 }
             } else {
                 // calcualte difference between the rows
-                // name | InBytes | InPackets | InErrors | InDropped |
-                // InDataBytes | InDataPackets | OutBytes | OutPackets |
-                // OutErrors | OutDropped | OutDataBytes |
-                // OutDataPackets |
-                // InQueue | BiggestInQueue | OutQueue | BiggestOutQueue
-                // |
-                // Router-1 localnet | 2548 | 13 | 0 | 0 | 2548 | 13 |
-                // 10584
-                // | 54 | 0 | 0 | 10584 | 54 | 0 | 1 | 0 | 0 |
+                // name | InBytes | InPackets | InErrors | InDropped |  InDataBytes | InDataPackets | OutBytes | OutPackets |  OutErrors | OutDropped | OutDataBytes | OutDataPackets | InQueue | BiggestInQueue | OutQueue | BiggestOutQueue |
+                // Router-1 localnet | 2548 | 13 | 0 | 0 | 2548 | 13 | 10584 | 54 | 0 | 0 | 10584 | 54 | 0 | 1 | 0 | 0 |
                 List<Object> data = new ArrayList<Object>(row.size());
 
                 // add name
@@ -246,7 +222,7 @@ RouterDeletedNotification, TrafficInfo {
      * Tell this reporter that a router has been deleted
      */
     @Override
-	public void routerDeleted(String routerName) {
+    public void routerDeleted(String routerName) {
         Table oldData = null;
 
         synchronized (measurements) {
@@ -255,9 +231,7 @@ RouterDeletedNotification, TrafficInfo {
             measurements.remove(routerName);
         }
 
-        System.out.println(
-            "Deleted router: " + routerName + " Lost data "
-            + calculateTraffic(oldData));
+        System.out.println("Deleted router: " + routerName + " Lost data " + calculateTraffic(oldData));
     }
 
     /**
@@ -319,7 +293,7 @@ RouterDeletedNotification, TrafficInfo {
      * Any dropped ?
      */
     @SuppressWarnings("unused")
-	private void printAnyDropped(String routerName, Table table) {
+    private void printAnyDropped(String routerName, Table table) {
         int rows = table.getRowCount();
 
         for (int r = 0; r < rows; r++) {
@@ -357,7 +331,7 @@ RouterDeletedNotification, TrafficInfo {
      * Print the table
      */
     @SuppressWarnings("unused")
-	private void printTable(Table table) {
+    private void printTable(Table table) {
         System.out.println(tableToString(table, true, false));
     }
 
@@ -373,13 +347,11 @@ RouterDeletedNotification, TrafficInfo {
         // output header
         if (withHeader) {
             if (withTime) {
-                builder.append(globalController.elapsedToString(
-                                   elapsed) + " ");
+                builder.append(globalController.elapsedToString(elapsed) + " ");
             }
 
             for (int c = 0; c < cols; c++) {
-                TableAttribute headerAttr
-                    = table.getColumnDefinitions().get(c);
+                TableAttribute headerAttr = table.getColumnDefinitions().get(c);
                 builder.append(headerAttr.getName() + " | ");
             }
 
@@ -391,8 +363,7 @@ RouterDeletedNotification, TrafficInfo {
 
         for (int r = 0; r < rows; r++) {
             if (withTime) {
-                builder.append(globalController.elapsedToString(
-                                   elapsed) + " ");
+                builder.append(globalController.elapsedToString(elapsed) + " ");
             }
 
             TableRow row = table.getRow(r);
@@ -402,13 +373,10 @@ RouterDeletedNotification, TrafficInfo {
 
                 switch (c) {
                 case 0: {                     // NetIF name col
-                    if (tableValue.getValue().toString().endsWith(
-                            "localnet")) {
-                        builder.append(coloured(ANSI.MAGENTA,
-                                                tableValue.getValue()));
+                    if (tableValue.getValue().toString().endsWith("localnet")) {
+                        builder.append(coloured(ANSI.MAGENTA, tableValue.getValue()));
                     } else {
-                        builder.append(coloured(ANSI.BLUE,
-                                                tableValue.getValue()));
+                        builder.append(coloured(ANSI.BLUE, tableValue.getValue()));
                     }
 
                     builder.append(" | ");
@@ -453,7 +421,7 @@ RouterDeletedNotification, TrafficInfo {
      * Print AppList data
      */
     @SuppressWarnings("unused")
-	private String appListToString(Table table) {
+    private String appListToString(Table table) {
         StringBuilder builder = new StringBuilder();
 
         // get the time
@@ -466,8 +434,7 @@ RouterDeletedNotification, TrafficInfo {
         builder.append(globalController.elapsedToString(elapsed) + " ");
 
         for (int c = 0; c < cols; c++) {
-            TableAttribute headerAttr
-                = table.getColumnDefinitions().get(c);
+            TableAttribute headerAttr = table.getColumnDefinitions().get(c);
             builder.append(headerAttr.getName() + " | ");
         }
 
@@ -477,8 +444,7 @@ RouterDeletedNotification, TrafficInfo {
         int rows = table.getRowCount();
 
         for (int r = 0; r < rows; r++) {
-            builder.append(globalController.elapsedToString(
-                               elapsed) + " ");
+            builder.append(globalController.elapsedToString(elapsed) + " ");
 
             TableRow row = table.getRow(r);
 

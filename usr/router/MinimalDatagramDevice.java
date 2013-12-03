@@ -63,7 +63,7 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      * Get the name of this Net Device
      */
     @Override
-	public String getName() {
+    public String getName() {
         return name_;
     }
 
@@ -79,7 +79,7 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      * Set the name of this Net Device
      */
     @Override
-	public void setName(String name) {
+    public void setName(String name) {
         name_ = name;
 
         if (fabric_!= null) {
@@ -91,14 +91,14 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      * Get the Address for this connection.
      */
     @Override
-	public Address getAddress() {
+    public Address getAddress() {
         return address_;
     }
 
     /** Get the FabricDevice associated with Net Device */
 
     @Override
-	public FabricDevice getFabricDevice() {
+    public FabricDevice getFabricDevice() {
         return fabric_;
     }
 
@@ -106,7 +106,7 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      * Set the Address for this connection.
      */
     @Override
-	public void setAddress(Address addr) {
+    public void setAddress(Address addr) {
         address_ = addr;
     }
 
@@ -114,7 +114,7 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      * Send a Datagram originating at this host (sets src address) and
      */
     @Override
-	public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
+    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
         return enqueueDatagram(dg);
     }
 
@@ -122,7 +122,7 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      * forward a datagram (does not set src address)
      */
     @Override
-	public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
+    public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
         FabricDevice fd = listener_.getRouteFabric(dg);
         return fd.addToInQueue(dg, null);
     }
@@ -137,13 +137,13 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      *   Send the datagram onwards to the world
      */
     @Override
-	public abstract boolean outQueueHandler(Datagram dg, DatagramDevice dd);
+    public abstract boolean outQueueHandler(Datagram dg, DatagramDevice dd);
 
     /**
      * Get the Listener of a NetIF.
      */
     @Override
-	public NetIFListener getNetIFListener() {
+    public NetIFListener getNetIFListener() {
         return listener_;
     }
 
@@ -151,7 +151,7 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      * Set the Listener of NetIF.
      */
     @Override
-	public void setNetIFListener(NetIFListener l) {
+    public void setNetIFListener(NetIFListener l) {
         listener_ = l;
 
     }

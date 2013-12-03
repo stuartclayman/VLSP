@@ -47,7 +47,7 @@ public class RouterAppsReporter implements Reporter {
      * 1 | 1331298150361 | 10000 | RUNNING | usr.applications.Send | [4, 3000, 250000, -d, 250, -i, 10] | /R1/App/usr.applications.Send/1 | [] | []
      */
     @Override
-	public void report(Measurement m) {
+    public void report(Measurement m) {
         if (m.getType().equals("AppList")) {
 
             List<ProbeValue> values = m.getValues();
@@ -134,7 +134,7 @@ public class RouterAppsReporter implements Reporter {
      * Print AppList data
      */
     @SuppressWarnings("unused")
-	private String appListToString(Table table) {
+    private String appListToString(Table table) {
         StringBuilder builder = new StringBuilder();
 
         // get the time

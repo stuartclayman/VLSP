@@ -26,15 +26,15 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
      * Set the GlobalController this Visualization gets data from.
      */
     @Override
-	public void setGlobalController(GlobalController gc) {
+    public void setGlobalController(GlobalController gc) {
         this.gc = gc;
     }
 
     /**
      * Visualize the current topology of the network.
      */
-     @Override
-	@SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     public void visualize(PrintStream s) {
 
         HashMap<String, ArrayList<BasicRouterInfo> > routerLocations = new HashMap<String, ArrayList<BasicRouterInfo> >();
@@ -102,7 +102,7 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
         s.print(" hosts=" + routerLocations.keySet().size());
         s.print(" routers=" + noRouters);
         s.print(" links=" + gc.getNoLinks
-());
+                    ());
         s.println("\";");
 
         // visit each host
@@ -214,17 +214,14 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
 
                         // Get the application measurement data from the app itself
 
-                        Map<String, Object> applicationData =
-                            routerInfo.getApplicationData(app);
+                        Map<String, Object> applicationData = routerInfo.getApplicationData(app);
                         // and get the MonitoringData from the applicationData
 
                         Map<String, String> monitoringData = null;
 
                         if (applicationData != null) {
 
-                            monitoringData =
-                                (Map<String,String>)
-                                applicationData.get("MonitoringData");
+                            monitoringData = (Map<String, String> )applicationData.get("MonitoringData");
                         }
 
                         // convert the map to a string
@@ -263,7 +260,15 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
 
         // visit all the edges
         for (int i : gc.getRouterList()) {
+            BasicRouterInfo router1 = gc.findRouterInfo(i);
+
+            if (router1 == null) continue;
+
             for (int j : gc.getOutLinks(i)) {
+                BasicRouterInfo router2 = gc.findRouterInfo(j);
+
+                if (router2 == null) continue;
+
                 if (i < j) {
                     s.print(i + " -- " + j);
 

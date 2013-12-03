@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.Future;
 
 import usr.interactor.RouterInteractor;
 import usr.net.Address;
@@ -98,7 +99,7 @@ public class RouterEnv {
 
         // Execute the Starter
         ExecutorService executer = Executors.newSingleThreadExecutor(new SimpleThreadFactory(name));
-        executer.submit(starter);
+        Future future = executer.submit(starter);
 
         // Get a handle on the Router itself
         return getRouter();
@@ -176,7 +177,7 @@ class Starter implements Runnable {
 
     // Thread.start jumps in here.
     @Override
-	public void run() {
+    public void run() {
         System.out.println("Starting Router: " + name + " / " + port1 + " / " + port2);
 
         router = new Router(port1, port2, name);
@@ -250,7 +251,7 @@ class SimpleThreadFactory implements ThreadFactory {
      * Create a new Thread in a specific ThreadGroup
      */
     @Override
-	public Thread newThread(Runnable r) {
+    public Thread newThread(Runnable r) {
         group = new ThreadGroup(name);
         return new Thread(group, r, name);
     }
@@ -266,7 +267,7 @@ class TidyUp extends Thread {
     }
 
     @Override
-	public void run() {
+    public void run() {
         List<Router> routers = RouterDirectory.getRouterList();
 
         for (Router router : routers) {

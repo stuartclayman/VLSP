@@ -201,7 +201,8 @@ public class TCPNetIF implements NetIF, Runnable {
      */
     @Override
     public void setWeight(int w) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + " TCPNetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin() + ANSI.YELLOW + " TCPNetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
         weight = w;
     }
 
@@ -320,8 +321,8 @@ public class TCPNetIF implements NetIF, Runnable {
 
     /**
      * Send a Datagram -- sets source to this interface and puts the datagram
-     on the incoming queue for this interface
-    */
+       on the incoming queue for this interface
+     */
     @Override
     public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
         if (running_ == true) {
@@ -352,7 +353,8 @@ public class TCPNetIF implements NetIF, Runnable {
 
             //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " TCPNetIF " + name + " sent " + dg);
         } catch (ClosedByInterruptException cbie) {
-            //Logger.getLogger("log").logln(USR.ERROR, leadin() + " ClosedByInterruptException connection.send "+address+"->"+remoteRouterAddress);
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + " ClosedByInterruptException connection.send
+            // "+address+"->"+remoteRouterAddress);
 
             //cbie.printStackTrace();
 
@@ -420,6 +422,7 @@ public class TCPNetIF implements NetIF, Runnable {
 
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+" About to stop fabricDevice_");
+
             // tell the fabricDevice to stop
             if (fabricDevice_ != null) {
                 fabricDevice_.stop();
@@ -441,7 +444,7 @@ public class TCPNetIF implements NetIF, Runnable {
                 latch.await();
             } catch (InterruptedException ie) {
             }
-  
+
             /*
              * try {
              *   runThread_.join();
@@ -516,9 +519,9 @@ public class TCPNetIF implements NetIF, Runnable {
         String ifName = getRouterPort() == null ? ("No port") : ("if" + Integer.toString(getRouterPort().getPortNo()));
 
         return ifName + " W(" + getWeight() + ") = " +
-            (address == null ? "No_Address" : "" + address) + " => " +
-            //getRemoteRouterName() + " " +
-            (remoteAddress == null ? "No_Remote_Address" : "" + remoteAddress);
+               (address == null ? "No_Address" : "" + address) + " => " +
+               //getRemoteRouterName() + " " +
+               (remoteAddress == null ? "No_Remote_Address" : "" + remoteAddress);
     }
 
     @Override

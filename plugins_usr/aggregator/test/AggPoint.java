@@ -67,6 +67,7 @@ public class AggPoint {
             System.out.println("Collected: " + object);
             return object;
         }
+
     };
 
 
@@ -84,6 +85,7 @@ public class AggPoint {
             List<ProbeValue> list = m.getValues();
             return new NumberCR((Number)list.get(0).getValue());
         }
+
     };
 
 
@@ -103,7 +105,7 @@ public class AggPoint {
         public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
             Collection<Number> list = convert(coll);
             Aggregate aggregate = new Aggregate();
-            Number number =  aggregate.average(list);
+            Number number = aggregate.average(list);
             System.out.println("Aggregation: average = " + number);
 
             // now create a Measurement as the result
@@ -113,7 +115,7 @@ public class AggPoint {
                 DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
                 // create a list of ProbeValue
-                ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+                ArrayList<ProbeValue> pvList = new ArrayList<ProbeValue>();
                 pvList.add((ProbeValue)pv0);
 
                 // Construct the Measurement
@@ -127,6 +129,7 @@ public class AggPoint {
 
 
         }
+
     };
 
 
@@ -135,7 +138,7 @@ public class AggPoint {
         public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
             Collection<Number> list = convert(coll);
             Aggregate aggregate = new Aggregate();
-            Number number =  aggregate.variance(list);
+            Number number = aggregate.variance(list);
             System.out.println("Aggregation: variance = " + number);
             // now create a Measurement as the result
 
@@ -144,7 +147,7 @@ public class AggPoint {
                 DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
                 // create a list of ProbeValue
-                ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+                ArrayList<ProbeValue> pvList = new ArrayList<ProbeValue>();
                 pvList.add((ProbeValue)pv0);
 
                 // Construct the Measurement
@@ -157,6 +160,7 @@ public class AggPoint {
             }
 
         }
+
     };
 
 
@@ -165,7 +169,7 @@ public class AggPoint {
         public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
             Collection<Number> list = convert(coll);
             Aggregate aggregate = new Aggregate();
-            Number number =  aggregate.sd(list);
+            Number number = aggregate.sd(list);
             System.out.println("Aggregation: sd = " + number);
 
             // now create a Measurement as the result
@@ -175,7 +179,7 @@ public class AggPoint {
                 DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
                 // create a list of ProbeValue
-                ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+                ArrayList<ProbeValue> pvList = new ArrayList<ProbeValue>();
                 pvList.add((ProbeValue)pv0);
 
                 // Construct the Measurement
@@ -187,6 +191,7 @@ public class AggPoint {
                 return null;
             }
         }
+
     };
 
 
@@ -195,7 +200,7 @@ public class AggPoint {
         public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
             Collection<Number> list = convert(coll);
             Aggregate aggregate = new Aggregate();
-            Number number =  aggregate.length(list);
+            Number number = aggregate.length(list);
             System.out.println("Aggregation: length = " + number);
 
             // now create a Measurement as the result
@@ -205,7 +210,7 @@ public class AggPoint {
                 DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
                 // create a list of ProbeValue
-                ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+                ArrayList<ProbeValue> pvList = new ArrayList<ProbeValue>();
                 pvList.add((ProbeValue)pv0);
 
                 // Construct the Measurement
@@ -217,6 +222,7 @@ public class AggPoint {
                 return null;
             }
         }
+
     };
 
     // The sum function.
@@ -224,7 +230,7 @@ public class AggPoint {
         public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
             Collection<Number> list = convert(coll);
             Aggregate aggregate = new Aggregate();
-            Number number =  aggregate.sum(list);
+            Number number = aggregate.sum(list);
             System.out.println("Aggregation: sum = " + number);
 
             // now create a Measurement as the result
@@ -234,7 +240,7 @@ public class AggPoint {
                 DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
                 // create a list of ProbeValue
-                ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+                ArrayList<ProbeValue> pvList = new ArrayList<ProbeValue>();
                 pvList.add((ProbeValue)pv0);
 
                 // Construct the Measurement
@@ -247,6 +253,7 @@ public class AggPoint {
             }
 
         }
+
     };
 
 
@@ -255,7 +262,7 @@ public class AggPoint {
         public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
             Collection<Number> list = convert(coll);
             Aggregate aggregate = new Aggregate();
-            Number number =  aggregate.min(list);
+            Number number = aggregate.min(list);
             System.out.println("Aggregation: min = " + number);
 
             // now create a Measurement as the result
@@ -265,7 +272,7 @@ public class AggPoint {
                 DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
                 // create a list of ProbeValue
-                ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+                ArrayList<ProbeValue> pvList = new ArrayList<ProbeValue>();
                 pvList.add((ProbeValue)pv0);
 
                 // Construct the Measurement
@@ -278,6 +285,7 @@ public class AggPoint {
             }
 
         }
+
     };
 
 
@@ -286,7 +294,7 @@ public class AggPoint {
         public AggregatorMeasurement aggregate(Collection<ChooserResult> coll) {
             Collection<Number> list = convert(coll);
             Aggregate aggregate = new Aggregate();
-            Number number =  aggregate.max(list);
+            Number number = aggregate.max(list);
             System.out.println("Aggregation: max = " + number);
 
             // now create a Measurement as the result
@@ -296,7 +304,7 @@ public class AggPoint {
                 DefaultProbeValue pv0 = new DefaultProbeValue(0, number);
 
                 // create a list of ProbeValue
-                ArrayList <ProbeValue> pvList = new ArrayList<ProbeValue>();
+                ArrayList<ProbeValue> pvList = new ArrayList<ProbeValue>();
                 pvList.add((ProbeValue)pv0);
 
                 // Construct the Measurement
@@ -309,6 +317,7 @@ public class AggPoint {
             }
 
         }
+
     };
 
 
@@ -334,6 +343,7 @@ public class AggPoint {
         public boolean filter(Forwarder forwarder, AggregatorMeasurement m) {
             return true;
         }
+
     };
 
     // Filter only returns value if it is different by 5%
@@ -355,7 +365,6 @@ public class AggPoint {
             System.out.println("Filter: " + mVal + "/" + oVal + " = " +
                                percent);
 
-
             // test for 5% tolerance -  0.95 -> 1.05
             if (0.95 < percent && percent < 1.05) {
                 // values too similar
@@ -364,6 +373,7 @@ public class AggPoint {
                 return true;
             }
         }
+
     };
 
     // Filter only returns value if it is different by 2%
@@ -401,6 +411,7 @@ public class AggPoint {
                 return true;
             }
         }
+
     };
 
     // Filter only returns value if it is different by 10%
@@ -422,7 +433,6 @@ public class AggPoint {
             System.out.println("Filter: " + mVal + "/" + oVal + " = " +
                                percent);
 
-
             // test for 10% tolerance -  0.90 -> 1.10
             if (0.90 < percent && percent < 1.10) {
                 // values too similar
@@ -431,6 +441,7 @@ public class AggPoint {
                 return true;
             }
         }
+
     };
 
     // set default filter to pass every value
@@ -498,7 +509,6 @@ public class AggPoint {
         aggPoint.activateControl();
     }
 
-
     /**
      * Get the path where raw data is collected into.
      */
@@ -557,7 +567,6 @@ public class AggPoint {
         return oldSleepTime;
     }
 
-
     /**
      * Get the address for input traffic to the aggregation point.
      */
@@ -602,6 +611,7 @@ public class AggPoint {
      */
     public AggregateFn setAggregateFn(AggregateFnSpecifer spec) {
         AggregateFn old = actualAggregateFn;
+
         switch (spec) {
         case Average:
             actualAggregateFn = average;
@@ -647,6 +657,7 @@ public class AggPoint {
      */
     public Filter setFilter(FilterSpecifer spec) {
         Filter old = actualFilter;
+
         switch (spec) {
         case Always:
             actualFilter = always;
@@ -668,7 +679,6 @@ public class AggPoint {
 
         return old;
     }
-
 
     /**
      * Get the ProbeAttributes
@@ -692,7 +702,8 @@ public class AggPoint {
      * Convert a Collection<ChooserResult> to  Collection<Number>
      */
     private Collection<Number> convert(Collection<ChooserResult> coll) {
-        ArrayList <Number>list = new ArrayList<Number>();
+        ArrayList<Number> list = new ArrayList<Number>();
+
         for (ChooserResult cr : coll) {
             list.add(((NumberCR)cr).number);
         }
@@ -751,14 +762,13 @@ public class AggPoint {
             System.exit(2);
         }
 
-
         // allocate an AggPoint
         AggPoint aggPoint = new AggPoint();
 
         // process args
         int argc = args.length;
 
-        for (int arg=0; arg < argc; arg++) {
+        for (int arg = 0; arg < argc; arg++) {
             String thisArg = args[arg];
 
             // check if its a flag
@@ -835,6 +845,7 @@ public class AggPoint {
                 case 'l': {
                     // assume a file name
                     File potentialPath = new File(argValue);
+
                     // check if directory part exists
                     if (potentialPath.isDirectory() && potentialPath.canWrite()) {
                         aggPoint.setCollectionPath(argValue);
@@ -879,6 +890,7 @@ public class AggPoint {
         // start the agg point
         aggPoint.start();
     }
+
 }
 
 // A ChooserResult class.
@@ -889,4 +901,5 @@ class NumberCR implements ChooserResult {
     public NumberCR(Number n) {
         number = n;
     }
+
 }

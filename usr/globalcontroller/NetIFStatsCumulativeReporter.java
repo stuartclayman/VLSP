@@ -50,7 +50,7 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
      * Router-1
      * ProbeValue 1: Table =
      * name | InBytes | InPackets | InErrors | InDropped | InDataBytes | InDataPackets | OutBytes | OutPackets | OutErrors |
-     *OutDropped | OutDataBytes | OutDataPackets | InQueue | BiggestInQueue | OutQueue | BiggestOutQueue |
+     * OutDropped | OutDataBytes | OutDataPackets | InQueue | BiggestInQueue | OutQueue | BiggestOutQueue |
      * Router-1 localnet | 2548 | 13 | 0 | 0 | 2548 | 13 | 10584 | 54 | 0 | 0 | 10584 | 54 | 0 | 1 | 0 | 0 |
      * Router-4 /Router-1/Connection-3 | 2925 | 18 | 0 | 0 | 2548 | 13 | 292 | 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
      * Router-5 /Router-1/Connection-4 | 3351 | 19 | 0 | 0 | 3136 | 16 | 308 | 4 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
@@ -58,7 +58,7 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
 
      */
     @Override
-	public void report(Measurement m) {
+    public void report(Measurement m) {
         if (m.getType().equals("NetIFStats")) {
             count++;
 
@@ -105,7 +105,7 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
      * @param routerDst the name of dest router
      */
     @Override
-	public List<Object> getTraffic(String routerSrc, String routerDst) {
+    public List<Object> getTraffic(String routerSrc, String routerDst) {
         Table table = measurements.get(routerSrc);
 
         if (table == null) {
@@ -148,7 +148,7 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
      * Tell this reporter that a router has been deleted
      */
     @Override
-	public void routerDeleted(String routerName) {
+    public void routerDeleted(String routerName) {
         Table oldData = null;
 
         synchronized (measurements) {
@@ -219,7 +219,7 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
      * Any dropped ?
      */
     @SuppressWarnings("unused")
-	private void printAnyDropped(String routerName, Table table) {
+    private void printAnyDropped(String routerName, Table table) {
         int rows = table.getRowCount();
 
         for (int r = 0; r< rows; r++) {
@@ -257,7 +257,7 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
      * Print the table
      */
     @SuppressWarnings("unused")
-	private void printTable(Table table) {
+    private void printTable(Table table) {
         System.out.println(tableToString(table, true, false));
     }
 
@@ -346,7 +346,7 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
      * Print AppList data
      */
     @SuppressWarnings("unused")
-	private String appListToString(Table table) {
+    private String appListToString(Table table) {
         StringBuilder builder = new StringBuilder();
 
         // get the time

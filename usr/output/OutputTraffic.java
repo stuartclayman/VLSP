@@ -18,18 +18,18 @@ public class OutputTraffic implements OutputFunction {
 
     /** In fact this only requests output -- actual output occurs later */
     @Override
-	public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
+    public void makeOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
         gc.checkTrafficOutputRequests(t, o);
 
     }
 
     @Override
-	public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
+    public void makeEventOutput(Event event, JSONObject result, PrintStream s, OutputType out, GlobalController gc) {
         makeOutput(event.getTime(), s, out, gc);
     }
 
     @Override
-	public void parseExtraXML(Node n) throws SAXException {
+    public void parseExtraXML(Node n) throws SAXException {
     }
 
     public void produceOutput(long t, PrintStream p, OutputType o, GlobalController gc) {
@@ -44,7 +44,6 @@ public class OutputTraffic implements OutputFunction {
             } else if (o.getParameter().equals("Aggregate")) {
                 outputTrafficAggregate(o, t, p, routerStats, gc);
             } else if (o.getParameter().equals("Raw")) {
-
 
                 for (String s : routerStats.split("\\*\\*\\*")) {
                     p.println(t+" "+s);

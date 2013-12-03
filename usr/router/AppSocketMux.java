@@ -133,7 +133,41 @@ public class AppSocketMux implements NetIF {
         }
     }
 
+    /**
+     * Wait for this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
+     */
+    private void waitFor() {
+        try {
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"waiting");
+            synchronized (this) {
+                setTheEnd();
+                wait();
+            }
+        } catch (InterruptedException ie) {
+        }
 
+    }
+
+    /**
+     * Notify this thread -- DO NOT MAKE WHOLE FUNCTION synchronized
+     */
+    private void theEnd() {
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "theEnd");
+        while (!ended()) {
+            try {
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"In a loop");
+                Thread.sleep(100);
+            } catch (Exception e) {
+
+            }
+        }
+
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"notifying");
+        synchronized (this) {
+            notify();
+        }
+
+    }
 
     synchronized void setTheEnd() {
         theEnd = true;
@@ -143,11 +177,18 @@ public class AppSocketMux implements NetIF {
         return theEnd;
     }
 
+    private synchronized void pause() {
+        try {
+            wait();
+        } catch (InterruptedException ie) {
+        }
+    }
+
     /**
      * Connect to my local Router.
      */
     @Override
-	public boolean connect() throws IOException {
+    public boolean connect() throws IOException {
         setID(0);
         setName("localnet");
         setWeight(0);
@@ -161,7 +202,7 @@ public class AppSocketMux implements NetIF {
 
     /** The fabric device which moves packets to/from this interface */
     @Override
-	public FabricDevice getFabricDevice() {
+    public FabricDevice getFabricDevice() {
         return fabricDevice_;
     }
 
@@ -169,7 +210,7 @@ public class AppSocketMux implements NetIF {
      * Get the name of this NetIF.
      */
     @Override
-	public String getName() {
+    public String getName() {
         return name;
     }
 
@@ -177,7 +218,7 @@ public class AppSocketMux implements NetIF {
      * Set the name of this NetIF.
      */
     @Override
-	public void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -185,7 +226,7 @@ public class AppSocketMux implements NetIF {
      * Get the ID of this NetIF.
      */
     @Override
-	public int getID() {
+    public int getID() {
         return id;
     }
 
@@ -193,7 +234,7 @@ public class AppSocketMux implements NetIF {
      * Set the ID of this NetIF.
      */
     @Override
-	public void setID(int id) {
+    public void setID(int id) {
         this.id = id;
     }
 
@@ -201,7 +242,7 @@ public class AppSocketMux implements NetIF {
      * Get the weight of this NetIF.
      */
     @Override
-	public int getWeight() {
+    public int getWeight() {
         return weight;
     }
 
@@ -209,7 +250,7 @@ public class AppSocketMux implements NetIF {
      * Set the weight of this NetIF.
      */
     @Override
-	public void setWeight(int w) {
+    public void setWeight(int w) {
         weight = w;
     }
 
@@ -217,7 +258,7 @@ public class AppSocketMux implements NetIF {
      * Get the Address for this connection.
      */
     @Override
-	public Address getAddress() {
+    public Address getAddress() {
         // return controller.getAddress();
         return address;
     }
@@ -226,7 +267,7 @@ public class AppSocketMux implements NetIF {
      * Set the Address for this connection.
      */
     @Override
-	public void setAddress(Address addr) {
+    public void setAddress(Address addr) {
         System.err.println("DO NOT SET ADDRESS FOR ASM");
         System.exit(-1);
     }
@@ -235,7 +276,7 @@ public class AppSocketMux implements NetIF {
      * Get the name of the remote router this NetIF is connected to.
      */
     @Override
-	public String getRemoteRouterName() {
+    public String getRemoteRouterName() {
         return controller.getName();
     }
 
@@ -243,7 +284,7 @@ public class AppSocketMux implements NetIF {
      * Set the name of the remote router this NetIF is connected to.
      */
     @Override
-	public void setRemoteRouterName(String name) {
+    public void setRemoteRouterName(String name) {
         System.err.println("Do not call setRemoteRouterName for ASM");
         System.exit(-1);
     }
@@ -252,7 +293,7 @@ public class AppSocketMux implements NetIF {
      * Get the Address  of the remote router this NetIF is connected to
      */
     @Override
-	public Address getRemoteRouterAddress() {
+    public Address getRemoteRouterAddress() {
         return controller.getAddress();
     }
 
@@ -260,7 +301,7 @@ public class AppSocketMux implements NetIF {
      * Set the Address  of the remote router this NetIF is connected to.
      */
     @Override
-	public void setRemoteRouterAddress(Address addr) {
+    public void setRemoteRouterAddress(Address addr) {
         System.err.println("Do not call setRemoteRouterAddress for ASM");
         System.exit(-1);
     }
@@ -270,7 +311,7 @@ public class AppSocketMux implements NetIF {
      * Returns a NetStats object.
      */
     @Override
-	public NetStats getStats() {
+    public NetStats getStats() {
         return fabricDevice_.getNetStats();
     }
 
@@ -281,7 +322,7 @@ public class AppSocketMux implements NetIF {
     public Map<Integer, NetStats> getSocketStats() {
         // now add queues for sockets
         for (int port : socketStats.keySet()) {
-            socketStats.get(port);
+            NetStats stats = socketStats.get(port);
         }
 
         return socketStats;
@@ -291,14 +332,14 @@ public class AppSocketMux implements NetIF {
      * Close a NetIF
      */
     @Override
-	public void close() {
+    public void close() {
         if (!isClosed()) {
             isClosed = true;
         }
     }
 
     @Override
-	public boolean isLocal() {
+    public boolean isLocal() {
         return true;
     }
 
@@ -306,7 +347,7 @@ public class AppSocketMux implements NetIF {
      * Is closed.
      */
     @Override
-	public boolean isClosed() {
+    public boolean isClosed() {
         return isClosed;
     }
 
@@ -314,7 +355,7 @@ public class AppSocketMux implements NetIF {
      * Get the Listener of a NetIF.
      */
     @Override
-	public NetIFListener getNetIFListener() {
+    public NetIFListener getNetIFListener() {
         return listener;
     }
 
@@ -322,7 +363,7 @@ public class AppSocketMux implements NetIF {
      * Set the Listener of NetIF.
      */
     @Override
-	public void setNetIFListener(NetIFListener l) {
+    public void setNetIFListener(NetIFListener l) {
         listener = l;
         fabricDevice_.setListener(l);
 
@@ -332,7 +373,7 @@ public class AppSocketMux implements NetIF {
      * Get the RouterPort a NetIF is plugIged into.
      */
     @Override
-	public RouterPort getRouterPort() {
+    public RouterPort getRouterPort() {
         return port;
     }
 
@@ -340,13 +381,13 @@ public class AppSocketMux implements NetIF {
      * Set the RouterPort a NetIF is plugIged into.
      */
     @Override
-	public void setRouterPort(RouterPort rp) {
+    public void setRouterPort(RouterPort rp) {
         port = rp;
     }
 
     /** Remote close received */
     @Override
-	public void remoteClose() {
+    public void remoteClose() {
         close();
     }
 
@@ -355,7 +396,7 @@ public class AppSocketMux implements NetIF {
        on the incoming queue for this interface
      */
     @Override
-	public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
+    public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
         if (running == true) {
             return enqueueDatagram(dg);
         } else {
@@ -367,7 +408,7 @@ public class AppSocketMux implements NetIF {
      * Puts a datagram on the incoming queue for this network interface
      */
     @Override
-	public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
+    public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
         return fabricDevice_.blockingAddToInQueue(dg, this);
     }
 
@@ -375,7 +416,7 @@ public class AppSocketMux implements NetIF {
         Deliver a received datagram to the appropriate app
      */
     @Override
-	public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
+    public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
         // if (running == false)  // If we're not running simply pretend to have received it
         //     return true;
         if (datagram.getProtocol() == Protocol.CONTROL) {

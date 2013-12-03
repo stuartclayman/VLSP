@@ -153,10 +153,8 @@ public class LocalControllerInteractor {
      * Ask the Local Controller to connect routers
      * Name is optional.
      */
-    public JSONObject connectRouters(String host1, int port1, String host2, int port2, int weight,
-                                 String name) throws IOException, JSONException {
-        String toSend = MCRP.CONNECT_ROUTERS.CMD+" "+host1+":"+port1+" "+
-            host2+":"+port2 +" " + weight;
+    public JSONObject connectRouters(String host1, int port1, String host2, int port2, int weight, String name) throws IOException, JSONException {
+        String toSend = MCRP.CONNECT_ROUTERS.CMD+" "+host1+":"+port1+" "+ host2+":"+port2 +" " + weight;
 
         if (name != null) {
             toSend += " " + name;
@@ -187,13 +185,12 @@ public class LocalControllerInteractor {
     }
 
     /** Ask the Local Controller to set a link weight */
-        public Boolean setLinkWeight(String host1, int port1, String address, int weight) throws IOException, JSONException {
+    public Boolean setLinkWeight(String host1, int port1, String address, int weight) throws IOException, JSONException {
         String toSend = MCRP.SET_LINK_WEIGHT.CMD+" "+host1+":"+port1+" "+address+" "+weight;
         JSONObject response = interact(toSend);
 
         return (Boolean)response.get("success");
     }
-
 
     /** Set the configuration string for a router */
     public Boolean setConfigString(String config) throws IOException,
@@ -229,11 +226,31 @@ public class LocalControllerInteractor {
     }
 
     /**
+     * Ask the LocalController to stop a command on a router.
+     */
+    public JSONObject appStop(int routerId, String appName) throws IOException, JSONException  {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(MCRP.APP_STOP.CMD);
+        builder.append(" ");
+        builder.append(routerId);
+        builder.append(" ");
+        builder.append(java.net.URLEncoder.encode(appName, "UTF-8"));
+
+        String toSend = builder.toString();
+
+        JSONObject response = interact(toSend);
+
+        // return the response
+        return response;
+    }
+
+    /**
      * Check with a local controller.
      */
     public Boolean checkLocalController(String host, int port) throws IOException, JSONException {
-        String toSend = MCRP.CHECK_LOCAL_CONTROLLER.CMD +
-            " " + host + " " + port;
+        Logger.getLogger("log").logln(USR.ERROR, "LocalControllerInteractor: checkLocalController: " + host + ":" + port);
+        String toSend = MCRP.CHECK_LOCAL_CONTROLLER.CMD + " " + host + " " + port;
         JSONObject response = interact(toSend);
         return (Boolean)response.get("success");
     }

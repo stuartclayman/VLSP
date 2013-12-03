@@ -28,7 +28,7 @@ public class LocalOKCommand extends GlobalCommand {
      * Evaluate the Command.
      */
     @Override
-	public boolean evaluate(Request request, Response response) {
+    public boolean evaluate(Request request, Response response) {
 
         try {
             PrintStream out = response.getPrintStream();

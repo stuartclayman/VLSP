@@ -54,7 +54,7 @@ public class MultiRouter1C1S {
                 router2.setAddress(new IPV4Address("192.168.7.2"));
 
                 // talk to router2 ManagementConsole
-                router2Interactor =  router2Env.getRouterInteractor();
+                router2Interactor = router2Env.getRouterInteractor();
             } else {
                 router2Env.stop();
                 throw new Exception("router2 will not start");

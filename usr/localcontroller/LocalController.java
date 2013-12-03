@@ -64,6 +64,8 @@ public class LocalController implements ComponentController {
      */
     public static void main(String[] args) {
 
+        LocalController self_;
+
         if (args.length != 1) {
             Logger.getLogger("log").logln(USR.ERROR, "Command line must specify "+
                                           "port number to listen on and nothing else.");
@@ -83,7 +85,7 @@ public class LocalController implements ComponentController {
             System.exit(-1);
         }
 
-        new LocalController(port);
+        self_ = new LocalController(port);
 
     }
 
@@ -130,7 +132,7 @@ public class LocalController implements ComponentController {
      * Get the name of this LocalController.
      */
     @Override
-	public String getName() {
+    public String getName() {
         return myName + ":" + hostInfo_.getPort();
     }
 
@@ -234,7 +236,7 @@ public class LocalController implements ComponentController {
      * @return the name of the router, on success, or null, on failure.
      */
     @SuppressWarnings("unused")
-	public String requestNewRouter (int routerId, int port1, int port2, String address, String name) {
+    public String requestNewRouter (int routerId, int port1, int port2, String address, String name) {
 
         String routerName;
         Address routerAddress = null;
@@ -263,11 +265,11 @@ public class LocalController implements ComponentController {
         ProcessWrapper pw = null;
 
         String [] cmd = new String[9];
-        cmd[0] = "/usr/bin/java";
+        cmd[0] = "java";
         cmd[1] = "-cp";
         cmd[2] = classPath_;
         cmd[3] = "-Xms32m";
-        cmd[4] = "-Xmx64m";
+        cmd[4] = "-Xmx512m";
         cmd[5] = "usr.router.Router";
         cmd[6] = String.valueOf(port1);
         cmd[7] = String.valueOf(port2);
@@ -283,7 +285,11 @@ public class LocalController implements ComponentController {
         } catch (IOException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute command "+ Arrays.asList(cmd));
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-            child = null;
+
+
+            if (child != null) {
+                child = null;
+            }
 
             if (pw != null) {
                 pw.stop();
@@ -424,7 +430,7 @@ public class LocalController implements ComponentController {
                 String address = r2.getName()+":"+r2.getPort();
 
                 // Create a connection
-                // Exampel response {"address":"3","name":"Router-3.Connection-0","port":0,"remoteAddress ":"4","remoteName":"Router-4","weight":1}
+                // Exampel response {"address":"3","name":"Router-3.Connection-0","port":0,"remoteAddress":"4","remoteName":"Router-4","weight":1}
                 JSONObject response = null;
                 String connectionName;
 
@@ -467,11 +473,11 @@ public class LocalController implements ComponentController {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+
                                               "IO EXception, cannot send stats to global controller "+e.getMessage());
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Full stats \n:"+
-                         allStats);
+                                              allStats);
                 return false;
             } catch (JSONException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+
-                        "JSON Excpetion cannot send stats to global controller "+e.getMessage());
+                                              "JSON Excpetion cannot send stats to global controller "+e.getMessage());
                 return false;
             }
 
@@ -697,12 +703,12 @@ public class LocalController implements ComponentController {
 
             } catch (JSONException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+"JSON error in getRouterStats()"+" type "+
-                	e.getClass().getName() + "Message:"+e.getMessage());
+                                              e.getClass().getName() + "Message:"+e.getMessage());
                 return null;
             } catch (IOException e) {
-            	Logger.getLogger("log").logln(USR.ERROR, leadin()+"IOError in getRouterStats()"+" type "+
-                    	e.getClass().getName() + "Message:"+e.getMessage());
-            	return null;
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"IOError in getRouterStats()"+" type "+
+                                              e.getClass().getName() + "Message:"+e.getMessage());
+                return null;
             }
 
         }
@@ -768,6 +774,32 @@ public class LocalController implements ComponentController {
 
     }
 
+    /**
+     * Stop something on a Router.
+     */
+    public JSONObject appStop(int routerID, String appName) {
+        BasicRouterInfo br = routerMap_.get(routerID);
+
+        int port = br.getManagementPort();
+        RouterInteractor ri = findRouterInteractor(port);
+
+        if (ri == null) {
+            return null;
+        } else {
+            try {
+
+                JSONObject jsonObj = ri.appStop(appName);
+
+                return jsonObj;
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"");
+                return null;
+            }
+
+        }
+
+    }
+
     /** Report the Aggregation point for a given router */
     public boolean reportAP(int GID, int AP) {
         try {
@@ -806,7 +838,7 @@ public class LocalController implements ComponentController {
      * Get the ManagementConsole this ComponentController interacts with.
      */
     @Override
-	public ManagementConsole getManagementConsole() {
+    public ManagementConsole getManagementConsole() {
         return console_;
     }
 

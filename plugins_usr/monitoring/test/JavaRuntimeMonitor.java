@@ -46,7 +46,7 @@ public class JavaRuntimeMonitor {
     }
 
     @SuppressWarnings("unused")
-	private void turnOffProbe(Probe p) {
+    private void turnOffProbe(Probe p) {
         ds.deactivateProbe(p);
         ds.removeProbe(p);
     }
@@ -117,6 +117,5 @@ public class JavaRuntimeMonitor {
         hostMon.turnOnProbe(javaProbe);
 
     }
-
 
 }

@@ -74,7 +74,6 @@ public class SimpleConsumer {
             System.exit(2);
         }
 
-
         // Set up Consumer on AppSocket 2299
         new SimpleConsumer(appPort);
 

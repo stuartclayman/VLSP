@@ -132,7 +132,6 @@ public class AddressFactory {
         }
     }
 
-
     /**
      * Get address of current router
      */
@@ -145,6 +144,5 @@ public class AddressFactory {
             return r.getAddress();
         }
     }
-
 
 }
