@@ -1,0 +1,64 @@
+<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <StartLocalControllers>true</StartLocalControllers>
+     <ConnectedNetwork>true</ConnectedNetwork>
+     <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass>
+     <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualization</VisualizationClass> -->
+
+     <Monitoring>
+       <LatticeMonitoring>true</LatticeMonitoring>
+       <Consumer>
+         <Name>usr.globalcontroller.NetIFStatsCumulativeReporter</Name>
+       </Consumer>
+       <Consumer>
+         <Name>usr.globalcontroller.RouterAppsReporter</Name>
+       </Consumer>
+     </Monitoring>
+  </GlobalController>
+
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10000</Port>
+     <LowPort>11001</LowPort>
+     <HighPort>12000</HighPort>
+     <MaxRouters>30</MaxRouters>
+  </LocalController>
+
+  <!--
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10001</Port>
+     <LowPort>12001</LowPort>
+     <HighPort>13000</HighPort>
+  </LocalController>
+
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10002</Port>
+     <LowPort>13001</LowPort>
+     <HighPort>14000</HighPort>
+  </LocalController>
+  -->
+
+  <EventEngine>
+     <Name>Probabilistic</Name>
+     <EndTime>602</EndTime> <!-- seconds -->
+     <Parameters>scripts/probdists.xml</Parameters>
+  </EventEngine>
+
+  <RouterOptions>
+      scripts/routeroptions-noap.xml
+  </RouterOptions>
+
+  <!-- 
+  <Output>
+    <File>/tmp/traffic.raw</File>
+    <When>Interval</When>
+    <Time>2000</Time>
+    <Type>Traffic</Type>
+    <Parameter>Separate</Parameter> 
+  </Output>
+  -->
+
+</SimOptions>
