@@ -11,7 +11,7 @@ public class AggPointCreator implements AP {
 
     int ap_ = 0; // The aggregation point for this node
     String apName_ = null;
-    String monGenName_ = null;
+    String infoSourceName_ = null;
 
     // Counts ensure that Info Source and Aggreg Points have unique names
     int isCount_ = 1;
@@ -34,44 +34,25 @@ public class AggPointCreator implements AP {
             return ap;
         }
 
-        int result = internalSetAP(gid, ap);
-        return result;
+        return internalSetAP(gid, ap);
     }
 
 
     private int internalSetAP(int gid, int ap) {
-        if (monGenName_ != null) { // stop previous monitoring generator
-            //System.err.println("APP STOP");
-            controller.appStop(monGenName_);
-
-        }
+        stopInfoSource(); // stop previous monitoring generator
 
         if (gid == ap) {  // If this is becoming an AP then start an AP
             startAP(ap);
-        } else if (ap_ == gid) { // If this WAS an AP and is no longer then stop an AP
+        } else if (gid == ap_) { // If this WAS an AP and is no longer then stop an AP
             stopAP();
         }
-        ap_ = ap;
 
         // Now start an info source pointing at the new AP.
-        String command = new String("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-                                    "/3000 -t 1 -d 3");
-        command += (" -p "+options_.getMonType());    // What type of data do we monitor
-        //command+= (" -n info-source-"+gid+"-"+isCount_);  // Make source name unique
-        command += (" -n info-source-"+gid);  // Make source name
+        startInfoSource(gid, ap);
 
-        if (options_.getAPFilter() != null) {
-            command += (" -f "+options_.getAPFilter());             // Filter output
-        }
+        ap_ = ap;
 
-        if (options_.getAPOutputPath() != null) {
-            command += " -l "+ options_.getAPOutputPath();
-        }
-        ApplicationResponse resp = controller.appStart(command);
-        // WAS "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
-        isCount_++;
-        monGenName_ = resp.getMessage();
-        //System.err.println("NEW NAME "+monGenName_);
+        //System.err.println("NEW NAME "+infoSourceName_);
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+ gid+ " now has aggregation point "+ap);
 
         return ap;
@@ -104,6 +85,41 @@ public class AggPointCreator implements AP {
         }
     }
 
+
+    /**
+     * Start an Info Source
+     */
+    public void startInfoSource(int gid, int ap) {
+        String command = new String("plugins_usr.aggregator.appl.InfoSource -o "+ap+
+                                    "/3000 -t 1 -d 3");
+        command += (" -p "+options_.getMonType());    // What type of data do we monitor
+        //command+= (" -n info-source-"+gid+"-"+isCount_);  // Make source name unique
+        command += (" -n info-source-"+gid);  // Make source name
+
+        if (options_.getAPFilter() != null) {
+            command += (" -f "+options_.getAPFilter());             // Filter output
+        }
+
+        if (options_.getAPOutputPath() != null) {
+            command += " -l "+ options_.getAPOutputPath();
+        }
+        ApplicationResponse resp = controller.appStart(command);
+        // WAS "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
+        isCount_++;
+        infoSourceName_ = resp.getMessage();
+    }
+
+
+    /**
+     * Stop an info  source
+     */
+    public void stopInfoSource() {
+        if (infoSourceName_ != null) { 
+            //System.err.println("APP STOP");
+            controller.appStop(infoSourceName_);
+
+        }
+    }
 
     /**
      * Create the String to print out before a message
