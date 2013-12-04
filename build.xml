@@ -6,11 +6,11 @@
     <echo message=""/>
     <property name="sources" value="${basedir}"/>
     <property name="classes" value="${basedir}/classes"/>
-    <property name="external.jars" value="./libs/monitoring-0.6.7.jar:./libs/timeindex-20130121.jar:./libs/aggregator-0.3.jar:./libs/rgcprobdistributions.jar:./libs/rgcxmlparse.jar:./libs/rgcmathfunctions.jar:./libs/resty-0.3.1.jar:./libs/simple-4.1.21.jar:./libs/restconsole-0.1.0.jar:./umf_libs/UMFCommon.jar:./umf_libs/restbind.jar" />
+    <property name="external.jars" value="./libs/monitoring-0.6.7.jar:./libs/timeindex-20130121.jar:./libs/aggregator-0.3.jar:./libs/rgcprobdistributions.jar:./libs/rgcxmlparse.jar:./libs/rgcmathfunctions.jar:./libs/resty-0.3.1.jar:./libs/simple-4.1.21.jar:./libs/restconsole-0.1.0.jar:./libs/log4j.jar" />
     <property name="api" value="${basedir}/docs"/>    
     <property name="year" value="2012"/>
     <property name="jars" value="${basedir}"/>
-    <property name="release" value="0.10.2" />
+    <property name="release" value="0.11.1" />
   </target>
 
   <!-- Build -->
@@ -18,7 +18,7 @@
     <echo message="------ Compiling application"/>
     <mkdir dir="${classes}"/>
     <javac debug="on" srcdir="${sources}" classpath="${external.jars}"
-            includeantruntime="false">
+           target="1.7" includeantruntime="false">
       <!-- destdir="${classes}" -->
       <include name="usr/**" />
       <include name="plugins_usr/**" />
@@ -90,11 +90,12 @@
   <!-- JavaDoc -->
   <target name="javadoc" depends="build">
     <echo message="------ Running JavaDoc"/>
-    <javadoc packagenames="usr.*, plugins_usr.*, demo_usr.*"
+
+    <javadoc packagenames="usr.*, plugins_usr.*"
              sourcepath="${sources}"
              destdir="${api}"
 	     classpath="${external.jars}"
-	     excludepackagenames="usr.test, plugins_usr.monitoring.test"
+	     excludepackagenames="usr.test, plugins_usr.monitoring.test, plugins_usr.tftp.com.*, demo_usr"
              bottom="User Space Routing ${release}"
              author="false">
       <classpath>
