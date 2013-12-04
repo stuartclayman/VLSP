@@ -90,7 +90,7 @@ public class RouterDirectory {
 
         if (r== null) {
             try {
-                ThreadTools.findAllThreads(".. ");
+                //ThreadTools.findAllThreads(".. ");
                 throw new Exception("RouterDirectory.getRouter() FAILED");
             } catch (Exception e) {
                 e.printStackTrace();

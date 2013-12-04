@@ -183,10 +183,10 @@ public class Router {
             isActive = false;
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
 
-            removeThreadContext(threadGroup);
-
             controller.stop();
             fabric.stop();
+
+            removeThreadContext(threadGroup);
 
             try {
                 if (outputStream_ != null) {

@@ -335,7 +335,7 @@ public class RouterInteractor {
 
         String toSend = builder.toString();
 
-        JSONObject response = interact(MCRP.APP_STOP.CMD);
+        JSONObject response = interact(toSend);
 
         return response;
     }

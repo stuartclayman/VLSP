@@ -62,7 +62,23 @@ public class AppStopEvent extends AbstractEvent {
         // Try and stop the app
         int result = appStopTry(routerNo_, appID, gc);
 
-        return new JSONObject();
+        JSONObject json = new JSONObject();
+        
+        try {
+            if (result >=0) {
+                json.put("success", true);
+            } else {
+                json.put("success", false);
+                json.put("msg", "Unable to stop application on router " + getName());
+            }
+        } catch (JSONException e) {
+            Logger.getLogger("log").logln(
+                USR.ERROR,
+                "JSONException in AppStopEvent should not occur");
+        }
+
+
+        return json;
 
     }
 

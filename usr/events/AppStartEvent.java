@@ -123,7 +123,7 @@ public class AppStartEvent extends AbstractEvent {
         } catch (JSONException e) {
             Logger.getLogger("log").logln(
                 USR.ERROR,
-                "JSONException in CreateTrafficEvent should not occur");
+                "JSONException in AppStartEvent should not occur");
         }
 
         return json;

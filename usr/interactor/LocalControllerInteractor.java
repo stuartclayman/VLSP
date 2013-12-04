@@ -81,7 +81,7 @@ public class LocalControllerInteractor {
     private JSONObject interact(String str) throws IOException, JSONException {
         String uri = localControllerURI +  "/command/" + java.net.URLEncoder.encode(str, "UTF-8");
 
-        Logger.getLogger("log").logln(USR.STDOUT, ANSI.CYAN + "LC call: " +  uri.substring(0, Math.min(84, uri.length())) + ANSI.RESET_COLOUR);
+        Logger.getLogger("log").logln(USR.STDOUT, ANSI.CYAN + "LC call: " + str.substring(0, Math.min(84, str.length())) + ANSI.RESET_COLOUR);
 
         JSONObject jsobj;
 
