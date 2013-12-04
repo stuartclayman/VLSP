@@ -617,9 +617,9 @@ public class GlobalController implements ComponentController {
             Operation execute = new Operation() {
                 @Override
                 public JSONObject call() throws InstantiationException, InterruptedException, TimeoutException {
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT preceed: " + e);
+                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT preceed: " + e);
                     e.preceedEvent(scheduler_, gc);
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT execute: " + e);
+                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT execute: " + e);
                     JSONObject js = null;
                     js = e.execute(gc);
 
@@ -628,11 +628,13 @@ public class GlobalController implements ComponentController {
                     for (OutputType t : eventOutput_) {
                         produceEventOutput(e, js, t);
                     }
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "EVENT follow: " + e);
+                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "EVENT follow: " + e);
 
                     e.followEvent(scheduler_, js, gc);
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT done: " + e );
+
+                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT done: " + e );
                     String str = js.toString();
+
                     Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " "+str.substring(0, Math.min(str.length(), 60)));
                     return js;
                 }
@@ -742,8 +744,12 @@ public class GlobalController implements ComponentController {
     }
 
     /** Register existence of router */
-    public void registerRouter(int rId) {
+    public void registerRouter(long time,int rId) {
         network_.addNode(rId);
+
+        // Tell APController about link
+        APController_.addNode(time, rId);
+
         // inform about all routers
         informAllRouters();
 
@@ -751,12 +757,12 @@ public class GlobalController implements ComponentController {
 
     /** Unregister a router and all links from structures in
      *  GlobalController*/
-    public void unregisterRouter(int rId, long time) {
+    public void unregisterRouter(long time, int rId) {
         int[] out = getOutLinks(rId);
-        APController_.removeNode(getElapsedTime(), rId);
+        APController_.removeNode(time, rId);
 
         for (int i = out.length - 1; i >= 0; i--) {
-            unregisterLink(rId, out[i]);
+            unregisterLink(time, rId, out[i]);
         }
 
         network_.removeNode(rId);
@@ -1257,8 +1263,11 @@ public class GlobalController implements ComponentController {
 
     /** Register a link with structures necessary in Global
      * Controller */
-    public void registerLink(int router1Id, int router2Id, boolean scheduled) {
+    public void registerLink(long time, int router1Id, int router2Id, boolean scheduled) {
         network_.addLink(router1Id, router2Id, scheduled);
+
+        // Tell APController about link
+        APController_.addLink(time, router1Id, router2Id);
 
         // inform
         informAllRouters();
@@ -1298,9 +1307,9 @@ public class GlobalController implements ComponentController {
 
     /** Remove a link with structures necessary in Global
      * Controller */
-    public void unregisterLink(int router1Id, int router2Id) {
+    public void unregisterLink(long time, int router1Id, int router2Id) {
         network_.removeLink(router1Id, router2Id);
-        APController_.removeLink(getElapsedTime(), router1Id, router2Id);
+        APController_.removeLink(time, router1Id, router2Id);
 
         // inform
         informAllRouters();
@@ -1347,14 +1356,14 @@ public class GlobalController implements ComponentController {
     /**
      * register an app
      */
-    public void registerApp(int appID, int routerID) {
+    public void registerApp(long time, int appID, int routerID) {
         appInfo.put(appID, routerID);
     }
 
     /**
      * unregister an app
      */
-    public void unregisterApp(int appID) {
+    public void unregisterApp(long time, int appID) {
         appInfo.remove(appID);
     }
 
@@ -2138,14 +2147,6 @@ public class GlobalController implements ComponentController {
     public boolean reportAP(int gid, int AP) {
         Logger.getLogger("log").logln(USR.ERROR, leadin() + "TODO write reportAP");
         return true;
-    }
-
-    public void addAPNode(long time, int rId) {
-        APController_.addNode(time, rId);
-    }
-
-    public void addAPLink(long time, int router1Id, int router2Id) {
-        APController_.addLink(time, router1Id, router2Id);
     }
 
     public boolean isLatticeMonitoring() {

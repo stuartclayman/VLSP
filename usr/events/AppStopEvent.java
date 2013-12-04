@@ -72,9 +72,7 @@ public class AppStopEvent extends AbstractEvent {
                 json.put("msg", "Unable to stop application on router " + getName());
             }
         } catch (JSONException e) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in AppStopEvent should not occur");
+            Logger.getLogger("log").logln(USR.ERROR, "JSONException in AppStopEvent should not occur");
         }
 
 
@@ -113,7 +111,7 @@ public class AppStopEvent extends AbstractEvent {
                 br.removeApplication(appID, appName);
 
                 // remove app to app info
-                gc.unregisterApp(appID);
+                gc.unregisterApp(time_, appID);
 
                 return appID;
             } catch (Exception e) {

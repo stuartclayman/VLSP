@@ -132,7 +132,7 @@ public class EndRouterEvent extends AbstractEvent {
         }
 
         if (success) {
-            gc.unregisterRouter(routerId, time);
+            gc.unregisterRouter(time, routerId);
         }
 
         return success;

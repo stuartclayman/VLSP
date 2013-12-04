@@ -155,7 +155,7 @@ public class EndLinkEvent extends AbstractEvent {
         }
 
         // return 0 for end of link
-        gc.unregisterLink(router1Id, router2Id);
+        gc.unregisterLink(time, router1Id, router2Id);
 
         return true;
     }

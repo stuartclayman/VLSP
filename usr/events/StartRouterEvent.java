@@ -94,8 +94,7 @@ public class StartRouterEvent extends AbstractEvent {
                 return -1;
             }
         }
-        gc.registerRouter(rId);
-        gc.addAPNode(time, rId);
+        gc.registerRouter(time, rId);
 
         return rId;
     }

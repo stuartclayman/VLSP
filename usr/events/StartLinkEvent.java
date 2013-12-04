@@ -232,10 +232,8 @@ public class StartLinkEvent extends AbstractEvent {
             }
 
             // register inside GlobalController
-            gc.registerLink(router1Id, router2Id, scheduled);
+            gc.registerLink(time,router1Id, router2Id, scheduled);
 
-            // Tell APController about link
-            gc.addAPLink(time, router1Id, router2Id);
             return linkID;
         }
     }

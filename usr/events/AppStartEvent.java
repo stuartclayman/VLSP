@@ -121,9 +121,7 @@ public class AppStartEvent extends AbstractEvent {
                 json.put("msg", "Unable to start application on router " + getName());
             }
         } catch (JSONException e) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in AppStartEvent should not occur");
+            Logger.getLogger("log").logln( USR.ERROR, "JSONException in AppStartEvent should not occur");
         }
 
         return json;
@@ -187,8 +185,8 @@ public class AppStartEvent extends AbstractEvent {
 
                 br.setApplicationData(appName, dataMap);
 
-                gc.// register app info
-                registerApp(appID, routerID);
+                // register app info
+                gc.registerApp(time_, appID, routerID);
 
                 return appID;
             } catch (JSONException je) {
