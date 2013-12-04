@@ -79,16 +79,12 @@ public class RouterController implements ComponentController, Runnable {
     // The ThreadGroup
     ThreadGroup threadGroup;
 
-    // Counts ensure that Info Source and Aggreg Points have unique names
-    int isCount_ = 1;
-    int apCount_ = 1;
-
     // Information about the APcontroller
     APController apController_ = null;
     APInfo apInfo_ = null;
-    int ap_ = 0; // The aggregation point for this node
-    String apName_ = null;
-    String monGenName_ = null;
+
+
+    AP apMgr;   // An Agg Point Manager
 
     RouterOptions options_ = null;
 
@@ -152,6 +148,8 @@ public class RouterController implements ComponentController, Runnable {
         //System.out.println("Construct AP Controller");
         apController_ = ConstructAPController.constructAPController(options_);
         apInfo_ = apController_.newAPInfo();
+
+        apMgr = new AggPointCreator(this);
 
         // setup DataSource
         dataSource = new BasicDataSource(name + ".dataSource");
@@ -352,7 +350,7 @@ public class RouterController implements ComponentController, Runnable {
      *
      */
     @Override
-	public void run() {
+    public void run() {
         /** Not needed with rest
 
            // get a handle on the Listener Queue
@@ -613,77 +611,17 @@ public class RouterController implements ComponentController, Runnable {
     }
 
     /** Read a file containing router options */
-
     public boolean readOptionsFile(String fName) {
         return router.readOptionsFile(fName);
     }
 
+    RouterOptions getRouterOptions() {
+        return options_;
+    }
+
     /** Set the aggregation point for this router */
     public synchronized void setAP(int gid, int ap) {
-        if (ap == ap_) {  // No change to AP
-            return;
-        }
-
-        if (monGenName_ != null) { // stop previous monitoring generator
-            //System.err.println("APP STOP");
-            appStop(monGenName_);
-
-        }
-
-        if (gid == ap) {  // If this is becoming an AP then start an AP
-            startAP(ap);
-        } else if (ap_ == gid) { // If this WAS an AP and is no longer then stop an AP
-            stopAP();
-        }
-        ap_ = ap;
-
-        // Now start an info source pointing at the new AP.
-        String command = new String("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-                                    "/3000 -t 1 -d 3");
-        command += (" -p "+options_.getMonType());    // What type of data do we monitor
-        //command+= (" -n info-source-"+gid+"-"+isCount_);  // Make source name unique
-        command += (" -n info-source-"+gid);  // Make source name
-
-        if (options_.getAPFilter() != null) {
-            command += (" -f "+options_.getAPFilter());             // Filter output
-        }
-
-        if (options_.getAPOutputPath() != null) {
-            command += " -l "+ options_.getAPOutputPath();
-        }
-        ApplicationResponse resp = appStart(command);
-        // WAS "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
-        isCount_++;
-        monGenName_ = resp.getMessage();
-        //System.err.println("NEW NAME "+monGenName_);
-        Logger.getLogger("log").logln(USR.STDOUT, leadin()+" now has aggregation point "+ap);
-
-    }
-
-    /** This node starts as an AP */
-    public void startAP(int gid) {
-        synchronized (this) {
-            System.out.println(leadin()+" has become an AP");
-            String command = new String("plugins_usr.aggregator.appl.AggPoint -i 0/3000 -t 5 -a average");
-            command += (" -n agg-point-"+gid+"-"+apCount_);
-
-            if (options_.getAPOutputPath() != null) {
-                command += " -l "+ options_.getAPOutputPath();
-            }
-            ApplicationResponse resp = appStart(command);
-            // WAS " -t 5 -a average -n agg-point-"+gid+"-"+apCount_);
-            apCount_++;
-            apName_ = resp.getMessage();
-        }
-    }
-
-    /** This node stops as an AP*/
-    public void stopAP() {
-        synchronized (this) {
-            System.out.println(leadin()+" has stopped being an AP");
-            appStop(apName_);
-            apName_ = null;
-        }
+        apMgr.setAP(gid, ap);
     }
 
     /*
@@ -793,18 +731,12 @@ public class RouterController implements ComponentController, Runnable {
             Integer datarate = entry.getValue();
 
             try {
-                // Now convert the class name to a Class
-                // get Class object
-
-                // WAS Class<RouterProbe> cc = (Class<RouterProbe>)Class.forName(probeClassName);
-
-                // Replaced with following 2 lines
+                // Ger class info
                 Class<?> c = Class.forName(probeClassName);
                 Class<? extends RouterProbe> cc = c.asSubclass(RouterProbe.class );
 
                 // find Constructor for when arg is RouterController
-                Constructor<? extends RouterProbe> cons = cc.getDeclaredConstructor(
-                        RouterController.class);
+                Constructor<? extends RouterProbe> cons = cc.getDeclaredConstructor(RouterController.class);
 
                 RouterProbe probe = cons.newInstance(this);
 

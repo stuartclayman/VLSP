@@ -308,6 +308,13 @@ public class Router {
     }
 
     /**
+     * List NetIFs
+     */
+    public List<NetIF> listNetIF() {
+        return fabric.listNetIF();
+    }
+
+    /**
      * Plug in a NetIF to the Router.
      */
     public RouterPort plugInNetIF(NetIF netIF) {
@@ -402,7 +409,7 @@ public class Router {
     }
 
     /** Read a string containing router options */
-    public boolean readOptionsString(String str) {
+    boolean readOptionsString(String str) {
         Logger logger = Logger.getLogger("log");
         try {
             //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO PARSE STRING "+str);
@@ -452,13 +459,9 @@ public class Router {
         return true;
     }
 
-    public List<NetIF> listNetIF() {
-        return fabric.listNetIF();
-    }
-
     /** Read a file containing router options */
 
-    public boolean readOptionsFile(String fName) {
+    boolean readOptionsFile(String fName) {
         Logger logger = Logger.getLogger("log");
         try {
             options_.setOptionsFromFile(fName);

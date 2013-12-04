@@ -3,11 +3,15 @@ package usr.net;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.SocketChannel;
 
 import usr.logging.Logger;
 import usr.logging.USR;
+
+// Can't import them, as both used in this class
+//import java.nio.channels.ClosedByInterruptException;
+//import usr.net.ClosedByInterruptException;
+
 
 /**
  * Create a connection that sends data
@@ -121,7 +125,7 @@ public class ConnectionOverTCP implements Connection {
      * when this is working
      */
     @Override
-	public synchronized boolean sendDatagram(Datagram dg) throws IOException, ClosedByInterruptException {
+	public synchronized boolean sendDatagram(Datagram dg) throws IOException, usr.net.ClosedByInterruptException {
         //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: send(" + outCounter + ")");
         if (dg == null) {
             Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: received null datagram");
@@ -137,9 +141,9 @@ public class ConnectionOverTCP implements Connection {
                 }
                 outCounter++;
                 return true;
-            } catch (ClosedByInterruptException cbie) {
+            } catch (java.nio.channels.ClosedByInterruptException cbie) {
                 //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverTCP: write failed because ClosedByInterruptException");
-                throw new ClosedByInterruptException();
+                throw new usr.net.ClosedByInterruptException("Connection from " + getAddress() + " Closed by Interrupt");
             }
         } else {
             Logger.getLogger("log").logln(USR.STDOUT,

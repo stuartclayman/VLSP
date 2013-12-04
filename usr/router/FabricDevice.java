@@ -280,7 +280,7 @@ public class FabricDevice implements FabricDeviceInterface {
             }
 
             if (inIsBlocking() && waitObj != null) {
-                throw new usr.net.InterfaceBlockedException();
+                throw new usr.net.InterfaceBlockedException("Interface NoQueueing Blocked to " + dg.getDstAddress().asTransmitForm());
             }
 
             Logger.getLogger("log").logln(USR.ERROR, leadin() + " inDroppedPacket: addToInQueue() inQueueDiscipline_ ==  QUEUE_NOQUEUE and waitObj == null for " + dh.datagram);
@@ -321,7 +321,7 @@ public class FabricDevice implements FabricDeviceInterface {
             if (waitObj != null) {
                 inWaitQueue_.addLast(waitObj);
                 // Here we have not processed the datagram -- the user may resend later
-                throw new usr.net.InterfaceBlockedException();
+                throw new usr.net.InterfaceBlockedException("Interface WithBlocking Blocked to " + dg.getDstAddress().asTransmitForm());
             } else {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + " inDroppedPacket: addToInQueue() inQueueDiscipline_ ==  QUEUE_BLOCKING || QUEUE_DROPPING and waitObj == null for " + dh.datagram);
                 inDroppedPacket(dg);
@@ -430,7 +430,7 @@ public class FabricDevice implements FabricDeviceInterface {
             // It will be notified when the queue is ready
             if (waitObj != null && outIsBlocking()) {
                 outWaitQueue_.addLast(waitObj);
-                throw new InterfaceBlockedException();
+                throw new InterfaceBlockedException("Interface WithBlocking Blocked to " + dh.datagram.getDstAddress().asTransmitForm());
             } else {
                 return false;
             }
@@ -718,7 +718,7 @@ class OutQueueHandler implements Runnable {
             // process DatagramHandle
             if (dh.datagram.TTLReduce() == false) {
                 fabricDevice_.listener_.TTLDrop(dh.datagram);
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + " inDroppedPacketNR: OutQueueHandler run() for " + dh.datagram);
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + " Dropped Packet: OutQueueHandler run() for " + dh.datagram);
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
                 continue;
             }
