@@ -697,7 +697,7 @@ public class VimClient {
      *
      * Returns JSONObject: {"status":"done"}
      */
-    public JSONObject deleteApp(int routerID, int appID) {
+    public JSONObject stopApp(int routerID, int appID) {
         try {
             String uri = vimURI + "/router/" + routerID + "/app/" + appID;
 
