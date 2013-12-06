@@ -1,5 +1,7 @@
 package usr.events;
 
+import java.util.ArrayList;
+
 
 public interface EventScheduler extends Runnable {
 
@@ -25,4 +27,10 @@ public interface EventScheduler extends Runnable {
     /** Interrupt above wait*/
     public void wakeWait();
 
+    /**
+     * @return list of all scheduled events
+     */
+    public ArrayList <Event> getEvents();
+
 }
+

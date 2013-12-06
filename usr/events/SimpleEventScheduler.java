@@ -227,6 +227,14 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Event position " +  "END");
     }
 
+    /* (non-Javadoc)
+     * return list of events
+     */
+    public ArrayList <Event> getEvents()
+    {
+    	return schedule_;
+    }
+
     /**
      * Create the String to print out before a message
      */
