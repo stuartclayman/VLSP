@@ -51,37 +51,37 @@ class Know1  {
 			//JSONObject a2 = test.createApp(router1, "demo_usr.know.InformationRetrievalNEM", "."); 
 			//System.out.println("a2 = " + a2);
 
-			JSONObject a1 = test.createApp(router2, "demo_usr.know.RestOverUSR", "20002");
+			JSONObject a1 = test.createApp(router2, "demo_usr.ikms.client.RestOverUSR", "20002");
 			System.out.println("a1 = " + a1);
 
 			Thread.sleep(10000);
 
-			JSONObject a2 = test.createApp(router2, "demo_usr.know.KnowForwarder", "10002");
+			JSONObject a2 = test.createApp(router2, "demo_usr.ikms.IKMSForwarder", "10002");
 			System.out.println("a2 = " + a2);           
 
 			Thread.sleep(10000);
 
-			JSONObject a3 = test.createApp(router1, "demo_usr.know.RestOverUSR", "20001");
+			JSONObject a3 = test.createApp(router1, "demo_usr.ikms.client.RestOverUSR", "20001");
 			System.out.println("a3 = " + a3);
 
 			Thread.sleep(10000);
 
 			//JSONObject a4 = test.createApp(router1, "demo_usr.know.InformationSubscribeNEM", "10001 2");
 			//JSONObject a4 = test.createApp(router1, "demo_usr.know.InformationSharingNEM", "10001 2");
-			JSONObject a4 = test.createApp(router1, "demo_usr.know.DirectSourceNEM", "10001 2");
+			JSONObject a4 = test.createApp(router1, "demo_usr.ikms.DirectSourceMA", "10001 2");
 
 			System.out.println("a4 = " + a4);
 
 			Thread.sleep(10000);
 
-			JSONObject a5 = test.createApp(router3, "demo_usr.know.RestOverUSR", "20003");
+			JSONObject a5 = test.createApp(router3, "demo_usr.ikms.client.RestOverUSR", "20003");
 			System.out.println("a5 = " + a5);
 
 			Thread.sleep(20000);
 
 			//JSONObject a6 = test.createApp(router3, "demo_usr.know.InformationPublishNEM", "10003 2");
 			//JSONObject a6 = test.createApp(router3, "demo_usr.know.InformationRetrievalNEM", "10003 2");
-			JSONObject a6 = test.createApp(router3, "demo_usr.know.DirectSinkNEM", "10003 2");
+			JSONObject a6 = test.createApp(router3, "demo_usr.ikms.DirectSinkMA", "10003 2");
 
 			System.out.println("a6 = " + a6);
 
