@@ -1408,6 +1408,7 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
 
                 Datagram datagram = DatagramFactory.newDatagram(Protocol.CONTROL, table);
+                datagram.setSrcAddress(getAddress());
                 datagram.setDstAddress(inter.getRemoteRouterAddress());
                 try {
                     sendDatagram(datagram);

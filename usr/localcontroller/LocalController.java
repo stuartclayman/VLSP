@@ -704,6 +704,7 @@ public class LocalController implements ComponentController {
             } catch (JSONException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+"JSON error in getRouterStats()"+" type "+
                                               e.getClass().getName() + "Message:"+e.getMessage());
+                e.printStackTrace();
                 return null;
             } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+"IOError in getRouterStats()"+" type "+

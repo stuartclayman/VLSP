@@ -28,6 +28,10 @@ public class LocalControllerInfo extends LocalHostInfo {
         return maxRouters_;
     }
 
+    public int getNoRouters() {
+        return currRouters_;
+    }
+
     public void addRouter() {
         currRouters_++;
     }

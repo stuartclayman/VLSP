@@ -718,7 +718,7 @@ class OutQueueHandler implements Runnable {
             // process DatagramHandle
             if (dh.datagram.TTLReduce() == false) {
                 fabricDevice_.listener_.TTLDrop(dh.datagram);
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + " Dropped Packet: OutQueueHandler run() for " + dh.datagram);
+                // Logger.getLogger("log").logln(USR.ERROR, leadin() + " Dropped Packet: OutQueueHandler run() for " + dh.datagram);
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
                 continue;
             }

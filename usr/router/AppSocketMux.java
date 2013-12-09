@@ -397,6 +397,7 @@ public class AppSocketMux implements NetIF {
      */
     @Override
     public boolean sendDatagram(Datagram dg) throws NoRouteToHostException {
+        dg.setSrcAddress(address);
         if (running == true) {
             return enqueueDatagram(dg);
         } else {

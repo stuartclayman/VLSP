@@ -45,8 +45,9 @@ import usr.events.EventScheduler;
 import usr.events.NetStatsEvent;
 import usr.events.OutputEvent;
 import usr.events.SetAggPointEvent;
-import usr.events.SimpleEventScheduler;
 import usr.events.StartLinkEvent;
+import usr.events.EventDelegate;
+import usr.events.SimpleEventScheduler;
 import usr.interactor.LocalControllerInteractor;
 import usr.lifeEstimate.LifetimeEstimate;
 import usr.localcontroller.LocalControllerInfo;
@@ -70,7 +71,7 @@ import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
  * contacts LocalControllers to set up virtual routers and then
  * gives set up and tear down instructions directly to them.
  */
-public class GlobalController implements ComponentController {
+public class GlobalController implements ComponentController, EventDelegate {
     private ControlOptions options_;      // Options affecting the simulation
 
     // Options structure which is given to each router.
@@ -79,10 +80,8 @@ public class GlobalController implements ComponentController {
     private String xmlFile_;              // name of XML file containing config
     private LocalHostInfo myHostInfo_;    // Information about the localhosts
     private GlobalControllerManagementConsole console_ = null;
-    private ArrayList<LocalControllerInteractor> localControllers_
-        = null;
-    private HashMap<String,
-                    ProcessWrapper> childProcessWrappers_ = null;
+    private ArrayList<LocalControllerInteractor> localControllers_ = null;
+    private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
     private ArrayList<String> childNames_ = null;
 
     // names of child processes
@@ -94,6 +93,9 @@ public class GlobalController implements ComponentController {
 
     // Map is used to store vacant ports on local controllers
     private HashMap<LocalControllerInfo, PortPool> portPools_ = null;
+
+    // The PlacementEngine that determines where a ROuter is placed.
+    private PlacementEngine placementEngine  = null;
 
     // Map is from router Id to information one which machine router is
     // stored on.
@@ -201,13 +203,6 @@ public class GlobalController implements ComponentController {
             System.exit(1);
         }
 
-        /*
-           GlobalController gControl = new GlobalController();
-           gControl.xmlFile_ = args[0];
-           gControl.init();
-           Logger.getLogger("log").logln(USR.STDOUT, gControl.leadin() + "Global controller session complete");
-           System.out.flush();
-         */
     }
 
     /**
@@ -303,6 +298,7 @@ public class GlobalController implements ComponentController {
             System.exit(-1);
         }
 
+
         if (options_.latticeMonitoring()) {
             latticeMonitoring = true;
         }
@@ -354,6 +350,10 @@ public class GlobalController implements ComponentController {
             initEmulation();
         }
 
+
+        // Setup Placement Engine
+        placementEngine = new LeastUsedLoadBalancer(interactorMap_.keySet());
+
         //Initialise events for schedules
         scheduler_ = new SimpleEventScheduler(options_.isSimulation(), this);
         options_.initialEvents(scheduler_, this);
@@ -369,8 +369,7 @@ public class GlobalController implements ComponentController {
         if (options_.getWarmUpPeriod() > 0) {
             for (EventEngine e : options_.getEngines()) {
                 if (e instanceof ProbabilisticEventEngine) {
-                    ((ProbabilisticEventEngine)e).warmUp(
-                        options_.getWarmUpPeriod(), APController_, this);
+                    ((ProbabilisticEventEngine)e).warmUp(options_.getWarmUpPeriod(), APController_, this);
                 }
             }
         }
@@ -452,6 +451,13 @@ public class GlobalController implements ComponentController {
         shutDown();
     }
 
+    /** 
+     * Checks if the event controller is active 
+     */
+    public boolean isActive() {
+        return isActive_;
+    }
+
     /** Sets isActive_ to false ending the simulation */
     public void deactivate() {
         isActive_ = false;
@@ -493,12 +499,10 @@ public class GlobalController implements ComponentController {
     /**
      * Set up the reporters
      */
-    private void setupReporters(HashMap<String,
-                                        String> reporterInfoMap) {
+    private void setupReporters(HashMap<String, String> reporterInfoMap) {
         // skip through the map, instantiate a Probe and set its data
         // rate
-        for (Map.Entry<String,
-                       String> entry : reporterInfoMap.entrySet()) {
+        for (Map.Entry<String, String> entry : reporterInfoMap.entrySet()) {
             String reporterClassName = entry.getValue();
             String label = entry.getKey();
 
@@ -509,15 +513,11 @@ public class GlobalController implements ComponentController {
                 // (Class<Reporter>)Class.forName(reporterClassName);
 
                 // Replaced with following 2 lines
-                Class<?> c =
-                    Class.forName(reporterClassName);
-                Class<? extends Reporter> cc = c.asSubclass(
-                        Reporter.class);
+                Class<?> c = Class.forName(reporterClassName);
+                Class<? extends Reporter> cc = c.asSubclass(Reporter.class);
 
                 // find Constructor for when arg is GlobalController
-                Constructor<? extends Reporter> cons
-                    = cc.
-                        getDeclaredConstructor(GlobalController.class);
+                Constructor<? extends Reporter> cons = cc.getDeclaredConstructor(GlobalController.class);
 
                 Reporter reporter = cons.newInstance(this);
                 reporterMap.put(label, reporter);
@@ -547,11 +547,6 @@ public class GlobalController implements ComponentController {
     public void scheduleLink(int node1, int node2, EventEngine eng, long time) {
         AbstractLink l = new AbstractLink(node1, node2);
         scheduleLink(l, eng, time);
-    }
-
-    /** checks if events can be simulated */
-    public boolean isActive() {
-        return isActive_;
     }
 
     /**
@@ -645,6 +640,7 @@ public class GlobalController implements ComponentController {
             JSONObject jsobj = semaphoredOperation(execute);
             return jsobj;
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new InstantiationException(ex.getMessage());
         }
     }
@@ -709,39 +705,26 @@ public class GlobalController implements ComponentController {
         return interactorMap_.get(lcinf);
     }
 
-    public LocalControllerInfo getLeastUsedLC() {
-        LocalControllerInfo leastUsed = options_.getController(0);
-
-        double minUse = leastUsed.getUsage();
-        double thisUsage;
-
-        for (int i = 1; i < noControllers_; i++) {
-            LocalControllerInfo lc = options_.getController(i);
-            thisUsage = lc.getUsage();
-
-            // Logger.getLogger("log").logln(USR.STDOUT, i+" Usage "+thisUsage);
-            if (thisUsage == 0.0) {
-                leastUsed = lc;
-                break;
-            }
-
-            if (thisUsage < minUse) {
-                minUse = thisUsage;
-                leastUsed = lc;
-            }
-        }
-
-        if (minUse >= 1.0) {
-            return null;
-        }
-
-        return leastUsed;
-    }
-
     /** Get the port pool associated with a local controller */
     public PortPool getPortPool(LocalControllerInfo lci) {
         return portPools_.get(lci);
     }
+
+
+    /**
+     * Do some placement calculation
+     */
+    public LocalControllerInfo placementForRouter() {
+        return placementEngine.routerPlacement();
+    }
+
+    /**
+     * Do some placement calculation
+     */
+    public LocalControllerInfo placementForRouter(String address) {
+        return placementEngine.routerPlacement(address);
+    }
+
 
     /** Register existence of router */
     public void registerRouter(long time,int rId) {
@@ -1970,9 +1953,7 @@ public class GlobalController implements ComponentController {
         boolean isOK = false;
 
         localControllers_ = new ArrayList<LocalControllerInteractor>();
-        interactorMap_
-            = new HashMap<LocalControllerInfo,
-                          LocalControllerInteractor>();
+        interactorMap_ = new HashMap<LocalControllerInfo, LocalControllerInteractor>();
         LocalControllerInteractor inter = null;
 
         // lopp a bit and try and talk to the LocalControllers
@@ -1985,18 +1966,18 @@ public class GlobalController implements ComponentController {
 
             // visit every LocalController
             for (int i = 0; i < noControllers_; i++) {
-                LocalControllerInfo lh = options_.getController(i);
+                LocalControllerInfo lcInfo = options_.getController(i);
 
-                if (interactorMap_.get(lh) == null) {
+                if (interactorMap_.get(lcInfo) == null) {
                     // we have not seen this LocalController before
                     // try and connect
                     try {
                         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Trying to make connection to "
-                                                      + lh.getName() + " " + lh.getPort());
-                        inter = new LocalControllerInteractor(lh);
+                                                      + lcInfo.getName() + " " + lcInfo.getPort());
+                        inter = new LocalControllerInteractor(lcInfo);
 
                         localControllers_.add(inter);
-                        interactorMap_.put(lh, inter);
+                        interactorMap_.put(lcInfo, inter);
                         inter.checkLocalController(myHostInfo_);
 
                         if (options_.getRouterOptionsString() != "") {
@@ -2014,7 +1995,7 @@ public class GlobalController implements ComponentController {
                             inter.monitoringStart(monitoringAddress, monitoringTimeout);
                         }
                     } catch (Exception e) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exception from " + lh + ". " + e.getMessage());
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exception from " + lcInfo + ". " + e.getMessage());
                         e.printStackTrace();
                         shutDown();
                         return;
@@ -2153,6 +2134,9 @@ public class GlobalController implements ComponentController {
         return latticeMonitoring;
     }
 
+    /**
+     * Get the maximum lag this controller will allow.
+     */
     public long getMaximumLag() {
         return options_.getMaxLag();
     }

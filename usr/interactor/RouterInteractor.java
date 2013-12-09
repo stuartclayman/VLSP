@@ -453,10 +453,8 @@ public class RouterInteractor {
      * Get the NetIF stats from a Router.
      */
     public List<String> getNetIFStats() throws IOException, JSONException {
-        // 237-localnet  InBytes=0 InPackets=0 InErrors=0 InDropped=0 OutBytes=17890 OutPackets=500 OutErrors=0 OutDropped=0
-        // InQueue=0 OutQueue=0
-        // 237-/Router-15151-15152/Connection-1  InBytes=66 InPackets=1 InErrors=0 InDropped=0 OutBytes=17956 OutPackets=501
-        // OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
+        // 237-localnet  InBytes=0 InPackets=0 InErrors=0 InDropped=0 OutBytes=17890 OutPackets=500 OutErrors=0 OutDropped=0  InQueue=0 OutQueue=0
+        // 237-/Router-15151-15152/Connection-1  InBytes=66 InPackets=1 InErrors=0 InDropped=0 OutBytes=17956 OutPackets=501 OutErrors=0 OutDropped=0 InQueue=0 OutQueue=0
         // 237 END 2
 
         JSONObject response = interact(MCRP.GET_NETIF_STATS.CMD);
@@ -472,23 +470,26 @@ public class RouterInteractor {
 
         // create a list for the names
         List<String> stats = new ArrayList<String>();
-        //System.err.println("JSON response "+response+"\n"+routerURI+"\n");
+        //System.err.println("RouterInteractor: getNetIFStats JSON response "+response+"\n"+routerURI+"\n");
 
-        /*
         Iterator<String> itr = response.keys();
 
         while (itr.hasNext()) {
             String key = (String)itr.next();
 
-            stats.add((String)response.getString(key));
+            if (key.equals("size")) {
+                continue;
+            } else {
+                stats.add((String)response.getString(key));
+            }
         }
-        */
 
+        /*
         for (int n = 0; n < netifReplies; n++) {
             // pick out the r-th connection
             stats.add((String)response.get(Integer.toString(n)));
         }
-
+        */
 
 
         return stats;

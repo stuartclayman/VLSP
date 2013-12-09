@@ -110,7 +110,9 @@ public class StartRouterEvent extends AbstractEvent {
         }
 
         // Find least used local controller
-        LocalControllerInfo leastUsed = gc.getLeastUsedLC();
+        LocalControllerInfo leastUsed = gc.placementForRouter();
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Choose LocalControllerInfo " + leastUsed);
 
         if (leastUsed == null) {
             return false;
