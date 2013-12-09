@@ -47,7 +47,7 @@ class TFTP2  {
             Thread.sleep(10000);
 
             // on router1, TFTPClient send to @(3)
-            JSONObject a2 = test.createApp(router1, "plugins_usr.tftp.com.globalros.tftp.client.TFTPClient", "3"); 
+            JSONObject a2 = test.createApp(router1, "plugins_usr.tftp.com.globalros.tftp.client.TFTPClient", Integer.toString(router3)); 
             System.out.println("a2 = " + a2);
 
             /* sleep 60 seconds = 1 minute = 60000 ms */
