@@ -53,7 +53,8 @@ public class SimpleEventScheduler implements EventScheduler, Runnable {
             if (ev == null) {
                 Logger.getLogger("log").logln(USR.ERROR, "Run out of events to process");
                 delegate_.deactivate();
-                waitForever();
+                //sclayman 20131209 - this causes a lockup
+                // waitForever();
             } else {
                 expectedStart = ev.getTime() + simulationStartTime_;
                 waitUntil(expectedStart);

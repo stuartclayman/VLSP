@@ -125,7 +125,6 @@ public class LocalController implements ComponentController {
         // it will actually output things where the log has bit
         // USR.ERROR set
         logger.addOutput(System.err, new BitMask(USR.ERROR));
-
     }
 
     /**
@@ -207,14 +206,16 @@ public class LocalController implements ComponentController {
     }
 
     /**
-     * Received alive message from GlobalController.
-     */
+     * Send 'alive' message to GlobalController.
+     */    
     public void aliveMessage(LocalHostInfo gc) {
         Logger.getLogger("log").logln(USR.STDOUT, "Got alive message from global controller.");
         try {
             Logger.getLogger("log").logln(USR.STDOUT, "Sending to "+gc.getName()+":"+gc.getPort());
             gcInteractor_ = new GlobalControllerInteractor(gc);
-            gcInteractor_.respondToGlobalController(hostInfo_);
+
+            //sclayman 20131209 - not needed any more
+            // gcInteractor_.respondToGlobalController(hostInfo_);
         } catch (UnknownHostException e) {
             Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
@@ -223,13 +224,10 @@ public class LocalController implements ComponentController {
             Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
             System.exit(-1);
-        } catch (JSONException e) {
-            Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
-            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-            System.exit(-1);
         }
 
     }
+
 
     /**
      * Received start new router command
@@ -457,7 +455,7 @@ public class LocalController implements ComponentController {
         }
     }
 
-    /** Send router stats to global controller*/
+    /** Send router stats to global controller */
     public boolean sendRouterStats(List<String> list) {
         synchronized (gcInteractor_) { // Synchronize on gcInteractor to prevent overlap
             StringBuilder sb = new StringBuilder();
@@ -484,6 +482,8 @@ public class LocalController implements ComponentController {
             return true;
         }
     }
+
+
 
     /** Local controller receives request to end a router */
     public boolean endRouter(LocalHostInfo r1) {

@@ -29,7 +29,7 @@ public class LocalCheckCommand extends LocalCommand {
      * Evaluate the Command.
      */
     @Override
-	public boolean evaluate(Request request, Response response) {
+    public boolean evaluate(Request request, Response response) {
 
         try {
             PrintStream out = response.getPrintStream();
@@ -48,6 +48,7 @@ public class LocalCheckCommand extends LocalCommand {
                 JSONObject jsobj = new JSONObject();
                 jsobj.put("error", "Local Check Command has wrong arguments " + rest);
 
+                jsobj.put("success", Boolean.FALSE);
                 out.println(jsobj.toString());
                 response.close();
 
@@ -66,6 +67,7 @@ public class LocalCheckCommand extends LocalCommand {
                 JSONObject jsobj = new JSONObject();
                 jsobj.put("error", "Cannot find host info for LOCAL_CHECK_COMMAND "+e.getMessage());
 
+                jsobj.put("success", Boolean.FALSE);
                 out.println(jsobj.toString());
                 response.close();
 

@@ -116,7 +116,7 @@ public class GlobalController implements ComponentController, EventDelegate {
     // A map of routerID to the agg point for that router
     private HashMap<Integer, Integer> apInfo = null;
 
-    private int aliveCount = 0;   // Counts number of live nodes running.
+    private int aliveCount = 0;   // Counts number of live LocalControllers running.
 
     private EventScheduler scheduler_ = null;    // Class holds scheduler for event list
 
@@ -492,7 +492,7 @@ public class GlobalController implements ComponentController, EventDelegate {
             startLocalControllers();
         }
 
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Checking existence of local Controllers");
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Checking existence of local Controllers");
         checkAllControllers();
     }
 
@@ -1599,8 +1599,9 @@ public class GlobalController implements ComponentController, EventDelegate {
         if (trafficOutputRequests_.size() > 1) {
             return;
         }
-        //long start= getTime();
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats sent at time "+start);
+
+        long start= getTime();
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats sent at time "+start);
         //  Make request for stats
         requestRouterStats();
         // Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats completed at time "+getTime()+ " elapsed (secs)
@@ -1817,37 +1818,178 @@ public class GlobalController implements ComponentController, EventDelegate {
 
         while (i.hasNext()) {
             LocalControllerInfo lh = i.next();
-            String [] cmd = options_.localControllerStartCommand(lh);
+
+            // try and see if we can talk to an exisiting LocalController
+            boolean connected = false;
             try {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting process " + Arrays.asList(cmd));
-                child = new ProcessBuilder(cmd).start();
-            } catch (IOException e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute remote command " + Arrays.asList(cmd));
-                Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-                System.exit(-1);
+                // see if the LocalController already exists
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + " does LocalController " + lh + " already exist");
+                LocalControllerInteractor inter = new LocalControllerInteractor(lh);
+                connected = inter.checkLocalController(myHostInfo_);
+
+            } catch (Exception ex) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + " cannot connect to exisiting localController " + lh);
+                connected = false;
             }
 
-            String procName = lh.getName() + ":" + lh.getPort();
-            childNames_.add(procName);
-            childProcessWrappers_.put(procName, new ProcessWrapper(child, procName));
 
-            try {
-                Thread.sleep(100); // Simple wait is to ensure controllers start up
-            } catch (java.lang.InterruptedException e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "startLocalControllers Got interrupt!");
-                System.exit(-1);
+            // Can't see it, so start a new one
+            if (!connected) {
+            
+                String [] cmd = options_.localControllerStartCommand(lh);
+                try {
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting process " + Arrays.asList(cmd));
+                    child = new ProcessBuilder(cmd).start();
+                } catch (IOException e) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute remote command " + Arrays.asList(cmd));
+                    Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+                    System.exit(-1);
+                }
+
+                String procName = lh.getName() + ":" + lh.getPort();
+                childNames_.add(procName);
+                childProcessWrappers_.put(procName, new ProcessWrapper(child, procName));
+
+                try {
+                    Thread.sleep(100); // Simple wait is to ensure controllers start up
+                } catch (java.lang.InterruptedException e) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "startLocalControllers Got interrupt!");
+                    System.exit(-1);
+                }
             }
+
         }
     }
 
     /**
+     * Check all controllers listed are functioning and
+     * creates interactors with the LocalControllers.
+     */
+    private void checkAllControllers() {
+        // try 20 times, with 500 millisecond gap
+        int MAX_TRIES = 20;
+        int tries = 0;
+        int millis = 500;
+        boolean isOK = false;
+
+        localControllers_ = new ArrayList<LocalControllerInteractor>();
+        interactorMap_ = new HashMap<LocalControllerInfo, LocalControllerInteractor>();
+        LocalControllerInteractor inter = null;
+
+        // lopp a bit and try and talk to the LocalControllers
+        for (tries = 0; tries < MAX_TRIES; tries++) {
+            // sleep a bit
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException ie) {
+            }
+
+            // visit every LocalController
+            for (int i = 0; i < noControllers_; i++) {
+                LocalControllerInfo lcInfo = options_.getController(i);
+
+                if (interactorMap_.get(lcInfo) == null) {
+                    // we have not seen this LocalController before
+                    // try and connect
+                    try {
+                        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Trying to make connection to "
+                                                      + lcInfo.getName() + " " + lcInfo.getPort());
+                        inter = new LocalControllerInteractor(lcInfo);
+
+                        localControllers_.add(inter);
+                        interactorMap_.put(lcInfo, inter);
+                        boolean connected = inter.checkLocalController(myHostInfo_);
+
+                        if (!connected) {
+                            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot interact with LocalController " + lcInfo);
+                            break;
+                        } else {
+                            aliveCount++;
+                        }
+
+                        if (options_.getRouterOptionsString() != "") {
+                            inter.setConfigString(options_.getRouterOptionsString());
+                        }
+
+                        // tell the LocalController to start monitoring
+                        // TODO: make more robust
+                        // only work if address is real
+                        // and/ or there is a consumer
+                        if (latticeMonitoring) {
+                            Logger.getLogger("log").logln(USR.STDOUT,
+                                                          leadin() + "Setting  monitoring address: " + monitoringAddress + " timeout: " + monitoringTimeout);
+
+                            inter.monitoringStart(monitoringAddress, monitoringTimeout);
+                        }
+                    } catch (Exception e) {
+                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exception from " + lcInfo + ". " + e.getMessage());
+                        e.printStackTrace();
+                        shutDown();
+                        return;
+                    }
+                }
+            }
+
+            // check if we have connected to all of them
+            // check if the no of controllers == the no of interactors
+            // if so, we dont have to do all lopps
+            if (noControllers_ == localControllers_.size()) {
+                Logger.getLogger("log").logln(USR.STDOUT,
+                                              leadin() + "All LocalControllers connected after " + (tries + 1) + " tries");
+                isOK = true;
+                break;
+            }
+        }
+
+        // if we did all loops and it's not OK
+        if (!isOK) {
+            // couldnt reach all LocalControllers
+            // We can keep a list of failures if we need to.
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Can't talk to all LocalControllers");
+            shutDown();
+            return;
+        }
+
+        /*
+         * sclayman 20131209 - not sure this is needed
+         *
+        // Wait to see if we have all controllers.
+        for (int i = 0; i < options_.getControllerWaitTime(); i++) {
+            if (aliveCount == noControllers_) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All controllers responded with alive message.");
+                return;
+            }
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+            }
+        }
+
+        */
+
+        // alternate
+        if (aliveCount == noControllers_) {
+            return;
+        } else {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Only " + aliveCount
+                                          + " from " + noControllers_ + " local Controllers responded.");
+            shutDown();
+            return;
+        }
+    }
+
+
+    /**
      * An alive message has been received from the host specified
      * in LocalHostInfo.
-     */
+     * sclayman 20131209 - not sure this is needed
+     *
     public void aliveMessage(LocalHostInfo lh) {
         aliveCount += 1;
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Received alive count from " + lh.getName() + ":" + lh.getPort());
     }
+     */
 
     /**
      * Get the simulation start time.
@@ -1939,107 +2081,6 @@ public class GlobalController implements ComponentController, EventDelegate {
      */
     public APController getAPController() {
         return APController_;
-    }
-
-    /**
-     * Check all controllers listed are functioning and
-     * creates interactors with the LocalControllers.
-     */
-    private void checkAllControllers() {
-        // try 20 times, with 500 millisecond gap
-        int MAX_TRIES = 20;
-        int tries = 0;
-        int millis = 500;
-        boolean isOK = false;
-
-        localControllers_ = new ArrayList<LocalControllerInteractor>();
-        interactorMap_ = new HashMap<LocalControllerInfo, LocalControllerInteractor>();
-        LocalControllerInteractor inter = null;
-
-        // lopp a bit and try and talk to the LocalControllers
-        for (tries = 0; tries < MAX_TRIES; tries++) {
-            // sleep a bit
-            try {
-                Thread.sleep(millis);
-            } catch (InterruptedException ie) {
-            }
-
-            // visit every LocalController
-            for (int i = 0; i < noControllers_; i++) {
-                LocalControllerInfo lcInfo = options_.getController(i);
-
-                if (interactorMap_.get(lcInfo) == null) {
-                    // we have not seen this LocalController before
-                    // try and connect
-                    try {
-                        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Trying to make connection to "
-                                                      + lcInfo.getName() + " " + lcInfo.getPort());
-                        inter = new LocalControllerInteractor(lcInfo);
-
-                        localControllers_.add(inter);
-                        interactorMap_.put(lcInfo, inter);
-                        inter.checkLocalController(myHostInfo_);
-
-                        if (options_.getRouterOptionsString() != "") {
-                            inter.setConfigString(options_.getRouterOptionsString());
-                        }
-
-                        // tell the LocalController to start monitoring
-                        // TODO: make more robust
-                        // only work if address is real
-                        // and/ or there is a consumer
-                        if (latticeMonitoring) {
-                            Logger.getLogger("log").logln(USR.STDOUT,
-                                                          leadin() + "Setting  monitoring address: " + monitoringAddress + " timeout: " +
-                                                          monitoringTimeout);
-                            inter.monitoringStart(monitoringAddress, monitoringTimeout);
-                        }
-                    } catch (Exception e) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exception from " + lcInfo + ". " + e.getMessage());
-                        e.printStackTrace();
-                        shutDown();
-                        return;
-                    }
-                }
-            }
-
-            // check if we have connected to all of them
-            // check if the no of controllers == the no of interactors
-            // if so, we dont have to do all lopps
-            if (noControllers_ == localControllers_.size()) {
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin() + "All LocalControllers connected after " + (tries + 1) + " tries");
-                isOK = true;
-                break;
-            }
-        }
-
-        // if we did all loops and it's not OK
-        if (!isOK) {
-            // couldnt reach all LocalControllers
-            // We can keep a list of failures if we need to.
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Can't talk to all LocalControllers");
-            shutDown();
-            return;
-        }
-
-        // Wait to see if we have all controllers.
-        for (int i = 0; i < options_.getControllerWaitTime(); i++) {
-            if (aliveCount == noControllers_) {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All controllers responded with alive message.");
-                return;
-            }
-
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-            }
-        }
-
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Only " + aliveCount
-                                      + " from " + noControllers_ + " local Controllers responded.");
-        shutDown();
-        return;
     }
 
     /**

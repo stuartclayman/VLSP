@@ -285,7 +285,7 @@ public class LocalControllerInteractor {
         return (Boolean)response.get("success");
     }
 
-    /** Request stats from routers -- stats are returned by a separate command*/
+    /** Request stats from routers -- stats are returned by a separate command */
     public void  requestRouterStats() throws IOException, JSONException {
 
         interact(MCRP.REQUEST_ROUTER_STATS.CMD);

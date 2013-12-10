@@ -3,7 +3,7 @@ package usr.globalcontroller;
 
 import usr.console.USRRestConsole;
 import usr.globalcontroller.command.GetRouterStatsCommand;
-import usr.globalcontroller.command.LocalOKCommand;
+//import usr.globalcontroller.command.LocalOKCommand;
 import usr.globalcontroller.command.QuitCommand;
 import usr.globalcontroller.command.ReportAPCommand;
 import usr.globalcontroller.command.SendRouterStatsCommand;
@@ -51,7 +51,7 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
         defineRequestHandler("/graph/", new GraphRestHandler());
 
         register(new UnknownCommand());
-        register(new LocalOKCommand());
+        //register(new LocalOKCommand());
         register(new QuitCommand());
         register(new ShutDownEventCommand());
         register(new ReportAPCommand());
