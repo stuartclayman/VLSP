@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import us.monoid.web.Resty;
+import static us.monoid.web.Resty.form;
 import usr.common.LocalHostInfo;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -86,6 +87,21 @@ public class GlobalControllerInteractor {
         return jsobj;
     }
 
+    /**
+     * Interact with post
+     */
+        private JSONObject post(String str, String data) throws IOException, JSONException {
+        String uri = globalControllerURI +  "/command/" + java.net.URLEncoder.encode(str, "UTF-8");
+
+        Logger.getLogger("log").logln(USR.STDOUT, "GC call: " + uri.substring(0, Math.min(64, uri.length())));
+
+        JSONObject jsobj = rest.json(uri, form(data)).toObject();
+
+        Logger.getLogger("log").logln(USR.STDOUT, "GC response: " + jsobj.toString());
+
+        return jsobj;
+    }
+
     /* Calls for ManagementConsole */
 
     /**
@@ -99,11 +115,12 @@ public class GlobalControllerInteractor {
 
     /**
      * Sends collected router stats to the global controller
+     * This does a POST as so much is sent.
      */
     public Boolean sendRouterStats(String stats) throws IOException, JSONException {
 
-        String command = MCRP.SEND_ROUTER_STATS.CMD+" "+stats;
-        interact(command);
+        String command = MCRP.SEND_ROUTER_STATS.CMD;
+        post(command, stats);
         return true;
     }
 

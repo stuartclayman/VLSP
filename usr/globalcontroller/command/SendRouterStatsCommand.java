@@ -38,7 +38,11 @@ public class SendRouterStatsCommand extends GlobalCommand  {
             // strip off COMMAND
             String rest = value.substring(MCRP.SEND_ROUTER_STATS.CMD.length()).trim();
 
-            controller.receiveRouterStats(rest);
+
+            // Stats are posted in
+            // So collect them
+            String stats  = request.getContent();
+            controller.receiveRouterStats(stats);
 
             JSONObject jsobj = new JSONObject();
 
