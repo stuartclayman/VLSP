@@ -5,7 +5,7 @@ import java.util.List;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import demo_usr.rest.VimClient;
+import usr.vim.VimClient;
 
 /**
  * A represention of a Path across a virtual network.

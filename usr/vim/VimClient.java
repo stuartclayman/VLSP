@@ -1,4 +1,4 @@
-package demo_usr.rest;
+package usr.vim;
 
 import static us.monoid.web.Resty.content;
 import static us.monoid.web.Resty.delete;

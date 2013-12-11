@@ -4,7 +4,7 @@ import us.monoid.web.*;
 import us.monoid.json.*;
 import static us.monoid.web.Resty.*;
 import java.io.IOException;
-import demo_usr.rest.VimClient;
+import usr.vim.VimClient;
 
 /**
  * Test some calls to GlobalController using Resty

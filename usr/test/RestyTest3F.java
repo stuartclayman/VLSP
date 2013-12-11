@@ -1,7 +1,7 @@
 package usr.test;
 
 import us.monoid.json.JSONObject;
-import demo_usr.rest.VimClient;
+import usr.vim.VimClient;
 
 /**
  * Test some calls to GlobalController using Resty

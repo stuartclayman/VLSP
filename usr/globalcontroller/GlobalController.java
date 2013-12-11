@@ -213,7 +213,7 @@ public class GlobalController implements ComponentController, EventDelegate {
     }
 
     /** Basic intialisation for the global controller */
-    protected void init() {
+    public void init() {
         // allocate a new logger
         Logger logger = Logger.getLogger("log");
 
@@ -376,6 +376,9 @@ public class GlobalController implements ComponentController, EventDelegate {
 
     }
 
+    /**
+     * Start the GlobalController.
+     */
     public void start() {
         if (options_.isSimulation()) {
             runSimulation();
@@ -384,9 +387,16 @@ public class GlobalController implements ComponentController, EventDelegate {
         }
     }
 
+    /**
+     * Stop the GlobalController.
+     */
+    public void stop() {
+        shutDown();
+    }
+
+
     /** Runs a simulation loop --- gets events and executes them in order.
      */
-
     private void runSimulation() {
         isActive_ = true;
 
@@ -710,6 +720,29 @@ public class GlobalController implements ComponentController, EventDelegate {
         return portPools_.get(lci);
     }
 
+    /**
+     * Get a mapping of host to the list of routers on that host.
+     */
+    public HashMap<String, ArrayList<BasicRouterInfo> > getRouterLocations() {
+        HashMap<String, ArrayList<BasicRouterInfo> > routerLocations = new HashMap<String, ArrayList<BasicRouterInfo> >();
+
+        // work out which router is where
+        for (BasicRouterInfo routerInfo : getAllRouterInfo()) {
+            String host = routerInfo.getHost();
+
+            if (routerLocations.containsKey(host)) { // we've seen this host
+                ArrayList<BasicRouterInfo> list = routerLocations.get(host);
+                list.add(routerInfo);
+            } else {                                 //  it's a new host
+                ArrayList<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
+                list.add(routerInfo);
+
+                routerLocations.put(host, list);
+            }
+        }
+
+        return routerLocations;
+    }
 
     /**
      * Do some placement calculation
@@ -1601,7 +1634,7 @@ public class GlobalController implements ComponentController, EventDelegate {
         }
 
         long start= getTime();
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats sent at time "+start);
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats sent at time "+start);
         //  Make request for stats
         requestRouterStats();
         // Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats completed at time "+getTime()+ " elapsed (secs)

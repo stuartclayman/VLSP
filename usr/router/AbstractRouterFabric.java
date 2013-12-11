@@ -417,7 +417,15 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
         Long curr = nextTableUpdateTime_.get(netIF);
 
         if (last == null || curr == null) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+netIF+" not in nextTableTime");
+            if (last == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+netIF+" not in lastTableTime");
+            }
+
+            if (curr == null) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+netIF+" not in nextTableTime");
+            }
+
+
             return;
         }
         Long next = last + options_.getMinNetIFUpdateTime();
