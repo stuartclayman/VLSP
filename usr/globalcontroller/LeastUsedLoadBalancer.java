@@ -6,19 +6,23 @@ import usr.logging.USR;
 import usr.logging.Logger;
 
 /**
- * A LoadBalanacer is repsonsible for determining the placement
+ * The LeastUsedLoadBalancer is repsonsible for determining the placement
  * of a Router across the active resources.
+ * <p>
+ * It finds the LocalController with the least no of routers.
  */
 public class LeastUsedLoadBalancer implements PlacementEngine {
-    Set<LocalControllerInfo> localcontrollers;
+    // The GlobalController
+    GlobalController gc;
+
 
     /**
      * Constructor
      */
-    public LeastUsedLoadBalancer(Set<LocalControllerInfo> localcontrollers) {
-        this.localcontrollers = localcontrollers;
+    public LeastUsedLoadBalancer(GlobalController gc) {
+        this.gc = gc;
 
-        Logger.getLogger("log").logln(USR.STDOUT, "LeastUsedLoadBalancer: localcontrollers = " + localcontrollers);
+        Logger.getLogger("log").logln(USR.STDOUT, "LeastUsedLoadBalancer: localcontrollers = " + getPlacementDestinations());
     }
 
     /**
@@ -30,7 +34,7 @@ public class LeastUsedLoadBalancer implements PlacementEngine {
         double minUse = 0.0;
         double thisUsage = 0.0;
 
-        for (LocalControllerInfo localInfo : localcontrollers) {
+        for (LocalControllerInfo localInfo : getPlacementDestinations()) {
             thisUsage = localInfo.getUsage(); // same as localInfo.getNoRouters() / localInfo.getMaxRouters()
 
             //Logger.getLogger("log").logln(USR.STDOUT, localInfo +" Usage "+thisUsage);
@@ -66,6 +70,6 @@ public class LeastUsedLoadBalancer implements PlacementEngine {
      * Get all the possible placement destinations
      */
     public Set<LocalControllerInfo> getPlacementDestinations() {
-        return localcontrollers;
+        return gc.getLocalControllers();
     }
 }

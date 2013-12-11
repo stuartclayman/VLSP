@@ -101,6 +101,10 @@ public class ControlOptions {
 
     private ArrayList<OutputType> outputs_ = null;
 
+    // The name of the class to use to place a Router
+    private String placementEngineClass = null;
+
+    // The name of the class to use to visualize the network
     private String visualizationClass = null;
 
     /** init function sets up basic information */
@@ -336,6 +340,23 @@ public class ControlOptions {
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
+        }
+
+        // What is the name of the class for PlacementEngine
+        try {
+            placementEngineClass = ReadXMLUtils.parseSingleString(gcn, "PlacementEngineClass", "GlobalController", true);
+            ReadXMLUtils.removeNode(gcn, "PlacementEngineClass", "GlobalController");
+
+            Logger.getLogger("log").logln(USR.STDOUT, "PlacementEngineClass = " + placementEngineClass);
+
+            Class.forName(placementEngineClass).asSubclass(PlacementEngine.class);
+        } catch (SAXException e) {
+            throw new SAXException("Unable to parse class name " + placementEngineClass + " in GlobalController options" + e.getMessage());
+        } catch (XMLNoTagException e) {
+        } catch (ClassNotFoundException e) {
+            throw new Error("Class not found for class name " + placementEngineClass); 
+        } catch (ClassCastException e) {
+            throw new Error("Class name " + placementEngineClass + " must be sub type of PlacementEngine");
         }
 
         // What is the name of the class for Visualization
@@ -950,6 +971,13 @@ public class ControlOptions {
     /** Do we force the network to be connected */
     public boolean connectedNetwork() {
         return connectedNetwork_;
+    }
+
+    /**
+     * Get the class name for PlacementEngine
+     */
+    public String getPlacementEngineClassName() {
+        return placementEngineClass;
     }
 
     /**

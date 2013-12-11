@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -104,7 +105,7 @@ public class GlobalController implements ComponentController, EventDelegate {
     // A list of all the routers that have been shutdown
     private ArrayList<BasicRouterInfo> shutdownRouters_ = null;
 
-    // A map of routerID links to LinkInfo objects
+    // A map of linkID to LinkInfo objects
     private HashMap<Integer, LinkInfo> linkInfo = null;
 
     // A Map if appID to routerID
@@ -352,7 +353,15 @@ public class GlobalController implements ComponentController, EventDelegate {
 
 
         // Setup Placement Engine
-        placementEngine = new LeastUsedLoadBalancer(interactorMap_.keySet());
+        String placementEngineClassName = options_.getPlacementEngineClassName();
+
+        if (placementEngineClassName == null) {
+            // there is no PlacementEngine defined in the options
+            // use the built-in one
+            placementEngineClassName = "usr.globalcontroller.LeastUsedLoadBalancer";
+        }
+
+        setupPlacementEngine(placementEngineClassName);  //new LeastBusyPlacement(this); // new LeastUsedLoadBalancer(this);
 
         //Initialise events for schedules
         scheduler_ = new SimpleEventScheduler(options_.isSimulation(), this);
@@ -504,6 +513,28 @@ public class GlobalController implements ComponentController, EventDelegate {
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Checking existence of local Controllers");
         checkAllControllers();
+    }
+
+    /**
+     * Set up the PlacementEngine
+     */
+    private void setupPlacementEngine(String placementEngineClassName) {
+        try {
+            Class<?> c = Class.forName(placementEngineClassName);
+            Class<? extends PlacementEngine> cc = c.asSubclass(PlacementEngine.class);
+
+            // find Constructor for when arg is GlobalController
+            Constructor<? extends PlacementEngine> cons = cc.getDeclaredConstructor(GlobalController.class);
+
+            placementEngine = cons.newInstance(this);
+
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Setup PlacementEngine: " + placementEngine);
+
+        } catch (ClassNotFoundException cnfe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Class not found " + placementEngineClassName);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot instantiate class " + placementEngineClassName);
+        }
     }
 
     /**
@@ -692,6 +723,14 @@ public class GlobalController implements ComponentController, EventDelegate {
         }
 
         shutDown();
+    }
+
+
+    /**
+     * Get the LocalControllers
+     */
+    public Set<LocalControllerInfo> getLocalControllers() {
+        return interactorMap_.keySet();
     }
 
     /** Return the local controller attached to a router id*/
@@ -1291,7 +1330,12 @@ public class GlobalController implements ComponentController, EventDelegate {
     }
 
     /* Return a list of outlinks from a router */
-    public int [] getOutLinks(int routerId) {
+    //public List<Integer> getOutLinksList(int routerId) {
+    //  return (List<Integer>)Arrays.asList(network_.getOutLinks(routerId));
+    //}
+
+    /* Return a list of outlinks from a router */
+    public int[] getOutLinks(int routerId) {
         return network_.getOutLinks(routerId);
     }
 
