@@ -62,6 +62,12 @@ public class RouterOptions {
     double minPropAP_ = 0.0;     // Minimum proportion of AP
     double maxPropAP_ = 1.0;     // Maximum proportion of AP
     String [] APParms_ = {}; // Parameters for AP Options
+    
+
+     // The name of the class to use to start an Agg Point on a Router
+    String apClass = null;
+    String apArgs = null;       // some  optional args for an Agg Point
+
     String outputFileName_ = ""; // output file name
     boolean outputFileAddName_ = false; // Add suffix to output file
     String errorFileName_ = ""; // output file name for error stream
@@ -151,7 +157,12 @@ public class RouterOptions {
             processAPM(apm);
         }
 
-        //NodeList mon = doc.getElementsByTagName("Monitoring");
+        NodeList ap = doc.getElementsByTagName("AP");
+
+        if (ap != null) {
+            processAP(ap);
+        }
+
         NodeList mon = ((Element)basenode).getElementsByTagName("Monitoring");
 
         if (mon != null) {
@@ -577,6 +588,62 @@ public class RouterOptions {
         n.getParentNode().removeChild(n);
     }
 
+    /** Process the part of the XML related to Access Point setup */
+    void processAP(NodeList ap) throws SAXException {
+
+        if (ap.getLength() > 1) {
+            throw new SAXException ("Only one AP tag allowed.");
+        }
+
+        if (ap.getLength() == 0) {
+            return;
+        }
+        Node a = ap.item(0);
+
+        // What is the name of the class for PlacementEngine
+        try {
+            apClass = ReadXMLUtils.parseSingleString(a, "APClass", "AP", true);
+            ReadXMLUtils.removeNode(a, "APClass", "AP");
+
+            Logger.getLogger("log").logln(USR.STDOUT, "APClass = " + apClass);
+
+            Class.forName(apClass).asSubclass(AP.class);
+        } catch (SAXException e) {
+            throw new SAXException("Unable to parse class name " + apClass + " in AP options" + e.getMessage());
+        } catch (XMLNoTagException e) {
+        } catch (ClassNotFoundException e) {
+            throw new Error("Class not found for class name " + apClass); 
+        } catch (ClassCastException e) {
+            throw new Error("Class name " + apClass + " must be sub type of AP");
+        }
+
+
+        try {
+            apArgs = ReadXMLUtils.parseSingleString(a, "APArgs", "AP", true);
+            ReadXMLUtils.removeNode(a, "APArgs", "AP");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+
+        }
+
+        // for (int i= 0; i < APParms_.length; i++) {
+        //     Logger.getLogger("log").logln(USR.ERROR, "READ "+APParms_[i]);
+        //}
+        NodeList nl = a.getChildNodes();
+
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node n0 = nl.item(i);
+
+            if (n0.getNodeType() == Node.ELEMENT_NODE) {
+                throw new SAXException("Unrecognised tag in AP"+n0.getNodeName());
+            }
+
+        }
+
+        a.getParentNode().removeChild(a);
+    }
+
     /**
      * Process Monitoring
      */
@@ -699,6 +766,12 @@ public class RouterOptions {
     public int getMinAPs() {
         return minAPs_;
     }
+
+    /** Accessor function for name of AP class*/
+    public String getAPClassName() {
+        return apClass;
+    }
+
 
     /** Accessor function for router Consider time */
     public int getRouterConsiderTime() {

@@ -149,7 +149,17 @@ public class RouterController implements ComponentController, Runnable {
         apController_ = ConstructAPController.constructAPController(options_);
         apInfo_ = apController_.newAPInfo();
 
-        apMgr = new AggPointCreator(this);
+        // Setup AP
+        String apClassName = options_.getAPClassName();
+
+        if (apClassName == null) {
+            // there is no AP defined in the options
+            // use the built-in one
+            apClassName = "usr.router.NullAPCreator";
+        }
+
+        setupAP(apClassName);  //         apMgr = new AggPointCreator(this);
+
 
         // setup DataSource
         dataSource = new BasicDataSource(name + ".dataSource");
@@ -622,6 +632,29 @@ public class RouterController implements ComponentController, Runnable {
     /** Set the aggregation point for this router */
     public synchronized void setAP(int gid, int ap) {
         apMgr.setAP(gid, ap);
+    }
+
+
+    /**
+     * Set up the AP
+     */
+    private void setupAP(String apClassName) {
+        try {
+            Class<?> c = Class.forName(apClassName);
+            Class<? extends AP> cc = c.asSubclass(AP.class);
+
+            // find Constructor for when arg is RouterController
+            Constructor<? extends AP> cons = cc.getDeclaredConstructor(RouterController.class);
+
+            apMgr = cons.newInstance(this);
+
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Setup AP: " + apMgr);
+
+        } catch (ClassNotFoundException cnfe) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Class not found " + apClassName);
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot instantiate class " + apClassName);
+        }
     }
 
     /*

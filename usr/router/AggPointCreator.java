@@ -4,6 +4,10 @@ import usr.applications.ApplicationResponse;
 import usr.logging.Logger;
 import usr.logging.USR;
 
+/**
+ * The AggPointCreator is an AP that starts an Aggregation Point.
+ *
+ */
 public class AggPointCreator implements AP {
     RouterController controller;
     RouterOptions options_;
