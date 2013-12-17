@@ -217,7 +217,7 @@ public class LocalControllerInteractor {
             builder.append(arg);
         }
 
-        String toSend = builder.toString();
+        String toSend = java.net.URLEncoder.encode(builder.toString(), "UTF-8");
 
         JSONObject response = interact(toSend);
 
