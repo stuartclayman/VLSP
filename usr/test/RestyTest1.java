@@ -30,6 +30,10 @@ class RestyTest1 extends RestyTest {
             int link1 = (Integer)l1.get("linkID");
 
 
+            JSONObject a0 = test.createApp(router2, "usr.applications.Echo", "this -is a /path/of/death to http://host:port/path?args=0&other=1");
+            System.out.println("a0 = " + a0);
+            Thread.sleep(500);
+
             JSONObject a1 = test.createApp(router2, "usr.applications.Recv", "4000");
             System.out.println("a1 = " + a1);
             Thread.sleep(500);
