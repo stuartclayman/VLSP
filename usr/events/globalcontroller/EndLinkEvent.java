@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
@@ -11,7 +14,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class EndLinkEvent extends AbstractEvent {
+public class EndLinkEvent extends AbstractGlobalControllerEvent {
     int router1_;
     int router2_;
     boolean routerNumsSet_ = true;
@@ -34,7 +37,7 @@ public class EndLinkEvent extends AbstractEvent {
     }
 
     public EndLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc)
-    throws InstantiationException {
+        throws InstantiationException {
         time_ = time;
         engine_ = eng;
         addr1_ = add1;
@@ -59,7 +62,7 @@ public class EndLinkEvent extends AbstractEvent {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         String str = "EndLinkEvent " + time_ + getName();
 
         return str;
@@ -78,19 +81,19 @@ public class EndLinkEvent extends AbstractEvent {
     }
 
     private void initNumbers(String add1, String add2, GlobalController gc)
-    throws InstantiationException {
+        throws InstantiationException {
         BasicRouterInfo r1Info = gc.findRouterInfo(add1);
 
         if (r1Info == null) {
             throw new InstantiationException(
-                      "Cannot find address " + add1);
+                                             "Cannot find address " + add1);
         }
 
         BasicRouterInfo r2Info = gc.findRouterInfo(add2);
 
         if (r2Info == null) {
             throw new InstantiationException(
-                      "Cannot find address " + add2);
+                                             "Cannot find address " + add2);
         }
 
         router1_ = r1Info.getId();
@@ -99,22 +102,22 @@ public class EndLinkEvent extends AbstractEvent {
 
     /** Perform logic which follows an event */
     @Override
-	public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
-        super.followEvent(s, response, g);
+    public void followEvent(JSONObject response, GlobalController g) {
+        super.followEvent(response, g);
         if (g.connectedNetwork()) {
             ConnectNetworkEvent cne= new ConnectNetworkEvent(router1_,router2_,time_);
-            s.addEvent(cne);
+            getEventScheduler().addEvent(cne);
         } else if (!g.allowIsolatedNodes()) {
             CheckIsolatedEvent ce = new CheckIsolatedEvent(router1_, time_);
-            s.addEvent(ce);
+            getEventScheduler().addEvent(ce);
             ce = new CheckIsolatedEvent(router2_, time_);
-            s.addEvent(ce);
+            getEventScheduler().addEvent(ce);
         }
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) throws
-    InstantiationException {
+    public JSONObject execute(GlobalController gc) throws
+        InstantiationException {
         if (!routerNumsSet_) {
             initNumbers(addr1_, addr2_, gc);
         }
@@ -138,8 +141,8 @@ public class EndLinkEvent extends AbstractEvent {
             }
         } catch (JSONException js) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in EndLinkEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in EndLinkEvent should not occur");
         }
 
         return json;
@@ -205,7 +208,7 @@ public class EndLinkEvent extends AbstractEvent {
 
         if (i == MAX_TRIES) {
             Logger.getLogger("log").logln(
-                USR.ERROR, "Giving up after failure to shut link");
+                                          USR.ERROR, "Giving up after failure to shut link");
             return false;
         }
 

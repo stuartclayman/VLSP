@@ -1,7 +1,10 @@
-package usr.events;
+package usr.events.globalcontroller;
 
 import java.io.IOException;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.ANSI;
@@ -15,7 +18,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class SetLinkWeightEvent extends AbstractEvent {
+public class SetLinkWeightEvent extends AbstractGlobalControllerEvent {
     private int router1_;
     private int router2_;
     private int weight_;

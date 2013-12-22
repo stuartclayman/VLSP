@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.APcontroller.APController;
@@ -9,7 +12,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class EndWarmupRouterEvent extends AbstractEvent {
+public class EndWarmupRouterEvent extends AbstractGlobalControllerEvent {
     long starttime_ = 0;
     EventEngine engine_ = null;
 
@@ -20,7 +23,7 @@ public class EndWarmupRouterEvent extends AbstractEvent {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         String str;
 
         str = "EndWarmupRouter: lasted from " + starttime_ + " to " + time_;
@@ -28,7 +31,7 @@ public class EndWarmupRouterEvent extends AbstractEvent {
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) {
+    public JSONObject execute(GlobalController gc) {
         JSONObject json = new JSONObject();
         APController ap = gc.getAPController();
 
@@ -37,15 +40,15 @@ public class EndWarmupRouterEvent extends AbstractEvent {
             json.put("success", (Boolean)true);
         } catch (JSONException js) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in EndRouterEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in EndRouterEvent should not occur");
         }
 
         return json;
     }
 
     @SuppressWarnings("unused")
-	private String leadin() {
+    private String leadin() {
         return "EWRE: ";
     }
 

@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.abstractnetwork.AbstractLink;
@@ -7,7 +10,7 @@ import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;
 
-public class CheckIsolatedEvent extends AbstractEvent {
+public class CheckIsolatedEvent extends AbstractGlobalControllerEvent {
 
     int node_;
 
@@ -24,7 +27,7 @@ public class CheckIsolatedEvent extends AbstractEvent {
 
     @Override
     public JSONObject execute(GlobalController gc)
-            throws InstantiationException {
+        throws InstantiationException {
         AbstractLink link= null;
         link= gc.getAbstractNetwork().checkIsolated(time_, node_ , gc);
         try {

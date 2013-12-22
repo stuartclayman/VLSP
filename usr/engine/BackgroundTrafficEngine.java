@@ -16,9 +16,10 @@ import org.xml.sax.SAXParseException;
 import rgc.probdistributions.ProbDistribution;
 import rgc.probdistributions.ProbException;
 import us.monoid.json.JSONObject;
-import usr.events.CreateTrafficEvent;
+import usr.events.globalcontroller.CreateTrafficEvent;
 import usr.events.EndSimulationEvent;
 import usr.events.Event;
+import usr.events.EventDelegate;
 import usr.events.EventScheduler;
 import usr.events.StartSimulationEvent;
 import usr.globalcontroller.GlobalController;
@@ -34,55 +35,51 @@ public class BackgroundTrafficEngine implements EventEngine {
     boolean preferEmptyNodes_ = false;
 
     /** Contructor from Parameter string */
-    public BackgroundTrafficEngine(int time, String parms) throws
-    EventEngineException {
+    public BackgroundTrafficEngine(int time, String parms) throws EventEngineException {
         timeToEnd_ = time * 1000;
         parseXMLFile(parms);
 
         if (trafficArriveDist_ == null) {
-            throw new EventEngineException(
-                      "Background traffic engine must specify arrival distribution.");
+            throw new EventEngineException("Background traffic engine must specify arrival distribution.");
         }
 
         if (trafficLengthDist_ == null) {
-            throw new EventEngineException(
-                      "Background traffic engine must specify length distribution.");
+            throw new EventEngineException("Background traffic engine must specify length distribution.");
         }
 
         if (trafficSpeedDist_ == null) {
-            throw new EventEngineException(
-                      "Background traffic engine must specify speed distribution.");
+            throw new EventEngineException("Background traffic engine must specify speed distribution.");
         }
     }
 
     /** Initial events to add to schedule */
     @Override
-	public void startStopEvents(EventScheduler s, GlobalController g) {
+    public void startStopEvents(EventScheduler s, EventDelegate g) {
         // simulation start
-        StartSimulationEvent e0 = new StartSimulationEvent(0, this);
+        StartSimulationEvent e0 = new StartSimulationEvent(0);
 
         s.addEvent(e0);
 
         // simulation end
-        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_, this);
+        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_);
         s.addEvent(e);
     }
 
     /** Initial events to add to schedule */
     @Override
-	public void initialEvents(EventScheduler s, GlobalController g) {
-        startNewConnection(0, s, g);
+    public void initialEvents(EventScheduler s, EventDelegate g) {
+        startNewConnection(0, s, (GlobalController)g);
     }
 
     /** Add or remove events following a simulation event */
     @Override
-	public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
+    public void preceedEvent(Event e, EventScheduler s, EventDelegate g) {
     }
 
     /** Add or remove events following a simulation event */
     @Override
-	public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
-        startNewConnection(e.getTime(), s, g);
+    public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate g) {
+        startNewConnection(e.getTime(), s, (GlobalController)g);
     }
 
     /** Start new connection between nodes at a given time */
@@ -116,7 +113,7 @@ public class BackgroundTrafficEngine implements EventEngine {
             s.addEvent(e);
         } catch (InstantiationException ex) {
             System.err.println(
-                "This should not happen in BackgroundTRafficEngine");
+                               "This should not happen in BackgroundTRafficEngine");
             System.exit(-1);
         }
     }
@@ -156,63 +153,63 @@ public class BackgroundTrafficEngine implements EventEngine {
 
             if (basenode == null) {
                 throw new SAXException(
-                          "Document requires basenode");
+                                       "Document requires basenode");
             }
 
             if (!basenode.equals("BackgroundTrafficEngine")) {
                 throw new
-                      SAXException(
-                          "Base tag should be BackgroundTrafficEngine");
+                    SAXException(
+                                 "Base tag should be BackgroundTrafficEngine");
             }
 
             NodeList n = doc.getElementsByTagName("TrafficArriveDist");
             trafficArriveDist_ = ProbDistribution.parseProbDist(
-                    n, "TrafficArriveDist");
+                                                                n, "TrafficArriveDist");
 
             if (trafficArriveDist_ == null) {
                 throw new SAXException(
-                          "Must specific TrafficArriveDist");
+                                       "Must specific TrafficArriveDist");
             }
 
             n = doc.getElementsByTagName("TrafficLengthDist");
             trafficLengthDist_ = ProbDistribution.parseProbDist(
-                    n, "TrafficLengthDist");
+                                                                n, "TrafficLengthDist");
 
             if (trafficLengthDist_ == null) {
                 throw new SAXException(
-                          "Must specific TrafficLengthDist");
+                                       "Must specific TrafficLengthDist");
             }
 
             n = doc.getElementsByTagName("TrafficArriveDist");
             trafficSpeedDist_ = ProbDistribution.parseProbDist(
-                    n, "TrafficSpeedDist");
+                                                               n, "TrafficSpeedDist");
 
             if (trafficSpeedDist_ == null) {
                 throw new SAXException(
-                          "Must specific TrafficSpeedDist");
+                                       "Must specific TrafficSpeedDist");
             }
         } catch (java.io.FileNotFoundException e) {
             throw new
-                  EventEngineException(
-                      "Parsing BackgroundTrafficEngine: Cannot find file "
-                      +
-                      fName);
+                EventEngineException(
+                                     "Parsing BackgroundTrafficEngine: Cannot find file "
+                                     +
+                                     fName);
         } catch (SAXParseException err) {
             throw new EventEngineException(
-                      "Parsing BackgroundTrafficEngine: error"
-                      + ", line "
-                      + err.getLineNumber()
-                      + ", uri "
-                      + err.getSystemId());
+                                           "Parsing BackgroundTrafficEngine: error"
+                                           + ", line "
+                                           + err.getLineNumber()
+                                           + ", uri "
+                                           + err.getSystemId());
         } catch (SAXException e) {
             throw new EventEngineException(
-                      "Parsing BackgroundTrafficEngine: Exception in SAX XML parser"
-                      + e.getMessage());
+                                           "Parsing BackgroundTrafficEngine: Exception in SAX XML parser"
+                                           + e.getMessage());
         } catch (Throwable t) {
             throw new EventEngineException(
-                      "Parsing ProbabilisticEventEngine: "
-                      +
-                      t.getMessage());
+                                           "Parsing ProbabilisticEventEngine: "
+                                           +
+                                           t.getMessage());
         }
     }
 

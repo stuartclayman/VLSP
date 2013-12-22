@@ -4,17 +4,31 @@ import java.util.ArrayList;
 
 
 public interface EventScheduler extends Runnable {
+    /**
+     * Start the EventScheduler.
+     */
+    public boolean start();
 
-    /** Return the time since the start of the simulation*/
-    public long getElapsedTime();
+    /**
+     * Stop the EventScheduler.
+     */
+    public boolean stop();
 
     /** Return start time */
     public long getStartTime();
 
-    /** Get the current time into the simulation.
+    /** Return the time since the start of the run
      * It is important to note that this can be called between events.
      */
-    public long getSimulationTime();
+    public long getElapsedTime();
+
+    /** Get the time of the last event
+     */
+    public long getLastEventTime();
+
+    /** Get the duration of the last event
+     */
+    public long getLastEventDuration();
 
     /** Adds an event to the schedule in time order
      */
@@ -23,9 +37,6 @@ public interface EventScheduler extends Runnable {
     /** Return first event from schedule
      */
     public Event getFirstEvent();
-
-    /** Interrupt above wait*/
-    public void wakeWait();
 
     /**
      * @return list of all scheduled events

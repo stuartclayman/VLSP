@@ -1,6 +1,3 @@
-/** Interface for Engine which adds events to the event list
- */
-
 package usr.engine;
 
 import java.io.File;
@@ -29,12 +26,13 @@ import usr.abstractnetwork.AbstractLink;
 import usr.engine.linkpicker.NodeLinkPicker;
 import usr.engine.linkpicker.PreferentialLinkPicker;
 import usr.engine.linkpicker.RandomLinkPicker;
-import usr.events.EndRouterEvent;
 import usr.events.EndSimulationEvent;
-import usr.events.EndWarmupRouterEvent;
+import usr.events.globalcontroller.EndRouterEvent;
+import usr.events.globalcontroller.EndWarmupRouterEvent;
+import usr.events.globalcontroller.StartRouterEvent;
 import usr.events.Event;
+import usr.events.EventDelegate;
 import usr.events.EventScheduler;
-import usr.events.StartRouterEvent;
 import usr.events.StartSimulationEvent;
 import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
@@ -44,7 +42,7 @@ import usr.logging.USR;
  * This engine uses probability distribtions to add events into the
  * event library
  */
-public class ProbabilisticEventEngine extends NullEventEngine {
+public class ProbabilisticEventEngine extends NullEventEngine implements APWarmUp {
     int timeToEnd_;
 
     // Time to end of simulation (ms)
@@ -65,8 +63,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
     //Method to pick links
 
     /** Contructor from Parameter string */
-    public ProbabilisticEventEngine(int time, String parms) throws
-    EventEngineException {
+    public ProbabilisticEventEngine(int time, String parms) throws EventEngineException {
         init(time);
         Document doc = parseXMLHead(parms,"ProbabilisticEventEngine");
         parseXMLMain(doc,"ProbabilisticEventEngine");
@@ -85,20 +82,20 @@ public class ProbabilisticEventEngine extends NullEventEngine {
 
     /** Start up and shut down events */
     @Override
-	public void startStopEvents(EventScheduler s, GlobalController g) {
+    public void startStopEvents(EventScheduler s, EventDelegate g) {
         // simulation start
-        StartSimulationEvent e0 = new StartSimulationEvent(0, this);
+        StartSimulationEvent e0 = new StartSimulationEvent(0);
 
         s.addEvent(e0);
 
         // simulation end
-        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_, this);
+        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_);
         s.addEvent(e);
     }
 
     /** Initial events to add to schedule */
     @Override
-	public void initialEvents(EventScheduler s, GlobalController g) {
+    public void initialEvents(EventScheduler s, EventDelegate g) {
         // Start initial router
         long time;
 
@@ -107,7 +104,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             time = (long)(nodeCreateDist_.getVariate() * 1000);
         } catch (ProbException x) {
             Logger.getLogger("log").logln(USR.ERROR,
-                leadin() + " Error generating trafficArriveDist variate");
+                                          leadin() + " Error generating trafficArriveDist variate");
             time = 0;
         }
 
@@ -120,12 +117,12 @@ public class ProbabilisticEventEngine extends NullEventEngine {
     /**
      * Add nodes simply to prime AP controllers lifetime estimation
      */
-    public void warmUp(long period, APController controller, GlobalController gc) {
+    public void warmUp(EventScheduler s, long period, APController apController, EventDelegate gc) {
         long tmptime = -period;
 
         if ((nodeDeathDist_ == null) || (nodeCreateDist_ == null)) {
             Logger.getLogger("log").logln(USR.ERROR, "WarmUpPeriod option "
-                 + "does not make sense without node death and create dists");
+                                          + "does not make sense without node death and create dists");
             return;
         }
 
@@ -145,32 +142,31 @@ public class ProbabilisticEventEngine extends NullEventEngine {
                     return;
                 }
 
-                deathtime = tmptime + (long)nodeDeathDist_.getVariate() *
-                    1000;
+                deathtime = tmptime + (long)nodeDeathDist_.getVariate() * 1000;
             } catch (ProbException e) {
                 Logger.getLogger("log").logln(USR.ERROR,
-                    "Exception thrown in ProbabilisticEventEngine.warmUp "
-                     + e.getMessage());
+                                              "Exception thrown in ProbabilisticEventEngine.warmUp "
+                                              + e.getMessage());
                 return;
             }
 
-            controller.addWarmUpNode(tmptime);
+            apController.addWarmUpNode(tmptime);
 
             if (deathtime <= 0) {
-                controller.removeWarmUpNode(tmptime, deathtime);
+                apController.removeWarmUpNode(tmptime, deathtime);
             } else {
                 EndWarmupRouterEvent e = new EndWarmupRouterEvent(tmptime,
                                                                   deathtime, this);
-                gc.addEvent(e);
+                s.addEvent(e);
             }
         }
     }
 
     /** Add or remove events following a simulation event */
     @Override
-	public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
+    public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate g) {
         if (e instanceof StartRouterEvent) {
-            followRouter((StartRouterEvent)e, s, response, g);
+            followRouter((StartRouterEvent)e, s, response, (GlobalController)g);
         }
     }
 
@@ -280,7 +276,7 @@ public class ProbabilisticEventEngine extends NullEventEngine {
 
     /** Parse the XML to get probability distribution information*/
     protected Document parseXMLHead(String fName, String basetag) throws
-    EventEngineException {
+        EventEngineException {
         Document doc;
 
         try {
@@ -296,31 +292,31 @@ public class ProbabilisticEventEngine extends NullEventEngine {
 
             if (!basenode.equals(basetag)) {
                 throw new
-                      SAXException(
-                          "Base tag should be"+basetag);
+                    SAXException(
+                                 "Base tag should be"+basetag);
             }
         } catch (java.io.FileNotFoundException e) {
             throw new EventEngineException(
-                      "Parsing "+basetag+": Cannot find file " +
-                      fName);
+                                           "Parsing "+basetag+": Cannot find file " +
+                                           fName);
         } catch (SAXParseException err) {
             throw new EventEngineException(
-                      "Parsing "+basetag+": error" + ", line "
-                      + err.getLineNumber() + ", uri " + err.getSystemId());
+                                           "Parsing "+basetag+": error" + ", line "
+                                           + err.getLineNumber() + ", uri " + err.getSystemId());
         } catch (SAXException e) {
             throw new EventEngineException(
-                      "Parsing "+basetag+": Exception in SAX XML parser"
-                      + e.getMessage());
+                                           "Parsing "+basetag+": Exception in SAX XML parser"
+                                           + e.getMessage());
         } catch (Throwable t) {
             throw new EventEngineException(
-                      "Parsing "+basetag+": " + t.getMessage());
+                                           "Parsing "+basetag+": " + t.getMessage());
         }
 
         return doc;
     }
 
     protected void parseXMLMain(Document doc, String basetag)
-    throws EventEngineException {
+        throws EventEngineException {
         try {
             NodeList nbd = doc.getElementsByTagName("NodeBirthDist");
 
@@ -330,22 +326,22 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             }
 
             nodeCreateDist_ = ProbDistribution.parseProbDist
-                    (nbd, "NodeBirthDist");
+                (nbd, "NodeBirthDist");
             ReadXMLUtils.removeNode(nbd.item(0).getParentNode(),
                                     "NodeBirthDist", "ProbabilisticEngine");
 
             if (nodeCreateDist_ == null) {
                 throw new SAXException(
-                          "Must specific NodeBirthDist");
+                                       "Must specific NodeBirthDist");
             }
 
             NodeList lcd = doc.getElementsByTagName("LinkCreateDist");
             linkCreateDist_ = ProbDistribution.parseProbDist(
-                    lcd, "LinkCreateDist");
+                                                             lcd, "LinkCreateDist");
 
             if (linkCreateDist_ == null) {
                 throw new SAXException(
-                          "Must specific LinkCreateDist");
+                                       "Must specific LinkCreateDist");
             }
 
             ReadXMLUtils.removeNode(lcd.item(0).getParentNode(),
@@ -363,17 +359,17 @@ public class ProbabilisticEventEngine extends NullEventEngine {
 
                 if (misc.getLength() > 1) {
                     throw new SAXException(
-                              "Only one Parameters tag allowed in XML for "
-                              + basetag);
+                                           "Only one Parameters tag allowed in XML for "
+                                           + basetag);
                 }
 
                 if (misc.getLength() == 1) {
                     Node miscnode = misc.item(0);
                     boolean tmp
                         = ReadXMLUtils.parseSingleBool(
-                                miscnode,
-                                "PreferentialAttachment",
-                                "Parameters", true);
+                                                       miscnode,
+                                                       "PreferentialAttachment",
+                                                       "Parameters", true);
 
                     if (tmp) {
                         linkPicker_ = new PreferentialLinkPicker();
@@ -393,15 +389,15 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             }
         } catch (SAXParseException err) {
             throw new EventEngineException(
-                      "Parsing "+basetag+": error" + ", line "
-                      + err.getLineNumber() + ", uri " + err.getSystemId());
+                                           "Parsing "+basetag+": error" + ", line "
+                                           + err.getLineNumber() + ", uri " + err.getSystemId());
         } catch (SAXException e) {
             throw new EventEngineException(
-                      "Parsing "+basetag+": Exception in SAX XML parser"
-                      + e.getMessage());
+                                           "Parsing "+basetag+": Exception in SAX XML parser"
+                                           + e.getMessage());
         } catch (Throwable t) {
             throw new EventEngineException(
-                      "Parsing "+basetag+": " + t.getMessage());
+                                           "Parsing "+basetag+": " + t.getMessage());
         }
 
         parseLinkPicker(doc);
@@ -414,8 +410,8 @@ public class ProbabilisticEventEngine extends NullEventEngine {
 
             if (n.getNodeType() == Node.ELEMENT_NODE) {
                 throw new EventEngineException(
-                          "Unrecognised tag constructing "
-                          +basetag+" " + n.getNodeName());
+                                               "Unrecognised tag constructing "
+                                               +basetag+" " + n.getNodeName());
             }
         }
     }
@@ -452,8 +448,8 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             lpclass = Class.forName(linkpick);
         } catch (ClassNotFoundException e) {
             throw new EventEngineException(
-                      "Could not find linkPicker class " + linkpick + " " +
-                      e.getMessage());
+                                           "Could not find linkPicker class " + linkpick + " " +
+                                           e.getMessage());
         }
 
         try {
@@ -463,24 +459,24 @@ public class ProbabilisticEventEngine extends NullEventEngine {
             linkPicker_ = (NodeLinkPicker)c.newInstance(arglist);
         } catch (InvocationTargetException e) {
             throw new EventEngineException(
-                      "Could not construct linkpicker " + linkpick
-                      + "\n Error message:"
-                      + e.getMessage());
+                                           "Could not construct linkpicker " + linkpick
+                                           + "\n Error message:"
+                                           + e.getMessage());
         } catch (InstantiationException e) {
             throw new EventEngineException(
-                      "Could not instantiate linkpicker " + linkpick
-                      + "\n Error message:"
-                      + e.getMessage());
+                                           "Could not instantiate linkpicker " + linkpick
+                                           + "\n Error message:"
+                                           + e.getMessage());
         } catch (NoSuchMethodException e) {
             throw new EventEngineException(
-                      "Could not find constructor for linkpicker " + linkpick
-                      + "\n Error message:"
-                      + e.getMessage());
+                                           "Could not find constructor for linkpicker " + linkpick
+                                           + "\n Error message:"
+                                           + e.getMessage());
         } catch (IllegalAccessException e) {
             throw new EventEngineException(
-                      "Could not instantiate object for linkpicker " + linkpick
-                      + "\n Error message:"
-                      + e.getMessage());
+                                           "Could not instantiate object for linkpicker " + linkpick
+                                           + "\n Error message:"
+                                           + e.getMessage());
         }
 
         linkPicker_.parseExtraXML(lpn);
@@ -491,8 +487,8 @@ public class ProbabilisticEventEngine extends NullEventEngine {
 
             if (n.getNodeType() == Node.ELEMENT_NODE) {
                 throw new EventEngineException(
-                          "ProbabilisticEventEngine unrecognised tag "
-                          + n.getNodeName());
+                                               "ProbabilisticEventEngine unrecognised tag "
+                                               + n.getNodeName());
             }
         }
 

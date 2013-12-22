@@ -5,19 +5,19 @@ package usr.engine;
 
 import us.monoid.json.JSONObject;
 import usr.events.Event;
+import usr.events.EventDelegate;
 import usr.events.EventScheduler;
-import usr.globalcontroller.GlobalController;
 
 public interface EventEngine {
     /** Initial events to add to schedule */
-    public void startStopEvents(EventScheduler s, GlobalController g);
+    public void startStopEvents(EventScheduler s, EventDelegate obj);
 
     /** Initial events to add to schedule */
-    public void initialEvents(EventScheduler s, GlobalController g);
+    public void initialEvents(EventScheduler s, EventDelegate obj);
 
     /** Add or remove events following a simulation event */
-    public void preceedEvent(Event e, EventScheduler s, GlobalController g);
+    public void preceedEvent(Event e, EventScheduler s, EventDelegate obj);
 
     /** Add or remove events following a simulation event */
-    public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g);
+    public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate obj);
 }

@@ -1,4 +1,4 @@
-package usr.events;
+package usr.events.globalcontroller;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -7,6 +7,9 @@ import java.util.Map;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import usr.common.BasicRouterInfo;
 import usr.common.Pair;
 import usr.engine.EventEngine;
@@ -16,7 +19,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class AppStartEvent extends AbstractEvent {
+public class AppStartEvent extends AbstractGlobalControllerEvent {
     int routerNo_ = 0;
     String className_ = null;
     String [] command_ = null;
@@ -50,7 +53,7 @@ public class AppStartEvent extends AbstractEvent {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         String str = "AppStart " + time_ + getName();
 
         return str;
@@ -85,7 +88,7 @@ public class AppStartEvent extends AbstractEvent {
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) throws InstantiationException {
+    public JSONObject execute(GlobalController gc) throws InstantiationException {
         if (!routerNumSet_) {
             setRouterNo(address_, gc);
         }

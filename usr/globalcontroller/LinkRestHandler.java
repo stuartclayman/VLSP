@@ -13,9 +13,9 @@ import org.simpleframework.http.Response;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.LinkInfo;
-import usr.events.EndLinkEvent;
-import usr.events.SetLinkWeightEvent;
-import usr.events.StartLinkEvent;
+import usr.events.globalcontroller.EndLinkEvent;
+import usr.events.globalcontroller.SetLinkWeightEvent;
+import usr.events.globalcontroller.StartLinkEvent;
 import cc.clayman.console.BasicRequestHandler;
 
 /**

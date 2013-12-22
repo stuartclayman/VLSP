@@ -2,6 +2,7 @@ package usr.events;
 
 import us.monoid.json.JSONObject;
 import java.util.concurrent.TimeoutException;
+import usr.output.OutputType;
 
 /**
  * An event delegate has support for an EventScheduler.
@@ -20,10 +21,13 @@ public interface EventDelegate {
      */
     public boolean isActive();
 
+    /** Notification for start of EventScheduler */
+    public void onEventSchedulerStart(long time);
+
     /**
-     * Deactivate the delegate
+     * Notification for stop of EventScheduler
      */
-    public void deactivate();
+    public void onEventSchedulerStop(long time);
 
     /**
      * Get the maximum lag this delegate will allow.

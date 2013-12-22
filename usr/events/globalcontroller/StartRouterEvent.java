@@ -1,7 +1,10 @@
-package usr.events;
+package usr.events.globalcontroller;
 
 import java.io.IOException;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
@@ -14,7 +17,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class StartRouterEvent extends AbstractEvent {
+public class StartRouterEvent extends AbstractGlobalControllerEvent {
     String address_ = null;
     String name_ = null;
 
@@ -24,7 +27,7 @@ public class StartRouterEvent extends AbstractEvent {
     }
 
     public StartRouterEvent(long time, EventEngine eng, String address, String name) throws
-    InstantiationException {
+        InstantiationException {
         time_ = time;
         engine_ = eng;
         name_ = name;
@@ -32,7 +35,7 @@ public class StartRouterEvent extends AbstractEvent {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         String str;
 
         str = "StartRouter: " + time_ + " " + nameString();
@@ -54,8 +57,8 @@ public class StartRouterEvent extends AbstractEvent {
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) throws
-    InstantiationException {
+    public JSONObject execute(GlobalController gc) throws
+        InstantiationException {
         int rNo = startRouter(gc, time_, address_, name_);
         JSONObject jsobj = new JSONObject();
 
@@ -80,8 +83,8 @@ public class StartRouterEvent extends AbstractEvent {
             }
         } catch (JSONException je) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in StartLinkEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in StartLinkEvent should not occur");
         }
 
         return jsobj;
@@ -90,7 +93,7 @@ public class StartRouterEvent extends AbstractEvent {
     public static int startRouter(GlobalController gc, long time, String address, String name) {
         int rId = gc.getNextNodeId();
         if (!gc.isSimulation()) {
-        	if (doRouterStart(gc, rId, address, name) == false) {
+            if (doRouterStart(gc, rId, address, name) == false) {
                 return -1;
             }
         }
@@ -151,7 +154,7 @@ public class StartRouterEvent extends AbstractEvent {
     /** Make one attempt to start a router */
     private static boolean tryRouterStart(GlobalController gc, int id, String address, String name, LocalControllerInfo local,
                                           LocalControllerInteractor lci)
-    throws IOException {
+        throws IOException {
         int port = 0;
         PortPool pp = gc.getPortPool(local);
         JSONObject routerAttrs;
@@ -164,19 +167,19 @@ public class StartRouterEvent extends AbstractEvent {
                                           + "Creating router: " + id
                                           + (address != null ?
                                              (
-                                                 " address = "
-                                                 + address) : "")
+                                              " address = "
+                                              + address) : "")
                                           + (name != null ? (" name = " + name) : ""));
 
             // create the new router and get it's name
             routerAttrs = lci.newRouter(id, port, port + 1, address, name);
 
             BasicRouterInfo br = new BasicRouterInfo
-                    ((Integer)routerAttrs.get(
-                        "routerID"),
-                    gc.getElapsedTime(), local,
-                    (Integer)routerAttrs.get("mgmtPort"),
-                    (Integer)routerAttrs.get("r2rPort"));
+                ((Integer)routerAttrs.get(
+                                          "routerID"),
+                 gc.getElapsedTime(), local,
+                 (Integer)routerAttrs.get("mgmtPort"),
+                 (Integer)routerAttrs.get("r2rPort"));
             br.setName((String)routerAttrs.get("name"));
             br.setAddress((String)routerAttrs.get("address"));
 

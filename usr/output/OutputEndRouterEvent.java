@@ -8,7 +8,7 @@ import org.xml.sax.SAXException;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.ANSI;
-import usr.events.EndRouterEvent;
+import usr.events.globalcontroller.EndRouterEvent;
 import usr.events.Event;
 import usr.globalcontroller.GlobalController;
 

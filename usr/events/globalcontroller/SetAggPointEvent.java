@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
 import usr.engine.EventEngine;
@@ -9,7 +12,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class SetAggPointEvent extends AbstractEvent {
+public class SetAggPointEvent extends AbstractGlobalControllerEvent {
     int routerNo_;
     int AP_;
 
@@ -20,7 +23,7 @@ public class SetAggPointEvent extends AbstractEvent {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         String str;
 
         str = "SetAggPointEvent: " + time_ + " router " + routerNo_ + " AP " + AP_;
@@ -28,7 +31,7 @@ public class SetAggPointEvent extends AbstractEvent {
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) {
+    public JSONObject execute(GlobalController gc) {
         JSONObject json= setAP(time_,routerNo_, AP_, gc);
 
         return json;
@@ -46,29 +49,29 @@ public class SetAggPointEvent extends AbstractEvent {
             json.put("AP",AP);
         } catch (Exception e) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in SetAggPointEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in SetAggPointEvent should not occur");
         }
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router " + gid + " now has access point " + AP);
         if (!gc.isSimulation()) {
-        	if (!callSetAP(gid,AP,gc)) {
+            if (!callSetAP(gid,AP,gc)) {
                 try {
                     json.put("success", (Boolean)false);
                 } catch (Exception e) {
                     Logger.getLogger("log").logln(
-                        USR.ERROR,
-                        "JSONException in SetAggPointEvent should not occur");
+                                                  USR.ERROR,
+                                                  "JSONException in SetAggPointEvent should not occur");
                 }
                 return json;
-        	}
+            }
         }
         gc.registerAggPoint(time,gid, AP);
         try {
             json.put("success", (Boolean)true);
         } catch (Exception e) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in SetAggPointEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in SetAggPointEvent should not occur");
         }
         return json;
     }

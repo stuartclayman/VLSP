@@ -9,7 +9,7 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.ANSI;
 import usr.events.Event;
-import usr.events.StartLinkEvent;
+import usr.events.globalcontroller.StartLinkEvent;
 import usr.globalcontroller.GlobalController;
 
 /** Class to output network stuff */

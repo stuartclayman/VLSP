@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
@@ -10,7 +13,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class ListRoutersEvent extends AbstractEvent {
+public class ListRoutersEvent extends AbstractGlobalControllerEvent {
     public ListRoutersEvent(long time, EventEngine eng) {
         time_ = time;
         engine_ = eng;

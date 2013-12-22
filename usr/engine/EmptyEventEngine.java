@@ -3,11 +3,11 @@
 
 package usr.engine;
 
-import usr.events.EndSimulationEvent;
 import usr.events.Event;
+import usr.events.EventDelegate;
 import usr.events.EventScheduler;
 import usr.events.StartSimulationEvent;
-import usr.globalcontroller.GlobalController;
+import usr.events.EndSimulationEvent;
 
 public class EmptyEventEngine extends NullEventEngine {
     long timeToEnd_;
@@ -20,29 +20,29 @@ public class EmptyEventEngine extends NullEventEngine {
 
     /** Initial events to add to schedule */
     @Override
-	public void startStopEvents(EventScheduler s, GlobalController g) {
+    public void startStopEvents(EventScheduler s, EventDelegate g) {
         // simulation start
-        StartSimulationEvent e0 = new StartSimulationEvent(0, this);
+        StartSimulationEvent e0 = new StartSimulationEvent(0);
 
         s.addEvent(e0);
 
         // simulation end
-        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_, this);
+        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_);
         s.addEvent(e);
     }
 
     /** Initial events to add to schedule */
     @Override
-	public void initialEvents(EventScheduler s, GlobalController g) {
+    public void initialEvents(EventScheduler s, EventDelegate g) {
     }
 
     /** Add or remove events following a simulation event */
     @Override
-	public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
+    public void preceedEvent(Event e, EventScheduler s, EventDelegate g) {
     }
 
     /** Add or remove events following a simulation event */
-    public void followEvent(Event e, EventScheduler s, GlobalController g) {
+    public void followEvent(Event e, EventScheduler s, EventDelegate g) {
     }
 
 }

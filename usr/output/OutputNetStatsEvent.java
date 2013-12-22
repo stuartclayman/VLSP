@@ -8,7 +8,7 @@ import org.xml.sax.SAXException;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.events.Event;
-import usr.events.NetStatsEvent;
+import usr.events.globalcontroller.NetStatsEvent;
 import usr.globalcontroller.GlobalController;
 
 /** Class to output network stuff */

@@ -37,18 +37,18 @@ import usr.common.PortPool;
 import usr.common.ProcessWrapper;
 import usr.console.ComponentController;
 import usr.engine.EventEngine;
-import usr.engine.ProbabilisticEventEngine;
-import usr.events.AppStartEvent;
-import usr.events.AppStopEvent;
-import usr.events.EndRouterEvent;
+import usr.engine.APWarmUp;
 import usr.events.Event;
 import usr.events.EventScheduler;
-import usr.events.NetStatsEvent;
-import usr.events.OutputEvent;
-import usr.events.SetAggPointEvent;
-import usr.events.StartLinkEvent;
 import usr.events.EventDelegate;
 import usr.events.SimpleEventScheduler;
+import usr.events.globalcontroller.OutputEvent;
+import usr.events.globalcontroller.AppStartEvent;
+import usr.events.globalcontroller.AppStopEvent;
+import usr.events.globalcontroller.EndRouterEvent;
+import usr.events.globalcontroller.NetStatsEvent;
+import usr.events.globalcontroller.SetAggPointEvent;
+import usr.events.globalcontroller.StartLinkEvent;
 import usr.interactor.LocalControllerInteractor;
 import usr.lifeEstimate.LifetimeEstimate;
 import usr.localcontroller.LocalControllerInfo;
@@ -375,10 +375,11 @@ public class GlobalController implements ComponentController, EventDelegate {
             }
         }
 
+        // If any Engines need a Warm up - do it now
         if (options_.getWarmUpPeriod() > 0) {
             for (EventEngine e : options_.getEngines()) {
-                if (e instanceof ProbabilisticEventEngine) {
-                    ((ProbabilisticEventEngine)e).warmUp(options_.getWarmUpPeriod(), APController_, this);
+                if (e instanceof APWarmUp) {
+                    ((APWarmUp)e).warmUp(scheduler_, options_.getWarmUpPeriod(), APController_, this);
                 }
             }
         }
@@ -400,7 +401,11 @@ public class GlobalController implements ComponentController, EventDelegate {
      * Stop the GlobalController.
      */
     public void stop() {
-        shutDown();
+        if (options_.isSimulation()) {
+            endSimulation(System.currentTimeMillis());
+        } else {
+            shutDown();
+        }
     }
 
 
@@ -440,11 +445,11 @@ public class GlobalController implements ComponentController, EventDelegate {
 
     private void runEmulation() {
         isActive_ = true;
-        // Start Scheduler as thread
-        Thread t;
         synchronized (runLoop_) {
-            t = new Thread(scheduler_);
-            t.start();
+
+            // Start Scheduler as thread
+            scheduler_.start();
+
 
             while (isActive_) {
                 try {
@@ -456,16 +461,7 @@ public class GlobalController implements ComponentController, EventDelegate {
             }
         }
 
-
-        scheduler_.wakeWait(); // Interrupt the scheduler to close it
-
-        if (t.isAlive()) {
-            scheduler_.wakeWait();
-            try {
-                t.join();
-            } catch (InterruptedException ie) {
-            }
-        }
+        scheduler_.stop();
 
         shutDown();
     }
@@ -477,8 +473,10 @@ public class GlobalController implements ComponentController, EventDelegate {
         return isActive_;
     }
 
-    /** Sets isActive_ to false ending the simulation */
-    public void deactivate() {
+    /**
+     * Called when an EventScheduler stops
+     * Sets isActive_ to false ending the simulation */
+    public void onEventSchedulerStop(long time) {
         isActive_ = false;
 
         if (!options_.isSimulation()) {
@@ -486,6 +484,13 @@ public class GlobalController implements ComponentController, EventDelegate {
                 runLoop_.notify();
             }
         }
+    }
+
+    /**
+     * Called when an EventScheduler starts
+     */
+    public void onEventSchedulerStart(long time) {
+        startSimulation(time);
     }
 
     /**
@@ -514,6 +519,33 @@ public class GlobalController implements ComponentController, EventDelegate {
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Checking existence of local Controllers");
         checkAllControllers();
     }
+
+    /** Event for start Simulation */
+    public void startSimulation(long time) {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Start of simulation  at: "
+                                      + time + " " + System.currentTimeMillis());
+
+        for (OutputType o : options_.getOutputs()) {
+            if (o.getTimeType() == OutputType.AT_START) {
+                produceOutput(time, o);
+            }
+        }
+    }
+
+    /** Event for end Simulation */
+    public void endSimulation(long time) {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of simulation  at " + time
+                                      + " " + System.currentTimeMillis());
+
+        for (OutputType o : options_.getOutputs()) {
+            if (o.getTimeType() == OutputType.AT_END) {
+                produceOutput(time, o);
+            }
+        }
+
+        shutDown();
+    }
+
 
     /**
      * Set up the PlacementEngine
@@ -570,24 +602,6 @@ public class GlobalController implements ComponentController, EventDelegate {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot instantiate class " + reporterClassName);
             }
         }
-    }
-
-    /**
-     * Schedule the creation of a link between two nodes
-     */
-    public void scheduleLink(AbstractLink link, EventEngine eng, long time) {
-        StartLinkEvent sle = new StartLinkEvent(time, eng, link);
-        sle.setScheduled();
-        scheduler_.addEvent(sle);
-        network_.scheduleLink(link);
-    }
-
-    /**
-     * Schedule the creation of a link between two nodes
-     */
-    public void scheduleLink(int node1, int node2, EventEngine eng, long time) {
-        AbstractLink l = new AbstractLink(node1, node2);
-        scheduleLink(l, eng, time);
     }
 
     /**
@@ -654,19 +668,13 @@ public class GlobalController implements ComponentController, EventDelegate {
                 @Override
                 public JSONObject call() throws InstantiationException, InterruptedException, TimeoutException {
                     //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT preceed: " + e);
-                    e.preceedEvent(scheduler_, gc);
-                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT execute: " + e);
-                    JSONObject js = null;
-                    js = e.execute(gc);
+                    JSONObject js = e.execute(gc);
 
                     //Logger.getLogger("log").logln(USR.STDOUT, "EVENT result:  " + js);
 
                     for (OutputType t : eventOutput_) {
                         produceEventOutput(e, js, t);
                     }
-                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "EVENT follow: " + e);
-
-                    e.followEvent(scheduler_, js, gc);
 
                     //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT done: " + e );
                     String str = js.toString();
@@ -697,32 +705,6 @@ public class GlobalController implements ComponentController, EventDelegate {
         }
 
         return jsobj;
-    }
-
-    /** Event for start Simulation */
-    public void startSimulation(long time) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Start of simulation event at: "
-                                      + time + " " + System.currentTimeMillis());
-
-        for (OutputType o : options_.getOutputs()) {
-            if (o.getTimeType() == OutputType.AT_START) {
-                produceOutput(time, o);
-            }
-        }
-    }
-
-    /** Event for end Simulation */
-    public void endSimulation(long time) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of simulation event at " + time
-                                      + " " + System.currentTimeMillis());
-
-        for (OutputType o : options_.getOutputs()) {
-            if (o.getTimeType() == OutputType.AT_END) {
-                produceOutput(time, o);
-            }
-        }
-
-        shutDown();
     }
 
 
@@ -1387,6 +1369,25 @@ public class GlobalController implements ComponentController, EventDelegate {
     }
 
     /**
+     * Schedule the creation of a link between two nodes
+     */
+    public void scheduleLink(AbstractLink link, EventEngine eng, long time) {
+        StartLinkEvent sle = new StartLinkEvent(time, eng, link);
+        sle.setScheduled();
+        scheduler_.addEvent(sle);
+        network_.scheduleLink(link);
+    }
+
+    // /**
+    //  * Schedule the creation of a link between two nodes
+    //  */
+    // public void scheduleLink(int node1, int node2, EventEngine eng, long time) {
+    //     AbstractLink l = new AbstractLink(node1, node2);
+    //     scheduleLink(l, eng, time);
+    // }
+
+
+    /**
      * External and static access to start an Application
      */
     public JSONObject appStart(int routerID, String className, String[] args) {
@@ -1623,7 +1624,7 @@ public class GlobalController implements ComponentController, EventDelegate {
     }
 
     /** Produce some output */
-    public void produceEventOutput(Event ev, JSONObject response, OutputType o) {
+    private void produceEventOutput(Event ev, JSONObject response, OutputType o) {
         File f;
         FileOutputStream s = null;
         PrintStream p = null;
@@ -2238,7 +2239,7 @@ public class GlobalController implements ComponentController, EventDelegate {
 
     }
 
-    public void addEvent(Event e) {
+    private void addEvent(Event e) {
         scheduler_.addEvent(e);
     }
 

@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONObject;
 import usr.APcontroller.APController;
 import usr.engine.EventEngine;
@@ -8,7 +11,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class QueryAPEvent extends AbstractEvent {
+public class QueryAPEvent extends AbstractGlobalControllerEvent {
     APController apc_;
 
     public QueryAPEvent(long time, EventEngine eng, APController ap) {
@@ -18,13 +21,13 @@ public class QueryAPEvent extends AbstractEvent {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         return new String("QueryAPController " + time_);
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) throws
-    InstantiationException {
+    public JSONObject execute(GlobalController gc) throws
+        InstantiationException {
         apc_.controllerUpdate(time_, gc);
         JSONObject jsobj = new JSONObject();
         try {
@@ -32,8 +35,8 @@ public class QueryAPEvent extends AbstractEvent {
             jsobj.put("msg", "APEvent Queried");
         } catch (Exception e) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in QueryAPEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in QueryAPEvent should not occur");
         }
 
         return jsobj;
@@ -41,11 +44,11 @@ public class QueryAPEvent extends AbstractEvent {
 
     /** Perform logic which follows an event */
     @Override
-	public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
-        super.followEvent(s, response, g);
+    public void followEvent(JSONObject response, GlobalController g) {
+        super.followEvent(response, g);
         long newTime = time_ + g.getAPControllerConsiderTime();
         QueryAPEvent e = new QueryAPEvent(newTime, engine_, apc_);
-        s.addEvent(e);
+        getEventScheduler().addEvent(e);
     }
 
 }

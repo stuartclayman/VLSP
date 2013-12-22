@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
@@ -13,7 +16,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class EndRouterEvent extends AbstractEvent {
+public class EndRouterEvent extends AbstractGlobalControllerEvent {
     int routerNo_;
     String address_ = null;
     boolean routerNumSet_ = true;
@@ -38,7 +41,7 @@ public class EndRouterEvent extends AbstractEvent {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         String str;
 
         str = "EndRouter: " + time_ + " " + getName();
@@ -68,14 +71,14 @@ public class EndRouterEvent extends AbstractEvent {
 
         if (rInfo == null) {
             throw new InstantiationException(
-                      "Cannot find router " + address);
+                                             "Cannot find router " + address);
         }
 
         routerNo_ = rInfo.getId();
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) throws InstantiationException {
+    public JSONObject execute(GlobalController gc) throws InstantiationException {
 
         if (!routerNumSet_) {
             initNumber(address_, gc);
@@ -107,12 +110,12 @@ public class EndRouterEvent extends AbstractEvent {
     }
 
     @Override
-	public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
-        super.followEvent(s, response, g);
+    public void followEvent(JSONObject response, GlobalController g) {
+        super.followEvent(response, g);
         // Schedule a check on network connectivity
         if (g.connectedNetwork()) {
             ConnectNetworkEvent cne= new ConnectNetworkEvent (g.getElapsedTime());
-            s.addEvent(cne);
+            getEventScheduler().addEvent(cne);
         } else if (!g.allowIsolatedNodes()) {
             g.getAbstractNetwork().checkIsolated(time_,g);
         }
@@ -123,12 +126,12 @@ public class EndRouterEvent extends AbstractEvent {
         boolean success;
 
         if (gc.isSimulation()) {
-        	success = endSimulationRouter(routerId, gc);
+            success = endSimulationRouter(routerId, gc);
         } else {
             success = endEmulatedRouter(routerId, gc);
         }
         if (LifetimeEstimate.usingLifetimeEstimate()) {
-        	LifetimeEstimate.getLifetimeEstimate().nodeDeath(time, routerId);
+            LifetimeEstimate.getLifetimeEstimate().nodeDeath(time, routerId);
         }
 
         if (success) {

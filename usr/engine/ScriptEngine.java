@@ -8,15 +8,16 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import us.monoid.json.JSONObject;
-import usr.events.AppStartEvent;
-import usr.events.EndLinkEvent;
-import usr.events.EndRouterEvent;
+import usr.events.StartSimulationEvent;
 import usr.events.EndSimulationEvent;
 import usr.events.Event;
+import usr.events.EventDelegate;
 import usr.events.EventScheduler;
-import usr.events.StartLinkEvent;
-import usr.events.StartRouterEvent;
-import usr.events.StartSimulationEvent;
+import usr.events.globalcontroller.AppStartEvent;
+import usr.events.globalcontroller.EndLinkEvent;
+import usr.events.globalcontroller.EndRouterEvent;
+import usr.events.globalcontroller.StartLinkEvent;
+import usr.events.globalcontroller.StartRouterEvent;
 import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -38,32 +39,32 @@ public class ScriptEngine implements EventEngine {
 
     /** Initial events to add to schedule */
     @Override
-	public void initialEvents(EventScheduler s, GlobalController g) {
+	public void initialEvents(EventScheduler s, EventDelegate g) {
         for (Event e : events_) {
             s.addEvent(e);
         }
     }
 
     @Override
-	public void startStopEvents(EventScheduler s, GlobalController g) {
+	public void startStopEvents(EventScheduler s, EventDelegate g) {
         // simulation start
-        StartSimulationEvent e0 = new StartSimulationEvent(0, this);
+        StartSimulationEvent e0 = new StartSimulationEvent(0);
 
         s.addEvent(e0);
 
         // simulation end
-        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_, this);
+        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_);
         s.addEvent(e);
     }
 
     /** Add or remove events following a simulation event */
     @Override
-	public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
+	public void preceedEvent(Event e, EventScheduler s, EventDelegate g) {
     }
 
     /** Add or remove events following a simulation event */
     @Override
-	public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
+	public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate g) {
     }
 
     private void readScript(String fname) {
@@ -252,7 +253,7 @@ public class ScriptEngine implements EventEngine {
                     }
                 }
             } else if (type.equals("END_SIMULATION")) {
-                return new EndSimulationEvent(time, this);
+                return new EndSimulationEvent(time);
             } else if (type.equals("ON_ROUTER")) {
                 if (args.length < 4) {
                     throw new Exception(

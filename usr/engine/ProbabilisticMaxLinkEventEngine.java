@@ -16,11 +16,12 @@ import rgc.xmlparse.XMLNoTagException;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.abstractnetwork.AbstractLink;
-import usr.events.EndLinkEvent;
-import usr.events.EndRouterEvent;
+import usr.events.globalcontroller.EndLinkEvent;
+import usr.events.globalcontroller.EndRouterEvent;
+import usr.events.globalcontroller.StartRouterEvent;
 import usr.events.Event;
+import usr.events.EventDelegate;
 import usr.events.EventScheduler;
-import usr.events.StartRouterEvent;
 import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -30,14 +31,12 @@ import usr.logging.USR;
  * event library -- in this case Links have a Minimum and Maximum number of links
  * They would like
  */
-public class ProbabilisticMaxLinkEventEngine extends
-ProbabilisticEventEngine {
+public class ProbabilisticMaxLinkEventEngine extends ProbabilisticEventEngine {
     HashMap<Integer, Integer> routerMaxLinkCount_;
     HashMap<Integer, Integer> routerMinLinkCount_;
     ProbDistribution extraLinkDist_ = null;
 
-    public ProbabilisticMaxLinkEventEngine(int time, String parms)
-    throws EventEngineException {
+    public ProbabilisticMaxLinkEventEngine(int time, String parms) throws EventEngineException {
         super(time);
         Document doc = parseXMLHead(parms,"ProbabilisticMaxLinkEventEngine");
         parseXMLExtra(doc);
@@ -47,26 +46,26 @@ ProbabilisticEventEngine {
     }
 
     @Override
-    public void preceedEvent(Event e, EventScheduler s, GlobalController g) {
+    public void preceedEvent(Event e, EventScheduler s, EventDelegate g) {
     	try {
-    		if (e instanceof EndRouterEvent) {
-    			precedeEndRouter((EndRouterEvent)e, s, g);
-    		} else if (e instanceof EndLinkEvent) {
+            if (e instanceof EndRouterEvent) {
+                precedeEndRouter((EndRouterEvent)e, s, (GlobalController)g);
+            } else if (e instanceof EndLinkEvent) {
 
-    			precedeEndLink((EndLinkEvent)e, s, g);
-    		}
+                precedeEndLink((EndLinkEvent)e, s, (GlobalController)g);
+            }
     	}
     	catch (Exception ex) {
-    		ex.printStackTrace();
+            ex.printStackTrace();
     	}
     }
 
     /** Add or remove events following a simulation event */
     @Override
-	public void followEvent(Event e, EventScheduler s, JSONObject response, GlobalController g) {
+    public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate g) {
         if (e instanceof StartRouterEvent) {
             StartRouterEvent sre = (StartRouterEvent)e;
-            followRouter(sre, s, response, g);
+            followRouter(sre, s, response, (GlobalController)g);
         }
     }
 
@@ -83,8 +82,8 @@ ProbabilisticEventEngine {
             }
         } catch (InstantiationException ie) {
             Logger.getLogger("log").logln(
-                USR.ERROR, leadin()
-                + "Error getting address " + e);
+                                          USR.ERROR, leadin()
+                                          + "Error getting address " + e);
         }
 
     }
@@ -115,8 +114,8 @@ ProbabilisticEventEngine {
             checkRouter(router, s, g, now);
         } catch (InstantiationException ie) {
             Logger.getLogger("log").logln(
-                USR.ERROR, leadin()
-                + "Error getting address " + e);
+                                          USR.ERROR, leadin()
+                                          + "Error getting address " + e);
         }
     }
 
@@ -176,7 +175,7 @@ ProbabilisticEventEngine {
             Logger.getLogger("log").logln(USR.ERROR,
                                           leadin() + "Unexpected JSON error in initMLRouter"+ex.getMessage());
             Logger.getLogger("log").logln(USR.ERROR,
-                    leadin() + "JSON "+response);
+                                          leadin() + "JSON "+response);
 
             return;
         } catch (ProbException ex) {

@@ -12,8 +12,8 @@ import org.simpleframework.http.Response;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import usr.events.EndRouterEvent;
-import usr.events.StartRouterEvent;
+import usr.events.globalcontroller.EndRouterEvent;
+import usr.events.globalcontroller.StartRouterEvent;
 import cc.clayman.console.BasicRequestHandler;
 
 /**

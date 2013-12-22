@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
@@ -10,31 +13,31 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class CreateTrafficEvent extends AbstractEvent {
+public class CreateTrafficEvent extends AbstractGlobalControllerEvent {
     BackgroundTrafficEngine engine_;
 
     public CreateTrafficEvent(long time, EventEngine eng)
-    throws InstantiationException {
+        throws InstantiationException {
         time_ = time;
 
         if (!(eng instanceof BackgroundTrafficEngine)) {
             throw new
-                  InstantiationException
-                  (
-                      "Create Traffic Event requires BackgroundTrafficEngine");
+                InstantiationException
+                (
+                 "Create Traffic Event requires BackgroundTrafficEngine");
         }
 
         engine_ = (BackgroundTrafficEngine)eng;
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         return new String("CreateTrafficEvent " + time_ + " ");
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) throws
-    InstantiationException {
+    public JSONObject execute(GlobalController gc) throws
+        InstantiationException {
         int nRouters = gc.getNoRouters();    // Cannot create traffic
         JSONObject json = new JSONObject();
 
@@ -54,7 +57,7 @@ public class CreateTrafficEvent extends AbstractEvent {
         if (engine_.preferEmptyNodes() ==
             true) {
             throw new InstantiationException(
-                      "Not written engine to prefer empty nodes");
+                                             "Not written engine to prefer empty nodes");
         }
 
         from = (int)Math.floor(Math.random() * nRouters);
@@ -102,8 +105,8 @@ public class CreateTrafficEvent extends AbstractEvent {
             }
         } catch (JSONException e) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in CreateTrafficEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in CreateTrafficEvent should not occur");
         }
 
         return json;

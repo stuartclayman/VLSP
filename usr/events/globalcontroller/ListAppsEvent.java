@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
@@ -10,7 +13,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class ListAppsEvent extends AbstractEvent {
+public class ListAppsEvent extends AbstractGlobalControllerEvent {
     int router_;
 
     public ListAppsEvent(long time, EventEngine eng, int router) {
@@ -20,7 +23,7 @@ public class ListAppsEvent extends AbstractEvent {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         String str;
 
         str = "ListApps: " + time_ + " " + router_;
@@ -28,8 +31,8 @@ public class ListAppsEvent extends AbstractEvent {
     }
 
     @Override
-	public JSONObject execute(GlobalController gc)
-    throws InstantiationException {
+    public JSONObject execute(GlobalController gc)
+        throws InstantiationException {
         JSONObject jsobj = new JSONObject();
         JSONArray array = new JSONArray();
         BasicRouterInfo bri = gc.findRouterInfo(router_);
@@ -40,8 +43,8 @@ public class ListAppsEvent extends AbstractEvent {
                 jsobj.put("msg", "Cannot find router with ID " + router_);
             } catch (JSONException js) {
                 Logger.getLogger("log").logln(
-                    USR.ERROR,
-                    "   JSONException in ListAppsEvent should not occur");
+                                              USR.ERROR,
+                                              "   JSONException in ListAppsEvent should not occur");
             }
 
             return jsobj;
@@ -59,8 +62,8 @@ public class ListAppsEvent extends AbstractEvent {
             jsobj.put("list", array);
         } catch (JSONException js) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in ListAppsEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in ListAppsEvent should not occur");
         }
 
         return jsobj;

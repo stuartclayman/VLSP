@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
@@ -10,22 +13,22 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents an event which lists all links*/
-public class ListLinksEvent extends AbstractEvent {
+public class ListLinksEvent extends AbstractGlobalControllerEvent {
     public ListLinksEvent(long time, EventEngine eng) {
         time_ = time;
         engine_ = eng;
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         String str = "ListLinks " + time_ + " ";
 
         return str;
     }
 
     @Override
-	public JSONObject execute(GlobalController gc)
-    throws InstantiationException {
+    public JSONObject execute(GlobalController gc)
+        throws InstantiationException {
         JSONObject jsobj = null;
 
         try {
@@ -41,8 +44,8 @@ public class ListLinksEvent extends AbstractEvent {
             return jsobj;
         } catch (JSONException js) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in ListLinksEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in ListLinksEvent should not occur");
         }
 
         return jsobj;

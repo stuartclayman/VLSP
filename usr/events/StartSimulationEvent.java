@@ -2,38 +2,32 @@ package usr.events;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import usr.engine.EventEngine;
-import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class StartSimulationEvent extends AbstractEvent {
     @Override
-	public String toString() {
+    public String toString() {
         String str;
 
         str = "StartSimulation: " + time_;
         return str;
     }
 
-    public StartSimulationEvent(long time, EventEngine eng) {
+    public StartSimulationEvent(long time) {
         time_ = time;
-        engine_ = eng;
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) throws
-    InstantiationException {
-        gc.startSimulation(time_);
+    public JSONObject execute(EventDelegate ed) throws InstantiationException {
+        ed.onEventSchedulerStart(time_);
         JSONObject json = new JSONObject();
         try {
             json.put("success", true);
             json.put("msg", "Simulation started");
         } catch (JSONException je) {
-            Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in StartLinkEvent should not occur");
+            Logger.getLogger("log").logln(USR.ERROR, "JSONException in StartLinkEvent should not occur");
         }
 
         return json;

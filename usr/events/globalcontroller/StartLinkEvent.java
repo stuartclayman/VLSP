@@ -1,7 +1,10 @@
-package usr.events;
+package usr.events.globalcontroller;
 
 import java.io.IOException;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.abstractnetwork.AbstractLink;
@@ -16,7 +19,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class StartLinkEvent extends AbstractEvent {
+public class StartLinkEvent extends AbstractGlobalControllerEvent {
     private int router1_;
     private int router2_;
     private int weight_ = 1;
@@ -60,7 +63,7 @@ public class StartLinkEvent extends AbstractEvent {
     }
 
     public StartLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc)
-    throws InstantiationException {
+        throws InstantiationException {
         time_ = time;
         engine_ = eng;
         address1_ = add1;
@@ -86,7 +89,7 @@ public class StartLinkEvent extends AbstractEvent {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         String str = "StartLink " + time_ + " " + getName();
 
         return str;
@@ -107,19 +110,19 @@ public class StartLinkEvent extends AbstractEvent {
     }
 
     private void setRouterNumbers(String add1, String add2, GlobalController gc)
-    throws InstantiationException {
+        throws InstantiationException {
         BasicRouterInfo r1Info = gc.findRouterInfo(add1);
 
         if (r1Info == null) {
             throw new InstantiationException(
-                      "Cannot find address " + add1);
+                                             "Cannot find address " + add1);
         }
 
         BasicRouterInfo r2Info = gc.findRouterInfo(add2);
 
         if (r2Info == null) {
             throw new InstantiationException(
-                      "Cannot find address " + add2);
+                                             "Cannot find address " + add2);
         }
 
         router1_ = r1Info.getId();
@@ -136,7 +139,7 @@ public class StartLinkEvent extends AbstractEvent {
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) throws InstantiationException {
+    public JSONObject execute(GlobalController gc) throws InstantiationException {
         if (!numbersSet_) {
             setRouterNumbers(address1_, address2_, gc);
         }
@@ -195,8 +198,8 @@ public class StartLinkEvent extends AbstractEvent {
             }
         } catch (JSONException js) {
             Logger.getLogger("log").logln(
-                USR.ERROR,
-                "JSONException in StartLinkEvent should not occur");
+                                          USR.ERROR,
+                                          "JSONException in StartLinkEvent should not occur");
         }
 
         return json;
@@ -204,7 +207,7 @@ public class StartLinkEvent extends AbstractEvent {
 
     /** Event to link two routers  Return -1 for fail or link id*/
     static public int startLink(GlobalController gc, long time, int router1Id, int router2Id,
-               int weight, String name, boolean scheduled) {
+                                int weight, String name, boolean scheduled) {
         // check if this link already exists
         int [] outForRouter1 = gc.getOutLinks(router1Id);
         boolean gotIt = false;

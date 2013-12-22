@@ -1,5 +1,8 @@
-package usr.events;
+package usr.events.globalcontroller;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.abstractnetwork.AbstractLink;
@@ -7,7 +10,7 @@ import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;
 
-public class ConnectNetworkEvent extends AbstractEvent {
+public class ConnectNetworkEvent extends AbstractGlobalControllerEvent {
     int node1_= -1;
     int node2_= -1;
 
@@ -25,7 +28,7 @@ public class ConnectNetworkEvent extends AbstractEvent {
 
     @Override
     public JSONObject execute(GlobalController gc)
-            throws InstantiationException {
+        throws InstantiationException {
         AbstractLink link= null;
         if (node1_ >= 0) {
             link= gc.getAbstractNetwork().connectNetwork(time_, node1_, node2_, gc);
@@ -50,7 +53,10 @@ public class ConnectNetworkEvent extends AbstractEvent {
             } else {
                 cne= new ConnectNetworkEvent(time_);
             }
-            gc.addEvent(cne);
+
+            // add a new event to my EventScheduler
+            getEventScheduler().addEvent(cne);
+
             return js;
         } catch (JSONException je) {
             Logger.getLogger("log").logln(USR.ERROR, "JSONException in ConnectNetworkEvent should not occur");

@@ -1,46 +1,48 @@
 package usr.events;
 
 import us.monoid.json.JSONObject;
-import usr.engine.EventEngine;
-import usr.globalcontroller.GlobalController;
 
 /** Class represents a global controller event*/
 public abstract class AbstractEvent implements Event {
     protected long time_;
-    protected EventEngine engine_;
+    protected EventScheduler scheduler;
 
     /** Execute the event and return a JSON object with information*/
     @Override
-	public abstract JSONObject execute(GlobalController gc) throws InstantiationException;
+    public abstract JSONObject execute(EventDelegate obj) throws InstantiationException;
 
     /** Return event as string*/
     @Override
-	public abstract String toString();
+    public abstract String toString();
 
     /** Accessor function for time*/
     @Override
-	public long getTime() {
+    public long getTime() {
         return time_;
     }
 
     /** Perform logic which follows an event */
     @Override
-	public void followEvent(EventScheduler s, JSONObject response, GlobalController g) {
-        if (engine_ != null) {
-            engine_.followEvent(this, s, response, g);
-        }
-
-        // Non-engine specific follows go here
+    public  void followEvent(JSONObject response, EventDelegate obj) {
     }
 
     /** Perform logic which preceeds an event */
     @Override
-	public void preceedEvent(EventScheduler s, GlobalController g) {
-        if (engine_ != null) {
-            engine_.preceedEvent(this, s, g);
-        }
+    public  void preceedEvent(EventDelegate obj) {
+    }
 
-        // Non-engine specific preceeding actions go here
+    /**
+     * Get event scheduler
+     */
+    public EventScheduler getEventScheduler() {
+        return scheduler;
+    }
+
+    /**
+     * Set event scheduler
+     */
+    public void  setEventScheduler(EventScheduler es) {
+        scheduler = es;
     }
 
 }

@@ -1,10 +1,13 @@
-package usr.events;
+package usr.events.globalcontroller;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import usr.events.Event;
+import usr.events.EventDelegate;
+import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
@@ -16,7 +19,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class AppStopEvent extends AbstractEvent {
+public class AppStopEvent extends AbstractGlobalControllerEvent {
     int routerNo_ = 0;
     int appID = 0;
 
