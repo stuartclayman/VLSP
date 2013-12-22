@@ -25,7 +25,7 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
     Object waitCounter_;          //  Just used in a wait loop
     EventDelegate delegate_;     // Hook back to gc
     long runStartTime_;    // time at which simulation started  (assuming realtime)
-
+    boolean running;       // should the scheduler be running
     private Thread t;                    // Thread for scheduler
 
 
@@ -33,6 +33,7 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
         schedule_ = new ArrayList<Event>();
         lastEventTime_ = 0;
         waitCounter_ = new Object();
+        running = false;
     }
 
     /**
@@ -40,6 +41,7 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
      */
     public boolean start() {
         // Execute the EventScheduler
+        running = true;
         t = new Thread(this);
         t.start();
 
@@ -51,6 +53,8 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
      * Stop the EventScheduler
      */
     public boolean stop() {
+        running = false;
+
         if (t.isAlive()) {
             wakeWait();
             try {
@@ -67,7 +71,7 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
      * Strips off an event, sends it to the  delegate for execution */
     @Override
     public void run() {
-        while (true) {
+        while (running) {
             Event ev = getFirstEvent();
             long expectedStart = 0;
 

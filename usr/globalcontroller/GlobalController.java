@@ -484,6 +484,8 @@ public class GlobalController implements ComponentController, EventDelegate {
                 runLoop_.notify();
             }
         }
+
+        endSimulation(time);
     }
 
     /**
@@ -2221,7 +2223,15 @@ public class GlobalController implements ComponentController, EventDelegate {
     }
 
     public JSONObject setAP(long time, int gid, int AP) {
-        return SetAggPointEvent.setAP(time, gid, AP, this);
+        try {
+            SetAggPointEvent ev = new SetAggPointEvent(time, null, gid, AP);
+            JSONObject jsobj = executeEvent(ev);
+            return jsobj;
+        } catch (Exception e) {
+            return null;
+        }
+
+        // sclayman 20131222 not needed // return SetAggPointEvent.setAP(time, gid, AP, this);
     }
 
     public void registerAggPoint(long time, int gid, int AP) {

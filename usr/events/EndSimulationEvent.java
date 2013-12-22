@@ -26,7 +26,7 @@ public class EndSimulationEvent extends AbstractEvent {
             Logger.getLogger("log").logln(USR.ERROR, "JSONException in EndSimulationEvent should not occur");
         }
 
-        ed.onEventSchedulerStop(getTime());
+        ed.onEventSchedulerStop(getTime());        
         return jsobj;
     }
 
