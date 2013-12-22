@@ -17,6 +17,10 @@
         <MinPropAP>0.1</MinPropAP>
     </APManager>
 
+    <AP>
+      <APClass>usr.router.AggPointCreator</APClass>
+    </AP>
+
    <Monitoring>
       <LatticeMonitoring>true</LatticeMonitoring>
       <Probe>
@@ -29,12 +33,6 @@
       </Probe>
     </Monitoring>
 
-    <!--
-    <AP>
-      <Name>usr.router.KNForwarder</Name>
-      <AppArg>-h lovalhost:6089</AppArg>
-    </AP>
 
-    -->
 
 </RouterOptions>

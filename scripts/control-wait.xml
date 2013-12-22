@@ -3,6 +3,9 @@
      <Port>8888</Port>
      <StartLocalControllers>true</StartLocalControllers>
      <ConnectedNetwork>false</ConnectedNetwork>
+
+     <PlacementEngineClass>usr.globalcontroller.LeastBusyPlacement</PlacementEngineClass>
+
      <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass> -->
      <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualization</VisualizationClass>
 
@@ -28,7 +31,7 @@
 
   <EventEngine>
      <Name>Empty</Name>
-     <EndTime>6000</EndTime> <!-- seconds -->
+     <EndTime>86400</EndTime> <!-- 86400 seconds == 1 day -->
   </EventEngine>
 
   <RouterOptions>

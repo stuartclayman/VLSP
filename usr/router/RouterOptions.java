@@ -590,7 +590,6 @@ public class RouterOptions {
 
     /** Process the part of the XML related to Access Point setup */
     void processAP(NodeList ap) throws SAXException {
-
         if (ap.getLength() > 1) {
             throw new SAXException ("Only one AP tag allowed.");
         }
@@ -603,6 +602,7 @@ public class RouterOptions {
         // What is the name of the class for PlacementEngine
         try {
             apClass = ReadXMLUtils.parseSingleString(a, "APClass", "AP", true);
+
             ReadXMLUtils.removeNode(a, "APClass", "AP");
 
             Logger.getLogger("log").logln(USR.STDOUT, "APClass = " + apClass);

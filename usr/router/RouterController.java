@@ -149,18 +149,6 @@ public class RouterController implements ComponentController, Runnable {
         apController_ = ConstructAPController.constructAPController(options_);
         apInfo_ = apController_.newAPInfo();
 
-        // Setup AP
-        String apClassName = options_.getAPClassName();
-
-        if (apClassName == null) {
-            // there is no AP defined in the options
-            // use the built-in one
-            apClassName = "usr.router.NullAPCreator";
-        }
-
-        setupAP(apClassName);  //         apMgr = new AggPointCreator(this);
-
-
         // setup DataSource
         dataSource = new BasicDataSource(name + ".dataSource");
         probeList = new ArrayList<RouterProbe>();
@@ -608,6 +596,18 @@ public class RouterController implements ComponentController, Runnable {
     /** Read a string containing router options */
     public boolean readOptionsString(String str) {
         boolean read = router.readOptionsString(str);
+
+        // Setup AP
+        String apClassName = options_.getAPClassName();
+
+        if (apClassName == null) {
+            // there is no AP defined in the options
+            // use the built-in one
+            apClassName = "usr.router.NullAPCreator";
+        }
+
+        setupAP(apClassName);  //         apMgr = new AggPointCreator(this);
+
 
         //System.out.println(leadin() + "options_.latticeMonitoring: " + options_.latticeMonitoring);
 
