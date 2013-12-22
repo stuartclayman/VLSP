@@ -206,7 +206,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
     }
 
     /** Event to link two routers  Return -1 for fail or link id*/
-    static public int startLink(GlobalController gc, long time, int router1Id, int router2Id,
+    public int startLink(GlobalController gc, long time, int router1Id, int router2Id,
                                 int weight, String name, boolean scheduled) {
         // check if this link already exists
         int [] outForRouter1 = gc.getOutLinks(router1Id);
@@ -242,7 +242,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
     }
 
     /** Start simulation link */
-    static private int startSimulationLink(GlobalController gc, int router1Id, int router2Id) {
+    private int startSimulationLink(GlobalController gc, int router1Id, int router2Id) {
         return 0;
     }
 
@@ -250,7 +250,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
      * Send commands to start virtual link
      * Args are: router1 ID, router2 ID, the weight for the link, a name for the link
      */
-    static private int startVirtualLink(GlobalController gc, int router1Id, int router2Id, int weight, String name) {
+    private int startVirtualLink(GlobalController gc, int router1Id, int router2Id, int weight, String name) {
         BasicRouterInfo br1, br2;
         LocalControllerInfo lc;
         LocalControllerInteractor lci;
@@ -339,7 +339,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
         return scheduled_;
     }
 
-    static private String leadin() {
+    private String leadin() {
         return "GC(SLE):";
     }
 

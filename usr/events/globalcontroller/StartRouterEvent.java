@@ -90,7 +90,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent {
         return jsobj;
     }
 
-    public static int startRouter(GlobalController gc, long time, String address, String name) {
+    public int startRouter(GlobalController gc, long time, String address, String name) {
         int rId = gc.getNextNodeId();
         if (!gc.isSimulation()) {
             if (doRouterStart(gc, rId, address, name) == false) {
@@ -102,7 +102,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent {
         return rId;
     }
 
-    private static boolean doRouterStart(GlobalController gc, int id, String address, String name) {
+    private boolean doRouterStart(GlobalController gc, int id, String address, String name) {
         // If we have no address or name fake these
         if (name == null) {
             name = new String("Router-" + id);
@@ -152,7 +152,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent {
     }
 
     /** Make one attempt to start a router */
-    private static boolean tryRouterStart(GlobalController gc, int id, String address, String name, LocalControllerInfo local,
+    private boolean tryRouterStart(GlobalController gc, int id, String address, String name, LocalControllerInfo local,
                                           LocalControllerInteractor lci)
         throws IOException {
         int port = 0;
@@ -205,7 +205,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent {
         }
     }
 
-    private static String leadin() {
+    private String leadin() {
         return "SRE:";
     }
 

@@ -136,7 +136,7 @@ public class SetLinkWeightEvent extends AbstractGlobalControllerEvent {
     }
 
 
-    static private String leadin() {
+    private String leadin() {
         return "GC(SLWE):";
     }
 
