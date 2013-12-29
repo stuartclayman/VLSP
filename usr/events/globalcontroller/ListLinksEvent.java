@@ -15,13 +15,12 @@ import usr.logging.USR;
 /** Class represents an event which lists all links*/
 public class ListLinksEvent extends AbstractGlobalControllerEvent {
     public ListLinksEvent(long time, EventEngine eng) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
     }
 
     @Override
     public String toString() {
-        String str = "ListLinks " + time_ + " ";
+        String str = "ListLinks " + time + " ";
 
         return str;
     }

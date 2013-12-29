@@ -24,15 +24,14 @@ public class AppStopEvent extends AbstractGlobalControllerEvent {
     int appID = 0;
 
     public AppStopEvent(long time, EventEngine eng, int rNo, int appNo) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         routerNo_ = rNo;
         appID = appNo;
     }
 
     @Override
 	public String toString() {
-        String str = "AppStop " + time_ + getName();
+        String str = "AppStop " + time + getName();
 
         return str;
     }
@@ -114,7 +113,7 @@ public class AppStopEvent extends AbstractGlobalControllerEvent {
                 br.removeApplication(appID, appName);
 
                 // remove app to app info
-                gc.unregisterApp(time_, appID);
+                gc.unregisterApp(time, appID);
 
                 return appID;
             } catch (Exception e) {

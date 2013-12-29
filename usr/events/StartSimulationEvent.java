@@ -6,22 +6,22 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class StartSimulationEvent extends AbstractEvent {
+public class StartSimulationEvent extends AbstractExecutableEvent {
     @Override
     public String toString() {
         String str;
 
-        str = "StartSimulation: " + time_;
+        str = "StartSimulation: " + time;
         return str;
     }
 
     public StartSimulationEvent(long time) {
-        time_ = time;
+        super(time, null);  // no engine
     }
 
     @Override
     public JSONObject execute(EventDelegate ed) throws InstantiationException {
-        ed.onEventSchedulerStart(time_);
+        ed.onEventSchedulerStart(time);
         JSONObject json = new JSONObject();
         try {
             json.put("success", true);

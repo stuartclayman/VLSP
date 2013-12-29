@@ -16,15 +16,11 @@ import usr.logging.USR;
 public class CreateTrafficEvent extends AbstractGlobalControllerEvent {
     BackgroundTrafficEngine engine_;
 
-    public CreateTrafficEvent(long time, EventEngine eng)
-        throws InstantiationException {
-        time_ = time;
+    public CreateTrafficEvent(long time, EventEngine eng) throws InstantiationException {
+        super(time, eng);
 
         if (!(eng instanceof BackgroundTrafficEngine)) {
-            throw new
-                InstantiationException
-                (
-                 "Create Traffic Event requires BackgroundTrafficEngine");
+            throw new InstantiationException ("Create Traffic Event requires BackgroundTrafficEngine");
         }
 
         engine_ = (BackgroundTrafficEngine)eng;
@@ -32,7 +28,7 @@ public class CreateTrafficEvent extends AbstractGlobalControllerEvent {
 
     @Override
     public String toString() {
-        return new String("CreateTrafficEvent " + time_ + " ");
+        return new String("CreateTrafficEvent " + time + " ");
     }
 
     @Override
@@ -54,10 +50,8 @@ public class CreateTrafficEvent extends AbstractGlobalControllerEvent {
         int from;
         int to;
 
-        if (engine_.preferEmptyNodes() ==
-            true) {
-            throw new InstantiationException(
-                                             "Not written engine to prefer empty nodes");
+        if (engine_.preferEmptyNodes() == true) {
+            throw new InstantiationException("Not written engine to prefer empty nodes");
         }
 
         from = (int)Math.floor(Math.random() * nRouters);
@@ -94,19 +88,15 @@ public class CreateTrafficEvent extends AbstractGlobalControllerEvent {
         try {
             if (start2 != null) {
                 json.put("success", true);
-                json.put("msg",
-                         "traffic added between routers " + from + " " + to);
+                json.put("msg", "traffic added between routers " + from + " " + to);
                 json.put("router1", from);
                 json.put("router2", to);
             } else {
                 json.put("success", (Boolean)false);
-                json.put("msg",
-                         "Unable to create traffic between " + from + " " + to);
+                json.put("msg", "Unable to create traffic between " + from + " " + to);
             }
         } catch (JSONException e) {
-            Logger.getLogger("log").logln(
-                                          USR.ERROR,
-                                          "JSONException in CreateTrafficEvent should not occur");
+            Logger.getLogger("log").logln(USR.ERROR, "JSONException in CreateTrafficEvent should not occur");
         }
 
         return json;

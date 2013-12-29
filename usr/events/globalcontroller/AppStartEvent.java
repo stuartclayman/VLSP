@@ -22,39 +22,56 @@ import usr.logging.USR;
 public class AppStartEvent extends AbstractGlobalControllerEvent {
     int routerNo_ = 0;
     String className_ = null;
-    String [] command_ = null;
+    String [] args_ = null;
     String address_ = null;
     boolean routerNumSet_ = true;
 
     public AppStartEvent(long time, EventEngine eng, int rNo, String cname, String [] args) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         routerNo_ = rNo;
         className_ = cname;
-        command_ = args;
+        args_ = args;
     }
 
     public AppStartEvent(long time, EventEngine eng, String addr, String cname, String [] args) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         className_ = cname;
         address_ = addr;
-        command_ = args;
+        args_ = args;
         routerNumSet_ = false;
     }
 
     public AppStartEvent(long time, EventEngine eng, String addr, String cname, String [] args, GlobalController gc) throws InstantiationException {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         className_ = cname;
-        command_ = args;
+        args_ = args;
         address_ = addr;
         setRouterNo(addr, gc);
     }
 
+    /**
+     * Create a AppStartEvent from an existing generic AppStartEvent
+     */
+    public AppStartEvent(usr.events.vim.AppStartEvent ase) {
+        super(ase.time, ase.engine);
+
+        if (ase.address == null) { // address is null, so use routerNo
+            routerNo_ = ase.routerNo;
+            className_ = ase.className;
+            args_ = ase.args;
+            routerNumSet_ = true;
+        } else {
+            address_ = ase.address;
+            className_ = ase.className;
+            args_ = ase.args;
+            routerNumSet_ = false;
+        }
+    }
+
+
     @Override
     public String toString() {
-        String str = "AppStart " + time_ + getName();
+        String str = "AppStart " + time + getName();
 
         return str;
     }
@@ -68,9 +85,9 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
             str += (address_ + " ");
         }
 
-        str += className_ + " Command:";
+        str += className_ + " Args:";
 
-        for (String a : command_) {
+        for (String a : args_) {
             str += " " + a;
         }
 
@@ -94,7 +111,7 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
         }
 
 
-        JSONObject jsobj = appStart(routerNo_, className_, command_, gc);
+        JSONObject jsobj = appStart(routerNo_, className_, args_, gc);
 
         return jsobj;
 
@@ -104,7 +121,7 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
     protected JSONObject appStart(int routerID, String className, String[] args, GlobalController gc) {
 
         // Try and start the app
-        int appID = appStartTry(routerNo_, className_, command_, gc);
+        int appID = appStartTry(routerNo_, className_, args_, gc);
 
         // register the app
         JSONObject json = new JSONObject();
@@ -189,7 +206,7 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
                 br.setApplicationData(appName, dataMap);
 
                 // register app info
-                gc.registerApp(time_, appID, routerID);
+                gc.registerApp(time, appID, routerID);
 
                 return appID;
             } catch (JSONException je) {

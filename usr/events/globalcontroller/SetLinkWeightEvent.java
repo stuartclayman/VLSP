@@ -25,16 +25,15 @@ public class SetLinkWeightEvent extends AbstractGlobalControllerEvent {
 
 
     public SetLinkWeightEvent(long time, EventEngine eng, int r1, int r2, int weight) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         router1_ = r1;
         router2_ = r2;
         weight_ = weight;
     }
 
     @Override
-	public String toString() {
-        String str = "SetLinkWeightEvent " + time_ + " " + router1_ + " " + router2_ + " " + weight_;
+    public String toString() {
+        String str = "SetLinkWeightEvent " + time + " " + router1_ + " " + router2_ + " " + weight_;
 
         return str;
     }

@@ -18,36 +18,51 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
     int router1_;
     int router2_;
     boolean routerNumsSet_ = true;
-    String addr1_ = null;
-    String addr2_ = null;
+    String address1_ = null;
+    String address2_ = null;
 
     public EndLinkEvent(long time, EventEngine eng, int r1, int r2) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         router1_ = r1;
         router2_ = r2;
     }
 
     public EndLinkEvent(long time, EventEngine eng, String add1, String add2) {
-        time_ = time;
-        engine_ = eng;
-        addr1_ = add1;
-        addr2_ = add2;
+        super(time, eng);
+        address1_ = add1;
+        address2_ = add2;
         routerNumsSet_ = false;
     }
 
-    public EndLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc)
-        throws InstantiationException {
-        time_ = time;
-        engine_ = eng;
-        addr1_ = add1;
-        addr2_ = add2;
+    public EndLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc) throws InstantiationException {
+        super(time, eng);
+        address1_ = add1;
+        address2_ = add2;
         initNumbers(add1, add2, gc);
     }
 
+
+    /**
+     * Create a EndLinkEvent from an existing generic EndLinkEvent
+     */
+    public EndLinkEvent(usr.events.vim.EndLinkEvent ele) {
+        super(ele.time, ele.engine);
+
+        if (ele.address1 == null) {   // address is null, so use routerNo
+            router1_ = ele.router1;
+            router2_ = ele.router2;
+            routerNumsSet_ = true;
+        } else {
+            address1_ = ele.address1;
+            address2_ = ele.address2;
+            routerNumsSet_ = false;
+        }
+    }
+
+
     public int getRouter1(GlobalController gc) throws InstantiationException {
         if (!routerNumsSet_) {
-            initNumbers(addr1_, addr2_, gc);
+            initNumbers(address1_, address2_, gc);
         }
 
         return router1_;
@@ -55,7 +70,7 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
 
     public int getRouter2(GlobalController gc) throws InstantiationException {
         if (!routerNumsSet_) {
-            initNumbers(addr1_, addr2_, gc);
+            initNumbers(address1_, address2_, gc);
         }
 
         return router2_;
@@ -63,7 +78,7 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
 
     @Override
     public String toString() {
-        String str = "EndLinkEvent " + time_ + getName();
+        String str = "EndLinkEvent " + time + getName();
 
         return str;
     }
@@ -71,10 +86,10 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
     private String getName() {
         String str = "";
 
-        if (addr1_ == null) {
+        if (address1_ == null) {
             str += router1_ + " " + router2_;
         } else {
-            str += addr1_ + " " + addr2_;
+            str += address1_ + " " + address2_;
         }
 
         return str;
@@ -105,12 +120,12 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
     public void followEvent(JSONObject response, GlobalController g) {
         super.followEvent(response, g);
         if (g.connectedNetwork()) {
-            ConnectNetworkEvent cne= new ConnectNetworkEvent(router1_,router2_,time_);
+            ConnectNetworkEvent cne= new ConnectNetworkEvent(router1_,router2_,time);
             getEventScheduler().addEvent(cne);
         } else if (!g.allowIsolatedNodes()) {
-            CheckIsolatedEvent ce = new CheckIsolatedEvent(router1_, time_);
+            CheckIsolatedEvent ce = new CheckIsolatedEvent(router1_, time);
             getEventScheduler().addEvent(ce);
-            ce = new CheckIsolatedEvent(router2_, time_);
+            ce = new CheckIsolatedEvent(router2_, time);
             getEventScheduler().addEvent(ce);
         }
     }
@@ -119,11 +134,11 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
     public JSONObject execute(GlobalController gc) throws
         InstantiationException {
         if (!routerNumsSet_) {
-            initNumbers(addr1_, addr2_, gc);
+            initNumbers(address1_, address2_, gc);
         }
 
         JSONObject json = new JSONObject();
-        boolean success = endLink(time_, router1_, router2_, gc);
+        boolean success = endLink(time, router1_, router2_, gc);
         try {
             if (success) {
                 json.put("success", true);
@@ -131,9 +146,9 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
                 json.put("router1", (Integer)router1_);
                 json.put("router2", (Integer)router2_);
 
-                if (addr1_ != null) {
-                    json.put("address1", addr1_);
-                    json.put("address2", addr2_);
+                if (address1_ != null) {
+                    json.put("address1", address1_);
+                    json.put("address2", address2_);
                 }
             } else {
                 json.put("success", false);

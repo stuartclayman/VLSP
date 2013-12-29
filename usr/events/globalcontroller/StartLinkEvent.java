@@ -30,24 +30,21 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
     private boolean scheduled_= false;
 
     public StartLinkEvent(long time, EventEngine eng, int r1, int r2) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         router1_ = r1;
         router2_ = r2;
         numbersSet_ = true;
     }
 
     public StartLinkEvent(long time, EventEngine eng, AbstractLink link) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         router1_ = link.getNode1();
         router2_ = link.getNode2();
         numbersSet_ = true;
     }
 
     public StartLinkEvent(long time, EventEngine eng, int r1, int r2, int w) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         router1_ = r1;
         router2_ = r2;
         weight_ = w;
@@ -55,22 +52,42 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
     }
 
     public StartLinkEvent(long time, EventEngine eng, String add1, String add2) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         address1_ = add1;
         address2_ = add2;
         numbersSet_ = false;
     }
 
-    public StartLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc)
-        throws InstantiationException {
-        time_ = time;
-        engine_ = eng;
+    public StartLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc) throws InstantiationException {
+        super(time, eng);
         address1_ = add1;
         address2_ = add2;
         setRouterNumbers(add1, add2, gc);
         numbersSet_ = true;
     }
+
+    /**
+     * Create a StartLinkEvent from an existing generic StartLinkEvent
+     */
+    public StartLinkEvent(usr.events.vim.StartLinkEvent sle) {
+        super(sle.time, sle.engine);
+
+        if (sle.address1 == null) {   // address is null, so use routerNo
+            router1_ = sle.router1;
+            router2_ = sle.router2;
+            numbersSet_ = true;
+        } else {
+            address1_ = sle.address1;
+            address2_ = sle.address2;
+            numbersSet_ = false;
+        }
+
+
+        weight_ =  sle.getWeight();
+        linkName_ = sle.getLinkName();
+
+    }
+
 
     public int getRouter1(GlobalController gc) throws InstantiationException {
         if (!numbersSet_) {
@@ -90,7 +107,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
 
     @Override
     public String toString() {
-        String str = "StartLink " + time_ + " " + getName();
+        String str = "StartLink " + time + " " + getName();
 
         return str;
     }
@@ -170,7 +187,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
             }
         }
 
-        int linkNo = startLink(gc, time_, r1, r2, weight_, linkName_, scheduled_);
+        int linkNo = startLink(gc, time, r1, r2, weight_, linkName_, scheduled_);
         boolean success = linkNo >= 0;
         try {
             if (success) {

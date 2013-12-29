@@ -17,16 +17,15 @@ public class EndWarmupRouterEvent extends AbstractGlobalControllerEvent {
     EventEngine engine_ = null;
 
     public EndWarmupRouterEvent(long starttime, long time, EventEngine eng) {
+        super(time, eng);
         starttime_ = starttime;
-        time_ = time;
-        engine_ = eng;
     }
 
     @Override
     public String toString() {
         String str;
 
-        str = "EndWarmupRouter: lasted from " + starttime_ + " to " + time_;
+        str = "EndWarmupRouter: lasted from " + starttime_ + " to " + time;
         return str;
     }
 
@@ -35,7 +34,7 @@ public class EndWarmupRouterEvent extends AbstractGlobalControllerEvent {
         JSONObject json = new JSONObject();
         APController ap = gc.getAPController();
 
-        ap.removeWarmUpNode(starttime_, time_);
+        ap.removeWarmUpNode(starttime_, time);
         try {
             json.put("success", (Boolean)true);
         } catch (JSONException js) {

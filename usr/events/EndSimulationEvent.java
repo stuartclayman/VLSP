@@ -5,14 +5,14 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class EndSimulationEvent extends AbstractEvent {
+public class EndSimulationEvent extends AbstractExecutableEvent {
     public EndSimulationEvent(long time) {
-        time_ = time;
+        super(time, null); // no engine
     }
 
     @Override
     public String toString() {
-        return new String("EndSimulation " + time_);
+        return new String("EndSimulation " + time);
     }
 
     @Override

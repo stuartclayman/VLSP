@@ -22,29 +22,39 @@ public class EndRouterEvent extends AbstractGlobalControllerEvent {
     boolean routerNumSet_ = true;
 
     public EndRouterEvent(long time, EventEngine eng, String address, GlobalController gc) throws InstantiationException {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         initNumber(address, gc);
     }
 
     public EndRouterEvent(long time, EventEngine eng, String addr) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         address_ = addr;
         routerNumSet_ = false;
     }
 
     public EndRouterEvent(long time, EventEngine eng, int rNo) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         routerNo_ = rNo;
+    }
+
+    /**
+     * Create a EndRouterEvent from an existing generic EndRouterEvent.
+     */
+    public EndRouterEvent(usr.events.vim.EndRouterEvent ere) {
+        super(ere.time, ere.engine);
+
+        if (ere.address == null) {  // address is null, so use routerNo
+            routerNo_ = ere.routerNo;
+        } else {
+            address_ = ere.address;
+        }
     }
 
     @Override
     public String toString() {
         String str;
 
-        str = "EndRouter: " + time_ + " " + getName();
+        str = "EndRouter: " + time + " " + getName();
         return str;
     }
 
@@ -83,7 +93,7 @@ public class EndRouterEvent extends AbstractGlobalControllerEvent {
         if (!routerNumSet_) {
             initNumber(address_, gc);
         }
-        boolean success = endRouter(routerNo_, gc, time_);
+        boolean success = endRouter(routerNo_, gc, time);
 
         JSONObject json = new JSONObject();
         try {
@@ -117,7 +127,7 @@ public class EndRouterEvent extends AbstractGlobalControllerEvent {
             ConnectNetworkEvent cne= new ConnectNetworkEvent (g.getElapsedTime());
             getEventScheduler().addEvent(cne);
         } else if (!g.allowIsolatedNodes()) {
-            g.getAbstractNetwork().checkIsolated(time_,g);
+            g.getAbstractNetwork().checkIsolated(time,g);
         }
     }
 

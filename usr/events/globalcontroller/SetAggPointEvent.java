@@ -17,7 +17,7 @@ public class SetAggPointEvent extends AbstractGlobalControllerEvent {
     int AP_;
 
     public SetAggPointEvent(long time, EventEngine eng, int rid, int AP) {
-        time_ = time;
+        super(time, eng);
         AP_ = AP;
         routerNo_ = rid;
     }
@@ -26,19 +26,19 @@ public class SetAggPointEvent extends AbstractGlobalControllerEvent {
     public String toString() {
         String str;
 
-        str = "SetAggPointEvent: " + time_ + " router " + routerNo_ + " AP " + AP_;
+        str = "SetAggPointEvent: " + time + " router " + routerNo_ + " AP " + AP_;
         return str;
     }
 
     @Override
     public JSONObject execute(GlobalController gc) {
-        JSONObject json= setAP(time_,routerNo_, AP_, gc);
+        JSONObject json= setAP(time,routerNo_, AP_, gc);
 
         return json;
     }
 
     public JSONObject setAP(long time, int gid, int AP, GlobalController gc) {
-        //System.out.println("setAP called");
+        System.out.println("SetAggPointEvent: setAP called");
 
         JSONObject json= new JSONObject();
 

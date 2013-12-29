@@ -21,13 +21,25 @@ public interface EventDelegate {
      */
     public boolean isActive();
 
-    /** Notification for start of EventScheduler */
+    /**
+     * Notification for start of EventScheduler
+     */
     public void onEventSchedulerStart(long time);
 
     /**
      * Notification for stop of EventScheduler
      */
     public void onEventSchedulerStop(long time);
+
+    /** 
+     * Notification for an event execution success 
+     */
+    public void onEventSuccess(long time, Event ev);
+
+    /**
+     * Notification for an event execution failure
+     */
+    public void onEventFailure(long time, Event ev);
 
     /**
      * Get the maximum lag this delegate will allow.

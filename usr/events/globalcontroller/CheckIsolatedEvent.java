@@ -19,17 +19,15 @@ public class CheckIsolatedEvent extends AbstractGlobalControllerEvent {
      * @param node -- number of node to check
      * @param time -- time to make check
      */
-    public CheckIsolatedEvent(int node, long time)
-    {
+    public CheckIsolatedEvent(int node, long time) {
+        super(time, null);      // no engine
         node_= node;
-        time_= time;
     }
 
     @Override
-    public JSONObject execute(GlobalController gc)
-        throws InstantiationException {
+    public JSONObject execute(GlobalController gc) throws InstantiationException {
         AbstractLink link= null;
-        link= gc.getAbstractNetwork().checkIsolated(time_, node_ , gc);
+        link= gc.getAbstractNetwork().checkIsolated(time, node_ , gc);
         try {
             JSONObject js = new JSONObject();
             js.put("success", (Boolean)false);
@@ -40,7 +38,7 @@ public class CheckIsolatedEvent extends AbstractGlobalControllerEvent {
             js.put("new_link",(Boolean)true);
             js.put("node1", (Integer)link.getNode1());
             js.put("node2", (Integer)link.getNode2());
-            gc.scheduleLink(link, null, time_);
+            gc.scheduleLink(link, null, time);
             return js;
         } catch (JSONException je) {
             Logger.getLogger("log").logln(USR.ERROR, "JSONException in ConnectNetworkEvent should not occur");
@@ -50,7 +48,7 @@ public class CheckIsolatedEvent extends AbstractGlobalControllerEvent {
 
     @Override
     public String toString() {
-        String cn = "CheckIsolatedEvent "+node_+" "+time_;
+        String cn = "CheckIsolatedEvent "+node_+" "+time;
 
         return cn;
     }

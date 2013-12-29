@@ -17,8 +17,7 @@ public class ListAppsEvent extends AbstractGlobalControllerEvent {
     int router_;
 
     public ListAppsEvent(long time, EventEngine eng, int router) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         router_ = router;
     }
 
@@ -26,7 +25,7 @@ public class ListAppsEvent extends AbstractGlobalControllerEvent {
     public String toString() {
         String str;
 
-        str = "ListApps: " + time_ + " " + router_;
+        str = "ListApps: " + time + " " + router_;
         return str;
     }
 

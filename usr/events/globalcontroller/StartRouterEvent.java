@@ -22,27 +22,31 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent {
     String name_ = null;
 
     public StartRouterEvent(long time, EventEngine eng) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
     }
 
-    public StartRouterEvent(long time, EventEngine eng, String address, String name) throws
-        InstantiationException {
-        time_ = time;
-        engine_ = eng;
+    public StartRouterEvent(long time, EventEngine eng, String address, String name) {
+        super(time, eng);
         name_ = name;
         address_ = address;
+    }
+
+    /**
+     * Create a StartRouterEvent from an existing generic StartRouterEvent.
+     */
+    public StartRouterEvent(usr.events.vim.StartRouterEvent sre) {
+        this(sre.time, sre.engine, sre.address, sre.name);
     }
 
     @Override
     public String toString() {
         String str;
 
-        str = "StartRouter: " + time_ + " " + nameString();
+        str = "StartRouter: " + time + " " + getName();
         return str;
     }
 
-    private String nameString() {
+    private String getName() {
         String str = "";
 
         if (name_ != null) {
@@ -59,7 +63,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent {
     @Override
     public JSONObject execute(GlobalController gc) throws
         InstantiationException {
-        int rNo = startRouter(gc, time_, address_, name_);
+        int rNo = startRouter(gc, time, address_, name_);
         JSONObject jsobj = new JSONObject();
 
         try {
@@ -79,7 +83,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent {
                 }
 
                 jsobj.put("msg", "Created router " + rNo + " "
-                          + nameString());
+                          + getName());
             }
         } catch (JSONException je) {
             Logger.getLogger("log").logln(

@@ -121,30 +121,40 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
 
                 JSONObject js = delegate_.executeEvent(ev);
 
-                ev.followEvent(js, delegate_);
+                // check if we got a null or a NON success result
+                Boolean success= false;
 
-
-                Boolean success= (Boolean)js.get("success");
-                if (! success) {
-                    Logger.getLogger("log").logln(USR.ERROR, "Event "+ev+" failed");
-                    delegate_.onEventSchedulerStop(now);
+                if (js != null) {
+                    success = (Boolean)js.get("success");
                 }
+
+                if (success) {
+                    delegate_.onEventSuccess(now, ev);
+
+                    ev.followEvent(js, delegate_);
+
+                } else { // failure
+                    delegate_.onEventFailure(now, ev);
+
+                    continue;
+                }
+
             } catch (InstantiationException ine) {
                 Logger.getLogger("log").logln(USR.ERROR,
                                               "Unexpected error in scheduled operation: "
                                               + ine.getMessage() + "\nEvent: "+ ev.toString());
                 ine.printStackTrace();
-                delegate_.onEventSchedulerStop(now);
+                delegate_.onEventFailure(now, ev);
             } catch (InterruptedException ie) {
                 Logger.getLogger("log").logln(USR.ERROR, delegate_.getName() + " problem -- scheduler interrupted");
-                delegate_.onEventSchedulerStop(now);
+                delegate_.onEventFailure(now, ev);
             } catch (TimeoutException te) {
                 Logger.getLogger("log").logln(USR.ERROR, delegate_.getName() + " must be lagging, cannot interrupt "
                                               + "scheduler in time");
-                delegate_.onEventSchedulerStop(now);
+                delegate_.onEventFailure(now, ev);
             } catch (JSONException e) {
                 Logger.getLogger("log").logln(USR.ERROR, "Event "+ev+" failed to return success in JSON");
-                delegate_.onEventSchedulerStop(now);
+                delegate_.onEventFailure(now, ev);
             }
 
             Logger.getLogger("log").logln(USR.STDOUT, elapsedToString(getElapsedTime()) + " " + leadin()+" finishing event "+ev);

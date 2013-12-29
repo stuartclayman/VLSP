@@ -35,13 +35,16 @@ import usr.common.LocalHostInfo;
 import usr.common.Pair;
 import usr.common.PortPool;
 import usr.common.ProcessWrapper;
+import usr.common.ANSI;
 import usr.console.ComponentController;
 import usr.engine.EventEngine;
 import usr.engine.APWarmUp;
 import usr.events.Event;
+import usr.events.ExecutableEvent;
 import usr.events.EventScheduler;
 import usr.events.EventDelegate;
 import usr.events.SimpleEventScheduler;
+import usr.events.EventResolver;
 import usr.events.globalcontroller.OutputEvent;
 import usr.events.globalcontroller.AppStartEvent;
 import usr.events.globalcontroller.AppStopEvent;
@@ -495,6 +498,20 @@ public class GlobalController implements ComponentController, EventDelegate {
         startSimulation(time);
     }
 
+    /** 
+     * Notification for an event execution success 
+     */
+    public void onEventSuccess(long time, Event ev) {
+    }
+
+    /**
+     * Notification for an event execution failure
+     */
+    public void onEventFailure(long time, Event ev) {
+        Logger.getLogger("log").logln(USR.ERROR, "Event "+ev+" failed");
+    }
+
+
     /**
      * Initialisation if we are emulating on hardware.
      */
@@ -545,7 +562,7 @@ public class GlobalController implements ComponentController, EventDelegate {
             }
         }
 
-        shutDown();
+        //shutDown();
     }
 
 
@@ -670,8 +687,24 @@ public class GlobalController implements ComponentController, EventDelegate {
                 @Override
                 public JSONObject call() throws InstantiationException, InterruptedException, TimeoutException {
                     //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT preceed: " + e);
-                    JSONObject js = e.execute(gc);
+                    
+                    ExecutableEvent ee = null;
 
+                    if (e instanceof ExecutableEvent) {
+                         ee = (ExecutableEvent) e;
+                    } else {
+                        // resolve event
+                        EventResolver resolver = new GCEventResolver();
+                        
+                        ee = resolver.resolveEvent(e);
+
+                        if (ee == null) {
+                            Logger.getLogger("log").logln(USR.ERROR, ANSI.RED + "EVENT not ExecutableEvent: " + e + ANSI.RESET_COLOUR);
+                            return null;
+                        }
+                    }
+
+                    JSONObject js = ee.execute(gc);
                     //Logger.getLogger("log").logln(USR.STDOUT, "EVENT result:  " + js);
 
                     for (OutputType t : eventOutput_) {
@@ -2223,6 +2256,11 @@ public class GlobalController implements ComponentController, EventDelegate {
     }
 
     public JSONObject setAP(long time, int gid, int AP) {
+        // this should be how we do it, but it is often called
+        // from the middle of an event execution
+        // therefore it is locked out as the existing event 
+        // gets the semaphore
+        /*
         try {
             SetAggPointEvent ev = new SetAggPointEvent(time, null, gid, AP);
             JSONObject jsobj = executeEvent(ev);
@@ -2230,8 +2268,18 @@ public class GlobalController implements ComponentController, EventDelegate {
         } catch (Exception e) {
             return null;
         }
+        */
 
-        // sclayman 20131222 not needed // return SetAggPointEvent.setAP(time, gid, AP, this);
+        try {
+            SetAggPointEvent ev = new SetAggPointEvent(time, null, gid, AP);
+            scheduler_.addEvent(ev);
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+
+        // sclayman 20131222 not needed
+        //return SetAggPointEvent.setAPNow(time, gid, AP, this);
     }
 
     public void registerAggPoint(long time, int gid, int AP) {
@@ -2358,4 +2406,38 @@ public class GlobalController implements ComponentController, EventDelegate {
         return getName() + " " + GC;
     }
 
+}
+
+
+class GCEventResolver implements EventResolver {
+    public GCEventResolver() {
+    }
+
+    public ExecutableEvent resolveEvent(Event e) {
+        if (e instanceof usr.events.vim.StartRouterEvent) {
+            usr.events.vim.StartRouterEvent sre = (usr.events.vim.StartRouterEvent)e;
+            return new usr.events.globalcontroller.StartRouterEvent(sre);
+
+        } else if (e instanceof   usr.events.vim.EndRouterEvent) {
+            usr.events.vim.EndRouterEvent ere = (usr.events.vim.EndRouterEvent)e;
+            return new usr.events.globalcontroller.EndRouterEvent(ere);
+
+        } else if (e instanceof   usr.events.vim.StartLinkEvent) {
+            usr.events.vim.StartLinkEvent sle = (usr.events.vim.StartLinkEvent)e;
+            return new usr.events.globalcontroller.StartLinkEvent(sle);
+
+        } else if (e instanceof   usr.events.vim.EndLinkEvent) {
+            usr.events.vim.EndLinkEvent ele = (usr.events.vim.EndLinkEvent)e;
+            return new usr.events.globalcontroller.EndLinkEvent(ele);
+
+        } else if (e instanceof  usr.events.vim.AppStartEvent) {
+            usr.events.vim.AppStartEvent ase = (usr.events.vim.AppStartEvent)e;
+            return new usr.events.globalcontroller.AppStartEvent(ase);
+
+        } else {
+        }
+
+        return null;
+
+    }
 }

@@ -1,16 +1,24 @@
 package usr.events;
 
 import us.monoid.json.JSONObject;
+import usr.engine.EventEngine;
 
 /** Class represents a global controller event*/
 public abstract class AbstractEvent implements Event {
-    protected long time_;
-    protected EventScheduler scheduler;
+    public final long time;
+    protected EventScheduler scheduler_;
+    public final EventEngine engine;
 
-    /** Execute the event and return a JSON object with information*/
-    @Override
-    public abstract JSONObject execute(EventDelegate obj) throws InstantiationException;
 
+    /**
+     * Important constructor to create Event.
+     */
+    protected AbstractEvent(long t, EventEngine eng) {
+        // this sets the public final variables: time and engine
+        time = t;
+        engine = eng;
+    }
+        
     /** Return event as string*/
     @Override
     public abstract String toString();
@@ -18,7 +26,7 @@ public abstract class AbstractEvent implements Event {
     /** Accessor function for time*/
     @Override
     public long getTime() {
-        return time_;
+        return time;
     }
 
     /** Perform logic which follows an event */
@@ -35,14 +43,14 @@ public abstract class AbstractEvent implements Event {
      * Get event scheduler
      */
     public EventScheduler getEventScheduler() {
-        return scheduler;
+        return scheduler_;
     }
 
     /**
      * Set event scheduler
      */
     public void  setEventScheduler(EventScheduler es) {
-        scheduler = es;
+        scheduler_ = es;
     }
 
 }

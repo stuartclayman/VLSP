@@ -3,16 +3,19 @@ package usr.events;
 import us.monoid.json.JSONObject;
 
 
-/** Class represents an event*/
+/** 
+ * The Event interface represents a generic event.
+ * It has structure and a class to represent some event.
+ * The receiver of an Event can do its own operations or
+ * it can resolve a generic Event into an ExecutableEvent in order to
+ * execute some operations.
+ */
 public interface Event {
     /** Accessor function for time*/
     public long getTime();
 
     /** Perform logic which preceeds an event */
     public void preceedEvent(EventDelegate obj);
-
-    /** Execute the event and return a JSON object with information*/
-    public JSONObject execute(EventDelegate obj) throws InstantiationException;
 
     /** Perform logic which follows an event */
     public void followEvent(JSONObject response, EventDelegate obj);

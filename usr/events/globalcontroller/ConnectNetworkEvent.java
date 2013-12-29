@@ -14,14 +14,12 @@ public class ConnectNetworkEvent extends AbstractGlobalControllerEvent {
     int node1_= -1;
     int node2_= -1;
 
-    public ConnectNetworkEvent(long t)
-    {
-        time_= t;
+    public ConnectNetworkEvent(long t) {
+        super(t, null);      // no engine
     }
 
-    public ConnectNetworkEvent(int n1, int n2, long t)
-    {
-        time_= t;
+    public ConnectNetworkEvent(int n1, int n2, long t) {
+        super(t, null);      // no engine
         node1_= n1;
         node2_= n2;
     }
@@ -31,9 +29,9 @@ public class ConnectNetworkEvent extends AbstractGlobalControllerEvent {
         throws InstantiationException {
         AbstractLink link= null;
         if (node1_ >= 0) {
-            link= gc.getAbstractNetwork().connectNetwork(time_, node1_, node2_, gc);
+            link= gc.getAbstractNetwork().connectNetwork(time, node1_, node2_, gc);
         } else {
-            link= gc.getAbstractNetwork().connectNetwork(time_, gc);
+            link= gc.getAbstractNetwork().connectNetwork(time, gc);
         }
         try {
             JSONObject js = new JSONObject();
@@ -45,13 +43,13 @@ public class ConnectNetworkEvent extends AbstractGlobalControllerEvent {
             js.put("new_link",(Boolean)true);
             js.put("node1", (Integer)link.getNode1());
             js.put("node2", (Integer)link.getNode2());
-            gc.scheduleLink(link, null, time_);
+            gc.scheduleLink(link, null, time);
             ConnectNetworkEvent cne;
             if (node1_ >= 0) {
                 // Recheck connection
-                cne= new ConnectNetworkEvent(node1_,node2_,time_);
+                cne= new ConnectNetworkEvent(node1_,node2_,time);
             } else {
-                cne= new ConnectNetworkEvent(time_);
+                cne= new ConnectNetworkEvent(time);
             }
 
             // add a new event to my EventScheduler
@@ -68,9 +66,9 @@ public class ConnectNetworkEvent extends AbstractGlobalControllerEvent {
     public String toString() {
         String cn;
         if (node1_ >= 0) {
-            cn = "ConnectNetworkEvent "+node1_+" "+node2_+" "+time_;
+            cn = "ConnectNetworkEvent "+node1_+" "+node2_+" "+time;
         } else {
-            cn = "ConnectNetworkEvent "+time_;
+            cn = "ConnectNetworkEvent "+time;
         }
         return cn;
     }

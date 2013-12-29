@@ -15,15 +15,14 @@ import usr.logging.USR;
 /** Class represents a global controller event*/
 public class ListRoutersEvent extends AbstractGlobalControllerEvent {
     public ListRoutersEvent(long time, EventEngine eng) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
     }
 
     @Override
 	public String toString() {
         String str;
 
-        str = "ListRouters: " + time_;
+        str = "ListRouters: " + time;
         return str;
     }
 

@@ -15,7 +15,7 @@ public class APInformEvent extends AbstractGlobalControllerEvent {
     int AP_;
 
     public APInformEvent(long time, int rid, int AP) {
-        time_ = time;
+        super(time, null);      // no engine
         AP_ = AP;
         routerNo_ = rid;
     }
@@ -24,7 +24,7 @@ public class APInformEvent extends AbstractGlobalControllerEvent {
     public String toString() {
         String str;
 
-        str = "APInform: " + time_ + " router " + routerNo_ + " AP " + AP_;
+        str = "APInform: " + time + " router " + routerNo_ + " AP " + AP_;
         return str;
     }
 

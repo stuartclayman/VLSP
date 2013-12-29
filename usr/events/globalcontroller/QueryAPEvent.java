@@ -15,20 +15,19 @@ public class QueryAPEvent extends AbstractGlobalControllerEvent {
     APController apc_;
 
     public QueryAPEvent(long time, EventEngine eng, APController ap) {
-        time_ = time;
-        engine_ = eng;
+        super(time, eng);
         apc_ = ap;
     }
 
     @Override
     public String toString() {
-        return new String("QueryAPController " + time_);
+        return new String("QueryAPEvent " + time);
     }
 
     @Override
     public JSONObject execute(GlobalController gc) throws
         InstantiationException {
-        apc_.controllerUpdate(time_, gc);
+        apc_.controllerUpdate(time, gc);
         JSONObject jsobj = new JSONObject();
         try {
             jsobj.put("success", (Boolean)true);
@@ -46,8 +45,8 @@ public class QueryAPEvent extends AbstractGlobalControllerEvent {
     @Override
     public void followEvent(JSONObject response, GlobalController g) {
         super.followEvent(response, g);
-        long newTime = time_ + g.getAPControllerConsiderTime();
-        QueryAPEvent e = new QueryAPEvent(newTime, engine_, apc_);
+        long newTime = time + g.getAPControllerConsiderTime();
+        QueryAPEvent e = new QueryAPEvent(newTime, engine, apc_);
         getEventScheduler().addEvent(e);
     }
 

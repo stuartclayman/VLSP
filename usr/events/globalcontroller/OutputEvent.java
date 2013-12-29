@@ -15,20 +15,20 @@ public class OutputEvent extends AbstractGlobalControllerEvent {
     private OutputType output_;
 
     public OutputEvent(long time, EventEngine eng, OutputType ot) {
-        time_ = time;
+        super(time, eng);
         output_ = ot;
     }
 
     @Override
     public String toString() {
-        return new String("OutputEvent " + time_ + " " + output_);
+        return new String("OutputEvent " + time + " " + output_);
     }
 
     @Override
     public JSONObject execute(GlobalController gc) throws InstantiationException {
         JSONObject jsobj = new JSONObject();
 
-        gc.produceOutput(time_, output_);
+        gc.produceOutput(time, output_);
 
         try {
             jsobj.put("success", (Boolean)true);

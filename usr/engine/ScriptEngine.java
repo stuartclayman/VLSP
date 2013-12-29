@@ -13,12 +13,11 @@ import usr.events.EndSimulationEvent;
 import usr.events.Event;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
-import usr.events.globalcontroller.AppStartEvent;
-import usr.events.globalcontroller.EndLinkEvent;
-import usr.events.globalcontroller.EndRouterEvent;
-import usr.events.globalcontroller.StartLinkEvent;
-import usr.events.globalcontroller.StartRouterEvent;
-import usr.globalcontroller.GlobalController;
+import usr.events.vim.AppStartEvent;
+import usr.events.vim.EndLinkEvent;
+import usr.events.vim.EndRouterEvent;
+import usr.events.vim.StartLinkEvent;
+import usr.events.vim.StartRouterEvent;
 import usr.logging.Logger;
 import usr.logging.USR;
 
@@ -39,14 +38,14 @@ public class ScriptEngine implements EventEngine {
 
     /** Initial events to add to schedule */
     @Override
-	public void initialEvents(EventScheduler s, EventDelegate g) {
+    public void initialEvents(EventScheduler s, EventDelegate g) {
         for (Event e : events_) {
             s.addEvent(e);
         }
     }
 
     @Override
-	public void startStopEvents(EventScheduler s, EventDelegate g) {
+    public void startStopEvents(EventScheduler s, EventDelegate g) {
         // simulation start
         StartSimulationEvent e0 = new StartSimulationEvent(0);
 
@@ -59,12 +58,12 @@ public class ScriptEngine implements EventEngine {
 
     /** Add or remove events following a simulation event */
     @Override
-	public void preceedEvent(Event e, EventScheduler s, EventDelegate g) {
+    public void preceedEvent(Event e, EventScheduler s, EventDelegate g) {
     }
 
     /** Add or remove events following a simulation event */
     @Override
-	public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate g) {
+    public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate g) {
     }
 
     private void readScript(String fname) {
@@ -143,24 +142,23 @@ public class ScriptEngine implements EventEngine {
                     String address = args[2].trim();
                     String name = args[3].trim();
 
-                    return new StartRouterEvent(time, this, address,
-                                                name);
+                    return new StartRouterEvent(time, this, address, name);
                 } else {
                     throw new Exception(
-                              "START_ROUTER requires router id or no arg "
-                              +
-                              s
-                              + " => " + noComments + " args.length = "
-                              + args.length);
+                                        "START_ROUTER requires router id or no arg "
+                                        +
+                                        s
+                                        + " => " + noComments + " args.length = "
+                                        + args.length);
                 }
             } else if (type.equals("START_LINK")) {
                 if ((args.length < 4) || (args.length >
                                           6)) {
                     throw new Exception(
-                              "START_LINK requires two router ids "
-                              +
-                              s
-                              + " plus optional weight and name");
+                                        "START_LINK requires two router ids "
+                                        +
+                                        s
+                                        + " plus optional weight and name");
                 } else {
                     // process links
                     String addStr1 = args[2].trim();
@@ -182,8 +180,7 @@ public class ScriptEngine implements EventEngine {
                         e =
                             new StartLinkEvent(time, this, addr1, addr2);
                     } else {
-                        e = new StartLinkEvent(time, this, addStr1,
-                                               addStr2);
+                        e = new StartLinkEvent(time, this, addStr1, addStr2);
                     }
 
                     if (args.length == 5) {
@@ -193,14 +190,14 @@ public class ScriptEngine implements EventEngine {
                             weight = Integer.parseInt(args[4].trim());
                         } catch (Exception ex) {
                             throw new Exception(
-                                      "Cannot interpret weight as integer in "
-                                      +
-                                      s);
+                                                "Cannot interpret weight as integer in "
+                                                +
+                                                s);
                         }
 
                         e.setWeight(weight);
                     } else if (args.length == 6) {
-                        e.setName(args[5]);
+                        e.setLinkName(args[5]);
                     }
 
                     return e;
@@ -208,8 +205,8 @@ public class ScriptEngine implements EventEngine {
             } else if (type.equals("END_ROUTER")) {
                 if (args.length != 3) {
                     throw new Exception(
-                              "END_ROUTER requires router id "
-                              + s);
+                                        "END_ROUTER requires router id "
+                                        + s);
                 } else {
                     String arg2 = args[2].trim();
 
@@ -229,8 +226,8 @@ public class ScriptEngine implements EventEngine {
             } else if (type.equals("END_LINK")) {
                 if (args.length != 4) {
                     throw new Exception(
-                              "END_LINK requires 2 router ids "
-                              + s);
+                                        "END_LINK requires 2 router ids "
+                                        + s);
                 } else {
                     String arg2 = args[2].trim();
                     String arg3 = args[3].trim();
@@ -257,7 +254,7 @@ public class ScriptEngine implements EventEngine {
             } else if (type.equals("ON_ROUTER")) {
                 if (args.length < 4) {
                     throw new Exception(
-                              "ON_ROUTER requires router_id AND className, plus optional args");
+                                        "ON_ROUTER requires router_id AND className, plus optional args");
                 } else {
                     // eliminate time and ON_ROUTER
                     String[] cmdArgs = new String[args.length - 4];
@@ -281,10 +278,10 @@ public class ScriptEngine implements EventEngine {
             }
 
             throw new Exception(
-                      "Unrecognised event in script line " + s);
+                                "Unrecognised event in script line " + s);
         } catch (Exception ex) {
             Logger.getLogger("log").logln(
-                USR.ERROR, "Cannot read simulation script line " + s);
+                                          USR.ERROR, "Cannot read simulation script line " + s);
             Logger.getLogger("log").logln(USR.ERROR, ex.getMessage());
             System.exit(-1);
         }

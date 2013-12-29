@@ -20,6 +20,11 @@ public class SimpleEventScheduler extends AbstractEventScheduler implements Even
     boolean isSimulation_ = true;
 
 
+    public SimpleEventScheduler(EventDelegate ed) {
+        this(false, ed);
+    }
+
+
     public SimpleEventScheduler(boolean isSimulation, EventDelegate gc) {
         isSimulation_ = isSimulation;
         schedule_ = new ArrayList<Event>();

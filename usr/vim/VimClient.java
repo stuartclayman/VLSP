@@ -18,7 +18,7 @@ import usr.logging.USR;
 /**
  * Makes REST calls to VIM / GlobalController using Resty
  */
-public class VimClient {
+public class VimClient implements VimFunctions {
     // A URI for a VIM / GlobalController to interact with
     String vimURI;
     Resty rest;

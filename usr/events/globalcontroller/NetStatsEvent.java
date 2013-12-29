@@ -14,7 +14,7 @@ public class NetStatsEvent extends AbstractGlobalControllerEvent {
     String stats_;
 
     public NetStatsEvent(long time, String stats) {
-        time_ = time;
+        super(time, null);
         stats_ = stats;
     }
 
@@ -22,7 +22,7 @@ public class NetStatsEvent extends AbstractGlobalControllerEvent {
 	public String toString() {
         String str;
 
-        str = "NetStats: " + time_;
+        str = "NetStats: " + time;
         return str;
     }
 
