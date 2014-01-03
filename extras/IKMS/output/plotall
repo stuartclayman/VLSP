@@ -1,0 +1,37 @@
+echo "Plotting all figures for `cat scenario`"
+echo "Creating latex file"
+cat results-template.tex > results.tex
+echo "\section{Plotting all figures for `cat scenario`}" >> results.tex
+
+echo "Ploting CPU Load"
+echo "\subsection{CPU Load}" >> results.tex
+./plotallcpuload
+echo "\clearpage" >> results.tex
+
+echo "Ploting Memory State"
+echo "\subsection{Memory State}" >> results.tex
+./plotallmemorystate
+echo "\clearpage" >> results.tex
+
+echo "Ploting Response Time"
+echo "\subsection{Response Time}" >> results.tex
+./plotallresponsetime
+echo "\clearpage" >> results.tex
+
+echo "Ploting Information Freshness"
+echo "\subsection{Information Freshness}" >> results.tex
+./plotallinformationfreshness
+echo "\clearpage" >> results.tex
+
+echo "Ploting Response Time of Selected Flows"
+echo "\subsection{Response Time of Selected Flows}" >> results.tex
+./plotallresponsetimemonitored
+echo "\clearpage" >> results.tex
+
+echo "Ploting Information Freshness of Selected Flows"
+echo "\subsection{Information Freshness of Selected Flows}" >> results.tex
+./plotallinformationfreshnessmonitored
+echo "\clearpage" >> results.tex
+
+echo "" >> results.tex
+echo "\end{document}" >> results.tex

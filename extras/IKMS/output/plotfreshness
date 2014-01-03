@@ -1,0 +1,2 @@
+echo "Creating freshness figures"
+./plotfreshnessfigure "`cat scenario`/freshness.txt" "Average Information Freshness" "Time" "Information Freshness" $*

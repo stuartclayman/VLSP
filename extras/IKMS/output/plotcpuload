@@ -1,0 +1,3 @@
+echo "Creating cpuload figures"
+./plotcpuloadfigure "`cat scenario`/cpuload.txt" "Average CPU Load" "Time" "CPU Load" $*
+#echo plotcpuloadfigure "`cat scenario`/cpuload.txt" "Average CPU Load" "Time" "CPU Load" $*

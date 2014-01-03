@@ -1,0 +1,2 @@
+export CLASSPATH=./:./libs/*:./classes/
+java -Xmx1024m knowledgeblock.Main 2>&1 | tee /tmp/kb$$.out

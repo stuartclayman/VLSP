@@ -1,0 +1,14 @@
+
+export CLASSPATH=classes:libs/*
+
+
+java knowledgeblock.Main 2>&1  | tee /tmp/kb.out
+
+
+
+
+
+curl -H "Accept: application/json" -H "Content-type: application/json" -d '{"entityid": 5656, "urisforrequiredinformation":["/VIM/Routers/Detail/All", "/VIM/Links/Detail/All", "/VIM/Removed/"]}' 'http://localhost:9900/register/'
+
+
+curl -H "Accept: application/xml" -H "Content-type: application/json" -d '{"entityid": 5611, "urisforrequiredinformation":["/VIM/Routers/Detail/All", "/VIM/Links/Detail/All", "/VIM/Removed/"], "urisforavailableinformation":[]}' 'http://localhost:9900/register/'

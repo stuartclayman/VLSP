@@ -1,0 +1,104 @@
+<project name="KnowledgeBlock" default="usage" basedir=".">
+
+  <!-- Initializations -->
+  <target name="init">    
+    <echo message="------------ Building KnowledgeBlock ----------"/>
+    <echo message=""/>
+    <!-- <property name="sources" value="${basedir}"/> -->
+    <property name="classes" value="${basedir}/classes"/>
+    <property name="external.jars" value="./libs/monitoring-0.6.7.jar:./libs/timeindex-20130121.jar:./libs/resty-0.3.1.jar:./libs/simple-4.1.21.jar:./libs/jedis-2.1.0.jar:./libs/commons-pool-1.6.jar:./libs/Logger-0.1.0.jar:./libs/restconsole-0.1.0.jar:./libs/jfreechart-1.0.14.jar:./libs/javasysmon-0.3.4.jar:./libs/jcommon-1.0.17.jar" />
+    <property name="api" value="${basedir}/docs"/>    
+    <property name="year" value="2012"/>
+    <property name="jars" value="${basedir}"/>
+    <property name="release" value="0.1.0" />
+  </target>
+
+  <!-- Build -->
+  <target name="build" depends="init">
+    <echo message="------ Compiling application"/>
+    <mkdir dir="${classes}"/>
+    <javac debug="on" classpath="${external.jars}" destdir="${classes}" target="1.7" includeantruntime="false">
+
+     <src path="./sc_java" />
+     <src path="./lm_java" />
+
+      <!-- destdir="${classes}" -->
+      <include name="knowledgeblock/**" />
+      <!--
+          <compilerarg value="-Xlint:unchecked" />
+      -->
+
+      <compilerarg value="-Xlint:deprecation" />
+
+    </javac>
+
+
+</target>
+
+  <!-- Archive -->
+  <target name="dist" depends="build">
+    <echo message="------ Building Jar file"/>
+    <jar jarfile="${jars}/knowledge_block-${release}.jar"
+         basedir="${basedir}" includes="knowledgeblock/**">
+      <fileset dir="./sc_java"/>
+      <fileset dir="./lm_java"/>
+      <fileset dir="./classes"/>
+      <fileset dir="./resources"/>
+    </jar>
+
+    <jar jarfile="${jars}/knowledge_block-bin-${release}.jar"
+         basedir="${basedir}" includes="knowledgeblock/**" excludes="**/*.java" >
+      <fileset dir="./classes"/>
+    </jar>
+
+    <jar jarfile="${jars}/knowledge_block-src-${release}.jar"
+         basedir="${basedir}" includes="knowledgeblock/**" excludes="**/*.class" >
+      <fileset dir="./sc_java"/>
+      <fileset dir="./lm_java"/>
+    </jar>
+
+  </target>
+
+  <!-- JavaDoc -->
+  <target name="javadoc" depends="build">
+    <echo message="------ Running JavaDoc"/>
+    <javadoc packagenames="knowledgeblock.*"
+             sourcepath="${sources}"
+             destdir="${api}"
+	     classpath="${external.jars}"
+	     excludepackagenames="knowledgeblock.test"
+             bottom="KnowledgeBlock ${release}"
+             author="false">
+      <classpath>
+        <pathelement location="${classes}"/>
+      </classpath>
+    </javadoc>
+  </target>
+
+  <target name="clean" description="Delete class files and docs dir.">
+    <delete>
+      <fileset dir="${basedir}" includes="**/*.class"/>
+    </delete>
+    <delete dir="${api}" />
+  </target>
+
+  <!-- ALL -->
+  <target name="all" depends="dist, javadoc">
+  </target>
+
+  <!-- Usage -->
+  <target name="usage">
+    <echo message="*** KnowledgeBlock ANT build script ***"/>
+    <echo message="Usage : "/>
+    <echo message="   ant [target]"/>
+    <echo message=""/>     
+    <echo message="   target : "/>     
+    <echo message="            build : Build Application"/>     
+    <echo message="            dist  : Build Application + Archive (JAR)"/>     
+    <echo message="            javadoc  : Build Application + Javadoc"/>    
+    <echo message="            clean : Remove docs and .class files"/>      
+    <echo message="            all   : Build Application + Archive + JavaDoc"/>       
+  </target>
+  
+
+</project>

@@ -1,0 +1,7 @@
+echo "" >> results.tex
+echo "\begin{figure}[ht]" >> results.tex
+echo "\centering" >> results.tex
+echo "\includegraphics{`cat scenario`/$1}" >> results.tex
+echo "\caption{$1}\label{fig:$2}" >> results.tex
+echo "\end{figure}" >> results.tex
+echo "" >> results.tex

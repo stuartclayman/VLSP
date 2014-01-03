@@ -1,0 +1,68 @@
+#!/bin/sh
+die () {
+    echo >&2 "$@"
+    exit 1
+}
+
+[ "$#" -eq 2 ] || die "2 arguments required, $# provided. Syntax: combinecvs number_of_files column_to_combine filename"
+echo $1 | grep -E -q '^[0-9]+$' || die "Numeric argument required for number_of_files parameter, $1 provided"
+echo $2 | grep -E -q '^[0-9]+$' || die "Numeric argument required for column_to_combine parameter, $2 provided"
+
+if [ $1 -eq 1 ]
+then
+die "files should be more than one."
+fi
+
+if [ $1 -eq 2 ]
+then
+	join -t ';' -e- -j1 -o0,1.$2,2.$2 results-1-3-0.txt results-2-3-0.txt
+fi
+
+if [ $1 -eq 3 ]
+then
+        join -t ';' -e- -j1 -o0,1.$2,2.$2 results-1-3-0.txt results-2-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,2.$2 - results-3-3-0.txt
+fi
+
+if [ $1 -eq 4 ]
+then
+        join -t ';' -e- -j1 -o0,1.$2,2.$2 results-1-3-0.txt results-2-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,2.$2 - results-3-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,2.$2 - results-4-3-0.txt
+fi
+
+if [ $1 -eq 5 ]
+then
+        join -t ';' -e- -j1 -o0,1.$2,2.$2 results-1-3-0.txt results-2-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,2.$2 - results-3-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,2.$2 - results-4-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,2.$2 - results-5-3-0.txt
+fi
+
+if [ $1 -eq 6 ]
+then
+        join -t ';' -e- -j1 -o0,1.$2,2.$2 results-1-3-0.txt results-2-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,2.$2 - results-3-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,2.$2 - results-4-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,2.$2 - results-5-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,2.$2 - results-6-3-0.txt
+fi
+
+if [ $1 -eq 7 ]
+then
+        join -t ';' -e- -j1 -o0,1.$2,2.$2 results-1-3-0.txt results-2-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,2.$2 - results-3-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,2.$2 - results-4-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,2.$2 - results-5-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,2.$2 - results-6-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,2.$2 - results-7-3-0.txt
+fi
+
+if [ $1 -eq 8 ]
+then
+        join -t ';' -e- -j1 -o0,1.$2,2.$2 results-1-3-0.txt results-2-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,2.$2 - results-3-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,2.$2 - results-4-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,2.$2 - results-5-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,2.$2 - results-6-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,2.$2 - results-7-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.$2 - results-8-3-0.txt
+fi
+
+if [ $1 -eq 9 ]
+then
+       join -t ';' -e- -j1 -o0,1.$2,2.$2 results-1-3-0.txt results-2-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,2.$2 - results-3-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,2.$2 - results-4-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,2.$2 - results-5-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,2.$2 - results-6-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,2.$2 - results-7-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.$2 - results-8-3-0.txt | join -t ';' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.$2 - results-9-3-0.txt
+fi
+
+if [ $1 -eq 10 ]
+then
+      join -t$'\t' -e- -j1 -o0,1.$2,2.$2 results-1-3-0.txt results-2-3-0.txt | join -t$'\t' -e- -j1 -o0,1.2,1.3,2.$2 - results-3-3-0.txt | join -t$'\t' -e- -j1 -o0,1.2,1.3,1.4,2.$2 - results-4-3-0.txt | join -t$'\t' -e- -j1 -o0,1.2,1.3,1.4,1.5,2.$2 - results-5-3-0.txt | join -t$'\t' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,2.$2 - results-6-3-0.txt | join -t$'\t' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,2.$2 - results-7-3-0.txt | join -t$'\t' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.$2 - results-8-3-0.txt | join -t$'\t' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.$2 - results-9-3-0.txt | join -t$'\t' -e- -j1 -o0,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,2.$2 - results-10-3-0.txt
+fi
+
+# Options to join used here are:
+# -t$'\t' use tab as input and output field separator
+# -a1 -a2 include unmatched lines from the first and second file
+# -e- use a "-" for missing fields
+# -j1 use the first field as key in joining
+# -o0,1.2,2.2 output line consists of the join field (0), second field of the first file (1.2), second field of the second file (2.2)
+
+#join -t ';' -e- -j1 -o0,1.2,2.2 <(awk -f agg.awk results-1-3-0.txt) <(awk -f agg.awk results-2-3-0.txt) | join -t ';' -e- -j1 -o0,1.2,1.3,2.2 - <(awk -f agg.awk results-3-3-0.txt)

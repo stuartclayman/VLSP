@@ -1,0 +1,16 @@
+counter=2
+result=""
+
+for a in 1 2 3 4 5 6 7 8 9 10
+do
+
+        result="$result Flows$a $counter"
+        let counter+=1
+done
+#echo ./plotcpuload$result
+./plotcpuload$result
+result=""
+echo "gnuplot plot.p > `cat scenario`/cpuload.eps"
+./gnuplot plot.p > `cat scenario`/cpuload.eps
+epspdf `cat scenario`/cpuload.eps `cat scenario`/cpuload.pdf
+#./addlatexfigures w-all.eps w-all

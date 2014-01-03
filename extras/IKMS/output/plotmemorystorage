@@ -1,0 +1,2 @@
+echo "Creating memorystorage figures"
+./plotmemorystoragefigure "`cat scenario`/memorystorage.txt" "Memory Storage" "Time" "Memory Storage" $*

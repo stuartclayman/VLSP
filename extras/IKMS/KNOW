@@ -1,0 +1,9 @@
+export CLASSPATH=./classes/:./libs/*:../UMFCommon/bin/:../UMFCommon/bin/lib/*:../USelf-KnowInterface/bin/:../USelf-KnowInterface/bin/lib/*
+#echo -n 'Starting KNOW flow diagrams: '
+#read line
+#java umf.common.logging.LoggerFrame -p 8090 &
+#java umf.common.logging.LoggerFrame -p 8091 &
+#java umf.common.logging.LoggerFrame -p 8092 &
+#echo -n 'Starting Knowledge Block: '
+#read line
+java -Xmx1024m knowledgeblock.Main 2>&1 | tee /tmp/kb$$.out

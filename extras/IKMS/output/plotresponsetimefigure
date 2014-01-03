@@ -1,0 +1,184 @@
+#echo "Syntax: ./plotfigure filename title xlabel ylabel column1title column1position column2title column2position column3title column3position column4title column4position"
+
+#echo "set terminal png" > plot.p         
+#echo "set output 'output.png' >> plot.p  
+
+echo "set term postscript eps enhanced" > plot.p
+echo "set autoscale" >> plot.p
+echo "unset log" >> plot.p
+echo "unset label" >> plot.p
+echo "set xtic auto" >> plot.p
+echo "set ytic auto" >> plot.p
+echo "set title '$2'" >> plot.p
+echo "set xlabel '$3'" >> plot.p
+echo "set ylabel '$4'" >> plot.p
+#echo "set yrange [0:1]" >> plot.p
+#echo "set xrange [0:120]" >> plot.p
+echo "set key top right" >> plot.p
+#echo "set key box" >> plot.p
+
+echo "set style line 1 lt 1 lw 1 lc rgb 'black'" >> plot.p
+echo "set style line 2 lt 2 lw 1 lc rgb 'black'" >> plot.p
+echo "set style line 3 lt 3 lw 1 lc rgb 'black'" >> plot.p
+echo "set style line 4 lt 6 lw 1 lc rgb 'black'" >> plot.p
+echo "set style line 5 lt 1 lw 5 lc rgb 'black'" >> plot.p
+echo "set style line 6 lt 1 lw 5 lc rgb 'gray'" >> plot.p
+echo "set style line 7 lt 3 lw 3 lc rgb 'black'" >> plot.p
+echo "set style line 8 lt 6 lw 3 lc rgb 'black'" >> plot.p
+echo "set style line 9 lt 1 lw 3 lc rgb 'black'" >> plot.p
+echo "set style line 10 lt 2 lw 5 lc rgb 'black'" >> plot.p
+echo "set style line 11 lt 3 lw 5 lc rgb 'black'" >> plot.p
+echo "set style line 12 lt 6 lw 5 lc rgb 'black'" >> plot.p
+echo "set style line 13 lt 2 lw 3 lc rgb 'black'" >> plot.p
+
+if [ $# -eq 6 ]
+then
+        # add one more figure
+	echo "plot '$1' using 1:$6 title '$5' with lines linestyle 1" >> plot.p
+fi
+
+
+if [ $# -eq 8 ]
+then
+        echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+		, '$1' using 1:$8 title '$7' with lines linestyle 2" >> plot.p
+fi
+
+
+if [ $# -eq 10 ] 
+then
+       echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+		, '$1' using 1:${10} title '$9' with lines linestyle 3" >> plot.p
+fi
+
+if [ $# -eq 12 ]
+then
+	echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+        	, '$1' using 1:${12} title '${11}' with lines linestyle 4" >> plot.p
+fi
+
+if [ $# -eq 14 ]
+then
+      echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+                , '$1' using 1:${12} title '${11}' with lines linestyle 4\
+        	, '$1' using 1:${14} title '${13}' with lines linestyle 5" >> plot.p
+fi
+
+if [ $# -eq 16 ]
+then
+      echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+                , '$1' using 1:${12} title '${11}' with lines linestyle 4\
+                , '$1' using 1:${14} title '${13}' with lines linestyle 5\
+                , '$1' using 1:${16} title '${15}' with lines linestyle 6" >> plot.p
+fi
+
+if [ $# -eq 18 ]
+then
+      echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+                , '$1' using 1:${12} title '${11}' with lines linestyle 4\
+                , '$1' using 1:${14} title '${13}' with lines linestyle 5\
+                , '$1' using 1:${16} title '${15}' with lines linestyle 6\
+                , '$1' using 1:${18} title '${17}' with lines linestyle 7" >> plot.p
+
+fi
+
+if [ $# -eq 20 ]
+then
+      echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+                , '$1' using 1:${12} title '${11}' with lines linestyle 4\
+                , '$1' using 1:${14} title '${13}' with lines linestyle 5\
+                , '$1' using 1:${16} title '${15}' with lines linestyle 6\
+                , '$1' using 1:${18} title '${17}' with lines linestyle 7\
+                , '$1' using 1:${20} title '${19}' with lines linestyle 8" >> plot.p
+
+fi
+
+if [ $# -eq 22 ]
+then
+      echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+                , '$1' using 1:${12} title '${11}' with lines linestyle 4\
+                , '$1' using 1:${14} title '${13}' with lines linestyle 5\
+                , '$1' using 1:${16} title '${15}' with lines linestyle 6\
+                , '$1' using 1:${18} title '${17}' with lines linestyle 7\
+                , '$1' using 1:${20} title '${19}' with lines linestyle 8\
+                , '$1' using 1:${22} title '${21}' with lines linestyle 9" >> plot.p
+fi
+
+if [ $# -eq 24 ]
+then
+      echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+                , '$1' using 1:${12} title '${11}' with lines linestyle 4\
+                , '$1' using 1:${14} title '${13}' with lines linestyle 5\
+                , '$1' using 1:${16} title '${15}' with lines linestyle 6\
+                , '$1' using 1:${18} title '${17}' with lines linestyle 7\
+                , '$1' using 1:${20} title '${19}' with lines linestyle 8\
+                , '$1' using 1:${22} title '${21}' with lines linestyle 9\
+                , '$1' using 1:${24} title '${23}' with lines linestyle 10" >> plot.p
+fi
+
+if [ $# -eq 26 ]
+then
+
+     echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+                , '$1' using 1:${12} title '${11}' with lines linestyle 4\
+                , '$1' using 1:${14} title '${13}' with lines linestyle 5\
+                , '$1' using 1:${16} title '${15}' with lines linestyle 6\
+                , '$1' using 1:${18} title '${17}' with lines linestyle 7\
+                , '$1' using 1:${20} title '${19}' with lines linestyle 8\
+                , '$1' using 1:${22} title '${21}' with lines linestyle 9\
+                , '$1' using 1:${24} title '${23}' with lines linestyle 10\
+                , '$1' using 1:${26} title '${25}' with lines linestyle 11" >> plot.p
+fi
+
+if [ $# -eq 28 ]
+then
+      echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+                , '$1' using 1:${12} title '${11}' with lines linestyle 4\
+                , '$1' using 1:${14} title '${13}' with lines linestyle 5\
+                , '$1' using 1:${16} title '${15}' with lines linestyle 6\
+                , '$1' using 1:${18} title '${17}' with lines linestyle 7\
+                , '$1' using 1:${20} title '${19}' with lines linestyle 8\
+                , '$1' using 1:${22} title '${21}' with lines linestyle 9\
+                , '$1' using 1:${24} title '${23}' with lines linestyle 10\
+                , '$1' using 1:${26} title '${25}' with lines linestyle 11\
+                , '$1' using 1:${28} title '${27}' with lines linestyle 12" >> plot.p
+fi
+
+if [ $# -eq 30 ]
+then
+      echo    "plot '$1' using 1:$6 title '$5' with lines linestyle 1\
+                , '$1' using 1:$8 title '$7' with lines linestyle 2\
+                , '$1' using 1:${10} title '$9' with lines linestyle 3\
+                , '$1' using 1:${12} title '${11}' with lines linestyle 4\
+                , '$1' using 1:${14} title '${13}' with lines linestyle 5\
+                , '$1' using 1:${16} title '${15}' with lines linestyle 6\
+                , '$1' using 1:${18} title '${17}' with lines linestyle 7\
+                , '$1' using 1:${20} title '${19}' with lines linestyle 8\
+                , '$1' using 1:${22} title '${21}' with lines linestyle 9\
+                , '$1' using 1:${24} title '${23}' with lines linestyle 10\
+                , '$1' using 1:${26} title '${25}' with lines linestyle 11\
+                , '$1' using 1:${28} title '${27}' with lines linestyle 12\
+                , '$1' using 1:${30} title '${29}' with lines linestyle 13" >> plot.p
+fi
+
+
+#gnuplot plot.p

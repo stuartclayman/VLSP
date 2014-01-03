@@ -1,0 +1,2 @@
+echo "Creating response time figures"
+./plotresponsetimefigure "`cat scenario`/responsetime.txt" "Average Response Time" "Time" "Response Time" $*

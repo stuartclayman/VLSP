@@ -1,0 +1,5 @@
+#export CLASSPATH=./classes/:knowledge_block-0.1.0.jar:./libs/*
+export CLASSPATH=./umfcommons.jar
+java umf.common.logging.LoggerFrame -p 8090 &
+java umf.common.logging.LoggerFrame -p 8091 &
+java umf.common.logging.LoggerFrame -p 8092 &

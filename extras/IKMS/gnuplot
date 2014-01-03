@@ -1,0 +1,71 @@
+#!/bin/sh
+# Copyright (C) 2007, Thomas Treichl and Paul Kienzle
+# Copyright (C) 2008-2009, Thomas Treichl
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301 USA
+
+# Checks if Gnuplot is started from a file that is a link or if this
+# file has been taken directly to startup the Gnuplot program.
+LINK=`readlink "${0}"`
+if [ -z "${LINK}" ]; then
+  BASE="${0%/bin/gnuplot}"
+else
+  BASE="${LINK%/bin/gnuplot}"
+fi
+ROOT=`(cd "${BASE}" 2>/dev/null && pwd)`
+# echo LINK: ${LINK} && echo BASE: ${BASE} && echo ROOT: ${ROOT}; exit
+
+# Setting up various path information variables that are needed to
+# startup the Gnuplot program.
+GNUPLOT_HOME="${ROOT}"
+PATH="${ROOT}/bin:${PATH}"
+DYLD_LIBRARY_PATH="${ROOT}/lib:${DYLD_LIBRARY_PATH}"
+DYLD_FRAMEWORK_PATH="${ROOT}/lib:${DYLD_FRAMEWORK_PATH}"
+
+# Set up the path where gnuplot searches for the local .gnuplot file
+# (HOME), gnuplot's help file is installed (GNUHELP) and the gnuplot
+# prologue files are placed (GNUPLOT_PS_DIR)
+if [ -z ${GNUTERM} ]; then
+  GNUTERM="aqua"
+#  DYLD_FRAMEWORK_PATH="${ROOT}/lib:${DYLD_FRAMEWORK_PATH}" \
+#    open "${ROOT}/lib/AquaTerm.app"
+fi
+if [ -z ${HOME} ]; then
+  HOME=`~`
+fi
+if [ -z ${GNUHELP} ]; then
+  GNUHELP="${ROOT}/share/gnuplot/4.2/gnuplot.gih"
+fi
+if [ -z ${GNUPLOT_PS_DIR} ]; then
+  GNUPLOT_PS_DIR="${ROOT}/share/gnuplot/4.2/PostScript"
+fi
+if [ -z ${GNUPLOT_DRIVER_DIR} ]; then
+  GNUPLOT_DRIVER_DIR="${ROOT}/libexec/gnuplot/4.2"
+fi
+if [ "${GNUTERM}" == "x11" ]; then
+  # Edit /etc/X11/xinit/xinitrc if you don't like it that an xterm is
+  # opened if X11 is started.
+  open "/Applications/Utilities/X11.app"
+  if [ -z ${DISPLAY} ]; then 
+    DISPLAY=:0.0; 
+  fi
+fi
+
+# Invoke gnuplot, preserving spaces in all the input arguments.
+  GNUTERM="${GNUTERM}" GNUPLOT_HOME="${GNUPLOT_HOME}" PATH="${PATH}" \
+  DYLD_LIBRARY_PATH="${DYLD_LIBRARY_PATH}" HOME="${HOME}" GNUHELP="${GNUHELP}" \
+  DYLD_FRAMEWORK_PATH="${DYLD_FRAMEWORK_PATH}" GNUPLOT_PS_DIR="${GNUPLOT_PS_DIR}" \
+  DISPLAY="${DISPLAY}" GNUPLOT_DRIVER_DIR="${GNUPLOT_DRIVER_DIR}" \
+"${ROOT}/bin/gnuplot-4.2.6" "$@"
