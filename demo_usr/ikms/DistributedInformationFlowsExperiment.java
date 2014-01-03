@@ -3,6 +3,7 @@ package demo_usr.ikms;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.vim.VimClient;
 
@@ -93,7 +94,12 @@ public class DistributedInformationFlowsExperiment {
 
 	private static void PlaceIKMSNode () {
 		if (nodesNumber==3) {
-			vimClient.createApp(2, "demo_usr.ikms.IKMSForwarder", "10002 20002");
+			try {
+				vimClient.createApp(2, "demo_usr.ikms.IKMSForwarder", "10002 20002");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -112,32 +118,35 @@ public class DistributedInformationFlowsExperiment {
 
 				// calculate flow time
 				flowTime = totalTime + (flowsNumber - i) * startingPeriod;
-				
+
 				// create sinks
 				entityId = 2000+i;
 				entityRestPort = 3000+i;
 				//System.out.println (entityId + " "+entityRestPort+" 2 "+1000+ " " + flowTime + " " + "/test"+i+"/All"+ " " + method + " " + goalId);
 				JSONObject appSource=null;
 
-				if (i<monitoredFlows) {
-					appSource = vimClient.createApp(1, "demo_usr.ikms.GenericSourceMA", "1 " + entityId + " " + entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All" + " " + monitoredMethod + " " + monitoredGoalId);
-				} else {
-					appSource = vimClient.createApp(1, "demo_usr.ikms.GenericSourceMA", "1 " + entityId + " " + entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All"+ " " + method+ " " + goalId);
+				try {
+					if (i<monitoredFlows) {
+						appSource = vimClient.createApp(1, "demo_usr.ikms.GenericSourceMA", "1 " + entityId + " " + entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All" + " " + monitoredMethod + " " + monitoredGoalId);
+					} else {
+						appSource = vimClient.createApp(1, "demo_usr.ikms.GenericSourceMA", "1 " + entityId + " " + entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All"+ " " + method+ " " + goalId);
+					}
+					System.out.println("appSink = " + appSource);
+
+					// create sinks
+					entityId = 4000+i;
+					entityRestPort = 5000+i;
+					JSONObject appSink=null;
+
+					if (i<monitoredFlows) {
+						appSink = vimClient.createApp(3, "demo_usr.ikms.GenericSinkMA", "3 " + entityId + " "+ entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All"+ " " + monitoredMethod+ " " + monitoredGoalId+ " true");
+					} else {
+						appSink = vimClient.createApp(3, "demo_usr.ikms.GenericSinkMA", "3 " + entityId + " "+ entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All"+ " " + method+ " " + goalId + " false");
+					}
+					System.out.println("appSink = " + appSink);
+				} catch (JSONException ex) {
+					ex.printStackTrace(); 
 				}
-				System.out.println("appSink = " + appSource);
-
-				// create sinks
-				entityId = 4000+i;
-				entityRestPort = 5000+i;
-				JSONObject appSink=null;
-
-				if (i<monitoredFlows) {
-					appSink = vimClient.createApp(3, "demo_usr.ikms.GenericSinkMA", "3 " + entityId + " "+ entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All"+ " " + monitoredMethod+ " " + monitoredGoalId+ " true");
-				} else {
-					appSink = vimClient.createApp(3, "demo_usr.ikms.GenericSinkMA", "3 " + entityId + " "+ entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All"+ " " + method+ " " + goalId + " false");
-				}
-				System.out.println("appSink = " + appSink);
-
 				Delay (startingPeriod);
 			}
 		}
