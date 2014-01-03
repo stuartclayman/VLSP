@@ -8,8 +8,11 @@ package plugins_usr.tftp.com.globalros.tftp.common;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+
 import usr.net.*;
+
 import java.net.SocketException;
+import java.util.Date;
 
 import usr.logging.*;
 
@@ -99,12 +102,14 @@ public class TFTPSocket
    public TFTPPacket read() throws IOException
    {
        Datagram usrPacket;
+
       try
       {
          usrPacket = usrSocket.receive();
-         
+
       } catch (SocketTimeoutException e)
       {
+    	  //e.printStackTrace();
          // timeout occured, no packet received!
          return null;
       }

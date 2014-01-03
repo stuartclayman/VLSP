@@ -9,6 +9,7 @@ import us.monoid.json.JSONObject;
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
 import demo_usr.ikms.client.IKMSEnabledUSREntity;
+import demo_usr.ikms.client.utils.Logging;
 
 //Example Source MA that shares periodically information with the IKMS (Push/Pull example)
 public class InformationSharingMA extends IKMSEnabledUSREntity implements Application {
@@ -110,8 +111,9 @@ public class InformationSharingMA extends IKMSEnabledUSREntity implements Applic
 	 */
 	@SuppressWarnings("resource")
 	public ApplicationResponse init(String[] args) {
+		int restOverUSRPort=0;
 
-		if (args.length == 2) {
+		if (args.length == 3) {
 			// try entityid
 			Scanner scanner = new Scanner(args[0]);
 
@@ -121,16 +123,27 @@ public class InformationSharingMA extends IKMSEnabledUSREntity implements Applic
 				scanner = new Scanner(args[1]);
 
 				if (scanner.hasNextInt()) {
-					ikmsForwarderHost = String.valueOf(scanner.nextInt());
+					restOverUSRPort = scanner.nextInt();
+
+					scanner = new Scanner(args[2]);
+
+					if (scanner.hasNextInt()) {
+						ikmsForwarderHost = String.valueOf(scanner.nextInt());						
+					} else {
+						scanner.close();
+						return new ApplicationResponse(false, "Bad ikmsForwarderHost: " + args[1]);
+					}
 				} else {
 					scanner.close();
-					return new ApplicationResponse(false, "Bad knowHost " + args[1]);
+					return new ApplicationResponse(false, "Bad restOverUSRPort: " + args[1]);
 				}
 			} else {
 				scanner.close();
-				return new ApplicationResponse(false, "Bad entityid " + args[0]);
+				return new ApplicationResponse(false, "Bad entityid: " + args[0]);
 			}
 			scanner.close();
+			// update RestOverUSR port
+			restOverUSR.init(restOverUSRPort);
 			return new ApplicationResponse(true, "");
 		} else {
 			return new ApplicationResponse(true, "");
@@ -165,8 +178,12 @@ public class InformationSharingMA extends IKMSEnabledUSREntity implements Applic
 	}
 
 	public void run() {
+		Logging.Log(entityid, "Waiting for registration to finish.");
 
-		System.out.println("IS MA Information Sharing Example");
+		// enforce a delay
+		Delay(entityid, 5000);
+		
+		Logging.Log(entityid, "IS MA Information Sharing Example");
 
 		// Periodically sharing test information
 		while (stopRunning==false) {
@@ -174,10 +191,10 @@ public class InformationSharingMA extends IKMSEnabledUSREntity implements Applic
 				// Generate and share test information
 				JSONObject test = new JSONObject();
 				test.put("value", GenerateTestValue("/BaseStations/Detail/Example3/All"));
-				System.out.println (informationExchangeInterface.ShareInformation(entityid, "/BaseStations/Detail/All", test));
+				Logging.Log(entityid, informationExchangeInterface.ShareInformation(entityid, "/BaseStations/Detail/All", test).toString());
 			} catch (IOException e) {
 				// Display connection error and exit
-				System.out.println ("Connection error. Probably IKMS stopped running.");
+				Logging.Log(entityid, "Connection error. Probably IKMS stopped running.");
 				System.exit(0);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
@@ -186,7 +203,7 @@ public class InformationSharingMA extends IKMSEnabledUSREntity implements Applic
 			// Wait 5000 ms
 			Delay (entityid, 5000);
 		}
-		System.out.println ("IS MA Stopped Running");
+		Logging.Log(entityid, "IS MA Stopped Running");
 		// stopped running
 		running = false;
 	}

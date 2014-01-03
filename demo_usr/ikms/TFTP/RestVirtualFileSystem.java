@@ -14,13 +14,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-
-import demo_usr.ikms.client.utils.Converters;
+import java.util.Date;
 
 import plugins_usr.tftp.com.globalros.tftp.common.VirtualFile;
 import plugins_usr.tftp.com.globalros.tftp.common.VirtualFileSystem;
 import us.monoid.web.Resty;
 import usr.logging.Logger;
+import demo_usr.ikms.client.utils.Converters;
 
 //import org.apache.log4j.Logger;
 
@@ -68,7 +68,8 @@ public class RestVirtualFileSystem implements VirtualFileSystem
 	{
 		String uri = Converters.FileNameToURI (urifile.getFileName());
 		try {
-			return rest.json(uri).getUrlConnection().getInputStream();
+			InputStream output = rest.json(uri).getUrlConnection().getInputStream();
+			return output;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -97,7 +98,9 @@ public class RestVirtualFileSystem implements VirtualFileSystem
 			httpconnection.setRequestProperty("Content-Type", "application/json");
 			httpconnection.setRequestProperty("Accept", "application/json");
 			httpconnection.setChunkedStreamingMode(0);
-			return httpconnection.getOutputStream();
+			OutputStream output = httpconnection.getOutputStream();
+
+			return output;
 			//urlconnection.setDoOutput(true);
 			//urlconnection.setRequestProperty("Accept-Charset", "UTF-8");
 			//urlconnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=" + "UTF-8");

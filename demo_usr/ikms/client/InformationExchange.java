@@ -1,12 +1,14 @@
 package demo_usr.ikms.client;
 
+import ikms.client.InformationExchangeInterface;
+
 import java.io.IOException;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import demo_usr.ikms.TFTP.RestOverTFTPClient;
 
-public class InformationExchangeInterface {
+public class InformationExchange implements InformationExchangeInterface {
 	// A client of the IKMS itself
 	IKMSUSRClient knowledgeBlockUSR=null;
 
@@ -16,7 +18,7 @@ public class InformationExchangeInterface {
 	 * Access the InformationExchangeInterface on host:port.
 	 * All interaction is via REST calls.
 	 */
-	public InformationExchangeInterface(String host, String port, RestOverTFTPClient tftpClient) {
+	public InformationExchange(String host, String port, RestOverTFTPClient tftpClient) {
 		knowledgeBlockUSR = new IKMSUSRClient(host, port, tftpClient);		
 	}
 

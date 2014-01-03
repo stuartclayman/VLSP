@@ -1,6 +1,8 @@
 package demo_usr.ikms.client;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.Map;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
@@ -42,6 +44,21 @@ class IKMSUSRClient {
 			return CreateResponseMessage ("registered unsuccessfully", "");				
 	}
 
+	/**
+	 * Unregistering entity by its entityid.
+	 * @return The result of the REST call as a JSONObject
+	 */
+	public JSONObject unRegisterEntity(int entityid) throws IOException, JSONException {
+		String ikmsURL = "http://" + ikmsHost + ":" + ikmsPort + "/register/remove?entityid=" + entityid;
+
+		// Call the relevant URL
+		String result = 	tftpClient.ApplyRestGetRequest(ikmsURL);
+
+		JSONObject jsobj = new JSONObject(result);
+
+		return jsobj;
+	}
+	
 	/**
 	 * Retrieve Entity registration information given the entityid.
 	 * @return The result of the REST call as a JSONObject
@@ -95,27 +112,34 @@ class IKMSUSRClient {
 	 */
 	public JSONObject requestDirectInformation(int entityid, String key, String uri) throws IOException, JSONException {
 		// DO curl 'http://localhost:9900/data/NetworkResources/WirelessNetworks/network1/Routers/router1/Interfaces/if0/Metrics/loadlevelestimation?entityid=200'
-		String kbURL = uri + key + "?entityid=" + entityid;
+		String kbURL = uri + "&u="+key + "&entityid=" + entityid;
 		System.out.println ("Directly requesting information from uri:" + kbURL);
 		
 		// Call the relevant URL
-		// We need to change the address from knowHost to the NEM to be directly connected to
+		// We need to change the address from knowHost to the Entity to be directly connected to
 		String oldHost = tftpClient.getHostName();
 		int oldPort = tftpClient.getPort();
 		
-		int newAddress = Converters.ExtractNodeAddressFromURI (kbURL);
-		int newPort = newAddress + 20000;
+		Map<String, String> parameters = Converters.SplitQuery(kbURL);
+		
+		String newAddress = parameters.get("n");
+		String newPort = parameters.get("p");
 		System.out.println ("Directly requesting information from host:" + newAddress+":"+newPort);
 
 		tftpClient.setHostName(String.valueOf(newAddress));
-		tftpClient.setPort(newPort);
+		tftpClient.setPort(Integer.valueOf(newPort));
 		
 		String resultstr = tftpClient.ApplyRestGetRequest(kbURL);
 		// reverting back to the old address
 		tftpClient.setHostName(oldHost);
 		tftpClient.setPort(oldPort);
 		
-		JSONObject jsobj = new JSONObject(resultstr);
+		JSONObject jsobj = null;
+
+		if (resultstr.equals(null)||resultstr.equals(""))
+			jsobj = new JSONObject("{}");
+		else
+			jsobj = new JSONObject(resultstr);
 
 		JSONObject result = null;
 		if (jsobj.has("result"))
@@ -138,7 +162,6 @@ class IKMSUSRClient {
 		// Call the relevant URL
 
 		//JSONObject jsobj = rest.json(kbURL).toObject();
-		
 		String resultstr = 	tftpClient.ApplyRestGetRequest(kbURL);
 
 		JSONObject jsobj = new JSONObject(resultstr);

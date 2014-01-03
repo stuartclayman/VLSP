@@ -8,20 +8,21 @@ import us.monoid.json.JSONObject;
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
 import demo_usr.ikms.client.IKMSEnabledUSREntity;
+import demo_usr.ikms.client.utils.Logging;
 
 // Example Governance component communication with the IKMS. A new global performance goal is being set.
 // This triggers re-negotiations of all active flows. The flows receive asynchronously the new information flow policies.
-public class GovernancePerformanceGoal extends IKMSEnabledUSREntity implements Application {
+public class GovernanceEntity extends IKMSEnabledUSREntity implements Application {
 
 	// Basic MA constructor. 
-	public GovernancePerformanceGoal () {
+	public GovernanceEntity () {
 		// default entityid value
 		entityid = 10016;
 	}
 
 	public static void main(String[] args) {
 		// Initializing example Governance component
-		GovernancePerformanceGoal gov = new GovernancePerformanceGoal();       
+		GovernanceEntity gov = new GovernanceEntity();       
 
 		// initializes and registers entity
 		gov.registerEntity();
@@ -84,26 +85,39 @@ public class GovernancePerformanceGoal extends IKMSEnabledUSREntity implements A
 	 */
 	@SuppressWarnings("resource")
 	public ApplicationResponse init(String[] args) {
-		if (args.length == 2) {
+		int restOverUSRPort=0;
+
+		if (args.length == 3) {
 			// try entityid
 			Scanner scanner = new Scanner(args[0]);
 
 			if (scanner.hasNextInt()) {
 				entityid = scanner.nextInt();
+
 				scanner = new Scanner(args[1]);
 
 				if (scanner.hasNextInt()) {
-					ikmsForwarderHost = String.valueOf(scanner.nextInt());
+					restOverUSRPort = scanner.nextInt();
+
+					scanner = new Scanner(args[2]);
+
+					if (scanner.hasNextInt()) {
+						ikmsForwarderHost = String.valueOf(scanner.nextInt());						
+					} else {
+						scanner.close();
+						return new ApplicationResponse(false, "Bad ikmsForwarderHost: " + args[1]);
+					}
 				} else {
 					scanner.close();
-					return new ApplicationResponse(false, "Bad knowHost " + args[1]);
+					return new ApplicationResponse(false, "Bad restOverUSRPort: " + args[1]);
 				}
-
 			} else {
 				scanner.close();
-				return new ApplicationResponse(false, "Bad entityid " + args[0]);
+				return new ApplicationResponse(false, "Bad entityid: " + args[0]);
 			}
 			scanner.close();
+			// update RestOverUSR port
+			restOverUSR.init(restOverUSRPort);
 			return new ApplicationResponse(true, "");
 		} else {
 			return new ApplicationResponse(true, "");
@@ -140,7 +154,13 @@ public class GovernancePerformanceGoal extends IKMSEnabledUSREntity implements A
 
 
 	public void run() {			
-		System.out.println("Governance Component Global Performance Goal Updating Example");
+		Logging.Log(entityid, "Waiting for registration to finish.");
+
+		// enforce a delay
+		Delay(entityid, 5000);
+		
+		Logging.Log(entityid, "Governance Component Global Performance Goal Updating Example");
+		
 		try {
 			// Defining a new goal. All goals are defined in the KnowOptimizationGoals data structure
 			// can either be defined through the IKMSOptimizationGoal data structure or a JSONObject directly
@@ -156,10 +176,10 @@ public class GovernancePerformanceGoal extends IKMSEnabledUSREntity implements A
 			// JSONObject performanceGoal = KnowOptimizationGoals.GetDirectEntityGoal().toJSONString();
 			
 			// Updating global performance goal
-			System.out.println (informationManagementInterface.UpdatePerformanceGoal(entityid, performanceGoal));
+			Logging.Log(entityid, informationManagementInterface.UpdatePerformanceGoal(entityid, performanceGoal).toString());
 		} catch (IOException e) {
 			// Display connection error and exit
-			System.out.println ("Connection error. Probably IKMS stopped running.");
+			Logging.Log(entityid, "Connection error. Probably IKMS stopped running.");
 			System.exit(0);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

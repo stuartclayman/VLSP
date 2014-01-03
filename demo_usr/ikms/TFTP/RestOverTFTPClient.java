@@ -12,17 +12,17 @@ package demo_usr.ikms.TFTP;
 import java.io.*;
 
 import usr.net.*;
+
 import java.net.SocketException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.util.Date;
 
 import demo_usr.ikms.client.utils.*;
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
-
 import usr.logging.*;
-
 import plugins_usr.tftp.com.globalros.tftp.common.ACK;
 import plugins_usr.tftp.com.globalros.tftp.common.DATA;
 import plugins_usr.tftp.com.globalros.tftp.common.ERROR;
@@ -71,7 +71,7 @@ public class RestOverTFTPClient {
 	 * the port of the host
 	 */
 	private int port = 0;	
-	
+
 	/**
 	 * options.
 	 */
@@ -166,7 +166,7 @@ public class RestOverTFTPClient {
 	 * @throws IOException
 	 */
 	private boolean download(RRQ rrq, OutputStream os) throws SocketException, InstantiationException, IOException
-	{      
+	{    	
 		// create a TFTP Socket     
 		TFTPSocket tftpSock = new TFTPSocket(5);
 
@@ -233,12 +233,15 @@ public class RestOverTFTPClient {
 			}
 			os.write(receive.getData());
 		}
+
 		// now that the last packet in the file has been sent, the client must sent an 
 		// acknowledgement to confirm it has received the last package...or else the server
 		// tries to resend..and resend....etc      
 		log.logln(USR.STDOUT, "send ack to say that we have received last message.");      
 		ack = new ACK(sequenceNumber);
-		receive = (DATA)TFTPUtils.dataTransfer(tftpSock, ack, null);
+
+		// do not wait for an ACK this time (added from Lefteris)
+		receive = (DATA)TFTPUtils.dataTransfer(tftpSock, ack, null, false);
 
 		// ensure that the stream is closed.
 		os.close();                  
@@ -472,7 +475,7 @@ public class RestOverTFTPClient {
 	{
 		return this.hostName;
 	}
-	
+
 	public void setPort(int port)
 	{
 		this.port = port;
@@ -489,7 +492,7 @@ public class RestOverTFTPClient {
 	}
 
 	public String ApplyRestGetRequest (String uri) {
-		
+
 		// invoke the download mechanism. This involves the device making a Read 
 		// Request to the server.
 		//RRQ rrq = initialiseDownload(TEST_CLIENT_DOWNLOAD_FILENAME);
@@ -497,7 +500,7 @@ public class RestOverTFTPClient {
 		// create an output stream to write the data to.
 		//FileOutputStream readFos = new FileOutputStream(new File(TEST_CLIENT_OUTPUT_FILENAME));  
 		//download(rrq,readFos);
-		
+
 		try {
 			// invoke the download mechanism. This involves the device making a Read 
 			// Request to the server.
@@ -506,7 +509,9 @@ public class RestOverTFTPClient {
 			// create an output stream to write the data to.
 			//FileOutputStream readFos = new FileOutputStream(new File(TEST_CLIENT_OUTPUT_FILENAME));  
 			ByteArrayOutputStream ll = new ByteArrayOutputStream();
+
 			download(rrq, ll);
+
 			return ll.toString();
 
 		} catch (Exception e) {
@@ -530,7 +535,7 @@ public class RestOverTFTPClient {
 
 		return UploadRestPostRequest (Converters.URIToFileName (uri), content);
 	}
-	
+
 	public boolean UploadRestPostRequest (String filename, String content) {
 		try {
 			WRQ wrq = initialiseUpload(filename);

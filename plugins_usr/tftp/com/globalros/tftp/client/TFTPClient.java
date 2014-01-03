@@ -9,14 +9,15 @@
  */
 package plugins_usr.tftp.com.globalros.tftp.client;
 
-import java.io.*;
-import usr.net.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import usr.applications.Application;
-import usr.applications.ApplicationResponse;
-
-import usr.logging.*;
+import java.util.Date;
 
 import plugins_usr.tftp.com.globalros.tftp.common.ACK;
 import plugins_usr.tftp.com.globalros.tftp.common.DATA;
@@ -28,6 +29,12 @@ import plugins_usr.tftp.com.globalros.tftp.common.TFTPPacket;
 import plugins_usr.tftp.com.globalros.tftp.common.TFTPSocket;
 import plugins_usr.tftp.com.globalros.tftp.common.TFTPUtils;
 import plugins_usr.tftp.com.globalros.tftp.common.WRQ;
+import usr.applications.Application;
+import usr.applications.ApplicationResponse;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.net.Address;
+import usr.net.AddressFactory;
 
 /**
  * class:   Client
@@ -54,7 +61,7 @@ public class TFTPClient implements Application {
     /**
      * file that client wants downloaded.
      */
-    public static final String TEST_CLIENT_DOWNLOAD_FILENAME = "/etc/services";
+    public static final String TEST_CLIENT_DOWNLOAD_FILENAME = "/etc/passwd";
 
     /**
      * file that client has downloaded - this is the output of the client
@@ -293,7 +300,7 @@ public class TFTPClient implements Application {
       
         // need to find the port and address the server has chosen to communicate on and connect to it. 
         int serverPort = receive.getPort();
-        log.logln(USR.STDOUT, "The server has chosen the following port as the communication port: "+serverPort);      
+        log.logln(USR.STDOUT, "The server has chosen the following port as the communication port: "+serverPort+" "+new Date().getTime());      
         Address serverAddress = rrq.getAddress();      
         tftpSock.connect(serverAddress, serverPort);
       
@@ -301,7 +308,7 @@ public class TFTPClient implements Application {
         while (receive.getData().length >= MAX_PACKAGE_SIZE){      
             ack = new ACK(sequenceNumber++);
             receive = new DATA(sequenceNumber, dummyByteArray);
-            log.logln(USR.STDOUT, "receiving block"+sequenceNumber);
+            log.logln(USR.STDOUT, "receiving block"+sequenceNumber+" "+new Date().getTime());
          
             receive = (DATA)TFTPUtils.dataTransfer(tftpSock, ack, receive);
          
@@ -316,13 +323,17 @@ public class TFTPClient implements Application {
         // now that the last packet in the file has been sent, the client must sent an 
         // acknowledgement to confirm it has received the last package...or else the server
         // tries to resend..and resend....etc      
-        log.logln(USR.STDOUT, "send ack to say that we have received last message.");      
+        log.logln(USR.STDOUT, "send ack to say that we have received last message."+" "+new Date().getTime());      
         ack = new ACK(sequenceNumber);
-        receive = (DATA)TFTPUtils.dataTransfer(tftpSock, ack, null);
-      
+
+        // do not wait for an ACK this time
+        ACK result = TFTPUtils.dataTransfer(tftpSock, ack, null, false);
+
+        receive = (DATA) result;
         // ensure that the stream is closed.
+
         os.close();                  
-                                                                 
+                                         
         return true;
     }
    
@@ -568,7 +579,9 @@ public class TFTPClient implements Application {
       
             // create an output stream to write the data to.
             FileOutputStream readFos = new FileOutputStream(new File(TEST_CLIENT_OUTPUT_FILENAME));  
+            System.out.println ("Starting downloading:"+new Date().getTime());
             download(rrq,readFos);
+            System.out.println ("Finished downloading:"+new Date().getTime());
 
             // invoke the upload mechanism. This requires the device to make a Write 
             // Request to the server.
@@ -577,7 +590,11 @@ public class TFTPClient implements Application {
             // create an output stream to write the data to.
             // need to send the data to the server...      
             FileInputStream writeFis = new FileInputStream(new File(TEST_CLIENT_UPLOAD_FILENAME));
+            System.out.println ("Starting uploading:"+new Date().getTime());
+
             upload(wrq, writeFis);
+            System.out.println ("Finished uploading:"+new Date().getTime());
+
         } catch (Exception e) {
             System.err.println("TFTPClient: Exception " + e);
             e.printStackTrace();

@@ -8,6 +8,7 @@ import us.monoid.json.JSONObject;
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
 import demo_usr.ikms.client.IKMSEnabledUSREntity;
+import demo_usr.ikms.client.utils.Logging;
 
 // Example Source MA that communicates directly with a Sink MA
 // At the beginning, the Source MA registers itself to the IKMS and waits for information retrieval requests from the source MA.
@@ -91,7 +92,7 @@ public class DirectSourceMA extends IKMSEnabledUSREntity implements Application 
 		// setting the information flow requirements/constraints to registrationInfo
 		registrationInfo.put("informationflowconstraints", informationflowconstraints);
 
-		// specifying the information collection callback URL (the sink NEM communicates directly through this URL) - using entityid as port
+		// specifying the information collection callback URL (the sink Entity communicates directly through this URL) - using entityid as port
 		String icCallBackURL="http://" + entityHost + ":" + entityid + "/update/";
 		registrationInfo.put("iccallbackURL", icCallBackURL);
 
@@ -106,7 +107,9 @@ public class DirectSourceMA extends IKMSEnabledUSREntity implements Application 
 	 */
 	@SuppressWarnings("resource")
 	public ApplicationResponse init(String[] args) {
-		if (args.length == 2) {
+		int restOverUSRPort=0;
+
+		if (args.length == 3) {
 			// try entityid
 			Scanner scanner = new Scanner(args[0]);
 
@@ -116,22 +119,31 @@ public class DirectSourceMA extends IKMSEnabledUSREntity implements Application 
 				scanner = new Scanner(args[1]);
 
 				if (scanner.hasNextInt()) {
-					ikmsForwarderHost = String.valueOf(scanner.nextInt());
+					restOverUSRPort = scanner.nextInt();
+
+					scanner = new Scanner(args[2]);
+
+					if (scanner.hasNextInt()) {
+						ikmsForwarderHost = String.valueOf(scanner.nextInt());						
+					} else {
+						scanner.close();
+						return new ApplicationResponse(false, "Bad ikmsForwarderHost: " + args[1]);
+					}
 				} else {
 					scanner.close();
-					return new ApplicationResponse(false, "Bad knowHost " + args[1]);
+					return new ApplicationResponse(false, "Bad restOverUSRPort: " + args[1]);
 				}
-
 			} else {
 				scanner.close();
-				return new ApplicationResponse(false, "Bad entityid " + args[0]);
+				return new ApplicationResponse(false, "Bad entityid: " + args[0]);
 			}
 			scanner.close();
+			// update RestOverUSR port
+			restOverUSR.init(restOverUSRPort);
 			return new ApplicationResponse(true, "");
 		} else {
 			return new ApplicationResponse(true, "");
 		}
-
 	}
 
 	/**
@@ -163,14 +175,19 @@ public class DirectSourceMA extends IKMSEnabledUSREntity implements Application 
 
 
 	public void run() {
-		System.out.println("DS MA Information Retrieval Example");
+		Logging.Log(entityid, "Waiting for registration to finish.");
+
+		// enforce a delay
+		Delay(entityid, 5000);
+		
+		Logging.Log(entityid, "DS MA Information Retrieval Example");
 
 		// just wait for direct requests from DSINK MA
 		while (stopRunning==false) {
 			Delay (entityid, 5000);
 		}
 
-		System.out.println ("DS MA Stopped Running");
+		Logging.Log(entityid, "DS MA Stopped Running");
 		// stopped running
 		running = false;
 	}

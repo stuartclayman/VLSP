@@ -10,14 +10,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
 import usr.net.*;
+
 import java.net.SocketException;
+import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import usr.logging.*;
-
 import plugins_usr.tftp.com.globalros.tftp.common.ERROR;
 import plugins_usr.tftp.com.globalros.tftp.common.FRQ;
 import plugins_usr.tftp.com.globalros.tftp.common.RRQ;
@@ -151,6 +153,7 @@ public class TFTPRequestHandler
             // at this point we have valid pizza stream
 
             // retrieve mcp data sa fileContent from mcpServer
+
             sendOK = tftpClient.sendFileToClient(is /*fileContent*/
             , clientAddress, clientPort, frq.hasOptions());
 
@@ -181,7 +184,9 @@ public class TFTPRequestHandler
                 // within the ClientHandler from this stream
                 OutputStream os = vfs.getOutputStream(file);
                 //				fileContent =
+
                 boolean receiveOK = tftpClient.receiveFileFromClient(os, clientAddress, clientPort, frq.hasOptions());
+                
                 // FDU: receiveFileFromClient has already closed the stream
                 //os.close();
                 if (listener != null)

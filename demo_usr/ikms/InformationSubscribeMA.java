@@ -8,6 +8,7 @@ import us.monoid.json.JSONObject;
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
 import demo_usr.ikms.client.IKMSEnabledUSREntity;
+import demo_usr.ikms.client.utils.Logging;
 
 // Example Source MA that subscribes information to the IKMS (PUB/SUB example)
 public class InformationSubscribeMA extends IKMSEnabledUSREntity implements Application {
@@ -59,6 +60,9 @@ public class InformationSubscribeMA extends IKMSEnabledUSREntity implements Appl
 		requiredArray.put("/BaseStations/Detail/Example2/All");
 		registrationInfo.put("urisforsubscribedinformation", requiredArray);
 
+		// uris that are required from this entity
+		registrationInfo.put("urisforrequiredinformation", requiredArray);
+
 		// setting proposed information flow requirements / constraints (see InformationFlowRequirementsAndConstraints class)
 		JSONObject informationflowconstraints = new JSONObject();
 
@@ -100,7 +104,9 @@ public class InformationSubscribeMA extends IKMSEnabledUSREntity implements Appl
 	 */
 	@SuppressWarnings("resource")
 	public ApplicationResponse init(String[] args) {
-		if (args.length == 2) {
+		int restOverUSRPort=0;
+
+		if (args.length == 3) {
 			// try entityid
 			Scanner scanner = new Scanner(args[0]);
 
@@ -110,23 +116,32 @@ public class InformationSubscribeMA extends IKMSEnabledUSREntity implements Appl
 				scanner = new Scanner(args[1]);
 
 				if (scanner.hasNextInt()) {
-					ikmsForwarderHost = String.valueOf(scanner.nextInt());
+					restOverUSRPort = scanner.nextInt();
+
+					scanner = new Scanner(args[2]);
+
+					if (scanner.hasNextInt()) {
+						ikmsForwarderHost = String.valueOf(scanner.nextInt());						
+					} else {
+						scanner.close();
+						return new ApplicationResponse(false, "Bad ikmsForwarderHost: " + args[1]);
+					}
 				} else {
 					scanner.close();
-					return new ApplicationResponse(false, "Bad knowHost " + args[1]);
+					return new ApplicationResponse(false, "Bad restOverUSRPort: " + args[1]);
 				}
 			} else {
 				scanner.close();
-				return new ApplicationResponse(false, "Bad entityid " + args[0]);
+				return new ApplicationResponse(false, "Bad entityid: " + args[0]);
 			}
 			scanner.close();
+			// update RestOverUSR port
+			restOverUSR.init(restOverUSRPort);
 			return new ApplicationResponse(true, "");
 		} else {
 			return new ApplicationResponse(true, "");
 		}
-
 	}
-
 	/**
 	 * Start an application.
 	 * This is called before run().
@@ -134,7 +149,7 @@ public class InformationSubscribeMA extends IKMSEnabledUSREntity implements Appl
 	public ApplicationResponse start() {
 		// register entity
 		registerEntity ();
-		
+
 		return new ApplicationResponse(true, "");
 	}
 
@@ -155,15 +170,19 @@ public class InformationSubscribeMA extends IKMSEnabledUSREntity implements Appl
 	}
 
 	public void run() {
+		Logging.Log(entityid, "Waiting for registration to finish.");
 
-		System.out.println("SUB MA Information Subscribe Example");
+		// enforce a delay
+		Delay(entityid, 5000);
+
+		Logging.Log(entityid, "SUB MA Information Subscribe Example");
 
 		// Periodically retrieving information from local storage, which keeps recent information pushed from KNOW
 		while (stopRunning==false) {
 			try {
 				// Retrieve information from local storage
 				JSONObject result = RetrieveFromLocalStorage ("/BaseStations/Detail/Example2/All");
-				System.out.println (result.toString());
+				Logging.Log(entityid, result.toString());
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -171,7 +190,7 @@ public class InformationSubscribeMA extends IKMSEnabledUSREntity implements Appl
 			// Wait 5000 ms
 			Delay (entityid, 5000);		
 		}		
-		System.out.println ("SUB MA Stopped Running");
+		Logging.Log(entityid, "SUB MA Stopped Running");
 		// stopped running
 		running = false;
 	}

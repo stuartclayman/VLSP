@@ -2,17 +2,14 @@ package demo_usr.ikms.client;
 
 import ikms.client.IKMSClientRestListener;
 import ikms.client.IKMSEnabledEntity;
+
+import java.util.concurrent.Executors;
+
 import us.monoid.json.JSONObject;
 import demo_usr.ikms.TFTP.RestOverTFTPClient;
 import demo_usr.ikms.client.utils.Logging;
 
-public class IKMSEnabledUSREntity extends IKMSEnabledEntity{
-
-	// InformationManagementInterface which talks to the IKMS
-	protected InformationManagementInterface informationManagementInterface;
-
-	// InformationExchangeInterface which talks to the IKMS
-	protected InformationExchangeInterface informationExchangeInterface;
+public class IKMSEnabledUSREntity extends IKMSEnabledEntity {
 
 	// for distributed virtual infrastructure deployment: the virtual machine address hosting the knowledge forwarder
 	protected String ikmsForwarderHost = null;
@@ -22,11 +19,30 @@ public class IKMSEnabledUSREntity extends IKMSEnabledEntity{
 	protected boolean stopRunning = false;
 
 	// the tftp client (used for distributed virtual infrastructure deployment)
-	RestOverTFTPClient tftpClient=null;
+	RestOverTFTPClient tftpClient= null;
 
+	/*// Basic IKMSEnabledUSREntity constructor. 
+	public IKMSEnabledUSREntity () {
+		// run IKMSEnabledEntity constructor
+		super();
+	}*/
+	
+	// the TFTP server (for rest call-backs)
+	protected RestOverUSR restOverUSR = new RestOverUSR();
+	
 	// Initializes and registers entity with the IKMS
 	protected void initializeAndRegister(JSONObject registrationInfo) {
 
+		// starting RestOverUSR
+		restOverUSR.start();
+		
+		// running RestOverUSR in a separate thread
+		Executors.newSingleThreadScheduledExecutor().execute(new Runnable(){
+			public void run() {
+				restOverUSR.run();
+			}
+		});
+		
 		// if restPort is not set, use entityid as port
 		if (entityPort==0)
 			entityPort = entityid;
@@ -46,8 +62,8 @@ public class IKMSEnabledUSREntity extends IKMSEnabledEntity{
 			ikmsForwarderPort = 20000 + Integer.valueOf(ikmsForwarderHost);
 			tftpClient = new RestOverTFTPClient (ikmsForwarderHost, ikmsForwarderPort);
 			Logging.Log(entityid, "Connecting with IKMS host:"+ikmsForwarderHost+":"+ikmsForwarderPort);
-			informationManagementInterface = new InformationManagementInterface(ikmsHost, String.valueOf(ikmsPort), tftpClient);
-			informationExchangeInterface = new InformationExchangeInterface(ikmsHost, String.valueOf(ikmsPort), tftpClient);			
+			informationManagementInterface = new InformationManagement(ikmsHost, String.valueOf(ikmsPort), tftpClient);
+			informationExchangeInterface = new InformationExchange(ikmsHost, String.valueOf(ikmsPort), tftpClient);			
 
 			// Entity Registration example
 			while (true) {
@@ -67,7 +83,7 @@ public class IKMSEnabledUSREntity extends IKMSEnabledEntity{
 			}
 		}
 	}
-
+	
 	// shutting down the entity
 	public void shutDown() {
 		// stop running
@@ -75,5 +91,15 @@ public class IKMSEnabledUSREntity extends IKMSEnabledEntity{
 		// stop tftp client ?
 		//if (tftpClient!=null)
 		//tftpClient.
-	}	
+		// stopping RestOverUSR object (i.e., the TFTP server for rest callbacks)
+		restOverUSR.stop();
+	}
+
+	@Override
+	public void InformationFlowPoliciesUpdatedUSR(
+			JSONObject informationFlowPolicies, String targetURIFileName) {
+		// TODO Auto-generated method stub
+		System.out.println ("InformationFlowPoliciesUpdateUSR method executed (at IKMSEnabledUSREntity)");
+
+	}
 }

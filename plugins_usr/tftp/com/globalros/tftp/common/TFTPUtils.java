@@ -10,11 +10,13 @@
 package plugins_usr.tftp.com.globalros.tftp.common;
 
 import java.io.IOException;
+
 import usr.net.Address;
+
 import java.net.SocketException;
+import java.util.Date;
 
 import usr.logging.*;
-
 import plugins_usr.tftp.com.globalros.tftp.common.TFTPSocket;
 
 /**
@@ -27,186 +29,201 @@ import plugins_usr.tftp.com.globalros.tftp.common.TFTPSocket;
  */
 public class TFTPUtils
 {
-   /**
-    *  Logger object
-    */
-   private static final Logger tftpLog = Logger.getLogger("log");
+	/**
+	 *  Logger object
+	 */
+	private static final Logger tftpLog = Logger.getLogger("log");
 
-   private TFTPUtils()
-   {
-      // this class should never be instantiated!!!
-   }
+	private TFTPUtils()
+	{
+		// this class should never be instantiated!!!
+	}
 
-   /**
-    * 
-    * dataTransfer
-    * @param tftpSock
-    * @param send
-    * @param recv
-    * @return
-    */
-   public static ACK dataTransfer(TFTPSocket tftpSock, ACK send, ACK recv)
-      throws IOException
-   {
-      int retransmits = 0;
-      int spamcount = 0;
+	// dataTransfer that do not wait for a packet
+	// used for the last ACK
 
-      /** 
-       * Boolean flag that is used internally to indicate we might have stuffed
-       * the connection to the client with resent packages. This flag is cleared
-       * when we duplicate the timeout with the next  data package sent which 
-       * should help to clean up the channel that did get stuffed
-       */
-      boolean stuffedLink = false;
-      int timeout = tftpSock.getSocketTimeOut();
+	// keeping old version of dataTransfer (i.e., without the option to wait for an ACK or not)
+	public static ACK dataTransfer(TFTPSocket tftpSock, ACK send, ACK recv) throws IOException
+	{
+		return dataTransfer (tftpSock, send, recv, true);
+	}
+	/**
+	 * 
+	 * dataTransfer
+	 * @param tftpSock
+	 * @param send
+	 * @param recv
+	 * @return
+	 */
+	public static ACK dataTransfer(TFTPSocket tftpSock, ACK send, ACK recv, boolean waitsForACK) throws IOException
+	{
+		int retransmits = 0;
+		int spamcount = 0;
 
-      // send the packet....
-      tftpSock.write(send);
-      TFTPPacket tftpP;
-      boolean receiving = true;
-      // wait for successful acknowledgement!.....
-      while (receiving)
-      {
-         tftpP = tftpSock.read();
+		/** 
+		 * Boolean flag that is used internally to indicate we might have stuffed
+		 * the connection to the client with resent packages. This flag is cleared
+		 * when we duplicate the timeout with the next  data package sent which 
+		 * should help to clean up the channel that did get stuffed
+		 */
+		boolean stuffedLink = false;
+		int timeout = tftpSock.getSocketTimeOut();
 
-         // case we did not receive any packet
-         if (tftpP == null)
-         {
-            // and we are not expecting a packet because we send last acknowledgement
-            // and only need to verify if this one arrived and so wait friendly for a possible
-            // resend of the data in case our ack got lost.
-            if (recv == null)
-               return null;
-            
-            // If too many retries, give up.
-            if (retransmits++ > 5)
-               throw new IOException(
-                  getClient(tftpSock) + " Maximum retransmit count exceeded");
-                  
-            // resend the packet and wait again!
-            tftpLog.logln(USR.ERROR,
-                          "TFTPUtils: " + getClient(tftpSock)
-                  + " expected packet before time out, sending ACK/DATA again");
-            tftpSock.write(send);
-            // set the flag to indicate that we might be stuffing the pipe for the
-            // client, next packet needs to have longer timeout to give client some
-            // time to clean up the pipe
-            stuffedLink = true;
-            try
-            {
-               tftpSock.setSocketTimeOut(tftpSock.getSocketTimeOut() * 2);
-            } catch (SocketException e)
-            {
-                tftpLog.logln(USR.ERROR,
-                  "TFTPUtils: " + getClient(tftpSock)
-                     + "Could not change timeout on socket. "
-                     + e.getMessage());
-               // just conitnue
-            }
-            continue;
-         }
+		// send the packet....
+		tftpSock.write(send);
 
-         // case we received error
-         if (tftpP instanceof ERROR)
-         {
-            throw new IOException(
-               getClient(tftpSock) + " " + ((ERROR) tftpP).getErrorMessage());
-         }
+		TFTPPacket tftpP;
 
-         // case we did receive expected
-         if ((tftpP instanceof ACK) && correctAnswer(recv, (ACK) tftpP))
-         {
-            //TODO: set timeout back to normal after successfull receival of packet for download
-            try
-            {
-               if (stuffedLink)
-               {
-                  stuffedLink = false;
-                  tftpSock.setSocketTimeOut(timeout);
-               }
-            } catch (SocketException e)
-            {
-                tftpLog.logln(USR.ERROR,
-                  "TFTPUtils: " + getClient(tftpSock)
-                     + "Could not change timeout on socket. "
-                     + e.getMessage());
-               // just conitnue
-            }
-            return (ACK) tftpP;
-         }
+		boolean receiving = true;
+		// wait for successful acknowledgement!.....
 
-         // all other is spam and when too many of this crap is give up, and do not signal
-         if (spamcount++ > 5)
-         {
-            return null;
-         }
-      }
-      return null;
-   }
+		while (receiving&&waitsForACK)
+		{
+			tftpP = tftpSock.read();
 
-   public static void sendErrPacket(
-      TFTPSocket tftpSock,
-      int errorCode,
-      String errorMsg)
-   {
-      try
-      {
-         TFTPPacket tftpP = new ERROR(errorCode, errorMsg);
-         tftpSock.write(tftpP);
-      } catch (Exception e)
-      {
-         tftpLog.logln(USR.ERROR, getClient(tftpSock) + " UDP send ERROR packet failure.");
-         tftpLog.logln(USR.ERROR, e.toString());
-         return;
-      }
-      tftpLog.logln(USR.ERROR, 
-         "SEND ERROR"
-            + " ["
-            + getClient(tftpSock)
-            + "] EC = ["
-            + errorCode
-            + "] "
-            + errorMsg);
-   }
+			// case we did not receive any packet
+			if (tftpP == null)
+			{
+				// and we are not expecting a packet because we send last acknowledgement
+				// and only need to verify if this one arrived and so wait friendly for a possible
+				// resend of the data in case our ack got lost.
+				if (recv == null) {
 
-   /**
-    * This method returns the IP address and port number of the 
-    * client this class is talking to.
-    */
-   public static String getClient(TFTPSocket tftpSock)
-   {
-      String client = "";
-      Address addr = tftpSock.getAddress();
-      int port = tftpSock.getPort();
-      if (addr != null)
-         client += addr.toString();
-      if (port != 0)
-      {
-         client += ":";
-         client += port;
-      }
-      return client;
-   }
+					return null;
+				}
+				// If too many retries, give up.
+				if (retransmits++ > 5)
+					throw new IOException(
+							getClient(tftpSock) + " Maximum retransmit count exceeded");
 
-   /**
-    * This method is an internal helper function that checks if the
-    * received ack packet matches the expectations. That means
-    * that the opcode and blocknumbers are expected.
-    * 
-    * @param expecting The expected acknowledgement
-    * @param received   The received acknowledgement
-    * @return true if received matched the expectations
-    */
-   public static boolean correctAnswer(ACK expecting, ACK received)
-   {
-      if (expecting == null)
-         return false;
-      if (received == null)
-         return false;
-      if (expecting.getOpCode() != received.getOpCode())
-         return false;
-      if (expecting.getBlockNr() != received.getBlockNr())
-         return false;
-      return true;
-   }
+				// resend the packet and wait again!
+				tftpLog.logln(USR.ERROR,
+						"TFTPUtils: " + getClient(tftpSock)
+						+ " expected packet before time out, sending ACK/DATA again");
+				tftpSock.write(send);
+				// set the flag to indicate that we might be stuffing the pipe for the
+				// client, next packet needs to have longer timeout to give client some
+				// time to clean up the pipe
+				stuffedLink = true;
+				try
+				{
+					tftpSock.setSocketTimeOut(tftpSock.getSocketTimeOut() * 2);
+				} catch (SocketException e)
+				{
+					tftpLog.logln(USR.ERROR,
+							"TFTPUtils: " + getClient(tftpSock)
+							+ "Could not change timeout on socket. "
+							+ e.getMessage());
+					// just conitnue
+				}
+				continue;
+			}
+
+			// case we received error
+			if (tftpP instanceof ERROR)
+			{
+				throw new IOException(
+						getClient(tftpSock) + " " + ((ERROR) tftpP).getErrorMessage());
+			}
+
+			// case we did receive expected
+			if ((tftpP instanceof ACK) && correctAnswer(recv, (ACK) tftpP))
+			{
+				//TODO: set timeout back to normal after successfull receival of packet for download
+				try
+				{
+					if (stuffedLink)
+					{
+						stuffedLink = false;
+						tftpSock.setSocketTimeOut(timeout);
+					}
+				} catch (SocketException e)
+				{
+					tftpLog.logln(USR.ERROR,
+							"TFTPUtils: " + getClient(tftpSock)
+							+ "Could not change timeout on socket. "
+							+ e.getMessage());
+					// just conitnue
+				}
+
+				ACK result = (ACK) tftpP;
+
+				return result;
+			}
+
+			// all other is spam and when too many of this crap is give up, and do not signal
+			if (spamcount++ > 5)
+			{
+				return null;
+			}
+		}
+
+		return null;
+	}
+
+	public static void sendErrPacket(
+			TFTPSocket tftpSock,
+			int errorCode,
+			String errorMsg)
+	{
+		try
+		{
+			TFTPPacket tftpP = new ERROR(errorCode, errorMsg);
+			tftpSock.write(tftpP);
+		} catch (Exception e)
+		{
+			tftpLog.logln(USR.ERROR, getClient(tftpSock) + " UDP send ERROR packet failure.");
+			tftpLog.logln(USR.ERROR, e.toString());
+			return;
+		}
+		tftpLog.logln(USR.ERROR, 
+				"SEND ERROR"
+						+ " ["
+						+ getClient(tftpSock)
+						+ "] EC = ["
+						+ errorCode
+						+ "] "
+						+ errorMsg);
+	}
+
+	/**
+	 * This method returns the IP address and port number of the 
+	 * client this class is talking to.
+	 */
+	public static String getClient(TFTPSocket tftpSock)
+	{
+		String client = "";
+		Address addr = tftpSock.getAddress();
+		int port = tftpSock.getPort();
+		if (addr != null)
+			client += addr.toString();
+		if (port != 0)
+		{
+			client += ":";
+			client += port;
+		}
+		return client;
+	}
+
+	/**
+	 * This method is an internal helper function that checks if the
+	 * received ack packet matches the expectations. That means
+	 * that the opcode and blocknumbers are expected.
+	 * 
+	 * @param expecting The expected acknowledgement
+	 * @param received   The received acknowledgement
+	 * @return true if received matched the expectations
+	 */
+	public static boolean correctAnswer(ACK expecting, ACK received)
+	{
+		if (expecting == null)
+			return false;
+		if (received == null)
+			return false;
+		if (expecting.getOpCode() != received.getOpCode())
+			return false;
+		if (expecting.getBlockNr() != received.getBlockNr())
+			return false;
+		return true;
+	}
 }

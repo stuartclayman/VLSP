@@ -1,5 +1,6 @@
 package demo_usr.ikms;
 
+import java.util.Map;
 import java.util.Scanner;
 
 import us.monoid.json.JSONObject;
@@ -8,6 +9,7 @@ import usr.applications.ApplicationResponse;
 import demo_usr.ikms.TFTP.RestOverTFTPClient;
 import demo_usr.ikms.client.IKMSEnabledUSREntity;
 import demo_usr.ikms.client.utils.Converters;
+import demo_usr.ikms.client.utils.Logging;
 
 // A distributed KNOW client for the virtual infrastructure (i.e., hosted in a virtual router)
 public class IKMSForwarder extends IKMSEnabledUSREntity implements Application {
@@ -46,22 +48,34 @@ public class IKMSForwarder extends IKMSEnabledUSREntity implements Application {
 	/**
 	 * Initialize with some args
 	 */
+	@SuppressWarnings("resource")
 	public ApplicationResponse init(String[] args) {
-
-		if (args.length == 1) {
+		int restOverUSRPort=0;
+		
+		if (args.length == 2) {
 			// try entityid
 			Scanner scanner = new Scanner(args[0]);
 
 			if (scanner.hasNextInt()) {
 				entityid = scanner.nextInt();
+
+				scanner = new Scanner(args[1]);
+
+				if (scanner.hasNextInt()) {
+					restOverUSRPort = scanner.nextInt();
+				} else {
+					scanner.close();
+					return new ApplicationResponse(false, "Bad knowHost " + args[1]);
+				}
 			} else {
 				scanner.close();
 				return new ApplicationResponse(false, "Bad entityid " + args[0]);
 			}
 			scanner.close();
+			// update RestOverUSR port
+			restOverUSR.init(restOverUSRPort);
 			return new ApplicationResponse(true, "");
 		} else {
-
 			return new ApplicationResponse(true, "");
 		}
 
@@ -88,7 +102,7 @@ public class IKMSForwarder extends IKMSEnabledUSREntity implements Application {
 	public ApplicationResponse stop() {
 		// stop running entity
 		stopRunning=true;
-		System.out.println ("Stopping running the IKMSForwarder");
+		Logging.Log(entityid, "Stopping running the IKMSForwarder");
 		// terminate entity
 		shutDown();
 		return new ApplicationResponse(true, "");
@@ -106,27 +120,38 @@ public class IKMSForwarder extends IKMSEnabledUSREntity implements Application {
 		tftpClient.ApplyRestGetRequest("http://localhost:8080/");*/
 		
 		while (stopRunning==false) {
-			Delay (entityid, 5000);			
+			//Delay (entityid, 5000);			
 		}
-		System.out.println ("The IKMSForwarder stopped running");
+		Logging.Log(entityid, "The IKMSForwarder stopped running");
 
 		running=false;
 	}
 
+	@Override
 	public void InformationFlowPoliciesUpdatedUSR (JSONObject informationFlowPolicies, String targetURIFileName) {
-		// Should forward informationFlowPolicies to the appropriate NEM
+		try {
+		
+		// Should forward informationFlowPolicies to the appropriate Entity
 		// Using the TFTPClient and POST method
-
+		Logging.Log(entityid, "informationFlowPolicies:"+informationFlowPolicies+" targetURIFileName:"+targetURIFileName);
 		// extract virtual router address from port
-		int port = Converters.ExtractPortFromTargetURIFileName (targetURIFileName);
-		int hostName = port-10000;
+		Map<String, String> parameters = Converters.SplitQuery(targetURIFileName);
+		
+		//int port = Converters.ExtractPortFromTargetURIFileName (targetURIFileName);
+		String hostName = parameters.get("n");
 		// TFTP Server port is 2000x
-		port+=10000;
+		//port+=10000;
+		String port = parameters.get("p");
 		tftpClient.setHostName(String.valueOf(hostName));
-		tftpClient.setPort(port);
+		tftpClient.setPort(Integer.valueOf(port));
+		Logging.Log(entityid, "hostName:"+hostName+" port:"+port);
+
 		//tftpClient
 		boolean success = tftpClient.UploadRestPostRequest(targetURIFileName, informationFlowPolicies.toString());
-		System.out.println ("Forwarded updated informationFlowPolicies, successfullness:"+success);
+		Logging.Log(entityid, "Forwarded updated informationFlowPolicies, successfullness:"+success);
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 }
 

@@ -16,20 +16,15 @@
  */
 package demo_usr.ikms.client;
 
-import java.util.Scanner;
-
 import plugins_usr.tftp.com.globalros.tftp.common.VirtualFileSystem;
 import plugins_usr.tftp.com.globalros.tftp.server.EventListener;
 import plugins_usr.tftp.com.globalros.tftp.server.TFTPServerSocket;
-import usr.applications.Application;
-import usr.applications.ApplicationResponse;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
 import demo_usr.ikms.TFTP.RestVirtualFileSystem;
 
-
-public class RestOverUSR implements EventListener, Application {
+public class RestOverUSR implements EventListener {
     static int DEFAULT_PORT = 69;
     // fields for the attributes
     private int poolSize = 5;
@@ -57,45 +52,30 @@ public class RestOverUSR implements EventListener, Application {
         tftpLog.logln(USR.ERROR, "TFTPServer: TFTPServer()");
         this.vfs = new RestVirtualFileSystem();
         this.listener = this;
-        setPoolSize(2);
+        setPoolSize(10);
         //setPort(1069);        
     }
 
     /**
-     * Initialize with some args
+     * Initialize with port as an arg
      */
-    public ApplicationResponse init(String[] args) {
-        if (args.length == 1) {
-            // try port
-            Scanner scanner = new Scanner(args[0]);
-
-            if (scanner.hasNextInt()) {
-                port = scanner.nextInt();
-            } else {
-                return new ApplicationResponse(false, "Bad port " + args[0]);
-            }
-            return new ApplicationResponse(true, "");
-        } else {
-            return new ApplicationResponse(true, "");
-        }
-
+    public void init(int port) {
+        setPort (port);
     }
 
     /**
-     * Start an application.
+     * Start the RestOverUSR object.
      * This is called before run().
      */
-    public ApplicationResponse start() {
+    public void start() {
         startUp();
-
-        return new ApplicationResponse(true, "");
     }
 
     public void run() {
         //tftpLog.logln(USR.ERROR, "TFTPServer: top of run()");
 
         try {
-            tftpLog.logln(USR.ERROR, "TFTPServer: waiting.....");
+            tftpLog.logln(USR.ERROR, "TFTPServer thread starting: waiting.....");
             server.join();
         } catch (Exception e) {
         }
@@ -104,14 +84,12 @@ public class RestOverUSR implements EventListener, Application {
     }
 
     /**
-     * Stop an application.
+     * Stops the RestOverUSR object.
      * This is called to implement graceful shut down
      * and cause run() to end.
      */
-    public ApplicationResponse stop() {
+    public void stop() {
         shutDown();
-
-        return new ApplicationResponse(true, "");
     }
 
     /**

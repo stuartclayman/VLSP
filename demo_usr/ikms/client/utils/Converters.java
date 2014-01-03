@@ -5,6 +5,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Converters {
 
@@ -40,7 +42,33 @@ public class Converters {
 		return port;
 	}
 	
-	public static int ExtractNodeAddressFromURI (String uri) {
+	public static Map<String, String> SplitQuery(String urlString) {
+		
+		URL url=null;
+		try {
+			url = new URL (urlString);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+	    String query = url.getQuery();
+	    System.out.println ("query:"+query);
+	    String[] pairs = query.split("&");
+	    for (String pair : pairs) {
+	        int idx = pair.indexOf("=");
+	        try {
+				query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    }
+	    return query_pairs;
+	}
+	
+	/*public static int ExtractNodeAddressFromURI (String uri) {
 		URL k=null;
 		try {
 			k = new URL(uri);
@@ -50,5 +78,5 @@ public class Converters {
 		}
 		int address = k.getPort() - 10000;
 		return address;
-	}
+	}*/
 }

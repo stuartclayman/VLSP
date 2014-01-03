@@ -1,21 +1,23 @@
 package demo_usr.ikms.client;
 
+import ikms.client.InformationManagementInterface;
+
 import java.io.IOException;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import demo_usr.ikms.TFTP.RestOverTFTPClient;
 
-public class InformationManagementInterface {
+public class InformationManagement implements InformationManagementInterface {
 	// A client of the IKMS itself
-	IKMSUSRClient knowledgeBlockUSR=null;
+	IKMSUSRClient ikmsUSR=null;
 
 	/**
 	 * Access the InformationManagementInterface on host:port.
 	 * All interaction is via REST calls.
 	 */
-	public InformationManagementInterface(String host, String port, RestOverTFTPClient tftpClient) {
-		knowledgeBlockUSR = new IKMSUSRClient(host, port, tftpClient);
+	public InformationManagement(String host, String port, RestOverTFTPClient tftpClient) {
+		ikmsUSR = new IKMSUSRClient(host, port, tftpClient);
 	}
 
 	/**
@@ -23,9 +25,16 @@ public class InformationManagementInterface {
 	 * @return The result of the REST call as a JSONObject
 	 */
 	public JSONObject RegisterEntity(JSONObject registrationInfo) throws IOException, JSONException {
-			return knowledgeBlockUSR.registerEntity(registrationInfo);
+		return ikmsUSR.registerEntity(registrationInfo);
 	}
 
+	/**
+	 * Unregistering management entity by its entityid.
+	 * @return The result of the REST call as a JSONObject
+	 */
+	public JSONObject UnregisterEntity (int entityid) throws IOException, JSONException {
+		return ikmsUSR.unRegisterEntity(entityid);
+	}
 
 	/**
 	 * Update Entity registration given a JSONObject which contains is the registration details.
@@ -33,7 +42,7 @@ public class InformationManagementInterface {
 	 */
 	public JSONObject UpdateEntityRegistration (JSONObject registrationInfo) throws IOException, JSONException {
 		// same as RegisterEntity
-			return knowledgeBlockUSR.registerEntity(registrationInfo);
+		return ikmsUSR.registerEntity(registrationInfo);
 	}
 
 	/**
@@ -41,7 +50,7 @@ public class InformationManagementInterface {
 	 * @return The result of the REST call as a JSONObject
 	 */
 	public JSONObject GetEntityRegistration (int entityid) throws IOException, JSONException {
-			return knowledgeBlockUSR.getEntityRegistration(entityid);
+		return ikmsUSR.getEntityRegistration(entityid);
 	}
 
 	/**
@@ -50,7 +59,7 @@ public class InformationManagementInterface {
 	 * @return The result of the REST call as a JSONObject
 	 */
 	public JSONObject UpdatePerformanceGoal(int entityid, JSONObject performanceGoal) throws IOException, JSONException {
-			return knowledgeBlockUSR.UpdatePerformanceGoal(entityid, performanceGoal);
+		return ikmsUSR.UpdatePerformanceGoal(entityid, performanceGoal);
 	}
 
 	/**
@@ -59,6 +68,6 @@ public class InformationManagementInterface {
 	 */
 
 	public JSONObject RetrievePerformanceGoal (int entityid) throws IOException, JSONException {
-			return knowledgeBlockUSR.RetrievePerformanceGoal(entityid);
+		return ikmsUSR.RetrievePerformanceGoal(entityid);
 	}
 }

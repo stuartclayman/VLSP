@@ -9,6 +9,7 @@ import us.monoid.json.JSONObject;
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
 import demo_usr.ikms.client.IKMSEnabledUSREntity;
+import demo_usr.ikms.client.utils.Logging;
 
 // Example Sink MA that retrieves periodically information from the IKMS (Push/Pull example)
 public class InformationRetrievalMA extends IKMSEnabledUSREntity implements Application {
@@ -105,31 +106,43 @@ public class InformationRetrievalMA extends IKMSEnabledUSREntity implements Appl
 	 */
 	@SuppressWarnings("resource")
 	public ApplicationResponse init(String[] args) {
-		if (args.length == 2) {
+		int restOverUSRPort=0;
+
+		if (args.length == 3) {
 			// try entityid
 			Scanner scanner = new Scanner(args[0]);
 
 			if (scanner.hasNextInt()) {
 				entityid = scanner.nextInt();
+
 				scanner = new Scanner(args[1]);
 
 				if (scanner.hasNextInt()) {
-					ikmsForwarderHost = String.valueOf(scanner.nextInt());
+					restOverUSRPort = scanner.nextInt();
+
+					scanner = new Scanner(args[2]);
+
+					if (scanner.hasNextInt()) {
+						ikmsForwarderHost = String.valueOf(scanner.nextInt());						
+					} else {
+						scanner.close();
+						return new ApplicationResponse(false, "Bad ikmsForwarderHost: " + args[1]);
+					}
 				} else {
 					scanner.close();
-					return new ApplicationResponse(false, "Bad knowHost " + args[1]);
+					return new ApplicationResponse(false, "Bad restOverUSRPort: " + args[1]);
 				}
-
 			} else {
 				scanner.close();
-				return new ApplicationResponse(false, "Bad entityid " + args[0]);
+				return new ApplicationResponse(false, "Bad entityid: " + args[0]);
 			}
 			scanner.close();
+			// update RestOverUSR port
+			restOverUSR.init(restOverUSRPort);
 			return new ApplicationResponse(true, "");
 		} else {
 			return new ApplicationResponse(true, "");
 		}
-
 	}
 
 	/**
@@ -164,8 +177,12 @@ public class InformationRetrievalMA extends IKMSEnabledUSREntity implements Appl
 	 * Main loop
 	 */
 	public void run() {
+		Logging.Log(entityid, "Waiting for registration to finish.");
 
-		System.out.println("IR MA Information Retrieval Example");
+		// enforce a delay
+		Delay(entityid, 5000);
+		
+		Logging.Log(entityid, "IR MA Information Retrieval Example");
 		JSONObject test = new JSONObject();
 
 		// Periodically requesting test information
@@ -173,11 +190,11 @@ public class InformationRetrievalMA extends IKMSEnabledUSREntity implements Appl
 			try {	
 				// request test information
 				test = informationExchangeInterface.RequestInformation(entityid, "/BaseStations/Detail/Example3/All");
-				System.out.println ("Retrieved value:"+test.toString());
-				System.out.println ("Waiting 5s");
+				Logging.Log(entityid, "Retrieved value:"+test.toString());
+				Logging.Log(entityid, "Waiting 5s");
 			} catch (IOException e) {
 				// Display connection error and exit
-				System.out.println ("Connection error. Probably IKMS stopped running.");
+				Logging.Log(entityid, "Connection error. Probably IKMS stopped running.");
 				System.exit(0);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
@@ -186,7 +203,7 @@ public class InformationRetrievalMA extends IKMSEnabledUSREntity implements Appl
 			// Wait 5000 ms
 			Delay (entityid, 5000);
 		}
-		System.out.println ("IR MA Stopped Running");
+		Logging.Log(entityid, "IR MA Stopped Running");
 		// stopped running
 		running = false;
 	}

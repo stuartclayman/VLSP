@@ -9,6 +9,7 @@ import us.monoid.json.JSONObject;
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
 import demo_usr.ikms.client.IKMSEnabledUSREntity;
+import demo_usr.ikms.client.utils.Logging;
 
 // Example Sink Entity that communicates directly with a Source Entity
 // At the beginning, the Sink Entity registers itself to the IKMS and retrieves communication information for the source Entity.
@@ -20,19 +21,19 @@ public class DirectSinkMA extends IKMSEnabledUSREntity implements Application  {
 	// Basic entity constructor. 
 	public DirectSinkMA () {
 		// default entityid value
-		entityid = 20100;
+		entityid = 20100;		
 	}
 
 	public static void main(String[] args) {
 		// Initializing example class, could provide rest callback and IKMS hostnames, ports in the constructor (in case of a distributed deployment)
-		// e.g., MA nem = new MA (restHost, restPort, ikmsHost, ikmsPort)
-		DirectSinkMA nem = new DirectSinkMA();       
+		// e.g., MA ma = new MA (restHost, restPort, ikmsHost, ikmsPort)
+		DirectSinkMA ma = new DirectSinkMA();       
 
 		// initializes and registers entity
-		nem.registerEntity();
+		ma.registerEntity();
 
 		// start entity communication
-		nem.run();
+		ma.run();
 	}
 
 	public void registerEntity () {
@@ -106,7 +107,9 @@ public class DirectSinkMA extends IKMSEnabledUSREntity implements Application  {
 	 */
 	@SuppressWarnings("resource")
 	public ApplicationResponse init(String[] args) {
-		if (args.length == 2) {
+		int restOverUSRPort=0;
+
+		if (args.length == 3) {
 			// try entityid
 			Scanner scanner = new Scanner(args[0]);
 
@@ -116,17 +119,27 @@ public class DirectSinkMA extends IKMSEnabledUSREntity implements Application  {
 				scanner = new Scanner(args[1]);
 
 				if (scanner.hasNextInt()) {
-					ikmsForwarderHost = String.valueOf(scanner.nextInt());
+					restOverUSRPort = scanner.nextInt();
+
+					scanner = new Scanner(args[2]);
+
+					if (scanner.hasNextInt()) {
+						ikmsForwarderHost = String.valueOf(scanner.nextInt());						
+					} else {
+						scanner.close();
+						return new ApplicationResponse(false, "Bad ikmsForwarderHost: " + args[1]);
+					}
 				} else {
 					scanner.close();
-					return new ApplicationResponse(false, "Bad knowHost " + args[1]);
+					return new ApplicationResponse(false, "Bad restOverUSRPort: " + args[1]);
 				}
-
 			} else {
 				scanner.close();
-				return new ApplicationResponse(false, "Bad entityid " + args[0]);
+				return new ApplicationResponse(false, "Bad entityid: " + args[0]);
 			}
 			scanner.close();
+			// update RestOverUSR port
+			restOverUSR.init(restOverUSRPort);
 			return new ApplicationResponse(true, "");
 		} else {
 			return new ApplicationResponse(true, "");
@@ -163,8 +176,13 @@ public class DirectSinkMA extends IKMSEnabledUSREntity implements Application  {
 
 	public void run() {
 		
-		System.out.println("DSINK MA Information Retrieval Example");
+		Logging.Log(entityid, "Waiting for registration to finish.");
 
+		// enforce a delay
+		Delay(entityid, 5000);
+		
+		System.out.println("DSINK MA Information Retrieval Example");
+		
 		// output of information requests
 		JSONObject output = new JSONObject();
 
