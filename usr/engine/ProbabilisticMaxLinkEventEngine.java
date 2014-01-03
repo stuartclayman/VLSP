@@ -15,7 +15,7 @@ import rgc.xmlparse.ReadXMLUtils;
 import rgc.xmlparse.XMLNoTagException;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import usr.abstractnetwork.AbstractLink;
+import usr.model.abstractnetwork.AbstractLink;
 import usr.events.globalcontroller.EndLinkEvent;
 import usr.events.globalcontroller.EndRouterEvent;
 import usr.events.globalcontroller.StartRouterEvent;

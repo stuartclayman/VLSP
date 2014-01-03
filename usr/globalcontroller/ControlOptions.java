@@ -33,6 +33,7 @@ import usr.engine.EmptyEventEngine;
 import usr.engine.EventEngine;
 import usr.engine.EventEngineException;
 import usr.engine.ProbabilisticEventEngine;
+import usr.engine.IKMSEventEngine;
 import usr.engine.ScriptEngine;
 import usr.engine.TestEventEngine;
 import usr.events.EventScheduler;
@@ -47,64 +48,30 @@ import usr.router.RouterOptions;
 
 public class ControlOptions {
     private ArrayList<LocalControllerInfo> localControllers_;
-    private int globalControlPort_ = 8888;
-
-    // Port global  controller listens on
-    private String remoteLoginCommand_ = null;
-
-    // Command used  to login to start local
-    // controller
-    private String remoteStartController_ = null;
-
-    // Command used on local controller to start it
-    private String remoteLoginFlags_ = null;
-
-    //  Flags used for ssh to login to remote machine
-    private String remoteLoginUser_ = null;
-
-    // User on remote machines to login with.
-    private boolean startLocalControllers_ = true;
-
-    // If true Global Controller starts local controllers
-    private boolean isSimulation_ = false;
-
-    // If true simulation in software not emulation in hardware
-    private boolean allowIsolatedNodes_ = true;
-
-    // If true, check for isolated nodes
-    private boolean connectedNetwork_ = false;
-
-    // If true, keep network connected
-    private boolean latticeMonitoring = false;
-
-    // If true, turn on Lattice Monitoring
-    private HashMap<String, String> consumerInfoMap = null;
-
-    // A map of class names for Monitoring consumers and their label
+    private int globalControlPort_ = 8888;           // Port global  controller listens on
+    private String remoteLoginCommand_ = null;       // Command used  to login to start local controller
+    private String remoteStartController_ = null;    // Command used on local controller to start it
+    private String remoteLoginFlags_ = null;         //  Flags used for ssh to login to remote machine
+    private String remoteLoginUser_ = null;          // User on remote machines to login with.
+    private boolean startLocalControllers_ = true;   // If true Global Controller starts local controllers
+    private boolean isSimulation_ = false;           // If true simulation in software not emulation in hardware
+    private boolean allowIsolatedNodes_ = true;      // If true, check for isolated nodes
+    private boolean connectedNetwork_ = false;       // If true, keep network connected
+    private boolean latticeMonitoring = false;       // If true, turn on Lattice Monitoring
+    private HashMap<String, String> consumerInfoMap = null;   // A map of class names for Monitoring consumers and their label
     private long warmUpPeriod_ = 0;
 
     private int controllerWaitTime_ = 6;
-    private int lowPort_ = 10000;
+    private int lowPort_ = 10000;                    // Default lowest port to be used on  local controller
+    private int highPort_ = 20000;                   // Default highest port to be used on local controller
+    private int maxLag_ = 10000;                     // Maximum lag tolerable in simulation in millisec
 
-    // Default lowest port to be used on  local controller
-    private int highPort_ = 20000;
-
-    // Default highest port to be used on local controller
-    private int maxLag_ = 10000;
-
-    // Maximum lag tolerable in simulation in millisec
-    private String routerOptionsString_ = "";             //
+    private String routerOptionsString_ = "";        //
     private RouterOptions routerOptions_ = null;
-    private ArrayList<EventEngine> engines_ = null;
+    private ArrayList<EventEngine> engines_ = null;  // Engines used to create new events for sim
 
-    // Engines used to create new events for sim
-
-    private ArrayList<OutputType> outputs_ = null;
-
-    // The name of the class to use to place a Router
-    private String placementEngineClass = null;
-
-    // The name of the class to use to visualize the network
+    private ArrayList<OutputType> outputs_ = null;  // The name of the class to use to place a Router
+    private String placementEngineClass = null;     // The name of the class to use to visualize the network
     private String visualizationClass = null;
 
     /** init function sets up basic information */
@@ -679,10 +646,10 @@ public class ControlOptions {
                 return eng;
             }
 
-            //if (engine.equals("IKMS")) {
-            //    eng = new IKMSEventEngine(endtime, parms);
-            //    return eng;
-            //}
+            if (engine.equals("IKMS")) {
+                eng = new IKMSEventEngine(endtime, parms);
+                return eng;
+            }
 
             if (engine.equals("Script")) {
                 eng = new ScriptEngine(endtime, parms);

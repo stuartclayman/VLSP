@@ -22,7 +22,7 @@ import rgc.xmlparse.XMLNoTagException;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.APcontroller.APController;
-import usr.abstractnetwork.AbstractLink;
+import usr.model.abstractnetwork.AbstractLink;
 import usr.engine.linkpicker.NodeLinkPicker;
 import usr.engine.linkpicker.PreferentialLinkPicker;
 import usr.engine.linkpicker.RandomLinkPicker;

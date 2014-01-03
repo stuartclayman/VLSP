@@ -20,33 +20,33 @@ import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class AppStartEvent extends AbstractGlobalControllerEvent {
-    int routerNo_ = 0;
+    int address_ = 0;
     String className_ = null;
     String [] args_ = null;
-    String address_ = null;
+    String name_ = null;
     boolean routerNumSet_ = true;
 
     public AppStartEvent(long time, EventEngine eng, int rNo, String cname, String [] args) {
         super(time, eng);
-        routerNo_ = rNo;
+        address_ = rNo;
         className_ = cname;
         args_ = args;
     }
 
-    public AppStartEvent(long time, EventEngine eng, String addr, String cname, String [] args) {
+    public AppStartEvent(long time, EventEngine eng, String name, String cname, String [] args) {
         super(time, eng);
         className_ = cname;
-        address_ = addr;
+        name_ = name;
         args_ = args;
         routerNumSet_ = false;
     }
 
-    public AppStartEvent(long time, EventEngine eng, String addr, String cname, String [] args, GlobalController gc) throws InstantiationException {
+    public AppStartEvent(long time, EventEngine eng, String name, String cname, String [] args, GlobalController gc) throws InstantiationException {
         super(time, eng);
         className_ = cname;
         args_ = args;
-        address_ = addr;
-        setRouterNo(addr, gc);
+        name_ = name;
+        setRouterNo(name, gc);
     }
 
     /**
@@ -55,13 +55,13 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
     public AppStartEvent(usr.events.vim.AppStartEvent ase) {
         super(ase.time, ase.engine);
 
-        if (ase.address == null) { // address is null, so use routerNo
-            routerNo_ = ase.routerNo;
+        if (ase.name == null) { // name is null, so use address
+            address_ = ase.address;
             className_ = ase.className;
             args_ = ase.args;
             routerNumSet_ = true;
         } else {
-            address_ = ase.address;
+            name_ = ase.name;
             className_ = ase.className;
             args_ = ase.args;
             routerNumSet_ = false;
@@ -77,12 +77,12 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
     }
 
     private String getName() {
-        String str = "";
+        String str = " ";
 
-        if (address_ == null) {
-            str += (routerNo_ + " ");
-        } else {
+        if (name_ == null) {
             str += (address_ + " ");
+        } else {
+            str += (name_ + " ");
         }
 
         str += className_ + " Args:";
@@ -94,24 +94,19 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
         return str;
     }
 
-    private void setRouterNo(String addr, GlobalController gc) throws InstantiationException {
-        BasicRouterInfo rInfo = gc.findRouterInfo(addr);
+    private void setRouterNo(String name, GlobalController gc) throws InstantiationException {
+        BasicRouterInfo rInfo = gc.findRouterInfo(name);
 
         if (rInfo == null) {
-            throw new InstantiationException("Cannot find address " + addr);
+            throw new InstantiationException("Cannot find router " + name);
         }
 
-        routerNo_ = rInfo.getId();
+        address_ = rInfo.getId();
     }
 
     @Override
-    public JSONObject execute(GlobalController gc) throws InstantiationException {
-        if (!routerNumSet_) {
-            setRouterNo(address_, gc);
-        }
-
-
-        JSONObject jsobj = appStart(routerNo_, className_, args_, gc);
+    public JSONObject execute(GlobalController gc) {
+        JSONObject jsobj = appStart(address_, className_, args_, gc);
 
         return jsobj;
 
@@ -120,12 +115,24 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
 
     protected JSONObject appStart(int routerID, String className, String[] args, GlobalController gc) {
 
-        // Try and start the app
-        int appID = appStartTry(routerNo_, className_, args_, gc);
-
         // register the app
         JSONObject json = new JSONObject();
         try {
+
+            int appID;
+
+            try {
+                if (!routerNumSet_) {
+                    setRouterNo(name_, gc);
+                }
+
+                // Try and start the app
+                appID = appStartTry(address_, className_, args_, gc);
+            } catch (Exception e) {
+                appID = -1;
+            }
+
+
             if (appID >= 0) {
                 json.put("success", true);
                 BasicRouterInfo bri = gc.findAppInfo(appID);

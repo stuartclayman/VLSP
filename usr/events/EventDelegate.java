@@ -14,7 +14,7 @@ public interface EventDelegate {
      * Interrupted if acquisition of lock interrupted
      * Timeout if acquisition timesout
      */
-    public JSONObject executeEvent(Event ev) throws InstantiationException, InterruptedException, TimeoutException;
+    public JSONObject executeEvent(Event ev) throws Exception;
 
     /**
      * checks if the delegate is active

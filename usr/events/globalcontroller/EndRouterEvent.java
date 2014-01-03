@@ -10,31 +10,31 @@ import usr.common.PortPool;
 import usr.engine.EventEngine;
 import usr.globalcontroller.GlobalController;
 import usr.interactor.LocalControllerInteractor;
-import usr.lifeEstimate.LifetimeEstimate;
+import usr.model.lifeEstimate.LifetimeEstimate;
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class EndRouterEvent extends AbstractGlobalControllerEvent {
-    int routerNo_;
-    String address_ = null;
+    int address_;
+    String name_ = null;
     boolean routerNumSet_ = true;
 
-    public EndRouterEvent(long time, EventEngine eng, String address, GlobalController gc) throws InstantiationException {
+    public EndRouterEvent(long time, EventEngine eng, String name, GlobalController gc) throws InstantiationException {
         super(time, eng);
-        initNumber(address, gc);
+        initNumber(name, gc);
     }
 
-    public EndRouterEvent(long time, EventEngine eng, String addr) {
+    public EndRouterEvent(long time, EventEngine eng, String nm) {
         super(time, eng);
-        address_ = addr;
+        name_ = nm;
         routerNumSet_ = false;
     }
 
     public EndRouterEvent(long time, EventEngine eng, int rNo) {
         super(time, eng);
-        routerNo_ = rNo;
+        address_ = rNo;
     }
 
     /**
@@ -43,10 +43,10 @@ public class EndRouterEvent extends AbstractGlobalControllerEvent {
     public EndRouterEvent(usr.events.vim.EndRouterEvent ere) {
         super(ere.time, ere.engine);
 
-        if (ere.address == null) {  // address is null, so use routerNo
-            routerNo_ = ere.routerNo;
-        } else {
+        if (ere.name == null) {  // name is null, so use address
             address_ = ere.address;
+        } else {
+            name_ = ere.name;
         }
     }
 
@@ -60,50 +60,50 @@ public class EndRouterEvent extends AbstractGlobalControllerEvent {
 
     public int getNumber(GlobalController gc) throws InstantiationException {
         if (!routerNumSet_) {
-            initNumber(address_, gc);
+            initNumber(name_, gc);
         }
 
-        return routerNo_;
+        return address_;
     }
 
     private String getName() {
         String str = "";
 
-        if (address_ != null) {
-            str = address_;
+        if (name_ != null) {
+            str = name_;
         }
 
         return str;
     }
 
-    private void initNumber(String address, GlobalController gc) throws InstantiationException {
-        BasicRouterInfo rInfo = gc.findRouterInfo(address);
+    private void initNumber(String name, GlobalController gc) throws InstantiationException {
+        BasicRouterInfo rInfo = gc.findRouterInfo(name);
 
         if (rInfo == null) {
-            throw new InstantiationException(
-                                             "Cannot find router " + address);
+            throw new InstantiationException("Cannot find router " + name);
         }
 
-        routerNo_ = rInfo.getId();
+        address_ = rInfo.getId();
     }
 
     @Override
-    public JSONObject execute(GlobalController gc) throws InstantiationException {
-
-        if (!routerNumSet_) {
-            initNumber(address_, gc);
-        }
-        boolean success = endRouter(routerNo_, gc, time);
+    public JSONObject execute(GlobalController gc) {
 
         JSONObject json = new JSONObject();
         try {
+
+            if (!routerNumSet_) {
+                initNumber(name_, gc);
+            }
+            boolean success = endRouter(address_, gc, time);
+
             if (success) {
                 json.put("success", (Boolean)true);
                 json.put("msg", "Shut down router " + getName());
-                json.put("router", (Integer)routerNo_);
+                json.put("router", (Integer)address_);
 
-                if (address_ != null) {
-                    json.put("address", address_);
+                if (name_ != null) {
+                    json.put("name", name_);
                 }
             } else {
                 json.put("success", (Boolean)false);
@@ -121,13 +121,12 @@ public class EndRouterEvent extends AbstractGlobalControllerEvent {
 
     @Override
     public void followEvent(JSONObject response, GlobalController g) {
-        super.followEvent(response, g);
         // Schedule a check on network connectivity
         if (g.connectedNetwork()) {
             ConnectNetworkEvent cne= new ConnectNetworkEvent (g.getElapsedTime());
             getEventScheduler().addEvent(cne);
         } else if (!g.allowIsolatedNodes()) {
-            g.getAbstractNetwork().checkIsolated(time,g);
+            g.getAbstractNetwork().checkIsolated(time);
         }
     }
 

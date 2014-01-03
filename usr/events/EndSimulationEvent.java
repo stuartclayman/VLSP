@@ -16,7 +16,7 @@ public class EndSimulationEvent extends AbstractExecutableEvent {
     }
 
     @Override
-    public JSONObject execute(EventDelegate ed) throws InstantiationException {
+    public JSONObject eventBody(EventDelegate ed) {
         JSONObject jsobj = new JSONObject();
 
         try {

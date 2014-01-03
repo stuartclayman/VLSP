@@ -1,4 +1,4 @@
-package usr.lifeEstimate;
+package usr.model.lifeEstimate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,7 +69,7 @@ public class LifetimeEstimate {
      */
     public static boolean usingLifetimeEstimate()
     {
-    	return (mainLSE_ != null);
+    	return (mainLSE_.options_ != null); // sclayman 20131231 (mainLSE_ != null);
     }
 
     private void setOptions(RouterOptions o)

@@ -27,8 +27,8 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.APcontroller.APController;
 import usr.APcontroller.ConstructAPController;
-import usr.abstractnetwork.AbstractLink;
-import usr.abstractnetwork.AbstractNetwork;
+import usr.model.abstractnetwork.AbstractLink;
+import usr.model.abstractnetwork.AbstractNetwork;
 import usr.common.BasicRouterInfo;
 import usr.common.LinkInfo;
 import usr.common.LocalHostInfo;
@@ -48,12 +48,15 @@ import usr.events.EventResolver;
 import usr.events.globalcontroller.OutputEvent;
 import usr.events.globalcontroller.AppStartEvent;
 import usr.events.globalcontroller.AppStopEvent;
-import usr.events.globalcontroller.EndRouterEvent;
 import usr.events.globalcontroller.NetStatsEvent;
 import usr.events.globalcontroller.SetAggPointEvent;
 import usr.events.globalcontroller.StartLinkEvent;
+import usr.events.globalcontroller.EndLinkEvent;
+import usr.events.globalcontroller.StartRouterEvent;
+import usr.events.globalcontroller.EndRouterEvent;
+import usr.events.globalcontroller.SetLinkWeightEvent;
 import usr.interactor.LocalControllerInteractor;
-import usr.lifeEstimate.LifetimeEstimate;
+import usr.model.lifeEstimate.LifetimeEstimate;
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.BitMask;
 import usr.logging.Logger;
@@ -69,13 +72,14 @@ import eu.reservoir.monitoring.core.Reporter;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneForwardingConsumerWithNames;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
+import usr.vim.VimFunctions;
 
 /**
  * The GlobalController is in overall control of the software.  It
  * contacts LocalControllers to set up virtual routers and then
  * gives set up and tear down instructions directly to them.
  */
-public class GlobalController implements ComponentController, EventDelegate {
+public class GlobalController implements ComponentController, EventDelegate, VimFunctions {
     private ControlOptions options_;      // Options affecting the simulation
 
     // Options structure which is given to each router.
@@ -427,6 +431,12 @@ public class GlobalController implements ComponentController, EventDelegate {
 
             try {
                 executeEvent(ev);
+
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event exception " + e );
+                isActive_ = false;
+            }
+            /*
             } catch (InstantiationException ine) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Could not instantiate"+ine);
                 isActive_ = false;
@@ -437,6 +447,7 @@ public class GlobalController implements ComponentController, EventDelegate {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event got timeout"+te);
                 isActive_ = false;
             }
+            */
         }
 
         shutDown();
@@ -502,13 +513,14 @@ public class GlobalController implements ComponentController, EventDelegate {
      * Notification for an event execution success 
      */
     public void onEventSuccess(long time, Event ev) {
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event "+ev+" success");
     }
 
     /**
      * Notification for an event execution failure
      */
     public void onEventFailure(long time, Event ev) {
-        Logger.getLogger("log").logln(USR.ERROR, "Event "+ev+" failed");
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event "+ev+" failed");
     }
 
 
@@ -643,7 +655,7 @@ public class GlobalController implements ComponentController, EventDelegate {
      * throws InstantiationException if creation fails
      * InterruptedException if acquisition of lock interrupted
      * TimeoutException if acquisition timesout*/
-    public JSONObject semaphoredOperation(Operation op) throws Exception {
+    public JSONObject semaphoredOperation(Operation op) throws Exception, TimeoutException, InterruptedException {
         try {
             // Wait to aquire a lock -- only one event at once
             //
@@ -673,7 +685,7 @@ public class GlobalController implements ComponentController, EventDelegate {
      * Interrupted if acquisition of lock interrupted
      * Timeout if acquisition timesout
      */
-    public JSONObject executeEvent(Event ev) throws InstantiationException, InterruptedException, TimeoutException {
+    public JSONObject executeEvent(Event ev) {
 
         try {
             // Get a 'final' handle on the Event
@@ -685,7 +697,7 @@ public class GlobalController implements ComponentController, EventDelegate {
             // the method 'call()' is called by semaphoredOperation()
             Operation execute = new Operation() {
                 @Override
-                public JSONObject call() throws InstantiationException, InterruptedException, TimeoutException {
+                public JSONObject call() throws InstantiationException {
                     //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT preceed: " + e);
                     
                     ExecutableEvent ee = null;
@@ -702,10 +714,31 @@ public class GlobalController implements ComponentController, EventDelegate {
                             Logger.getLogger("log").logln(USR.ERROR, ANSI.RED + "EVENT not ExecutableEvent: " + e + ANSI.RESET_COLOUR);
                             return null;
                         }
+
+                        // tell the event which EventScheduler we are using
+                        ee.setEventScheduler(scheduler_);
+                    }
+                    
+
+                    // event preceeed
+                    ee.preceedEvent(gc);
+
+
+                    // pass in gc as EventDelegate and as context object
+                    JSONObject js = ee.execute(gc, gc);
+                    //Logger.getLogger("log").logln(USR.STDOUT, "EVENT result:  " + js);
+
+
+                    // event follow
+                    if (js != null) {
+                        try {
+                            if (js.getBoolean("success")) {
+                                ee.followEvent(js, gc);
+                            }
+                        } catch (JSONException je) { }
                     }
 
-                    JSONObject js = ee.execute(gc);
-                    //Logger.getLogger("log").logln(USR.STDOUT, "EVENT result:  " + js);
+
 
                     for (OutputType t : eventOutput_) {
                         produceEventOutput(e, js, t);
@@ -714,7 +747,8 @@ public class GlobalController implements ComponentController, EventDelegate {
                     //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT done: " + e );
                     String str = js.toString();
 
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " "+str.substring(0, Math.min(str.length(), 60)));
+                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " "+str.substring(0, Math.min(str.length(), 60)));
+
                     return js;
                 }
 
@@ -723,9 +757,44 @@ public class GlobalController implements ComponentController, EventDelegate {
             // Do the Operation in the semaphore code block
             JSONObject jsobj = semaphoredOperation(execute);
             return jsobj;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new InstantiationException(ex.getMessage());
+        } catch (TimeoutException te) {
+            //te.printStackTrace();
+
+            JSONObject jsobj = new JSONObject();
+
+            try {
+                jsobj.put("success", false);
+                jsobj.put("msg", te.getMessage());
+            } catch (JSONException je) {
+            }
+
+            return jsobj;
+
+        } catch (InterruptedException ie) {
+            // ie.printStackTrace();
+
+            JSONObject jsobj = new JSONObject();
+            try {
+                jsobj.put("success", false);
+                jsobj.put("msg", ie.getMessage());
+            } catch (JSONException je) {
+            }
+
+            return jsobj;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            JSONObject jsobj = new JSONObject();
+
+            try {
+                jsobj.put("success", false);
+                jsobj.put("msg", e.getMessage());
+            } catch (JSONException je) {
+            }
+
+            return jsobj;
+
         }
     }
 
@@ -848,16 +917,64 @@ public class GlobalController implements ComponentController, EventDelegate {
     /** Find some router info
      */
     public BasicRouterInfo findRouterInfo(int rId) {
-
         return routerIdMap_.get(rId);
     }
 
     /**
      * Find some router info, given a router address or a router name
+     */
+    public BasicRouterInfo findRouterInfo(String value) {
+        // skip through all the BasicRouterInfo objects
+        for (BasicRouterInfo info : routerIdMap_.values()) {
+            if (info.getAddress() !=
+                null &&info.getAddress().equals(value)) {
+                // we found a match
+                return info;
+            } else if (info.getName() !=
+                       null &&info.getName().equals(value)) {
+                // we found a match
+                return info;
+            }
+        }
+
+        // we got here and found nothing
+        return null;
+    }
+
+    /**
+     * List all RouterInfo.
+     */
+    public Collection<BasicRouterInfo> getAllRouterInfo() {
+        return routerIdMap_.values();
+    }
+
+    /**
+     * Find some router info, given a router ID
      * and return a JSONObject
      */
     public JSONObject findRouterInfoAsJSON(int routerID) throws JSONException {
         BasicRouterInfo bri = findRouterInfo(routerID);
+
+        return routerInfoAsJSON(bri);
+    }
+
+
+    /**
+     * Find some router info, given a router address or a router name
+     * and return a JSONObject
+     */
+    public JSONObject findRouterInfoAsJSON(String value) throws JSONException {
+        BasicRouterInfo bri = findRouterInfo(value);
+
+        return routerInfoAsJSON(bri);
+    }
+
+
+    /**
+     * Convert BasicRouterInfo into JSON
+     */
+    public JSONObject routerInfoAsJSON(BasicRouterInfo bri) throws JSONException {
+        int routerID = bri.getId();
 
         JSONObject jsobj = new JSONObject();
 
@@ -869,14 +986,25 @@ public class GlobalController implements ComponentController, EventDelegate {
         jsobj.put("r2rPort", bri.getRoutingPort());
 
         // now get all outlinks
-        JSONArray outArr = new JSONArray();
-        int [] outLinks = getOutLinks(routerID);
+        Collection<LinkInfo> links = findLinkInfoByRouter(routerID);
 
-        for (int outLink : outLinks) {
-            outArr.put(outLink);
+        JSONArray outArr = new JSONArray();
+        JSONArray linkIDArr = new JSONArray();
+
+        for (LinkInfo li : links) {
+            int otherEnd = li.getEndPoints().getSecond() == routerID ? li.getEndPoints().getFirst() : li.getEndPoints().getSecond();
+            outArr.put(otherEnd);
+            linkIDArr.put(li.getLinkID());
         }
 
+        //int [] outLinks = getOutLinks(routerID);
+
+        //for (int outLink : outLinks) {
+        //    outArr.put(outLink);
+        //}
+
         jsobj.put("links", outArr);
+        jsobj.put("linkIDs", linkIDArr);
 
         return jsobj;
 
@@ -979,34 +1107,6 @@ public class GlobalController implements ComponentController, EventDelegate {
     }
 
     /**
-     * Find some router info, given a router address or a router name
-     */
-    public BasicRouterInfo findRouterInfo(String value) {
-        // skip through all the BasicRouterInfo objects
-        for (BasicRouterInfo info : routerIdMap_.values()) {
-            if (info.getAddress() !=
-                null &&info.getAddress().equals(value)) {
-                // we found a match
-                return info;
-            } else if (info.getName() !=
-                       null &&info.getName().equals(value)) {
-                // we found a match
-                return info;
-            }
-        }
-
-        // we got here and found nothing
-        return null;
-    }
-
-    /**
-     * List all RouterInfo.
-     */
-    public Collection<BasicRouterInfo> getAllRouterInfo() {
-        return routerIdMap_.values();
-    }
-
-    /**
      * List all RouterInfo as a JSON object
      */
     public JSONObject getAllRouterInfoAsJSON(String detail) throws JSONException {
@@ -1021,25 +1121,7 @@ public class GlobalController implements ComponentController, EventDelegate {
 
             if (detail.equals("all")) {
                 // add a detailed record
-                JSONObject record = new JSONObject();
-                record.put("time", info.getTime());
-                record.put("routerID", info.getId());
-                record.put("name", info.getName());
-                record.put("address", info.getAddress());
-                record.put("mgmtPort", info.getManagementPort());
-                record.put("r2rPort", info.getRoutingPort());
-
-                // now get all outlinks
-                JSONArray outArr = new JSONArray();
-                int [] outLinks = getOutLinks(routerID);
-
-                for (int outLink : outLinks) {
-                    outArr.put(outLink);
-                }
-
-                record.put("links", outArr);
-
-
+                JSONObject record = routerInfoAsJSON(info);
 
                 detailArray.put(record);
 
@@ -1056,11 +1138,31 @@ public class GlobalController implements ComponentController, EventDelegate {
         return jsobj;
     }
 
+
     /**
-     * Get the number of routers
+     * List one RouterInfo as a JSON object
      */
-    public int getRouterCount() {
-        return network_.getNoNodes();
+    public JSONObject getOneRouterInfoAsJSON(String value) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();
+        JSONArray detailArray = new JSONArray();
+
+
+        BasicRouterInfo bri = findRouterInfo(value);
+        int routerID = bri.getId();
+
+        array.put(routerID);
+
+        JSONObject record = routerInfoAsJSON(bri);
+
+        detailArray.put(record);
+
+        jsobj.put("type", "router");
+        jsobj.put("list", array);
+
+        jsobj.put("detail", detailArray);
+
+        return jsobj;
     }
 
     /**
@@ -1200,6 +1302,46 @@ public class GlobalController implements ComponentController, EventDelegate {
         if (detail.equals("all")) {
             jsobj.put("detail", detailArray);
         }
+
+        return jsobj;
+    }
+
+    /**
+     * Get a list of Router Link Info as JSON.
+     * Get info on all links from a specified router.
+     */
+    private JSONObject listRouterLinksAsJSON(int routerID, String attr) throws JSONException {
+        Collection<LinkInfo> links = findLinkInfoByRouter(routerID);
+
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();
+
+        for (LinkInfo link : links) {
+
+            if (attr.equals("id")) {
+                array.put(link.getLinkID());
+            } else if (attr.equals("name")) {
+                array.put(link.getLinkName());
+            } else if (attr.equals("weight")) {
+                array.put(link.getLinkWeight());
+            } else if (attr.equals("connected")) {
+                Pair<Integer, Integer> routers = link.getEndPoints();
+
+                // put out router ID of other end
+                if (routers.getSecond() == routerID) {
+                    array.put(routers.getFirst());
+                } else {
+                    array.put(routers.getSecond());
+                }
+            } else {
+                // should not get here
+                throw new Error("RouterLinkRestHandler: should not get here");
+            }
+        }
+
+        jsobj.put("routerID", routerID);
+        jsobj.put("type", "link");
+        jsobj.put("list", array);
 
         return jsobj;
     }
@@ -1421,34 +1563,6 @@ public class GlobalController implements ComponentController, EventDelegate {
     //     scheduleLink(l, eng, time);
     // }
 
-
-    /**
-     * External and static access to start an Application
-     */
-    public JSONObject appStart(int routerID, String className, String[] args) {
-        try {
-            AppStartEvent ev = new AppStartEvent(getElapsedTime(), null, routerID, className, args);
-            JSONObject jsobj = executeEvent(ev);
-            return jsobj;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
-     * Stop an app
-     */
-    public JSONObject appStop(int routerID, int appId) {
-        try {
-            AppStopEvent ev = new AppStopEvent(getElapsedTime(), null, routerID, appId);
-            JSONObject jsobj = executeEvent(ev);
-            return jsobj;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-
     /**
      * register an app
      */
@@ -1471,6 +1585,27 @@ public class GlobalController implements ComponentController, EventDelegate {
         BasicRouterInfo bri = routerIdMap_.get(routerID);
 
         return bri;
+    }
+
+    /**
+     * 
+     */
+    private JSONObject getAllAppInfoAsJSON(int routerID) throws JSONException {
+        BasicRouterInfo bri = findRouterInfo(routerID);
+
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();
+
+        for (Integer id : bri.getApplicationIDs()) {
+
+            array.put(id);
+        }
+
+        jsobj.put("type", "app");
+        jsobj.put("list", array);
+        jsobj.put("routerID", routerID);
+
+        return jsobj;
     }
 
     /**
@@ -1583,14 +1718,10 @@ public class GlobalController implements ComponentController, EventDelegate {
             // stop all Routers
             for (int routerId : new ArrayList<Integer>(getRouterList())) {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "SHUTDOWN router " + routerId);
-                try {
-                    EndRouterEvent re = new EndRouterEvent(getElapsedTime(), null, routerId);
-                    // Execution is not through semaphore in shutDown since we have shutDown
-                    re.execute(this);
-                } catch (InstantiationException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
+
+                // Execution is not through semaphore in shutDown since we have shutDown
+                EndRouterEvent re = new EndRouterEvent(getElapsedTime(), null, routerId);
+                re.execute(this);
             }
 
             // stop monitoring
@@ -2297,6 +2428,21 @@ public class GlobalController implements ComponentController, EventDelegate {
 
     }
 
+
+    private JSONObject listAggPointsAsJSON() throws JSONException {
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();
+
+        for (Integer apID : getAPs()) {
+            array.put(apID);
+        }
+
+        jsobj.put("type", "ap");
+        jsobj.put("list", array);
+
+        return jsobj;
+    }
+
     private void addEvent(Event e) {
         scheduler_.addEvent(e);
     }
@@ -2405,6 +2551,294 @@ public class GlobalController implements ComponentController, EventDelegate {
 
         return getName() + " " + GC;
     }
+
+
+    /*
+     * Vim Functions
+     */
+
+    public JSONObject createRouter() throws JSONException {
+        return createRouter("", "");
+    }
+
+    public JSONObject createRouter(String name, String address) throws JSONException {
+        StartRouterEvent ev = new StartRouterEvent(getElapsedTime(), null, address, name);
+        return executeEvent(ev);
+    }
+
+    public JSONObject createRouterWithName(String name) throws JSONException {
+        return createRouter(name, "");
+    }
+
+    public JSONObject createRouterWithAddress(String address) throws JSONException {
+        return createRouter("", address);
+    }
+
+    public JSONObject deleteRouter(int routerID) throws JSONException {
+        EndRouterEvent ev = new EndRouterEvent(getElapsedTime(), null, routerID);
+        return executeEvent(ev);
+    }
+
+    public JSONObject listRouters() throws JSONException {
+        return listRouters("detail=id");
+    }
+
+    public JSONObject listRouters(String arg) throws JSONException {
+        String detail = null;
+        String value = null;
+        JSONObject jsobj;
+
+        if (arg == null || arg.equals("")) {
+            detail = "id";
+
+        } else if (!arg.contains("=")) {
+            detail = arg;
+
+        } else if (arg.startsWith("detail=")) {
+            String[] parts = arg.split("=");
+            detail = parts[1];
+
+        } else if (arg.startsWith("name=")) {
+            String[] parts = arg.split("=");
+            value = parts[1];
+
+        } else if (arg.startsWith("address=")) {
+            String[] parts = arg.split("=");
+            value = parts[1];
+
+        } else {
+            detail = "id";
+        }
+
+        if (detail != null) {
+            jsobj = getAllRouterInfoAsJSON(detail);
+        } else {
+            jsobj = getOneRouterInfoAsJSON(value);
+        }
+
+        return jsobj;
+    }
+    
+    public JSONObject listRemovedRouters() throws JSONException {
+        return listShutdownRoutersAsJSON();
+    }
+
+    public JSONObject getRouterInfo(int id) throws JSONException {
+        return findRouterInfoAsJSON(id);
+    }
+
+    public JSONObject getRouterLinkStats(int id) throws JSONException {
+        return getRouterLinkStatsAsJSON(id);
+    }
+
+    public JSONObject getRouterLinkStats(int id, int dstID) throws JSONException {
+        return getRouterLinkStatsAsJSON(id, dstID);
+    }
+
+    public JSONObject getRouterCount() throws JSONException {
+        int count = getNoRouters();
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("value", count);
+
+        return jsobj;
+
+    }
+
+    public JSONObject getMaxRouterID() throws JSONException {
+        int maxid = getMaxRouterId();
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("value", maxid);
+
+        return jsobj;
+    }
+
+    public JSONObject createLink(int routerID1, int routerID2) throws JSONException {
+        StartLinkEvent sle = new StartLinkEvent(getElapsedTime(), null, routerID1, routerID2);
+        sle.setWeight(1);
+
+        return executeEvent(sle);
+    }
+
+     public JSONObject createLink(int routerID1, int routerID2, int weight) throws JSONException {
+        StartLinkEvent sle = new StartLinkEvent(getElapsedTime(), null, routerID1, routerID2);
+        sle.setWeight(weight);
+
+        return executeEvent(sle);
+
+    }
+
+    public JSONObject createLink(int routerID1, int routerID2, int weight, String linkName) throws JSONException {
+        StartLinkEvent sle = new StartLinkEvent(getElapsedTime(), null, routerID1, routerID2);
+        sle.setWeight(weight);
+        sle.setName(linkName);
+
+        return executeEvent(sle);
+    }
+
+    public JSONObject deleteLink(int linkID) throws JSONException {
+        int router1, router2;
+
+        // now lookup all the saved link info details
+        LinkInfo li = findLinkInfo(linkID);
+        router1 = li.getEndPoints().getFirst();
+        router2 = li.getEndPoints().getSecond();
+        
+        EndLinkEvent ele = new EndLinkEvent(getElapsedTime(), null, router1, router2);
+
+        return executeEvent(ele);
+    }
+
+    public JSONObject listLinks() throws JSONException {
+        return listLinks("detail=id");
+    }
+
+    public JSONObject listLinks(String arg) throws JSONException {
+        String detail = null;
+        JSONObject jsobj;
+
+        if (arg == null || arg.equals("")) {
+            detail = "id";
+
+        } else if (!arg.contains("=")) {
+            detail = arg;
+
+        } else if (arg.startsWith("detail=")) {
+            String[] parts = arg.split("=");
+            detail = parts[1];
+
+        } else {
+            detail = "id";
+        }
+
+        jsobj = getAllRouterInfoAsJSON(detail);
+
+        return jsobj;
+    }
+
+
+    public JSONObject getLinkInfo(int id) throws JSONException {
+        return findLinkInfoAsJSON(id);
+    }
+
+    public JSONObject setLinkWeight(int linkID, int weight) throws JSONException {
+        int router1, router2;
+
+        // now lookup all the saved link info details
+        LinkInfo li = findLinkInfo(linkID);
+
+        router1 = li.getEndPoints().getFirst();
+        router2 = li.getEndPoints().getSecond();
+
+        SetLinkWeightEvent slwe = new SetLinkWeightEvent(getElapsedTime(), null, router1, router2, weight); 
+
+        return executeEvent(slwe);
+   }
+
+    public JSONObject getLinkCount() throws JSONException {
+        int count = getNoLinks();
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("value", count);
+
+        return jsobj;
+    }
+
+
+    public JSONObject listRouterLinks(int routerID) throws JSONException {
+        return listRouterLinks(routerID, "attr=id");
+    }
+
+
+    public JSONObject listRouterLinks(int rid, String arg) throws JSONException {
+        String attr = null;
+        JSONObject jsobj;
+
+        if (arg == null || arg.equals("")) {
+            attr = "id";
+
+        } else if (!arg.contains("=")) {
+            attr = arg;
+
+        } else if (arg.startsWith("attr=")) {
+            String[] parts = arg.split("=");
+            attr = parts[1];
+
+        } else {
+            attr = "id";
+        }
+
+        return listRouterLinksAsJSON(rid, attr);
+
+    }
+
+    public JSONObject getRouterLinkInfo(int routerID, int linkID) throws JSONException {
+        return findLinkInfoAsJSON(linkID);
+    }
+
+    public JSONObject createApp(int routerID, String className, String[] args) throws JSONException {
+        AppStartEvent ase = new AppStartEvent(getElapsedTime(), null, routerID, className, args);
+        return executeEvent(ase);
+    }
+
+    public JSONObject createApp(int routerID, String className, String rawArgs) throws JSONException {
+        String[] args = null;
+        // now convert raw args to String[]
+        args = rawArgs.split(" ");
+
+        AppStartEvent ase = new AppStartEvent(getElapsedTime(), null, routerID, className, args);
+        return executeEvent(ase);
+    }
+
+    public JSONObject stopApp(int routerID, int appID) throws JSONException {
+        AppStopEvent ase = new AppStopEvent(getElapsedTime(), null, routerID, appID);
+        return executeEvent(ase);
+
+    }
+
+    public JSONObject listApps(int routerID) throws JSONException {
+        return getAllAppInfoAsJSON(routerID);
+    }
+
+    public JSONObject getAppInfo(int routerID, int appID) throws JSONException {
+        return findAppInfoAsJSON(appID);
+    }
+
+    public JSONObject listAggPoints() throws JSONException {
+        return listAggPointsAsJSON();
+    }
+
+
+    public JSONObject getAggPointInfo(int id) throws JSONException {
+        int ap = getAP(id);
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("routerID", id);
+        jsobj.put("ap", ap);
+
+        return jsobj;
+    }
+
+
+    public JSONObject setAggPoint(int apID, int routerID) throws JSONException {
+        setAP(getElapsedTime(),routerID, apID);
+
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("routerID", routerID);
+        jsobj.put("ap", apID);
+
+        return jsobj;
+
+    }
+
+
 
 }
 

@@ -8,7 +8,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 import usr.router.RouterController;
 import usr.router.RouterOptions;
-import usr.lifeEstimate.LifetimeEstimate;
+import usr.model.lifeEstimate.LifetimeEstimate;
 
 /** Implements Random AP Controller */
 

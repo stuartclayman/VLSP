@@ -61,8 +61,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent {
     }
 
     @Override
-    public JSONObject execute(GlobalController gc) throws
-        InstantiationException {
+    public JSONObject execute(GlobalController gc) {
         int rNo = startRouter(gc, time, address_, name_);
         JSONObject jsobj = new JSONObject();
 

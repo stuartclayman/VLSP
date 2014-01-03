@@ -7,8 +7,8 @@ import java.util.PriorityQueue;
 import org.w3c.dom.Node;
 
 import usr.globalcontroller.GlobalController;
-import usr.lifeEstimate.NodeAndLifetime;
-import usr.lifeEstimate.LifetimeEstimate;
+import usr.model.lifeEstimate.NodeAndLifetime;
+import usr.model.lifeEstimate.LifetimeEstimate;
 /**
  * Class chooses links based upon finding the node with the longest lifetime
  * @author richard

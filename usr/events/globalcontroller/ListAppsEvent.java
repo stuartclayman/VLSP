@@ -30,8 +30,7 @@ public class ListAppsEvent extends AbstractGlobalControllerEvent {
     }
 
     @Override
-    public JSONObject execute(GlobalController gc)
-        throws InstantiationException {
+    public JSONObject execute(GlobalController gc) {
         JSONObject jsobj = new JSONObject();
         JSONArray array = new JSONArray();
         BasicRouterInfo bri = gc.findRouterInfo(router_);

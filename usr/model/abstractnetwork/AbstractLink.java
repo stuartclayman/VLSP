@@ -1,4 +1,4 @@
-package usr.abstractnetwork;
+package usr.model.abstractnetwork;
 
 /** Class simply represents a link as
  * two integers -- smallest first -- easy to return as single value */

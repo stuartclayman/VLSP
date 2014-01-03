@@ -115,7 +115,7 @@ public class RemovedRestHandler extends BasicRequestHandler {
         // and send them back as the return value
         PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = gc.listShutdownRoutersAsJSON();
+        JSONObject jsobj = gc.listRemovedRouters();
 
         out.println(jsobj.toString());
 

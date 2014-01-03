@@ -12,8 +12,8 @@ import org.simpleframework.http.Response;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import usr.events.globalcontroller.EndRouterEvent;
-import usr.events.globalcontroller.StartRouterEvent;
+import us.monoid.json.JSONArray;
+import usr.common.BasicRouterInfo;
 import cc.clayman.console.BasicRequestHandler;
 
 /**
@@ -142,29 +142,16 @@ public class RouterRestHandler extends BasicRequestHandler {
         /* do work */
 
         // start a router, and get it's ID
-        // WAS int rID = controller_.startRouter(System.currentTimeMillis(), address, name);
 
         boolean success = true;
         String failMessage = null;
         JSONObject jsobj = null;
 
-        try {
-            StartRouterEvent ev = new StartRouterEvent(controller_.getElapsedTime(), null, address, name);
-            jsobj = controller_.executeEvent(ev);
+        jsobj = controller_.createRouter(name, address);
 
-            if (jsobj.get("success").equals(false)) {
-                success = false;
-                failMessage = (String)jsobj.get("msg");
-            }
-        } catch (InterruptedException ie) {
+        if (jsobj.get("success").equals(false)) {
             success = false;
-            failMessage = "Signal interrupted in global controller";
-        } catch (InstantiationException ine) {
-            success = false;
-            failMessage = "Unexplained failure executing startRouter";
-        } catch (TimeoutException to) {
-            success = false;
-            failMessage = "Semaphore timeout in global controller -- too busy";
+            failMessage = (String)jsobj.get("msg");
         }
 
         if (success) {
@@ -200,22 +187,7 @@ public class RouterRestHandler extends BasicRequestHandler {
             // if it exists, stop it, otherwise complain
             if (controller_.isValidRouterID(id)) {
                 // delete a router
-                // WAS controller_.endRouter(System.currentTimeMillis(), id);
-
-                try {
-                    EndRouterEvent ev = new EndRouterEvent(controller_.getElapsedTime(), null, id);
-                    jsobj = controller_.executeEvent(ev);
-
-                } catch (InterruptedException ie) {
-                    success = false;
-                    failMessage = "Signal interrupted in global controller";
-                } catch (InstantiationException ine) {
-                    success = false;
-                    failMessage = "Unexplained failure executing delereRouter";
-                } catch (TimeoutException to) {
-                    success = false;
-                    failMessage = "Semaphore timeout in global controller -- too busy";
-                }
+                jsobj = controller_.deleteRouter(id);
 
                 if (success) {
                     // now lookup all the saved details
@@ -248,7 +220,11 @@ public class RouterRestHandler extends BasicRequestHandler {
         Query query = request.getQuery();
 
         // the attribute we want about the router
-        String detail;
+        String detail = null;
+        String name = null;
+        String address = null;
+        String value = null;
+
 
         if (query.containsKey("detail")) {
             detail = query.get("detail");
@@ -261,6 +237,16 @@ public class RouterRestHandler extends BasicRequestHandler {
                 complain(response, "Bad detail: " + detail);
             }
 
+        /* process optional args */
+
+        } else if (query.containsKey("name")) {
+            name = query.get("name");
+            value = name;
+
+        } else if (query.containsKey("address")) {
+            address = query.get("address");
+            value = address;
+
         } else {
             detail = "id";
         }
@@ -269,8 +255,20 @@ public class RouterRestHandler extends BasicRequestHandler {
         // and send them back as the return value
         PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = controller_.getAllRouterInfoAsJSON(detail);
+        JSONObject jsobj;
 
+        if (detail != null) {
+            jsobj = controller_.listRouters("detail=" + detail);
+        } else {
+            if (name != null) {
+                jsobj = controller_.listRouters("name=" + name);
+            } else if (address != null) {
+                jsobj = controller_.listRouters("address=" + address);
+            } else {
+                jsobj = controller_.listRouters("detail=" + "id");
+            }
+        }
+        
 
         out.println(jsobj.toString());
 
@@ -299,8 +297,7 @@ public class RouterRestHandler extends BasicRequestHandler {
             // and send them back as the return value
             PrintStream out = response.getPrintStream();
 
-
-            JSONObject jsobj = controller_.findRouterInfoAsJSON(routerID);
+            JSONObject jsobj = controller_.getRouterInfo(routerID);
 
             out.println(jsobj.toString());
 
@@ -308,26 +305,18 @@ public class RouterRestHandler extends BasicRequestHandler {
         } else {
             // not an Integer
             if (name.equals("maxid")) {
-                int maxid = controller_.getMaxRouterId();
-
                 // and send them back as the return value
                 PrintStream out = response.getPrintStream();
 
-                JSONObject jsobj = new JSONObject();
-
-                jsobj.put("value", maxid);
+                JSONObject jsobj = controller_.getMaxRouterID();
 
                 out.println(jsobj.toString());
 
             } else if (name.equals("count")) {
-                int count = controller_.getNoRouters();
-
                 // and send them back as the return value
                 PrintStream out = response.getPrintStream();
 
-                JSONObject jsobj = new JSONObject();
-
-                jsobj.put("value", count);
+                JSONObject jsobj = controller_.getRouterCount();
 
                 out.println(jsobj.toString());
 
@@ -422,10 +411,10 @@ public class RouterRestHandler extends BasicRequestHandler {
 
             if (segments.length == 3) {
                 // get all link stats
-                jsobj = controller_.getRouterLinkStatsAsJSON(routerID);
+                jsobj = controller_.getRouterLinkStats(routerID);
             } else if (segments.length == 4) {
                 // get specified link stats
-                jsobj = controller_.getRouterLinkStatsAsJSON(routerID, dstID);
+                jsobj = controller_.getRouterLinkStats(routerID, dstID);
             }
 
 

@@ -7,44 +7,44 @@ import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class StartLinkEvent extends AbstractEvent {
-    public final int router1;
-    public final int router2;
-    public final String address1;
-    public final String address2;
+    public final int address1;
+    public final int address2;
+    public final String name1;
+    public final String name2;
     private int weight = 1;
     private String linkName = null;
 
     public StartLinkEvent(long time, EventEngine eng, int r1, int r2) {
         super(time, eng);
-        router1 = r1;
-        router2 = r2;
-        address1 = null;
-        address2 = null;
+        address1 = r1;
+        address2 = r2;
+        name1 = null;
+        name2 = null;
     }
 
     public StartLinkEvent(long time, EventEngine eng, int r1, int r2, int w) {
         super(time, eng);
-        router1 = r1;
-        router2 = r2;
-        address1 = null;
-        address2 = null;
+        address1 = r1;
+        address2 = r2;
+        name1 = null;
+        name2 = null;
         weight = w;
     }
 
     public StartLinkEvent(long time, EventEngine eng, String add1, String add2) {
         super(time, eng);
-        router1 = 0;
-        router2 = 0;
-        address1 = add1;
-        address2 = add2;
+        address1 = 0;
+        address2 = 0;
+        name1 = add1;
+        name2 = add2;
     }
 
     public StartLinkEvent(long time, EventEngine eng, String add1, String add2, int w) {
         super(time, eng);
-        router1 = 0;
-        router2 = 0;
-        address1 = add1;
-        address2 = add2;
+        address1 = 0;
+        address2 = 0;
+        name1 = add1;
+        name2 = add2;
         weight = w;
     }
 
@@ -74,12 +74,12 @@ public class StartLinkEvent extends AbstractEvent {
     private String getName() {
         String str = "";
 
-        if (address1 == null) {
-            str += router1 + " " + router2 + " ";
+        if (name1 == null) {
+            str += address1 + " " + address2 + " ";
         }
 
-        if (address1 != null) {
-            str += address1 + " " + address2;
+        if (name1 != null) {
+            str += name1 + " " + name2;
         }
 
         return str;

@@ -19,12 +19,12 @@ public abstract class AbstractGlobalControllerEvent extends AbstractExecutableEv
         
     /** Execute the event and return a JSON object with information*/
     @Override
-    public  JSONObject execute(EventDelegate obj) throws InstantiationException {
-        return execute((GlobalController)obj);
+    public  JSONObject eventBody(EventDelegate obj) {
+        return execute((GlobalController)getContextObject());
     }
 
 
-    public abstract JSONObject execute(GlobalController gc) throws InstantiationException;
+    public abstract JSONObject execute(GlobalController gc);
 
     /** Return event as string*/
     @Override
@@ -33,30 +33,31 @@ public abstract class AbstractGlobalControllerEvent extends AbstractExecutableEv
     /** Perform logic which follows an event */
     @Override
     public void followEvent(JSONObject response, EventDelegate obj) {
-        followEvent(response, (GlobalController)obj);
+        super.followEvent(response, obj);
+
+        // Non-engine specific follows go here
+        if (obj instanceof GlobalController) {
+            followEvent(response, (GlobalController)obj);
+        }
+                        
     }
 
     public void followEvent(JSONObject response, GlobalController gc) {
-        if (engine != null) {
-            engine.followEvent(this, getEventScheduler(), response, gc);
-        }
-
-        // Non-engine specific follows go here
     }
 
     /** Perform logic which preceeds an event */
     @Override
     public void preceedEvent(EventDelegate obj) {
-        preceedEvent((GlobalController)obj);
+        super.preceedEvent(obj);
+
+        // Non-engine specific preceeding actions go here
+        if (obj instanceof GlobalController) {
+            preceedEvent((GlobalController)obj);
+        }
+                        
     }
 
     public void preceedEvent(GlobalController gc) {
-
-        if (engine != null) {
-            engine.preceedEvent(this, getEventScheduler(), gc);
-        }
-
-        // Non-engine specific preceeding actions go here
     }
 
 }

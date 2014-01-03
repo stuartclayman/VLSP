@@ -51,9 +51,12 @@ public class ScriptEngine implements EventEngine {
 
         s.addEvent(e0);
 
+        /*
+
         // simulation end
         EndSimulationEvent e = new EndSimulationEvent(timeToEnd_);
         s.addEvent(e);
+        */
     }
 
     /** Add or remove events following a simulation event */
@@ -170,15 +173,13 @@ public class ScriptEngine implements EventEngine {
                     int addr2 = 0;
                     StartLinkEvent e;
 
-                    if (a1Scanner.hasNextInt()
-                        && a2Scanner.hasNextInt()) {
+                    if (a1Scanner.hasNextInt() && a2Scanner.hasNextInt()) {
                         // both args are ints
                         addr1 = a1Scanner.nextInt();
                         addr2 = a2Scanner.nextInt();
                         a1Scanner.close();
                         a2Scanner.close();
-                        e =
-                            new StartLinkEvent(time, this, addr1, addr2);
+                        e = new StartLinkEvent(time, this, addr1, addr2);
                     } else {
                         e = new StartLinkEvent(time, this, addStr1, addStr2);
                     }
@@ -280,8 +281,7 @@ public class ScriptEngine implements EventEngine {
             throw new Exception(
                                 "Unrecognised event in script line " + s);
         } catch (Exception ex) {
-            Logger.getLogger("log").logln(
-                                          USR.ERROR, "Cannot read simulation script line " + s);
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot read simulation script line " + s);
             Logger.getLogger("log").logln(USR.ERROR, ex.getMessage());
             System.exit(-1);
         }

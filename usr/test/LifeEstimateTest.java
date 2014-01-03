@@ -11,7 +11,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import rgc.probdistributions.ProbDistribution;
-import usr.lifeEstimate.LifetimeEstimate;
+import usr.model.lifeEstimate.LifetimeEstimate;
 import usr.logging.BitMask;
 import usr.logging.Logger;
 import usr.logging.USR;

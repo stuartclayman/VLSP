@@ -1,8 +1,7 @@
-package usr.abstractnetwork;
+package usr.model.abstractnetwork;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import usr.globalcontroller.GlobalController;
 import usr.logging.USR;
 
 import usr.logging.Logger;
@@ -197,9 +196,9 @@ public class AbstractNetwork {
 
 
     /** Check network for isolated nodes and connect them if possible */
-    public AbstractLink checkIsolated(long time, GlobalController gc) {
+    public AbstractLink checkIsolated(long time) {
         for (int i : getNodeList()) {
-            AbstractLink l = checkIsolated(time, i, gc);
+            AbstractLink l = checkIsolated(time, i);
             if (l != null)
                 return l;
         }
@@ -415,7 +414,7 @@ public class AbstractNetwork {
 
 
     /** Check if given node is isolated return a connecting link if one available */
-    public AbstractLink checkIsolated(long time, int gid, GlobalController gc) {
+    public AbstractLink checkIsolated(long time, int gid) {
         int [] links = getAllOutLinks(gid);
         int nRouters = getNoNodes();
 
@@ -438,7 +437,7 @@ public class AbstractNetwork {
     }
 
     /** Make sure network is connected*/
-    public AbstractLink connectNetwork (long time, GlobalController gc) {
+    public AbstractLink connectNetwork (long time) {
         int nRouters = getNoNodes();
         int largestRouterId = getLargestRouterId();
 
@@ -501,8 +500,7 @@ public class AbstractNetwork {
 
                 if ((l1 == -1) || (l2 == -1)) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
-                    gc.shutDown();
-                    return null;
+                    throw new Error(leadin() + "Error in network connection " + l1 + " " + l2);
                 }
                 return new AbstractLink(l1,l2);
             }
@@ -524,7 +522,7 @@ public class AbstractNetwork {
     }
 
     /** Make sure network is connected from r1 to r2*/
-    public AbstractLink connectNetwork(long time, int r1, int r2, GlobalController gc) {
+    public AbstractLink connectNetwork(long time, int r1, int r2) {
         int nRouters = getNoNodes();
         int maxRouterId = getLargestRouterId();
 
@@ -556,9 +554,7 @@ public class AbstractNetwork {
                 // Not visited everything so make a new link
                 // Choose i1 th visited and i2 th unvisited
                 int i1 = (int)Math.floor(Math.random() * noVisited);
-                int i2
-                    = (int)Math.floor(Math.random()
-                                      * (nRouters - noVisited));
+                int i2 = (int)Math.floor(Math.random() * (nRouters - noVisited));
                 int l1 = -1;
                 int l2 = -1;
 
@@ -586,8 +582,7 @@ public class AbstractNetwork {
 
                 if ((l1 == -1) || (l2 == -1)) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Error in network connection " + l1 + " " + l2);
-                    gc.shutDown();
-                    return null;
+                    throw new Error(leadin() + "Error in network connection " + l1 + " " + l2);
                 }
                 return new AbstractLink(l1,l2);
             }

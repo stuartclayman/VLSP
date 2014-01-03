@@ -5,4 +5,4 @@
  * @author Richard G. Clegg
  *
  */
-package usr.lifeEstimate;
+package usr.model.lifeEstimate;

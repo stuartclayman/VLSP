@@ -7,7 +7,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 import usr.router.RouterController;
 
-import usr.lifeEstimate.LifetimeEstimate;
+import usr.model.lifeEstimate.LifetimeEstimate;
 
 /** Implements AP controller which does nothing*/
 

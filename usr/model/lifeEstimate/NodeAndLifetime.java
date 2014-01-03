@@ -1,4 +1,4 @@
-package usr.lifeEstimate;
+package usr.model.lifeEstimate;
 
 import java.lang.Comparable;
 

@@ -8,7 +8,7 @@ public abstract class AbstractEvent implements Event {
     public final long time;
     protected EventScheduler scheduler_;
     public final EventEngine engine;
-
+    protected Object context;
 
     /**
      * Important constructor to create Event.
@@ -29,16 +29,6 @@ public abstract class AbstractEvent implements Event {
         return time;
     }
 
-    /** Perform logic which follows an event */
-    @Override
-    public  void followEvent(JSONObject response, EventDelegate obj) {
-    }
-
-    /** Perform logic which preceeds an event */
-    @Override
-    public  void preceedEvent(EventDelegate obj) {
-    }
-
     /**
      * Get event scheduler
      */
@@ -52,5 +42,43 @@ public abstract class AbstractEvent implements Event {
     public void  setEventScheduler(EventScheduler es) {
         scheduler_ = es;
     }
+
+
+    /**
+     * Get the context object that is used for this event
+     */
+    public Object getContextObject() {
+        return context;
+    }
+
+    /**
+     * Set the context object that is used for this event
+     */
+    public void setContextObject(Object co) {
+        context = co;
+    }
+
+    /** Perform logic which preceeds an event */
+    @Override
+    public  void preceedEvent(EventDelegate obj) {
+        //System.out.println("AbstractEvent preceedEvent: " + this + " with engine " + engine);
+
+        if (engine != null) {
+            engine.preceedEvent(this, getEventScheduler(), obj);
+        }
+
+    }
+
+    /** Perform logic which follows an event */
+    @Override
+    public  void followEvent(JSONObject response, EventDelegate obj) {
+        //System.out.println("AbstractEvent followEvent: " + this + " with engine " + engine);
+
+        if (engine != null) {
+            engine.followEvent(this, getEventScheduler(), response, obj);
+        }
+
+    }
+
 
 }

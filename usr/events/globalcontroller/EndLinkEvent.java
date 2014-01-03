@@ -15,29 +15,29 @@ import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class EndLinkEvent extends AbstractGlobalControllerEvent {
-    int router1_;
-    int router2_;
+    int address1_;
+    int address2_;
     boolean routerNumsSet_ = true;
-    String address1_ = null;
-    String address2_ = null;
+    String name1_ = null;
+    String name2_ = null;
 
     public EndLinkEvent(long time, EventEngine eng, int r1, int r2) {
         super(time, eng);
-        router1_ = r1;
-        router2_ = r2;
+        address1_ = r1;
+        address2_ = r2;
     }
 
     public EndLinkEvent(long time, EventEngine eng, String add1, String add2) {
         super(time, eng);
-        address1_ = add1;
-        address2_ = add2;
+        name1_ = add1;
+        name2_ = add2;
         routerNumsSet_ = false;
     }
 
     public EndLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc) throws InstantiationException {
         super(time, eng);
-        address1_ = add1;
-        address2_ = add2;
+        name1_ = add1;
+        name2_ = add2;
         initNumbers(add1, add2, gc);
     }
 
@@ -48,13 +48,13 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
     public EndLinkEvent(usr.events.vim.EndLinkEvent ele) {
         super(ele.time, ele.engine);
 
-        if (ele.address1 == null) {   // address is null, so use routerNo
-            router1_ = ele.router1;
-            router2_ = ele.router2;
-            routerNumsSet_ = true;
-        } else {
+        if (ele.name1 == null) {   // name is null, so use addressNo
             address1_ = ele.address1;
             address2_ = ele.address2;
+            routerNumsSet_ = true;
+        } else {
+            name1_ = ele.name1;
+            name2_ = ele.name2;
             routerNumsSet_ = false;
         }
     }
@@ -62,18 +62,18 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
 
     public int getRouter1(GlobalController gc) throws InstantiationException {
         if (!routerNumsSet_) {
-            initNumbers(address1_, address2_, gc);
+            initNumbers(name1_, name2_, gc);
         }
 
-        return router1_;
+        return address1_;
     }
 
     public int getRouter2(GlobalController gc) throws InstantiationException {
         if (!routerNumsSet_) {
-            initNumbers(address1_, address2_, gc);
+            initNumbers(name1_, name2_, gc);
         }
 
-        return router2_;
+        return address2_;
     }
 
     @Override
@@ -84,12 +84,12 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
     }
 
     private String getName() {
-        String str = "";
+        String str = " ";
 
-        if (address1_ == null) {
-            str += router1_ + " " + router2_;
-        } else {
+        if (name1_ == null) {
             str += address1_ + " " + address2_;
+        } else {
+            str += name1_ + " " + name2_;
         }
 
         return str;
@@ -101,54 +101,57 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
 
         if (r1Info == null) {
             throw new InstantiationException(
-                                             "Cannot find address " + add1);
+                                             "Cannot find name " + add1);
         }
 
         BasicRouterInfo r2Info = gc.findRouterInfo(add2);
 
         if (r2Info == null) {
             throw new InstantiationException(
-                                             "Cannot find address " + add2);
+                                             "Cannot find name " + add2);
         }
 
-        router1_ = r1Info.getId();
-        router2_ = r2Info.getId();
+        address1_ = r1Info.getId();
+        address2_ = r2Info.getId();
     }
 
     /** Perform logic which follows an event */
     @Override
     public void followEvent(JSONObject response, GlobalController g) {
-        super.followEvent(response, g);
         if (g.connectedNetwork()) {
-            ConnectNetworkEvent cne= new ConnectNetworkEvent(router1_,router2_,time);
+            ConnectNetworkEvent cne= new ConnectNetworkEvent(address1_,address2_,time);
             getEventScheduler().addEvent(cne);
         } else if (!g.allowIsolatedNodes()) {
-            CheckIsolatedEvent ce = new CheckIsolatedEvent(router1_, time);
+            CheckIsolatedEvent ce = new CheckIsolatedEvent(address1_, time);
             getEventScheduler().addEvent(ce);
-            ce = new CheckIsolatedEvent(router2_, time);
+            ce = new CheckIsolatedEvent(address2_, time);
             getEventScheduler().addEvent(ce);
         }
     }
 
     @Override
-    public JSONObject execute(GlobalController gc) throws
-        InstantiationException {
-        if (!routerNumsSet_) {
-            initNumbers(address1_, address2_, gc);
+    public JSONObject execute(GlobalController gc) {
+        try {
+            if (!routerNumsSet_) {
+                initNumbers(name1_, name2_, gc);
+            }
+        } catch (InstantiationException ie) {
+            return fail(ie.getMessage());
         }
 
+
         JSONObject json = new JSONObject();
-        boolean success = endLink(time, router1_, router2_, gc);
+        boolean success = endLink(time, address1_, address2_, gc);
         try {
             if (success) {
                 json.put("success", true);
                 json.put("msg", "Link removed " + getName());
-                json.put("router1", (Integer)router1_);
-                json.put("router2", (Integer)router2_);
+                json.put("router1", (Integer)address1_);
+                json.put("router2", (Integer)address2_);
 
-                if (address1_ != null) {
-                    json.put("address1", address1_);
-                    json.put("address2", address2_);
+                if (name1_ != null) {
+                    json.put("name1", name1_);
+                    json.put("name2", name2_);
                 }
             } else {
                 json.put("success", false);
@@ -187,7 +190,7 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
     /** Event to end emulated link between two routers */
     private boolean endEmulatedLink(int rId1, int rId2, GlobalController gc) {
         BasicRouterInfo br1 = gc.findRouterInfo(rId1);
-        BasicRouterInfo br2 = gc.findRouterInfo(rId1);
+        BasicRouterInfo br2 = gc.findRouterInfo(rId2);
 
         if ((br1 == null) || (br2 == null)) {
             return false;
@@ -199,8 +202,7 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
 
         for (i = 0; i < MAX_TRIES; i++) {
             try {
-                lci.endLink(br1.getHost(),
-                            br1.getManagementPort(), br2.getAddress());
+                lci.endLink(br1.getHost(), br1.getManagementPort(), br2.getAddress());
                 Pair<Integer, Integer> pair = GlobalController.makePair(rId1, rId2);
                 Integer linkID = pair.hashCode();
                 gc.removeLinkInfo(linkID);

@@ -9,19 +9,19 @@ import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class EndRouterEvent extends AbstractEvent {
-    public final int routerNo;
-    public final String address;
+    public final int address;
+    public final String name;
 
-    public EndRouterEvent(long time, EventEngine eng, String addr) {
+    public EndRouterEvent(long time, EventEngine eng, String nm) {
         super(time, eng);
-        routerNo = 0;
-        address = addr;
+        address = 0;
+        name = nm;
     }
 
     public EndRouterEvent(long time, EventEngine eng, int rNo) {
         super(time, eng);
-        routerNo = rNo;
-        address = null;
+        address = rNo;
+        name = null;
     }
 
     @Override
@@ -35,8 +35,8 @@ public class EndRouterEvent extends AbstractEvent {
     private String getName() {
         String str = "";
 
-        if (address != null) {
-            str = address;
+        if (name != null) {
+            str = name;
         }
 
         return str;

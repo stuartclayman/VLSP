@@ -39,7 +39,7 @@ public class SetLinkWeightEvent extends AbstractGlobalControllerEvent {
     }
 
     @Override
-	public JSONObject execute(GlobalController gc) throws InstantiationException {
+    public JSONObject execute(GlobalController gc) {
         int linkID = setLinkWeight(router1_, router2_, weight_, gc);
 
         JSONObject jsobj = new JSONObject();

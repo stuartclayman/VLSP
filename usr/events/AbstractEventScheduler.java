@@ -78,10 +78,12 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
             long now = System.currentTimeMillis();
 
             if (ev == null) {
-                Logger.getLogger("log").logln(USR.ERROR, "Run out of events to process");
-                delegate_.onEventSchedulerStop(now);
-                //sclayman 20131209 - this causes a lockup
-                // waitForever();
+                Logger.getLogger("log").logln(USR.ERROR,  elapsedToString(getElapsedTime()) + " " + leadin() + "Run out of events to process");
+                waitForever();
+
+                // we waited, so update now
+                now = System.currentTimeMillis();
+
             } else {
                 expectedStart = ev.getTime() + getStartTime();
                 waitUntil(expectedStart);
@@ -117,8 +119,6 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
 
             try {
 
-                ev.preceedEvent(delegate_);
-
                 JSONObject js = delegate_.executeEvent(ev);
 
                 // check if we got a null or a NON success result
@@ -130,8 +130,6 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
 
                 if (success) {
                     delegate_.onEventSuccess(now, ev);
-
-                    ev.followEvent(js, delegate_);
 
                 } else { // failure
                     delegate_.onEventFailure(now, ev);
@@ -152,8 +150,13 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
                 Logger.getLogger("log").logln(USR.ERROR, delegate_.getName() + " must be lagging, cannot interrupt "
                                               + "scheduler in time");
                 delegate_.onEventFailure(now, ev);
-            } catch (JSONException e) {
+            } catch (JSONException je) {
                 Logger.getLogger("log").logln(USR.ERROR, "Event "+ev+" failed to return success in JSON");
+                delegate_.onEventFailure(now, ev);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Logger.getLogger("log").logln(USR.ERROR, "Event "+ev+" failed to return success");
                 delegate_.onEventFailure(now, ev);
             }
 

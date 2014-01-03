@@ -13,9 +13,6 @@ import org.simpleframework.http.Response;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.LinkInfo;
-import usr.events.globalcontroller.EndLinkEvent;
-import usr.events.globalcontroller.SetLinkWeightEvent;
-import usr.events.globalcontroller.StartLinkEvent;
 import cc.clayman.console.BasicRequestHandler;
 
 /**
@@ -204,32 +201,21 @@ public class LinkRestHandler extends BasicRequestHandler {
         // start a link, and get its ID
         // WAS int linkID = controller_.startLink(System.currentTimeMillis(), router1, router2, weight, linkName);
 
-        StartLinkEvent sle = new StartLinkEvent(controller_.getElapsedTime(), null, router1, router2);
-        sle.setWeight(weight);
-
-        if (linkName != null) {
-            sle.setName(linkName);
-        }
+        
 
         boolean success = true;
         String failMessage = null;
         JSONObject jsobj = null;
-        try {
-            jsobj = controller_.executeEvent(sle);
 
-            if (jsobj.get("success").equals(false)) {
-                success = false;
-                failMessage = (String)jsobj.get("msg");
-            }
-        } catch (InterruptedException ie) {
+        if (linkName != null) {
+            jsobj = controller_.createLink(router1, router2, weight, linkName);
+        } else {
+            jsobj = controller_.createLink(router1, router2, weight);
+        }
+
+        if (jsobj.get("success").equals(false)) {
             success = false;
-            failMessage = "Signal interrupted in global controller";
-        } catch (InstantiationException ine) {
-            success = false;
-            failMessage = "Unexplained failure executing start Link";
-        } catch (TimeoutException to) {
-            success = false;
-            failMessage = "Semaphore timeout in global controller -- too busy";
+            failMessage = (String)jsobj.get("msg");
         }
 
         if (success) {
@@ -273,15 +259,9 @@ public class LinkRestHandler extends BasicRequestHandler {
         if (sc.hasNextInt()) {
             int id = sc.nextInt();
             sc.close();
-            int router1, router2;
 
             // if it exists, stop it, otherwise complain
             if (controller_.isValidLinkID(id)) {
-
-                // now lookup all the saved link info details
-                LinkInfo li = controller_.findLinkInfo(id);
-                router1 = li.getEndPoints().getFirst();
-                router2 = li.getEndPoints().getSecond();
             } else {
                 badRequest(response, "deleteLink arg is not valid router id: " + name);
                 return;
@@ -293,23 +273,12 @@ public class LinkRestHandler extends BasicRequestHandler {
             JSONObject jsobj = null;
             boolean success = true;
             String failMessage = null;
-            EndLinkEvent ele = new EndLinkEvent(controller_.getElapsedTime(), null, router1, router2);
-            try {
-                jsobj = controller_.executeEvent(ele);
 
-                if (jsobj.get("success").equals(false)) {
-                    success = false;
-                    failMessage = (String)jsobj.get("msg");
-                }
-            } catch (InterruptedException ie) {
+            jsobj = controller_.deleteLink(id);
+
+            if (jsobj.get("success").equals(false)) {
                 success = false;
-                failMessage = "Signal interrupted in global controller";
-            } catch (InstantiationException ine) {
-                success = false;
-                failMessage = "Unexplained failure executing end Link";
-            } catch (TimeoutException to) {
-                success = false;
-                failMessage = "Semaphore timeout in global controller -- too busy";
+                failMessage = (String)jsobj.get("msg");
             }
 
             if (success) {
@@ -368,46 +337,25 @@ public class LinkRestHandler extends BasicRequestHandler {
         if (sc.hasNextInt()) {
             int id = sc.nextInt();
             sc.close();
-            int router1, router2;
 
             // if it exists, stop it, otherwise complain
             if (controller_.isValidLinkID(id)) {
-                // now lookup all the saved link info details
-                LinkInfo li = controller_.findLinkInfo(id);
-
-                router1 = li.getEndPoints().getFirst();
-                router2 = li.getEndPoints().getSecond();
             } else {
                 complain(response, "setLinkWeight arg is not valid router id: " + name);
                 return;
             }
 
-                // set link weight
-                /* TODO: convert to Event
-                controller_.setLinkWeight(System.currentTimeMillis(), (Integer)li.getEndPoints().getFirst(),
-                                    (Integer)li.getEndPoints().getSecond(), weight);
-                */
 
             JSONObject jsobj = null;
             boolean success = true;
             String failMessage = null;
-            SetLinkWeightEvent slwe = new SetLinkWeightEvent(controller_.getElapsedTime(), null, router1, router2, weight);
-            try {
-                jsobj = controller_.executeEvent(slwe);
 
-                if (jsobj.get("success").equals(false)) {
-                    success = false;
-                    failMessage = (String)jsobj.get("msg");
-                }
-            } catch (InterruptedException ie) {
+
+            jsobj = controller_.setLinkWeight(id, weight);
+
+            if (jsobj.get("success").equals(false)) {
                 success = false;
-                failMessage = "Signal interrupted in global controller";
-            } catch (InstantiationException ine) {
-                success = false;
-                failMessage = "Unexplained failure executing setLinkWeight";
-            } catch (TimeoutException to) {
-                success = false;
-                failMessage = "Semaphore timeout in global controller -- too busy";
+                failMessage = (String)jsobj.get("msg");
             }
 
             if (success) {
@@ -457,7 +405,7 @@ public class LinkRestHandler extends BasicRequestHandler {
         // and send them back as the return value
         PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = controller_.getAllLinkInfoAsJSON(detail);
+        JSONObject jsobj = controller_.listRouters("detail=" + detail);
 
         out.println(jsobj.toString());
 
@@ -486,7 +434,7 @@ public class LinkRestHandler extends BasicRequestHandler {
             PrintStream out = response.getPrintStream();
 
 
-            JSONObject jsobj = controller_.findLinkInfoAsJSON(linkID);
+            JSONObject jsobj = controller_.getLinkInfo(linkID);
 
             out.println(jsobj.toString());
 
@@ -494,14 +442,10 @@ public class LinkRestHandler extends BasicRequestHandler {
         } else {
             // not an Integer
             if (name.equals("count")) {
-                int count = controller_.getNoLinks();
-
                 // and send them back as the return value
                 PrintStream out = response.getPrintStream();
 
-                JSONObject jsobj = new JSONObject();
-
-                jsobj.put("value", count);
+                JSONObject jsobj = controller_.getLinkCount();
 
                 out.println(jsobj.toString());
 

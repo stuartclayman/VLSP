@@ -171,16 +171,10 @@ public class AggPointRestHandler extends BasicRequestHandler {
 
         // if it exists, stop it, otherwise complain
         if (gc.isValidRouterID(routerID) && gc.isValidRouterID(apID)) {
-            gc.setAP(gc.getElapsedTime(),routerID, apID);
-
             // and send back a the return value
             PrintStream out = response.getPrintStream();
 
-
-            JSONObject jsobj = new JSONObject();
-
-            jsobj.put("routerID", routerID);
-            jsobj.put("ap", apID);
+            JSONObject jsobj = gc.setAggPoint(apID, routerID);
 
             out.println(jsobj.toString());
         } else {
@@ -197,16 +191,7 @@ public class AggPointRestHandler extends BasicRequestHandler {
         // and send them back as the return value
         PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = new JSONObject();
-        JSONArray array = new JSONArray();
-
-        for (Integer apID : gc.getAPs()) {
-            array.put(apID);
-        }
-
-        jsobj.put("type", "ap");
-        jsobj.put("list", array);
-
+        JSONObject jsobj = gc.listAggPoints();
 
         out.println(jsobj.toString());
 
@@ -226,15 +211,10 @@ public class AggPointRestHandler extends BasicRequestHandler {
 
             // if it exists, stop it, otherwise complain
             if (gc.isValidRouterID(id)) {
-                int ap = gc.getAP(id);
-
                 // and send them back as the return value
                 PrintStream out = response.getPrintStream();
 
-                JSONObject jsobj = new JSONObject();
-
-                jsobj.put("routerID", name);
-                jsobj.put("ap", ap);
+                JSONObject jsobj = gc.getAggPointInfo(id);
 
                 out.println(jsobj.toString());
 

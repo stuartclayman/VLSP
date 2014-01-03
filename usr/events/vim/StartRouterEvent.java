@@ -16,7 +16,7 @@ public class StartRouterEvent extends AbstractEvent {
         this.address = null;
     }
 
-    public StartRouterEvent(long time, EventEngine eng, String address, String name) throws InstantiationException {
+    public StartRouterEvent(long time, EventEngine eng, String address, String name) {
         super(time, eng);
         this.name = name;
         this.address = address;

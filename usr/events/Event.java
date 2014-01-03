@@ -14,12 +14,6 @@ public interface Event {
     /** Accessor function for time*/
     public long getTime();
 
-    /** Perform logic which preceeds an event */
-    public void preceedEvent(EventDelegate obj);
-
-    /** Perform logic which follows an event */
-    public void followEvent(JSONObject response, EventDelegate obj);
-
     /**
      * Get the event scheduler that processes this event
      */
@@ -29,4 +23,24 @@ public interface Event {
      * Set event scheduler  that will process this event
      */
     public void  setEventScheduler(EventScheduler es);
+
+
+    /**
+     * Get the context object that is used for this event
+     */
+    public Object getContextObject();
+
+    /**
+     * Set the context object that is used for this event
+     */
+    public void  setContextObject(Object co);
+
+
+    /** Perform logic which preceeds an event */
+    public void preceedEvent(EventDelegate obj);
+
+    /** Perform logic which follows an event */
+    public void followEvent(JSONObject response, EventDelegate obj);
+
+
 }

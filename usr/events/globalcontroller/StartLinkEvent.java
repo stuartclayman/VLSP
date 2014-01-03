@@ -7,7 +7,7 @@ import usr.events.EventDelegate;
 import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import usr.abstractnetwork.AbstractLink;
+import usr.model.abstractnetwork.AbstractLink;
 import usr.common.BasicRouterInfo;
 import usr.common.LinkInfo;
 import usr.common.Pair;
@@ -20,48 +20,48 @@ import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class StartLinkEvent extends AbstractGlobalControllerEvent {
-    private int router1_;
-    private int router2_;
+    private int address1_;
+    private int address2_;
     private int weight_ = 1;
-    private String address1_ = null;
-    private String address2_ = null;
+    private String name1_ = null;
+    private String name2_ = null;
     private String linkName_ = null;
     private boolean numbersSet_ = false;
     private boolean scheduled_= false;
 
     public StartLinkEvent(long time, EventEngine eng, int r1, int r2) {
         super(time, eng);
-        router1_ = r1;
-        router2_ = r2;
+        address1_ = r1;
+        address2_ = r2;
         numbersSet_ = true;
     }
 
     public StartLinkEvent(long time, EventEngine eng, AbstractLink link) {
         super(time, eng);
-        router1_ = link.getNode1();
-        router2_ = link.getNode2();
+        address1_ = link.getNode1();
+        address2_ = link.getNode2();
         numbersSet_ = true;
     }
 
     public StartLinkEvent(long time, EventEngine eng, int r1, int r2, int w) {
         super(time, eng);
-        router1_ = r1;
-        router2_ = r2;
+        address1_ = r1;
+        address2_ = r2;
         weight_ = w;
         numbersSet_ = true;
     }
 
     public StartLinkEvent(long time, EventEngine eng, String add1, String add2) {
         super(time, eng);
-        address1_ = add1;
-        address2_ = add2;
+        name1_ = add1;
+        name2_ = add2;
         numbersSet_ = false;
     }
 
     public StartLinkEvent(long time, EventEngine eng, String add1, String add2, GlobalController gc) throws InstantiationException {
         super(time, eng);
-        address1_ = add1;
-        address2_ = add2;
+        name1_ = add1;
+        name2_ = add2;
         setRouterNumbers(add1, add2, gc);
         numbersSet_ = true;
     }
@@ -72,13 +72,13 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
     public StartLinkEvent(usr.events.vim.StartLinkEvent sle) {
         super(sle.time, sle.engine);
 
-        if (sle.address1 == null) {   // address is null, so use routerNo
-            router1_ = sle.router1;
-            router2_ = sle.router2;
-            numbersSet_ = true;
-        } else {
+        if (sle.name1 == null) {   // address is null, so use routerNo
             address1_ = sle.address1;
             address2_ = sle.address2;
+            numbersSet_ = true;
+        } else {
+            name1_ = sle.name1;
+            name2_ = sle.name2;
             numbersSet_ = false;
         }
 
@@ -89,20 +89,20 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
     }
 
 
-    public int getRouter1(GlobalController gc) throws InstantiationException {
+    public int getAddress1(GlobalController gc) throws InstantiationException {
         if (!numbersSet_) {
-            setRouterNumbers(address1_, address2_, gc);
+            setRouterNumbers(name1_, name2_, gc);
         }
 
-        return router1_;
+        return address1_;
     }
 
     public int getRouter2(GlobalController gc) throws InstantiationException {
         if (!numbersSet_) {
-            setRouterNumbers(address1_, address2_, gc);
+            setRouterNumbers(name1_, name2_, gc);
         }
 
-        return router2_;
+        return address2_;
     }
 
     @Override
@@ -116,11 +116,11 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
         String str = "";
 
         if (numbersSet_) {
-            str += router1_ + " " + router2_ + " ";
+            str += address1_ + " " + address2_ + " ";
         }
 
-        if (address1_ != null) {
-            str += address1_ + " " + address2_;
+        if (name1_ != null) {
+            str += name1_ + " " + name2_;
         }
 
         return str;
@@ -131,19 +131,17 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
         BasicRouterInfo r1Info = gc.findRouterInfo(add1);
 
         if (r1Info == null) {
-            throw new InstantiationException(
-                                             "Cannot find address " + add1);
+            throw new InstantiationException("Cannot find address " + add1);
         }
 
         BasicRouterInfo r2Info = gc.findRouterInfo(add2);
 
         if (r2Info == null) {
-            throw new InstantiationException(
-                                             "Cannot find address " + add2);
+            throw new InstantiationException("Cannot find address " + add2);
         }
 
-        router1_ = r1Info.getId();
-        router2_ = r2Info.getId();
+        address1_ = r1Info.getId();
+        address2_ = r2Info.getId();
         numbersSet_ = true;
     }
 
@@ -156,14 +154,21 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
     }
 
     @Override
-    public JSONObject execute(GlobalController gc) throws InstantiationException {
-        if (!numbersSet_) {
-            setRouterNumbers(address1_, address2_, gc);
+    public JSONObject execute(GlobalController gc) {
+        try {
+            if (!numbersSet_) {
+                setRouterNumbers(name1_, name2_, gc);
+            }
+        } catch (InstantiationException ie) {
+            return fail(ie.getMessage());
         }
 
+
+
+
         JSONObject json = new JSONObject();
-        int r1 = router1_;
-        int r2 = router2_;
+        int r1 = address1_;
+        int r2 = address2_;
 
         if (!gc.isRouterAlive(r1)) {
             try {
@@ -198,9 +203,9 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
                 json.put("linkID", (Integer)linkNo);
                 json.put("weight", weight_);
 
-                if (address1_ != null) {
-                    json.put("address1", address1_);
-                    json.put("address2", address2_);
+                if (name1_ != null) {
+                    json.put("name1", name1_);
+                    json.put("name2", name2_);
                 }
 
                 if (linkName_ != null) {
@@ -214,8 +219,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
                 json.put("msg", "Could not start link " + getName());
             }
         } catch (JSONException js) {
-            Logger.getLogger("log").logln(
-                                          USR.ERROR,
+            Logger.getLogger("log").logln(USR.ERROR,
                                           "JSONException in StartLinkEvent should not occur");
         }
 
@@ -247,8 +251,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
             if (gc.isSimulation()) {
                 linkID = startSimulationLink(gc, router1Id, router2Id);
             } else {
-                linkID = startVirtualLink(gc, router1Id, router2Id, weight,
-                                          name);
+                linkID = startVirtualLink(gc, router1Id, router2Id, weight, name);
             }
 
             // register inside GlobalController

@@ -7,24 +7,24 @@ import usr.logging.USR;
 
 /** Class represents a global controller event*/
 public class AppStartEvent extends AbstractEvent {
-    public final int routerNo;
+    public final int address;
     public final String className;
     public final String [] args;
-    public final String address;
+    public final String name;
 
     public AppStartEvent(long time, EventEngine eng, int rNo, String cname, String [] args) {
         super(time, eng);
-        routerNo = rNo;
-        address = null;
+        address = rNo;
+        name = null;
         className = cname;
         this.args = args;
     }
 
     public AppStartEvent(long time, EventEngine eng, String addr, String cname, String [] args) {
         super(time, eng);
-        routerNo = 0;
+        address = 0;
         className = cname;
-        address = addr;
+        name = addr;
         this.args = args;
     }
 
@@ -36,15 +36,15 @@ public class AppStartEvent extends AbstractEvent {
     }
 
     private String getName() {
-        String str = "";
+        String str = " ";
 
-        if (address == null) {
-            str += (routerNo + " ");
-        } else {
+        if (name == null) {
             str += (address + " ");
+        } else {
+            str += (name + " ");
         }
 
-        str += className + " Args:";
+        str +=  className + " Args:";
 
         for (String a : args) {
             str += " " + a;

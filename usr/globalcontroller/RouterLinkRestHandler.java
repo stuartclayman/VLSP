@@ -177,52 +177,14 @@ public class RouterLinkRestHandler extends BasicRequestHandler {
             attr = "id";
         }
 
-        // this is list of connected routers
-        //int [] links = gc.getOutLinks(routerID);
-        // same as /router/9/link/?attr=connected
-
-        Collection<LinkInfo> links = gc.findLinkInfoByRouter(routerID);
-
         // and send them back as the return value
         PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = new JSONObject();
-        JSONArray array = new JSONArray();
 
-        for (LinkInfo link : links) {
+        // this is list of connected routers
+        // same as /router/9/link/?attr=connected
 
-            if (attr.equals("id")) {
-                array.put(link.getLinkID());
-            } else if (attr.equals("name")) {
-                array.put(link.getLinkName());
-            } else if (attr.equals("weight")) {
-                array.put(link.getLinkWeight());
-            } else if (attr.equals("connected")) {
-                Pair<Integer, Integer> routers = link.getEndPoints();
-
-                // put out router ID of other end
-                if (routers.getSecond() == routerID) {
-                    array.put(routers.getFirst());
-                } else {
-                    array.put(routers.getSecond());
-                }
-            } else {
-                // should not get here
-                throw new Error("RouterLinkRestHandler: should not get here");
-            }
-        }
-
-        jsobj.put("routerID", routerID);
-        jsobj.put("type", "link");
-        jsobj.put("list", array);
-
-        /*
-        if (attr.equals("connected")) {
-            jsobj.put("check", gc.getOutLinks(routerID));
-        } else if (attr.equals("weight")) {
-            jsobj.put("check", gc.getLinkCosts(routerID));
-        }
-        */
+        JSONObject jsobj = gc.listRouterLinks(routerID, attr);
 
         out.println(jsobj.toString());
 
@@ -294,7 +256,7 @@ public class RouterLinkRestHandler extends BasicRequestHandler {
         // send back link info as the return value
         PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = gc.findLinkInfoAsJSON(linkID);
+        JSONObject jsobj = gc.getRouterLinkInfo(routerID, linkID);
 
         out.println(jsobj.toString());
 

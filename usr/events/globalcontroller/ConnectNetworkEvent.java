@@ -5,7 +5,7 @@ import usr.events.EventDelegate;
 import usr.events.EventScheduler;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import usr.abstractnetwork.AbstractLink;
+import usr.model.abstractnetwork.AbstractLink;
 import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -25,13 +25,12 @@ public class ConnectNetworkEvent extends AbstractGlobalControllerEvent {
     }
 
     @Override
-    public JSONObject execute(GlobalController gc)
-        throws InstantiationException {
+    public JSONObject execute(GlobalController gc) {
         AbstractLink link= null;
         if (node1_ >= 0) {
-            link= gc.getAbstractNetwork().connectNetwork(time, node1_, node2_, gc);
+            link= gc.getAbstractNetwork().connectNetwork(time, node1_, node2_);
         } else {
-            link= gc.getAbstractNetwork().connectNetwork(time, gc);
+            link= gc.getAbstractNetwork().connectNetwork(time);
         }
         try {
             JSONObject js = new JSONObject();

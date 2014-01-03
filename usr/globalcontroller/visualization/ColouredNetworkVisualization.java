@@ -62,7 +62,7 @@ public class ColouredNetworkVisualization implements Visualization {
 
         // set root node, if using twopi
         int noAPs = gc.getAPs().size();  // WAS gc.getAPController().getNoAPs();
-        int noRouters = gc.getRouterCount();
+        int noRouters = gc.getNoRouters();
 
         if (noAPs > 0) {
             int first = gc.getAPs().get(0); // WAS gc.getAPController().getAPList().get(0);

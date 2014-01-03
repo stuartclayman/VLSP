@@ -46,7 +46,7 @@ public class AppStopEvent extends AbstractGlobalControllerEvent {
 
 
     @Override
-    public JSONObject execute(GlobalController gc) throws InstantiationException {
+    public JSONObject execute(GlobalController gc) {
 
         JSONObject jsobj = appStop(routerNo_, appID, gc);
 

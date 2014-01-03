@@ -32,26 +32,19 @@ public class CreateTrafficEvent extends AbstractGlobalControllerEvent {
     }
 
     @Override
-    public JSONObject execute(GlobalController gc) throws
-        InstantiationException {
-        int nRouters = gc.getNoRouters();    // Cannot create traffic
+    public JSONObject execute(GlobalController gc) {
+        int nRouters = gc.getNoRouters();    
         JSONObject json = new JSONObject();
 
-        if (nRouters < 2) {
-            try {
-                json.put("success", false);
-                json.put("msg", "Insufficient routers");
-            } catch (JSONException e) {
-            }
-
-            return json;
+        if (nRouters < 2) {      // Cannot create traffic
+            return fail("Insufficient routers");
         }
 
         int from;
         int to;
 
         if (engine_.preferEmptyNodes() == true) {
-            throw new InstantiationException("Not written engine to prefer empty nodes");
+            return fail("Not written engine to prefer empty nodes");
         }
 
         from = (int)Math.floor(Math.random() * nRouters);
@@ -75,17 +68,20 @@ public class CreateTrafficEvent extends AbstractGlobalControllerEvent {
         fromArgs[2] = bytes;
         toArgs[1] = bytes;
         fromArgs[3] = rate;
-        JSONObject start1 = gc.appStart(toRouter, "usr.applications.Receive", toArgs);
+        JSONObject start1 = null;
         JSONObject start2 = null;
 
-        if (start1 != null) {
-            start2 = gc.appStart(fromRouter, "usr.applications.Transfer", fromArgs);
-        } else {
-            // nothing to stop - it hasnt started yet
-            // gc.appStop(start1);
-        }
-
         try {
+            start1 = gc.createApp(toRouter, "usr.applications.Receive", toArgs);
+
+            if (start1 != null) {
+                start2 = gc.createApp(fromRouter, "usr.applications.Transfer", fromArgs);
+            } else {
+                // nothing to stop - it hasnt started yet
+                // gc.appStop(start1);
+            }
+
+
             if (start2 != null) {
                 json.put("success", true);
                 json.put("msg", "traffic added between routers " + from + " " + to);
@@ -101,5 +97,6 @@ public class CreateTrafficEvent extends AbstractGlobalControllerEvent {
 
         return json;
     }
+
 
 }

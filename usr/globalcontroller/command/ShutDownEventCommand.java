@@ -34,23 +34,9 @@ public class ShutDownEventCommand extends GlobalCommand {
         try {
             PrintStream out = response.getPrintStream();
 
-            EndSimulationEvent shutdown
-                = new EndSimulationEvent(System.currentTimeMillis());
+            EndSimulationEvent shutdown = new EndSimulationEvent(System.currentTimeMillis());
 
-            JSONObject jsobj;
-            try {
-                jsobj = controller.executeEvent(shutdown);
-            } catch (InterruptedException ie) {
-                jsobj = GlobalController.commandError(
-                        "Semaphor acquisition interrupted "
-                        + ie.getMessage());
-            } catch (TimeoutException te) {
-                jsobj = GlobalController.commandError(
-                        "Semaphor timeout " + te.getMessage());
-            } catch (InstantiationException ise) {
-                jsobj = GlobalController.commandError(
-                        "Could not shutdown " + ise.getMessage());
-            }
+            JSONObject jsobj = controller.executeEvent(shutdown);
 
             out.println(jsobj.toString());
             response.close();

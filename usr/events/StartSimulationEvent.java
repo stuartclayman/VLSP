@@ -20,7 +20,7 @@ public class StartSimulationEvent extends AbstractExecutableEvent {
     }
 
     @Override
-    public JSONObject execute(EventDelegate ed) throws InstantiationException {
+    public JSONObject eventBody(EventDelegate ed) {
         ed.onEventSchedulerStart(time);
         JSONObject json = new JSONObject();
         try {

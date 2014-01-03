@@ -25,8 +25,7 @@ public class QueryAPEvent extends AbstractGlobalControllerEvent {
     }
 
     @Override
-    public JSONObject execute(GlobalController gc) throws
-        InstantiationException {
+    public JSONObject execute(GlobalController gc) {
         apc_.controllerUpdate(time, gc);
         JSONObject jsobj = new JSONObject();
         try {
@@ -44,7 +43,6 @@ public class QueryAPEvent extends AbstractGlobalControllerEvent {
     /** Perform logic which follows an event */
     @Override
     public void followEvent(JSONObject response, GlobalController g) {
-        super.followEvent(response, g);
         long newTime = time + g.getAPControllerConsiderTime();
         QueryAPEvent e = new QueryAPEvent(newTime, engine, apc_);
         getEventScheduler().addEvent(e);

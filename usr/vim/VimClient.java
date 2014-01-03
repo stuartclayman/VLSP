@@ -76,7 +76,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"address":"1","mgmtPort":11000,"name":"Router-1","r2rPort":11001,"routerID":1}
      */
-    public JSONObject createRouter() {
+    public JSONObject createRouter() throws JSONException {
         try {
             String uri = vimURI + "/router/";
 
@@ -86,13 +86,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("createRouter FAILED");
-        } catch (JSONException je) {
-            System.err.println("createRouter FAILED");
+            throw new JSONException("createRouter FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -100,7 +95,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"address":"1","mgmtPort":11000,"name":"Router-1","r2rPort":11001,"routerID":1}
      */
-    public JSONObject createRouter(String name, String address) {
+    public JSONObject createRouter(String name, String address) throws JSONException {
         try {
             String uri = vimURI + "/router/?name=" + name + "&address=" + address;
 
@@ -110,13 +105,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("createRouter FAILED");
-        } catch (JSONException je) {
-            System.err.println("createRouter FAILED");
+            throw new JSONException("createRouter FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -124,7 +114,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"address":"1","mgmtPort":11000,"name":"Router-1","r2rPort":11001,"routerID":1}
      */
-    public JSONObject createRouterWithName(String name) {
+    public JSONObject createRouterWithName(String name) throws JSONException {
         try {
             String uri = vimURI + "/router/?name=" + name;
 
@@ -134,13 +124,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("createRouter FAILED");
-        } catch (JSONException je) {
-            System.err.println("createRouter FAILED");
+            throw new JSONException("createRouter FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -148,7 +133,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"address":"1","mgmtPort":11000,"name":"Router-1","r2rPort":11001,"routerID":1}
      */
-    public JSONObject createRouterWithAddress(String address) {
+    public JSONObject createRouterWithAddress(String address) throws JSONException {
         try {
             String uri = vimURI + "/router/?address=" + address;
 
@@ -158,13 +143,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("createRouter FAILED");
-        } catch (JSONException je) {
-            System.err.println("createRouter FAILED");
+            throw new JSONException("createRouter FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -172,23 +152,16 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"status":"done"}
      */
-    public JSONObject deleteRouter(int routerID) {
+    public JSONObject deleteRouter(int routerID) throws JSONException {
         try {
             String uri = vimURI + "/router/" + routerID;
-
-            // Delete
             JSONObject jsobj = rest.json(uri, delete()).toObject();
 
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("deleteRouter FAILED");
-        } catch (JSONException je) {
-            System.err.println("deleteRouter FAILED");
+            throw new JSONException("deleteRouter FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -196,7 +169,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:  {"list":[12,6,5,7,8,9,10,1,3,11,4],"type":"router"}
      */
-    public JSONObject listRouters() {
+    public JSONObject listRouters() throws JSONException {
         try {
             String uri = vimURI + "/router/";
 
@@ -205,13 +178,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("listRouters FAILED");
-        } catch (JSONException je) {
-            System.err.println("listRouters FAILED");
+            throw new JSONException("listRouters FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -219,22 +187,31 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:  {"list":[12,6,5,7,8,9,10,1,3,11,4],"type":"router"}
      */
-    public JSONObject listRouters(String detail) {
+    public JSONObject listRouters(String arg) throws JSONException {
         try {
-            String uri = vimURI + "/router/?detail=" + detail;
+            String uri;
+
+            if (arg == null || arg.equals("")) {
+                uri = vimURI + "/router/";
+            } else if (!arg.contains("=")) {
+                uri = vimURI + "/router/?detail" + arg;
+            } else if (arg.startsWith("detail=")) {
+                uri = vimURI + "/router/?" + arg;
+            } else if (arg.startsWith("name=")) {
+                uri = vimURI + "/router/?" + arg;
+            } else if (arg.startsWith("address=")) {
+                uri = vimURI + "/router/?" + arg;
+            } else {
+                throw new Error();
+            }
 
             JSONObject jsobj = rest.json(uri).toObject();
 
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("listRouters FAILED");
-        } catch (JSONException je) {
-            System.err.println("listRouters FAILED");
+            throw new JSONException("listRouters FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -242,7 +219,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:  {"list":[12,6,5,7,8,9,10,1,3,11,4],"type":"shutdown"}
      */
-    public JSONObject listRemovedRouters() {
+    public JSONObject listRemovedRouters() throws JSONException {
         try {
             String uri = vimURI + "/removed/";
 
@@ -251,13 +228,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("listRemovedRouters FAILED");
-        } catch (JSONException je) {
-            System.err.println("listRemovedRouters FAILED");
+            throw new JSONException("listRemovedRouters FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -265,7 +237,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:  {"routerID": 2, "address": "2", "name":"Router-2", "links": [1], "mgmtPort": 11003, "r2rPort": 11004, "time": 1361817254727}
      */
-    public JSONObject getRouterInfo(int id) {
+    public JSONObject getRouterInfo(int id) throws JSONException {
         try {
             String uri = vimURI + "/router/" + id;
 
@@ -274,13 +246,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getRouterInfo FAILED");
-        } catch (JSONException je) {
-            System.err.println("getRouterInfo FAILED");
+            throw new JSONException("getRouterInfo FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -293,7 +260,7 @@ public class VimClient implements VimFunctions {
      * name | InBytes | InPackets | InErrors | InDropped | InDataBytes | InDataPackets | OutBytes | OutPackets | OutErrors |
      * OutDropped | OutDataBytes | OutDataPackets | InQueue | BiggestInQueue | OutQueue | BiggestOutQueue |
      */
-    public JSONObject getRouterLinkStats(int id) {
+    public JSONObject getRouterLinkStats(int id) throws JSONException {
         try {
             String uri = vimURI + "/router/" + id + "/link_stats";
 
@@ -302,13 +269,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getRouterInfo FAILED");
-        } catch (JSONException je) {
-            System.err.println("getRouterInfo FAILED");
+            throw new JSONException("getRouterInfo FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -321,7 +283,7 @@ public class VimClient implements VimFunctions {
      * name | InBytes | InPackets | InErrors | InDropped | InDataBytes | InDataPackets | OutBytes | OutPackets | OutErrors |
      * OutDropped | OutDataBytes | OutDataPackets | InQueue | BiggestInQueue | OutQueue | BiggestOutQueue |
      */
-    public JSONObject getRouterLinkStats(int id, int dstID) {
+    public JSONObject getRouterLinkStats(int id, int dstID) throws JSONException {
         try {
             String uri = vimURI + "/router/" + id + "/link_stats/" + dstID;
 
@@ -330,13 +292,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getRouterInfo FAILED");
-        } catch (JSONException je) {
-            System.err.println("getRouterInfo FAILED");
+            throw new JSONException("getRouterInfo FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -344,7 +301,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:  { "value:" 5 }
      */
-    public JSONObject getRouterCount() {
+    public JSONObject getRouterCount() throws JSONException {
         try {
             String uri = vimURI + "/router/" + "count";
 
@@ -353,13 +310,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getRouterCount FAILED");
-        } catch (JSONException je) {
-            System.err.println("getRouterCount FAILED");
+            throw new JSONException("getRouterCount FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -367,7 +319,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:  { "value:" 5 }
      */
-    public JSONObject getMaxRouterID() {
+    public JSONObject getMaxRouterID() throws JSONException {
         try {
             String uri = vimURI + "/router/" + "maxid";
 
@@ -376,13 +328,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getMaxRouterID FAILED");
-        } catch (JSONException je) {
-            System.err.println("getMaxRouterID FAILED");
+            throw new JSONException("getMaxRouterID FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -390,7 +337,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"linkID":196612,"linkName":"Router-1.Connection-0","router1":1,"router2":2,"weight":1}
      */
-    public JSONObject createLink(int routerID1, int routerID2) {
+    public JSONObject createLink(int routerID1, int routerID2) throws JSONException {
         try {
             int weight = 1;
             String uri = vimURI + "/link/?router1=" + routerID1 + "&router2=" + routerID2+"&weight="+weight;
@@ -401,13 +348,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("createLink FAILED");
-        } catch (JSONException je) {
-            System.err.println("createLink FAILED");
+            throw new JSONException("createLink FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -415,7 +357,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"linkID":196612,"linkName":"Router-1.Connection-0","router1":1,"router2":2,"weight":1}
      */
-    public JSONObject createLink(int routerID1, int routerID2, int weight) {
+    public JSONObject createLink(int routerID1, int routerID2, int weight) throws JSONException {
         try {
             String uri = vimURI + "/link/?router1=" + routerID1 + "&router2=" + routerID2+"&weight="+weight;
 
@@ -425,13 +367,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("createLink FAILED");
-        } catch (JSONException je) {
-            System.err.println("createLink FAILED");
+            throw new JSONException("createLink FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -439,7 +376,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"linkID":196612,"linkName":"Router-1.Connection-0","router1":1,"router2":2,"weight":1}
      */
-    public JSONObject createLink(int routerID1, int routerID2, int weight, String linkName) {
+    public JSONObject createLink(int routerID1, int routerID2, int weight, String linkName) throws JSONException {
         try {
             String uri = vimURI + "/link/?router1=" + routerID1 + "&router2=" + routerID2+"&weight="+weight+"&linkName="+linkName;
 
@@ -449,13 +386,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("createLink FAILED");
-        } catch (JSONException je) {
-            System.err.println("createLink FAILED");
+            throw new JSONException("createLink FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -463,7 +395,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"status":"done"}
      */
-    public JSONObject deleteLink(int linkID) {
+    public JSONObject deleteLink(int linkID) throws JSONException {
         try {
             String uri = vimURI + "/link/" + linkID;
 
@@ -473,13 +405,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("deleteLink FAILED");
-        } catch (JSONException je) {
-            System.err.println("deleteLink FAILED");
+            throw new JSONException("deleteLink FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -487,7 +414,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"list":[786553,5505145,7864441],"type":"link"}
      */
-    public JSONObject listLinks() {
+    public JSONObject listLinks() throws JSONException {
         try {
             String uri = vimURI + "/link/";
 
@@ -496,13 +423,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("listLinks FAILED");
-        } catch (JSONException je) {
-            System.err.println("listLinks FAILED");
+            throw new JSONException("listLinks FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -510,7 +432,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"list":[786553,5505145,7864441],"type":"link"}
      */
-    public JSONObject listLinks(String detail) {
+    public JSONObject listLinks(String detail) throws JSONException {
         try {
             String uri = vimURI + "/link/?detail=" + detail;
 
@@ -519,13 +441,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("listLinks FAILED");
-        } catch (JSONException je) {
-            System.err.println("listLinks FAILED");
+            throw new JSONException("listLinks FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -533,7 +450,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"linkID":8, "linkName":"Router-5.Connection-0", "weight":10, "nodes":[5,6], "time":1362079709109}
      */
-    public JSONObject getLinkInfo(int id) {
+    public JSONObject getLinkInfo(int id) throws JSONException {
         try {
             String uri = vimURI + "/link/" + id;
 
@@ -542,13 +459,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getLinkInfo FAILED");
-        } catch (JSONException je) {
-            System.err.println("getLinkInfo FAILED");
+            throw new JSONException("getLinkInfo FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -556,7 +468,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"linkID":8, "linkName":"Router-5.Connection-0", "weight":30, "nodes":[5,6], "time":1362079709109}
      */
-    public JSONObject setLinkWeight(int linkID, int weight) {
+    public JSONObject setLinkWeight(int linkID, int weight) throws JSONException {
         try {
             String uri = vimURI + "/link/" + linkID + "?weight="+weight;
 
@@ -566,13 +478,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("setLinkWeight FAILED");
-        } catch (JSONException je) {
-            System.err.println("setLinkWeight FAILED");
+            throw new JSONException("setLinkWeight FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -580,7 +487,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: { "value:" 10 }
      */
-    public JSONObject getLinkCount() {
+    public JSONObject getLinkCount() throws JSONException {
         try {
             String uri = vimURI + "/link/" + "count";
 
@@ -589,13 +496,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getLinkCount FAILED");
-        } catch (JSONException je) {
-            System.err.println("getLinkCount FAILED");
+            throw new JSONException("getLinkCount FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -603,7 +505,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:  {"routerID": 9,"type":" link", "list":[9830481,7078009,6488164]}
      */
-    public JSONObject listRouterLinks(int routerID) {
+    public JSONObject listRouterLinks(int routerID) throws JSONException {
         try {
             String uri = vimURI + "/router/" + routerID + "/link/";
 
@@ -612,13 +514,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getRouterInfo FAILED");
-        } catch (JSONException je) {
-            System.err.println("getRouterInfo FAILED");
+            throw new JSONException("getRouterInfo FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -626,7 +523,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:  {"routerID": 9,"type":" link", "list":[9830481,7078009,6488164]}
      */
-    public JSONObject listRouterLinks(int rid, String attr) {
+    public JSONObject listRouterLinks(int rid, String attr) throws JSONException {
         try {
             String uri = vimURI + "/router/" + rid + "/link/" + "?attr=" + attr;
 
@@ -635,13 +532,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getRouterInfo FAILED");
-        } catch (JSONException je) {
-            System.err.println("getRouterInfo FAILED");
+            throw new JSONException("getRouterInfo FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -649,7 +541,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:
      */
-    public JSONObject getRouterLinkInfo(int routerID, int linkID) {
+    public JSONObject getRouterLinkInfo(int routerID, int linkID) throws JSONException {
         try {
             String uri = vimURI + "/router/" + routerID + "/link/" + linkID;
 
@@ -658,13 +550,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getRouterInfo FAILED");
-        } catch (JSONException je) {
-            System.err.println("getRouterInfo FAILED");
+            throw new JSONException("getRouterInfo FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -673,7 +560,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"aid":1,"id":262145,"name":"/Router-2/App/usr.applications.Recv/1","routerID":2}
      */
-    public JSONObject createApp(int routerID, String className, String args) {
+    public JSONObject createApp(int routerID, String className, String args) throws JSONException {
         try {
             String uri = vimURI + "/router/" + routerID + "/app/?className=" + className + "&args=" + java.net.URLEncoder.encode(args, "UTF-8");
 
@@ -683,13 +570,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("createApp FAILED");
-        } catch (JSONException je) {
-            System.err.println("createApp FAILED");
+            throw new JSONException("createApp FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -697,7 +579,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"status":"done"}
      */
-    public JSONObject stopApp(int routerID, int appID) {
+    public JSONObject stopApp(int routerID, int appID) throws JSONException {
         try {
             String uri = vimURI + "/router/" + routerID + "/app/" + appID;
 
@@ -707,13 +589,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("deleteApp FAILED");
-        } catch (JSONException je) {
-            System.err.println("deleteApp FAILED");
+            throw new JSONException("deleteApp FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
 
@@ -723,7 +600,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"list":[786553,5505145,7864441],"type":"app"}
      */
-    public JSONObject listApps(int routerID) {
+    public JSONObject listApps(int routerID) throws JSONException {
         try {
             String uri = vimURI + "/router/" + routerID + "/app/";
 
@@ -733,13 +610,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("listApps FAILED");
-        } catch (JSONException je) {
-            System.err.println("listApps FAILED");
+            throw new JSONException("listApps FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -747,7 +619,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"appID":2, "appName":"/Router-7/App/usr.applications.Send/1", "classname": "usr.applications.Send", "args": "[8, 4000, 2500000, -s, 1024]", "routerID": 7, "starttime": 1362090555686, "runtime": 42854}
      */
-    public JSONObject getAppInfo(int routerID, String appID) {
+    public JSONObject getAppInfo(int routerID, int appID) throws JSONException {
         try {
             String uri = vimURI + "/router/" + routerID + "/app/" + appID;
 
@@ -757,13 +629,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getAppInfo FAILED");
-        } catch (JSONException je) {
-            System.err.println("getAppInfo FAILED");
+            throw new JSONException("getAppInfo FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -771,7 +638,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject:  {"list":[12,6,5],"type":"ap"}
      */
-    public JSONObject listAggPoints() {
+    public JSONObject listAggPoints() throws JSONException {
         try {
             String uri = vimURI + "/ap/";
 
@@ -780,13 +647,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("listAggPoints FAILED");
-        } catch (JSONException je) {
-            System.err.println("listAggPoints FAILED");
+            throw new JSONException("listAggPoints FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -794,7 +656,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"ap": 10, "routerID": 5}
      */
-    public JSONObject getAggPointInfo(int id) {
+    public JSONObject getAggPointInfo(int id) throws JSONException {
         try {
             String uri = vimURI + "/ap/" + id;
 
@@ -803,13 +665,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("getAggPointInfo FAILED");
-        } catch (JSONException je) {
-            System.err.println("getAggPointInfo FAILED");
+            throw new JSONException("getAggPointInfo FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
     /**
@@ -817,7 +674,7 @@ public class VimClient implements VimFunctions {
      *
      * Returns JSONObject: {"ap": 10, "routerID": 5}
      */
-    public JSONObject setAggPoint(int apID, int routerID) {
+    public JSONObject setAggPoint(int apID, int routerID) throws JSONException {
         try {
             String uri = vimURI + "/ap/?apID=" + apID + "&routerID=" + routerID;
 
@@ -827,13 +684,8 @@ public class VimClient implements VimFunctions {
             return jsobj;
 
         } catch (IOException ioe) {
-            System.err.println("createRouter FAILED");
-        } catch (JSONException je) {
-            System.err.println("createRouter FAILED");
+            throw new JSONException("createRouter FAILED" + " IOException: " + ioe.getMessage());
         }
-
-        throw new Error();
-
     }
 
 }

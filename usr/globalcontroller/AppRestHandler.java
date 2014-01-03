@@ -14,8 +14,6 @@ import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
-import usr.events.globalcontroller.AppStartEvent;
-import usr.events.globalcontroller.AppStopEvent;
 import cc.clayman.console.BasicRequestHandler;
 
 /**
@@ -128,7 +126,6 @@ public class AppRestHandler extends BasicRequestHandler {
         int routerID;
         String className = null;
         String rawArgs = "";
-        String[] args = null;
 
         // get the path
         Path path = request.getPath();
@@ -175,8 +172,6 @@ public class AppRestHandler extends BasicRequestHandler {
             rawArgs = rawArgs.trim();
             rawArgs = rawArgs.replaceAll("  +", " ");
 
-            // now convert raw args to String[]
-            args = rawArgs.split(" ");
         }
 
         /* do work */
@@ -188,23 +183,12 @@ public class AppRestHandler extends BasicRequestHandler {
         boolean success = true;
         String failMessage = null;
         JSONObject jsobj = null;
-        try {
-            AppStartEvent ase = new AppStartEvent(controller_.getElapsedTime(), null, routerID, className, args);
-            jsobj = controller_.executeEvent(ase);
 
-            if (jsobj.get("success").equals(false)) {
-                success = false;
-                failMessage = (String)jsobj.get("msg");
-            }
-        } catch (InterruptedException ie) {
+        jsobj = controller_.createApp(routerID, className, rawArgs);
+
+        if (jsobj.get("success").equals(false)) {
             success = false;
-            failMessage = "Signal interrupted in global controller";
-        } catch (InstantiationException ine) {
-            success = false;
-            failMessage = "Unexplained failure executing AppStartEvent";
-        } catch (TimeoutException to) {
-            success = false;
-            failMessage = "Semaphore timeout in global controller -- too busy";
+            failMessage = (String)jsobj.get("msg");
         }
 
         if (success) {
@@ -279,30 +263,16 @@ public class AppRestHandler extends BasicRequestHandler {
 
         /* do work */
 
-        // Start app
-        // WAS int appID = controller_.appStop(routerID, appID);
-
 
         boolean success = true;
         String failMessage = null;
         JSONObject jsobj = null;
-        try {
-            AppStopEvent ase = new AppStopEvent(controller_.getElapsedTime(), null, routerID, appID);
-            jsobj = controller_.executeEvent(ase);
 
-            if (jsobj.get("success").equals(false)) {
-                success = false;
-                failMessage = (String)jsobj.get("msg");
-            }
-        } catch (InterruptedException ie) {
+        jsobj = controller_.stopApp(routerID, appID);
+
+        if (jsobj.get("success").equals(false)) {
             success = false;
-            failMessage = "Signal interrupted in global controller";
-        } catch (InstantiationException ine) {
-            success = false;
-            failMessage = "Unexplained failure executing AppStopEvent";
-        } catch (TimeoutException to) {
-            success = false;
-            failMessage = "Semaphore timeout in global controller -- too busy";
+            failMessage = (String)jsobj.get("msg");
         }
 
         if (success) {
@@ -355,22 +325,10 @@ public class AppRestHandler extends BasicRequestHandler {
         }
 
 
-        BasicRouterInfo bri = controller_.findRouterInfo(routerID);
-
         // and send them back as the return value
         PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = new JSONObject();
-        JSONArray array = new JSONArray();
-
-        for (Integer id : bri.getApplicationIDs()) {
-
-            array.put(id);
-        }
-
-        jsobj.put("type", "app");
-        jsobj.put("list", array);
-        jsobj.put("routerID", routerID);
+        JSONObject jsobj = controller_.listApps(routerID);
 
         out.println(jsobj.toString());
 
@@ -440,7 +398,7 @@ public class AppRestHandler extends BasicRequestHandler {
         // send back app info as the return value
         PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = controller_.findAppInfoAsJSON(appID);
+        JSONObject jsobj = controller_.getAppInfo(routerID, appID);
 
         out.println(jsobj.toString());
 
