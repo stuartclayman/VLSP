@@ -1,0 +1,19 @@
+echo "Creating memory storage figure"
+
+counter=2
+result="`cat scenario`/memorystorage.txt Memory_State Time Memory_State"
+
+./memorystorage > `cat scenario`/memorystorage.txt
+
+for a in 1 2 3 4 5 6 7 8 9 10
+do
+        flow="Flows_${a}"
+        result="${result} ${flow} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotmemorystoragefigure $result
+
+./createpicture memorystorage

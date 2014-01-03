@@ -1,0 +1,33 @@
+export CLASSPATH=./:./libs/*:./bin/
+
+# Shutting down KNOW (in case it is still running)
+./shutDownKNOW
+
+echo Scenario 1: Pull from Entity
+for flows in 1 #2 3 4 5 6 7 8 9 10
+do
+	echo Flows $flows
+	echo Starting KNOW
+	cd know
+	./KNOW &
+	echo Waiting 5 secs
+	sleep 5
+	cd ..
+	./startKNOWMeasurements
+	java -Xmx1024m exampleNEM.LocalInformationFlowsExperiment $flows 3 4 2>&1 | tee /tmp/kb-expriment-$$.out
+	./stopKNOWMeasurements
+	echo Waiting 5 secs
+	sleep 5
+	./shutDownKNOW
+	echo Collecting results
+	cp know/output.txt output/`cat output/scenario`/results-$flows-3-0.txt
+	echo Waiting 5 secs
+	sleep 5
+done
+# Create latex file
+cd output
+./plotall
+latex results.tex
+dvipdf results.dvi
+cp results.* `cat scenario`/
+cd ..

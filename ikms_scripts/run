@@ -1,0 +1,31 @@
+export CLASSPATH=./:./libs/*:./bin/
+
+# Shutting down IKMS (in case it is still running)
+./shutDownIKMS
+
+echo Scenario 1: Pull from Entity
+for flows in 1 #2 3 4 5 6 7 8 9 10
+do
+	echo Flows $flows
+	echo Starting IKMS
+	./IKMS &
+	echo Waiting 5 secs
+	sleep 5
+	./startIKMSMeasurements
+	./singleExperiment 3 $flows 3 4 2>&1 | tee /tmp/ikms-expriment-$$.out
+	./stopIKMSMeasurements
+	echo Waiting 5 secs
+	sleep 5
+	./shutDownIKMS
+	echo Collecting results
+	cp ../output.txt output/`cat output/scenario`/results-$flows-3-0.txt
+	echo Waiting 5 secs
+	sleep 5
+done
+# Create latex file
+cd output
+./plotall
+latex results.tex
+dvipdf results.dvi
+cp results.* `cat scenario`/
+cd ..

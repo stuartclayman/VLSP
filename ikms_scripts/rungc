@@ -1,0 +1,4 @@
+./killrouters
+export CLASSPATH=bin/.:libs/*
+cd ..
+java usr.globalcontroller.GlobalController scripts/control-wait.xml
