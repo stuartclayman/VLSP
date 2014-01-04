@@ -14,14 +14,14 @@ import usr.logging.USR;
 import usr.protocol.MCRP;
 
 /**
- * The ON_ROUTER command.
+ * The START_APP command.
  */
-public class OnRouterCommand extends LocalCommand {
+public class AppStartCommand extends LocalCommand {
     /**
      * Construct a OnRouterCommand.
      */
-    public OnRouterCommand() {
-        super(MCRP.ON_ROUTER.CMD);
+    public AppStartCommand() {
+        super(MCRP.START_APP.CMD);
     }
 
     /**
@@ -44,7 +44,7 @@ public class OnRouterCommand extends LocalCommand {
                 response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put("error", "Expected three or more arguments for ON_ROUTER Command: ON_ROUTER router_id className args");
+                jsobj.put("error", "Expected three or more arguments for APP_START Command: APP_START router_id className args");
 
                 out.println(jsobj.toString());
                 response.close();
@@ -62,7 +62,7 @@ public class OnRouterCommand extends LocalCommand {
                     response.setCode(302);
 
                     JSONObject jsobj = new JSONObject();
-                    jsobj.put("error", "Argument for ON_ROUTER command must be int");
+                    jsobj.put("error", "Argument for APP_START command must be int");
 
                     out.println(jsobj.toString());
                     response.close();
@@ -94,7 +94,7 @@ public class OnRouterCommand extends LocalCommand {
                     response.setCode(302);
 
                     JSONObject jsobj = new JSONObject();
-                    jsobj.put("error", "ON_ROUTER. ERROR with " + value);
+                    jsobj.put("error", "APP_START. ERROR with " + value);
 
                     out.println(jsobj.toString());
                     response.close();

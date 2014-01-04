@@ -3,6 +3,7 @@ package usr.events.globalcontroller;
 import usr.events.Event;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
+import usr.events.vim.EndRouter;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
@@ -16,7 +17,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class EndRouterEvent extends AbstractGlobalControllerEvent {
+public class EndRouterEvent extends AbstractGlobalControllerEvent implements EndRouter {
     int address_;
     String name_ = null;
     boolean routerNumSet_ = true;

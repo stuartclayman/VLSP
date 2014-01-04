@@ -47,7 +47,7 @@ public class SetLinkWeightEvent extends AbstractGlobalControllerEvent {
 
         try {
             if (linkID != 0) {
-                jsobj = gc.findLinkInfoAsJSON(linkID);
+                jsobj = gc.getLinkInfo(linkID);
                 jsobj.put("success", true);
             } else {
                 jsobj.put("success", false);
@@ -119,7 +119,7 @@ public class SetLinkWeightEvent extends AbstractGlobalControllerEvent {
         // link with the new weight
 
         // Create Pair<router1Id, router2Id>
-        Pair<Integer, Integer> endPoints = GlobalController.makePair(router1Id, router2Id);
+        Pair<Integer, Integer> endPoints = gc.makePair(router1Id, router2Id);
         // and determine linkID
         int linkID = endPoints.hashCode();
 

@@ -8,7 +8,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class EndRouterEvent extends AbstractEvent {
+public class EndRouterEvent extends AbstractEvent implements EndRouter {
     public final int address;
     public final String name;
 

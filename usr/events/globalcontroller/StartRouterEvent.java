@@ -5,6 +5,7 @@ import java.io.IOException;
 import usr.events.Event;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
+import usr.events.vim.StartRouter;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
@@ -17,7 +18,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class StartRouterEvent extends AbstractGlobalControllerEvent {
+public class StartRouterEvent extends AbstractGlobalControllerEvent implements StartRouter {
     String address_ = null;
     String name_ = null;
 

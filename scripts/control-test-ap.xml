@@ -43,7 +43,7 @@
 
   <EventEngine>
      <Name>Probabilistic</Name>
-     <EndTime>1800</EndTime> <!-- seconds -->
+     <EndTime>600</EndTime> <!-- seconds -->
      <Parameters>scripts/probdists-control-test-ap.xml</Parameters>
   </EventEngine>
 

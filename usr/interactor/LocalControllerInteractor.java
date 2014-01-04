@@ -206,7 +206,7 @@ public class LocalControllerInteractor {
     public JSONObject appStart(int routerId, String className, String[] args) throws IOException, JSONException  {
 
         StringBuilder builder = new StringBuilder();
-        builder.append(MCRP.ON_ROUTER.CMD);
+        builder.append(MCRP.START_APP.CMD);
         builder.append(" ");
         builder.append(routerId);
         builder.append(" ");

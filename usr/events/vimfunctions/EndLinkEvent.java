@@ -4,6 +4,7 @@ import usr.engine.EventEngine;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.events.AbstractExecutableEvent;
+import usr.events.vim.EndLink;
 import usr.events.EventDelegate;
 import usr.vim.VimFunctions;
 import us.monoid.json.JSONObject;
@@ -11,7 +12,7 @@ import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 
 /** Class represents a global controller event*/
-public class EndLinkEvent extends AbstractExecutableEvent {
+public class EndLinkEvent extends AbstractExecutableEvent implements EndLink {
     public final int address1;
     public final int address2;
     public final String name1;

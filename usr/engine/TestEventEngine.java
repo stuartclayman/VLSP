@@ -8,7 +8,7 @@ import usr.events.EndSimulationEvent;
 import usr.events.Event;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
-import usr.events.globalcontroller.StartRouterEvent;
+import usr.events.vim.StartRouterEvent;
 import usr.events.StartSimulationEvent;
 import usr.globalcontroller.GlobalController;
 
@@ -16,7 +16,7 @@ public class TestEventEngine implements EventEngine {
     int timeToEnd_;
 
     /** Contructor from Parameter string */
-    public TestEventEngine(int time, String parms) {
+    public TestEventEngine(int time, String parms) throws EventEngineException {
         timeToEnd_ = time * 1000;
     }
 

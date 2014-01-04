@@ -12,11 +12,11 @@
 
 // start 1 aggregation point on router 3
 // with no forwarding
-+30000 ON_ROUTER 3 plugins_usr.aggregator.appl.AggPoint -i 0/3000 -a average -n agg-point-3
++30000 START_APP 3 plugins_usr.aggregator.appl.AggPoint -i 0/3000 -a average -n agg-point-3
 
 // start 2 senders
-+1000 ON_ROUTER 1 plugins_usr.aggregator.appl.InfoSource -o 3/3000 -p rt -t 1 -n info-source-1
-+0 ON_ROUTER 2 plugins_usr.aggregator.appl.InfoSource -o 3/3000 -p rt -t 1 -n info-source-2
++1000 START_APP 1 plugins_usr.aggregator.appl.InfoSource -o 3/3000 -p rt -t 1 -n info-source-1
++0 START_APP 2 plugins_usr.aggregator.appl.InfoSource -o 3/3000 -p rt -t 1 -n info-source-2
 
 // end links
 +16000 END_LINK 1 3

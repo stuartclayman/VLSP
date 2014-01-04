@@ -3,6 +3,7 @@ package usr.events.vimfunctions;
 import usr.engine.EventEngine;
 import usr.events.EventDelegate;
 import usr.events.AbstractExecutableEvent;
+import usr.events.vim.StartRouter;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.vim.VimFunctions;
@@ -10,7 +11,7 @@ import us.monoid.json.JSONObject;
 import us.monoid.json.JSONException;
 
 /** Class represents a global controller event*/
-public class StartRouterEvent extends AbstractExecutableEvent {
+public class StartRouterEvent extends AbstractExecutableEvent implements StartRouter {
     public final String address;
     public final String name;
 

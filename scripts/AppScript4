@@ -11,14 +11,14 @@
 4200 START_LINK 3 5
 
 // start 1 receiver
-+30000 ON_ROUTER 4 plugins_usr.aggregator.appl.InfoConsumer -i 0/3333 -n info-consumer-4 // receive on R 4
++30000 START_APP 4 plugins_usr.aggregator.appl.InfoConsumer -i 0/3333 -n info-consumer-4 // receive on R 4
 
 // start 1 aggregation point on router 3
-+1000 ON_ROUTER 3 plugins_usr.aggregator.appl.AggPoint -i 0/3000 -a average -o 4/3333 -n agg-point-3 -t 5
++1000 START_APP 3 plugins_usr.aggregator.appl.AggPoint -i 0/3000 -a average -o 4/3333 -n agg-point-3 -t 5
 
 // start 2 senders
-+1000 ON_ROUTER 1 plugins_usr.aggregator.appl.InfoSource -o 3/3000 -p rt -t 1 -n info-source-1
-+0 ON_ROUTER 2 plugins_usr.aggregator.appl.InfoSource -o 3/3000 -p rt -t 1 -n info-source-2
++1000 START_APP 1 plugins_usr.aggregator.appl.InfoSource -o 3/3000 -p rt -t 1 -n info-source-1
++0 START_APP 2 plugins_usr.aggregator.appl.InfoSource -o 3/3000 -p rt -t 1 -n info-source-2
 // end links
 +600000 END_LINK 1 3
 +200 END_LINK 2 3

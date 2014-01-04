@@ -6,7 +6,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class StartRouterEvent extends AbstractEvent {
+public class StartRouterEvent extends AbstractEvent implements StartRouter {
     public final String address;
     public final String name;
 

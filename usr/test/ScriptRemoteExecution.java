@@ -9,25 +9,25 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 
-public class RemoteExecution extends RemoteEventDelegate implements EventDelegate {
+public class ScriptRemoteExecution extends RemoteEventDelegate implements EventDelegate {
     /**
-     * Construct a RemoteExecution.
+     * Construct a ScriptRemoteExecution.
      */
-    public RemoteExecution() throws UnknownHostException, IOException {
+    public ScriptRemoteExecution() throws UnknownHostException, IOException {
         super();
     }
 
     /**
-     * Construct a RemoteExecution.
+     * Construct a ScriptRemoteExecution.
      */
-    public RemoteExecution(String addr, int port)  throws UnknownHostException, IOException {
+    public ScriptRemoteExecution(String addr, int port)  throws UnknownHostException, IOException {
         super(addr, port);
     }
 
     /**
-     * Construct a RemoteExecution.
+     * Construct a ScriptRemoteExecution.
      */
-    public RemoteExecution(InetAddress addr, int port)  throws UnknownHostException, IOException {
+    public ScriptRemoteExecution(InetAddress addr, int port)  throws UnknownHostException, IOException {
         super(addr, port);
     }
 
@@ -40,9 +40,8 @@ public class RemoteExecution extends RemoteEventDelegate implements EventDelegat
             // time to run:  86400 seconds = 1 day
             // startup script
 
-            //return new usr.engine.ScriptEngine(86400, "scripts/AppScript2Ca");
+            return new usr.engine.ScriptEngine(86400, "scripts/AppScript2Ca");
 
-            return new usr.engine.IKMSEventEngine(1800, "scripts/ikms.xml");
         } catch (EventEngineException eee) {
             throw new Error("Cant start event engine");
         }
@@ -53,12 +52,12 @@ public class RemoteExecution extends RemoteEventDelegate implements EventDelegat
      * Get the name of the delegate
      */
     public String getName() {
-        return "RemoteExecution";
+        return "ScriptRemoteExecution";
     }
 
     public static void main(String[] args) {
         try {
-            RemoteExecution rexec = new RemoteExecution();
+            ScriptRemoteExecution rexec = new ScriptRemoteExecution();
 
             rexec.init();
 

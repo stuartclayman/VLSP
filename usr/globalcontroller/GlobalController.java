@@ -46,8 +46,8 @@ import usr.events.EventDelegate;
 import usr.events.SimpleEventScheduler;
 import usr.events.EventResolver;
 import usr.events.globalcontroller.OutputEvent;
-import usr.events.globalcontroller.AppStartEvent;
-import usr.events.globalcontroller.AppStopEvent;
+import usr.events.globalcontroller.StartAppEvent;
+import usr.events.globalcontroller.StopAppEvent;
 import usr.events.globalcontroller.NetStatsEvent;
 import usr.events.globalcontroller.SetAggPointEvent;
 import usr.events.globalcontroller.StartLinkEvent;
@@ -55,6 +55,7 @@ import usr.events.globalcontroller.EndLinkEvent;
 import usr.events.globalcontroller.StartRouterEvent;
 import usr.events.globalcontroller.EndRouterEvent;
 import usr.events.globalcontroller.SetLinkWeightEvent;
+import usr.events.globalcontroller.GCEventResolver;
 import usr.interactor.LocalControllerInteractor;
 import usr.model.lifeEstimate.LifetimeEstimate;
 import usr.localcontroller.LocalControllerInfo;
@@ -72,6 +73,7 @@ import eu.reservoir.monitoring.core.Reporter;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneForwardingConsumerWithNames;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
+import java.io.FileNotFoundException;
 import usr.vim.VimFunctions;
 
 /**
@@ -269,7 +271,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 PrintWriter pw = new PrintWriter(fos, true);
                 logger.removeOutput(System.out);
                 logger.addOutput(pw, new BitMask(USR.STDOUT));
-            } catch (Exception e) {
+            } catch (FileNotFoundException e) {
                 System.err.println("Cannot output to file");
                 System.err.println(fileName);
                 System.exit(-1);
@@ -289,7 +291,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 PrintWriter pw = new PrintWriter(fos, true);
                 logger.removeOutput(System.err);
                 logger.addOutput(pw, new BitMask(USR.ERROR));
-            } catch (Exception e) {
+            } catch (FileNotFoundException e) {
                 System.err.println("Cannot output to file");
                 System.err.println(fileName);
                 System.exit(-1);
@@ -301,7 +303,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         try {
             myHostInfo_ = new LocalHostInfo(options_.getGlobalPort());
-        } catch (Exception e) {
+        } catch (UnknownHostException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             System.exit(-1);
         }
@@ -552,7 +554,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     }
 
     /** Event for start Simulation */
-    public void startSimulation(long time) {
+    private void startSimulation(long time) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Start of simulation  at: "
                                       + time + " " + System.currentTimeMillis());
 
@@ -564,7 +566,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     }
 
     /** Event for end Simulation */
-    public void endSimulation(long time) {
+    private void endSimulation(long time) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of simulation  at " + time
                                       + " " + System.currentTimeMillis());
 
@@ -655,7 +657,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * throws InstantiationException if creation fails
      * InterruptedException if acquisition of lock interrupted
      * TimeoutException if acquisition timesout*/
-    public JSONObject semaphoredOperation(Operation op) throws Exception, TimeoutException, InterruptedException {
+    private JSONObject semaphoredOperation(Operation op) throws Exception, TimeoutException, InterruptedException {
         try {
             // Wait to aquire a lock -- only one event at once
             //
@@ -799,7 +801,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     }
 
     /** Convenience function to create JSON object from error string*/
-    static public JSONObject commandError(String error) {
+    public JSONObject commandError(String error) {
         JSONObject jsobj = new JSONObject();
 
         try {
@@ -952,7 +954,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Find some router info, given a router ID
      * and return a JSONObject
      */
-    public JSONObject findRouterInfoAsJSON(int routerID) throws JSONException {
+    private JSONObject findRouterInfoAsJSON(int routerID) throws JSONException {
         BasicRouterInfo bri = findRouterInfo(routerID);
 
         return routerInfoAsJSON(bri);
@@ -963,7 +965,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Find some router info, given a router address or a router name
      * and return a JSONObject
      */
-    public JSONObject findRouterInfoAsJSON(String value) throws JSONException {
+    private JSONObject findRouterInfoAsJSON(String value) throws JSONException {
         BasicRouterInfo bri = findRouterInfo(value);
 
         return routerInfoAsJSON(bri);
@@ -973,7 +975,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Convert BasicRouterInfo into JSON
      */
-    public JSONObject routerInfoAsJSON(BasicRouterInfo bri) throws JSONException {
+    private JSONObject routerInfoAsJSON(BasicRouterInfo bri) throws JSONException {
         int routerID = bri.getId();
 
         JSONObject jsobj = new JSONObject();
@@ -1109,7 +1111,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * List all RouterInfo as a JSON object
      */
-    public JSONObject getAllRouterInfoAsJSON(String detail) throws JSONException {
+    private JSONObject getAllRouterInfoAsJSON(String detail) throws JSONException {
         JSONObject jsobj = new JSONObject();
         JSONArray array = new JSONArray();
         JSONArray detailArray = new JSONArray();
@@ -1142,7 +1144,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * List one RouterInfo as a JSON object
      */
-    public JSONObject getOneRouterInfoAsJSON(String value) throws JSONException {
+    private JSONObject getOneRouterInfoAsJSON(String value) throws JSONException {
         JSONObject jsobj = new JSONObject();
         JSONArray array = new JSONArray();
         JSONArray detailArray = new JSONArray();
@@ -1182,7 +1184,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * List all shutdown routers
      */
-    public JSONObject listShutdownRoutersAsJSON() throws JSONException {
+    private JSONObject listShutdownRoutersAsJSON() throws JSONException {
         JSONObject jsobj = new JSONObject();
         JSONArray array = new JSONArray();
 
@@ -1218,7 +1220,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Find link info
      * and return a JSONObject
      */
-    public JSONObject findLinkInfoAsJSON(int linkID) throws JSONException {
+    private JSONObject findLinkInfoAsJSON(int linkID) throws JSONException {
         LinkInfo li = findLinkInfo(linkID);
 
         JSONObject jsobj = new JSONObject();
@@ -1266,7 +1268,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * List all LinkInfo as a JSONObject
      */
-    public JSONObject getAllLinkInfoAsJSON(String detail) throws JSONException {
+    private JSONObject getAllLinkInfoAsJSON(String detail) throws JSONException {
         JSONObject jsobj = new JSONObject();
         JSONArray array = new JSONArray();
         JSONArray detailArray = new JSONArray();
@@ -1361,7 +1363,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Get router stats info, given a router address
      * and return a JSONObject
      */
-    public JSONObject getRouterLinkStatsAsJSON(int routerID) throws JSONException {
+    private JSONObject getRouterLinkStatsAsJSON(int routerID) throws JSONException {
         // Find the traffic reporter
         // This is done by asking the GlobalController for
         // a class that implements TrafficInfo.
@@ -1419,7 +1421,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Get router stats info, given a router address and a destination router
      * and return a JSONObject
      */
-    public JSONObject getRouterLinkStatsAsJSON(int routerID, int dstID) throws JSONException {
+    private JSONObject getRouterLinkStatsAsJSON(int routerID, int dstID) throws JSONException {
         // Find the traffic reporter
         // This is done by asking the GlobalController for
         // a class that implements TrafficInfo.
@@ -1520,7 +1522,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     }
 
     /** Create pair of integers  */
-    static public Pair<Integer, Integer> makePair(int r1, int r2) {
+    public Pair<Integer, Integer> makePair(int r1, int r2) {
         return new Pair<Integer, Integer>(r1, r2);
     }
 
@@ -1612,20 +1614,18 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Find some app info, given an app ID
      * and returns a JSONObject.
      */
-    public JSONObject findAppInfoAsJSON(int appID) throws JSONException {
+    private JSONObject findAppInfoAsJSON(int appID) throws JSONException {
         BasicRouterInfo bri = findAppInfo(appID);
 
         Logger.getLogger("log").logln(USR.STDOUT, "AppID: " + appID + " -> " + "BasicRouterInfo: " + bri);
 
         String appName = bri.getAppName(appID);
 
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      "AppID: " + appID + " -> " + "AppName: " + appName);
+        Logger.getLogger("log").logln(USR.STDOUT, "AppID: " + appID + " -> " + "AppName: " + appName);
 
         Map<String, Object> data = bri.getApplicationData(appName);
 
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      "AppName: " + appName + " => " + "data: " + data);
+        Logger.getLogger("log").logln(USR.STDOUT, "AppName: " + appName + " => " + "data: " + data);
 
 
         JSONObject jsobj = new JSONObject();
@@ -1683,6 +1683,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Get the router stats -- method is blocking
      */
     public List<String> compileRouterStats() {
+        throw new Error("REMOVED 20140104 - sclayman");
+    }
+        /*
         try {
             List<String> result = new ArrayList<String>();
 
@@ -1706,6 +1709,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             return null;
         }
     }
+    */
 
     /*
      * Shutdown
@@ -1734,18 +1738,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             killAllControllers();
 
             //ThreadTools.findAllThreads("GC post killAllControllers:");
-            /*
-               Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Pausing.");
 
-               try {
-                Thread.sleep(10);
-               } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
-                System.exit(-1);
-               }
-             */
-
-            //ThreadTools.findAllThreads("GC post checkMessages:");
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
 
             stopConsole();
@@ -1768,7 +1761,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             f = new File(o.getFileName());
             s = new FileOutputStream(f, true);
             p = new PrintStream(s, true);
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot open " + o.getFileName()
                                           + " for output " + e.getMessage());
             return;
@@ -1912,7 +1905,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Start listening for router stats using monitoring framework.
      */
-    public synchronized void startMonitoringConsumer(InetSocketAddress addr) {
+    private synchronized void startMonitoringConsumer(InetSocketAddress addr) {
         // check to see if the monitoring is already connected and
         // running
         if (dataConsumer.isConnected()) {
@@ -1948,7 +1941,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Stop monitoring.
      */
-    public synchronized void stopMonitoringConsumer() {
+    private synchronized void stopMonitoringConsumer() {
         if (dataConsumer.isConnected()) {
             dataConsumer.clearReporters(); // was setReporter(null);
 
@@ -1959,7 +1952,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Start producing router stats using monitoring framework.
      */
-    public synchronized void startMonitoringProducer(InetSocketAddress addr) {
+    private synchronized void startMonitoringProducer(InetSocketAddress addr) {
         // set up DataPlane
         DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
         dataSource.setDataPlane(outputDataPlane);
@@ -1999,7 +1992,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Stop monitoring Producer.
      */
-    public synchronized void stopMonitoringProducer() {
+    private synchronized void stopMonitoringProducer() {
         if (dataSource.isConnected()) {
             // turn off probes
             for (Probe probe : probeList) {
@@ -2071,7 +2064,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 LocalControllerInteractor inter = new LocalControllerInteractor(lh);
                 connected = inter.checkLocalController(myHostInfo_);
 
-            } catch (Exception ex) {
+            } catch (IOException iex) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + " cannot connect to exisiting localController " + lh);
+                connected = false;
+            } catch (JSONException jex) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + " cannot connect to exisiting localController " + lh);
                 connected = false;
             }
@@ -2408,9 +2404,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         } catch (Exception e) {
             return null;
         }
-
-        // sclayman 20131222 not needed
-        //return SetAggPointEvent.setAPNow(time, gid, AP, this);
     }
 
     public void registerAggPoint(long time, int gid, int AP) {
@@ -2449,8 +2442,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
     /** Router GID reports a connection to access point AP */
     public boolean reportAP(int gid, int AP) {
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "TODO write reportAP");
-        return true;
+        throw new Error("REMOVED 20140104 - sclayman");
     }
 
     public boolean isLatticeMonitoring() {
@@ -2781,7 +2773,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     }
 
     public JSONObject createApp(int routerID, String className, String[] args) throws JSONException {
-        AppStartEvent ase = new AppStartEvent(getElapsedTime(), null, routerID, className, args);
+        StartAppEvent ase = new StartAppEvent(getElapsedTime(), null, routerID, className, args);
         return executeEvent(ase);
     }
 
@@ -2790,12 +2782,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         // now convert raw args to String[]
         args = rawArgs.split(" ");
 
-        AppStartEvent ase = new AppStartEvent(getElapsedTime(), null, routerID, className, args);
+        StartAppEvent ase = new StartAppEvent(getElapsedTime(), null, routerID, className, args);
         return executeEvent(ase);
     }
 
     public JSONObject stopApp(int routerID, int appID) throws JSONException {
-        AppStopEvent ase = new AppStopEvent(getElapsedTime(), null, routerID, appID);
+        StopAppEvent ase = new StopAppEvent(getElapsedTime(), null, routerID, appID);
         return executeEvent(ase);
 
     }
@@ -2843,35 +2835,3 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 }
 
 
-class GCEventResolver implements EventResolver {
-    public GCEventResolver() {
-    }
-
-    public ExecutableEvent resolveEvent(Event e) {
-        if (e instanceof usr.events.vim.StartRouterEvent) {
-            usr.events.vim.StartRouterEvent sre = (usr.events.vim.StartRouterEvent)e;
-            return new usr.events.globalcontroller.StartRouterEvent(sre);
-
-        } else if (e instanceof   usr.events.vim.EndRouterEvent) {
-            usr.events.vim.EndRouterEvent ere = (usr.events.vim.EndRouterEvent)e;
-            return new usr.events.globalcontroller.EndRouterEvent(ere);
-
-        } else if (e instanceof   usr.events.vim.StartLinkEvent) {
-            usr.events.vim.StartLinkEvent sle = (usr.events.vim.StartLinkEvent)e;
-            return new usr.events.globalcontroller.StartLinkEvent(sle);
-
-        } else if (e instanceof   usr.events.vim.EndLinkEvent) {
-            usr.events.vim.EndLinkEvent ele = (usr.events.vim.EndLinkEvent)e;
-            return new usr.events.globalcontroller.EndLinkEvent(ele);
-
-        } else if (e instanceof  usr.events.vim.AppStartEvent) {
-            usr.events.vim.AppStartEvent ase = (usr.events.vim.AppStartEvent)e;
-            return new usr.events.globalcontroller.AppStartEvent(ase);
-
-        } else {
-        }
-
-        return null;
-
-    }
-}

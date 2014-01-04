@@ -8,6 +8,7 @@ import java.util.Map;
 import usr.events.Event;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
+import usr.events.vim.StopApp;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
@@ -19,11 +20,11 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class AppStopEvent extends AbstractGlobalControllerEvent {
+public class StopAppEvent extends AbstractGlobalControllerEvent implements StopApp {
     int routerNo_ = 0;
     int appID = 0;
 
-    public AppStopEvent(long time, EventEngine eng, int rNo, int appNo) {
+    public StopAppEvent(long time, EventEngine eng, int rNo, int appNo) {
         super(time, eng);
         routerNo_ = rNo;
         appID = appNo;

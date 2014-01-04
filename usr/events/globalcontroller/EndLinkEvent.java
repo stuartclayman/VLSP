@@ -3,6 +3,7 @@ package usr.events.globalcontroller;
 import usr.events.Event;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
+import usr.events.vim.EndLink;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
@@ -14,7 +15,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class EndLinkEvent extends AbstractGlobalControllerEvent {
+public class EndLinkEvent extends AbstractGlobalControllerEvent implements EndLink {
     int address1_;
     int address2_;
     boolean routerNumsSet_ = true;
@@ -203,7 +204,7 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent {
         for (i = 0; i < MAX_TRIES; i++) {
             try {
                 lci.endLink(br1.getHost(), br1.getManagementPort(), br2.getAddress());
-                Pair<Integer, Integer> pair = GlobalController.makePair(rId1, rId2);
+                Pair<Integer, Integer> pair = gc.makePair(rId1, rId2);
                 Integer linkID = pair.hashCode();
                 gc.removeLinkInfo(linkID);
 

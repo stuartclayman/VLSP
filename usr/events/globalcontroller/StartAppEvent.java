@@ -10,6 +10,7 @@ import us.monoid.json.JSONObject;
 import usr.events.Event;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
+import usr.events.vim.StartApp;
 import usr.common.BasicRouterInfo;
 import usr.common.Pair;
 import usr.engine.EventEngine;
@@ -19,21 +20,21 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class AppStartEvent extends AbstractGlobalControllerEvent {
+public class StartAppEvent extends AbstractGlobalControllerEvent implements StartApp {
     int address_ = 0;
     String className_ = null;
     String [] args_ = null;
     String name_ = null;
     boolean routerNumSet_ = true;
 
-    public AppStartEvent(long time, EventEngine eng, int rNo, String cname, String [] args) {
+    public StartAppEvent(long time, EventEngine eng, int rNo, String cname, String [] args) {
         super(time, eng);
         address_ = rNo;
         className_ = cname;
         args_ = args;
     }
 
-    public AppStartEvent(long time, EventEngine eng, String name, String cname, String [] args) {
+    public StartAppEvent(long time, EventEngine eng, String name, String cname, String [] args) {
         super(time, eng);
         className_ = cname;
         name_ = name;
@@ -41,7 +42,7 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
         routerNumSet_ = false;
     }
 
-    public AppStartEvent(long time, EventEngine eng, String name, String cname, String [] args, GlobalController gc) throws InstantiationException {
+    public StartAppEvent(long time, EventEngine eng, String name, String cname, String [] args, GlobalController gc) throws InstantiationException {
         super(time, eng);
         className_ = cname;
         args_ = args;
@@ -50,9 +51,9 @@ public class AppStartEvent extends AbstractGlobalControllerEvent {
     }
 
     /**
-     * Create a AppStartEvent from an existing generic AppStartEvent
+     * Create a StartAppEvent from an existing generic StartAppEvent
      */
-    public AppStartEvent(usr.events.vim.AppStartEvent ase) {
+    public StartAppEvent(usr.events.vim.StartAppEvent ase) {
         super(ase.time, ase.engine);
 
         if (ase.name == null) { // name is null, so use address

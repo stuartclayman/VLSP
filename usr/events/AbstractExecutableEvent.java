@@ -20,7 +20,7 @@ public abstract class AbstractExecutableEvent extends AbstractEvent implements E
 
         JSONObject jsobj = eventBody(ed);
 
-        System.out.println("AbstractExecutableEvent" + " result = " + jsobj);
+        //System.out.println("AbstractExecutableEvent" + " result = " + jsobj);
 
         return jsobj;
     }

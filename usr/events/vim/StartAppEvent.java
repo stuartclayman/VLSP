@@ -6,13 +6,13 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class AppStartEvent extends AbstractEvent {
+public class StartAppEvent extends AbstractEvent implements StartApp {
     public final int address;
     public final String className;
     public final String [] args;
     public final String name;
 
-    public AppStartEvent(long time, EventEngine eng, int rNo, String cname, String [] args) {
+    public StartAppEvent(long time, EventEngine eng, int rNo, String cname, String [] args) {
         super(time, eng);
         address = rNo;
         name = null;
@@ -20,7 +20,7 @@ public class AppStartEvent extends AbstractEvent {
         this.args = args;
     }
 
-    public AppStartEvent(long time, EventEngine eng, String addr, String cname, String [] args) {
+    public StartAppEvent(long time, EventEngine eng, String addr, String cname, String [] args) {
         super(time, eng);
         address = 0;
         className = cname;

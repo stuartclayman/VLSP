@@ -7,12 +7,13 @@ import usr.logging.Logger;
 import usr.logging.USR;
 import usr.events.AbstractExecutableEvent;
 import usr.events.EventDelegate;
+import usr.events.vim.EndRouter;
 import usr.vim.VimFunctions;
 import us.monoid.json.JSONObject;
 
 
 /** Class represents a global controller event*/
-public class EndRouterEvent extends AbstractExecutableEvent {
+public class EndRouterEvent extends AbstractExecutableEvent implements EndRouter {
     public final int address;
     public final String name;
 

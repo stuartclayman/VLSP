@@ -13,7 +13,7 @@ import usr.events.EndSimulationEvent;
 import usr.events.Event;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
-import usr.events.vim.AppStartEvent;
+import usr.events.vim.StartAppEvent;
 import usr.events.vim.EndLinkEvent;
 import usr.events.vim.EndRouterEvent;
 import usr.events.vim.StartLinkEvent;
@@ -31,7 +31,7 @@ public class ScriptEngine implements EventEngine {
     ArrayList<Event> events_ = null;
 
     /** Contructor from Parameter string */
-    public ScriptEngine(int time, String parms) {
+    public ScriptEngine(int time, String parms) throws EventEngineException {
         timeToEnd_ = time * 1000;
         readScript(parms);
     }
@@ -252,12 +252,12 @@ public class ScriptEngine implements EventEngine {
                 }
             } else if (type.equals("END_SIMULATION")) {
                 return new EndSimulationEvent(time);
-            } else if (type.equals("ON_ROUTER")) {
+            } else if (type.equals("START_APP")) {
                 if (args.length < 4) {
                     throw new Exception(
-                                        "ON_ROUTER requires router_id AND className, plus optional args");
+                                        "START_APP requires router_id AND className, plus optional args");
                 } else {
-                    // eliminate time and ON_ROUTER
+                    // eliminate time and START_APP
                     String[] cmdArgs = new String[args.length - 4];
 
                     for (int a = 4; a < args.length; a++) {
@@ -270,10 +270,10 @@ public class ScriptEngine implements EventEngine {
                     if (arg2Scanner.hasNextInt()) {
                         int rno = arg2Scanner.nextInt();
                         arg2Scanner.close();
-                        return new AppStartEvent(time, this, rno, args[3], cmdArgs);
+                        return new StartAppEvent(time, this, rno, args[3], cmdArgs);
                     } else {
                     	arg2Scanner.close();
-                        return new AppStartEvent(time, this, args[2], args[3], cmdArgs);
+                        return new StartAppEvent(time, this, args[2], args[3], cmdArgs);
                     }
                 }
             }

@@ -5,6 +5,7 @@ import java.io.IOException;
 import usr.events.Event;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
+import usr.events.vim.StartLink;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.model.abstractnetwork.AbstractLink;
@@ -19,7 +20,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /** Class represents a global controller event*/
-public class StartLinkEvent extends AbstractGlobalControllerEvent {
+public class StartLinkEvent extends AbstractGlobalControllerEvent implements StartLink {
     private int address1_;
     private int address2_;
     private int weight_ = 1;
@@ -313,7 +314,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent {
                 String connectionName = (String)response.get("name");
 
                 // add Pair<router1Id, router2Id> -> connectionName to  linkNames
-                Pair<Integer, Integer> endPoints = GlobalController.makePair(router1Id, router2Id);
+                Pair<Integer, Integer> endPoints = gc.makePair(router1Id, router2Id);
                 linkID = endPoints.hashCode();
 
                 gc.setLinkInfo(linkID, new LinkInfo(endPoints, connectionName, weight, linkID, gc.getElapsedTime()));

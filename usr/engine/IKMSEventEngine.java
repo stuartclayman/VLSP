@@ -7,7 +7,6 @@ import usr.vim.VimFunctions;
 import rgc.xmlparse.*;
 import rgc.probdistributions.*;
 import usr.logging.*;
-import usr.common.Pair;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.*;
@@ -30,6 +29,7 @@ import usr.events.StartSimulationEvent;
 import usr.events.vim.EndRouterEvent;
 import usr.events.vim.StartLinkEvent;
 import usr.events.vim.StartRouterEvent;
+import usr.events.vim.StartRouter;
 
 /**
    This engine uses probability distributions to add events into the
@@ -109,7 +109,7 @@ public class IKMSEventEngine implements EventEngine  {
     public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate obj){
         Logger.getLogger("log").logln(USR.STDOUT,leadin() + "followEvent " + e);
 
-        if (e instanceof ExecutableEvent) {
+        if (e instanceof ExecutableEvent && e instanceof StartRouter) {
             ExecutableEvent ee = (ExecutableEvent)e;
             followRouter(ee, s, response, (VimFunctions)ee.getContextObject());
             return;
@@ -369,7 +369,7 @@ public class IKMSEventEngine implements EventEngine  {
      */
 
     private String leadin() {
-        return new String ("IKMSTrafficEngine:");
+        return "IKMSTrafficEngine:";
     }
 
 }

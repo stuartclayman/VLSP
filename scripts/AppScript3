@@ -11,12 +11,12 @@
 4200 START_LINK 3 5
 
 // start 2 receivers
-+30000 ON_ROUTER 4 plugins_usr.aggregator.appl.InfoConsumer -i 0/3000 -n info-consumer-4 // receive on R 4
-+0 ON_ROUTER 5 plugins_usr.aggregator.appl.InfoConsumer -i 0/3000 -n info-consumer-5 // receive on R 5
++30000 START_APP 4 plugins_usr.aggregator.appl.InfoConsumer -i 0/3000 -n info-consumer-4 // receive on R 4
++0 START_APP 5 plugins_usr.aggregator.appl.InfoConsumer -i 0/3000 -n info-consumer-5 // receive on R 5
 
 // start 2 senders
-+1000 ON_ROUTER 1 plugins_usr.aggregator.appl.InfoSource -o 4/3000 -p rt -t 1 -n info-source-1 -d 10
-+0 ON_ROUTER 2 plugins_usr.aggregator.appl.InfoSource -o 5/3000 -p rt -t 1 -n info-source-2 -d 10
++1000 START_APP 1 plugins_usr.aggregator.appl.InfoSource -o 4/3000 -p rt -t 1 -n info-source-1 -d 10
++0 START_APP 2 plugins_usr.aggregator.appl.InfoSource -o 5/3000 -p rt -t 1 -n info-source-2 -d 10
 
 
 // end links

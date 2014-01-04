@@ -10,7 +10,7 @@ import usr.localcontroller.command.LocalCheckCommand;
 import usr.localcontroller.command.MonitoringStartCommand;
 import usr.localcontroller.command.MonitoringStopCommand;
 import usr.localcontroller.command.NewRouterCommand;
-import usr.localcontroller.command.OnRouterCommand;
+import usr.localcontroller.command.AppStartCommand;
 import usr.localcontroller.command.AppStopCommand;
 import usr.localcontroller.command.QuitCommand;
 import usr.localcontroller.command.ReportAPCommand;
@@ -52,7 +52,7 @@ public class LocalControllerManagementConsole extends USRRestConsole {
         register(new RouterConfigCommand());
         register(new SetAPCommand());
         register(new ReportAPCommand());
-        register(new OnRouterCommand());
+        register(new AppStartCommand());
         register(new AppStopCommand());
         register(new GetRouterStatsCommand());
         register(new RequestRouterStatsCommand());

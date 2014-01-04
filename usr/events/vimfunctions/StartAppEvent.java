@@ -6,17 +6,18 @@ import usr.logging.USR;
 import usr.events.AbstractExecutableEvent;
 import usr.events.EventDelegate;
 import usr.vim.VimFunctions;
+import usr.events.vim.StartApp;
 import us.monoid.json.JSONObject;
 import us.monoid.json.JSONException;
 
 /** Class represents a global controller event*/
-public class AppStartEvent extends AbstractExecutableEvent {
+public class StartAppEvent extends AbstractExecutableEvent implements StartApp {
     public final int address;
     public final String className;
     public final String [] args;
     public final String name;
 
-    public AppStartEvent(long time, EventEngine eng, int rNo, String cname, String [] args) {
+    public StartAppEvent(long time, EventEngine eng, int rNo, String cname, String [] args) {
         super(time, eng);
         address = rNo;
         name = null;
@@ -24,7 +25,7 @@ public class AppStartEvent extends AbstractExecutableEvent {
         this.args = args;
     }
 
-    public AppStartEvent(long time, EventEngine eng, String name, String cname, String [] args) {
+    public StartAppEvent(long time, EventEngine eng, String name, String cname, String [] args) {
         super(time, eng);
         address = 0;
         className = cname;
@@ -33,9 +34,9 @@ public class AppStartEvent extends AbstractExecutableEvent {
     }
 
     /**
-     * Create a AppStartEvent from an existing generic AppStartEvent
+     * Create a StartAppEvent from an existing generic StartAppEvent
      */
-    public AppStartEvent(usr.events.vim.AppStartEvent ase) {
+    public StartAppEvent(usr.events.vim.StartAppEvent ase) {
         super(ase.time, ase.engine);
 
         if (ase.name == null) { // name is null, so use address
