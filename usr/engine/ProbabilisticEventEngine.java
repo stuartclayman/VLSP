@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -249,7 +250,7 @@ public class ProbabilisticEventEngine extends NullEventEngine implements APWarmU
     private void createNLinks(int routerId, long now, EventScheduler s, GlobalController g, int noLinks, EventEngine eng) {
         // Schedule links
 
-        ArrayList<Integer> picked = chooseNLinks(routerId, g, noLinks);
+        List<Integer> picked = chooseNLinks(routerId, g, noLinks);
 
         for (int i : picked) {
             g.scheduleLink(new AbstractLink(routerId,i),eng,now);
@@ -257,19 +258,17 @@ public class ProbabilisticEventEngine extends NullEventEngine implements APWarmU
     }
 
     /** Choose n links to be connected to */
-    private ArrayList<Integer> chooseNLinks(int routerId, GlobalController g, int noLinks) {
+    private List<Integer> chooseNLinks(int routerId, GlobalController g, int noLinks) {
         // Get a list of nodes which can be connected to
-        ArrayList<Integer> nodes =
-            new ArrayList<Integer>(g.getRouterList());
+        List<Integer> nodes = new ArrayList<Integer>(g.getRouterList());
         nodes.remove(nodes.indexOf(routerId));
-        int [] outlinks = g.getOutLinks(routerId);
+        List<Integer> outlinks = g.getOutLinks(routerId);
 
         for (Integer l : outlinks) {
             nodes.remove(nodes.indexOf(l));
         }
 
-        ArrayList<Integer> picked = linkPicker_.pickNLinks(nodes, g,
-                                                           noLinks, routerId);
+        List<Integer> picked = linkPicker_.pickNLinks(nodes, g, noLinks, routerId);
 
         return picked;
     }

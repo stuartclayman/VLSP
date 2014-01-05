@@ -1,7 +1,9 @@
 package usr.model.abstractnetwork;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import usr.logging.USR;
 
 import usr.logging.Logger;
@@ -626,7 +628,7 @@ public class AbstractNetwork {
     }
 
     /** Accessor function for routerList */
-    public ArrayList<Integer> getNodeList() {
+    public List<Integer> getNodeList() {
         return nodeList_;
     }
 
@@ -646,6 +648,14 @@ public class AbstractNetwork {
     /** Return id of ith router */
     public int getNodeId(int i) {
         return nodeList_.get(i);
+    }
+    
+    public List<Integer> asList(final int[] is)
+    {
+            return new AbstractList<Integer>() {
+                    public Integer get(int i) { return is[i]; }
+                    public int size() { return is.length; }
+            };
     }
 
     private String leadin()

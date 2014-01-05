@@ -2,6 +2,7 @@
 
 package usr.engine.linkpicker;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.PriorityQueue;
 
 import org.w3c.dom.Node;
@@ -25,9 +26,10 @@ public class LifetimeLinkPicker implements NodeLinkPicker {
         lte_= LifetimeEstimate.getLifetimeEstimate();
     }
 
+     /** Return an array of several nodes from a list which will
+     * connect to an origin node*/
     @Override
-	public ArrayList <Integer> pickNLinks(ArrayList<Integer> nodes,
-        GlobalController g, int noLinks, int node)
+    public List <Integer> pickNLinks(List<Integer> nodes, GlobalController g, int noLinks, int node)
     {
         ArrayList<Integer> picked= new ArrayList<Integer>();
         long time= g.getElapsedTime();
@@ -42,9 +44,10 @@ public class LifetimeLinkPicker implements NodeLinkPicker {
         return picked;
     }
 
+    /** As above but a single node -- returns -1 if no node
+     * picked*/
     @Override
-	public int pickLink(ArrayList<Integer> nodes, GlobalController g,
-        int node)
+    public int pickLink(List<Integer> nodes, GlobalController g, int node)
     {
     	long time= g.getElapsedTime();
     	createQueue(nodes, time);
@@ -54,7 +57,7 @@ public class LifetimeLinkPicker implements NodeLinkPicker {
     }
 
 
-    private void createQueue(ArrayList<Integer> nodes, long time)
+    private void createQueue(List<Integer> nodes, long time)
     {
     	for (int n: nodes) {
     		NodeAndLifetime nl= new NodeAndLifetime(n,lte_.getNodeLife(n,time));
@@ -62,8 +65,9 @@ public class LifetimeLinkPicker implements NodeLinkPicker {
     	}
     }
 
+    /** Parse any extra XML associated with configuration*/
     @Override
-	public void parseExtraXML(Node linkpicker)
+    public void parseExtraXML(Node linkpicker)
     {
 
     }

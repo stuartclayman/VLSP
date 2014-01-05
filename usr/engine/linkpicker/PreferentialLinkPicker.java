@@ -2,6 +2,7 @@
 
 package usr.engine.linkpicker;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.w3c.dom.Node;
@@ -17,7 +18,7 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
     }
 
     @Override
-	public ArrayList<Integer> pickNLinks(ArrayList<Integer> nodes, GlobalController g, int noLinks, int node) {
+    public List<Integer> pickNLinks(List<Integer> nodes, GlobalController g, int noLinks, int node) {
         ArrayList<Integer> picked = new ArrayList<Integer>();
         updateNodes(g, nodes);
 
@@ -40,12 +41,12 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
 
     /** Count the total degree and create a list of nodes grouped
      * by degree */
-    private void updateNodes(GlobalController g, ArrayList<Integer> nodes) {
+    private void updateNodes(GlobalController g, List<Integer> nodes) {
         nodesByDegree_ = new ArrayList<ArrayList<Integer> >();
         totDegree_ = 0;
 
         for (int node : nodes) {
-            int deg = g.getOutLinks(node).length;
+            int deg = g.getOutLinks(node).size();
             if (deg == 0)
                 deg= 1;
 
@@ -59,7 +60,7 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
     }
 
     @Override
-	public int pickLink(ArrayList<Integer> nodes, GlobalController g, int node) {
+    public int pickLink(List<Integer> nodes, GlobalController g, int node) {
         updateNodes(g, nodes);
         return pickLinkWithoutUpdate();
     }
@@ -91,7 +92,7 @@ public class PreferentialLinkPicker implements NodeLinkPicker {
     }
 
     @Override
-	public void parseExtraXML(Node linkpicker) {
+    public void parseExtraXML(Node linkpicker) {
     }
 
 }

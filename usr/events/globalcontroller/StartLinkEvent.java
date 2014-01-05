@@ -1,6 +1,7 @@
 package usr.events.globalcontroller;
 
 import java.io.IOException;
+import java.util.List;
 
 import usr.events.Event;
 import usr.events.EventDelegate;
@@ -231,7 +232,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent implements Sta
     public int startLink(GlobalController gc, long time, int router1Id, int router2Id,
                                 int weight, String name, boolean scheduled) {
         // check if this link already exists
-        int [] outForRouter1 = gc.getOutLinks(router1Id);
+        List<Integer> outForRouter1 = gc.getOutLinks(router1Id);
         boolean gotIt = false;
 
         for (int i : outForRouter1) {

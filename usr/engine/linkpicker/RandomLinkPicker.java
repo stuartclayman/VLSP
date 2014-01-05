@@ -2,6 +2,7 @@
 
 package usr.engine.linkpicker;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.w3c.dom.Node;
@@ -16,7 +17,7 @@ public class RandomLinkPicker implements NodeLinkPicker {
     }
 
     @Override
-	public ArrayList<Integer> pickNLinks(ArrayList<Integer> nodes, GlobalController g, int noLinks, int node) {
+    public List<Integer> pickNLinks(List<Integer> nodes, GlobalController g, int noLinks, int node) {
         ArrayList<Integer> picked = new ArrayList<Integer>();
 
         for (int i = 0; i < noLinks; i++) {
@@ -32,7 +33,7 @@ public class RandomLinkPicker implements NodeLinkPicker {
     }
 
     @Override
-	public int pickLink(ArrayList<Integer> nodes, GlobalController g, int node) {
+    public int pickLink(List<Integer> nodes, GlobalController g, int node) {
         if (nodes.size() == 0) {
             return -1;
         }

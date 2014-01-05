@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.ArrayList;
 import usr.logging.USR;
 import usr.logging.Logger;
 
@@ -40,7 +39,7 @@ public class LeastBusyPlacement implements PlacementEngine {
         HashMap<LocalControllerInfo, Long>lcVolumes = new HashMap<LocalControllerInfo, Long>();
 
         // a mapping of host to the list of routers on that host.
-        HashMap<String, ArrayList<BasicRouterInfo> > routerLocations = gc.getRouterLocations();
+        HashMap<String, List<BasicRouterInfo> > routerLocations = gc.getRouterLocations();
 
         // Get the monitoring reporter object that collects link usage data
         TrafficInfo reporter = (TrafficInfo)gc.findByInterface(TrafficInfo.class);
@@ -50,7 +49,7 @@ public class LeastBusyPlacement implements PlacementEngine {
             String host = localInfo.getName();
 
             // now find all of the routers on that host
-            ArrayList<BasicRouterInfo> routers = routerLocations.get(host);
+            List<BasicRouterInfo> routers = routerLocations.get(host);
 
             if (routers == null) {
                 // no routers in that host
@@ -68,7 +67,7 @@ public class LeastBusyPlacement implements PlacementEngine {
                     String routerName = router.getName();
 
                     // get remote routerIDs of links that come out of this router.
-                    int [] outDests = gc.getOutLinks(routerID);
+                    List<Integer> outDests = gc.getOutLinks(routerID);
 
                     // for each link
                     for (int otherRouter : outDests) {

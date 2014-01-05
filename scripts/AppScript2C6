@@ -1,0 +1,51 @@
+// 7 routers in 3 domains
+1000 START_ROUTER       fe80:0:0:0:0:0:0:1     dom1.Src1
+1500 START_ROUTER       fe80:0:0:0:0:0:0:2     dom1.Src2
+2000 START_ROUTER       fe80:0:ccdd:aabb:0:0:0:2     dom2.Middle
+2500 START_ROUTER       fe80:0:0:0:0:0:09:1     dom3.Dst1
+3000 START_ROUTER       fe80:0:0:0:0:0:09:2     dom3.Dst2
+3500 START_ROUTER       fe80:0:0:0:0:0:09:3     dom3.Src3
+4000 START_ROUTER       fe80:0:0:0:0:0:0:3     dom1.Dst3
+
+
+// router fe80:0:ccdd:aabb:0:0:0:2 in the middle
+//  also add weights and link names
+// t  START_LINK     src_addr  dst_addr weight  link_name
++1000 START_LINK	fe80:0:ccdd:aabb:0:0:0:2	fe80:0:0:0:0:0:09:1	1	m-to-d1
++100  START_LINK	fe80:0:ccdd:aabb:0:0:0:2	fe80:0:0:0:0:0:09:2	1	m-to-d2
++100  START_LINK	fe80:0:ccdd:aabb:0:0:0:2	fe80:0:0:0:0:0:0:3	1	m-to-d3
++100  START_LINK	fe80:0:0:0:0:0:0:1	fe80:0:ccdd:aabb:0:0:0:2	1	s1-to-m
++100  START_LINK	fe80:0:0:0:0:0:0:2	fe80:0:ccdd:aabb:0:0:0:2	1	s2-to-m
++100  START_LINK	fe80:0:0:0:0:0:09:3	fe80:0:ccdd:aabb:0:0:0:2	1	s3-to-m
+
+// start 3 receivers
++6000 START_APP fe80:0:0:0:0:0:09:1 usr.applications.RecvDataRate 3000   // receive on R fe80:0:0:0:0:0:09:1
++200  START_APP fe80:0:0:0:0:0:09:2 usr.applications.RecvDataRate 3000   // receive on R fe80:0:0:0:0:0:09:2
++200  START_APP fe80:0:0:0:0:0:0:3 usr.applications.RecvDataRate 3000   // receive on R fe80:0:0:0:0:0:0:3
+
+// start 3 senders
++1500 START_APP fe80:0:0:0:0:0:0:1 usr.applications.Send fe80:0:0:0:0:0:09:1 3000 50000  // send 5000 datagrams from fe80:0:0:0:0:0:0:1 to fe80:0:0:0:0:0:09:1
++200  START_APP fe80:0:0:0:0:0:0:2 usr.applications.Send fe80:0:0:0:0:0:09:2 3000 50000  // send 5000 datagrams from fe80:0:0:0:0:0:0:2 to fe80:0:0:0:0:0:09:2
++200  START_APP fe80:0:0:0:0:0:09:3 usr.applications.Send fe80:0:0:0:0:0:0:3 3000 50000  // send 5000 datagrams from fe80:0:0:0:0:0:09:3 to fe80:0:0:0:0:0:0:3
+
+
+// end links
+32000 END_LINK  fe80:0:0:0:0:0:0:1     fe80:0:ccdd:aabb:0:0:0:2
++200  END_LINK  fe80:0:0:0:0:0:0:2     fe80:0:ccdd:aabb:0:0:0:2
++200  END_LINK  fe80:0:0:0:0:0:09:3     fe80:0:ccdd:aabb:0:0:0:2
++200  END_LINK  fe80:0:ccdd:aabb:0:0:0:2     fe80:0:0:0:0:0:09:1
++200  END_LINK  fe80:0:ccdd:aabb:0:0:0:2     fe80:0:0:0:0:0:09:2
++200  END_LINK  fe80:0:ccdd:aabb:0:0:0:2     fe80:0:0:0:0:0:0:3
+
+// end routers
++500 END_ROUTER fe80:0:0:0:0:0:0:1
++300 END_ROUTER fe80:0:0:0:0:0:0:2
++300 END_ROUTER fe80:0:0:0:0:0:0:3
++300 END_ROUTER fe80:0:0:0:0:0:09:1
++300 END_ROUTER fe80:0:0:0:0:0:09:2
++300 END_ROUTER fe80:0:0:0:0:0:09:3
++300 END_ROUTER fe80:0:ccdd:aabb:0:0:0:2
+
+
+// and end
++700 END_SIMULATION

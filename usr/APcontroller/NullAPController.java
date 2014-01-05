@@ -1,11 +1,13 @@
 package usr.APcontroller;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import usr.common.Pair;
 import usr.globalcontroller.GlobalController;
 import usr.logging.Logger;
 import usr.logging.USR;
+import usr.model.abstractnetwork.AbstractNetwork;
 import usr.router.RouterController;
 import usr.router.RouterOptions;
 import usr.model.lifeEstimate.LifetimeEstimate;
@@ -275,7 +277,7 @@ public class NullAPController implements APController {
 
         int [] permCost = new int[g.getMaxRouterId()+1];
         int [] tempCost = new int[g.getMaxRouterId()+1];
-        ArrayList<Integer> routers = g.getRouterList();
+        List<Integer> routers = g.getRouterList();
 
         for (int i : routers) {
             permCost[i] = -1;
@@ -319,8 +321,10 @@ public class NullAPController implements APController {
             if (cheapCost == maxCost) {
                 continue;
             }
-            int [] out = g.getOutLinks(cheapNode);
-            int [] outCost = g.getLinkCosts(cheapNode);
+            
+            AbstractNetwork network = g.getAbstractNetwork();
+            int [] out = network.getOutLinks(cheapNode);
+            int [] outCost = network.getLinkCosts(cheapNode);
             int link;
 
             //System.err.println("Adding links from "+cheapNode+" cost "+cheapCost);

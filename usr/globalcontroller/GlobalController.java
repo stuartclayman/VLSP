@@ -850,18 +850,18 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Get a mapping of host to the list of routers on that host.
      */
-    public HashMap<String, ArrayList<BasicRouterInfo> > getRouterLocations() {
-        HashMap<String, ArrayList<BasicRouterInfo> > routerLocations = new HashMap<String, ArrayList<BasicRouterInfo> >();
+    public HashMap<String, List<BasicRouterInfo> > getRouterLocations() {
+        HashMap<String, List<BasicRouterInfo> > routerLocations = new HashMap<String, List<BasicRouterInfo> >();
 
         // work out which router is where
         for (BasicRouterInfo routerInfo : getAllRouterInfo()) {
             String host = routerInfo.getHost();
 
             if (routerLocations.containsKey(host)) { // we've seen this host
-                ArrayList<BasicRouterInfo> list = routerLocations.get(host);
+                List<BasicRouterInfo> list = routerLocations.get(host);
                 list.add(routerInfo);
             } else {                                 //  it's a new host
-                ArrayList<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
+                List<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
                 list.add(routerInfo);
 
                 routerLocations.put(host, list);
@@ -901,7 +901,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /** Unregister a router and all links from structures in
      *  GlobalController*/
     public void unregisterRouter(long time, int rId) {
-        int[] out = getOutLinks(rId);
+        int[] out = network_.getOutLinks(rId);
         APController_.removeNode(time, rId);
 
         for (int i = out.length - 1; i >= 0; i--) {
@@ -1177,7 +1177,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * List all shutdown routers
      */
-    public ArrayList<BasicRouterInfo> getShutdownRouters() {
+    public List<BasicRouterInfo> getShutdownRouters() {
         return shutdownRouters_;
     }
 
@@ -1383,7 +1383,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
 
         // get outlinks
-        int [] outLinks = getOutLinks(routerID);
+        int [] outLinks = network_.getOutLinks(routerID);
 
         for (int outLink : outLinks) {
             // add link
@@ -1441,7 +1441,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
 
         // get outlinks
-        int [] outLinks = getOutLinks(routerID);
+        int [] outLinks = network_.getOutLinks(routerID);
 
         for (int outLink : outLinks) {
             if (outLink == dstID) {
@@ -1495,16 +1495,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     //  return (List<Integer>)Arrays.asList(network_.getOutLinks(routerId));
     //}
 
-    /* Return a list of outlinks from a router */
-    public int[] getOutLinks(int routerId) {
-        return network_.getOutLinks(routerId);
-    }
-
     /**
      * Is a router directly connected to another one
      */
     public boolean isConnected(int routerId, int other) {
-        int [] links = getOutLinks(routerId);
+        int [] links = network_.getOutLinks(routerId);
 
         for (int p = 0; p < links.length; p++) {
             if (links[p] == other) {
@@ -1513,12 +1508,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         }
 
         return false;
-    }
-
-    /* Return a list of link costs from a router -- must be used in
-     *  parallel get getOutLinks to id link nos*/
-    public int [] getLinkCosts(int routerId) {
-        return network_.getLinkCosts(routerId);
     }
 
     /** Create pair of integers  */
@@ -2366,7 +2355,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * List all APs
      */
-    public ArrayList<Integer> getAPs() {
+    public List<Integer> getAPs() {
         //return new ArrayList(new HashSet(apInfo.values()));
         return apList;
     }
@@ -2483,7 +2472,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     }
 
     /** Accessor function for routerList */
-    public ArrayList<Integer> getRouterList() {
+    public List<Integer> getRouterList() {
         return network_.getNodeList();
     }
 
@@ -2505,6 +2494,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /** Number of links in simulation */
     public int getNoLinks() {
         return network_.getNoLinks();
+    }
+
+    /* Return a list of outlinks from a router */
+    public List<Integer> getOutLinks(int routerId) {
+        return network_.asList(network_.getOutLinks(routerId));
     }
 
     /** Access function for abstract network */

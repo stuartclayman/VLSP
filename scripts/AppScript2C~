@@ -1,0 +1,41 @@
+// 7 routers in 3 domains
+1000 START_ROUTER dom1.Src1
+1500 START_ROUTER dom1.Src2
+2000 START_ROUTER dom2.Middle
+2500 START_ROUTER dom3.Dst1
+3000 START_ROUTER dom3.Dst2
+3500 START_ROUTER dom3.Src3
+4000 START_ROUTER dom1.Dst3
+
+
+// router 3 in the middle
+// also add weights and link names
++1000 START_LINK 3 4 1 m-to-d1
++100 START_LINK 3 5 1 m-to-d2
++100 START_LINK 3 7 1 m-to-d3
++100 START_LINK 1 3 1 s1-to-m
++100 START_LINK 2 3 1 s2-to-m
++100 START_LINK 6 3 1 s3-to-m
+
+// links with no names
+//+1000 START_LINK 3 4 
+//+100 START_LINK 3 5 
+//+100 START_LINK 3 7 
+//+100 START_LINK 1 3 
+//+100 START_LINK 2 3 
+//+100 START_LINK 6 3 
+
+// start 2 receivers
++6000 START_APP 4 usr.applications.RecvDataRate 3000  // receive on R 4
++100 START_APP 5 usr.applications.RecvDataRate 3000  // receive on R 5
++100 START_APP 7 usr.applications.RecvDataRate 3000  // receive on R 7
+// start 2 senders
++1000 START_APP 1 usr.applications.Send 4 3000 50000  // send 5000 datagrams from 1 to 4 via 3
++100 START_APP 2 usr.applications.Send 5 3000 50000  // send 5000 datagrams from 2 to 5 via 3
++100 START_APP 6 usr.applications.Send 7 3000 50000  // send 5000 datagrams from 6 to 7 via 3
+// end links
+32000 END_LINK 1 3
++200 END_LINK 2 3
++200 END_LINK 3 4
++200 END_LINK 3 5
++200 END_SIMULATION

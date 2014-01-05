@@ -1,8 +1,10 @@
 package usr.APcontroller;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import usr.globalcontroller.GlobalController;
+import usr.model.abstractnetwork.AbstractNetwork;
 import usr.router.Router;
 import usr.router.RouterOptions;
 
@@ -99,7 +101,7 @@ public class PressureAPController extends NullAPController {
 
         int [] permCost = new int[g.getMaxRouterId()+1];
         int [] tempCost = new int[g.getMaxRouterId()+1];
-        ArrayList<Integer> routers = g.getRouterList();
+        List<Integer> routers = g.getRouterList();
 
         for (int i : routers) {
             permCost[i] = -1;
@@ -139,8 +141,11 @@ public class PressureAPController extends NullAPController {
             if (cheapCost == maxCost) {
                 continue;
             }
-            int [] out = g.getOutLinks(cheapNode);
-            int [] outCost = g.getLinkCosts(cheapNode);
+            
+            AbstractNetwork network = g.getAbstractNetwork();
+            int [] out = network.getOutLinks(cheapNode);
+            int [] outCost = network.getLinkCosts(cheapNode);
+            
             int link;
 
             // Consider adding links from new node
@@ -182,7 +187,7 @@ public class PressureAPController extends NullAPController {
     /** Pressure score for AP -- crude, simply number of nodes controlled*/
     int getAPPressure(int gid, GlobalController g) {
         int pressure = 0;
-        ArrayList<Integer> gids = g.getRouterList();
+        List<Integer> gids = g.getRouterList();
 
         for (int i : gids) {
             if (getAP(i) == gid) {

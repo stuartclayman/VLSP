@@ -5,6 +5,7 @@ package usr.engine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -75,7 +76,7 @@ public class ProbabilisticMaxLinkEventEngine extends ProbabilisticEventEngine {
 
         try {
             int router = e.getNumber(g);
-            int [] outLinks = g.getOutLinks(router);
+            List<Integer> outLinks = g.getOutLinks(router);
 
             for (int o : outLinks) {
                 checkRouter(o, s, g, now);
@@ -120,11 +121,11 @@ public class ProbabilisticMaxLinkEventEngine extends ProbabilisticEventEngine {
     }
 
     private void checkRouter(int router, EventScheduler s, GlobalController g, long now) {
-        int [] outLinks = g.getOutLinks(router);
+        List<Integer> outLinks = g.getOutLinks(router);
         int minLinks = routerMinLinkCount_.get(router);
 
-        if (outLinks.length <= minLinks) {
-            createNLinks(s, router, g, now, outLinks.length + 1 - minLinks);
+        if (outLinks.size() <= minLinks) {
+            createNLinks(s, router, g, now, outLinks.size() + 1 - minLinks);
         }
     }
 
@@ -155,8 +156,7 @@ public class ProbabilisticMaxLinkEventEngine extends ProbabilisticEventEngine {
         }
 
         // Pink links and schedule
-        ArrayList<Integer> picked = linkPicker_.pickNLinks(nodes, g,
-                                                           noLinks, routerId);
+        List<Integer> picked = linkPicker_.pickNLinks(nodes, g, noLinks, routerId);
 
         for (int i : picked) {
             g.scheduleLink(new AbstractLink(routerId,i),this,now);
