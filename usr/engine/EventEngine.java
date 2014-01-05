@@ -20,4 +20,8 @@ public interface EventEngine {
 
     /** Add or remove events following a simulation event */
     public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate obj);
+
+    /** Final events to add to schedule */
+    public void finalEvents(EventDelegate obj);
+
 }

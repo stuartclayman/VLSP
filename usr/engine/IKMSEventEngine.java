@@ -17,6 +17,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 import us.monoid.json.JSONObject;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
@@ -46,11 +47,15 @@ public class IKMSEventEngine implements EventEngine  {
     private boolean staticTopology_ = false;     // whether the topology is static or not
 
     int initialNumberOfRouters_ = 1;     // Initial number of routers
+    
+    List<Integer>routerIDs = null;
 
     /** Constructor from Parameter string */
     public IKMSEventEngine(int time, String parms) throws EventEngineException {
         timeToEnd_ = time*1000;
         parseXMLFile(parms);
+        
+        routerIDs = new ArrayList<Integer>();
     }
 
     /** Start up and shut down events */    
@@ -115,6 +120,19 @@ public class IKMSEventEngine implements EventEngine  {
             return;
         }
     }
+    
+    @Override
+    public void finalEvents(EventDelegate obj) {
+        for (Integer routerID : routerIDs) {
+            try {
+                EndRouterEvent e2 = new EndRouterEvent(0, this, routerID);
+                
+                obj.executeEvent(e2);
+            } catch (Exception ex) {
+            }
+        }
+    }
+
 
     private void followRouter(Event e, EventScheduler s, JSONObject response, VimFunctions v) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "followRouter " + e);
@@ -125,6 +143,8 @@ public class IKMSEventEngine implements EventEngine  {
 
         try {
             routerId = response.getInt("routerID");  // WAS g.getMaxRouterId();
+            // keep track of routerIds for later on when the engine ends
+            routerIDs.add(routerId);
         } catch (JSONException jse) {
             routerId = -1;
         }

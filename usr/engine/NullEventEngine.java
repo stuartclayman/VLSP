@@ -33,4 +33,8 @@ public class NullEventEngine implements EventEngine {
     public void followEvent(Event e, EventScheduler s, JSONObject js, EventDelegate g) {
     }
 
+    @Override
+    public void finalEvents(EventDelegate obj) {
+    }
+
 }

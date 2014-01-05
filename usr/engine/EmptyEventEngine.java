@@ -45,4 +45,8 @@ public class EmptyEventEngine extends NullEventEngine {
     public void followEvent(Event e, EventScheduler s, EventDelegate g) {
     }
 
+    @Override
+    public void finalEvents(EventDelegate obj) {
+    }
+
 }

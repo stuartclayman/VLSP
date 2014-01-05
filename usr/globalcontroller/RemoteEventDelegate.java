@@ -83,9 +83,6 @@ public class RemoteEventDelegate implements EventDelegate {
         eventEngine = startEventEngine(this);
 
 
-        eventEngine.startStopEvents(scheduler, this);
-        eventEngine.initialEvents(scheduler, this);
-
         return true;
     }
 
@@ -95,11 +92,26 @@ public class RemoteEventDelegate implements EventDelegate {
     public boolean start() {
         running = true;
 
+        // start event engine
+        eventEngine.startStopEvents(scheduler, this);
+        eventEngine.initialEvents(scheduler, this);
+
+
+
+        // Start Scheduler 
+        scheduler.start();
+
+
+
+        return true;
+    }
+
+    /**
+     * Run
+     */
+    public void run() {
+        // wait - until stop
         synchronized (runLock) {
-
-            // Start Scheduler as thread
-            scheduler.start();
-
 
             while (running) {
                 try {
@@ -111,9 +123,11 @@ public class RemoteEventDelegate implements EventDelegate {
             }
         }
 
+        // stop scheduler
         scheduler.stop();
 
-        return true;
+        // do final Event Engine events
+        eventEngine.finalEvents(this);
     }
 
     /**
@@ -122,6 +136,7 @@ public class RemoteEventDelegate implements EventDelegate {
     public boolean stop() {
         running = false;
 
+        // stop wait
         synchronized (runLock) {
             runLock.notify();
         }

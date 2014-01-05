@@ -68,6 +68,11 @@ public class ScriptEngine implements EventEngine {
     @Override
     public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate g) {
     }
+    
+    @Override
+    public void finalEvents(EventDelegate obj) {
+    }
+
 
     private void readScript(String fname) {
         events_ = new ArrayList<Event>();

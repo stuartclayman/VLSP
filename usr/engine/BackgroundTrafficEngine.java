@@ -81,6 +81,12 @@ public class BackgroundTrafficEngine implements EventEngine {
     public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate g) {
         startNewConnection(e.getTime(), s, (GlobalController)g);
     }
+    
+    
+    @Override
+    public void finalEvents(EventDelegate obj) {
+    }
+
 
     /** Start new connection between nodes at a given time */
     private void startNewConnection(long currTime, EventScheduler s, GlobalController g) {

@@ -417,6 +417,14 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         }
     }
 
+    /**
+     * Wrap and and clean up
+     */
+    private void wrapUp() {
+        for (EventEngine e : options_.getEngines()) {
+            e.finalEvents(this);
+        }
+    }
 
     /** Runs a simulation loop --- gets events and executes them in order.
      */
@@ -576,7 +584,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             }
         }
 
-        //shutDown();
+        wrapUp();
     }
 
 
@@ -687,6 +695,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Interrupted if acquisition of lock interrupted
      * Timeout if acquisition timesout
      */
+    @Override
     public JSONObject executeEvent(Event ev) {
 
         try {
@@ -1705,6 +1714,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      */
     public void shutDown() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "SHUTDOWN CALLED!");
+
+        wrapUp();
 
         if (!options_.isSimulation()) {
 

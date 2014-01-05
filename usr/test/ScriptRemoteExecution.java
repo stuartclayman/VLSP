@@ -63,6 +63,8 @@ public class ScriptRemoteExecution extends RemoteEventDelegate implements EventD
 
             rexec.start();
 
+            rexec.run();
+
             rexec.stop();
         } catch (Exception e) {
         }

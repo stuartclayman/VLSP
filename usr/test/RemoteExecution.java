@@ -64,6 +64,8 @@ public class RemoteExecution extends RemoteEventDelegate implements EventDelegat
 
             rexec.start();
 
+            rexec.run();
+
             rexec.stop();
         } catch (Exception e) {
         }
