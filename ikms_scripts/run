@@ -4,7 +4,7 @@ export CLASSPATH=./:./libs/*:./bin/
 ./shutDownIKMS
 
 echo Scenario 1: Pull from Entity
-for flows in 1 #2 3 4 5 6 7 8 9 10
+for flows in 1 2 3 4 5 6 7 8 9 10
 do
 	echo Flows $flows
 	echo Starting IKMS
@@ -13,6 +13,8 @@ do
 	sleep 5
 	./startIKMSMeasurements
 	./singleExperiment 3 $flows 3 4 2>&1 | tee /tmp/ikms-expriment-$$.out
+	#echo "Waiting 60"
+	#sleep 60
 	./stopIKMSMeasurements
 	echo Waiting 5 secs
 	sleep 5
