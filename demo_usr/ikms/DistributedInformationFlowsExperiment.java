@@ -2,6 +2,7 @@ package demo_usr.ikms;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
@@ -18,11 +19,14 @@ public class DistributedInformationFlowsExperiment {
 	static int monitoredFlows=0;
 	static int monitoredMethod=3;
 	static int monitoredGoalId=0;	
+	static ArrayList<Integer> routerIDs;
 
 	static VimClient vimClient;
 
 	public static void main(String[] args) {
-
+		// initialize routerIDs arraylist
+		routerIDs = new ArrayList<Integer>();
+		
 		if (args.length==7) {
 			nodesNumber = Integer.valueOf(args[0]);
 			flowsNumber = Integer.valueOf(args[1]);
@@ -60,28 +64,42 @@ public class DistributedInformationFlowsExperiment {
 
 		// Initializing information flows
 		InitializeInformationFlows (); 
+		
+		// wait for the experiment to finish
+		// assume that flows take warmup time to start and add an extra 2000ms to be sure
+		Delay (totalTime+warmupTime+2000);
+		
+		// Cleanup topology
+		CleanUpTopology ();
 	}
 
 	private static void InitializeTopology () {
+		Integer routerID1=null;
+		Integer routerID2=null;
+		Integer routerID3=null;
+
 		if (nodesNumber==3) {
 			try {
 				JSONObject r1 = vimClient.createRouter();
-				int router1 = (Integer)r1.get("routerID");
-				System.out.println("r1 = " + r1);
+				routerID1 = (Integer)r1.get("routerID");
+				routerIDs.add(routerID1);
+				System.out.println("r1 = " + routerID1);
 
 				JSONObject r2 = vimClient.createRouter();
-				int router2 = (Integer)r2.get("routerID");
-				System.out.println("r2 = " + r2);
+				routerID2 = (Integer)r2.get("routerID");
+				routerIDs.add(routerID2);
+				System.out.println("r2 = " + routerID2);
 
 				JSONObject r3 = vimClient.createRouter();
-				int router3 = (Integer)r3.get("routerID");
-				System.out.println("r3 = " + r3);
+				routerID3 = (Integer)r3.get("routerID");
+				routerIDs.add(routerID3);
+				System.out.println("r3 = " + routerID3);
 
-				JSONObject l1 = vimClient.createLink(router1, router2, 10);
+				JSONObject l1 = vimClient.createLink(routerID1, routerID2, 10);
 				int link1 = (Integer)l1.get("linkID");
 				System.out.println("l1 = " + l1);
 
-				JSONObject l2 = vimClient.createLink(router2, router3, 10);
+				JSONObject l2 = vimClient.createLink(routerID2, routerID3, 10);
 				int link2 = (Integer)l2.get("linkID");
 				System.out.println("l2 = " + l2);
 			} catch (Exception e) {
@@ -92,10 +110,32 @@ public class DistributedInformationFlowsExperiment {
 		}
 	}
 
+	private static void CleanUpTopology () {
+		if (nodesNumber==3) {
+			try {
+				for (Integer routerID : routerIDs) {
+					// delete all routers
+					vimClient.deleteRouter(routerID);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} catch (Error err) {
+				err.printStackTrace();
+			}
+			// cleanup routerIDs arraylist
+			routerIDs.clear();
+		}
+	}
+	
 	private static void PlaceIKMSNode () {
 		if (nodesNumber==3) {
 			try {
-				vimClient.createApp(2, "demo_usr.ikms.IKMSForwarder", "10002 20002");
+				// create sinks
+				int entityId = 10000+routerIDs.get(1);
+				int entityRestPort = 20000+routerIDs.get(1);
+				
+				// add IKMSforwarder to second node
+				vimClient.createApp(routerIDs.get(1), "demo_usr.ikms.IKMSForwarder", entityId+" "+entityRestPort);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -120,28 +160,31 @@ public class DistributedInformationFlowsExperiment {
 				flowTime = totalTime + (flowsNumber - i) * startingPeriod;
 
 				// create sinks
-				entityId = 2000+i;
-				entityRestPort = 3000+i;
+				int tempInt = routerIDs.get(0)+i;
+				entityId = 2000+tempInt;
+				entityRestPort = 3000+tempInt;
 				//System.out.println (entityId + " "+entityRestPort+" 2 "+1000+ " " + flowTime + " " + "/test"+i+"/All"+ " " + method + " " + goalId);
 				JSONObject appSource=null;
 
 				try {
+					// add source apps to first node
 					if (i<monitoredFlows) {
-						appSource = vimClient.createApp(1, "demo_usr.ikms.GenericSourceMA", "1 " + entityId + " " + entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All" + " " + monitoredMethod + " " + monitoredGoalId);
+						appSource = vimClient.createApp(routerIDs.get(0), "demo_usr.ikms.GenericSourceMA", routerIDs.get(0)+" " + entityId + " " + entityRestPort + " "+routerIDs.get(1)+" " + 1000 + " " + flowTime + " " + "/test"+tempInt+"/All" + " " + monitoredMethod + " " + monitoredGoalId);
 					} else {
-						appSource = vimClient.createApp(1, "demo_usr.ikms.GenericSourceMA", "1 " + entityId + " " + entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All"+ " " + method+ " " + goalId);
+						appSource = vimClient.createApp(routerIDs.get(0), "demo_usr.ikms.GenericSourceMA", routerIDs.get(0)+" " + entityId + " " + entityRestPort + " "+routerIDs.get(1)+" " +  1000 + " " + flowTime + " " + "/test"+tempInt+"/All"+ " " + method+ " " + goalId);
 					}
 					System.out.println("appSink = " + appSource);
 
 					// create sinks
-					entityId = 4000+i;
-					entityRestPort = 5000+i;
+					entityId = 4000+routerIDs.get(2)+i;
+					entityRestPort = 5000+routerIDs.get(2)+i;
 					JSONObject appSink=null;
 
+					// add sink apps to third node
 					if (i<monitoredFlows) {
-						appSink = vimClient.createApp(3, "demo_usr.ikms.GenericSinkMA", "3 " + entityId + " "+ entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All"+ " " + monitoredMethod+ " " + monitoredGoalId+ " true");
+						appSink = vimClient.createApp(routerIDs.get(2), "demo_usr.ikms.GenericSinkMA", routerIDs.get(2)+" " + entityId + " "+ entityRestPort + " "+routerIDs.get(1)+" " +  1000 + " " + flowTime + " " + "/test"+tempInt+"/All"+ " " + monitoredMethod+ " " + monitoredGoalId+ " true");
 					} else {
-						appSink = vimClient.createApp(3, "demo_usr.ikms.GenericSinkMA", "3 " + entityId + " "+ entityRestPort + " 2 " + 1000 + " " + flowTime + " " + "/test"+i+"/All"+ " " + method+ " " + goalId + " false");
+						appSink = vimClient.createApp(routerIDs.get(2), "demo_usr.ikms.GenericSinkMA", routerIDs.get(2)+" " + entityId + " "+ entityRestPort + " "+routerIDs.get(1)+" " +  1000 + " " + flowTime + " " + "/test"+tempInt+"/All"+ " " + method+ " " + goalId + " false");
 					}
 					System.out.println("appSink = " + appSink);
 				} catch (JSONException ex) {

@@ -120,7 +120,7 @@ public class IKMSForwarder extends IKMSEnabledUSREntity implements Application {
 		tftpClient.ApplyRestGetRequest("http://localhost:8080/");*/
 		
 		while (stopRunning==false) {
-			//Delay (entityid, 5000);			
+			Delay (entityid, 5000);			
 		}
 		Logging.Log(entityid, "The IKMSForwarder stopped running");
 
