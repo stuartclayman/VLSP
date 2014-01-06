@@ -256,7 +256,7 @@ public class TFTPPool
     /* This inner class is defined to do the thread stuff
      * and delegate work to its TFTPRequestHandler. */
     // This is were model MBean would fit in but because this
-    // is not only supprted in HEAD we'll have to wait and use
+    // is not only supported in HEAD we'll have to wait and use
     // DynamicMBean.
     class TFTPRHThread extends Thread implements DynamicMBean
     // implements XMBeanConstants

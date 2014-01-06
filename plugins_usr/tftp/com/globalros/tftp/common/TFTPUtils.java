@@ -88,7 +88,6 @@ public class TFTPUtils
 				// and only need to verify if this one arrived and so wait friendly for a possible
 				// resend of the data in case our ack got lost.
 				if (recv == null) {
-
 					return null;
 				}
 				// If too many retries, give up.
@@ -114,7 +113,7 @@ public class TFTPUtils
 							"TFTPUtils: " + getClient(tftpSock)
 							+ "Could not change timeout on socket. "
 							+ e.getMessage());
-					// just conitnue
+					// just continue
 				}
 				continue;
 			}
