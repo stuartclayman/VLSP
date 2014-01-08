@@ -80,7 +80,7 @@ public class DistributedInformationFlowsExperiment {
 		System.out.println ("Starting Information Flows");
 
 		// Initializing information flows
-		InitializeInformationFlows (); // takes warmupTime in mss
+		//InitializeInformationFlows (); // takes warmupTime in mss
 
 		// wait for the experiment to finish
 		// assume that flows take warmup time to start and add an extra 2000ms to be sure
