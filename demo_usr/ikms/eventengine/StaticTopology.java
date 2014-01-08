@@ -57,7 +57,7 @@ public class StaticTopology extends RemoteEventDelegate implements EventDelegate
 
 			return new usr.engine.IKMSEventEngine(totalTime, "scripts/ikms"+numberOfHosts+".xml");
 		} catch (EventEngineException eee) {
-			throw new Error("Cant start event engine");
+                    throw new Error("Cant start event engine" + eee.getMessage());
 		}
 	}
 
