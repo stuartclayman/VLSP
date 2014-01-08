@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.Callable;
 
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
@@ -14,25 +16,53 @@ import demo_usr.ikms.eventengine.StaticTopology;
 
 public class DistributedInformationFlowsExperiment {
 
-	static int warmupTime=10000; // 50000
-	static int totalTime=30000; // 80000
-	static int nodesNumber=3;
-	static int flowsNumber=1;
-	static int method=3;
-	static int goalId=0;
-	static int monitoredFlows=0;
-	static int monitoredMethod=3;
-	static int monitoredGoalId=0;	
-	static int topologyTime = 40;
-	static ArrayList<Integer> routerIDs;
+	 int warmupTime=10000; // 50000
+	 int totalTime=30000; // 80000
+	 int nodesNumber=3;
+	 int flowsNumber=1;
+	 int method=3;
+	 int goalId=0;
+	 int monitoredFlows=0;
+	 int monitoredMethod=3;
+	 int monitoredGoalId=0;	
+	 int topologyTime = 40;
+	 ArrayList<Integer> routerIDs;
 
-	static VimClient vimClient;
+	 VimClient vimClient;
 
-	static StaticTopology staticTopology;
+	 StaticTopology staticTopology;
 	
-	static Future executorObj;
+         ExecutorService pool;
+	 Future executorObj;
 
 	public static void main(String[] args) {
+            DistributedInformationFlowsExperiment experiment =  new DistributedInformationFlowsExperiment();
+
+            experiment.config(args);
+
+		// Initializing topology
+		experiment.InitializeTopology ();
+
+		// let the routing tables propagate
+		experiment.Delay (12000);
+
+		// looking up routers
+		experiment.LookingUpRouters ();
+
+		System.out.println ("Starting Information Flows");
+
+		// Initializing information flows
+		//InitializeInformationFlows (); // takes warmupTime in mss
+
+		// wait for the experiment to finish
+		// assume that flows take warmup time to start and add an extra 2000ms to be sure
+		experiment.Delay (experiment.totalTime + experiment.warmupTime + 2000);
+
+		// Cleanup topology
+		experiment.CleanUpTopology ();
+	}
+
+    private void config(String [] args) {
 		// initialize routerIDs arraylist
 		routerIDs = new ArrayList<Integer>();
 
@@ -68,29 +98,10 @@ public class DistributedInformationFlowsExperiment {
 		// calculating topology duration (it is in seconds)
 		topologyTime = 1000 + 12 + (totalTime+warmupTime) / 1000;
 
-		// Initializing topology
-		InitializeTopology ();
 
-		// let the routing tables propagate
-		Delay (12000);
+    }
 
-		// looking up routers
-		LookingUpRouters ();
-
-		System.out.println ("Starting Information Flows");
-
-		// Initializing information flows
-		//InitializeInformationFlows (); // takes warmupTime in mss
-
-		// wait for the experiment to finish
-		// assume that flows take warmup time to start and add an extra 2000ms to be sure
-		Delay (totalTime+warmupTime+2000);
-
-		// Cleanup topology
-		CleanUpTopology ();
-	}
-
-	private static void LookingUpRouters () {
+	private void LookingUpRouters () {
 		System.out.println ("Looking up routers");
 		JSONObject routers = null;
 		JSONArray routersAr = null;
@@ -108,32 +119,35 @@ public class DistributedInformationFlowsExperiment {
 		}
 	}
 
-	private static void CreateStaticTopology (final int numberOfHosts, final int totalTime) {
-		staticTopology=null;
-		try {
-			staticTopology = new StaticTopology(numberOfHosts, totalTime);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	private void CreateStaticTopology (final int numberOfHosts, final int totalTime) {
+                    pool = Executors.newFixedThreadPool(1);
 
-		staticTopology.init();
+                    executorObj = pool.submit(new Callable(){
+			public Object call() {
 
-		staticTopology.start();
+                            try {
+                                staticTopology = new StaticTopology(numberOfHosts, totalTime);
+                            } catch (UnknownHostException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+
+                            staticTopology.init();
+
+                            staticTopology.start();
 		
-		executorObj = Executors.newSingleThreadScheduledExecutor().submit(new Runnable(){
-			public void run() {
-				System.out.println ("Run started.");
-				staticTopology.run();
-				System.out.println ("Run stopped.");
+                            staticTopology.run();
+                            System.out.println ("Run stopped.");
+
+                            return new Object();
 			}
-		});
+                    });
 	}
 
-	private static void InitializeTopology () {
+	private void InitializeTopology () {
 		Integer routerID1=null;
 		Integer routerID2=null;
 		Integer routerID3=null;
@@ -173,7 +187,7 @@ public class DistributedInformationFlowsExperiment {
 		}
 	}
 
-	private static void CleanUpTopology () {
+	private  void CleanUpTopology () {
 		// doing my own cleaning up
 		/*if (nodesNumber==3) {
 			try {
@@ -196,12 +210,15 @@ public class DistributedInformationFlowsExperiment {
 		System.out.println ("STOPPING EVENT ENGINE!!!!!");
 		staticTopology.stop();
 		
-		executorObj.cancel(true);
+		executorObj.cancel(false);
 		System.out.println ("EVENT ENGINE STOPPED!!!!!");
+
+
+                pool.shutdown();
 
 	}
 
-	private static void PlaceIKMSNode () {
+	private void PlaceIKMSNode () {
 		if (nodesNumber==3) {
 			try {
 				// create sinks
@@ -217,7 +234,7 @@ public class DistributedInformationFlowsExperiment {
 		}
 	}
 
-	private static void	InitializeInformationFlows () {
+	private  void	InitializeInformationFlows () {
 		int startingPeriod = warmupTime / flowsNumber;
 		int flowTime=0;
 
