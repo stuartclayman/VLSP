@@ -6,12 +6,13 @@ import java.util.Scanner;
 import us.monoid.json.JSONObject;
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
+import usr.router.AP;
 import demo_usr.ikms.TFTP.RestOverTFTPClient;
 import demo_usr.ikms.client.IKMSEnabledUSREntity;
 import demo_usr.ikms.client.utils.Converters;
 import demo_usr.ikms.client.utils.Logging;
 
-// A distributed KNOW client for the virtual infrastructure (i.e., hosted in a virtual router)
+// A distributed IKMS client for the virtual infrastructure (i.e., hosted in a virtual router)
 public class IKMSForwarder extends IKMSEnabledUSREntity implements Application {
 
 	// TFTP client, i.e., for forwarding REST calls over a virtual path
