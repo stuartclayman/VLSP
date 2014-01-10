@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import usr.common.ANSI;
+import usr.logging.Logger;
 import eu.reservoir.monitoring.core.Measurement;
 import eu.reservoir.monitoring.core.ProbeValue;
 import eu.reservoir.monitoring.core.Reporter;
@@ -86,10 +87,7 @@ public class NetIFStatsReporter implements Reporter, RouterDeletedNotification, 
                 measurements.put(routerName, table);
             }
 
-            // sclayman 20130808 THIS IS A RECEIVER OF DATA. DONT CALL EVENT
-            // sclayman 20130808 NetStatsEvent nse = new NetStatsEvent(globalController.getElapsedTime(), tableToString(table,
-            // false, true));
-            // sclayman 20130808 globalController.addEvent(nse);
+            Logger.getLogger("log").logln(1<<7, tableToString(table, false, true));
 
             // Calculate volume of traffic - in and out
             //int volume = calculateTraffic(table);

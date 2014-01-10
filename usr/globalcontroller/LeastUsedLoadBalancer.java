@@ -4,6 +4,7 @@ import usr.localcontroller.LocalControllerInfo;
 import java.util.Set;
 import usr.logging.USR;
 import usr.logging.Logger;
+import usr.common.ANSI;
 
 /**
  * The LeastUsedLoadBalancer is repsonsible for determining the placement
@@ -26,14 +27,18 @@ public class LeastUsedLoadBalancer implements PlacementEngine {
     }
 
     /**
-     * Get the relevant LocalControllerInfo for a placement of a router.
+     * Get the relevant LocalControllerInfo for a placement of a router with 
+     * a specified name and address.
      */
-    public LocalControllerInfo routerPlacement() {
+    public LocalControllerInfo routerPlacement(String name, String address) {
         LocalControllerInfo leastUsed = null;
 
         double minUse = 0.0;
         double thisUsage = 0.0;
 
+        long elapsedTime = gc.getElapsedTime();
+
+        // now work out placement
         for (LocalControllerInfo localInfo : getPlacementDestinations()) {
             thisUsage = localInfo.getUsage(); // same as localInfo.getNoRouters() / localInfo.getMaxRouters()
 
@@ -50,21 +55,25 @@ public class LeastUsedLoadBalancer implements PlacementEngine {
             }
         }
 
+        // log current values
+        Logger.getLogger("log").logln(1<<10, toTable(elapsedTime));
+
         if (minUse >= 1.0) {
+            Logger.getLogger("log").logln(1<<10, gc.elapsedToString(elapsedTime) + ANSI.RED +  "LeastUsedLoadBalancer: no chose "  + " minUse: " + minUse + ANSI.RESET_COLOUR);
+
+
             return null;
+        } else {
+
+            Logger.getLogger("log").logln(USR.STDOUT, "LeastUsedLoadBalancer: choose " + leastUsed + " minUse: " + minUse);
+
+            Logger.getLogger("log").logln(1<<10, gc.elapsedToString(elapsedTime) + ANSI.CYAN +  " LeastUsedLoadBalancer: choose " + leastUsed + " minUse: " + minUse + " for " + name + "/" + address + ANSI.RESET_COLOUR);
+
+            return leastUsed;
         }
-
-        return leastUsed;
     }
 
 
-    /**
-     * Get the relevant LocalControllerInfo for a placement of a router with a specific address.
-     */
-    public LocalControllerInfo routerPlacement(String address) {
-        // this LoadBalancer doesn't care about the address.
-        return routerPlacement();
-    }
 
     /**
      * Get all the possible placement destinations
@@ -72,4 +81,22 @@ public class LeastUsedLoadBalancer implements PlacementEngine {
     public Set<LocalControllerInfo> getPlacementDestinations() {
         return gc.getLocalControllers();
     }
+
+    /**
+     * Get info as a String
+     */
+    private String toTable(long elapsed) {
+        StringBuilder builder = new StringBuilder();
+        double thisUsage = 0.0;
+
+        builder.append(gc.elapsedToString(elapsed) + " ");
+        for (LocalControllerInfo localInfo : getPlacementDestinations()) {
+
+            thisUsage = localInfo.getUsage(); // same as localInfo.getNoRouters() / localInfo.getMaxRouters()
+            builder.append(localInfo + ": " + thisUsage + " | ");
+        }
+
+        return builder.toString();
+    }
+
 }

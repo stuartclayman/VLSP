@@ -10,14 +10,10 @@ import java.util.Set;
 public interface PlacementEngine {
 
     /**
-     * Get the relevant LocalControllerInfo for a placement of a router.
+     * Get the relevant LocalControllerInfo for a placement of a router with 
+     * a specified name and address.
      */
-    public LocalControllerInfo routerPlacement();
-
-    /**
-     * Get the relevant LocalControllerInfo for a placement of a router with a specific address.
-     */
-    public LocalControllerInfo routerPlacement(String address);
+    public LocalControllerInfo routerPlacement(String name, String address);
 
     /**
      * Get all the possible placement destinations

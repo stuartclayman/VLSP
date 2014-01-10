@@ -237,7 +237,16 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         logger.addOutput(System.err, new BitMask(USR.ERROR));
         logger.addOutput(System.out, new BitMask(USR.STDOUT));
 
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Hello");
+        // add some extra output channels, using mask bit 7, 8, 9, 10
+        try {
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel7.out")), new BitMask(1<<7));
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel8.out")), new BitMask(1<<8));
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel9.out")), new BitMask(1<<9));
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel10.out")), new BitMask(1<<10));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         network_ = new AbstractNetwork();
         shutdownRouters_ = new ArrayList<BasicRouterInfo>();
@@ -859,21 +868,21 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Get a mapping of host to the list of routers on that host.
      */
-    public HashMap<String, List<BasicRouterInfo> > getRouterLocations() {
-        HashMap<String, List<BasicRouterInfo> > routerLocations = new HashMap<String, List<BasicRouterInfo> >();
+    public HashMap<LocalControllerInfo, List<BasicRouterInfo> > getRouterLocations() {
+        HashMap<LocalControllerInfo, List<BasicRouterInfo> > routerLocations = new HashMap<LocalControllerInfo, List<BasicRouterInfo> >();
 
         // work out which router is where
         for (BasicRouterInfo routerInfo : getAllRouterInfo()) {
-            String host = routerInfo.getHost();
+            LocalControllerInfo localInfo = routerInfo.getLocalControllerInfo();
 
-            if (routerLocations.containsKey(host)) { // we've seen this host
-                List<BasicRouterInfo> list = routerLocations.get(host);
+            if (routerLocations.containsKey(localInfo)) { // we've seen this host
+                List<BasicRouterInfo> list = routerLocations.get(localInfo);
                 list.add(routerInfo);
             } else {                                 //  it's a new host
                 List<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
                 list.add(routerInfo);
 
-                routerLocations.put(host, list);
+                routerLocations.put(localInfo, list);
             }
         }
 
@@ -883,15 +892,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Do some placement calculation
      */
-    public LocalControllerInfo placementForRouter() {
-        return placementEngine.routerPlacement();
-    }
-
-    /**
-     * Do some placement calculation
-     */
-    public LocalControllerInfo placementForRouter(String address) {
-        return placementEngine.routerPlacement(address);
+    public LocalControllerInfo placementForRouter(String name, String address) {
+        return placementEngine.routerPlacement(name, address);
     }
 
 
@@ -904,6 +906,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         // inform about all routers
         informAllRouters();
+
+        Logger.getLogger("log").logln(1<<9, elapsedToString(getElapsedTime()) + ANSI.GREEN + " START ROUTER " + rId + ANSI.RESET_COLOUR);
 
     }
 
@@ -921,6 +925,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         // inform about all routers
         informAllRouters();
+
+        Logger.getLogger("log").logln(1<<9, elapsedToString(getElapsedTime()) + ANSI.RED + " STOP ROUTER " + rId + ANSI.RESET_COLOUR);
+
 
 
     }
@@ -1497,6 +1504,23 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         // inform
         informAllRouters();
         informAllLinks();
+
+        Logger.getLogger("log").logln(1<<9, elapsedToString(getElapsedTime()) + ANSI.BLUE + " CREATE LINK " + router1Id + " TO " + router2Id + ANSI.RESET_COLOUR);
+
+
+    }
+
+    /** Remove a link with structures necessary in Global Controller */
+    public void unregisterLink(long time, int router1Id, int router2Id) {
+        network_.removeLink(router1Id, router2Id);
+        APController_.removeLink(time, router1Id, router2Id);
+
+        // inform
+        informAllRouters();
+        informAllLinks();
+
+        Logger.getLogger("log").logln(1<<9, elapsedToString(getElapsedTime()) + ANSI.MAGENTA + " REMOVE LINK " + router1Id + " TO " + router2Id + ANSI.RESET_COLOUR);
+
     }
 
     /* Return a list of outlinks from a router */
@@ -1522,17 +1546,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /** Create pair of integers  */
     public Pair<Integer, Integer> makePair(int r1, int r2) {
         return new Pair<Integer, Integer>(r1, r2);
-    }
-
-    /** Remove a link with structures necessary in Global
-     * Controller */
-    public void unregisterLink(long time, int router1Id, int router2Id) {
-        network_.removeLink(router1Id, router2Id);
-        APController_.removeLink(time, router1Id, router2Id);
-
-        // inform
-        informAllRouters();
-        informAllLinks();
     }
 
     /** Remove info about link from linkInfo struct */
@@ -2396,6 +2409,16 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             return null;
         }
         */
+
+        // print out a message
+        if (gid == AP) {
+            Logger.getLogger("log").logln(1<<8, elapsedToString(getElapsedTime()) + ANSI.BLUE + " ROUTER " + gid + " BECOME AP" + ANSI.RESET_COLOUR);
+        } else {
+            Logger.getLogger("log").logln(1<<8, elapsedToString(getElapsedTime()) + ANSI.CYAN + " ROUTER " + gid + " SET AP " + AP + ANSI.RESET_COLOUR);
+        }
+
+
+
 
         try {
             SetAggPointEvent ev = new SetAggPointEvent(time, null, gid, AP);

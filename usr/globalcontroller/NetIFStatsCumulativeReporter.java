@@ -266,7 +266,7 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
 
         // get the time
 
-        long elapsed = globalController.getTime();
+        long elapsed = globalController.getElapsedTime();
 
         // get no of cols
         int cols = table.getColumnCount();

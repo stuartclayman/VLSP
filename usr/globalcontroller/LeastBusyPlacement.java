@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.HashMap;
 import usr.logging.USR;
 import usr.logging.Logger;
+import usr.common.ANSI;
 
 /**
  * The LeastBusyPlacement is repsonsible for determining the placement
@@ -19,6 +20,8 @@ public class LeastBusyPlacement implements PlacementEngine {
     // The GlobalController
     GlobalController gc;
 
+    // Previous volumes
+    HashMap<LocalControllerInfo, Long>oldVolumes;
 
     /**
      * Constructor
@@ -26,30 +29,34 @@ public class LeastBusyPlacement implements PlacementEngine {
     public LeastBusyPlacement(GlobalController gc) {
         this.gc = gc;
 
+        oldVolumes = new HashMap<LocalControllerInfo, Long>();
+
         Logger.getLogger("log").logln(USR.STDOUT, "LeastBusyPlacement: localcontrollers = " + getPlacementDestinations());
     }
 
     /**
-     * Get the relevant LocalControllerInfo for a placement of a router.
+     * Get the relevant LocalControllerInfo for a placement of a router with 
+     * a specified name and address.
      */
-    public LocalControllerInfo routerPlacement() {
+    public LocalControllerInfo routerPlacement(String name, String address) {
         LocalControllerInfo leastUsed = null;
+
+        long elapsedTime = gc.getElapsedTime();
+
+
 
         // A map of LocalControllerInfo to the volume of traffic
         HashMap<LocalControllerInfo, Long>lcVolumes = new HashMap<LocalControllerInfo, Long>();
 
         // a mapping of host to the list of routers on that host.
-        HashMap<String, List<BasicRouterInfo> > routerLocations = gc.getRouterLocations();
+        HashMap<LocalControllerInfo, List<BasicRouterInfo> > routerLocations = gc.getRouterLocations();
 
         // Get the monitoring reporter object that collects link usage data
         TrafficInfo reporter = (TrafficInfo)gc.findByInterface(TrafficInfo.class);
 
         for (LocalControllerInfo localInfo : getPlacementDestinations()) {
-            // get the host for the LocalController
-            String host = localInfo.getName();
-
             // now find all of the routers on that host
-            List<BasicRouterInfo> routers = routerLocations.get(host);
+            List<BasicRouterInfo> routers = routerLocations.get(localInfo);
 
             if (routers == null) {
                 // no routers in that host
@@ -96,10 +103,22 @@ public class LeastBusyPlacement implements PlacementEngine {
         // at this point we know which host has what volume.
         // now we need to skip through all of them and find the host
         // with the lowest volume
+        // this is done by subracting the oldvolume from the latest volume
         long lowestVolume = Long.MAX_VALUE;
 
         for (Map.Entry<LocalControllerInfo, Long> entry : lcVolumes.entrySet()) {
-            Long volume = entry.getValue();
+            LocalControllerInfo localInfo = entry.getKey();
+            Long newVolume = entry.getValue();
+            Long oldVolume = oldVolumes.get(localInfo);
+            long volume = 0;
+
+            if (oldVolume == null) { // the oldVolumes didnt have an entry for this LocalControllerInfo
+                volume = 0;
+            } else if (newVolume < oldVolume) {
+                volume = 0;
+            } else {
+                volume = newVolume - oldVolume;
+            }
 
             if (volume < lowestVolume) {
                 lowestVolume = volume;
@@ -107,7 +126,19 @@ public class LeastBusyPlacement implements PlacementEngine {
             }
         }
 
+
+        // log current values
+        Logger.getLogger("log").logln(1<<10, toTable(elapsedTime, lcVolumes));
+
+
+
         Logger.getLogger("log").logln(USR.STDOUT, "LeastBusyPlacement: choose " + leastUsed + " volume " + lowestVolume);
+
+
+        Logger.getLogger("log").logln(1<<10, gc.elapsedToString(elapsedTime) + ANSI.CYAN +  " LeastBusyPlacement: choose " + leastUsed + " lowestVolume: " + lowestVolume + " for " + name + "/" + address + ANSI.RESET_COLOUR);
+
+        // save volumes
+        oldVolumes = lcVolumes;
 
         // return the leastUsed LocalControllerInfo
         return leastUsed;
@@ -116,17 +147,43 @@ public class LeastBusyPlacement implements PlacementEngine {
 
 
     /**
-     * Get the relevant LocalControllerInfo for a placement of a router with a specific address.
-     */
-    public LocalControllerInfo routerPlacement(String address) {
-        // this LoadBalancer doesn't care about the address.
-        return routerPlacement();
-    }
-
-    /**
      * Get all the possible placement destinations
      */
     public Set<LocalControllerInfo> getPlacementDestinations() {
         return gc.getLocalControllers();
     }
+
+
+    /**
+     * Get info as a String
+     */
+    private String toTable(long elapsed, HashMap<LocalControllerInfo, Long>lcVolumes) {
+        StringBuilder builder = new StringBuilder();
+
+
+        builder.append(gc.elapsedToString(elapsed) + " ");
+
+        for (Map.Entry<LocalControllerInfo, Long> entry : lcVolumes.entrySet()) {
+            LocalControllerInfo localInfo = entry.getKey();
+            Long newVolume = entry.getValue();
+            Long oldVolume = oldVolumes.get(localInfo);
+
+            long volume = 0;
+
+            if (oldVolume == null) { // the oldVolumes didnt have an entry for this LocalControllerInfo
+                volume = 0;
+            } else if (newVolume < oldVolume) {
+                volume = 0;
+            } else {
+                volume = newVolume - oldVolume;
+            }
+
+
+
+            builder.append(localInfo + ": " + volume + " | ");
+        }
+
+        return builder.toString();
+    }
+
 }
