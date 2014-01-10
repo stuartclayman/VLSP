@@ -282,7 +282,7 @@ public class Viewer {
     /**
      * Send some data to a process
      */
-    protected String sendDataToProcess(PipeProcess pipe, String data) {
+    protected String sendDataToProcess(PipeProcess pipe, String data) throws IOException {
         Process process = pipe.getProcess();
 
         // send the data to the process
@@ -311,6 +311,8 @@ public class Viewer {
 
         if (result == null) {
             return null;
+        } else if (result.length() == 0) {
+            throw new IOException("dot failed to process data");
         } else {
             System.err.println("Viewer: dot converted " + data.length() + " to " + result.length());
 
