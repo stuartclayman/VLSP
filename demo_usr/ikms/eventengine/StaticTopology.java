@@ -11,21 +11,29 @@ import java.net.UnknownHostException;
 
 public class StaticTopology extends RemoteEventDelegate implements EventDelegate {
 	int numberOfHosts=3;
-	int totalTime=1000;
-	
+	int totalTime=86400;
+
+	/**
+	 * Get the maximum lag this delegate will allow.
+	 */
+	@Override
+	public long getMaximumLag() {
+		return 600000;   // 10 mins
+	}
+
 	/**
 	 * Construct a StaticTopology.
 	 */
 	public StaticTopology() throws UnknownHostException, IOException {
 		super();
 	}
-	
+
 	/**
 	 * Construct a StaticTopology.
 	 */
 	public StaticTopology(int numberOfHosts, int totalTime) throws UnknownHostException, IOException {
 		super();
-		
+
 		this.numberOfHosts = numberOfHosts;
 		this.totalTime = totalTime;
 	}
@@ -57,7 +65,7 @@ public class StaticTopology extends RemoteEventDelegate implements EventDelegate
 
 			return new usr.engine.IKMSEventEngine(totalTime, "scripts/ikms"+numberOfHosts+".xml");
 		} catch (EventEngineException eee) {
-                    throw new Error("Cant start event engine" + eee.getMessage());
+			throw new Error("Cant start event engine" + eee.getMessage());
 		}
 	}
 

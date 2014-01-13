@@ -17,8 +17,8 @@ import demo_usr.ikms.eventengine.StaticTopology;
 
 public class DistributedInformationFlowsExperiment {
 
-	int warmupTime=10000; // 50000
-	int totalTime=30000; // 80000
+	int warmupTime=30000; // 50000
+	int totalTime=90000; // 80000
 	int nodesNumber=3;
 	int informationSourcesNumber=1;
 	int urisPerInformationSourceNumber=1;
@@ -46,7 +46,7 @@ public class DistributedInformationFlowsExperiment {
 		experiment.InitializeTopology ();
 
 		// let the routing tables propagate
-		experiment.Delay (10000);
+		experiment.Delay (20000);
 
 		// looking up routers
 		experiment.LookingUpRouters ();
@@ -70,24 +70,26 @@ public class DistributedInformationFlowsExperiment {
 		// initialize ikmsForwarderPerRouter map
 		ikmsForwarderPerRouter = new ArrayList<Integer>();
 
-		if (args.length==8) {
+		if (args.length==9) {
 			nodesNumber = Integer.valueOf(args[0]);
 			informationSourcesNumber = Integer.valueOf(args[1]);
 			urisPerInformationSourceNumber = Integer.valueOf(args[2]);
-			method = Integer.valueOf(args[3]);
-			goalId = Integer.valueOf(args[4]);
-			monitoredFlows = Integer.valueOf(args[5]);
-			monitoredMethod = Integer.valueOf(args[6]);
-			monitoredGoalId = Integer.valueOf(args[7]);	
+			totalTime = Integer.valueOf(args[3]);
+			method = Integer.valueOf(args[4]);
+			goalId = Integer.valueOf(args[5]);
+			monitoredFlows = Integer.valueOf(args[6]);
+			monitoredMethod = Integer.valueOf(args[7]);
+			monitoredGoalId = Integer.valueOf(args[8]);	
 		} else {
-			if (args.length==5) {
+			if (args.length==6) {
 				nodesNumber = Integer.valueOf(args[0]);
 				informationSourcesNumber = Integer.valueOf(args[1]);
 				urisPerInformationSourceNumber = Integer.valueOf(args[2]);
-				method = Integer.valueOf(args[3]);
-				goalId = Integer.valueOf(args[4]);
+				totalTime = Integer.valueOf(args[3]);
+				method = Integer.valueOf(args[4]);
+				goalId = Integer.valueOf(args[5]);
 			} else {
-				System.out.println ("Syntax: nodesNumber informationSourcesNumber flowsPerInformationSourceNumber method goalId monitoredFlows monitoredMethod monitoredGoalId");
+				System.out.println ("Syntax: nodesNumber informationSourcesNumber urisPerInformationSourceNumber totalTime method goalId monitoredFlows monitoredMethod monitoredGoalId");
 				System.exit(0);
 			}
 		}
@@ -137,7 +139,7 @@ public class DistributedInformationFlowsExperiment {
 					if (routerIDs.size()<nodesNumber||routersNotAssigned!=0) {
 						// wait a bit
 						System.out.println ("Waiting for topology to appear or imksFowarder assignments to complete.");
-						Delay (5000);
+						Delay (10000);
 					}	
 				}
 			}

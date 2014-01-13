@@ -61,7 +61,7 @@ public class IKMSEnabledUSREntity extends IKMSEnabledEntity {
 
 			ikmsForwarderPort = 20000 + Integer.valueOf(ikmsForwarderHost);
 			tftpClient = new RestOverTFTPClient (ikmsForwarderHost, ikmsForwarderPort);
-			Logging.Log(entityid, "Connecting with IKMS host:"+ikmsForwarderHost+":"+ikmsForwarderPort);
+			Logging.Log(entityid, "Connecting with IKMS host:"+ikmsHost+":"+ikmsPort+" through node:"+ikmsForwarderHost+" node port:"+ikmsForwarderPort);
 			informationManagementInterface = new InformationManagement(ikmsHost, String.valueOf(ikmsPort), tftpClient);
 			informationExchangeInterface = new InformationExchange(ikmsHost, String.valueOf(ikmsPort), tftpClient);			
 
