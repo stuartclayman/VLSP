@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 
 import us.monoid.json.JSONException;
@@ -65,6 +64,12 @@ public class IKMSEnabledEntity implements EntityInterface {
 
 		// use the same host as IKMS
 		ikmsHost = entityHost;
+		// use claydesk1, in case entityHost is in test-bed
+		Logging.Log(entityid, "TRYING TO CONNECT TO IKMS:"+entityHost);
+		if (entityHost.startsWith("128.40.39"))
+			ikmsHost="128.40.39.166";
+		Logging.Log(entityid, "TRYING TO CONNECT TO IKMS:"+entityHost);
+
 		// use default IKMS port
 		ikmsPort = 9900;
 
