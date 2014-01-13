@@ -18,7 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class IKMSVisualisation extends JFrame {
+public class IKMSVisualisation {
 
 	/**
 	 * 
@@ -31,6 +31,8 @@ public class IKMSVisualisation extends JFrame {
 
 	private JPanel contentPane;
 
+	private JFrame ikmsFrame;
+	
 	// measurement figures for all entities
 	private PerformanceMeasurementGraph responseTimeGraph;
 	private PerformanceMeasurementGraph informationFreshnessGraph;
@@ -88,6 +90,8 @@ public class IKMSVisualisation extends JFrame {
 		// show graphical user interface is textMode=false
 
 		if (textMode==false) {
+			ikmsFrame = new JFrame();
+			
 			showResponseTimeGraph = showResponseTimeGraph_;
 			showInformationFreshnessGraph = showInformationFreshnessGraph_;
 			showResponseTimeGraphForMonitoredEntities = showResponseTimeGraphForMonitoredEntities_;
@@ -97,18 +101,18 @@ public class IKMSVisualisation extends JFrame {
 			showFlowsStatistics = showFlowsStatistics_;
 
 			// add window lister for terminating UI
-			this.addWindowListener(new WindowAdapter() {
+			ikmsFrame.addWindowListener(new WindowAdapter() {
 				public void windowClosing(WindowEvent e) {
 					TerminateIKMSUI ();
 				}
 			});
 
-			this.setTitle("Information & Knowledge Management System");
-			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			setBounds (windowX_, windowY_, windowWidth_, windowHeight_);
+			ikmsFrame.setTitle("Information & Knowledge Management System");
+			ikmsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			ikmsFrame.setBounds (windowX_, windowY_, windowWidth_, windowHeight_);
 			//setBounds(100, 100, 1105, 845);
 			contentPane = new JPanel();
-			setContentPane(contentPane);
+			ikmsFrame.setContentPane(contentPane);
 			contentPane.setLayout(new GridLayout(0, 2, 0, 0));
 			// current path: System.out.println (this.getClass().getResource("").getPath());
 			JLabel label = new JLabel(new ImageIcon(getClass().getResource("resources/ikms.png")));
@@ -173,7 +177,7 @@ public class IKMSVisualisation extends JFrame {
 				UpdateFlowsCountLabels (0, 0, 0, 0);
 
 			}
-			this.setVisible(true);   
+			ikmsFrame.setVisible(true);   
 		}
 		// Start updating the performance measurement figures
 		StartUpdatingPerformanceMeasurements ();
