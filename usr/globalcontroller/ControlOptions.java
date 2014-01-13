@@ -310,20 +310,28 @@ public class ControlOptions {
         }
 
         // What is the name of the class for PlacementEngine
-        try {
-            placementEngineClass = ReadXMLUtils.parseSingleString(gcn, "PlacementEngineClass", "GlobalController", true);
-            ReadXMLUtils.removeNode(gcn, "PlacementEngineClass", "GlobalController");
+        NodeList placementNode = ((Element)gcn).getElementsByTagName("PlacementEngineClass");
 
-            Logger.getLogger("log").logln(USR.STDOUT, "PlacementEngineClass = " + placementEngineClass);
+        // if it exists - parse subelements
+        if (placementNode.getLength() != 0) {
+            Element el = (Element)placementNode.item(0);
 
-            Class.forName(placementEngineClass).asSubclass(PlacementEngine.class);
-        } catch (SAXException e) {
-            throw new SAXException("Unable to parse class name " + placementEngineClass + " in GlobalController options" + e.getMessage());
-        } catch (XMLNoTagException e) {
-        } catch (ClassNotFoundException e) {
-            throw new Error("Class not found for class name " + placementEngineClass); 
-        } catch (ClassCastException e) {
-            throw new Error("Class name " + placementEngineClass + " must be sub type of PlacementEngine");
+            try {
+                placementEngineClass = ReadXMLUtils.parseSingleString(gcn, "PlacementEngineClass", "GlobalController", true);
+                ReadXMLUtils.removeNode(gcn, "PlacementEngineClass", "GlobalController");
+
+                Logger.getLogger("log").logln(USR.STDOUT, "PlacementEngineClass = " + placementEngineClass);
+
+                Class.forName(placementEngineClass).asSubclass(PlacementEngine.class);
+            } catch (SAXException e) {
+                throw new SAXException("Unable to parse class name " + placementEngineClass + " in GlobalController options" + e.getMessage());
+            } catch (XMLNoTagException e) {
+            } catch (ClassNotFoundException e) {
+                throw new Error("Class not found for class name " + placementEngineClass); 
+            } catch (ClassCastException e) {
+                throw new Error("Class name " + placementEngineClass + " must be sub type of PlacementEngine");
+            }
+
         }
 
         // What is the name of the class for Visualization
@@ -358,8 +366,7 @@ public class ControlOptions {
         }
 
         // Check for Monitoring node
-        NodeList monitoring = ((Element)gcn).getElementsByTagName(
-                "Monitoring");
+        NodeList monitoring = ((Element)gcn).getElementsByTagName("Monitoring");
 
         // if it exists - parse subelements
         if (monitoring.getLength() != 0) {
@@ -367,13 +374,8 @@ public class ControlOptions {
 
             // Should the GlobalController turn on Lattice Monitoring
             try {
-                latticeMonitoring = ReadXMLUtils.parseSingleBool(
-                        el,
-                        "LatticeMonitoring",
-                        "GlobalController",
-                        true);
-                ReadXMLUtils.removeNode(el, "LatticeMonitoring",
-                                        "GlobalController");
+                latticeMonitoring = ReadXMLUtils.parseSingleBool(el, "LatticeMonitoring", "GlobalController", true);
+                ReadXMLUtils.removeNode(el, "LatticeMonitoring", "GlobalController");
             } catch (SAXException e) {
                 throw e;
             } catch (XMLNoTagException e) {
@@ -382,19 +384,15 @@ public class ControlOptions {
             // get Consumers
             try {
                 // First get all nodes called 'Consumer'
-                NodeList consumers = el.getElementsByTagName(
-                        "Consumer");
+                NodeList consumers = el.getElementsByTagName("Consumer");
 
                 if (consumers.getLength() != 0) {
                     for (int c = 0; c < consumers.getLength(); c++) {
                         Node elC = consumers.item(c);
 
                         try {
-                            String className
-                                = ReadXMLUtils.parseSingleString(
-                                        elC, "Name", "Consumer", true);
-                            ReadXMLUtils.removeNodes(elC, "Name",
-                                                     "Consumer");
+                            String className = ReadXMLUtils.parseSingleString(elC, "Name", "Consumer", true);
+                            ReadXMLUtils.removeNodes(elC, "Name", "Consumer");
 
                             //String label =
                             // ReadXMLUtils.parseSingleString(elC,

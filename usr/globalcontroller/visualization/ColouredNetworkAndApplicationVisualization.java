@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import usr.common.BasicRouterInfo;
+import usr.localcontroller.LocalControllerInfo;
 import usr.globalcontroller.GlobalController;
 import usr.globalcontroller.TrafficInfo;
 
@@ -37,22 +38,8 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
     @SuppressWarnings("unchecked")
     public void visualize(PrintStream s) {
 
-        HashMap<String, ArrayList<BasicRouterInfo> > routerLocations = new HashMap<String, ArrayList<BasicRouterInfo> >();
-
         // work out which router is where
-        for (BasicRouterInfo routerInfo : gc.getAllRouterInfo()) {
-            String host = routerInfo.getHost();
-
-            if (routerLocations.containsKey(host)) { // we've seen this host
-                ArrayList<BasicRouterInfo> list = routerLocations.get(host);
-                list.add(routerInfo);
-            } else { // it's a new host
-                ArrayList<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
-                list.add(routerInfo);
-
-                routerLocations.put(host, list);
-            }
-        }
+        HashMap<LocalControllerInfo, List<BasicRouterInfo> > routerLocations = gc.getRouterLocations();
 
         // now visit each host and output the routers
         s.println("graph gg {");
@@ -64,11 +51,11 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
         // s.println("    rank=source;");
 
         // set root node, if using twopi
-        int noAPs = gc.getAPs().size();  // WAS gc.getAPController().getNoAPs();
+        int noAPs = gc.getAPs().size(); 
         int noRouters = gc.getNoRouters();
 
         if (noAPs > 0) {
-            int first = gc.getAPs().get(0); // WAS gc.getAPController().getAPList().get(0);
+            int first = gc.getAPs().get(0); 
             s.println("    root=" + first + ";");
         }
 
@@ -102,16 +89,16 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
         s.print(" hosts=" + routerLocations.keySet().size());
         s.print(" routers=" + noRouters);
         s.print(" links=" + gc.getNoLinks
-                    ());
+                ());
         s.println("\";");
 
         // visit each host
-        for (String host : routerLocations.keySet()) {
-            List<BasicRouterInfo> routersOnHost = routerLocations.get(host);
+        for (Map.Entry<LocalControllerInfo, List<BasicRouterInfo>  > entry  : routerLocations.entrySet()) {
+            LocalControllerInfo localInfo = entry.getKey();
+            List<BasicRouterInfo> routersOnHost = entry.getValue();
 
-            s.println("    subgraph cluster_" + host + " {");
-            s.print("\tlabel=\"" + host + " routers=" + routersOnHost.size()
-                    + "\";");
+            s.println("    subgraph cluster_" + localInfo.getName() + "_" + localInfo.getPort() + " {");
+            s.print("\tlabel=\"" + localInfo + " routers=" + routersOnHost.size() + "\";");
             s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"0.0, 0.0, 0.97\"];");
             s.println("\tnode [ shape=ellipse, nodesep=2.0 ];");
 
@@ -198,7 +185,7 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
                     String subgraphName = "apps_for_" + r;
                     s.print("\t" + subgraphName);
                     s.print(
-                        " [ shape=record, fontname=\"Helvetica\", fontsize=11, color=\"#888888\", fontcolor=\"#888888\", label=\"{");
+                            " [ shape=record, fontname=\"Helvetica\", fontsize=11, color=\"#888888\", fontcolor=\"#888888\", label=\"{");
 
                     // determine apps to show
                     List<String> appsToShow = filterAppList(apps);
@@ -228,8 +215,8 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
                         String monString = "";
 
                         if (monitoringData != null) {
-                            for (Map.Entry<String, String> entry : monitoringData.entrySet()) {
-                                monString += (entry.getKey() + "=" + entry.getValue() + " ");
+                            for (Map.Entry<String, String> data : monitoringData.entrySet()) {
+                                monString += (data.getKey() + "=" + data.getValue() + " ");
                             }
                         }
 

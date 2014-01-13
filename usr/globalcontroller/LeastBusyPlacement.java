@@ -180,7 +180,7 @@ public class LeastBusyPlacement implements PlacementEngine {
 
 
 
-            builder.append(localInfo + ": " + volume + " | ");
+            builder.append(localInfo + ": " + localInfo.getNoRouters() + " "  + volume + " | ");
         }
 
         return builder.toString();

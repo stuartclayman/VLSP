@@ -87,13 +87,10 @@ public class LeastUsedLoadBalancer implements PlacementEngine {
      */
     private String toTable(long elapsed) {
         StringBuilder builder = new StringBuilder();
-        double thisUsage = 0.0;
 
         builder.append(gc.elapsedToString(elapsed) + " ");
         for (LocalControllerInfo localInfo : getPlacementDestinations()) {
-
-            thisUsage = localInfo.getUsage(); // same as localInfo.getNoRouters() / localInfo.getMaxRouters()
-            builder.append(localInfo + ": " + thisUsage + " | ");
+            builder.append(localInfo + ": " + localInfo.getNoRouters() + " " + localInfo.getUsage() + " | ");
         }
 
         return builder.toString();

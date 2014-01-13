@@ -2,10 +2,12 @@ package usr.globalcontroller.visualization;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
 import usr.common.BasicRouterInfo;
+import usr.localcontroller.LocalControllerInfo;
 import usr.globalcontroller.GlobalController;
 import usr.globalcontroller.TrafficInfo;
 
@@ -34,22 +36,8 @@ public class ColouredNetworkVisualization implements Visualization {
     @Override
     public void visualize(PrintStream s) {
 
-        HashMap<String, ArrayList<BasicRouterInfo> > routerLocations = new HashMap<String, ArrayList<BasicRouterInfo> >();
-
         // work out which router is where
-        for (BasicRouterInfo routerInfo : gc.getAllRouterInfo()) {
-            String host = routerInfo.getHost();
-
-            if (routerLocations.containsKey(host)) { // we've seen this host
-                ArrayList<BasicRouterInfo> list = routerLocations.get(host);
-                list.add(routerInfo);
-            } else {                                 //  it's a new host
-                ArrayList<BasicRouterInfo> list = new ArrayList<BasicRouterInfo>();
-                list.add(routerInfo);
-
-                routerLocations.put(host, list);
-            }
-        }
+        HashMap<LocalControllerInfo, List<BasicRouterInfo> > routerLocations = gc.getRouterLocations();
 
         // now visit each host and output the routers
         s.println("graph gg {");
@@ -61,11 +49,11 @@ public class ColouredNetworkVisualization implements Visualization {
         //s.println("    rank=source;");
 
         // set root node, if using twopi
-        int noAPs = gc.getAPs().size();  // WAS gc.getAPController().getNoAPs();
+        int noAPs = gc.getAPs().size(); 
         int noRouters = gc.getNoRouters();
 
         if (noAPs > 0) {
-            int first = gc.getAPs().get(0); // WAS gc.getAPController().getAPList().get(0);
+            int first = gc.getAPs().get(0);
             s.println("    root=" + first +";");
         }
 
@@ -102,11 +90,12 @@ public class ColouredNetworkVisualization implements Visualization {
         s.println("\";");
 
         // visit each host
-        for (String host : routerLocations.keySet()) {
-            List<BasicRouterInfo> routersOnHost = routerLocations.get(host);
+        for (Map.Entry<LocalControllerInfo, List<BasicRouterInfo>  > entry  : routerLocations.entrySet()) {
+            LocalControllerInfo localInfo = entry.getKey();
+            List<BasicRouterInfo> routersOnHost = entry.getValue();
 
-            s.println("    subgraph cluster_" + host + " {");
-            s.print("\tlabel=\"" + host + " routers=" + routersOnHost.size() +"\";");
+            s.println("    subgraph cluster_" + localInfo.getName() + "_" + localInfo.getPort() + " {");
+            s.print("\tlabel=\"" + localInfo + " routers=" + routersOnHost.size() +"\";");
             s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"0.0, 0.0, 0.97\"];");
             s.println("\tnode [ shape=ellipse, style=rounded, nodesep=2.0 ];");
 
@@ -188,7 +177,7 @@ public class ColouredNetworkVisualization implements Visualization {
 
         // visit all the edges
         for (int i : gc.getRouterList()) {
-             BasicRouterInfo router1 = gc.findRouterInfo(i);
+            BasicRouterInfo router1 = gc.findRouterInfo(i);
 
             if (router1 == null) continue;
 
