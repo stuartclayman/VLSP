@@ -9,6 +9,7 @@ import ikms.util.JSONData;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.Scanner;
 
 import org.simpleframework.http.Path;
@@ -40,8 +41,8 @@ public class RegisterHandler extends BasicRequestHandler implements RequestHandl
 		mc = (IKMSManagementConsole)getManagementConsole();
 
 		try {
-			
-            /*System.out.println("method: " + request.getMethod());
+
+			/*System.out.println("method: " + request.getMethod());
             System.out.println("target: " + request.getTarget());
             System.out.println("path: " + request.getPath());
             System.out.println("directory: " + request.getPath().getDirectory());
@@ -49,7 +50,7 @@ public class RegisterHandler extends BasicRequestHandler implements RequestHandl
             System.out.println("segments: " + java.util.Arrays.asList(request.getPath().getSegments()));
             System.out.println("query: " + request.getQuery());
             System.out.println("keys: " + request.getQuery().keySet());*/
-			 
+
 
 			System.out.println("/register/ REQUEST: " + request.getMethod() + " " +  request.getTarget());
 
@@ -216,7 +217,7 @@ public class RegisterHandler extends BasicRequestHandler implements RequestHandl
 		//}
 		out.println(jsobj.toString());
 	}
-	
+
 	/**
 	 * Get data given a request and send a response.
 	 */
@@ -236,7 +237,7 @@ public class RegisterHandler extends BasicRequestHandler implements RequestHandl
 		// get the path
 		//Path path =  request.getPath();
 		//String name = path.getName();
-		
+
 		Query query = request.getQuery();
 		Scanner scanner;
 		int entityid=0;
@@ -361,7 +362,7 @@ public class RegisterHandler extends BasicRequestHandler implements RequestHandl
 		//if (xml) {
 		//	out.println(XML.toString(jsobj, "response"));
 		//} else {                       
-			out.println(jsobj.toString());
+		out.println(jsobj.toString());
 		//}
 	}
 
@@ -445,7 +446,7 @@ public class RegisterHandler extends BasicRequestHandler implements RequestHandl
 
 				String result=null;
 				try {
-				result = imi.UpdatePerformanceGoal(entityid, knowGoal);
+					result = imi.UpdatePerformanceGoal(entityid, knowGoal);
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
@@ -485,6 +486,25 @@ public class RegisterHandler extends BasicRequestHandler implements RequestHandl
 				PrintStream out = response.getPrintStream();
 
 				if (entityRI!=null) {
+					String forwarderIP = request.getClientAddress().getAddress().getHostAddress();
+
+					// updating correct ikmsForwarderAddress
+					if (! entityRI.GetInformationFlowConstraints().equals(null)) {
+						if (!entityRI.GetInformationFlowConstraints().getIKMSClientURL().equals(null)) {
+							System.out.println ("Received Registration Information with IKMSClientURL. Updating URL with forwarders IP:"+forwarderIP);
+							String initialForwarderURI = entityRI.GetInformationFlowConstraints().getIKMSClientURL();
+							URL initialForwarderURL = new URL (initialForwarderURI);
+							entityRI.GetInformationFlowConstraints().setIKMSClientURL("http://" + forwarderIP + ":"+initialForwarderURL.getPort()+"/update/");
+						}
+					}
+					// updating correct iccallbackurl
+					if (! entityRI.GetIcCallbackURL().equals(null)) {
+						System.out.println ("Received Registration Information with ICCallBackURL. Updating URL with forwarders IP:"+forwarderIP);
+						String initialIcCallBackURI = entityRI.GetIcCallbackURL();
+						URL initialIcCallBackURL = new URL (initialIcCallBackURI);
+						entityRI.SetIcCallbackURL("http://" + forwarderIP + ":"+initialIcCallBackURL.getPort()+initialIcCallBackURL.getPath());
+					}
+
 					imi.RegisterEntity(entityRI, false);
 
 					jsobj.put("message", "registered successfully");
