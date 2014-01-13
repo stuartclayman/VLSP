@@ -416,6 +416,11 @@ public class EntityRegistrationInformation implements JSONString {
 		return iccallbackURL;
 	}
 
+	// Sets iccallbackURL of current instance
+	public void SetIcCallbackURL (String iccallbackURL_) {
+		iccallbackURL=iccallbackURL_;
+	}
+
 	// Returns urisforrequiredinformation of current instance
 	public ArrayList<String> GetUrisForRequiredInformation () {
 		return urisforrequiredinformation;
@@ -434,6 +439,11 @@ public class EntityRegistrationInformation implements JSONString {
 	// Returns ircallbackURL of current instance
 	public String GetIrCallbackURL () {
 		return ircallbackURL;
+	}
+
+	// Sets ircallbackURL of current instance
+	public void SetIrCallbackURL (String ircallbackURL_) {
+		ircallbackURL = ircallbackURL_;
 	}
 
 	// Returns urisforsubscribedinformation of current instance
@@ -466,6 +476,18 @@ public class EntityRegistrationInformation implements JSONString {
 		// in case of a distributed virtual infrastructure deployment
 		// return a 
 		return ifpcallbackURL;
+	}
+
+	// Sets ipkpcallbackURL of current instance
+	public void SetIPKPCallBackURL (String ipkpcallbackURL_) {
+		ipkpcallbackURL = ipkpcallbackURL_;
+	}
+
+	// Sets ifpcallbackURL of current instance
+	public void SetIFCCallBackURL(String ifpcallbackURL_) {
+		// in case of a distributed virtual infrastructure deployment
+		// return a 
+		ifpcallbackURL = ifpcallbackURL_;
 	}
 
 	// Returns ifpcallbackURL or knowClientURL of current instance, i.e., in case of a distributed virtual infrastructure deployment
@@ -520,7 +542,7 @@ public class EntityRegistrationInformation implements JSONString {
 		} 
 		return list;
 	}
-	
+
 	public ArrayList<Boolean> JSONArrayToBooleanArrayList (JSONArray jsArray) throws JSONException {
 		ArrayList<Boolean> list = new ArrayList<Boolean>();     
 		if (jsArray != null) { 
