@@ -195,7 +195,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent implements Sta
         }
 
         int linkNo = startLink(gc, time, r1, r2, weight_, linkName_, scheduled_);
-        boolean success = linkNo >= 0;
+        boolean success = linkNo != -1;
         try {
             if (success) {
                 json.put("success", (Boolean)true);

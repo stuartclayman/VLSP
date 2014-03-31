@@ -2,6 +2,7 @@
 
 package usr.globalcontroller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import usr.logging.USR;
 import eu.reservoir.monitoring.core.Measurement;
 import eu.reservoir.monitoring.core.ProbeValue;
 import eu.reservoir.monitoring.core.Reporter;
+import eu.reservoir.monitoring.core.ReporterMeasurementType;
 import eu.reservoir.monitoring.core.list.MList;
 import eu.reservoir.monitoring.core.table.Table;
 import eu.reservoir.monitoring.core.table.TableAttribute;
@@ -23,7 +25,7 @@ import eu.reservoir.monitoring.core.table.TableValue;
  * a AppListProbe embedded in each Router.
  * It shows the apps running on a router.
  */
-public class RouterAppsReporter implements Reporter {
+public class RouterAppsReporter implements Reporter, ReporterMeasurementType {
     GlobalController globalController;
 
 
@@ -35,6 +37,17 @@ public class RouterAppsReporter implements Reporter {
      */
     public RouterAppsReporter(GlobalController gc) {
         globalController = gc;
+    }
+
+    /**
+     * Return the measurement types this Reporter accepts.
+     */
+    public List<String> getMeasurementTypes() {
+        List<String> list = new ArrayList<String>();
+
+        list.add("AppList");
+
+        return list;
     }
 
     /**

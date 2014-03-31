@@ -11,6 +11,7 @@ import usr.logging.Logger;
 import eu.reservoir.monitoring.core.Measurement;
 import eu.reservoir.monitoring.core.ProbeValue;
 import eu.reservoir.monitoring.core.Reporter;
+import eu.reservoir.monitoring.core.ReporterMeasurementType;
 import eu.reservoir.monitoring.core.table.Table;
 import eu.reservoir.monitoring.core.table.TableAttribute;
 import eu.reservoir.monitoring.core.table.TableRow;
@@ -21,7 +22,7 @@ import eu.reservoir.monitoring.core.table.TableValue;
  * a NetIFStatsProbe embedded in each Router.
  * It shows the cumulative traffic across the network.
  */
-public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNotification, TrafficInfo {
+public class NetIFStatsCumulativeReporter implements Reporter, ReporterMeasurementType, RouterDeletedNotification, TrafficInfo {
     GlobalController globalController;
 
     // A HashMap of RouterName -> latest measurement
@@ -41,6 +42,17 @@ public class NetIFStatsCumulativeReporter implements Reporter, RouterDeletedNoti
 
         measurements = new HashMap<String, Table>();
         old = new HashMap<String, Table>();
+    }
+
+    /**
+     * Return the measurement types this Reporter accepts.
+     */
+    public List<String> getMeasurementTypes() {
+        List<String> list = new ArrayList<String>();
+
+        list.add("NetIFStats");
+
+        return list;
     }
 
     /**

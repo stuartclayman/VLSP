@@ -83,7 +83,7 @@ public class AppListProbe extends RouterProbe implements Probe {
      * Collect a measurement.
      */
     @Override
-	public ProbeMeasurement collect() {
+    public ProbeMeasurement collect() {
         //System.out.println("AppListProbe: collect()");
 
         // get list of apps

@@ -11,6 +11,7 @@ import usr.logging.Logger;
 import eu.reservoir.monitoring.core.Measurement;
 import eu.reservoir.monitoring.core.ProbeValue;
 import eu.reservoir.monitoring.core.Reporter;
+import eu.reservoir.monitoring.core.ReporterMeasurementType;
 import eu.reservoir.monitoring.core.table.Table;
 import eu.reservoir.monitoring.core.table.TableAttribute;
 import eu.reservoir.monitoring.core.table.TableRow;
@@ -21,7 +22,7 @@ import eu.reservoir.monitoring.core.table.TableValue;
  * a NetIFStatsProbe embedded in each Router.
  * It shows the traffic sent over the network since last time.
  */
-public class NetIFStatsReporter implements Reporter, RouterDeletedNotification, TrafficInfo {
+public class NetIFStatsReporter implements Reporter, ReporterMeasurementType, RouterDeletedNotification, TrafficInfo {
     GlobalController globalController;
 
     // A HashMap of RouterName -> latest measurement
@@ -50,6 +51,17 @@ public class NetIFStatsReporter implements Reporter, RouterDeletedNotification, 
     }
 
     /**
+     * Return the measurement types this Reporter accepts.
+     */
+    public List<String> getMeasurementTypes() {
+        List<String> list = new ArrayList<String>();
+
+        list.add("NetIFStats");
+
+        return list;
+    }
+
+    /**
      * This collects each measurement and processes it.
      * Each measurement has the following structure:
      * ProbeValue 0: String =
@@ -64,6 +76,7 @@ public class NetIFStatsReporter implements Reporter, RouterDeletedNotification, 
      */
     @Override
     public void report(Measurement m) {
+
         if (m.getType().equals("NetIFStats")) {
             count++;
 
@@ -114,6 +127,8 @@ public class NetIFStatsReporter implements Reporter, RouterDeletedNotification, 
      */
     @Override
     public List<Object> getTraffic(String routerSrc, String routerDst) {
+        System.out.println("getTraffic: " + routerSrc + " -> " + routerDst);
+
         Table tablePrev = previousMeasurements.get(routerSrc);
 
         Table table = measurements.get(routerSrc);
@@ -171,6 +186,8 @@ public class NetIFStatsReporter implements Reporter, RouterDeletedNotification, 
                     // add to data
                     data.add(diff);
                 }
+
+                System.err.println("return: " + data);
 
                 return data;
             }

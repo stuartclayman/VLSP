@@ -1,4 +1,4 @@
-package demo_usr.viewer;
+package usr.common;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -8,7 +8,7 @@ import usr.common.ProcessWrapper;
 /**
  * A process that runs down the end of a pipe.
  */
-class PipeProcess extends ProcessWrapper {
+public class PipeProcess extends ProcessWrapper {
     StringBuilder builder;
     String pipeData;
     boolean error = false;
@@ -29,7 +29,7 @@ class PipeProcess extends ProcessWrapper {
         // could check if label is 'stderr' or 'stdout'
         // and do different things
         if (label.equals("stderr")) {
-            System.err.println("PipeProcess: stderr " + line);
+            //System.err.println("PipeProcess: stderr " + line);
         } else {
             // it's stdout
             //System.err.println("PipeProcess: stdout " + line);
@@ -45,7 +45,7 @@ class PipeProcess extends ProcessWrapper {
      */
     @Override
     public void eof(){
-        System.err.println("PipeProcess: EOF");
+        //System.err.println("PipeProcess: EOF");
         if (error)
             pipeData = null;
         else

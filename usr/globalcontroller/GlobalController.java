@@ -70,6 +70,7 @@ import eu.reservoir.monitoring.appl.BasicConsumer;
 import eu.reservoir.monitoring.appl.BasicDataSource;
 import eu.reservoir.monitoring.core.Probe;
 import eu.reservoir.monitoring.core.Reporter;
+import eu.reservoir.monitoring.core.ReporterMeasurementType;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneForwardingConsumerWithNames;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
@@ -645,7 +646,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 Reporter reporter = cons.newInstance(this);
                 reporterMap.put(label, reporter);
 
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Added reporter: " + reporter);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Added reporter: " + label + " -> " + reporter);
             } catch (ClassNotFoundException cnfe) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin() + "Class not found " + reporterClassName);
             } catch (Exception e) {
@@ -1384,7 +1385,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         // This is done by asking the GlobalController for
         // a class that implements TrafficInfo.
         // It is this class that has the current traffic info.
-        TrafficInfo reporter = (TrafficInfo)findByInterface(TrafficInfo.class);
+        Reporter netIFStatsReporter = findByMeasurementType("NetIFStats");
+
+        // We know it implements TrafficInfo
+        TrafficInfo reporter = (TrafficInfo)netIFStatsReporter;
+
+        //TrafficInfo reporter = (TrafficInfo)findByInterface(TrafficInfo.class);
 
 
         findLinkInfoByRouter(routerID);
@@ -1442,7 +1448,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         // This is done by asking the GlobalController for
         // a class that implements TrafficInfo.
         // It is this class that has the current traffic info.
-        TrafficInfo reporter = (TrafficInfo)findByInterface(TrafficInfo.class);
+        Reporter netIFStatsReporter = findByMeasurementType("NetIFStats");
+
+        // We know it implements TrafficInfo
+        TrafficInfo reporter = (TrafficInfo)netIFStatsReporter;
+
+        //TrafficInfo reporter = (TrafficInfo)findByInterface(TrafficInfo.class);
 
 
         findLinkInfoByRouter(routerID);
@@ -2056,6 +2067,29 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 if (rI.isAssignableFrom(inter)) {
                     return reporter;
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find reporter by Measurement type it consumes and reports on
+     */
+    public Reporter findByMeasurementType(String type) {
+        // skip through each Reporter
+        for (Reporter reporter :  reporterMap.values()) {
+            if (reporter instanceof ReporterMeasurementType) {
+                List<String> types = ((ReporterMeasurementType)reporter).getMeasurementTypes();
+
+                if (types.contains(type)) {
+                    // the reporter accepts this type
+                    return reporter;
+                } else {
+                    // skip this one
+                }
+            } else {
+                // reporter doesnt advertise - so skip it
             }
         }
 

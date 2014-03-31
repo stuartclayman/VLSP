@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -29,6 +30,11 @@ import usr.net.Address;
 import usr.net.AddressFactory;
 import usr.router.RouterOptions;
 import cc.clayman.console.ManagementConsole;
+import java.lang.reflect.Constructor;
+import eu.reservoir.monitoring.appl.BasicDataSource;
+import eu.reservoir.monitoring.appl.datarate.EveryNMilliseconds;
+import eu.reservoir.monitoring.core.plane.DataPlane;
+import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
 
 
 /** The local controller is intended to run on every machine.
@@ -57,7 +63,16 @@ public class LocalController implements ComponentController {
     // Doing Lattice monitoring ?
     private boolean latticeMonitoring = false;
     private InetSocketAddress monitoringAddress;
-    private int monitoringTimeout;
+    private int routerMonitoringTimeout;
+
+    // A BasicDataSource for the stats of a Router
+    BasicDataSource dataSource = null;
+
+    // The probes
+    ArrayList<LocalControllerProbe> probeList = null;
+
+    HashMap<String, Integer> probeInfoMap = null;
+
 
     /**
      * Main entry point.
@@ -106,6 +121,15 @@ public class LocalController implements ComponentController {
         Properties prop = System.getProperties();
         classPath_ = prop.getProperty("java.class.path", null);
 
+        // setup DataSource
+        dataSource = new BasicDataSource(getName() + ".dataSource");
+        probeList = new ArrayList<LocalControllerProbe>();
+
+        probeInfoMap = new HashMap<String, Integer>();
+
+        // hack in a probe
+        probeInfoMap.put("usr.localcontroller.HostInfoProbe", 5000);
+
         init();
 
         console_.start();
@@ -125,6 +149,10 @@ public class LocalController implements ComponentController {
         // it will actually output things where the log has bit
         // USR.ERROR set
         logger.addOutput(System.err, new BitMask(USR.ERROR));
+
+        // Setup probes
+        setupProbes(probeInfoMap);
+
     }
 
     /**
@@ -356,7 +384,7 @@ public class LocalController implements ComponentController {
 
         // tell the router its new name and config if available
         try {
-            if (routerConfigString_ != "") {
+            if (!"".equals(routerConfigString_)) {
                 interactor.setConfigString(routerConfigString_);
             }
 
@@ -367,7 +395,7 @@ public class LocalController implements ComponentController {
 
             // tell the router to start some monitoring
             if (latticeMonitoring) {
-                interactor.monitoringStart(monitoringAddress, monitoringTimeout);
+                interactor.monitoringStart(monitoringAddress, routerMonitoringTimeout);
             }
 
         } catch (IOException ioexc) {
@@ -715,39 +743,6 @@ public class LocalController implements ComponentController {
         }
     }
 
-    /**
-     * Start monitoring, sending data to a specified address
-     * with a particular timeout.
-     */
-    public void startMonitoring(InetSocketAddress socketAddress, int timeout) {
-        latticeMonitoring = true;
-        monitoringAddress = socketAddress;
-        monitoringTimeout = timeout;
-    }
-
-    /**
-     * Stop any monitoring
-     */
-    public void stopMonitoring() {
-        // tell all the Routers to stop monitoring
-        if (latticeMonitoring) {
-            for (int i = 0; i < routers_.size(); i++) {
-
-                RouterInteractor interactor = routerInteractors_.get(i);
-                try {
-                    interactor.monitoringStop();
-                } catch (IOException e) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot send stopMonitoring to Router");
-                    Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-                } catch (JSONException e) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin() + "Cannot send stopMonitoring to Router");
-                    Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
-                }
-            }
-            latticeMonitoring = false;
-        }
-    }
 
     /**
      * Run something on a Router.
@@ -859,6 +854,181 @@ public class LocalController implements ComponentController {
 
     public GlobalControllerInteractor getGlobalControllerInteractor() {
         return gcInteractor_;
+    }
+
+    /***  MONITORING  ***/
+
+    /**
+     * Setup monitoring, sending data to a specified address
+     * with a particular timeout for routers.
+     */
+    private void setUpRouterMonitoring(InetSocketAddress socketAddress, int timeout) {
+        latticeMonitoring = true;
+        monitoringAddress = socketAddress;
+        routerMonitoringTimeout = timeout;
+    }
+
+    /**
+     * Stop any monitoring on Routers
+     */
+    private void stopRouterMonitoring() {
+        // tell all the Routers to stop monitoring
+        if (latticeMonitoring) {
+            for (int i = 0; i < routers_.size(); i++) {
+
+                RouterInteractor interactor = routerInteractors_.get(i);
+                try {
+                    interactor.monitoringStop();
+                } catch (IOException e) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot send stopMonitoring to Router");
+                    Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+                } catch (JSONException e) {
+                    Logger.getLogger("log").logln(USR.ERROR,
+                                                  leadin() + "Cannot send stopMonitoring to Router");
+                    Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+                }
+            }
+            latticeMonitoring = false;
+        }
+    }
+
+
+    /**
+     * Start monitoring.
+     * Sends to a particular UDP address, and
+     * sets the initial gap between transmits at every 'when' seconds.
+     */
+    public synchronized void startMonitoring(InetSocketAddress addr, int when) {
+        // check to see if the monitoring is already connected and running
+        if (dataSource.isConnected()) {
+            // if it is, stop it first
+            stopMonitoring();
+        }
+
+        // set up DataPlane
+        DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
+        dataSource.setDataPlane(outputDataPlane);
+
+        // add probes
+        for (LocalControllerProbe probe : probeList) {
+            dataSource.addProbe(probe);  // this does registerProbe and activateProbe
+        }
+
+        // and connect
+        dataSource.connect();
+
+        // turn on probes
+        for (LocalControllerProbe probe : probeList) {
+            Logger.getLogger("log").logln(USR.STDOUT,
+                                          leadin() + " data source: " +  dataSource.getName() + " turn on probe " +
+                                          probe.getName());
+
+            dataSource.turnOnProbe(probe);
+
+            probe.started();
+        }
+
+        setUpRouterMonitoring(addr, when);
+
+    }
+
+    /**
+     * Pause monitoring
+     */
+    public synchronized void pauseMonitoring() {
+        for (LocalControllerProbe probe : probeList) {
+            if (dataSource.isProbeOn(probe)) {
+                dataSource.turnOffProbe(probe);
+
+                probe.paused();
+            }
+        }
+    }
+
+    /**
+     * Resume monitoring
+     */
+    public synchronized void resumeMonitoring() {
+        for (LocalControllerProbe probe : probeList) {
+            if (!dataSource.isProbeOn(probe)) {
+                dataSource.turnOnProbe(probe);
+
+                probe.resumed();
+            }
+        }
+    }
+
+    /**
+     * Stop monitoring.
+     */
+    public synchronized void stopMonitoring() {
+        stopRouterMonitoring();
+
+        if (dataSource.isConnected()) {
+            //pauseMonitoring();
+
+            // turn off probes
+            for (LocalControllerProbe probe : probeList) {
+                Logger.getLogger("log").logln(USR.STDOUT,
+                                              leadin() + " data source: " +  dataSource.getName() + " turn off probe " +
+                                              probe.getName());
+
+                probe.lastMeasurement();
+
+                dataSource.turnOffProbe(probe);
+
+            }
+
+            // disconnect
+            dataSource.disconnect();
+
+            // remove probes
+            for (LocalControllerProbe probe : probeList) {
+                dataSource.removeProbe(probe);
+            }
+
+        }
+    }
+
+    /**
+     * Set up the probes
+     */
+    private void setupProbes(HashMap<String, Integer> probeInfoMap) {
+        // skip through the map, instantiate a Probe and set its data rate
+        for (Map.Entry<String, Integer> entry : probeInfoMap.entrySet()) {
+            String probeClassName = entry.getKey();
+            Integer datarate = entry.getValue();
+
+            try {
+                // Ger class info
+                Class<?> c = Class.forName(probeClassName);
+                Class<? extends LocalControllerProbe> cc = c.asSubclass(LocalControllerProbe.class );
+
+                // find Constructor for when arg is RouterController
+                Constructor<? extends LocalControllerProbe> cons = cc.getDeclaredConstructor(LocalController.class);
+
+                LocalControllerProbe probe = cons.newInstance(this);
+
+                // Set datarate, iff we need to
+                if (datarate > 0) {
+                    probe.setDataRate(new EveryNMilliseconds(datarate));
+                }
+
+                probeList.add(probe);
+
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Added probe: " + probe);
+
+            } catch (ClassNotFoundException cnfe) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Class not found " + probeClassName);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin() + "Cannot instantiate class " + probeClassName + " because " +
+                                              e.getMessage());
+                e.printStackTrace();
+            }
+
+
+        }
     }
 
     /**
