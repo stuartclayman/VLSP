@@ -1,4 +1,4 @@
-package usr.lifeEstimate;
+package usr.model.lifeEstimate;
 
 
 /** Class represents a nodes internal number and its lifeTime estimate
