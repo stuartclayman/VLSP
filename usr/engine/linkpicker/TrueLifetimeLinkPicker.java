@@ -1,15 +1,16 @@
 /** Interface choses n links using some rule*/
 
 package usr.engine.linkpicker;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import org.w3c.dom.Node;
 
-import usr.events.EndRouterEvent;
 import usr.events.Event;
+import usr.events.vim.EndRouterEvent;
 import usr.globalcontroller.GlobalController;
-import usr.lifeEstimate.NodeAndLifetime;
+import usr.model.lifeEstimate.NodeAndLifetime;
 /**
  * Class chooses links based upon finding the node with the longest lifetime
  * uses actual lifetime not estimate
@@ -25,7 +26,7 @@ public class TrueLifetimeLinkPicker implements NodeLinkPicker {
     }
 
     @Override
-	public ArrayList <Integer> pickNLinks(ArrayList<Integer> nodes,
+	public List <Integer> pickNLinks(List<Integer> nodes,
         GlobalController g, int noLinks, int node)
     {
         ArrayList<Integer> picked= new ArrayList<Integer>();
@@ -42,7 +43,7 @@ public class TrueLifetimeLinkPicker implements NodeLinkPicker {
     }
 
     @Override
-	public int pickLink(ArrayList<Integer> nodes, GlobalController g,
+	public int pickLink(List<Integer> nodes, GlobalController g,
         int node)
     {
     	long time= g.getElapsedTime();
@@ -53,17 +54,13 @@ public class TrueLifetimeLinkPicker implements NodeLinkPicker {
     }
 
 
-    private void createQueue(ArrayList<Integer> nodes, long time, GlobalController g)
+    private void createQueue(List<Integer> nodes, long time, GlobalController g)
     {
     	for (Event e: g.getEventScheduler().getEvents()) {
     		if (e instanceof EndRouterEvent) {
     			EndRouterEvent ere= (EndRouterEvent)e;
-    			int rno;
-    			try {
-    				rno= ere.getNumber(g);
-    			} catch (InstantiationException ex) {
-    				continue;
-    			}
+    			int rno= ere.getRouterNumber();
+    			
     			if (nodes.contains(rno)) {
     				orderNodes_.add(new NodeAndLifetime(rno,ere.getTime()-g.getElapsedTime()));
     			}

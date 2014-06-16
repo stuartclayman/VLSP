@@ -31,7 +31,11 @@ public class EndRouterEvent extends AbstractEvent implements EndRouter {
         str = "EndRouter: " + time + " " + getName();
         return str;
     }
-
+    
+    public int getRouterNumber() {
+		return address;
+	}
+    
     private String getName() {
         String str = "";
 
