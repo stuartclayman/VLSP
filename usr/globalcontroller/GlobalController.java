@@ -2597,6 +2597,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         return "GC";
     }
 
+    public EventScheduler getEventScheduler()
+    {
+    	return scheduler_;
+    }
+
     /**
      * Create the String to print out before a message
      */

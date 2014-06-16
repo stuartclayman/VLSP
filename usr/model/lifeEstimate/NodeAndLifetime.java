@@ -1,6 +1,5 @@
-package usr.model.lifeEstimate;
+package usr.lifeEstimate;
 
-import java.lang.Comparable;
 
 /** Class represents a nodes internal number and its lifeTime estimate
  *
@@ -10,7 +9,7 @@ public class NodeAndLifetime implements Comparable <NodeAndLifetime>{
 	int nodeNo_;
 	long lifetime_;
 
-	public NodeAndLifetime(int n, int l)
+	public NodeAndLifetime(int n, long l)
 	{
 		nodeNo_= n;
 		lifetime_= l;
