@@ -28,7 +28,7 @@
   <EventEngine>
      <Name>usr.engine.ProbabilisticMaxLinkEventEngine</Name>
      <EndTime>360000</EndTime>
-     <Parameters>monitoring_scripts/gasbed_probdists_noPA.xml</Parameters>
+     <Parameters>monitoring_scripts/gasbed_mldists_noPA.xml</Parameters>
   </EventEngine>
   <RouterOptions>
       monitoring_scripts/gasbed_routeroptions.xml
