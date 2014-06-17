@@ -41,7 +41,7 @@ public class ProbabilisticMaxLinkEventEngine extends ProbabilisticEventEngine {
         super(time);
         Document doc = parseXMLHead(parms,"ProbabilisticMaxLinkEventEngine");
         parseXMLExtra(doc);
-        parseXMLMain(doc,"ProbabilisticEventEngine");
+        parseXMLMain(doc,"ProbabilisticMaxLinkEventEngine");
         routerMaxLinkCount_ = new HashMap<Integer, Integer>();
         routerMinLinkCount_ = new HashMap<Integer, Integer>();
     }
