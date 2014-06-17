@@ -1,0 +1,41 @@
+<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <ConnectedNetwork>false</ConnectedNetwork>
+     <Simulation>false</Simulation>
+  </GlobalController>
+    <LocalController>
+     <Name>localhost</Name>
+     <Port>20000</Port>
+     <LowPort>20001</LowPort>
+     <HighPort>21000</HighPort>
+     <MaxRouters>75</MaxRouters>
+  </LocalController>
+
+  <EventEngine>
+     <Name>usr.engine.ProbabilisticEventEngine</Name>
+     <EndTime>360000</EndTime>
+     <Parameters>scripts/stability/local_mldists_noPA.xml</Parameters>
+  </EventEngine>
+  <RouterOptions>
+      scripts/stability/local_router.xml
+  </RouterOptions>
+      <Output>
+        <File>out.net</File>
+        <When>End</When>
+        <Type>Network</Type>
+    </Output>
+    <Output>
+        <File>summary.out</File>
+        <When>Interval</When>
+        <Time>10000</Time>
+        <Type>Summary</Type>
+    </Output>
+    <Output>
+     <File>traffic.agg</File>
+        <When>Interval</When>
+        <Time>10000</Time>
+        <Type>Traffic</Type>
+        <Parameter>Aggregate</Parameter>
+    </Output>
+</SimOptions>
