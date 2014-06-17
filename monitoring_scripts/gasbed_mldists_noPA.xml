@@ -1,4 +1,12 @@
 <ProbabilisticMaxLinkEventEngine>
+	  <ExtralLinkDist>
+		    <ProbElement>
+                 <Type>Poisson</Type>
+                 <Weight>1.0</Weight>
+                 <Parameter>3.0</Parameter>
+            </ProbElement>	
+	  
+	  </ExtralLinkDist>
       <NodeBirthDist>
             <ProbElement>
                  <Type>Exponential</Type>
