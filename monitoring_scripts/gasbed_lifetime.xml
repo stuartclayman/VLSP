@@ -5,33 +5,20 @@
      <Simulation>false</Simulation>
   </GlobalController>
     <LocalController>
-     <Name>ethane</Name>
+     <Name>localhost</Name>
      <Port>20000</Port>
      <LowPort>20001</LowPort>
      <HighPort>21000</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>
-  <LocalController>
-     <Name>methane</Name>
-     <Port>20000</Port>
-     <LowPort>20001</LowPort>
-     <HighPort>21000</HighPort>
-     <MaxRouters>75</MaxRouters>
-  </LocalController>
-  <LocalController>
-     <Name>pentane</Name>
-     <Port>20000</Port>
-     <LowPort>20001</LowPort>
-     <HighPort>22000</HighPort>
-     <MaxRouters>75</MaxRouters>
-  </LocalController>
+
   <EventEngine>
      <Name>usr.engine.ProbabilisticMaxLinkEventEngine</Name>
      <EndTime>360000</EndTime>
      <Parameters>monitoring_scripts/gasbed_mldists_noPA.xml</Parameters>
   </EventEngine>
   <RouterOptions>
-      monitoring_scripts/gasbed_routeroptions.xml
+      monitoring_scripts/gasbed_router.xml
   </RouterOptions>
       <Output>
         <File>out.net</File>

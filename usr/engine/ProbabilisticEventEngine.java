@@ -327,7 +327,7 @@ public class ProbabilisticEventEngine extends NullEventEngine implements APWarmU
             nodeCreateDist_ = ProbDistribution.parseProbDist
                 (nbd, "NodeBirthDist");
             ReadXMLUtils.removeNode(nbd.item(0).getParentNode(),
-                                    "NodeBirthDist", "ProbabilisticEngine");
+                                    "NodeBirthDist", basetag);
 
             if (nodeCreateDist_ == null) {
                 throw new SAXException(
@@ -339,7 +339,7 @@ public class ProbabilisticEventEngine extends NullEventEngine implements APWarmU
                                                              lcd, "LinkCreateDist");
 
             if (linkCreateDist_ == null) {
-                throw new SAXException(
+                throw new EventEngineException(
                                        "Must specific LinkCreateDist");
             }
 
@@ -348,6 +348,10 @@ public class ProbabilisticEventEngine extends NullEventEngine implements APWarmU
             NodeList ndd = doc.getElementsByTagName("NodeDeathDist");
             nodeDeathDist_ = ProbDistribution.parseProbDist(ndd,
                                                             "NodeDeathDist");
+            if (nodeDeathDist_ == null) {
+				throw new EventEngineException(
+                                       "Must specific NodeDeathDist");
+			}
             ReadXMLUtils.removeNode(ndd.item(0).getParentNode(),
                                     "NodeDeathDist", basetag);
             NodeList ldd = doc.getElementsByTagName("LinkDeathDist");
@@ -383,7 +387,7 @@ public class ProbabilisticEventEngine extends NullEventEngine implements APWarmU
                                             "Parameters", basetag);
                 }
             } catch (SAXException e) {
-                throw e;
+                throw new EventEngineException ("Error parsing parameters tag\n");
             } catch (XMLNoTagException e) {
             }
         } catch (SAXParseException err) {
@@ -392,12 +396,14 @@ public class ProbabilisticEventEngine extends NullEventEngine implements APWarmU
                                            + err.getLineNumber() + ", uri " + err.getSystemId());
         } catch (SAXException e) {
             throw new EventEngineException(
-                                           "Parsing "+basetag+": Exception in SAX XML parser"
+                  "Parsing "+basetag+": Exception in SAX XML parser"
                                            + e.getMessage());
-        } catch (Throwable t) {
-            throw new EventEngineException(
-                                           "Parsing "+basetag+": " + t.getMessage());
-        }
+        } catch (ProbException e) {
+			throw new EventEngineException(
+                  "Parsing "+basetag+": Exception in Probability distributio "
+                                           + e.getMessage());
+		} catch (XMLNoTagException e) {
+		}
 
         parseLinkPicker(doc);
 
