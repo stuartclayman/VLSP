@@ -196,7 +196,7 @@ public class ProbabilisticMaxLinkEventEngine extends ProbabilisticEventEngine {
             }
 
             ReadXMLUtils.removeNode(eld.item(0).getParentNode(),
-                                    "ExtraLinkDist", "ProbabilisticEngine");
+                                    "ExtraLinkDist", "ProbabilisticMaxLinkEventEngine");
         } catch (ProbException e) {
             throw new EventEngineException("Must specify ExtraLinkDist "
                                            + "correctly in ProbablisiticMaxLinkEventEngine "
