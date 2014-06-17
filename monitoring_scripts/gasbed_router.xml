@@ -1,0 +1,14 @@
+<RouterOptions>
+    <RoutingParameters>
+        <MaxCheckTime>60000</MaxCheckTime>
+        <MinNetIFUpdateTime>5000</MinNetIFUpdateTime>
+        <MaxNetIFUpdateTime>30000</MaxNetIFUpdateTime>
+	<MaxDist>20</MaxDist>
+    </RoutingParameters>
+   <Output>
+	    <FileName>/space/rclegg/testbedoutput</FileName>
+  	  <ExtendedName>true</ExtendedName>
+   </Output>
+
+</RouterOptions>
+
