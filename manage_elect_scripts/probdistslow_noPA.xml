@@ -3,7 +3,7 @@
             <ProbElement>
                  <Type>Exponential</Type>
                  <Weight>1.0</Weight>
-                 <Parameter>0.5</Parameter>
+                 <Parameter>2</Parameter>
             </ProbElement>
       </NodeBirthDist>
       <NodeDeathDist>
