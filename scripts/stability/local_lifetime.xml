@@ -11,10 +11,9 @@
      <HighPort>21000</HighPort>
      <MaxRouters>75</MaxRouters>
   </LocalController>
-
   <EventEngine>
      <Name>usr.engine.ProbabilisticEventEngine</Name>
-     <EndTime>360000</EndTime>
+     <EndTime>360</EndTime>
      <Parameters>scripts/stability/local_mldists_noPA.xml</Parameters>
   </EventEngine>
   <RouterOptions>
