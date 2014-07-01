@@ -56,9 +56,9 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
         register(new ShutDownEventCommand());
         
         // sclayman 20140104 - not sure if these are needed any more
-        //register(new ReportAPCommand());
-        //register(new GetRouterStatsCommand());
-        //register(new SendRouterStatsCommand());
+        register(new ReportAPCommand());
+        register(new GetRouterStatsCommand());
+        register(new SendRouterStatsCommand());
     }
 
 }

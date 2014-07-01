@@ -133,6 +133,9 @@ public class LocalController implements ComponentController {
         init();
 
         console_.start();
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + hostInfo_.getIp() + ":" + hostInfo_.getPort() +  " Starting.");
+
     }
 
     private void init() {
@@ -212,15 +215,16 @@ public class LocalController implements ComponentController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
         console_.stop();
 
-        Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Pausing.");
+    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ hostInfo_.getIp() + ":" + hostInfo_.getPort() + " Stopping.");
 
+        /*
         try {
             Thread.sleep(10);
         } catch (Exception e) {
             // Logger.getLogger("log").logln(USR.ERROR, leadin()+ e.getMessage());
 
         }
-
+        */
         //ThreadTools.findAllThreads("LC end of shutDown:");
 
 
@@ -443,7 +447,7 @@ public class LocalController implements ComponentController {
      * @return the name of the connection, on success, or null, on failure.
      */
     public JSONObject connectRouters(LocalHostInfo r1, LocalHostInfo r2, int weight, String name) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Got connect request for routers");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Got connect request for routers " + r1 + " " + r2);
 
         RouterInteractor ri = findRouterInteractor(r1.getPort());
 
@@ -494,6 +498,8 @@ public class LocalController implements ComponentController {
             }
             String allStats = sb.toString();
             try {
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "sendRouterStats " + allStats);
+
                 gcInteractor_.sendRouterStats(allStats);
             } catch (IOException e) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+
@@ -683,12 +689,15 @@ public class LocalController implements ComponentController {
      * Get router stats for all routers managed by this LocalController
      */
     public synchronized List<String> getRouterStats() {
+
         Set<Integer> routerIDs = routerMap_.keySet();
 
         List<String> result = new ArrayList<String>();
 
         // now add the stats for each router to the list
         for (int routerID : routerIDs) {
+            Logger.getLogger("log").logln(USR.STDOUT, "getRouterStats " + routerID);
+
             List<String> routerStats = getRouterStats(routerID);
 
             if (routerStats != null) {
@@ -718,7 +727,7 @@ public class LocalController implements ComponentController {
                 // original data
 
                 List<String> list = ri.getNetIFStats();
-                Logger.getLogger("log").logln(USR.STDOUT, leadin()+" requesting statistics from router "+routerID);
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"requesting statistics from router "+routerID);
 
                 // now add the router id to each element of the list
                 List<String> newList = new ArrayList<String>();

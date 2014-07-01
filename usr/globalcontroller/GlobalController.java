@@ -1865,13 +1865,14 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats sent at time "+start);
         //  Make request for stats
         requestRouterStats();
-        // Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats completed at time "+getTime()+ " elapsed (secs)
-        // "+((getTime() - start)/1000));
+
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Request for stats completed at time "+getTime()+ " elapsed (secs) "+((getTime() - start)/1000));
     }
 
     /** Receiver router traffic -- if it completes a set then output it */
     public void receiveRouterStats(String stats) {
         synchronized (routerStats_) {
+            // System.err.println("receiveRouterStats: top");
             statsCount_++;
 
             routerStats_ = routerStats_.concat(stats);
@@ -1882,7 +1883,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 return;
             }
 
-            //System.err.println("Enough"+routerStats_);
+            // System.err.println("receiveRouterStats: Enough"+routerStats_);
             File f;
             FileOutputStream s = null;
             PrintStream p = null;
@@ -1903,7 +1904,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 ot.produceOutput(trafficOutputTime_.get(i), p, o, this);
             }
 
-            //    System.err.println("Requests done");
+            // System.err.println("receiveRouterStats: Requests done");
             trafficOutputRequests_ = new ArrayList<OutputType>();
             trafficOutputTime_ = new ArrayList<Long>();
             statsCount_ = 0;

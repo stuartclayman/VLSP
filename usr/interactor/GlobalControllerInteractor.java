@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import usr.common.ANSI;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import us.monoid.web.Resty;
@@ -78,11 +79,12 @@ public class GlobalControllerInteractor {
     private JSONObject interact(String str) throws IOException, JSONException {
         String uri = globalControllerURI +  "/command/" + java.net.URLEncoder.encode(str, "UTF-8");
 
-        Logger.getLogger("log").logln(USR.STDOUT, "GC call: " + uri.substring(0, Math.min(64, uri.length())));
+        Logger.getLogger("log").logln(USR.STDOUT, ANSI.GREEN + "GC call: " + uri.substring(0, Math.min(64, uri.length())) + ANSI.RESET_COLOUR);
 
         JSONObject jsobj = rest.json(uri).toObject();
 
-        Logger.getLogger("log").logln(USR.STDOUT, "GC response: " + jsobj.toString());
+        Logger.getLogger("log").logln(USR.STDOUT, ANSI.MAGENTA + "GC response: " + jsobj.toString()
+ + ANSI.RESET_COLOUR);
 
         return jsobj;
     }
@@ -93,11 +95,11 @@ public class GlobalControllerInteractor {
         private JSONObject post(String str, String data) throws IOException, JSONException {
         String uri = globalControllerURI +  "/command/" + java.net.URLEncoder.encode(str, "UTF-8");
 
-        Logger.getLogger("log").logln(USR.STDOUT, "GC call: " + uri.substring(0, Math.min(64, uri.length())));
+        Logger.getLogger("log").logln(USR.STDOUT, ANSI.GREEN_BG + "GC call: " + uri.substring(0, Math.min(64, uri.length())) + ANSI.RESET_COLOUR);
 
         JSONObject jsobj = rest.json(uri, form(data)).toObject();
 
-        Logger.getLogger("log").logln(USR.STDOUT, "GC response: " + jsobj.toString());
+        Logger.getLogger("log").logln(USR.STDOUT, ANSI.MAGENTA + "GC response: " + jsobj.toString() + ANSI.RESET_COLOUR);
 
         return jsobj;
     }

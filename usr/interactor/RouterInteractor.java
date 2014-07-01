@@ -76,14 +76,15 @@ public class RouterInteractor {
     private JSONObject interact(String str) throws IOException, JSONException {
         String uri = routerURI +  "/command/" + java.net.URLEncoder.encode(str, "UTF-8");
 
-        Logger.getLogger("log").logln(USR.STDOUT, "R call: " + uri.substring(0, Math.min(72, uri.length())));
+        Logger.getLogger("log").logln(USR.STDOUT, ANSI.YELLOW + "R call: " + uri.substring(0, Math.min(72, uri.length())) + ANSI.RESET_COLOUR);
 
         JSONObject jsobj;
 
         try {
             jsobj = rest.json(uri).toObject();
             String stri = jsobj.toString();
-            Logger.getLogger("log").logln(USR.STDOUT, "R response: " + stri.substring(0, Math.min(stri.length(), 72)));
+
+            Logger.getLogger("log").logln(USR.STDOUT, ANSI.MAGENTA +  "R response: " + stri.substring(0, Math.min(stri.length(), 72)) + ANSI.RESET_COLOUR);
 
             return jsobj;
         } catch (java.net.ConnectException ce) {
