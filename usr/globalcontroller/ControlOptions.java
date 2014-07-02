@@ -64,8 +64,8 @@ public class ControlOptions {
     private int controllerWaitTime_ = 6;
     private int lowPort_ = 10000;                    // Default lowest port to be used on  local controller
     private int highPort_ = 20000;                   // Default highest port to be used on local controller
-    private int maxLag_ = 10000;                     // Maximum lag tolerable in simulation in millisec
-
+    private int maxLag_ = 100000;                     // Maximum lag tolerable in simulation in millisec
+    // (was 10000, changed by lefteris - used to cause shutting down of GC in case of large topologies > 100 nodes)
     private String routerOptionsString_ = "";        //
     private RouterOptions routerOptions_ = null;
     private ArrayList<EventEngine> engines_ = null;  // Engines used to create new events for sim
