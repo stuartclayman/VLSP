@@ -32,7 +32,7 @@ do
       for gr in $goalsrange
       do
 	count=`echo $count+1 | bc`
-	#echo Starting IKMS
+	echo Starting IKMS
 	./IKMS &
 	echo Waiting 5 secs
 	sleep 5
@@ -40,7 +40,7 @@ do
 	# Syntax: nodesNumber informationSourcesNumber urisPerInformationSourceNumber totalTime method goalId monitoredFlows monitoredMethod monitoredGoalId
 	# method: 3 (All)
 	# goalID: 0 (Pull from Entity), 1 (Pull from Storage), 2 (Pub/Sub), 3 (Direct Communication), 4 (Compact 0), 5 (Compact 1), 6 (Compact 2), 7 (Compact 3)
-	./singleExperiment $nr $fr 1 100000 3 $gr 2>&1 | tee /tmp/ikms-experiment-$$.out
+	./singleExperiment $nr $fr 1 100000 3 $gr 3 20000 2>&1 | tee /tmp/ikms-experiment-$$.out
 	echo "Waiting 10"
 	sleep 10
 	./stopIKMSMeasurements
@@ -52,9 +52,9 @@ do
 	cp ../output.txt output/`cat output/scenario`/results-$nr-$fr-$gr-$count.txt
 	echo Waiting 5 secs
 	sleep 5
-	echo Stopping global controller and waiting to reboot
-	./stop
-	sleep 20
+	#echo Stopping global controller and waiting to reboot
+	#./stop
+	#sleep 20
       done
    done
 done

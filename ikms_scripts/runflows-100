@@ -1,0 +1,4 @@
+./runstats ScenarioFlowsPullFromEntity-100 "Flows" "1 2 5 10" 100 "1 2 5 10" 0 10
+./runstats ScenarioFlowsPullFromStorage-100 "Flows" "1 2 5 10" 100 "1 2 5 10" 1 10
+./runstats ScenarioFlowsPubSub-100 "Flows" "1 2 5 10" 100 "1 2 5 10" 2 10
+./runstats ScenarioFlowsDirect-100 "Flows" "1 2 5 10" 100 "1 2 5 10" 3 10
