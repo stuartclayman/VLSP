@@ -293,13 +293,16 @@ public class LocalController implements ComponentController {
 
         Process child = null;
         ProcessWrapper pw = null;
-
+// was 9
         String [] cmd = new String[9];
         cmd[0] = "java";
         cmd[1] = "-cp";
         cmd[2] = classPath_;
+        //cmd[3] = "-Xms32m";
+        //cmd[4] = "-Xmx512m";
         cmd[3] = "-Xms32m";
-        cmd[4] = "-Xmx512m";
+        cmd[4] = "-Xmx128m";
+        // for better scalability (Lefteris)
         cmd[5] = "usr.router.Router";
         cmd[6] = String.valueOf(port1);
         cmd[7] = String.valueOf(port2);
