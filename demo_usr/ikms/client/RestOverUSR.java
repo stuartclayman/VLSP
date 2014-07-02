@@ -27,7 +27,7 @@ import demo_usr.ikms.TFTP.RestVirtualFileSystem;
 public class RestOverUSR implements EventListener {
     static int DEFAULT_PORT = 69;
     // fields for the attributes
-    private int poolSize = 5;
+    private int poolSize = 100;
     private int port = DEFAULT_PORT;
     private VirtualFileSystem vfs;
 
@@ -52,7 +52,7 @@ public class RestOverUSR implements EventListener {
         tftpLog.logln(USR.ERROR, "TFTPServer: TFTPServer()");
         this.vfs = new RestVirtualFileSystem();
         this.listener = this;
-        setPoolSize(10);
+        setPoolSize(100);
         //setPort(1069);        
     }
 
