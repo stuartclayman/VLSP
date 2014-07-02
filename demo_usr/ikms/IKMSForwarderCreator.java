@@ -64,8 +64,8 @@ public class IKMSForwarderCreator implements AP {
             System.out.println(leadin()+ gid+" has become an IKMSForwarder");
             
             // define IKMSForwarder parameters
-			int entityId = 10000+gid;
-			int entityRestPort = 20000+gid;
+			int entityId = 27000+gid;
+			int entityRestPort = 28000+gid;
             
             String command = new String("demo_usr.ikms.IKMSForwarder "+entityId+" "+entityRestPort);
             //command += (" -n agg-point-"+gid+"-"+apCount_);

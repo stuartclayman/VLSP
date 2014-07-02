@@ -108,7 +108,7 @@ public class GenericSourceMA extends IKMSEnabledUSREntity implements Application
 		// setting ikmsClientURL (the address of the know forwarder node) - i.e., for distributed virtual infrastructure deployment
 		int ikmsForwarderPort=0;
 		if (ikmsForwarderHost!=null) {
-			ikmsForwarderPort = 10000 + Integer.valueOf(ikmsForwarderHost);
+			ikmsForwarderPort = 27000 + Integer.valueOf(ikmsForwarderHost);
 			informationFlowConstraints.setIKMSClientURL("http://" + entityHost + ":"+ikmsForwarderPort+"/update/");
 		}
 

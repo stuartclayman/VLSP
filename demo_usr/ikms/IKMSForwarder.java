@@ -52,7 +52,7 @@ public class IKMSForwarder extends IKMSEnabledUSREntity implements Application {
 	@SuppressWarnings("resource")
 	public ApplicationResponse init(String[] args) {
 		int restOverUSRPort=0;
-		
+
 		if (args.length == 2) {
 			// try entityid
 			Scanner scanner = new Scanner(args[0]);
@@ -114,14 +114,14 @@ public class IKMSForwarder extends IKMSEnabledUSREntity implements Application {
 		tftpClient.setHostName("1");
 		tftpClient.setPort(1069);
 		tftpClient.ApplyRestGetRequest("http://localhost:8080/");
-		
+
 		System.out.println ("Testing 2nd FTP server");
 		tftpClient.setHostName("2");
 		tftpClient.setPort(1069);
 		tftpClient.ApplyRestGetRequest("http://localhost:8080/");*/
-		
+
 		while (stopRunning==false) {
-			Delay (entityid, 5000);			
+			DelayNoMessage (5000);			
 		}
 		Logging.Log(entityid, "The IKMSForwarder stopped running");
 
@@ -131,28 +131,86 @@ public class IKMSForwarder extends IKMSEnabledUSREntity implements Application {
 	@Override
 	public void InformationFlowPoliciesUpdatedUSR (JSONObject informationFlowPolicies, String targetURIFileName) {
 		try {
-		
-		// Should forward informationFlowPolicies to the appropriate Entity
-		// Using the TFTPClient and POST method
-		Logging.Log(entityid, "informationFlowPolicies:"+informationFlowPolicies+" targetURIFileName:"+targetURIFileName);
-		// extract virtual router address from port
-		Map<String, String> parameters = Converters.SplitQuery(targetURIFileName);
-		
-		//int port = Converters.ExtractPortFromTargetURIFileName (targetURIFileName);
-		String hostName = parameters.get("n");
-		// TFTP Server port is 2000x
-		//port+=10000;
-		String port = parameters.get("p");
-		tftpClient.setHostName(String.valueOf(hostName));
-		tftpClient.setPort(Integer.valueOf(port));
-		Logging.Log(entityid, "hostName:"+hostName+" port:"+port);
 
-		//tftpClient
-		boolean success = tftpClient.UploadRestPostRequest(targetURIFileName, informationFlowPolicies.toString());
-		Logging.Log(entityid, "Forwarded updated informationFlowPolicies, successfullness:"+success);
+			// Should forward informationFlowPolicies to the appropriate Entity
+			// Using the TFTPClient and POST method
+			Logging.Log(entityid, "informationFlowPolicies:"+informationFlowPolicies+" targetURIFileName:"+targetURIFileName);
+			// extract virtual router address from port
+			Map<String, String> parameters = Converters.SplitQuery(targetURIFileName);
+
+			//int port = Converters.ExtractPortFromTargetURIFileName (targetURIFileName);
+			String hostName = parameters.get("n");
+			// TFTP Server port is 2000x
+			//port+=10000;
+			String port = parameters.get("p");
+			tftpClient.setHostName(String.valueOf(hostName));
+			tftpClient.setPort(Integer.valueOf(port));
+			Logging.Log(entityid, "hostName:"+hostName+" port:"+port);
+
+			//tftpClient
+			boolean success = tftpClient.UploadRestPostRequest(targetURIFileName, informationFlowPolicies.toString());
+			Logging.Log(entityid, "Forwarded updated informationFlowPolicies, successfullness:"+success);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+	}
+
+	@Override
+	public JSONObject CollectValueUSR (String uri, String targetURIFileName) {
+		// get the value through the TFTP
+		try {
+			// Should forward informationFlowPolicies to the appropriate Entity
+			// Using the TFTPClient and GET method
+			Logging.Log(entityid, "Collecting information with uri:"+uri+" targetURIFileName:"+targetURIFileName);
+			// extract virtual router address from port
+			Map<String, String> parameters = Converters.SplitQuery(targetURIFileName);
+
+			//int port = Converters.ExtractPortFromTargetURIFileName (targetURIFileName);
+			String hostName = parameters.get("n");
+			// TFTP Server port is 2000x
+			//port+=10000;
+			String port = parameters.get("p");
+			tftpClient.setHostName(String.valueOf(hostName));
+			tftpClient.setPort(Integer.valueOf(port));
+			Logging.Log(entityid, "hostName:"+hostName+" port:"+port);
+
+			//tftpClient
+			String result = tftpClient.ApplyRestGetRequest(targetURIFileName+"&u="+uri);
+			Logging.Log(entityid, "Retrieved value:"+result);
+
+			JSONObject resultObj = new JSONObject (result);
+			return resultObj;
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public void UpdateValueUSR(String uri, String value, String targetURIFileName) {
+		// forwarding update to the corresponding management entity
+		// post the value through the TFTP
+		try {
+			// Using the TFTPClient and POST method
+			Logging.Log(entityid, "Notifying ME for information change:"+uri+" targetURI:"+targetURIFileName);
+			// extract virtual router address from port
+			Map<String, String> parameters = Converters.SplitQuery(targetURIFileName);
+
+			//int port = Converters.ExtractPortFromTargetURIFileName (targetURIFileName);
+			String hostName = parameters.get("n");
+			// TFTP Server port is 2000x
+			//port+=10000;
+			String port = parameters.get("p");
+			tftpClient.setHostName(String.valueOf(hostName));
+			tftpClient.setPort(Integer.valueOf(port));
+			Logging.Log(entityid, "hostName:"+hostName+" port:"+port);
+
+			//tftpClient
+			Boolean result = tftpClient.ApplyRestPostRequest(targetURIFileName+"&u="+uri, value);
+			Logging.Log(entityid, "Information forwarding, result:"+result);
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}	
 	}
 }
 
