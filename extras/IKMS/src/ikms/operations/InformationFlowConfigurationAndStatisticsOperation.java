@@ -40,6 +40,8 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 
 	static private int countIKMSCPUProcessingRequests = 0;
 
+	static private boolean firstMeasurementReceived = false;
+
 	public InformationFlowConfigurationAndStatisticsOperation (InformationStorageAndIndexingFunction informationStorageAndIndexingFunction_) {
 		informationStorageAndIndexingFunction = informationStorageAndIndexingFunction_;
 
@@ -65,11 +67,11 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	public IKMSOptimizationGoal NegotiateGoal (IKMSOptimizationGoal currentGlobalGoal, IKMSOptimizationGoal suggestedGoal) {
 		return flowRegistry.NegotiateGoal(currentGlobalGoal, suggestedGoal);
 	}
-	
+
 	public HashMap<ArrayList<String>, HashMap<Integer, Integer>> FindFlowsThatNeedRestablishmentDueToNewGlobalGoal (IKMSOptimizationGoal newGoal) {
 		return flowRegistry.FindFlowsThatNeedRestablishmentDueToNewGlobalGoal(newGoal);
 	}
-	
+
 	// Retrieve relevant flows to entity
 	public static ArrayList<InformationExchangePolicies> GetRelevantInformationFlows (int entityId) {
 		return flowRegistry.GetRelevantInformationFlows(entityId);
@@ -90,7 +92,7 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 		return flowRegistry.GetInformationFlowExchangePolicies(uri);
 	}
 
-	
+
 
 	/*public static ArrayList<Integer> getAllEntityIDs () {
 		Set<Integer> keys = flowRegistry.keySet();
@@ -190,37 +192,61 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 		return output;
 	}
 
+	public static boolean IsFirstMessageReceived () {
+		return firstMeasurementReceived;
+	}
+
+	public static void ResetFirstMeasurementReceived () {
+		firstMeasurementReceived = false;
+	}
+
 	public static void UpdateResponseTime (int entityid, long responseTime) {
-		responseTimeRequestsInPeriod++;
-		totalResponseTimesInPeriod+=responseTime;
+		// set that a first measurement has been received
+		if (!firstMeasurementReceived)
+			firstMeasurementReceived = true;
+
+		// for all flows
+		//responseTimeRequestsInPeriod++;
+		//totalResponseTimesInPeriod+=responseTime;
 
 		if (CheckIfMonitored (entityid)) {
 			monitoredEntitiesResponseTimeRequestsInPeriod++;
 			totalResponseTimesInPeriodForMonitoredEntities+=responseTime;
+		} else {
+			// other flows (without the selected)
+			responseTimeRequestsInPeriod++;
+			totalResponseTimesInPeriod+=responseTime;
 		}
 	}
 
 	public static void UpdateFreshness (int entityid, long freshness) {
-		freshnessRequestsInPeriod++;
-		totalFreshness+=freshness;
+		// for all flows
+		//freshnessRequestsInPeriod++;
+		//totalFreshness+=freshness;
 
 		if (CheckIfMonitored (entityid)) {
 			monitoredEntitiesFreshnessRequestsInPeriod++;
 			totalFreshnessForMonitoredEntities+=freshness;
+		} else {
+			freshnessRequestsInPeriod++;
+			totalFreshness+=freshness;
 		}
 
 	}
 
 	public static double GetIKMSSystemCPUUsed () {
-		JavaSysMon monitor =   new JavaSysMon();
-		int currentPID = monitor.currentPid();
 		double output = 0.0;
-
 		try {
+
+			JavaSysMon monitor =   new JavaSysMon();
+			int currentPID = monitor.currentPid();
+
 			output = CPULoadFromPSCommand (currentPID);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println ("Bad CPU value. Returning last valid one.");
+			return 0.0;
 		}
 		//System.out.println ("process load:"+output);
 
@@ -251,9 +277,9 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	}
 
 	public static double CPULoadFromPSCommand (int currentPID) throws Exception {
-		countIKMSCPUProcessingRequests++;
+		//countIKMSCPUProcessingRequests++;
 		// do not show first 10 values
-		if (countIKMSCPUProcessingRequests>10) {
+		//if (countIKMSCPUProcessingRequests>10) {
 
 			Process p = Runtime.getRuntime().exec("/bin/ps -p "+currentPID+" -o %cpu");
 			p.waitFor();
@@ -267,10 +293,10 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 				if (line!=null)
 					return Double.valueOf(line);
 			}
-		}
+		//}
 		return 0.0;
 	}
-	
+
 	/*public static ArrayList<Integer> getAllEntityIDs () {
 		Set<Integer> keys = flowRegistry.keySet();
 

@@ -10,6 +10,7 @@ package ikms;
 //-	Information Processing and Knowledge Production - IPKP
 //-	Information Flow Establishment and Optimization - IFEO
 
+import ikms.operations.InformationFlowConfigurationAndStatisticsOperation;
 import ikms.console.IKMSManagementConsole;
 import ikms.core.Response;
 import ikms.data.DataStoreManager;
@@ -32,6 +33,8 @@ public class IKMS {
 	InformationProcessingAndKnowledgeProductionFunction informationProcessingAndKnowledgeProductionFunction = null;
 	InformationStorageAndIndexingFunction informationStorageAndIndexingFunction = null;
 
+	InformationFlowConfigurationAndStatisticsOperation informationFlowConfigurationAndStatisticsOperation = null;
+	
 	InformationExchangeInterface informationExchangeInterface = null;
 	InformationManagementInterface informationManagementInterface = null;
 
@@ -60,7 +63,7 @@ public class IKMS {
 
 	// Check if taking measurements process is active or not (for textmode version only)
 	public boolean areMeasurementsActive () {
-		return measurementsActive;
+		return measurementsActive && InformationFlowConfigurationAndStatisticsOperation.IsFirstMessageReceived();
 	}
 	
 	// Get measurements warmup period (for textmode version only)
@@ -155,6 +158,7 @@ public class IKMS {
 	public void stopMeasurements() {
 		System.out.println ("Disabling taking measurements.");
 		measurementsActive = false;
+		InformationFlowConfigurationAndStatisticsOperation.ResetFirstMeasurementReceived();
 	}
 	
 	

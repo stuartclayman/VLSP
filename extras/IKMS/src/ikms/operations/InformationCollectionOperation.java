@@ -42,8 +42,14 @@ public class InformationCollectionOperation {
 
 			// Call the relevant URL
 			//System.out.println ("DEBUG:"+locationURL+uri);
-
-			JSONObject jsobj = rest.json(locationURL+ uri+"?entityid="+entityid).toObject();
+			JSONObject jsobj = null;
+			if (locationURL.contains("iccallbackURL")) {
+				//distributed test-bed version running
+				jsobj = rest.json(locationURL+"&entityid="+entityid+"&u="+uri).toObject();
+			} else {
+				jsobj = rest.json(locationURL+ uri+"?entityid="+entityid).toObject();
+			}
+			
 			// Logging for internal IKMS functions workflow diagram
 			LoggerFrame.workflowvisualisationlog(entityid, LoggerFrame.InformationExchangeName, LoggerFrame.ICDFunctionName, "Collected Information", "ikmsfunctions");				
 			System.out.println ("Returning the collected value:"+jsobj.toString());

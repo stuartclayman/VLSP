@@ -11,11 +11,11 @@ import java.util.Iterator;
 
 public class InformationIndexingOperation {
 	//DataStoreManager dataStoreManager;	
-	
+
 	public InformationIndexingOperation () {
 		//dataStoreManager = dataStoreManager_;
 	}
-	
+
 	public String GetInformationIndex (String uri) {
 		String value = DataStoreManager.IKMSDBGet("Index://"+uri);
 		System.out.println ("Fetching uri:"+uri+" from index storage, value:"+value);
@@ -30,45 +30,50 @@ public class InformationIndexingOperation {
 		System.out.println ("Storing indexing information for uri:"+uri+" in index storage, location:"+locationURL+" output:"+output);
 		return output;
 	}
-	
+
 	public String IndexArrayList (int entityid, ArrayList<String> uris, String locationURL) {
 		String output = null;
 		String uri = null;
 
 		//get an Iterator object for ArrayList using iterator() method.
-	    Iterator<String> itr = uris.iterator();
-	   
-	    //use hasNext() and next() methods of Iterator to iterate through the elements
-	    while(itr.hasNext()) {
-	    		uri = "Index://"+itr.next();
-			output = DataStoreManager.IKMSDBSet(uri, locationURL);
+		Iterator<String> itr = uris.iterator();
+
+		//use hasNext() and next() methods of Iterator to iterate through the elements
+		ArrayList<String> urisToIndex = new ArrayList<String>();
+
+		while(itr.hasNext()) {
+			uri = "Index://"+itr.next();
+			urisToIndex.add(uri);
 			System.out.println ("Indexing information for entity:"+entityid+" uri:"+uri+" location:"+locationURL);
-	    }
+		}
+		output += DataStoreManager.IKMSDBSet(urisToIndex, locationURL);
 
 		return output;
 	}
-	
+
 	public long RemoveIndexArrayList (int entityid, ArrayList<String> uris) {
 		long output=0;
 		String uri = null;
 
 		//get an Iterator object for ArrayList using iterator() method.
-	    Iterator<String> itr = uris.iterator();
-	   
-	    //use hasNext() and next() methods of Iterator to iterate through the elements
-	    while(itr.hasNext()) {
-	    		uri = "Index://"+itr.next();
-			output = DataStoreManager.IKMSDBDel(uri);
+		Iterator<String> itr = uris.iterator();
+
+		//use hasNext() and next() methods of Iterator to iterate through the elements
+		ArrayList<String> urisToRemove = new ArrayList<String>();
+		while(itr.hasNext()) {
+			uri = "Index://"+itr.next();
+			urisToRemove.add(uri);
 			System.out.println ("Removing Information Index for entity:"+entityid+" uri:"+uri);
-	    }
+		}
+		output = DataStoreManager.IKMSDBDel(urisToRemove);
 
 		return output;
 	}
-	
+
 	public ArrayList<String> GetInformationSetIndexingFromStorage (ArrayList<String> uris) {
 		return null;
 	}
-	
+
 	String SearchBreakingDownUri (String uri) {
 		String[] uris = uri.split("/");
 		String result="";
@@ -78,10 +83,10 @@ public class InformationIndexingOperation {
 		{
 			if (result=="Index:")
 				result+="/";
-			
+
 			if (result!="")
 				result+="/";
-			
+
 			result+=uris[i];
 			//System.out.println("Searching URI:"+result+"/All");
 			value = DataStoreManager.IKMSDBGet(result+"/All");

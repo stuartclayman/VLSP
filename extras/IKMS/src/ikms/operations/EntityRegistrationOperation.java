@@ -45,7 +45,7 @@ public class EntityRegistrationOperation {
 	}
 
 	public long RemoveEntityRegistrationInfo (int entityid) {
-		long output = DataStoreManager.IKMSDBDel("Entitynfo://"+entityid);
+		long output = DataStoreManager.IKMSDBDel("EntityInfo://"+entityid);
 		System.out.println ("Removing Entity registration info for entity:"+entityid+" from Entities registration storage, output:"+output);
 
 		return output;
@@ -248,11 +248,14 @@ public class EntityRegistrationOperation {
 		Iterator itr = uris.iterator();
 
 		//use hasNext() and next() methods of Iterator to iterate through the elements
+		ArrayList<String> urisToRemove = new ArrayList<String>();
 		while(itr.hasNext()) {
 			uri = "EntityInfo://"+entityid+"/"+typeofuri+"/"+itr.next();
-			output = DataStoreManager.IKMSDBDel(uri);
+			urisToRemove.add(uri);
 			//System.out.println ("Storing entity registration info for entity:"+entityid+" to Entities registration storage, uri:"+uri+" output:"+output);
 		}
+		output += DataStoreManager.IKMSDBDel(urisToRemove);
+
 		return output;
 	}		
 

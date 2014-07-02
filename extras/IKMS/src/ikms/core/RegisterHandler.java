@@ -4,6 +4,7 @@ import ikms.IKMS;
 import ikms.console.IKMSManagementConsole;
 import ikms.data.EntityRegistrationInformation;
 import ikms.data.IKMSOptimizationGoal;
+import ikms.data.InformationFlowRequirementsAndConstraints;
 import ikms.interfaces.InformationManagementInterface;
 import ikms.util.JSONData;
 
@@ -489,21 +490,23 @@ public class RegisterHandler extends BasicRequestHandler implements RequestHandl
 					String forwarderIP = request.getClientAddress().getAddress().getHostAddress();
 
 					// updating correct ikmsForwarderAddress
-					if (! entityRI.GetInformationFlowConstraints().equals(null)) {
-						if (!entityRI.GetInformationFlowConstraints().getIKMSClientURL().equals(null)) {
+					if (entityRI.GetInformationFlowConstraints()!=null) {
+						if (entityRI.GetInformationFlowConstraints().getIKMSClientURL()!=null) {
 							System.out.println ("Received Registration Information with IKMSClientURL. Updating URL with forwarders IP:"+forwarderIP);
 							String initialForwarderURI = entityRI.GetInformationFlowConstraints().getIKMSClientURL();
 							URL initialForwarderURL = new URL (initialForwarderURI);
-							entityRI.GetInformationFlowConstraints().setIKMSClientURL("http://" + forwarderIP + ":"+initialForwarderURL.getPort()+"/update/");
+							InformationFlowRequirementsAndConstraints constraints = entityRI.GetInformationFlowConstraints();
+							constraints.setIKMSClientURL("http://" + forwarderIP + ":"+initialForwarderURL.getPort()+"/update/");
+							entityRI.EmbeddInformationFlowConstraints(constraints);
 						}
 					}
 					// updating correct iccallbackurl
-					if (! entityRI.GetIcCallbackURL().equals(null)) {
+					/*if ((! entityRI.GetIcCallbackURL().equals(null))&&(! entityRI.GetIcCallbackURL().equals(""))) {
 						System.out.println ("Received Registration Information with ICCallBackURL. Updating URL with forwarders IP:"+forwarderIP);
 						String initialIcCallBackURI = entityRI.GetIcCallbackURL();
 						URL initialIcCallBackURL = new URL (initialIcCallBackURI);
 						entityRI.SetIcCallbackURL("http://" + forwarderIP + ":"+initialIcCallBackURL.getPort()+initialIcCallBackURL.getPath());
-					}
+					}*/
 
 					imi.RegisterEntity(entityRI, false);
 

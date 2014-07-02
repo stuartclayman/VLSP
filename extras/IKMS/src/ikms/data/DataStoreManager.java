@@ -2,6 +2,7 @@ package ikms.data;
 
 import ikms.IKMS;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
@@ -71,8 +72,32 @@ public class DataStoreManager {
 
 		DataStoreManager mgr = singleton;
 
+		Jedis result = null;
 		if (mgr != null) {
-			return mgr.kvManager.getKeyValueStore();
+			try {
+				result = mgr.kvManager.getKeyValueStore();
+			} catch (Throwable t) {
+
+			}
+			// It breaks some times, in that case, try again
+			int delay=1000;
+
+			while (true) {
+				if (result == null) {
+					System.out.println ("Problem in getKeyValueStore. Trying again after "+delay+"ms");
+					try {
+						Thread.sleep(delay);
+						// increase delay for next time
+						delay = 2 * delay;
+					} catch (InterruptedException ie) {
+						ie.printStackTrace();
+					}					
+				} else {
+					//System.out.println ("GetKeyValueStore completed.");
+					break;
+				}
+			}
+			return result;
 		} else {
 			throw new IllegalStateException("DataStoreManager not configured correctly");
 		}
@@ -86,6 +111,8 @@ public class DataStoreManager {
 
 		try {
 			ikmsdb.flushAll();
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
 		} finally {
 			DataStoreManager.releaseKeyValueStore(ikmsdb);
 		}
@@ -97,6 +124,8 @@ public class DataStoreManager {
 		String output = null;
 		try {
 			output = ikmsdb.info();
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
 			return output;
 		} finally {
 			DataStoreManager.releaseKeyValueStore(ikmsdb);
@@ -109,6 +138,8 @@ public class DataStoreManager {
 		String output = null;
 		try {
 			output = ikmsdb.get(key);
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
 			return output;
 		} finally {
 			DataStoreManager.releaseKeyValueStore(ikmsdb);
@@ -121,6 +152,42 @@ public class DataStoreManager {
 		String output = null;
 		try {
 			output = ikmsdb.set(key, value);
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
+			return output;
+		} finally {
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+		}
+	}
+
+	// add multiple key-value pairs to storage
+	public static String IKMSDBSet (ArrayList<String> keys, ArrayList<String> values) {
+		Jedis ikmsdb = DataStoreManager.getKeyValueStore();
+		String output = "";
+		try {
+			for (String key:keys) {
+				output += ikmsdb.set(key, values.get(keys.indexOf(key)));
+			}
+
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
+			return output;
+		} finally {
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+		}
+	}
+
+	// add multiple keys with the same value to storage
+	public static String IKMSDBSet (ArrayList<String> keys, String value) {
+		Jedis ikmsdb = DataStoreManager.getKeyValueStore();
+		String output = "";
+		try {
+			for (String key:keys) {
+				output += ikmsdb.set(key, value);
+			}
+
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
 			return output;
 		} finally {
 			DataStoreManager.releaseKeyValueStore(ikmsdb);
@@ -133,6 +200,24 @@ public class DataStoreManager {
 		long output = -1;
 		try {
 			output = ikmsdb.del(key);
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
+			return output;
+		} finally {
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+		}
+	}
+
+	// remove multiple key-value pairs from storage
+	public static long IKMSDBDel (ArrayList<String> keys) {
+		Jedis ikmsdb = DataStoreManager.getKeyValueStore();
+		long output = -1;
+		try {
+			for (String key:keys) {
+				output = ikmsdb.del(key);
+			}
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
 			return output;
 		} finally {
 			DataStoreManager.releaseKeyValueStore(ikmsdb);
@@ -144,6 +229,8 @@ public class DataStoreManager {
 		Set<String> output = null;
 		try {
 			output = ikmsdb.keys(key);
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
 			return output;
 		} finally {
 			DataStoreManager.releaseKeyValueStore(ikmsdb);
@@ -155,6 +242,8 @@ public class DataStoreManager {
 		Client output = null;
 		try {
 			output = ikmsdb.getClient();
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
 			return output;
 		} finally {
 			DataStoreManager.releaseKeyValueStore(ikmsdb);
@@ -166,6 +255,8 @@ public class DataStoreManager {
 		long output=0;
 		try {
 			output = ikmsdb.publish(key, value);
+			DataStoreManager.releaseKeyValueStore(ikmsdb);
+
 			return output;
 		} finally {
 			DataStoreManager.releaseKeyValueStore(ikmsdb);

@@ -73,19 +73,22 @@ public class IKMSVisualisation {
 	private double responseTimeForMonitoredEntities;
 	private double informationFreshnessForMonitoredEntities;
 	private double cpu;
+	private double lastcpu;
+	private double laststorage;
 	private double storage;
 	private double numberOfFlows;
 	private double numberOfPushPullFlows;
 	private double numberOfDirectFlows;
 	private double numberOfPubSubFlows;
-	
+		
 	public IKMSVisualisation(IKMS ikms_, boolean showResponseTimeGraph_, boolean showInformationFreshnessGraph_, boolean showResponseTimeGraphForMonitoredEntities_, boolean showInformationFreshnessGraphForMonitoredEntities_, boolean showProcessingCostGraph_, boolean showMemoryStateGraph_, boolean showFlowsStatistics_, int windowX_, int windowY_, int windowWidth_, int windowHeight_, boolean textMode_) {
 
+		// initialize variables
 		ikms = ikms_;
-
 		informationFlowConfigurationAndStatisticsOperation = ikms.getInformationFlowEstablishmentAndOptimizationFunction().GetInformationFlowConfigurationAndStatisticsOperation();
-
 		textMode = textMode_;
+		lastcpu = 0.0;
+		laststorage = 0.0;
 		
 		// show graphical user interface is textMode=false
 
@@ -233,16 +236,6 @@ public class IKMSVisualisation {
 	public void UpdatePerformanceMeasurementsLogFile () {
 		// for active measurements only 
 		if (ikms.areMeasurementsActive()) {
-			responseTime = informationFlowConfigurationAndStatisticsOperation.GetAverageResponseTime();
-			informationFreshness = informationFlowConfigurationAndStatisticsOperation.GetAverageFreshness();
-			responseTimeForMonitoredEntities = informationFlowConfigurationAndStatisticsOperation.GetAverageResponseTimeForMonitoredEntities();
-			informationFreshnessForMonitoredEntities = informationFlowConfigurationAndStatisticsOperation.GetAverageFreshnessForMonitoredEntities();
-			cpu = informationFlowConfigurationAndStatisticsOperation.GetIKMSSystemCPUUsed();
-			storage = informationFlowConfigurationAndStatisticsOperation.GetStorageMemoryUsed() / 1000;
-			numberOfFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfFlows();
-			numberOfPushPullFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfPushPullFlows();
-			numberOfDirectFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfDirectFlows();
-			numberOfPubSubFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfPubSubFlows();
 
 			//System.out.println (currentTime+";"+responseTime+";"+freshness+";"+cpu+";"+storage);
 			
@@ -255,8 +248,31 @@ public class IKMSVisualisation {
 			
 			// show required measurements only
 			//System.out.println ("warmup:"+warmup+" currenttime:"+currentTime+" totaltime:"+totaltime);
-			if (currentTime>=warmup&&currentTime<=totaltime)
+			if (currentTime>=warmup&&currentTime<=totaltime) {
+				responseTime = informationFlowConfigurationAndStatisticsOperation.GetAverageResponseTime();
+				informationFreshness = informationFlowConfigurationAndStatisticsOperation.GetAverageFreshness();
+				responseTimeForMonitoredEntities = informationFlowConfigurationAndStatisticsOperation.GetAverageResponseTimeForMonitoredEntities();
+				informationFreshnessForMonitoredEntities = informationFlowConfigurationAndStatisticsOperation.GetAverageFreshnessForMonitoredEntities();			
+				cpu = informationFlowConfigurationAndStatisticsOperation.GetIKMSSystemCPUUsed();
+				// in case of failure in cpu reading, return the last valid value
+				if (cpu==0.0) {
+					cpu = lastcpu;
+				} else {
+					lastcpu = cpu;
+				}
+				storage = informationFlowConfigurationAndStatisticsOperation.GetStorageMemoryUsed() / 1000;
+				if (storage==0.0) {
+					storage = laststorage;
+				} else {
+					laststorage = storage;
+				}
+				numberOfFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfFlows();
+				numberOfPushPullFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfPushPullFlows();
+				numberOfDirectFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfDirectFlows();
+				numberOfPubSubFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfPubSubFlows();
+				
 				logOutput.Log(step+"\t"+responseTime+"\t"+informationFreshness+"\t"+responseTimeForMonitoredEntities+"\t"+informationFreshnessForMonitoredEntities+"\t"+cpu+"\t"+storage+"\t"+SelectedOptimizationGoal.GetOptimizationGoal().getOptGoalName()+"\t"+numberOfFlows+"\t"+numberOfPushPullFlows+"\t"+numberOfDirectFlows+"\t"+numberOfPubSubFlows);
+			}
 		}
 	}
 
@@ -275,7 +291,6 @@ public class IKMSVisualisation {
 			informationFreshness = informationFlowConfigurationAndStatisticsOperation.GetAverageFreshness();
 			informationFreshnessGraph.AddData(currentTime, informationFreshness);
 		}
-
 		if (showInformationFreshnessGraphForMonitoredEntities) {
 			informationFreshnessForMonitoredEntities = informationFlowConfigurationAndStatisticsOperation.GetAverageFreshnessForMonitoredEntities();
 			informationFreshnessGraphForMonitoredEntities.AddData(currentTime, informationFreshnessForMonitoredEntities);

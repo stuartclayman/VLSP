@@ -97,11 +97,11 @@ public class InformationManagementInterface {
 				informationQualityControllerOperation.TriggerInformationFlowEstablishment(entityRegistrationinfo);
 
 				// Indexing information availability 
-				String indexingoutput = informationIndexingOperation.IndexArrayList(entityRegistrationinfo.GetEntityId(), entityRegistrationinfo.GetUrisForAvailableInformation(), entityRegistrationinfo.GetIcCallbackURL()); 
+				String indexingoutput = informationIndexingOperation.IndexArrayList(entityRegistrationinfo.GetEntityId(), entityRegistrationinfo.GetUrisForAvailableInformation(), entityRegistrationinfo.GetNextNodeICCallBackURL()); 
 				if (indexingoutput!=null) {
 					// Logging for internal IKMS functions workflow diagram
 					//logoutput = LoggerFrame.testlog(LoggerFrame.ICDFunctionName, LoggerFrame.ISIIndexingStorageName, "Indexing Information Availability", "black");	
-					logoutput = LoggerFrame.workflowvisualisationlog(entityid, LoggerFrame.ICDFunctionName, LoggerFrame.ISIName, "Indexing Augmented UMFInfoSpecifications", "ikmsfunctions");	
+					logoutput = LoggerFrame.workflowvisualisationlog(entityid, LoggerFrame.ICDFunctionName, LoggerFrame.ISIName, "Indexing available uris", "ikmsfunctions");	
 				}
 				// Subscribe for relevant information
 				if (entityRegistrationinfo.GetUrisForSubscribedInformation() != null &&
@@ -111,7 +111,7 @@ public class InformationManagementInterface {
 					//logoutput = LoggerFrame.testlog(LoggerFrame.ISIENTITYStorageName, LoggerFrame.ICDFunctionName, "Subscribing for external inputs", "black");	
 					logoutput = LoggerFrame.workflowvisualisationlog(entityid, LoggerFrame.ISIName, LoggerFrame.ICDFunctionName, "Subscribing for external inputs", "ikmsfunctions");	
 
-					informationStorageOperation.SubscribeForAnInformationSet(entityid, entityRegistrationinfo.GetIrCallbackURL(), entityRegistrationinfo.GetUrisForSubscribedInformation());
+					informationStorageOperation.SubscribeForAnInformationSet(entityid, entityRegistrationinfo.GetNextNodeIRCallBackURL(), entityRegistrationinfo.GetUrisForSubscribedInformation());
 				}
 
 				// Logging for internal IKMS functions workflow diagram
@@ -161,13 +161,14 @@ public class InformationManagementInterface {
 
 			entityRegistrationOperation.RemoveEntityRegistrationInfo(entityRegistration);
 
-			LoggerFrame.workflowvisualisationlog(entityid, LoggerFrame.ICDFunctionName, LoggerFrame.ISIName, "Removing UMFInformationSpecifications indices", "ikmsfunctions");	
+			LoggerFrame.workflowvisualisationlog(entityid, LoggerFrame.ICDFunctionName, LoggerFrame.ISIName, "Removing Entity Information indices", "ikmsfunctions");	
 
 			informationIndexingOperation.RemoveIndexArrayList(entityid, entityRegistration.GetUrisForAvailableInformation()); 
 
 			LoggerFrame.workflowvisualisationlog(entityid, LoggerFrame.ICDFunctionName, LoggerFrame.ISIName, "Removing Subscriptions for external inputs", "ikmsfunctions");	
-			informationStorageOperation.UnsubscribeForAnInformationSet(entityid, entityRegistration.GetUrisForSubscribedInformation());
-			informationStorageOperation.UnsubscribeForAnInformationSet(entityid, entityRegistration.GetUrisForRequiredInformation());
+			ArrayList<String> urisToRemove = entityRegistration.GetUrisForSubscribedInformation();
+			urisToRemove.addAll(entityRegistration.GetUrisForRequiredInformation());
+			informationStorageOperation.UnsubscribeForAnInformationSet(entityid, urisToRemove);
 
 			LoggerFrame.workflowvisualisationlog(entityid, LoggerFrame.ICDFunctionName, LoggerFrame.IFEOName, "Resolving Information/Knowledge Dependencies", "ikmsfunctions");	
 

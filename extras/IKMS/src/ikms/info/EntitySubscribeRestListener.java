@@ -57,7 +57,7 @@ public class EntitySubscribeRestListener extends EntitySubscribeListener {
             Resty rest = new Resty();
 
             //  http://localhost:9110/update/VIM/Removed/
-            String callURL = callbackURL + uri;
+            String callURL = callbackURL + "&u="+uri;
 
             System.out.println ("url:"+callURL);
             
@@ -67,7 +67,8 @@ public class EntitySubscribeRestListener extends EntitySubscribeListener {
             System.out.println ("EntitySubscribeRestListener received: " + jsobj.toString());
           
         }  catch (IOException ioe) {
-            ioe.printStackTrace();
+            //ioe.printStackTrace();
+        		System.out.println ("Cannot notificate for information change, probably target ME stopped running.");
         } catch (JSONException je) {
             je.printStackTrace();
         }
