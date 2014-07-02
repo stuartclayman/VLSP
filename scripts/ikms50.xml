@@ -4,7 +4,7 @@
       <Type>Uniform</Type>  <!-- Uniform -->
       <Weight>1.0</Weight>  <!-- 100% Type -->
       <Parameter>0</Parameter>  <!-- one every N seconds --> <!-- was 3 -->
-      <Parameter>9</Parameter> <!-- was 6 -->
+      <Parameter>99</Parameter> <!-- was 6 -->
     </ProbElement>
   </NodeBirthDist>
 
@@ -35,7 +35,7 @@
 
   <Parameters>
     <PreferentialAttachment>false</PreferentialAttachment>
-    <InitialNumberOfNodes>3</InitialNumberOfNodes>
+    <InitialNumberOfNodes>50</InitialNumberOfNodes>
     <StaticTopology>true</StaticTopology>
   </Parameters>
 
