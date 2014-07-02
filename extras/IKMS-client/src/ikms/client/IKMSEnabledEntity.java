@@ -13,9 +13,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
+import demo_usr.ikms.client.utils.Converters;
 
 public class IKMSEnabledEntity implements EntityInterface {
 	// The entityid
@@ -50,10 +52,10 @@ public class IKMSEnabledEntity implements EntityInterface {
 
 	// if true, compact versions of data structures are used (i.e., relevant optimization goal to save communication overhead/memory storage is set)
 	protected boolean compactMode = false;
-	
+
 	// active direct URI (used for direct communication between entities)
 	protected String directURI = null;
-	
+
 	// The BasicEntity constructor. Defines the restHost based on the local address 
 	public IKMSEnabledEntity () {
 		try {
@@ -65,10 +67,10 @@ public class IKMSEnabledEntity implements EntityInterface {
 		// use the same host as IKMS
 		ikmsHost = entityHost;
 		// use claydesk1, in case entityHost is in test-bed
-		Logging.Log(entityid, "TRYING TO CONNECT TO IKMS:"+entityHost);
+		//Logging.Log(entityid, "TRYING TO CONNECT TO IKMS:"+entityHost);
 		if (entityHost.startsWith("128.40.39"))
 			ikmsHost="128.40.39.166";
-		Logging.Log(entityid, "TRYING TO CONNECT TO IKMS:"+entityHost);
+		//Logging.Log(entityid, "TRYING TO CONNECT TO IKMS:"+entityHost);
 
 		// use default IKMS port
 		ikmsPort = 9900;
@@ -93,9 +95,13 @@ public class IKMSEnabledEntity implements EntityInterface {
 		return compactMode;
 	}
 
+	public void Shutdown () {
+		restListener.stop();
+	}
+	
 	// Initializes and registers entity with the IKMS
 	protected void initializeAndRegister(JSONObject registrationInfo) {
-		
+
 		// if restPort is not set, use entityid as port
 		if (entityPort==0)
 			entityPort = entityid;
@@ -104,7 +110,7 @@ public class IKMSEnabledEntity implements EntityInterface {
 		// sets up Rest Listener for callbacks (i.e., for information subscribe or information flow negotiation updates)
 		restListener = new IKMSClientRestListener(this, entityPort);
 		restListener.start();
-
+		
 		// Allocate InformationManagementInterface & InformationExchangeInterface
 		informationManagementInterface = new InformationManagement(ikmsHost, String.valueOf(ikmsPort));
 		informationExchangeInterface = new InformationExchange(ikmsHost, String.valueOf(ikmsPort));
@@ -126,14 +132,14 @@ public class IKMSEnabledEntity implements EntityInterface {
 			}
 		}
 	}
-	
+
 	// Flow that unregisters entity from IKMS
 	protected JSONObject UnregisterEntity (int entityid) {
 		JSONObject jsobj =  null;
 		try {
 			jsobj = informationManagementInterface.UnregisterEntity(entityid);
 			Logging.Log(entityid, "MA unregistered successfully");
-              
+
 		}  catch (IOException ioe) {
 			ioe.printStackTrace();
 		} catch (JSONException je) {
@@ -169,6 +175,19 @@ public class IKMSEnabledEntity implements EntityInterface {
 		long informationRetrievalResponseTime = 0;
 		JSONObject output = null;
 
+		// in case of distributed infrastructure
+		// check if iccallbackURL passed (i.e., for distributed virtual infrastructure deployment)
+		Map<String, String> keys = Converters.SplitQuery(uri);
+
+		if (keys.containsKey("iccallbackURL")) {
+			uri = keys.get("iccallbackURL");
+		}
+
+		// checking compact version as well
+		if (keys.containsKey("iccbu")) {
+			uri = keys.get("iccbu");
+		}
+
 		requestTimeInstance = Calendar.getInstance().getTimeInMillis();
 		output = informationExchangeInterface.RequestDirectInformation(entityid, key, uri);
 		responseTimeInstance = Calendar.getInstance().getTimeInMillis();
@@ -185,12 +204,14 @@ public class IKMSEnabledEntity implements EntityInterface {
 
 		boolean directEntity = false;
 		boolean pubsub = false;
+		boolean doNotCommunicateMeasurements = false;
 
 		if (activeInformationExchangePolicies!=null) {
 
 			directEntity = activeInformationExchangePolicies.getFlowOptimizationGoal().CheckOptimizationRule(OptimizationRules.DirectEntity2EntityCommunication);
 			pubsub = activeInformationExchangePolicies.getFlowOptimizationGoal().CheckOptimizationRule(OptimizationRules.PubSub);
-
+			doNotCommunicateMeasurements = activeInformationExchangePolicies.getFlowOptimizationGoal().CheckOptimizationRule(OptimizationRules.DoNotCommunicateMeasurements);
+			
 			if (activeInformationExchangePolicies.getFlowOptimizationGoal()!=null) {
 				Logging.Log(entityid, activeInformationExchangePolicies.getFlowOptimizationGoal().getOptGoalName());
 			}
@@ -201,7 +222,10 @@ public class IKMSEnabledEntity implements EntityInterface {
 			// no policies set: using pull
 			Logging.Log(entityid, "USING PULL");
 			try {
-				result = RequestInformationMeasured(entityid, key);
+				if (doNotCommunicateMeasurements)
+					result = informationExchangeInterface.RequestInformation(entityid, key);
+				else
+					result = RequestInformationMeasured(entityid, key);
 			} catch (IOException e) {
 				// Display connection error and exit
 				Logging.Log(entityid, "Connection error. Probably IKMS or Source Entity stopped running.");
@@ -233,7 +257,8 @@ public class IKMSEnabledEntity implements EntityInterface {
 
 			Logging.Log(entityid, "Response time:"+String.valueOf(informationRetrievalResponseTime)+" freshness:"+freshness);
 
-			CommunicateStatistics (entityid, informationRetrievalResponseTime, freshness);
+			if (doNotCommunicateMeasurements==false)
+				CommunicateStatistics (entityid, informationRetrievalResponseTime, freshness);
 
 			//communicate statistics
 		} else if (activeInformationExchangePolicies.getMethod()==Methods.Entity2Entity||directEntity==true) {
@@ -246,10 +271,13 @@ public class IKMSEnabledEntity implements EntityInterface {
 				Logging.Log(entityid, "Flow is not active anymore, falling back to IKMS-based communication.");
 				directURI = null;
 			}
-			
+
 			if (directURI==null) {
 				try {
-					result = RequestInformationMeasured(entityid, key);
+					if (doNotCommunicateMeasurements)
+						result = informationExchangeInterface.RequestInformation(entityid, key);
+					else
+						result = RequestInformationMeasured(entityid, key);
 				} catch (IOException e) {
 					// Display connection error and exit
 					Logging.Log(entityid, "Connection error. Probably IKMS or Source Entity stopped running.");
@@ -271,7 +299,10 @@ public class IKMSEnabledEntity implements EntityInterface {
 					// url provided, switching to direct mode
 					//System.out.println (test.getString("url"));
 					try {
-						result = RequestDirectInformationMeasured(entityid, key, directURI);
+						if (doNotCommunicateMeasurements)
+							result = informationExchangeInterface.RequestDirectInformation(entityid, key, directURI);
+						else
+							result = RequestDirectInformationMeasured(entityid, key, directURI);
 					} catch (IOException e) {
 						// Display connection error and exit
 						Logging.Log(entityid, "Connection error. Probably IKMS or Source Entity stopped running.");
@@ -284,7 +315,10 @@ public class IKMSEnabledEntity implements EntityInterface {
 				}
 			} else {
 				try {
-					result = RequestDirectInformationMeasured(entityid, key, directURI);
+					if (doNotCommunicateMeasurements)
+						result = informationExchangeInterface.RequestDirectInformation(entityid, key, directURI);
+					else
+						result = RequestDirectInformationMeasured(entityid, key, directURI);
 				} catch (IOException e) {
 					// Display connection error and exit
 					Logging.Log(entityid, "Connection error. Probably IKMS or Source Entity stopped running.");
@@ -300,7 +334,10 @@ public class IKMSEnabledEntity implements EntityInterface {
 			Logging.Log(entityid, "USING PULL");
 
 			try {
-				result = RequestInformationMeasured(entityid, key);
+				if (doNotCommunicateMeasurements)
+					result = informationExchangeInterface.RequestInformation(entityid, key);
+				else
+					result = RequestInformationMeasured(entityid, key);
 			} catch (IOException e) {
 				// Display connection error and exit
 				Logging.Log(entityid, "Connection error. Probably IKMS or Source Entity stopped running.");
@@ -316,18 +353,20 @@ public class IKMSEnabledEntity implements EntityInterface {
 	public void ShareInformation (String key, JSONObject value) {
 		// share information based on the established information flow policies
 		InformationExchangePolicies activeInformationExchangePolicies = flowRegistry.GetInformationFlowExchangePolicies(key);
-		
+
 		@SuppressWarnings("unused")
 		JSONObject result = null;
-		
+
 		boolean directEntity = false;
 		boolean pubsub = false;
-		
+		boolean pullfromentity=false;
+
 		if (activeInformationExchangePolicies!=null) {
 			directEntity = activeInformationExchangePolicies.getFlowOptimizationGoal().CheckOptimizationRule(OptimizationRules.DirectEntity2EntityCommunication);
 			pubsub = activeInformationExchangePolicies.getFlowOptimizationGoal().CheckOptimizationRule(OptimizationRules.PubSub);
+			pullfromentity = activeInformationExchangePolicies.getFlowOptimizationGoal().CheckOptimizationRule(OptimizationRules.FirstFetchThenRetrieveFromStorage);
 		}
-		
+
 		if (activeInformationExchangePolicies==null) {
 			// no policies set: using push
 			Logging.Log(entityid, "USING PUSH");
@@ -365,17 +404,23 @@ public class IKMSEnabledEntity implements EntityInterface {
 
 		} else {
 			// using push method (default mode)
-			Logging.Log(entityid, "USING PUSH");
+			// in case of pullfromentity=true, do nothing
+			if (pullfromentity) {
+				Logging.Log(entityid, "PULL FROM ENTITY MODE ENABLED, DOING NOTHING");
 
-			try {
-				result = informationExchangeInterface.ShareInformation(entityid, key, value);
-			} catch (IOException e) {
-				// Display connection error and exit
-				Logging.Log(entityid, "Connection error. Probably IKMS or Sink Entity stopped running.");
-				System.exit(0);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} else {
+				Logging.Log(entityid, "USING PUSH");
+
+				try {
+					result = informationExchangeInterface.ShareInformation(entityid, key, value);
+				} catch (IOException e) {
+					// Display connection error and exit
+					Logging.Log(entityid, "Connection error. Probably IKMS or Sink Entity stopped running.");
+					System.exit(0);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -385,7 +430,7 @@ public class IKMSEnabledEntity implements EntityInterface {
 		// return 0, is object is null
 		if (output==null)
 			return 0;
-		
+
 		if (output.has("result"))
 			try {
 				output = output.getJSONObject("result");
@@ -423,7 +468,7 @@ public class IKMSEnabledEntity implements EntityInterface {
 
 	// Method that is called whenever a new information flow policy update arrives (called from rest handler)
 	public void InformationFlowPoliciesUpdated (JSONObject informationFlowPolicies) {
-	
+
 		// active information exchange policies (updated asynchronously though the rest callback facility data handler)
 		InformationExchangePolicies policies=null;
 		try {
@@ -443,7 +488,7 @@ public class IKMSEnabledEntity implements EntityInterface {
 
 		Logging.Log(entityid, "Information flow policies updated:"+informationFlowPolicies
 				+" "+policies.getFlowOptimizationGoal().getOptGoalName());
-		
+
 		// update flow registry
 		flowRegistry.UpdateFlowRegistration(policies);
 	}
@@ -575,10 +620,45 @@ public class IKMSEnabledEntity implements EntityInterface {
 		}
 	}
 
+	// Apply a delay (i.e., for experiments or demo)
+	public static void DelayNoMessage (int delayTime) {
+		try {
+			Thread.sleep(delayTime);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public void InformationFlowPoliciesUpdatedUSR(
 			JSONObject informationFlowPolicies, String targetURIFileName) {
-		// TODO Auto-generated method stub
+		// Information flow policies updated
 		System.out.println ("InformationFlowPoliciesUpdateUSR method executed (at IKMSEnabledEntity)");
 	}
+
+	@Override
+	public JSONObject CollectValue(String uri) {
+		// return a generated test value
+		return GenerateTestValue (uri);
+	}
+
+	@Override
+	public JSONObject CollectValueUSR(String uri, String targetURIFileName) {
+		// return a generated test value
+		return GenerateTestValue (uri);
+	}
+
+	@Override
+	public void UpdateValue(String uri, String value) {
+		// store updated value in local storage
+		StoreInLocalStorage (uri, value);
+	}
+
+	@Override
+	public void UpdateValueUSR(String uri, String value, String ircallbackURL) {
+		// store updated value in local storage
+		StoreInLocalStorage (uri, value);
+	}
+
 }

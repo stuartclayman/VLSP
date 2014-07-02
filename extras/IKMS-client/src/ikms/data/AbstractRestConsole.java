@@ -118,7 +118,7 @@ public abstract class AbstractRestConsole implements Container, ManagementConsol
             Set<String> patterns = handlerMap.keySet();
 
             for (String pattern : patterns) {
-                
+
                 if (directory.equals(pattern) || path.matches(pattern)) {
                     RequestHandler handler = (RequestHandler)handlerMap.get(pattern);
 

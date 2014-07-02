@@ -117,7 +117,7 @@ public class IKMSClientUpdateHandler extends AbstractRestRequestHandler implemen
 		Query query = request.getQuery();
 		//Scanner scanner;
 
-		String uriPath;
+		/*		String uriPath;
 		JSONObject value = null;
 
 		// Convert path to uri
@@ -125,6 +125,29 @@ public class IKMSClientUpdateHandler extends AbstractRestRequestHandler implemen
 		//uriPath = uriPath.replaceFirst("/","");
 		if (name == null) {
 			uriPath = uriPath + "/";
+		}*/
+
+		// process uriPath arg
+		String uriPath=null;
+		JSONObject value = null;
+
+		if (query.containsKey("u")) {
+			String entityArg = query.get("u");
+
+			Scanner scanner = new Scanner(entityArg);
+
+			if (scanner.hasNext()) {
+				uriPath = scanner.next();
+			} else {
+				complain(response, "arg uriPath not correctly set");
+				response.close();
+				return;
+			}
+
+		} else {
+			complain(response, "arg u not provided");
+			response.close();
+			return;
 		}
 
 		/* process  args */
@@ -150,8 +173,24 @@ public class IKMSClientUpdateHandler extends AbstractRestRequestHandler implemen
 
 		System.out.println(System.currentTimeMillis() + " UpdateHandler: " + uriPath + " -> " + value);
 
-		// pass the value in 
-		listener.getEntity().StoreInLocalStorage(uriPath, value.toString());
+		// check if ircallbackURL is passed (i.e., for distributed virtual infrastructure deployment)
+		String ircallbackURL=null;
+
+		if (query.containsKey("ircallbackURL")) {
+			ircallbackURL = query.get("ircallbackURL");
+		}
+
+		// checking compact version as well
+		if (query.containsKey("ircbu")) {
+			ircallbackURL = query.get("ircbu");
+		}
+
+		// interact with the entity to post value
+		if (ircallbackURL==null)
+			// pass the value in 
+			listener.getEntity().UpdateValue(uriPath, value.toString());
+		else 
+			listener.getEntity().UpdateValueUSR(uriPath, value.toString(), ircallbackURL);
 
 		/* try {
             if (uriPath.equals("/VIM/Routers/Detail/All")) {
@@ -313,7 +352,6 @@ public class IKMSClientUpdateHandler extends AbstractRestRequestHandler implemen
 				xml = true;
 			}
 		}*/
-
 		// get the path
 		Path path =  request.getPath();
 		String name = path.getName();
@@ -332,7 +370,7 @@ public class IKMSClientUpdateHandler extends AbstractRestRequestHandler implemen
 		/* process  args */
 
 		// process entityid args
-		@SuppressWarnings("unused")
+		/*@SuppressWarnings("unused")
 		int entityid=0;
 		if (query.containsKey("entityid")) {
 			String entityArg = query.get("entityid");
@@ -351,7 +389,7 @@ public class IKMSClientUpdateHandler extends AbstractRestRequestHandler implemen
 			complain(response, "arg entityid not provided");
 			response.close();
 			return;
-		}
+		}*/
 
 		// process uriPath arg
 		String uriPath=null;
@@ -374,37 +412,65 @@ public class IKMSClientUpdateHandler extends AbstractRestRequestHandler implemen
 			return;
 		}
 
+		// check if iccallbackURL passed (i.e., for distributed virtual infrastructure deployment)
+		String iccallbackURL=null;
+
+		if (query.containsKey("iccallbackURL")) {
+			iccallbackURL = query.get("iccallbackURL");
+		}
+
+		// checking compact version as well
+		if (query.containsKey("iccbu")) {
+			iccallbackURL = query.get("iccbu");
+		}
+
+		// did we get everything
+		//if (value == null) {
+		//	complain(response, "error in update " + " value == " + value);
+		//	}
+
 		// interact with the entity to retrieve value
 		JSONObject result = null;
-		result = listener.getEntity().GenerateTestValue(uriPath);
+		if (iccallbackURL==null)
+			result = listener.getEntity().CollectValue(uriPath);
+		else 
+			result = listener.getEntity().CollectValueUSR(uriPath, iccallbackURL);
 
 		// and send them back as the return value
 		PrintStream out = response.getPrintStream();
 
 		JSONObject jsobj = new JSONObject();
 
-		if (result == null) {
-			if (listener.getEntity().CheckCompactMode()) {
-				jsobj.put("e", "error");
+		//in case of distributed infrastructure
+		//this does not need to be done in the last hop 
+
+		if (iccallbackURL==null) {
+			if (result == null) {
+				if (listener.getEntity().CheckCompactMode()) {
+					jsobj.put("e", "error");
+				} else {
+					jsobj.put("uri", uriPath);
+					jsobj.put("error", "error");
+					jsobj.put("result", new JSONObject("{}"));				
+				}
 			} else {
-				jsobj.put("uri", uriPath);
-				jsobj.put("error", "error");
-				jsobj.put("result", new JSONObject("{}"));				
+				//JSONObject JSONResult = new JSONObject(result);
+
+				if (listener.getEntity().CheckCompactMode()) {
+					jsobj.put("r", result);
+				} else {
+					jsobj.put("uri", uriPath);
+					jsobj.put("result", result);
+				}
 			}
 		} else {
-			//JSONObject JSONResult = new JSONObject(result);
-
-			if (listener.getEntity().CheckCompactMode()) {
-				jsobj.put("r", result);
-			} else {
-				jsobj.put("uri", uriPath);
-				jsobj.put("result", result);
-			}
+			jsobj = result;
 		}
 
 		//if (xml) {
 		//	out.println(XML.toString(jsobj, "response"));
-		//} else {                       
+		//} else {            
+
 		out.println(jsobj.toString());
 		//}
 

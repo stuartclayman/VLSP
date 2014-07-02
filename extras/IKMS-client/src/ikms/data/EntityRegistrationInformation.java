@@ -5,6 +5,7 @@ import ikms.data.IKMSOptimizationGoal.OptimizationRules;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
@@ -500,6 +501,44 @@ public class EntityRegistrationInformation implements JSONString {
 			} else {
 				try {
 					return informationflowconstraints.getIKMSClientURL()+"?ifpcallbackURL="+URLEncoder.encode(ifpcallbackURL, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null;
+				}
+			}
+		}
+	}
+
+	// Returns iccallbackURL or ikmsClientURL of current instance, i.e., in case of a distributed virtual infrastructure deployment
+	public String GetNextNodeICCallBackURL() {
+		if (informationflowconstraints==null) {
+			return iccallbackURL;
+		} else {
+			if (informationflowconstraints.getIKMSClientURL()==null) {
+				return iccallbackURL;
+			} else {
+				try {
+					return informationflowconstraints.getIKMSClientURL()+"?iccallbackURL="+URLEncoder.encode(iccallbackURL, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null;
+				}
+			}
+		}
+	}
+
+	// Returns ircallbackURL or ikmsClientURL of current instance, i.e., in case of a distributed virtual infrastructure deployment
+	public String GetNextNodeIRCallBackURL() {
+		if (informationflowconstraints==null) {
+			return ircallbackURL;
+		} else {
+			if (informationflowconstraints.getIKMSClientURL()==null) {
+				return ircallbackURL;
+			} else {
+				try {
+					return informationflowconstraints.getIKMSClientURL()+"?ircallbackURL="+URLEncoder.encode(ircallbackURL, "UTF-8");
 				} catch (UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

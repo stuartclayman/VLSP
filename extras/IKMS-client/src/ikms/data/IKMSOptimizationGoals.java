@@ -69,6 +69,7 @@ public class IKMSOptimizationGoals {
 		IKMSOptimizationGoal reduceProcessingGoal = new IKMSOptimizationGoal(9, "Reduce processing cost", "", IKMSOptimizationGoal.EnforcementLevels.High);
 		// Add optimization rules to goal
 		reduceProcessingGoal.AddOptimizationRule(OptimizationRules.DirectEntity2EntityCommunication);
+		reduceProcessingGoal.AddOptimizationRule(OptimizationRules.DoNotCommunicateMeasurements);
 		IKMSOptimizationGoals.ikmsOptimizationGoals.add(reduceProcessingGoal);
 
 		// Add goal option for reducing communication overhead
@@ -77,6 +78,7 @@ public class IKMSOptimizationGoals {
 		// Add optimization rules to goal
 		reduceCommunicationOverheadGoal.AddOptimizationRule(OptimizationRules.DirectEntity2EntityCommunication);
 		reduceCommunicationOverheadGoal.AddOptimizationRule(OptimizationRules.LightweightDataStructures);
+		reduceCommunicationOverheadGoal.AddOptimizationRule(OptimizationRules.DoNotCommunicateMeasurements);
 		IKMSOptimizationGoals.ikmsOptimizationGoals.add(reduceCommunicationOverheadGoal);
 
 		// Add goal for improving information accuracy
@@ -93,6 +95,7 @@ public class IKMSOptimizationGoals {
 		IKMSOptimizationGoal improveEnergyEfficiencyGoal = new IKMSOptimizationGoal(12, "Improve energy efficiency", "", IKMSOptimizationGoal.EnforcementLevels.High);
 		// Add optimization rules to goal
 		improveEnergyEfficiencyGoal.AddOptimizationRule(OptimizationRules.LightweightDataStructures);
+		improveEnergyEfficiencyGoal.AddOptimizationRule(OptimizationRules.DoNotCommunicateMeasurements);
 		IKMSOptimizationGoals.ikmsOptimizationGoals.add(improveEnergyEfficiencyGoal);
 
 	}

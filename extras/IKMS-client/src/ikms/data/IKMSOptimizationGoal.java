@@ -28,7 +28,7 @@ public class IKMSOptimizationGoal implements JSONString {
 
 	// Available optimization rules
 	public enum OptimizationRules {
-		LightweightDataStructures, DoNotStoreWithoutANeed, DirectEntity2EntityCommunication, FirstFetchThenRetrieveFromStorage, MultipleKNOWInstances, PubSub 
+		LightweightDataStructures, DoNotStoreWithoutANeed, DirectEntity2EntityCommunication, FirstFetchThenRetrieveFromStorage, MultipleKNOWInstances, PubSub, DoNotCommunicateMeasurements 
 	}
 
 	// The optimization rules relevant to goal
