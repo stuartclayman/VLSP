@@ -11,7 +11,7 @@ import usr.logging.Logger;
 import usr.common.ANSI;
 
 /**
- * The LeastBusyPlacement is repsonsible for determining the placement
+ * The LeastBusyPlacement is responsible for determining the placement
  * of a Router across the active resources.
  * <p>
  * It finds the LocalController where the traffic volume from all the routers is a minimum.
@@ -177,8 +177,6 @@ public class LeastBusyPlacement implements PlacementEngine {
             } else {
                 volume = newVolume - oldVolume;
             }
-
-
 
             builder.append(localInfo + ": " + localInfo.getNoRouters() + " "  + volume + " | ");
         }

@@ -1,18 +1,15 @@
 package usr.globalcontroller;
 
-import usr.localcontroller.LocalControllerInfo;
-import usr.common.BasicRouterInfo;
 import java.util.Set;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import usr.logging.USR;
-import usr.logging.Logger;
+
 import usr.common.ANSI;
+import usr.localcontroller.LocalControllerInfo;
+import usr.logging.Logger;
+import usr.logging.USR;
 
 
 /**
- * The NupPlacement is repsonsible for determining the placement
+ * The NupPlacement is responsible for determining the placement
  * of a Router across the active resources.
  * <p>
  * It allocates routers in blocks of N

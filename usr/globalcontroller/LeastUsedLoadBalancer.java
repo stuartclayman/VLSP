@@ -7,7 +7,7 @@ import usr.logging.Logger;
 import usr.common.ANSI;
 
 /**
- * The LeastUsedLoadBalancer is repsonsible for determining the placement
+ * The LeastUsedLoadBalancer is responsible for determining the placement
  * of a Router across the active resources.
  * <p>
  * It finds the LocalController with the least no of routers.
