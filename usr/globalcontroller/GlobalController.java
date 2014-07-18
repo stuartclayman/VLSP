@@ -1,6 +1,7 @@
 package usr.globalcontroller;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -27,44 +28,45 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.APcontroller.APController;
 import usr.APcontroller.ConstructAPController;
-import usr.model.abstractnetwork.AbstractLink;
-import usr.model.abstractnetwork.AbstractNetwork;
+import usr.common.ANSI;
 import usr.common.BasicRouterInfo;
 import usr.common.LinkInfo;
 import usr.common.LocalHostInfo;
 import usr.common.Pair;
 import usr.common.PortPool;
 import usr.common.ProcessWrapper;
-import usr.common.ANSI;
 import usr.console.ComponentController;
-import usr.engine.EventEngine;
 import usr.engine.APWarmUp;
+import usr.engine.EventEngine;
 import usr.events.Event;
-import usr.events.ExecutableEvent;
-import usr.events.EventScheduler;
 import usr.events.EventDelegate;
-import usr.events.SimpleEventScheduler;
 import usr.events.EventResolver;
-import usr.events.globalcontroller.OutputEvent;
-import usr.events.globalcontroller.StartAppEvent;
-import usr.events.globalcontroller.StopAppEvent;
-import usr.events.globalcontroller.NetStatsEvent;
-import usr.events.globalcontroller.SetAggPointEvent;
-import usr.events.globalcontroller.StartLinkEvent;
+import usr.events.EventScheduler;
+import usr.events.ExecutableEvent;
+import usr.events.SimpleEventScheduler;
 import usr.events.globalcontroller.EndLinkEvent;
-import usr.events.globalcontroller.StartRouterEvent;
 import usr.events.globalcontroller.EndRouterEvent;
-import usr.events.globalcontroller.SetLinkWeightEvent;
 import usr.events.globalcontroller.GCEventResolver;
+import usr.events.globalcontroller.NetStatsEvent;
+import usr.events.globalcontroller.OutputEvent;
+import usr.events.globalcontroller.SetAggPointEvent;
+import usr.events.globalcontroller.SetLinkWeightEvent;
+import usr.events.globalcontroller.StartAppEvent;
+import usr.events.globalcontroller.StartLinkEvent;
+import usr.events.globalcontroller.StartRouterEvent;
+import usr.events.globalcontroller.StopAppEvent;
 import usr.interactor.LocalControllerInteractor;
-import usr.model.lifeEstimate.LifetimeEstimate;
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.BitMask;
 import usr.logging.Logger;
 import usr.logging.USR;
+import usr.model.abstractnetwork.AbstractLink;
+import usr.model.abstractnetwork.AbstractNetwork;
+import usr.model.lifeEstimate.LifetimeEstimate;
 import usr.output.OutputTraffic;
 import usr.output.OutputType;
 import usr.router.RouterOptions;
+import usr.vim.VimFunctions;
 import cc.clayman.console.ManagementConsole;
 import eu.reservoir.monitoring.appl.BasicConsumer;
 import eu.reservoir.monitoring.appl.BasicDataSource;
@@ -74,8 +76,6 @@ import eu.reservoir.monitoring.core.ReporterMeasurementType;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneForwardingConsumerWithNames;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
-import java.io.FileNotFoundException;
-import usr.vim.VimFunctions;
 
 /**
  * The GlobalController is in overall control of the software.  It
@@ -105,7 +105,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     // Map is used to store vacant ports on local controllers
     private HashMap<LocalControllerInfo, PortPool> portPools_ = null;
 
-    // The PlacementEngine that determines where a ROuter is placed.
+    // The PlacementEngine that determines where a Router is placed.
     private PlacementEngine placementEngine  = null;
 
     // Map is from router Id to information one which machine router is

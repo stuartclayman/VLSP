@@ -3,34 +3,39 @@
 
 package usr.engine;
 
-import usr.vim.VimFunctions;
-import rgc.xmlparse.*;
-import rgc.probdistributions.*;
-import usr.logging.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.*;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import java.io.*;
-import java.util.*;
-import java.util.logging.Level;
-import us.monoid.json.JSONObject;
+
+import rgc.probdistributions.ProbDistribution;
+import rgc.probdistributions.ProbException;
+import rgc.xmlparse.ReadXMLUtils;
+import rgc.xmlparse.XMLNoTagException;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
 import usr.events.EndSimulationEvent;
 import usr.events.Event;
-import usr.events.ExecutableEvent;
 import usr.events.EventDelegate;
 import usr.events.EventScheduler;
+import usr.events.ExecutableEvent;
 import usr.events.StartSimulationEvent;
 import usr.events.vim.EndRouterEvent;
 import usr.events.vim.StartLinkEvent;
-import usr.events.vim.StartRouterEvent;
 import usr.events.vim.StartRouter;
+import usr.events.vim.StartRouterEvent;
+import usr.logging.Logger;
+import usr.logging.USR;
+import usr.vim.VimFunctions;
 
 /**
    This engine uses probability distributions to add events into the

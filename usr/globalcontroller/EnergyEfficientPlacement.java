@@ -12,12 +12,12 @@ import usr.logging.Logger;
 import usr.logging.USR;
 
 /**
- * The LeastBusyPlacement is responsible for determining the placement
+ * The EnergyEfficientPlacement is responsible for determining the placement
  * of a Router across the active resources.
  * <p>
- * It finds the LocalController where the traffic volume from all the routers is a minimum.
+ * It finds the LocalController where the energy consumption is a minimum.
  */
-public class LeastBusyPlacement implements PlacementEngine {
+public class EnergyEfficientPlacement implements PlacementEngine {
     // The GlobalController
     GlobalController gc;
 
@@ -27,12 +27,12 @@ public class LeastBusyPlacement implements PlacementEngine {
     /**
      * Constructor
      */
-    public LeastBusyPlacement(GlobalController gc) {
+    public EnergyEfficientPlacement(GlobalController gc) {
         this.gc = gc;
 
         oldVolumes = new HashMap<LocalControllerInfo, Long>();
 
-        Logger.getLogger("log").logln(USR.STDOUT, "LeastBusyPlacement: localcontrollers = " + getPlacementDestinations());
+        Logger.getLogger("log").logln(USR.STDOUT, "EnergyEfficientPlacement: localcontrollers = " + getPlacementDestinations());
     }
 
     /**
@@ -51,8 +51,17 @@ public class LeastBusyPlacement implements PlacementEngine {
         HashMap<LocalControllerInfo, List<BasicRouterInfo> > routerLocations = gc.getRouterLocations();
 
         // Get the monitoring reporter object that collects link usage data
-        TrafficInfo reporter = (TrafficInfo)gc.findByInterface(TrafficInfo.class);
+        TrafficInfo trafficReporter = (TrafficInfo)gc.findByInterface(TrafficInfo.class);
 
+        HostInfoReporter hostInfoReporter = (HostInfoReporter) gc.findByMeasurementType("HostInfo");
+        
+        // get volume of traffic
+        // iterate through all potential placement destinations
+        for (LocalControllerInfo localInfo : getPlacementDestinations()) {
+        		//hostInfoReporter.measurements.get
+        }
+        
+        
         for (LocalControllerInfo localInfo : getPlacementDestinations()) {
             // now find all of the routers on that host
             List<BasicRouterInfo> routers = routerLocations.get(localInfo);
@@ -80,7 +89,7 @@ public class LeastBusyPlacement implements PlacementEngine {
                         // convert 
                         String router2Name = gc.findRouterInfo(otherRouter).getName();
                         // get trafffic for link i -> j as routerName => router2Name
-                        List<Object> iToj = reporter.getTraffic(routerName, router2Name);
+                        List<Object> iToj = trafficReporter.getTraffic(routerName, router2Name);
 
                         if (iToj != null) {             // there is some traffic data for the link
                             // now calculate 

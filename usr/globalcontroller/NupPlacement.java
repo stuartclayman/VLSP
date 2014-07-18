@@ -49,7 +49,7 @@ public class NupPlacement implements PlacementEngine {
             thisUsage = localInfo.getNoRouters();
 
             if (localInfo.getNoRouters() >= localInfo.getMaxRouters()) {
-                // cant use this one
+                // can't use this one
                 continue;
             }
 
