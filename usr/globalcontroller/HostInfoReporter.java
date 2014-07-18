@@ -93,7 +93,7 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
     }
 
     /**
-     * Get the last measurment for the specified LocalController
+     * Get the last measurement for the specified LocalController
      * 
      * Each measurement has the following structure:
      * ProbeValues
@@ -111,7 +111,7 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
      * 
      * HostInfo attributes: [0: STRING LocalController:10000, 1: FLOAT 7.72, 2: FLOAT 14.7, 3: FLOAT 77.57, 4: INTEGER 15964, 5: INTEGER 412, 6: INTEGER 16376, 7: LONG 50728177, 8: LONG 43021697138, 9: LONG 40879848, 10: LONG 7519963728]
      */
-    public Measurement  getData(String localControllerName) {
+    public Measurement getData(String localControllerName) {
         return measurements.get(localControllerName);
     }
 

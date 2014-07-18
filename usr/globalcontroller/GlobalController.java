@@ -223,7 +223,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     public GlobalController() {
     }
 
-    /** Basic intialisation for the global controller */
+    /** Basic initialisation for the global controller */
     public void init() {
         // allocate a new logger
         Logger logger = Logger.getLogger("log");
@@ -248,7 +248,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             e.printStackTrace();
         }
 
-
         network_ = new AbstractNetwork();
         shutdownRouters_ = new ArrayList<BasicRouterInfo>();
         linkInfo = new HashMap<Integer, LinkInfo>();
@@ -266,7 +265,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         runLoop_ = new Object();
 
-        // Redirect ouptut for error and normal output if requested in
+        // Redirect output for error and normal output if requested in
         // router options file
         String fileName = routerOptions_.getOutputFile();
 
