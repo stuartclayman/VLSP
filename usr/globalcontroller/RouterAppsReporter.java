@@ -57,7 +57,7 @@ public class RouterAppsReporter implements Reporter, ReporterMeasurementType {
      * Router-1
      * ProbeValue 1: Table =
      * ID | StartTime | RunTime | State | ClassName | Args | Name | RuntimeKeys | RuntimeValues
-     * 1 | 1331298150361 | 10000 | RUNNING | usr.applications.Send | [4, 3000, 250000, -d, 250, -i, 10] | /R1/App/usr.applications.Send/1 | [] | []
+     * 1 | 1331298150361 | 10234061 | RUNNING | usr.applications.Send | [4, 3000, 250000, -d, 250, -i, 10] | /R1/App/usr.applications.Send/1 | [] | []
      */
     @Override
     public void report(Measurement m) {

@@ -127,8 +127,8 @@ public class Router {
 
         options_ = new RouterOptions(this);
 
-        // Setup ThreadGroup
-        threadGroup = Thread.currentThread().getThreadGroup(); // new ThreadGroup(name);
+        // Get current ThreadGroup
+        threadGroup = Thread.currentThread().getThreadGroup();
 
         controller = new RouterController(this, options_, port1, port2, name);
 

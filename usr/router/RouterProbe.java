@@ -5,6 +5,7 @@ package usr.router;
 
 import eu.reservoir.monitoring.core.AbstractProbe;
 import eu.reservoir.monitoring.core.Measurement;
+import eu.reservoir.monitoring.core.Timestamp;
 import eu.reservoir.monitoring.core.Probe;
 
 
@@ -15,6 +16,18 @@ public abstract class RouterProbe extends AbstractProbe implements Probe {
     // The controller of the router we are getting stats for
     RouterController controller;
 
+    Timestamp startTime;
+
+    RouterProbe() {
+        startTime = new Timestamp(System.currentTimeMillis());
+    }
+
+    /**
+     * Get the start time of this probe
+     */
+    public Timestamp getStartTime() {
+        return startTime;
+    }
 
     /**
      * Get the RouterController.

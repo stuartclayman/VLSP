@@ -12,8 +12,8 @@ public class ApplicationHandle implements Runnable {
     // The name
     String name;
 
-    // The thread name
-    String threadName;
+    // The thread 
+    Thread thread;
 
     // The app
     Application app;
@@ -85,14 +85,21 @@ public class ApplicationHandle implements Runnable {
      * Get the thread name
      */
     public String getThreadName() {
-        return threadName;
+        return thread.getName();
+    }
+
+    /**
+     * Get the thread
+     */
+    public Thread getThread() {
+        return thread;
     }
 
     /**
      * Set the thread name
      */
-    ApplicationHandle setThreadName(String name) {
-        threadName = name;
+    ApplicationHandle setThread(Thread t) {
+        thread = t;
         return this;
     }
 

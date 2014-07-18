@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import usr.common.TimedThreadGroup;
+import usr.common.TimedThread;
+
 import usr.logging.Logger;
 import usr.logging.USR;
 
@@ -41,9 +44,9 @@ public class ProcessWrapper {
         eListener = new ProcessListener(proc.getErrorStream(), "stderr", this);
 
         // allocate a Thread for the InputStream Listener
-        iThread = new Thread(iListener, name + "-InputStream");
+        iThread = new TimedThread(iListener, name + "-InputStream");
         // allocate a Thread for the ErrorStream Listener
-        eThread = new Thread(eListener, name + "-ErrorStream");
+        eThread = new TimedThread(eListener, name + "-ErrorStream");
 
         // start both threads
         iThread.start();

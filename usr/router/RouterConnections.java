@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 
+import usr.common.TimedThread;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.TCPEndPointDst;
@@ -62,8 +63,7 @@ public class RouterConnections implements Runnable {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Ready to accept on " + serverSocket);
 
 
-            myThread =
-                new Thread(controller.getThreadGroup(), this, "/" + controller.getName() + "/RouterConnections/" + hashCode());
+            myThread = new TimedThread(controller.getThreadGroup(), this, "/" + controller.getName() + "/RouterConnections/" + hashCode());
             running = true;
             myThread.start();
 

@@ -5,6 +5,13 @@ import java.util.HashMap;
 import usr.logging.Logger;
 import usr.logging.USR;
 
+import usr.common.TimedThreadGroup;
+import usr.common.TimedThread;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.lang.management.ThreadInfo;
+
 /**
  * A Thread Manager for USR Applications.
  */
@@ -32,16 +39,19 @@ class ApplicationThreadManager {
     public void execute(ApplicationHandle appH) {
         // create a thread name
         synchronized (threads) {
-            String threadName = "/" + appManager.getRouter().getName() + "/" + appH.getApplication().getClass().getName() + "/" +
-                threadCount;
-            // set the thread name in the ApplicationHandle
-            appH.setThreadName(threadName);
+            String threadName = "/" + appManager.getRouter().getName() + "/" + appH.getApplication().getClass().getName() + "/" + threadCount;
 
             // Allocate a Thread
-            Thread t = new Thread(appH, threadName);
+            String groupName =  "Application-" + threadCount;
+
+            ThreadGroup group = new TimedThreadGroup(groupName);
+            Thread t = new TimedThread(group, appH, threadName);
 
             // save it in the threads map
             threads.put(threadName, t);
+
+            // set the thread name in the ApplicationHandle
+            appH.setThread(t);
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting thread "  + threadName);
 
@@ -75,6 +85,8 @@ class ApplicationThreadManager {
                 }
 
                 finally {
+                    appH.setThread(null);
+
                     Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of "  + threadName);
 
                     // remove the thread from the threads map

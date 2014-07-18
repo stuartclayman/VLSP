@@ -46,7 +46,6 @@ public class RouterManagementConsole extends USRRestConsole {
 
     private RouterController _routerController;
     public RouterManagementConsole(RouterController rc, int port) {
-
         _routerController = rc;
         initialise(port);
     }

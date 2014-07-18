@@ -7,6 +7,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import usr.common.TimedThread;
+import usr.common.TimedThreadGroup;
+
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Datagram;
@@ -24,6 +27,7 @@ public class FabricDevice implements FabricDeviceInterface {
     NetIFListener listener_;  //  NetIF listener for this device
     Thread inThread_ = null;  // Thread for incoming queue
     Thread outThread_ = null;  // Thread for outgoing queue
+    ThreadGroup group = null;
     boolean stopped_ = true;
 
     static final int QUEUE_BLOCKING = 1;  // If queue is over size then queue wait objects and block
@@ -56,6 +60,14 @@ public class FabricDevice implements FabricDeviceInterface {
         device_ = ep;
         listener_ = l;
         netStats_ = new NetStats();
+    }
+
+    /** Default fabric device has no queue */
+    public FabricDevice (ThreadGroup group, DatagramDevice ep, NetIFListener l) {
+        device_ = ep;
+        listener_ = l;
+        netStats_ = new NetStats();
+        this.group = group;
     }
 
     /** Set the queue type for the inbound queue */
@@ -134,8 +146,13 @@ public class FabricDevice implements FabricDeviceInterface {
 
        /** Start inqueue and out queue threads if necessary */
     @Override
-	public synchronized void start() {
+    public synchronized void start() {
         stopped_ = false;
+
+        if (group == null) {
+            group = new TimedThreadGroup(device_.getName());
+        }
+
 
         if (inQueueDiscipline_ != QUEUE_NOQUEUE) {
 
@@ -147,7 +164,7 @@ public class FabricDevice implements FabricDeviceInterface {
             inWaitQueue_ = new LinkedBlockingDeque<Waker>();
             inQueueHandler_ = new InQueueHandler(inQueueDiscipline_, inQueue_, this);
 
-            inThread_ = new Thread(inQueueHandler_, "/" + listener_.getName() + "/" + name_+"/InQueue");
+            inThread_ = new TimedThread(group, inQueueHandler_, "/" + name_+"/InQueue");
             inThread_.start();
         }
 
@@ -159,7 +176,7 @@ public class FabricDevice implements FabricDeviceInterface {
             }
             outWaitQueue_ = new LinkedBlockingDeque<Waker>();
             outQueueHandler_ = new OutQueueHandler(outQueueDiscipline_, outQueue_, this);
-            outThread_ = new Thread(outQueueHandler_, "/" + listener_.getName() + "/" + name_+"/OutQueue");
+            outThread_ = new TimedThread(group, outQueueHandler_, "/" + name_+"/OutQueue");
             outThread_.start();
         }
     }
@@ -537,11 +554,11 @@ public class FabricDevice implements FabricDeviceInterface {
         name_ = name;
 
         if (inThread_ != null) {
-            inThread_.setName("/" + listener_.getName() + "/" + name+"/InQueue");
+            inThread_.setName("/" + name+"/InQueue");
         }
 
         if (outThread_ != null) {
-            outThread_.setName("/" + listener_.getName() + "/" + name+"/OutQueue");
+            outThread_.setName("/" + name+"/OutQueue");
         }
 
     }

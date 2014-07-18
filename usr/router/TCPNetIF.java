@@ -8,6 +8,9 @@ import java.nio.channels.ClosedByInterruptException;
 import java.util.concurrent.CountDownLatch;
 
 import usr.common.ANSI;
+import usr.common.TimedThread;
+import usr.common.TimedThreadGroup;
+
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
@@ -94,9 +97,11 @@ public class TCPNetIF implements NetIF, Runnable {
      * control
      */
     public synchronized void start() {
+        ThreadGroup group = new TimedThreadGroup("TCPNetIF-" + connection.getSocket().getPort());
+
         running_ = true;
         //System.err.println("New fabric device listener "+listener);
-        fabricDevice_ = new FabricDevice(this, listener);
+        fabricDevice_ = new FabricDevice(group, this, listener);
         fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
         fabricDevice_.setInQueueLength(100);
         fabricDevice_.setOutQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
@@ -104,7 +109,7 @@ public class TCPNetIF implements NetIF, Runnable {
         fabricDevice_.setName(name);
         fabricDevice_.start();
         latch = new CountDownLatch(1);
-        runThread_ = new Thread(this, "/" + listener.getName() + "/" + name + "/TCPNetIF");
+        runThread_ = new TimedThread(group, this, "/" + name + "/TCPNetIF");
         runThread_.start();
     }
 
@@ -184,7 +189,7 @@ public class TCPNetIF implements NetIF, Runnable {
         }
 
         if (runThread_ != null) {
-            runThread_.setName("/" + listener.getName() + "/" + n + "/TCPNetIF");
+            runThread_.setName("/" + n + "/TCPNetIF");
         }
     }
 
@@ -393,7 +398,7 @@ public class TCPNetIF implements NetIF, Runnable {
 
 
         CloseThread ct = new CloseThread(this, this.closed);
-        Thread t = new Thread(ct, "RemoteClose-"+name);
+        Thread t = new TimedThread(ct, "RemoteClose-"+name);
         t.start();
     }
 

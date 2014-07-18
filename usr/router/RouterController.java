@@ -15,6 +15,7 @@ import usr.applications.ApplicationHandle;
 import usr.applications.ApplicationManager;
 import usr.applications.ApplicationResponse;
 import usr.console.ComponentController;
+import usr.common.TimedThread;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
@@ -263,7 +264,7 @@ public class RouterController implements ComponentController, Runnable {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
         // start my own thread
-        myThread = new Thread(threadGroup, this, "/" + router.getName() + "/RouterController/" + hashCode());
+        myThread = new TimedThread(threadGroup, this, "/" + router.getName() + "/RouterController/" + hashCode());
         running = true;
         myThread.start();
 

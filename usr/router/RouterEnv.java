@@ -8,6 +8,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.Future;
 
+import usr.common.TimedThread;
+import usr.common.TimedThreadGroup;
+
 import usr.interactor.RouterInteractor;
 import usr.net.Address;
 
@@ -252,8 +255,8 @@ class SimpleThreadFactory implements ThreadFactory {
      */
     @Override
     public Thread newThread(Runnable r) {
-        group = new ThreadGroup(name);
-        return new Thread(group, r, name);
+        group = new TimedThreadGroup(name);
+        return new TimedThread(group, r, name);
     }
 
 }

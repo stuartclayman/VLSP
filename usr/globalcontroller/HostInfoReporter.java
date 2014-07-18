@@ -65,21 +65,8 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 
     /**
      * This collects each measurement and processes it.
-     * Each measurement has the following structure:
-     * ProbeValues
-     * 0: Name: STRING: name
-     * 1: cpu-user: FLOAT: percent
-     * 2: cpu-sys: FLOAT: percent
-     * 3: cpu-idle: FLOAT: percent
-     * 4: mem-used: INTEGER: Mb
-     * 5: mem-free: INTEGER: Mb
-     * 6: mem-total: INTEGER: Mb
-     * 7: in-packets: LONG: n
-     * 8: in-bytes: LONG: n
-     * 9: out-packets: LONG: n
-     * 10: out-bytes: LONG: n
-     * 
-     * HostInfo attributes: [0: STRING LocalController:10000, 1: FLOAT 7.72, 2: FLOAT 14.7, 3: FLOAT 77.57, 4: INTEGER 15964, 5: INTEGER 412, 6: INTEGER 16376, 7: LONG 50728177, 8: LONG 43021697138, 9: LONG 40879848, 10: LONG 7519963728]
+     * In this case it stores the last measurement for each LocalController.
+     * The measurement can be retrieved using the getData() method.
      */
     @Override
     public void report(Measurement m) {
@@ -104,6 +91,31 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
             // not what we were expecting
         }
     }
+
+    /**
+     * Get the last measurment for the specified LocalController
+     * 
+     * Each measurement has the following structure:
+     * ProbeValues
+     * 0: Name: STRING: name
+     * 1: cpu-user: FLOAT: percent
+     * 2: cpu-sys: FLOAT: percent
+     * 3: cpu-idle: FLOAT: percent
+     * 4: mem-used: INTEGER: Mb
+     * 5: mem-free: INTEGER: Mb
+     * 6: mem-total: INTEGER: Mb
+     * 7: in-packets: LONG: n
+     * 8: in-bytes: LONG: n
+     * 9: out-packets: LONG: n
+     * 10: out-bytes: LONG: n
+     * 
+     * HostInfo attributes: [0: STRING LocalController:10000, 1: FLOAT 7.72, 2: FLOAT 14.7, 3: FLOAT 77.57, 4: INTEGER 15964, 5: INTEGER 412, 6: INTEGER 16376, 7: LONG 50728177, 8: LONG 43021697138, 9: LONG 40879848, 10: LONG 7519963728]
+     */
+    public Measurement  getData(String localControllerName) {
+        return measurements.get(localControllerName);
+    }
+
+
 
     protected String showData(Measurement m) {
         StringBuilder builder = new StringBuilder();

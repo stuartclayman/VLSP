@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import usr.common.TimedThread;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
@@ -1255,7 +1256,7 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     /**
      * A Thread that sends out the Routing Table
      */
-    class RoutingTableTransmitter extends Thread {
+    class RoutingTableTransmitter extends TimedThread {
         // The Fabric
         RouterFabric fabric;
 

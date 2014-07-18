@@ -5,6 +5,7 @@ package usr.events;
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
+import usr.common.TimedThread;
 import usr.logging.Logger;
 import usr.logging.USR;
 import us.monoid.json.JSONException;
@@ -42,7 +43,7 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
     public boolean start() {
         // Execute the EventScheduler
         running = true;
-        t = new Thread(this);
+        t = new TimedThread(this);
         t.start();
 
         return true;
