@@ -61,7 +61,7 @@ public class TimedThreadGroup extends ThreadGroup {
         // Enumerate each thread in `group'
         for (int i = 0; i<numThreads; i++) {
             // Get thread
-            TimedThread thread = (TimedThread)threads[i];
+            Thread thread = threads[i];
 
             long id = thread.getId();
 
@@ -73,7 +73,6 @@ public class TimedThreadGroup extends ThreadGroup {
             cpu += threadCPU;
             user += threadUser;
             sys += (threadCPU - threadUser);
-
         }
 
         long [] result =  { cpu, user, sys };
