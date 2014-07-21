@@ -66,7 +66,10 @@ public class AppListProbe extends RouterProbe implements Probe {
         statsHeader = new DefaultTableHeader()
             .add("AID", ProbeAttributeType.INTEGER)
             .add("StartTime", ProbeAttributeType.LONG)
+            .add("ElapsedTime", ProbeAttributeType.LONG)
             .add("RunTime", ProbeAttributeType.LONG)
+            .add("UserTime", ProbeAttributeType.LONG)
+            .add("SysTime", ProbeAttributeType.LONG)
             .add("State", ProbeAttributeType.STRING)
             .add("ClassName", ProbeAttributeType.STRING)
             .add("Args", ProbeAttributeType.STRING)
@@ -130,14 +133,18 @@ public class AppListProbe extends RouterProbe implements Probe {
                     // get info for all Application threads
 
                     // get first thread
-                    Thread appThread = ah.getThread();
+                    TimedThread appThread = (TimedThread)ah.getThread();
+
+                    /*
                     // get it's thread group
                     ThreadGroup threadGroup = appThread.getThreadGroup();
                     // get all threads for app
                     Thread[] threads = ThreadTools.getGroupThreads(threadGroup);
                     // visit threads - get { cpu, user, sys }
                     long [] usage = ThreadTools.visitThreadsAccumulate(threads);
+                    */
 
+                    long [] usage = appThread.getCpuUsage();
 
                     //System.out.println(" " + new MillisecondTimestamp(now) + " " + threadGroup.getName()  + " elapsed: " + new MillisecondTimestamp((now - ah.getStartTime())) + " cpu: " + new MicrosecondTimestamp(usage[0]/1000) + " user: " + new MicrosecondTimestamp(usage[1]/1000) + " system: " + new MicrosecondTimestamp(usage[2]/1000) + " - " + appThread.getName() );
 
@@ -150,8 +157,17 @@ public class AppListProbe extends RouterProbe implements Probe {
                     // StartTime
                     appHRow.add(new DefaultTableValue(ah.getStartTime()));
 
+                    // ElapsedTime
+                    appHRow.add(new DefaultTableValue(now - ah.getStartTime()));
+
                     // RunTime
                     appHRow.add(new DefaultTableValue(usage[0]));
+
+                    // UserTime
+                    appHRow.add(new DefaultTableValue(usage[1]));
+
+                    // SysTime
+                    appHRow.add(new DefaultTableValue(usage[2]));
 
                     // State
                     appHRow.add(new DefaultTableValue(ah.getState().toString()));

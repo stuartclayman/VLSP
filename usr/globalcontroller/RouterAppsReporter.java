@@ -53,11 +53,29 @@ public class RouterAppsReporter implements Reporter, ReporterMeasurementType {
     /**
      * This collects each measurement and processes it.
      * Each measurement has the following structure:
+     * ProbeValues
+     * 0: RouterName: STRING: name
+     * 1: Data: TABLE
+     *
+     * Table elements are:
+     * 0: AID: INTEGER - application ID
+     * 1: StartTime: LONG - start time since epoch - in milliseconds
+     * 2: ElapsedTime: LONG - time since start time - in milliseconds
+     * 3: RunTime: LONG - cpu time - in nanoseconds
+     * 4: UserTime: LONG - user part of cpu time - in nanoseconds
+     * 5: SysTime: LONG - sys part of cpu time - in nanoseconds
+     * 6: State: STRING - application state
+     * 7: ClassName: STRING - name of the class of the application
+     * 8: Args: STRING - the args of the application
+     * 9: Name: STRING - the router's internal name for the application
+     * 10: RuntimeKeys: MLIST - a list of keys
+     * 11: RuntimeValues: MLIST - a list of values
+     *
      * ProbeValue 0: String =
      * Router-1
      * ProbeValue 1: Table =
-     * ID | StartTime | RunTime | State | ClassName | Args | Name | RuntimeKeys | RuntimeValues
-     * 1 | 1331298150361 | 10234061 | RUNNING | usr.applications.Send | [4, 3000, 250000, -d, 250, -i, 10] | /R1/App/usr.applications.Send/1 | [] | []
+     * ID | StartTime | ElapsedTime | RunTime | UserTime | SysTime | State | ClassName | Args | Name | RuntimeKeys | RuntimeValues
+     * 1 | 1331298150361 | 200000 | 10234061 | 10134000 | 100061 | RUNNING | usr.applications.Send | [4, 3000, 250000, -d, 250, -i, 10] | /R1/App/usr.applications.Send/1 | [] | []
      */
     @Override
     public void report(Measurement m) {
@@ -74,7 +92,7 @@ public class RouterAppsReporter implements Reporter, ReporterMeasurementType {
             Table table = (Table)pv1.getValue();
 
             // print out to channel 10
-            //Logger.getLogger("log").logln(USR.STDOUT, routerName + ":\n" + appListToString(table));
+            Logger.getLogger("log").logln(1<<10, routerName + ":\n" + appListToString(table));
 
             /*
              * Patch values into BasicRouterInfo table
@@ -109,16 +127,16 @@ public class RouterAppsReporter implements Reporter, ReporterMeasurementType {
         for (int r = 0; r< rows; r++) {
             TableRow row = table.getRow(r);
 
-            // Name is field 6
-            String name = (String)row.get(6).getValue();
+            // Name is field 9
+            String name = (String)row.get(9).getValue();
 
             // now fill in infoMap
             HashMap<String, Object> infoMap = new HashMap<String, Object>();
 
-            // visit every column except 6
+            // visit every column except 9
             // and the last 2
             for (int c = 0; c< (cols-2); c++) {
-                if (c == 6) {
+                if (c == 9) {
                     continue;
                 } else {
                     infoMap.put(header.get(c).getName(), row.get(c).getValue());
@@ -129,8 +147,8 @@ public class RouterAppsReporter implements Reporter, ReporterMeasurementType {
             // now convert last 2 lists into a map
             HashMap<String, String> appMonitoringData = new HashMap<String, String>();
 
-            MList keys = (MList)row.get(7).getValue();
-            MList values = (MList)row.get(8).getValue();
+            MList keys = (MList)row.get(10).getValue();
+            MList values = (MList)row.get(11).getValue();
 
             for (int pos = 0; pos < keys.size(); pos++) {
                 appMonitoringData.put((String)keys.get(pos).getValue(), (String)values.get(pos).getValue());

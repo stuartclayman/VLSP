@@ -109,8 +109,8 @@ public class ThreadListProbe extends RouterProbe implements Probe {
         // try ThreadGroup info
         ThreadGroup threadGroup1 = getController().getThreadGroup();
 
-        // now get all the threads
-        Thread[] threads = ThreadTools.getGroupThreads(threadGroup1);
+        // now get all the threads for the Controller
+        Thread[] threads = ThreadTools.getGroupThreadsRecursive(threadGroup1);
 
         if (threads == null || threads.length == 0) {
             // no threads to report

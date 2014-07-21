@@ -17,13 +17,28 @@ public class ThreadTools {
      * Get the Threads in a ThreadGroup
      */
     public static Thread[] getGroupThreads( final ThreadGroup group ) {
+        return getGroupThreads(group, false);
+    }
+
+    /**
+     * Get the Threads in a ThreadGroup recursively
+     */
+    public static Thread[] getGroupThreadsRecursive( final ThreadGroup group ) {
+        return getGroupThreads(group, true);
+    }
+
+    /**
+     * Get the Threads in a ThreadGroup.
+     * Specify if to do it recursively.
+     */
+    private static Thread[] getGroupThreads( final ThreadGroup group, final boolean recursively ) {
         if ( group == null )
             throw new NullPointerException( "Null thread group" );
 
         // Get threads in `group'
         int numThreads = group.activeCount();
         Thread[] threads = new Thread[numThreads*2];
-        numThreads = group.enumerate(threads, false);
+        numThreads = group.enumerate(threads, recursively);
 
         return java.util.Arrays.copyOf( threads, numThreads );
     }
@@ -32,13 +47,28 @@ public class ThreadTools {
      * Get the ThreadGroups in a ThreadGroup
      */
     public static ThreadGroup[] getGroupThreadGroups( final ThreadGroup group ) {
+        return getGroupThreadGroups(group, false);
+    }
+
+    /**
+     * Get the ThreadGroups in a ThreadGroup recursively
+     */
+    public static ThreadGroup[] getGroupThreadGroupsRecursive( final ThreadGroup group ) {
+        return getGroupThreadGroups(group, true);
+    }
+
+    /**
+     * Get the ThreadGroups in a ThreadGroup.
+     * Specify if to do it recursively.
+     */
+    private static ThreadGroup[] getGroupThreadGroups( final ThreadGroup group, final boolean recursively) {
         if ( group == null )
             throw new NullPointerException( "Null thread group" );
 
         // Get thread groups in `group'
         int numGroups = group.activeGroupCount();
         ThreadGroup[] groups = new ThreadGroup[numGroups*2];
-        numGroups = group.enumerate(groups, false);
+        numGroups = group.enumerate(groups, recursively);
 
         return java.util.Arrays.copyOf( groups, numGroups );
     }
