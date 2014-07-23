@@ -341,64 +341,9 @@ public class RouterController implements ComponentController, Runnable {
 
     /**
      * The main thread loop.
-     * It processes asynchronous commands from the request queue.
-     * <p>
-     * Asynchronous commands include:
-     * CREATE_CONNECTION ip_addr/port - create a new network interface to
-     * a router on the address ip_addr/port
-     *
      */
     @Override
     public void run() {
-        /** Not needed with rest
-
-           // get a handle on the Listener Queue
-           BlockingQueue<Request> queue = management.queue();
-
-           // create an Executor pool
-           ExecutorService pool = Executors.newCachedThreadPool();  // WAS newFixedThreadPool(3);
-           long now= System.currentTimeMillis();
-           long next= now + options_.getRouterConsiderTime();
-           boolean shutDown= false;
-           while (running) {
-            try {
-                now= System.currentTimeMillis();
-                if (now >= next) {
-                    next+= options_.getRouterConsiderTime();
-                    apController_.routerUpdate(this);
-                }
-                // we check the RouterListener queue for commands
-                Request nextRequest = queue.poll(next-now,TimeUnit.MILLISECONDS);
-                if (nextRequest == null)
-                    continue;
-                String value = nextRequest.value;
-
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + " Controller processing nextRequest = " + nextRequest);
-
-                // now process the next request
-                if (value.startsWith("CREATE_CONNECTION")) {
-                    // incr connection count
-                    connectionCount++;
-
-                    pool.execute(new CreateConnection(this, nextRequest));
-
-                } else if (value.startsWith("END_LINK")) {
-                    // do not decrease connectionCount, it MUST only increase
-                    pool.execute(new EndLink(this,nextRequest));
-
-                }
-                else {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown request " + nextRequest);
-                }
-
-
-            } catch (InterruptedException ie) {
-                //Logger.getLogger("log").logln(USR.ERROR, leadin() + "BlockingQueue: interrupt " + ie);
-            }
-           }
-           // System.err.println("Pool stop");
-           pool.shutdown();
-         */
     }
 
     /** Return a routing table as a string */

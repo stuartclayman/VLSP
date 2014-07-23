@@ -24,6 +24,8 @@ public class TimedThreadGroup extends ThreadGroup {
         startTime = System.currentTimeMillis();
 
         mxBean = ManagementFactory.getThreadMXBean();
+
+        System.out.println( "NEW TimedThreadGroup: " + this.getName() + " parent: " + getParent().getName());
     }
 
     /**
@@ -53,10 +55,11 @@ public class TimedThreadGroup extends ThreadGroup {
         long sys = 0;
 
         // Get threads in `group'
-        int numThreads = this.activeCount();
-        Thread[] threads = new Thread[numThreads*2];
-        numThreads = this.enumerate(threads, false);
+        Thread[] threads = ThreadTools.getGroupThreadsRecursive(this);
+        int numThreads = threads.length;
 
+
+        //System.out.println( "TimedThreadGroup: " + this.getName() + " threads: " + numThreads + " T[] = " + java.util.Arrays.asList(threads));
 
         // Enumerate each thread in `group'
         for (int i = 0; i<numThreads; i++) {
@@ -75,7 +78,10 @@ public class TimedThreadGroup extends ThreadGroup {
             sys += (threadCPU - threadUser);
         }
 
+        //System.out.println( "TimedThreadGroup: " + this.getName() + " cpu: " + cpu + " user: " + user + " sys: " + sys);
+
         long [] result =  { cpu, user, sys };
+
         return result;
 
     }

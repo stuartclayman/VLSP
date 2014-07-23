@@ -42,7 +42,7 @@ import com.timeindexing.time.NanosecondTimestamp;
 
 /**
  * A probe that talks to a Router can collects the stats
- * for each executing App.
+ * for each executing Thread.
  */
 public class ThreadListProbe extends RouterProbe implements Probe {
     // The TableHeader for the table of stats

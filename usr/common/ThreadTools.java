@@ -31,7 +31,7 @@ public class ThreadTools {
      * Get the Threads in a ThreadGroup.
      * Specify if to do it recursively.
      */
-    private static Thread[] getGroupThreads( final ThreadGroup group, final boolean recursively ) {
+    private static Thread[] getGroupThreads( ThreadGroup group, final boolean recursively ) {
         if ( group == null )
             throw new NullPointerException( "Null thread group" );
 
@@ -61,9 +61,15 @@ public class ThreadTools {
      * Get the ThreadGroups in a ThreadGroup.
      * Specify if to do it recursively.
      */
-    private static ThreadGroup[] getGroupThreadGroups( final ThreadGroup group, final boolean recursively) {
+    private static ThreadGroup[] getGroupThreadGroups( ThreadGroup group, final boolean recursively) {
         if ( group == null )
             throw new NullPointerException( "Null thread group" );
+
+        /*
+        while (group.getParent() != null) {
+            group = group.getParent();
+        }
+        */
 
         // Get thread groups in `group'
         int numGroups = group.activeGroupCount();

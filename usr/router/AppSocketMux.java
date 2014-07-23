@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
+import usr.common.TimedThread;
+import usr.common.TimedThreadGroup;
 
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -89,9 +91,12 @@ public class AppSocketMux implements NetIF {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
             // start my own thread
+            ThreadGroup group = new TimedThreadGroup("localnet");
+
+
             running = true;
             address = AddressFactory.newAddress(0);
-            fabricDevice_ = new FabricDevice(this, controller.getListener());
+            fabricDevice_ = new FabricDevice(group, this, controller.getListener());
 
             fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
             fabricDevice_.setInQueueLength(1000);

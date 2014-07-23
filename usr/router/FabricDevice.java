@@ -150,7 +150,7 @@ public class FabricDevice implements FabricDeviceInterface {
         stopped_ = false;
 
         if (group == null) {
-            group = new TimedThreadGroup(device_.getName());
+            group = new TimedThreadGroup(getName());
         }
 
 

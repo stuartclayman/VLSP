@@ -10,6 +10,7 @@ import java.util.Map;
 import usr.applications.ApplicationHandle;
 import usr.applications.RuntimeMonitoring;
 import usr.common.TimedThread;
+import usr.common.TimedThreadGroup;
 import usr.common.ThreadTools;
 import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
 import eu.reservoir.monitoring.core.DefaultProbeAttribute;
@@ -133,18 +134,19 @@ public class AppListProbe extends RouterProbe implements Probe {
                     // get info for all Application threads
 
                     // get first thread
-                    TimedThread appThread = (TimedThread)ah.getThread();
+                    Thread appThread = ah.getThread();
+
+                    // get it's thread group
+                    TimedThreadGroup threadGroup = (TimedThreadGroup)appThread.getThreadGroup();
 
                     /*
-                    // get it's thread group
-                    ThreadGroup threadGroup = appThread.getThreadGroup();
                     // get all threads for app
                     Thread[] threads = ThreadTools.getGroupThreads(threadGroup);
                     // visit threads - get { cpu, user, sys }
                     long [] usage = ThreadTools.visitThreadsAccumulate(threads);
                     */
 
-                    long [] usage = appThread.getCpuUsage();
+                    long [] usage = threadGroup.getCpuUsage();
 
                     //System.out.println(" " + new MillisecondTimestamp(now) + " " + threadGroup.getName()  + " elapsed: " + new MillisecondTimestamp((now - ah.getStartTime())) + " cpu: " + new MicrosecondTimestamp(usage[0]/1000) + " user: " + new MicrosecondTimestamp(usage[1]/1000) + " system: " + new MicrosecondTimestamp(usage[2]/1000) + " - " + appThread.getName() );
 
