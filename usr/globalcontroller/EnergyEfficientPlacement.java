@@ -50,7 +50,7 @@ public class EnergyEfficientPlacement implements PlacementEngine {
 		HashMap<LocalControllerInfo, Long>lcEnergyVolumes = new HashMap<LocalControllerInfo, Long>();
 
 		HostInfoReporter hostInfoReporter = (HostInfoReporter) gc.findByMeasurementType("HostInfo");
-
+		
 		Measurement currentMeasurement=null;
 		/**
 		 * Each measurement has the following structure:
@@ -76,26 +76,34 @@ public class EnergyEfficientPlacement implements PlacementEngine {
 		int currentFreeMemory=0;
 		long currentOutputBytes=0;
 		long currentInputBytes=0;
-		
+
 		Double currentEnergyVolume=0.0;
-		
+
 		// iterate through all potential placement destinations and calculate energy consumption
 		for (LocalControllerInfo localInfo : getPlacementDestinations()) {
 			// get measurement from hostInfoReporter for particular localcontroller
-			currentMeasurement = hostInfoReporter.getData(localInfo.getName());
-			List<ProbeValue> values = currentMeasurement.getValues();
-			// extracted required measurements for the energy model
-			currentCPUUserAndSystem = (Float)values.get(1).getValue() + (Float)values.get(2).getValue();
-			currentCPUIdle = (Float) values.get(3).getValue();
-			currentMemoryUsed = (Integer) values.get(4).getValue();
-			currentFreeMemory = (Integer) values.get(5).getValue();
-			currentOutputBytes = (Long) values.get(10).getValue();
-			currentInputBytes = (Long) values.get(8).getValue();
-			// calculate current energy consumption of particular physical server 
-			currentEnergyVolume = localInfo.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
+			System.out.println ("Tralalala:");
+			System.out.println (localInfo.getName());
+			System.out.println (hostInfoReporter.getData("LocalController:10000"));
+					//localInfo.getName()));
+			currentMeasurement = hostInfoReporter.getData(localInfo.getName()); // Returns NULL why????
+			if (currentMeasurement!=null) {
+				List<ProbeValue> values = currentMeasurement.getValues();
+				// extracted required measurements for the energy model
+				currentCPUUserAndSystem = (Float)values.get(1).getValue() + (Float)values.get(2).getValue();
+				currentCPUIdle = (Float) values.get(3).getValue();
+				currentMemoryUsed = (Integer) values.get(4).getValue();
+				currentFreeMemory = (Integer) values.get(5).getValue();
+				currentOutputBytes = (Long) values.get(10).getValue();
+				currentInputBytes = (Long) values.get(8).getValue();
+				// calculate current energy consumption of particular physical server 
+				currentEnergyVolume = localInfo.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
 
-			// convert double to long
-			lcEnergyVolumes.put(localInfo, currentEnergyVolume.longValue());
+				// convert double to long
+				lcEnergyVolumes.put(localInfo, currentEnergyVolume.longValue());
+			} else {
+				lcEnergyVolumes.put(localInfo, 0L);
+			}
 		}
 
 

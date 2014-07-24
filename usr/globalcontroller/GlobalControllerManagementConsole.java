@@ -25,7 +25,10 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
     @Override
 	public void registerCommands() {
 
-        // setup default /router/ handler
+    	 	// setup default /localcontroller/ handler
+        defineRequestHandler("/localcontroller/", new LocalControllerRestHandler());
+    	
+    		// setup default /router/ handler
         defineRequestHandler("/router/", new RouterRestHandler());
 
         // setup default /link/ handler

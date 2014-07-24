@@ -960,6 +960,27 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     }
 
     /**
+     * Find some local controller info, given a local controller ip address or a local controller name
+     */
+    public LocalControllerInfo findLocalControllerInfo(String value) {
+        // skip through all the LocalControllerInfo objects
+        for (LocalControllerInfo info : getLocalControllers()) {
+            if (info.getIp() !=
+                null &&info.getIp().equals(value)) {
+                // we found a match
+                return info;
+            } else if (info.getName() !=
+                       null &&info.getName().equals(value)) {
+                // we found a match
+                return info;
+            }
+        }
+
+        // we got here and found nothing
+        return null;
+    }
+    
+    /**
      * List all RouterInfo.
      */
     public Collection<BasicRouterInfo> getAllRouterInfo() {
@@ -1028,6 +1049,33 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
     }
 
+    /**
+     * Convert LocalControllerInfo into JSON
+     */
+    private JSONObject localControllerInfoAsJSON(LocalControllerInfo lci) throws JSONException {
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("getName", lci.getName());
+        jsobj.put("getIP", lci.getName());
+        jsobj.put("getRemoteLoginUser", lci.getName());
+        jsobj.put("getRemoteStartController", lci.getName());
+
+        jsobj.put("maxRouters", lci.getMaxRouters());
+        jsobj.put("getNoRouters", lci.getNoRouters());
+        jsobj.put("getUsage", lci.getName());
+
+        jsobj.put("baseLineEnergyConsumption", lci.GetBaseLineEnergyConsumption());
+        jsobj.put("cpuIdleCoefficient", lci.GetCPUIdleCoefficient());
+        jsobj.put("cpuLoadCoefficient", lci.GetCPULoadCoefficient());
+        jsobj.put("freeMemoryCoefficient", lci.GetFreeMemoryCoefficient());
+        jsobj.put("memoryAllocationCoefficient", lci.GetMemoryAllocationCoefficient());
+        jsobj.put("networkIncomingBytesCoefficient", lci.GetNetworkIncomingBytesCoefficient());
+        jsobj.put("networkOutboundBytesCoefficient", lci.GetNetworkOutboundBytesCoefficient());
+
+        return jsobj;
+    }
+    
     /** add some router info */
     public void addRouterInfo(int id, BasicRouterInfo br) {
         routerIdMap_.put(id, br);
@@ -1156,6 +1204,37 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         return jsobj;
     }
 
+    /**
+     * List all LocalControllerInfo as a JSON object
+     */
+    private JSONObject getAllLocalControllerInfoAsJSON(String detail) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();
+        JSONArray detailArray = new JSONArray();
+
+        for (LocalControllerInfo info : getLocalControllers()) {
+            String localControllerName = info.getName();
+
+            array.put(localControllerName);
+
+            if (detail.equals("all")) {
+                // add a detailed record
+                JSONObject record = localControllerInfoAsJSON(info);
+
+                detailArray.put(record);
+
+            }
+        }
+
+        jsobj.put("type", "localcontroller");
+        jsobj.put("list", array);
+
+        if (detail.equals("all")) {
+            jsobj.put("detail", detailArray);
+        }
+
+        return jsobj;
+    }
 
     /**
      * List one RouterInfo as a JSON object
@@ -1183,6 +1262,32 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         return jsobj;
     }
 
+    /**
+     * List one LocalControllerInfo as a JSON object
+     */
+    private JSONObject getOneLocalControllerInfoAsJSON(String value) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();
+        JSONArray detailArray = new JSONArray();
+
+
+        LocalControllerInfo lci = findLocalControllerInfo(value);
+        String localControllerName = lci.getName();
+
+        array.put(localControllerName);
+
+        JSONObject record = localControllerInfoAsJSON(lci);
+
+        detailArray.put(record);
+
+        jsobj.put("type", "localcontroller");
+        jsobj.put("list", array);
+
+        jsobj.put("detail", detailArray);
+
+        return jsobj;
+    }
+    
     /**
      * Is the router ID valid.
      */
@@ -2641,6 +2746,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     public JSONObject listRouters() throws JSONException {
         return listRouters("detail=id");
     }
+    
+    public JSONObject listLocalControllers() throws JSONException {
+        return listLocalControllers("detail=id");
+    }
 
     public JSONObject listRouters(String arg) throws JSONException {
         String detail = null;
@@ -2678,6 +2787,42 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         return jsobj;
     }
     
+    public JSONObject listLocalControllers(String arg) throws JSONException {
+        String detail = null;
+        String value = null;
+        JSONObject jsobj;
+
+        if (arg == null || arg.equals("")) {
+            detail = "name";
+
+        } else if (!arg.contains("=")) {
+            detail = arg;
+
+        } else if (arg.startsWith("detail=")) {
+            String[] parts = arg.split("=");
+            detail = parts[1];
+
+        } else if (arg.startsWith("name=")) {
+            String[] parts = arg.split("=");
+            value = parts[1];
+
+        } else if (arg.startsWith("address=")) {
+            String[] parts = arg.split("=");
+            value = parts[1];
+
+        } else {
+            detail = "name";
+        }
+
+        if (detail != null) {
+            jsobj = getAllLocalControllerInfoAsJSON(detail);
+        } else {
+            jsobj = getOneLocalControllerInfoAsJSON(value);
+        }
+
+        return jsobj;
+    }
+    
     public JSONObject listRemovedRouters() throws JSONException {
         return listShutdownRoutersAsJSON();
     }
@@ -2685,6 +2830,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     public JSONObject getRouterInfo(int id) throws JSONException {
         return findRouterInfoAsJSON(id);
     }
+    
+    public JSONObject getLocalControllerInfo(String name) throws JSONException {
+    		return getOneLocalControllerInfoAsJSON(name);
+    	}
 
     public JSONObject getRouterLinkStats(int id) throws JSONException {
         return getRouterLinkStatsAsJSON(id);

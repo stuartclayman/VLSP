@@ -181,6 +181,24 @@ public class VimClient implements VimFunctions {
             throw new JSONException("listRouters FAILED" + " IOException: " + ioe.getMessage());
         }
     }
+    
+    /**
+     * Equivalent of: curl GET http://localhost:8888/localcontroller/
+     *
+     * Returns JSONObject:  {TBA}
+     */
+    public JSONObject listLocalControllers() throws JSONException {
+        try {
+            String uri = vimURI + "/localcontroller/";
+
+            JSONObject jsobj = rest.json(uri).toObject();
+
+            return jsobj;
+
+        } catch (IOException ioe) {
+            throw new JSONException("listLocalControllers FAILED" + " IOException: " + ioe.getMessage());
+        }
+    }
 
     /**
      * Equivalent of: curl GET http://localhost:8888/router/?detail=[id | all]
@@ -247,6 +265,24 @@ public class VimClient implements VimFunctions {
 
         } catch (IOException ioe) {
             throw new JSONException("getRouterInfo FAILED" + " IOException: " + ioe.getMessage());
+        }
+    }
+    
+    /**
+     * Equivalent of: curl GET http://localhost:8888/localcontroller/id
+     *
+     * Returns JSONObject:  {TBA}
+     */
+    public JSONObject getLocalControllerInfo(int id) throws JSONException {
+        try {
+            String uri = vimURI + "/localcontroller/" + id;
+
+            JSONObject jsobj = rest.json(uri).toObject();
+
+            return jsobj;
+
+        } catch (IOException ioe) {
+            throw new JSONException("getLocalControllerInfo FAILED" + " IOException: " + ioe.getMessage());
         }
     }
 
