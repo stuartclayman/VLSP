@@ -76,9 +76,10 @@ public class TimedThread extends Thread {
 
 
     /**
-     * Get cpu usage info
+     * Get cpu usage and memory usage info.
+     * Returns  { cpu, user, sys, mem };
      */
-    public long[] getCpuUsage() {
+    public long[] getUsage() {
         long id = getId();
 
         ThreadInfo info = mxBean.getThreadInfo(id);
@@ -90,7 +91,17 @@ public class TimedThread extends Thread {
         long user = threadUser;
         long sys = (threadCPU - threadUser);
 
-        long [] result =  { cpu, user, sys };
+        long mem = 0;
+
+        if (mxBean instanceof com.sun.management.ThreadMXBean) {
+
+            com.sun.management.ThreadMXBean sunMxBean = (com.sun.management.ThreadMXBean)mxBean;
+            mem = sunMxBean.getThreadAllocatedBytes(id);
+        }
+            
+
+
+        long [] result =  { cpu, user, sys, mem };
         return result;
 
     }

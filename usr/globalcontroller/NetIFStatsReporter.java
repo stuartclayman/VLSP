@@ -112,9 +112,9 @@ public class NetIFStatsReporter implements Reporter, ReporterMeasurementType, Ro
             //printAnyDropped(routerName, table);
 
             // print out total every 100 measurements
-            if (count % 100 == 0) {
-                System.out.println("Total = " + calculateTotalTraffic());
-            }
+            //if (count % 100 == 0) {
+            //    System.out.println("Total = " + calculateTotalTraffic());
+            //}
         } else {
             // not what we handle
         }
@@ -290,7 +290,7 @@ public class NetIFStatsReporter implements Reporter, ReporterMeasurementType, Ro
             volume += calculateTraffic(routerData);
         }
 
-        System.out.println("Total volume = " + volume);
+        //System.out.println("Total volume = " + volume);
 
         int lost = 0;
 
@@ -299,7 +299,7 @@ public class NetIFStatsReporter implements Reporter, ReporterMeasurementType, Ro
             lost += calculateTraffic(routerData);
         }
 
-        System.out.println("Total lost = " + lost);
+        //System.out.println("Total lost = " + lost);
 
         return lost + volume;
     }

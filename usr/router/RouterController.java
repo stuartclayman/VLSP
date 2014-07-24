@@ -291,9 +291,6 @@ public class RouterController implements ComponentController, Runnable {
             router.sendGoodbye();
         }
 
-        // stop applications
-        stopApplications();
-
         // stop the dataSource and associated probe
         if (dataSource.isConnected()) {
             for (RouterProbe probe : probeList) {
@@ -307,6 +304,9 @@ public class RouterController implements ComponentController, Runnable {
             stopMonitoring();
         }
 
+
+        // stop applications
+        stopApplications();
 
         // stop the appSocketMux
         appSocketMux.stop();

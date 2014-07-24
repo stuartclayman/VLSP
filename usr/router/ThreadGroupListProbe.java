@@ -1,4 +1,4 @@
-// AppListProbe.java
+// ThreadListProbe.java
 
 package usr.router;
 
@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.List;
 
 import usr.applications.ApplicationHandle;
 import usr.applications.RuntimeMonitoring;
-import usr.common.TimedThread;
 import usr.common.TimedThreadGroup;
 import usr.common.ThreadTools;
 import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
@@ -32,6 +32,10 @@ import eu.reservoir.monitoring.core.table.TableProbeAttribute;
 import eu.reservoir.monitoring.core.table.TableRow;
 import eu.reservoir.monitoring.core.table.TableValue;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.lang.management.ThreadInfo;
+
 import com.timeindexing.time.ElapsedMillisecondTimestamp;
 import com.timeindexing.time.MillisecondTimestamp;
 import com.timeindexing.time.MicrosecondTimestamp;
@@ -39,19 +43,22 @@ import com.timeindexing.time.NanosecondTimestamp;
 
 /**
  * A probe that talks to a Router can collects the stats
- * for each executing App.
+ * for each executing ThreadGroup.
  */
-public class AppListProbe extends RouterProbe implements Probe {
+public class ThreadGroupListProbe extends RouterProbe implements Probe {
     // The TableHeader for the table of stats
     TableHeader statsHeader;
 
     // Save table, so we only send different ones
     DefaultTable savedT = null;
 
+    // ThreadMXBean
+    ThreadMXBean mxBean;
+
     /**
-     * Construct a AppListProbe
+     * Construct a ThreadGroupListProbe
      */
-    public AppListProbe(RouterController cont) {
+    public ThreadGroupListProbe(RouterController cont) {
         setController(cont);
 
         // set probe name
@@ -65,21 +72,14 @@ public class AppListProbe extends RouterProbe implements Probe {
         // ClassName
         // State
         statsHeader = new DefaultTableHeader()
-            .add("AID", ProbeAttributeType.INTEGER)
+            .add("Name", ProbeAttributeType.STRING)
             .add("StartTime", ProbeAttributeType.LONG)
             .add("ElapsedTime", ProbeAttributeType.LONG)
             .add("RunTime", ProbeAttributeType.LONG)
             .add("UserTime", ProbeAttributeType.LONG)
             .add("SysTime", ProbeAttributeType.LONG)
-            .add("State", ProbeAttributeType.STRING)
-            .add("ClassName", ProbeAttributeType.STRING)
-            .add("Args", ProbeAttributeType.STRING)
-            .add("Name", ProbeAttributeType.STRING)
-            .add("RuntimeKeys", ProbeAttributeType.LIST)
-            .add("RuntimeValues", ProbeAttributeType.LIST)
+            .add("Mem", ProbeAttributeType.LONG)
         ;
-
-        //add("ThreadName", ProbeAttributeType.STRING);
 
 
         // setup the probe attributes
@@ -88,6 +88,8 @@ public class AppListProbe extends RouterProbe implements Probe {
         addProbeAttribute(new DefaultProbeAttribute(0, "RouterName", ProbeAttributeType.STRING, "name"));
         addProbeAttribute(new TableProbeAttribute(1, "Data", statsHeader));
 
+        mxBean = ManagementFactory.getThreadMXBean();
+
     }
 
     /**
@@ -95,28 +97,35 @@ public class AppListProbe extends RouterProbe implements Probe {
      */
     @Override
     public ProbeMeasurement collect() {
-        //System.out.println("AppListProbe: collect()");
+        //System.out.println("ThreadGroupListProbe: collect()");
+        try {
+            long now = System.currentTimeMillis();
 
-        long now = System.currentTimeMillis();
 
 
+            // try ThreadGroup info
+            ThreadGroup threadGroup1 = getController().getThreadGroup();
 
-        // try cpu usage info
-        ThreadGroup threadGroup1 = getController().getThreadGroup();
+            // now get all the threads for the Controller
+            ThreadGroup[] subGroups = ThreadTools.getGroupThreadGroupsRecursive(threadGroup1);
 
-        //System.out.println("AppListProbe: threadGroup = " + threadGroup1);
-        Thread[] threads1 = ThreadTools.getGroupThreads(threadGroup1);
+            // add current ThreadGroup into list
+            List<ThreadGroup> threadGroups = new ArrayList(Arrays.asList(subGroups));
+            threadGroups.add(0, threadGroup1);
 
-        // get list of apps
-        Collection<ApplicationHandle> appList = getController().appList();
+            if (threadGroups == null || threadGroups.size() == 0) {
+                // no threads to report
+                return null;
 
-        if (appList == null || appList.size() == 0) {
-            // no apps to report
-            return null;
+            } else {
 
-        } else {
+                long cpu = 0;
+                long user = 0;
+                long sys = 0;
+                long mem = 0;
+                long elapsed = 0;
 
-            try {
+                long time = System.currentTimeMillis();
 
                 // collate measurement values
                 ArrayList<ProbeValue> list = new ArrayList<ProbeValue>();
@@ -128,105 +137,79 @@ public class AppListProbe extends RouterProbe implements Probe {
                 DefaultTable statsTable = new DefaultTable();
                 statsTable.defineTable(statsHeader);
 
-                // visit each App
-                for (ApplicationHandle ah : appList) {
 
-                    // get info for all Application threads
+                // List every thread in the group
+                for (int i=0; i<threadGroups.size(); i++) {
+                    ThreadGroup threadGroup = threadGroups.get(i);
 
-                    // get first thread
-                    Thread appThread = ah.getThread();
+                    if (! (threadGroup instanceof TimedThreadGroup)) {
+                        //System.out.println(threadGroup.getName() + " NOT instanceof TimedThreadGroup");
+                        continue;
+                    }
 
-                    // get it's thread group
-                    TimedThreadGroup threadGroup = (TimedThreadGroup)appThread.getThreadGroup();
+                    if (threadGroup.activeCount() == 0) {
+                        //System.out.println(threadGroup.getName() + " SIZE 0");
+                        continue;
+                    }
 
-                    long [] usage = threadGroup.getUsage();
 
-                    //System.out.println(" " + new MillisecondTimestamp(now) + " " + threadGroup.getName()  + " elapsed: " + new MillisecondTimestamp((now - ah.getStartTime())) + " cpu: " + new MicrosecondTimestamp(usage[0]/1000) + " user: " + new MicrosecondTimestamp(usage[1]/1000) + " system: " + new MicrosecondTimestamp(usage[2]/1000) + " - " + appThread.getName() );
+                    TimedThreadGroup tg = (TimedThreadGroup) threadGroup;
+
+                    long[] result = tg.getUsage();
+
+                    cpu = result[0];
+                    user = result[1];
+                    sys = result[2];
+                    mem = result[3];
+                    elapsed = tg.getElapsedTime();
+
 
                     // create a row for ApplicationHandle data
                     TableRow appHRow = new DefaultTableRow();
 
-                    // AID
-                    appHRow.add(new DefaultTableValue(ah.getID()));
+                    // Name
+                    appHRow.add(new DefaultTableValue(tg.getName()));
 
                     // StartTime
-                    appHRow.add(new DefaultTableValue(ah.getStartTime()));
+                    appHRow.add(new DefaultTableValue(tg.getStartTime()));
 
                     // ElapsedTime
-                    appHRow.add(new DefaultTableValue(now - ah.getStartTime()));
+                    appHRow.add(new DefaultTableValue(elapsed));
 
                     // RunTime
-                    appHRow.add(new DefaultTableValue(usage[0]));
+                    appHRow.add(new DefaultTableValue(cpu));
 
                     // UserTime
-                    appHRow.add(new DefaultTableValue(usage[1]));
+                    appHRow.add(new DefaultTableValue(user));
 
                     // SysTime
-                    appHRow.add(new DefaultTableValue(usage[2]));
+                    appHRow.add(new DefaultTableValue(sys));
 
-                    // State
-                    appHRow.add(new DefaultTableValue(ah.getState().toString()));
+                    // Mem
+                    appHRow.add(new DefaultTableValue(mem));
 
-                    // ClassName
-                    appHRow.add(new DefaultTableValue(ah.getApplication().getClass().getName()));
 
-                    // Args
-                    appHRow.add(new DefaultTableValue(Arrays.asList(ah.getArgs()).toString()));
-
-                    // Name
-                    appHRow.add(new DefaultTableValue(ah.getName()));
-
-                    // check if we should get run time monitoring data
-                    if (ah.getApplication() instanceof RuntimeMonitoring) {
-                        // yes
-                        MList keys = new DefaultMList(ProbeAttributeType.STRING);
-                        MList values = new DefaultMList(ProbeAttributeType.STRING);
-
-                        // get the data
-                        Map<String, String> theMap = ((RuntimeMonitoring)ah.getApplication()).getMonitoringData();
-
-                        // add the keys and values
-                        for (Map.Entry<String, String> entry : theMap.entrySet()) {
-                            keys.add(entry.getKey());
-                            values.add(entry.getValue());
-                        }
-
-                        appHRow.add(new DefaultTableValue(keys));
-                        appHRow.add(new DefaultTableValue(values));
-
-                    } else {
-                        // no
-                        appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
-                        appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
-
-                    }
 
                     // add this row to the table
                     statsTable.addRow(appHRow);
 
 
+                    //System.out.println("ThreadGroupListProbe: " + new MillisecondTimestamp(time) +  " elapsed: " + new MillisecondTimestamp(elapsed) +  " " + threadGroup.getName()  + " - " + tg.getName() + " cpu: " + new MicrosecondTimestamp(cpu/1000) + " user: " + new MicrosecondTimestamp(user/1000) + " system: " + new MicrosecondTimestamp(sys/1000)  + " mem: " + mem );
+
                 }
 
                 list.add(new DefaultProbeValue(1, statsTable));
 
-                // TODO: do the following as a ProbeFilter.
-                // if the tables are the same, don not send a new measurement
-                if (tablesEqual(savedT, statsTable)) {
-                    // nothing to send
-                    return null;
-                } else {
-                    // set the type to be: AppList
-                    ProducerMeasurement lastestM = new ProducerMeasurement(this, list, "AppList");
-                    savedT = statsTable;
-                    return lastestM;
-                }
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+                // set the type to be: ThreadList
+                ProducerMeasurement lastestM = new ProducerMeasurement(this, list, "ThreadGroupList");
+                return lastestM;
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
+
     }
 
     /**
@@ -271,5 +254,7 @@ public class AppListProbe extends RouterProbe implements Probe {
             }
         }
     }
+
+
 
 }

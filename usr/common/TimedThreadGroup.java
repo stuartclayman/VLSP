@@ -25,7 +25,7 @@ public class TimedThreadGroup extends ThreadGroup {
 
         mxBean = ManagementFactory.getThreadMXBean();
 
-        System.out.println( "NEW TimedThreadGroup: " + this.getName() + " parent: " + getParent().getName());
+        //System.out.println( "NEW TimedThreadGroup: " + this.getName() + " parent: " + getParent().getName());
     }
 
     /**
@@ -47,12 +47,14 @@ public class TimedThreadGroup extends ThreadGroup {
 
 
     /**
-     * Get cpu usage info
+     * Get cpu usage and memory usage info.
+     * Returns  { cpu, user, sys, mem };
      */
-    public long[] getCpuUsage() {
+    public long[] getUsage() {
         long cpu = 0;
         long user = 0;
         long sys = 0;
+        long mem = 0;
 
         // Get threads in `group'
         Thread[] threads = ThreadTools.getGroupThreadsRecursive(this);
@@ -76,11 +78,18 @@ public class TimedThreadGroup extends ThreadGroup {
             cpu += threadCPU;
             user += threadUser;
             sys += (threadCPU - threadUser);
+
+            if (mxBean instanceof com.sun.management.ThreadMXBean) {
+
+                com.sun.management.ThreadMXBean sunMxBean = (com.sun.management.ThreadMXBean)mxBean;
+                mem += sunMxBean.getThreadAllocatedBytes(id);
+            }
+            
         }
 
         //System.out.println( "TimedThreadGroup: " + this.getName() + " cpu: " + cpu + " user: " + user + " sys: " + sys);
 
-        long [] result =  { cpu, user, sys };
+        long [] result =  { cpu, user, sys, mem };
 
         return result;
 
