@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -922,7 +924,16 @@ public class ControlOptions {
 	 * machine given machine name
 	 */
 	public String [] localControllerStartCommand(LocalControllerInfo lh) {
-		if (lh.getName().equals("localhost")) {
+            boolean isLocal = false;
+
+            try {
+                isLocal = InetAddress.getByName(lh.getName()).isReachable(1);
+            } catch (UnknownHostException uhe) {
+            } catch (IOException ioe) {
+            }
+
+            if ((lh.getName().equals("localhost")) || isLocal) {
+
 			// no need to do remote command
 			String classpath = System.getProperty("java.class.path");
 
