@@ -81,15 +81,18 @@ public class LocalController implements ComponentController {
 
         LocalController self_;
 
-        if (args.length != 1) {
+        if (args.length != 2) {
             Logger.getLogger("log").logln(USR.ERROR, "Command line must specify "+
                                           "port number to listen on and nothing else.");
             System.exit(-1);
         }
+
+        String hostname  = null;
         int port = 0;
 
         try {
-            port = Integer.parseInt(args[0]);
+            hostname = args[0];
+            port = Integer.parseInt(args[1]);
 
             if (port < 0) {
                 throw new NumberFormatException ("Port number must be > 0");
@@ -100,14 +103,14 @@ public class LocalController implements ComponentController {
             System.exit(-1);
         }
 
-        self_ = new LocalController(port);
+        self_ = new LocalController(hostname, port);
 
     }
 
     /** Constructor for local controller starting on port */
-    public LocalController (int port) {
+    public LocalController (String hostname, int port) {
         try {
-            hostInfo_ = new LocalControllerInfo(port);
+            hostInfo_ = new LocalControllerInfo(hostname, port);
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, "Cannot find host info for controller");
             shutDown();
@@ -163,7 +166,7 @@ public class LocalController implements ComponentController {
      */
     @Override
     public String getName() {
-        return myName + ":" + hostInfo_.getPort();
+        return  hostInfo_.getName() + ":" + hostInfo_.getPort();
     }
 
     /** Received shut Down data gram from global */

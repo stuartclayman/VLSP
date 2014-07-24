@@ -926,18 +926,19 @@ public class ControlOptions {
 			// no need to do remote command
 			String classpath = System.getProperty("java.class.path");
 
-			String [] cmd = new String[5];
+			String [] cmd = new String[6];
 			cmd[0] = "java";
 			cmd[1] = "-classpath";
 			cmd[2] = classpath;
 			cmd[3] = "usr.localcontroller.LocalController";
-			cmd[4] = String.valueOf(lh.getPort());
+			cmd[4] = String.valueOf(lh.getName());
+			cmd[5] = String.valueOf(lh.getPort());
 
 			return cmd;
 
 		} else {
 			// its a remote command
-			String [] cmd = new String[5];
+			String [] cmd = new String[6];
 			cmd[0] = remoteLoginCommand_;
 			cmd[1] = remoteLoginFlags_;
 
@@ -961,7 +962,8 @@ public class ControlOptions {
 				remote = remoteStartController_;
 			}
 			cmd[3] = remote;
-			cmd[4] = String.valueOf(lh.getPort());
+			cmd[4] = String.valueOf(lh.getName());
+			cmd[5] = String.valueOf(lh.getPort());
 			return cmd;
 		}
 	}
