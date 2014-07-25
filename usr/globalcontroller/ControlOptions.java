@@ -560,10 +560,10 @@ public class ControlOptions {
 			// parse energy efficiency related parameters (hardware related coefficients regarding the energy behavior of the physical host)
 			try {
 				double c1
-				= ReadXMLUtils.parseSingleDouble(lc, "CPULoadC",
+				= ReadXMLUtils.parseSingleDouble(lc, "CPULoadCoefficient",
 						"LocalController",
 						true);
-				ReadXMLUtils.removeNode(lc, "CPULoadC", "LocalController");
+				ReadXMLUtils.removeNode(lc, "CPULoadCoefficient", "LocalController");
 				lh.SetCPULoadCoefficient(c1);
 			} catch (SAXException e) {
 				throw e;
@@ -572,10 +572,10 @@ public class ControlOptions {
 
 			try {
 				double c2
-				= ReadXMLUtils.parseSingleDouble(lc, "CPUIdleC",
+				= ReadXMLUtils.parseSingleDouble(lc, "CPUIdleCoefficient",
 						"LocalController",
 						true);
-				ReadXMLUtils.removeNode(lc, "CPUIdleC", "LocalController");
+				ReadXMLUtils.removeNode(lc, "CPUIdleCoefficient", "LocalController");
 				lh.SetCPUIdleCoefficient(c2);
 			} catch (SAXException e) {
 				throw e;
@@ -584,10 +584,10 @@ public class ControlOptions {
 			
 			try {
 				double c3
-				= ReadXMLUtils.parseSingleDouble(lc, "MemoryAllocationC",
+				= ReadXMLUtils.parseSingleDouble(lc, "MemoryAllocationCoefficient",
 						"LocalController",
 						true);
-				ReadXMLUtils.removeNode(lc, "MemoryAllocationC", "LocalController");
+				ReadXMLUtils.removeNode(lc, "MemoryAllocationCoefficient", "LocalController");
 				lh.SetMemoryAllocationCoefficient(c3);
 			} catch (SAXException e) {
 				throw e;
@@ -596,10 +596,10 @@ public class ControlOptions {
 			
 			try {
 				double c4
-				= ReadXMLUtils.parseSingleDouble(lc, "FreeMemoryC",
+				= ReadXMLUtils.parseSingleDouble(lc, "FreeMemoryCoefficient",
 						"LocalController",
 						true);
-				ReadXMLUtils.removeNode(lc, "FreeMemoryC", "LocalController");
+				ReadXMLUtils.removeNode(lc, "FreeMemoryCoefficient", "LocalController");
 				lh.SetFreeMemoryCoefficient(c4);
 			} catch (SAXException e) {
 				throw e;
@@ -608,10 +608,10 @@ public class ControlOptions {
 			
 			try {
 				double c5
-				= ReadXMLUtils.parseSingleDouble(lc, "NetworkOutboundBytesC",
+				= ReadXMLUtils.parseSingleDouble(lc, "NetworkOutboundBytesCoefficient",
 						"LocalController",
 						true);
-				ReadXMLUtils.removeNode(lc, "NetworkOutboundBytesC", "LocalController");
+				ReadXMLUtils.removeNode(lc, "NetworkOutboundBytesCoefficient", "LocalController");
 				lh.SetNetworkOutboundBytesCoefficient(c5);
 			} catch (SAXException e) {
 				throw e;
@@ -620,10 +620,10 @@ public class ControlOptions {
 			
 			try {
 				double c6
-				= ReadXMLUtils.parseSingleDouble(lc, "NetworkIncomingBytesC",
+				= ReadXMLUtils.parseSingleDouble(lc, "NetworkIncomingBytesCoefficient",
 						"LocalController",
 						true);
-				ReadXMLUtils.removeNode(lc, "NetworkIncomingBytesC", "LocalController");
+				ReadXMLUtils.removeNode(lc, "NetworkIncomingBytesCoefficient", "LocalController");
 				lh.SetNetworkIncomingBytesCoefficient(c6);
 			} catch (SAXException e) {
 				throw e;
