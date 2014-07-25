@@ -1,0 +1,16 @@
+./killrouters
+./killlocalcontrollers
+#export CLASSPATH=$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/bin/.:$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/.:$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/libs/*:$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/extras/IKMS-client/src/
+
+export CLASSPATH=$HOME/Documents/workspace/userspacerouter/bin/.:$HOME/Documents/workspace/userspacerouter/.:$HOME/Documents/workspace/userspacerouter/libs/*:$HOME/Documents/workspace/userspacerouter/extras/IKMS-client/src/
+
+cd ..
+# run 16 times
+#for i in {1..16}
+#for i in {1..32}
+#do
+	#java usr.globalcontroller.GlobalController scripts/control-wait-ikms.xml
+	java -Djava.net.preferIPv4Stack=true usr.globalcontroller.GlobalController scripts/control-wait-energy.xml
+        #java usr.globalcontroller.GlobalController scripts/control-wait-ikms-HotSpot.xml
+
+#done

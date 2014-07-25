@@ -1,0 +1,2 @@
+ps ax | grep Router | grep -v grep | awk '{print $1}' | xargs kill -9
+#for h in clayone claytwo claythree clayfour claydesk1 claydesk2 ethane methane butane propane pentane; do echo "Killing routers in $h"; ssh $h "ps ax | grep Router | grep -v grep | awk '{print \$1}' | xargs kill -9"; done

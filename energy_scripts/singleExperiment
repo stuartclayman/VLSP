@@ -1,0 +1,3 @@
+export CLASSPATH=./:bin/.:libs/*:./extras/IKMS-client/src/
+cd ..
+java -Xmx1024m demo_usr.ikms.DistributedInformationFlowsExperiment "$@"

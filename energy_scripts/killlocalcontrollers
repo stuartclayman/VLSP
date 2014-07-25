@@ -1,0 +1,4 @@
+#ps ax | grep LocalController | awk '{print $1}' | xargs kill
+#for h in clayone claytwo claythree clayfour claydesk1 claydesk2 ethane methane butane propane pentane; do echo "Killing localcontroller in $h"; ssh $h "ps ax | grep LocalController | grep -v grep | awk '{print \$1}' | xargs kill -9"; done
+
+ps ax | grep LocalController | grep -v grep | awk '{print $1}' | xargs kill -9

@@ -1,0 +1,3 @@
+export CLASSPATH=./:bin/.:usr-libs-0.10.3:libs/*
+cd ..
+java demo_usr.viewer.Viewer -p 8888
