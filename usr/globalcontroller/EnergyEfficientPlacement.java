@@ -1,16 +1,15 @@
 package usr.globalcontroller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
 import usr.common.ANSI;
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.Logger;
 import usr.logging.USR;
-import eu.reservoir.monitoring.core.Measurement;
-import eu.reservoir.monitoring.core.ProbeValue;
 
 /**
  * The EnergyEfficientPlacement is responsible for determining the placement
@@ -30,28 +29,12 @@ public class EnergyEfficientPlacement implements PlacementEngine {
 	private long currentOutputBytes=0;
 	private long currentInputBytes=0;
 
-	// keep track on last inbound and outbound traffic
-	long lastNetworkOutboundBytes;
-	long lastNetworkIncomingBytes;
-
-	// variables to calculate difference in communicated bytes
-	long differenceInOutBoundBytes;
-	long differenceInIncomingBytes;
-
 	/**
 	 * Constructor
 	 */
 	public EnergyEfficientPlacement(GlobalController gc) {
 		this.gc = gc;
 
-		// initialize last incoming and outgoing bytes
-		lastNetworkOutboundBytes=0;
-		lastNetworkIncomingBytes=0;
-
-		// initialize variables to calculate difference in communicated bytes
-		differenceInOutBoundBytes=0;
-		differenceInIncomingBytes=0;
-		
 		Logger.getLogger("log").logln(USR.STDOUT, "EnergyEfficientPlacement: localcontrollers = " + getPlacementDestinations());
 	}
 
@@ -69,7 +52,7 @@ public class EnergyEfficientPlacement implements PlacementEngine {
 
 		HostInfoReporter hostInfoReporter = (HostInfoReporter) gc.findByMeasurementType("HostInfo");
 
-		Measurement currentMeasurement=null;
+		JSONObject currentMeasurement=null;
 		/**
 		 * Each measurement has the following structure:
 		 * ProbeValues
@@ -98,33 +81,27 @@ public class EnergyEfficientPlacement implements PlacementEngine {
 			//System.out.println (localInfo.getName());
 
 			localControllerName = localInfo.getName() + ":" + localInfo.getPort();
-			currentMeasurement = hostInfoReporter.getData(localControllerName); 
+			//currentMeasurement = hostInfoReporter.getData(localControllerName); 
+			currentMeasurement = hostInfoReporter.getProcessedData(localControllerName); 
 
 			System.out.println ("Fetching HostInfo Probe:"+currentMeasurement);
+		
 			if (currentMeasurement!=null) {
-				List<ProbeValue> values = currentMeasurement.getValues();
 				// extracted required measurements for the energy model
-				currentCPUUserAndSystem = ((Float)values.get(1).getValue() + (Float)values.get(2).getValue()) / 100; // percentage
-				currentCPUIdle = ((Float) values.get(3).getValue()) / 100; // percentage
-				currentMemoryUsed = (Integer) values.get(4).getValue() / 1024; // in GBs
-				currentFreeMemory = (Integer) values.get(5).getValue() / 1024; // in GBs
-				currentOutputBytes = (Long) values.get(10).getValue();
-				currentInputBytes = (Long) values.get(8).getValue();
-				// subtract last incoming & outgoing bytes
-				if (lastNetworkOutboundBytes==0) 
-					differenceInOutBoundBytes=0;
-				else
-					differenceInOutBoundBytes = currentOutputBytes - lastNetworkOutboundBytes;
-				lastNetworkOutboundBytes = currentOutputBytes;
-
-				if (lastNetworkIncomingBytes==0) 
-					differenceInIncomingBytes=0;
-				else
-					differenceInIncomingBytes = currentInputBytes - lastNetworkIncomingBytes;
-				lastNetworkIncomingBytes = currentInputBytes;
-
+				try {
+					currentCPUUserAndSystem = (float) currentMeasurement.getDouble("cpuLoad");
+					currentCPUIdle = (float) currentMeasurement.getDouble("cpuIdle");
+					currentMemoryUsed = currentMeasurement.getInt("memoryAllocation");
+					currentFreeMemory = currentMeasurement.getInt("freeMemory");
+					currentOutputBytes = currentMeasurement.getLong("networkOutboundBytes");
+					currentInputBytes = currentMeasurement.getLong("networkIncomingBytes");
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				// calculate current energy consumption of particular physical server 
-				currentEnergyVolume = localInfo.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, differenceInOutBoundBytes, differenceInIncomingBytes);
+				currentEnergyVolume = localInfo.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
 
 				// convert double to long
 				lcEnergyVolumes.put(localInfo, currentEnergyVolume.longValue());
@@ -154,7 +131,7 @@ public class EnergyEfficientPlacement implements PlacementEngine {
 		// log current values
 		Logger.getLogger("log").logln(1<<10, toTable(elapsedTime, lcEnergyVolumes));
 
-		Logger.getLogger("log").logln(USR.STDOUT, "EnergyEfficientPlacement: choose " + leastUsed + " volume " + lowestVolume+" Watts - " + currentCPUUserAndSystem + " " + currentCPUIdle + " " + currentMemoryUsed + " " + currentFreeMemory + " " + differenceInOutBoundBytes + " " + differenceInIncomingBytes);
+		Logger.getLogger("log").logln(USR.STDOUT, "EnergyEfficientPlacement: choose " + leastUsed + " volume " + lowestVolume+" Watts - " + currentCPUUserAndSystem + " " + currentCPUIdle + " " + currentMemoryUsed + " " + currentFreeMemory + " " + currentOutputBytes + " " + currentInputBytes);
 
 		Logger.getLogger("log").logln(1<<10, gc.elapsedToString(elapsedTime) + ANSI.CYAN +  " EnergyEfficientPlacement: choose " + leastUsed + " lowestVolume: " + lowestVolume + " for " + name + "/" + address + ANSI.RESET_COLOUR);
 

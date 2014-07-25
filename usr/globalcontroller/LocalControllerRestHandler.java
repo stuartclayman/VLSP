@@ -276,7 +276,7 @@ public class LocalControllerRestHandler extends BasicRequestHandler {
 		// /localcontroller/ and another bit
 		String name = request.getPath().getName();
 		Scanner sc = new Scanner(name);
-
+		
 		if (sc.hasNext()) {
 			String localControllerName = sc.next();
 			sc.close();

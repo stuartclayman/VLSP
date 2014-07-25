@@ -20,7 +20,7 @@ public class EnergyModel {
 	// hardware related coefficient for energy consumption of network (incoming traffic) - per byte
 	private double networkIncomingBytesCoefficient;
 
-	// average energy consumption of all server devices, besides newtwork, cpu and memory
+	// average energy consumption of all server devices, besides network, cpu and memory
 	private double baseLineEnergyConsumption;
 
 	// keeps track of cumulative energy consumption of particular server

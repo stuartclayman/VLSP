@@ -269,13 +269,13 @@ public class VimClient implements VimFunctions {
     }
     
     /**
-     * Equivalent of: curl GET http://localhost:8888/localcontroller/id
+     * Equivalent of: curl GET http://localhost:8888/localcontroller/name
      *
      * Returns JSONObject:  {TBA}
      */
-    public JSONObject getLocalControllerInfo(int id) throws JSONException {
+    public JSONObject getLocalControllerInfo(String name) throws JSONException {
         try {
-            String uri = vimURI + "/localcontroller/" + id;
+            String uri = vimURI + "/localcontroller/" + name;
 
             JSONObject jsobj = rest.json(uri).toObject();
 

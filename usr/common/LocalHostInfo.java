@@ -20,18 +20,18 @@ public class LocalHostInfo {
 	// hardware related coefficient for energy consumption of cpu
 	// assuming maximum average consumption per machine
 	// 50 watts at working state, 20 watts per idle state
-	private double cpuLoadC = 50;
-	private double cpuIdleC = 20;
+	private double cpuLoadCoefficient = 5;
+	private double cpuIdleCoefficient = 2;
 
 	// hardware related coefficient for energy consumption of memory
 	// assuming 40 watt per gigabyte
-	private double memoryAllocationC=40;
-	private double freeMemoryC=20;
+	private double memoryAllocationCoefficient=40;
+	private double freeMemoryCoefficient=20;
 
 	// hardware related coefficient for energy consumption of network
 	// assuming 0.1 watts to send and 0.05 watts to receive (per byte)
-	private double networkOutboundBytesC=0.1;
-	private double networkIncomingBytesC=0.05;
+	private double networkOutboundBytesCoefficient=0.001;
+	private double networkIncomingBytesCoefficient=0.0005;
 
 	// average energy consumption of all server devices, besides newtwork, cpu and memory
 	// assuming 300Watts in total
@@ -136,32 +136,32 @@ public class LocalHostInfo {
 
 	// returns cpuload consumption coefficient (working mode)
 	public double GetCPULoadCoefficient () {
-		return cpuLoadC;
+		return cpuLoadCoefficient;
 	}
 
 	// returns cpuload consumption coefficient (idle mode)
 	public double GetCPUIdleCoefficient () {
-		return cpuIdleC;
+		return cpuIdleCoefficient;
 	}	
 
 	// returns memory allocation consumption coefficient
 	public double GetMemoryAllocationCoefficient () {
-		return memoryAllocationC;
+		return memoryAllocationCoefficient;
 	}
 
 	// returns free memory consumption coefficient
 	public double GetFreeMemoryCoefficient () {
-		return freeMemoryC;
+		return freeMemoryCoefficient;
 	}
 
 	// returns network outbound load energy consumption coefficient
 	public double GetNetworkOutboundBytesCoefficient () {
-		return networkOutboundBytesC;
+		return networkOutboundBytesCoefficient;
 	}
 
 	// returns network incoming load energy consumption coefficient
 	public double GetNetworkIncomingBytesCoefficient () {
-		return networkIncomingBytesC;
+		return networkIncomingBytesCoefficient;
 	}
 
 	// returns baseline energy consumption of particular physical host
@@ -170,33 +170,33 @@ public class LocalHostInfo {
 	}
 
 	// sets cpuload consumption coefficient
-	public void SetCPULoadCoefficient (double cpuLoadC_) {
-		cpuLoadC = cpuLoadC_;
+	public void SetCPULoadCoefficient (double cpuLoadCoefficient_) {
+		cpuLoadCoefficient = cpuLoadCoefficient_;
 	}
 
 	// sets cpuload consumption coefficient (idle mode)
-	public void SetCPUIdleCoefficient (double cpuIdleC_) {
-		cpuIdleC = cpuIdleC_;
+	public void SetCPUIdleCoefficient (double cpuIdleCoefficient_) {
+		cpuIdleCoefficient = cpuIdleCoefficient_;
 	}	
 
 	// sets memory allocation consumption coefficient
-	public void SetMemoryAllocationCoefficient (double memoryAllocationC_) {
-		memoryAllocationC = memoryAllocationC_;
+	public void SetMemoryAllocationCoefficient (double memoryAllocationCoefficient_) {
+		memoryAllocationCoefficient = memoryAllocationCoefficient_;
 	}
 
 	// sets free memory consumption coefficient
-	public void SetFreeMemoryCoefficient (double freeMemoryC_) {
-		freeMemoryC = freeMemoryC_;
+	public void SetFreeMemoryCoefficient (double freeMemoryCoefficient_) {
+		freeMemoryCoefficient = freeMemoryCoefficient_;
 	}
 
 	// sets network outbound load energy consumption coefficient
-	public void SetNetworkOutboundBytesCoefficient (double networkOutboundBytesC_) {
-		networkOutboundBytesC = networkOutboundBytesC_;
+	public void SetNetworkOutboundBytesCoefficient (double networkOutboundBytesCoefficient_) {
+		networkOutboundBytesCoefficient = networkOutboundBytesCoefficient_;
 	}
 
 	// sets network incoming load energy consumption coefficient
-	public void SetNetworkIncomingBytesCoefficient (double networkIncomingBytesC_) {
-		networkIncomingBytesC = networkIncomingBytesC_;
+	public void SetNetworkIncomingBytesCoefficient (double networkIncomingBytesCoefficient_) {
+		networkIncomingBytesCoefficient = networkIncomingBytesCoefficient_;
 	}
 	
 	// sets baseline energy consumption of particular physical host
@@ -206,7 +206,7 @@ public class LocalHostInfo {
 
 	// initialise energy model for particular physical host
 	public void InitEnergyModel () {
-		energyModel = new EnergyModel (cpuLoadC, cpuIdleC, memoryAllocationC, freeMemoryC, networkOutboundBytesC, networkIncomingBytesC, baseLineEnergyConsumption);
+		energyModel = new EnergyModel (cpuLoadCoefficient, cpuIdleCoefficient, memoryAllocationCoefficient, freeMemoryCoefficient, networkOutboundBytesCoefficient, networkIncomingBytesCoefficient, baseLineEnergyConsumption);
 	}
 
 	// returns current energy consumption from the energy model
