@@ -2,7 +2,7 @@ package usr.common;
 
 import java.net.InetAddress;
 
-import demo_usr.energymodel.EnergyModel;
+import demo_usr.energy.energymodel.EnergyModel;
 
 
 /**
