@@ -86,6 +86,20 @@ public class RouterDirectory {
 
         Router r = threadToRouter.get(threadG);
 
+        while (r == null) {
+         
+            // try parent group
+            threadG = threadG.getParent();
+
+            if (threadG != null) {
+                r = threadToRouter.get(threadG);
+            } else {
+                break;
+            }
+
+
+        }
+
         //Logger.getLogger("log").logln(USR.STDOUT," found: " + r);
 
         if (r== null) {

@@ -44,6 +44,8 @@ class ApplicationThreadManager {
             // Allocate a Thread
             String groupName =  "Application-" + threadCount;
 
+            ThreadGroup routerGroup = Thread.currentThread().getThreadGroup();
+
             ThreadGroup group = new TimedThreadGroup(groupName);
             Thread t = new TimedThread(group, appH, threadName);
 

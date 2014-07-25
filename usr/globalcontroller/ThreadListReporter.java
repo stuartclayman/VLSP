@@ -106,13 +106,14 @@ public class ThreadListReporter implements Reporter, ReporterMeasurementType {
      * 1: Data: TABLE
      *
      * Table elements are:
-     * 0: Name: STRING - thread gorpu name
+     * 0: Name: STRING - thread  name
      * 1: StartTime: LONG - start time since epoch - in milliseconds
      * 2: ElapsedTime: LONG - time since start time - in milliseconds
      * 3: RunTime: LONG - cpu time - in nanoseconds
      * 4: UserTime: LONG - user part of cpu time - in nanoseconds
      * 5: SysTime: LONG - sys part of cpu time - in nanoseconds
      * 6: Mem: LONG - total bytes this thread has asked the run-time to allocate
+     * 1: ThreadGroup: STRING - thread group  name
      */
     public Measurement getData(String routerName) {
         return measurements.get(routerName);
@@ -168,6 +169,7 @@ public class ThreadListReporter implements Reporter, ReporterMeasurementType {
             Long user = (Long)row.get(4).getValue();
             Long sys = (Long)row.get(5).getValue();
             Long mem = (Long)row.get(6).getValue();
+            String threadGroupName = (String)row.get(7).getValue();
 
 
             // add up
@@ -177,7 +179,7 @@ public class ThreadListReporter implements Reporter, ReporterMeasurementType {
             memT += (mem / 1000000);
 
 
-            builder.append(routerName + " -- "  + name + " -- " +  " starttime: " + new MillisecondTimestamp(time) +  " elapsed: " + new MillisecondTimestamp(elapsed) +  " cpu: " + new MicrosecondTimestamp(cpu/1000) + " user: " + new MicrosecondTimestamp(user/1000) + " system: " + new MicrosecondTimestamp(sys/1000)  + " mem: " + mem);
+            builder.append(routerName + " -- "  + name + " - " + threadGroupName + " -- " +  " starttime: " + new MillisecondTimestamp(time) +  " elapsed: " + new MillisecondTimestamp(elapsed) +  " cpu: " + new MicrosecondTimestamp(cpu/1000) + " user: " + new MicrosecondTimestamp(user/1000) + " system: " + new MicrosecondTimestamp(sys/1000)  + " mem: " + mem);
             builder.append("\n");
 
         }

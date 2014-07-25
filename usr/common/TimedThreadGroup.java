@@ -29,6 +29,16 @@ public class TimedThreadGroup extends ThreadGroup {
     }
 
     /**
+     * Construct a TimedThreadGroup
+     */
+    public TimedThreadGroup(ThreadGroup parent, String name) {
+        super(parent, name);
+        startTime = System.currentTimeMillis();
+
+        mxBean = ManagementFactory.getThreadMXBean();
+    }
+
+    /**
      * Get the start time.
      * As milliseconds
      */

@@ -61,7 +61,7 @@ public class ThreadListProbe extends RouterProbe implements Probe {
         setController(cont);
 
         // set probe name
-        setName(cont.getName()+".appList");
+        setName(cont.getName()+".threadList");
         // set data rate
         setDataRate(new EveryNSeconds(10));
 
@@ -78,6 +78,7 @@ public class ThreadListProbe extends RouterProbe implements Probe {
             .add("UserTime", ProbeAttributeType.LONG)
             .add("SysTime", ProbeAttributeType.LONG)
             .add("Mem", ProbeAttributeType.LONG)
+            .add("ThreadGroup", ProbeAttributeType.STRING)
         ;
 
 
@@ -203,6 +204,8 @@ public class ThreadListProbe extends RouterProbe implements Probe {
                     // Mem
                     appHRow.add(new DefaultTableValue(mem));
 
+
+                    appHRow.add(new DefaultTableValue(t.getThreadGroup().getName()));
 
 
                     // add this row to the table

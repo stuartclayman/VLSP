@@ -2390,9 +2390,13 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     public long getStartTime() {
         if (options_.isSimulation()) {
             return 0;
+        } else {
+            if (scheduler_ == null) {
+                return 0;
+            } else {
+                return scheduler_.getStartTime();
+            }
         }
-
-        return scheduler_.getStartTime();
     }
 
     /**
@@ -2402,7 +2406,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         if (isSimulation()) {
             return scheduler_.getElapsedTime();
         } else {
-            return System.currentTimeMillis() - scheduler_.getStartTime();
+            if (scheduler_ == null) {
+                return 0;
+            } else {
+                return System.currentTimeMillis() - scheduler_.getStartTime();
+            }
         }
     }
 
@@ -2411,7 +2419,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         if (isSimulation()) {
             return scheduler_.getElapsedTime();
         } else {
-            return System.currentTimeMillis();
+            if (scheduler_ == null) {
+                return 0;
+            } else {
+                return System.currentTimeMillis();
+            }
         }
     }
 
