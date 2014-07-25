@@ -7,7 +7,7 @@
 	<!-- <DatagramType>usr.net.IPV4Datagram</DatagramType> -->
     </RoutingParameters>
 
-    <APManager>
+<!--    <APManager>
         <Name>Random</Name>
         <APLifeBias>0.0</APLifeBias>
         <MinAPs>1</MinAPs>
@@ -19,20 +19,27 @@
 
     <AP>
       <APClass>demo_usr.ikms.IKMSForwarderCreator</APClass>
-    </AP>
+    </AP>-->
 
-   <Monitoring>
-      <LatticeMonitoring>true</LatticeMonitoring>
-      <Probe>
-        <Name>usr.router.NetIFStatsProbe</Name>
-        <Rate>1000</Rate>
-      </Probe>
-      <Probe>
-        <Name>usr.router.AppListProbe</Name>
-        <Rate>1000</Rate>
-      </Probe>
-    </Monitoring>
-
+     <Monitoring>
+     <LatticeMonitoring>true</LatticeMonitoring>
+     <Probe>
+       <Name>usr.router.NetIFStatsProbe</Name>
+       <Rate>1000</Rate>
+     </Probe>
+     <Probe>
+       <Name>usr.router.ThreadListProbe</Name>
+       <Rate>10000</Rate>
+     </Probe>
+     <Probe>
+       <Name>usr.router.ThreadGroupListProbe</Name>
+       <Rate>5000</Rate>
+     </Probe>
+     <Probe>
+       <Name>usr.router.AppListProbe</Name>
+       <Rate>5000</Rate>
+     </Probe>
+   </Monitoring>
 
 
 </RouterOptions>
