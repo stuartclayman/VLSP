@@ -1,0 +1,4 @@
+export CLASSPATH=$HOME/Documents/workspace/userspacerouter/bin/.:$HOME/Documents/workspace/userspacerouter/.:$HOME/Documents/workspace/userspacerouter/libs/*:$HOME/Documents/workspace/userspacerouter/extras/IKMS-client/src/
+
+cd ..
+java demo_usr.energy.ServiceOrchestrator

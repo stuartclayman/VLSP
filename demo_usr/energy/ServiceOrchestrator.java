@@ -3,10 +3,11 @@ package demo_usr.energy;
 import java.util.HashMap;
 
 import us.monoid.json.JSONArray;
+import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import usr.localcontroller.LocalControllerInfo;
 import usr.vim.VimClient;
 import demo_usr.energy.energymodel.EnergyModel;
+import demo_usr.energy.energymodel.EnergyModel.ImpactLevel;
 
 public class ServiceOrchestrator {
 
@@ -15,7 +16,7 @@ public class ServiceOrchestrator {
 		serviceOrchestrator.TFTPTest();;
 	}
 
-	
+
 
 	public void TFTPTest () {
 		try {
@@ -46,79 +47,18 @@ public class ServiceOrchestrator {
 			// let the routing tables propogate
 			Thread.sleep(12000);
 
-			// WE USE THE ENERGYMODEL HERE TO DETERMINE
-			// THE APPROPRIATE ROUTING POSITIONS TO DEPLOY THE APPLICATIONS
-			
-			// A map of LocalController EnergyModels
-			HashMap<String, EnergyModel> energyModelsPerLocalController = new HashMap<String, EnergyModel>();
-			
-			// retrieve local controllers
-			JSONArray localControllerIDs = test.listLocalControllers().getJSONArray("list");
-			
-			JSONArray currentLocalControllerInformation=null;
-			EnergyModel currentLocalControllerEnergyModel=null;
-			
-			// Coefficients per energy model
-			// hardware related coefficient for energy consumption of cpu (user+system mode)
-			double cpuLoadCoefficient=0;
-			// hardware related coefficient for energy consumption of cpu (idle mode)
-			double cpuIdleCoefficient=0;
-			// hardware related coefficient for energy consumption of used memory
-			double memoryAllocationCoefficient=0;
-			// hardware related coefficient for energy consumption of unused memory
-			double freeMemoryCoefficient=0;
-			// hardware related coefficient for energy consumption of network (outbound traffic) - per byte
-			double networkOutboundBytesCoefficient=0;
-			// hardware related coefficient for energy consumption of network (incoming traffic) - per byte
-			double networkIncomingBytesCoefficient=0;
-			// average energy consumption of all server devices, besides network, cpu and memory
-			double baseLineEnergyConsumption=0;
-			
-			// current localcontroller status
-			float currentCPUUserAndSystem=0;
-			float currentCPUIdle=0;
-			int currentMemoryUsed=0;
-			int currentFreeMemory=0;
-			long currentOutputBytes=0;
-			long currentInputBytes=0;
-			
-			// current energy consumption
-			double currentEnergyConsumption=0;
-			
-			// iterate through all local controllers
-			for (int i = 0; i < localControllerIDs.length(); i++) {
-				// get information for each localcontroller 
-				System.out.println ("Retrieving information for localcontroller:" + localControllerIDs.get(i));
-				currentLocalControllerInformation = (JSONArray) test.getLocalControllerInfo(localControllerIDs.get(i).toString()).get("detail");
-				System.out.println (currentLocalControllerInformation);
-				// retrieve all coefficients
-				cpuLoadCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("cpuLoadCoefficient");
-				cpuIdleCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("cpuIdleCoefficient");
-				memoryAllocationCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("memoryAllocationCoefficient");
-				freeMemoryCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("freeMemoryCoefficient");
-				networkOutboundBytesCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("networkOutboundBytesCoefficient");
-				networkIncomingBytesCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("networkIncomingBytesCoefficient");
-				baseLineEnergyConsumption = currentLocalControllerInformation.getJSONObject(0).getDouble("baseLineEnergyConsumption");
+			// deploy applications in an energy efficient way
+			// FTP SERVER has a low impact on processing and memory resources, medium impact on incoming traffic but high impact on outgoing traffic
+			int serverVM = DeployEnergyEfficientApplication (test, "plugins_usr.tftp.com.globalros.tftp.server.TFTPServer", "1069", ImpactLevel.Low, ImpactLevel.Low, ImpactLevel.Medium, ImpactLevel.High);
 
-				// add one energy model per localcontroller
-				currentLocalControllerEnergyModel = 	new EnergyModel (cpuLoadCoefficient, cpuIdleCoefficient, memoryAllocationCoefficient, freeMemoryCoefficient, networkOutboundBytesCoefficient, networkIncomingBytesCoefficient, baseLineEnergyConsumption);
-				
-				// get latest status information for each localcontroller
-				currentCPUUserAndSystem = (float) currentLocalControllerInformation.getJSONObject(0).getDouble("cpuLoad");
-				currentCPUIdle = (float) currentLocalControllerInformation.getJSONObject(0).getDouble("cpuIdle");
-				currentMemoryUsed = currentLocalControllerInformation.getJSONObject(0).getInt("memoryAllocation");
-				currentFreeMemory = currentLocalControllerInformation.getJSONObject(0).getInt("freeMemory");
-				currentOutputBytes = currentLocalControllerInformation.getJSONObject(0).getLong("networkOutboundBytes");
-				currentInputBytes = currentLocalControllerInformation.getJSONObject(0).getLong("networkIncomingBytes");
-				
-				currentEnergyConsumption = currentLocalControllerEnergyModel.CurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
+			Thread.sleep(10000);
+			
+			// FTP CLIENT has a low impact on processing and memory resources, high impact on incoming traffic but medium impact on outgoing traffic
+			int clientVM = DeployEnergyEfficientApplication (test, "plugins_usr.tftp.com.globalros.tftp.client.TFTPClient", Integer.toString(serverVM), ImpactLevel.Low, ImpactLevel.Low, ImpactLevel.High, ImpactLevel.Medium);
 
-				System.out.println ("Current Energy Consumption of localcontroller:"+localControllerIDs.get(i) + " is "+currentEnergyConsumption+" Watts");
-				
-				energyModelsPerLocalController.put(localControllerIDs.get(i).toString(), currentLocalControllerEnergyModel);
-			}
-
-
+			
+			// previous way to deploy them
+			/*
 			// on router3, TFTPServer listening on port 1069
 			JSONObject a1 = test.createApp(router3, "plugins_usr.tftp.com.globalros.tftp.server.TFTPServer", "1069");
 			System.out.println("a1 = " + a1);
@@ -127,7 +67,7 @@ public class ServiceOrchestrator {
 
 			// on router1, TFTPClient send to @(3)
 			JSONObject a2 = test.createApp(router1, "plugins_usr.tftp.com.globalros.tftp.client.TFTPClient", Integer.toString(router3)); 
-			System.out.println("a2 = " + a2);
+			System.out.println("a2 = " + a2);*/
 
 			/* sleep 30 seconds = 0.5 minute = 3s0000 ms */
 			Thread.sleep(30000);
@@ -144,6 +84,132 @@ public class ServiceOrchestrator {
 			err.printStackTrace();
 		}
 
+	}
+
+	// returns the chosen router
+	private int DeployEnergyEfficientApplication (VimClient vim, String applicationName, String applicationPort, ImpactLevel processingImpact, ImpactLevel memoryImpact, ImpactLevel incomingTrafficImpact, ImpactLevel outgoingTrafficImpact) throws JSONException {
+		// WE USE THE ENERGYMODEL HERE TO DETERMINE
+		// THE APPROPRIATE ROUTING POSITIONS TO DEPLOY THE APPLICATIONS
+
+		// A map of LocalController EnergyModels
+		HashMap<String, EnergyModel> energyModelsPerLocalController = new HashMap<String, EnergyModel>();
+
+		// retrieve local controllers
+		JSONArray localControllerIDs = vim.listLocalControllers().getJSONArray("list");
+
+		JSONArray currentLocalControllerInformation=null;
+		EnergyModel currentLocalControllerEnergyModel=null;
+
+		// Coefficients per energy model
+		// hardware related coefficient for energy consumption of cpu (user+system mode)
+		double cpuLoadCoefficient=0;
+		// hardware related coefficient for energy consumption of cpu (idle mode)
+		double cpuIdleCoefficient=0;
+		// hardware related coefficient for energy consumption of used memory
+		double memoryAllocationCoefficient=0;
+		// hardware related coefficient for energy consumption of unused memory
+		double freeMemoryCoefficient=0;
+		// hardware related coefficient for energy consumption of network (outbound traffic) - per byte
+		double networkOutboundBytesCoefficient=0;
+		// hardware related coefficient for energy consumption of network (incoming traffic) - per byte
+		double networkIncomingBytesCoefficient=0;
+		// average energy consumption of all server devices, besides network, cpu and memory
+		double baseLineEnergyConsumption=0;
+
+		// current localcontroller status
+		float currentCPUUserAndSystem=0;
+		float currentCPUIdle=0;
+		int currentMemoryUsed=0;
+		int currentFreeMemory=0;
+		long currentOutputBytes=0;
+		long currentInputBytes=0;
+
+		// current energy consumption
+		double currentEnergyConsumption=0;
+		
+		// minimum energy consumption
+		double minimumEnergyConsumption = Double.MAX_VALUE;
+		// localcontroller with minimum energy consumption
+		String bestLocalController="";
+		
+		// iterate through all local controllers
+		for (int i = 0; i < localControllerIDs.length(); i++) {
+			// get information for each localcontroller 
+			System.out.println ("Retrieving information for localcontroller:" + localControllerIDs.get(i));
+			currentLocalControllerInformation = (JSONArray) vim.getLocalControllerInfo(localControllerIDs.get(i).toString()).get("detail");
+			System.out.println (currentLocalControllerInformation);
+			// retrieve all coefficients
+			cpuLoadCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("cpuLoadCoefficient");
+			cpuIdleCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("cpuIdleCoefficient");
+			memoryAllocationCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("memoryAllocationCoefficient");
+			freeMemoryCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("freeMemoryCoefficient");
+			networkOutboundBytesCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("networkOutboundBytesCoefficient");
+			networkIncomingBytesCoefficient=currentLocalControllerInformation.getJSONObject(0).getDouble("networkIncomingBytesCoefficient");
+			baseLineEnergyConsumption = currentLocalControllerInformation.getJSONObject(0).getDouble("baseLineEnergyConsumption");
+
+			// add one energy model per localcontroller
+			currentLocalControllerEnergyModel = 	new EnergyModel (cpuLoadCoefficient, cpuIdleCoefficient, memoryAllocationCoefficient, freeMemoryCoefficient, networkOutboundBytesCoefficient, networkIncomingBytesCoefficient, baseLineEnergyConsumption);
+
+			// get latest status information for each localcontroller
+			currentCPUUserAndSystem = (float) currentLocalControllerInformation.getJSONObject(0).getDouble("cpuLoad");
+			currentCPUIdle = (float) currentLocalControllerInformation.getJSONObject(0).getDouble("cpuIdle");
+			currentMemoryUsed = currentLocalControllerInformation.getJSONObject(0).getInt("memoryAllocation");
+			currentFreeMemory = currentLocalControllerInformation.getJSONObject(0).getInt("freeMemory");
+			currentOutputBytes = currentLocalControllerInformation.getJSONObject(0).getLong("networkOutboundBytes");
+			currentInputBytes = currentLocalControllerInformation.getJSONObject(0).getLong("networkIncomingBytes");
+
+			currentEnergyConsumption = currentLocalControllerEnergyModel.CurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
+
+			System.out.println ("Current Energy Consumption of localcontroller:"+localControllerIDs.get(i) + " is "+currentEnergyConsumption+" Watts");
+
+			// NOW THE GOAL IS TO PREDICT THE IMPACT ON THE ENERGY CONSUMPTION OF EACH PHYSICAL SERVER
+			// AFTER THE APPLICATION DEPLOYMENT
+			// FOR EACH APPLICATION WE ASSUME THE LEVEL OF IMPACT ON PROCESSING, MEMORY AND NETWORK RESOURCES (LOW, MEDIUM, HIGH).
+			// OR WE KEEP HISTORICAL INFORMATION OF AVERAGE PROCESSING, MEMORY AND NETWORK RESOURCES UTILISATION
+			
+			// reset application coefficients - adding some indicative default values
+			float HighProcessingImpactValueCoefficient = 0.10F;
+			float MediumProcessingImpactValueCoefficient = 0.05F;
+			float LowProcessingImpactValueCoefficient = 0.01F;
+			int HighMemoryImpactValueCoefficient = 1000; //1GB
+			int MediumMemoryImpactValueCoefficient = 500; //500MB
+			int LowMemoryImpactValueCoefficient = 50; //50MB
+			long HighOutgoingTrafficValueCoefficient = 1000000000; //100MB
+			long MediumOutgoingTrafficValueCoefficient = 10000000; //10MB
+			long LowOutgoingTrafficValueCoefficient = 100000; //100KB
+			long HighIncomingTrafficValueCoefficient = 1000000000; //100MB
+			long MediumIncomingTrafficValueCoefficient = 10000000; //10MB
+			long LowIncomingTrafficValueCoefficient = 100000; //100KB
+			
+			// configure application coefficients in the energy model
+			currentLocalControllerEnergyModel.ConfigureApplicationCoefficients(HighProcessingImpactValueCoefficient, MediumProcessingImpactValueCoefficient, LowProcessingImpactValueCoefficient, HighMemoryImpactValueCoefficient, MediumMemoryImpactValueCoefficient, LowMemoryImpactValueCoefficient, HighOutgoingTrafficValueCoefficient, MediumOutgoingTrafficValueCoefficient, LowOutgoingTrafficValueCoefficient, HighIncomingTrafficValueCoefficient, MediumIncomingTrafficValueCoefficient, LowIncomingTrafficValueCoefficient);
+			
+			// calculate predicted energy consumption for the specific application
+			double currentPredictedEnergyConsumption = currentLocalControllerEnergyModel.PredictEnergyConsumptionAfterApplicationDeploymentFromLevelOfImpact(processingImpact, memoryImpact, outgoingTrafficImpact, incomingTrafficImpact);
+			
+			System.out.println ("Predicted Energy Consumption of localcontroller after application deployment:"+localControllerIDs.get(i) + " is "+currentPredictedEnergyConsumption+" Watts");
+			
+			if (minimumEnergyConsumption > currentPredictedEnergyConsumption) {
+				minimumEnergyConsumption = currentPredictedEnergyConsumption;
+				bestLocalController = localControllerIDs.getString(i);
+			}
+			
+			energyModelsPerLocalController.put(localControllerIDs.get(i).toString(), currentLocalControllerEnergyModel);
+		}
+
+		System.out.println ("Best localcontroller for application is:"+bestLocalController+" consuming energy:"+minimumEnergyConsumption+" Watts");
+		// deploy application and return the chosen router id
+		return DeployApplicationInLocalController (vim, applicationName, applicationPort, bestLocalController);
+	}
+
+	// deploy application on specific localcontroller (choose a VM randomly)
+	private int DeployApplicationInLocalController (VimClient vim, String applicationName, String applicationPort, String localControllerName) {
+		// retrieve existing VMs
+		
+		// select one virtual machine randomly
+		
+		// deploy application and return the chosen router id
+		return 0;
 	}
 	
 	public void RestyTest () {

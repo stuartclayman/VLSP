@@ -45,6 +45,7 @@
      <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
   </LocalController>
+<!-- could add application related coefficients here, in case it is needed -->
 
   <EventEngine>
      <Name>Empty</Name>
