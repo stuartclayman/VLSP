@@ -6,9 +6,9 @@ import java.nio.ByteBuffer;
  * An abstract Foundation class for Datagrams that use Size4 addresses.
  */
 class Size4Datagram implements Datagram, DatagramPatch {
-    // The full datagram is 24 bytes plus the payload
+    // The full datagram is 36 bytes plus the payload
     // as an  Address is 4 bytes long
-    final static int HEADER_SIZE = 24;
+    final static int HEADER_SIZE = 36;
     final static int CHECKSUM_SIZE = 4;
 
     // USRD       - 0 / 4
@@ -23,8 +23,10 @@ class Size4Datagram implements Datagram, DatagramPatch {
     // spare      - 19 / 1
     // src port   - 20 / 2
     // dst port   - 22 / 2
-    // payload    - 24 / N
-    // checksum   - 24 + N / 4
+    // timestamp  - 24 / 8
+    // flow ID    - 32 / 4
+    // payload    - 36 / N
+    // checksum   - 36 + N / 4
 
 
     // The full datagram contents
@@ -36,12 +38,17 @@ class Size4Datagram implements Datagram, DatagramPatch {
     // Dst port
     int dstPort = 0;
 
+    // Creation time
+    long timestamp;
+
     static int initialTTL_ = 64; // TTL used for new
 
     /**
      * Construct a Size4Datagram given a payload.
      */
     Size4Datagram(ByteBuffer payload) {
+        timestamp = System.currentTimeMillis();
+
         payload.rewind();
         int payloadSize = payload.limit();
         //Logger.getLogger("log").logln(USR.ERROR, "PAYLOAD SIZE "+payloadSize);
@@ -61,6 +68,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * Construct a Size4Datagram given a payload and a destination address
      */
     Size4Datagram(ByteBuffer payload, Address address) {
+        timestamp = System.currentTimeMillis();
+
         payload.rewind();
         dstAddr = address;
 
@@ -83,6 +92,8 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * and a destination port.
      */
     Size4Datagram(ByteBuffer payload, Address address, int port) {
+        timestamp = System.currentTimeMillis();
+
         payload.rewind();
         dstAddr = address;
         dstPort = port;
@@ -99,6 +110,14 @@ class Size4Datagram implements Datagram, DatagramPatch {
      * and a destination port.
      */
     Size4Datagram(byte[] payload, Address address, int port) {
+        this(ByteBuffer.wrap(payload), address, port);
+    }
+
+    /**
+     * Construct a Size4Datagram given a payload, a destination address,
+     * and a destination port.
+     */
+    Size4Datagram(byte[] payload, int len, Address address, int port) {
         this(ByteBuffer.wrap(payload), address, port);
     }
 
@@ -136,6 +155,17 @@ class Size4Datagram implements Datagram, DatagramPatch {
     @Override
     public byte getChecksumLength() {
         return (byte)(CHECKSUM_SIZE & 0xFF);
+    }
+
+    /**
+     * Get the Timestamp.
+     * The time the Datagram was created.
+     */
+    @Override
+    public long getTimestamp() {
+        long ts = fullDatagram.getLong(24);
+
+        return ts;
     }
 
     /**
@@ -323,6 +353,26 @@ class Size4Datagram implements Datagram, DatagramPatch {
         return this;
     }
 
+    /**
+     * Get the flow ID
+     */
+    @Override
+    public int getFlowID() {
+        int f = fullDatagram.getInt(32);
+        return f;
+    }
+
+    /**
+     * Set the flow iD
+     */
+    @Override
+    public Datagram setFlowID(int id) {
+        fullDatagram.putInt(32, id);
+
+        return this;
+    }
+
+
     /** Reduce TTL and return true if packet still valid */
     @Override
     public boolean TTLReduce() {
@@ -353,7 +403,7 @@ class Size4Datagram implements Datagram, DatagramPatch {
     }
 
     /**
-     * Get payload
+     * Get payload as a byte[] copy
      */
     @Override
     public byte[] getPayload() {
@@ -375,6 +425,27 @@ class Size4Datagram implements Datagram, DatagramPatch {
         // payload.limit() + " < " + payload.capacity());
 
         return payloadBytes;
+
+    }
+
+    /**
+     * View payload as a constituent part of a Datagram
+     */
+    protected ByteBuffer viewPayload() {
+        fullDatagram.position(getHeaderLength());
+        fullDatagram.limit(getTotalLength() - CHECKSUM_SIZE);
+
+        ByteBuffer slice =  fullDatagram.slice();
+
+        /*
+        System.err.println("sliceBuffer SB(P) = " + slice.position() +
+                           " SB(C) = " + slice.capacity() +
+                           " B(P) = " + fullDatagram.position() + 
+                           " B(L) = " + fullDatagram.limit() +
+                           " B(C) = " + fullDatagram.capacity());
+        */
+
+        return slice;
 
     }
 
@@ -475,10 +546,19 @@ class Size4Datagram implements Datagram, DatagramPatch {
         // to be filled in later
         fullDatagram.putShort(22, (short)dstPort);
 
+        // put timestamp
+        fullDatagram.putLong(24, timestamp);
+
+        // put flowID
+        // to be filled in later
+        fullDatagram.position(32);
+        fullDatagram.putInt(0);
+
+
         /*
          * copy in payload
          */
-        fullDatagram.position(24);
+        fullDatagram.position(36);
         payload.rewind();
         // Logger.getLogger("log").logln(USR.ERROR, "payload size = " + payload.limit());
 

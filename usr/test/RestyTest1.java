@@ -38,7 +38,7 @@ class RestyTest1 extends RestyTest {
             System.out.println("a1 = " + a1);
             Thread.sleep(500);
 
-            JSONObject a2 = test.createApp(router1, "usr.applications.Send", router2 + " 4000 100");  // id 4000 count
+            JSONObject a2 = test.createApp(router1, "usr.applications.Send", router2 + " 4000 10000 -i 1 -b 20");  // id 4000 count
             System.out.println("a2 = " + a2);
 
 

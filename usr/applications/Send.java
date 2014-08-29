@@ -20,6 +20,7 @@ public class Send implements Application {
     int interPacketDelay = 0;
     int startDelay = 0;
     int sendSize = 0;
+    int burstSize = 1;
 
     boolean running = false;
     DatagramSocket socket = null;
@@ -34,9 +35,10 @@ public class Send implements Application {
      * Initialisation for Send.
      * Send address port count [optionals]
      * Optional args:
-     * -i inter packet delay (in milliseconds)
-     * -d start-up delay (in milliseconds)
+     * -i inter send delay (in milliseconds) (default: 0)
+     * -d start-up delay (in milliseconds) (default: 0)
      * -s size of send buffer (in bytes)
+     * -b burst size - no of packets to send between each delay (default: 1) 
      */
     @Override
 	public ApplicationResponse init(String[] args) {
@@ -119,6 +121,16 @@ public class Send implements Application {
                             break;
                         }
 
+                        case 'b': {
+                            try {
+                                burstSize = Integer.parseInt(argValue);
+                            } catch (Exception e) {
+                                return new ApplicationResponse(false, "Bad burstSize " + argValue);
+                            }
+
+                            break;
+                        }
+
 
 
                         default:
@@ -184,8 +196,11 @@ public class Send implements Application {
             }
         }
 
+        // a buffer for data
+        byte [] buffer;
+        int thisBurst = 0;
+
         for (int i = 0; i < count; i++) {
-            byte [] buffer;
 
             if (sendSize == 0) {
                 buffer = ("line " + i).getBytes();
@@ -198,9 +213,13 @@ public class Send implements Application {
             try {
                 socket.send(datagram);
 
+                // burst
+                thisBurst++;
+
                 // Inter Packet Delay
-                if (interPacketDelay > 0) {
+                if (thisBurst == burstSize && interPacketDelay > 0) {
                     Thread.sleep(interPacketDelay);
+                    thisBurst = 0;
                 }
 
 

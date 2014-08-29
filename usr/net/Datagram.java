@@ -27,6 +27,12 @@ public interface Datagram {
     public byte getChecksumLength();
 
     /**
+     * Get the Timestamp.
+     * The time the Datagram was created.
+     */
+    public long getTimestamp();
+
+    /**
      * Get the flags
      */
     public byte getFlags();
@@ -90,6 +96,16 @@ public interface Datagram {
      * Set the dst port
      */
     public Datagram setDstPort(int port);
+
+    /**
+     * Get the flow ID
+     */
+    public int getFlowID();
+
+    /**
+     * Set the flow iD
+     */
+    public Datagram setFlowID(int id);
 
     /** Reduce TTL and return true if packet still valid */
     public boolean TTLReduce();

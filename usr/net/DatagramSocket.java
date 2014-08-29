@@ -3,8 +3,8 @@ package usr.net;
 import usr.router.AppSocket;
 import usr.router.Router;
 import usr.router.RouterDirectory;
-import java.net.SocketException;
 import usr.net.SocketTimeoutException;
+import java.net.SocketException;
 import java.net.NoRouteToHostException;
 
 /**
@@ -59,6 +59,28 @@ public class DatagramSocket {
         AppSocket appSocket = new AppSocket(router, addr, port);
 
         socketImpl = appSocket;
+    }
+
+    /**
+     * Create a DatagramSocket connected to a specified remote Address and port.
+     */
+    public DatagramSocket(int port, Address addr) throws SocketException {
+        Router router = RouterDirectory.getRouter();
+
+        if (router == null) {
+            throw new SocketException("Cannot find Router");
+        }
+
+        AppSocket appSocket = new AppSocket(router, addr, port);
+
+        socketImpl = appSocket;
+    }
+
+    /**
+     * Create a DatagramSocket connected to a specified Socket Address.
+     */
+    public DatagramSocket(SocketAddress socketAddr) throws SocketException {
+        this(socketAddr.getAddress(), socketAddr.getPort());
     }
 
     /**

@@ -14,4 +14,9 @@ public class DatagramPacket extends Size4Datagram {
         super(payload, addr, port);
     }
 
+    public DatagramPacket(byte[] payload, int length, SocketAddress socketAddress) {
+        super(payload, length, socketAddress.getAddress(), socketAddress.getPort());
+    }
+
+
 }

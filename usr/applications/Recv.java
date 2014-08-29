@@ -7,6 +7,7 @@ import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Datagram;
 import usr.net.DatagramSocket;
+import java.nio.ByteBuffer;
 
 /**
  * An application for Receiving some data
@@ -94,11 +95,13 @@ public class Recv implements Application {
             while ((datagram = socket.receive()) != null) {
 
                 Logger.getLogger("log").log(USR.STDOUT, count + ". ");
-                Logger.getLogger("log").log(USR.STDOUT, "HL: " + datagram.getHeaderLength() +
-                                            " TL: " + datagram.getTotalLength() +
+                Logger.getLogger("log").log(USR.STDOUT, "HdrLen: " + datagram.getHeaderLength() +
+                                            " Len: " + datagram.getTotalLength() +
+                                            " Time: " + (System.currentTimeMillis() - datagram.getTimestamp()) +
                                             " From: " + datagram.getSrcAddress() +
                                             " To: " + datagram.getDstAddress() +
                                             ". ");
+
                 byte[] payload = datagram.getPayload();
 
                 if (payload == null) {

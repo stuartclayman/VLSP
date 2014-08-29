@@ -6,9 +6,9 @@ import java.nio.ByteBuffer;
  * An abstract Foundation class for Datagrams that use Size16 addresses.
  */
 class Size16Datagram implements Datagram, DatagramPatch {
-    // The full datagram is 48 bytes plus the payload
+    // The full datagram is 60 bytes plus the payload
     // as an  Address is 16 bytes long
-    final static int HEADER_SIZE = 48;
+    final static int HEADER_SIZE = 60;
     final static int CHECKSUM_SIZE = 4;
 
     // USRD       - 0 / 4
@@ -23,8 +23,10 @@ class Size16Datagram implements Datagram, DatagramPatch {
     // spare      - 43 / 1
     // src port   - 44 / 2
     // dst port   - 46 / 2
-    // payload    - 48 / N
-    // checksum   - 48 + N / 4
+    // timestamp  - 48 / 8
+    // flow ID    - 56 / 4
+    // payload    - 60 / N
+    // checksum   - 60 + N / 4
 
     // The full datagram contents
     ByteBuffer fullDatagram;
@@ -35,12 +37,17 @@ class Size16Datagram implements Datagram, DatagramPatch {
     // Dst port
     int dstPort = 0;
 
+    // Creation time
+    long timestamp;
+
     static int initialTTL_ = 64; // TTL used for new
 
     /**
      * Construct a Size16Datagram given a payload.
      */
     Size16Datagram(ByteBuffer payload) {
+        timestamp = System.currentTimeMillis();
+
         payload.rewind();
         int payloadSize = payload.limit();
         //Logger.getLogger("log").logln(USR.ERROR, "PAYLOAD SIZE "+payloadSize);
@@ -60,6 +67,8 @@ class Size16Datagram implements Datagram, DatagramPatch {
      * Construct a Size16Datagram given a payload and a destination address
      */
     Size16Datagram(ByteBuffer payload, Address address) {
+        timestamp = System.currentTimeMillis();
+
         payload.rewind();
         dstAddr = address;
 
@@ -82,6 +91,8 @@ class Size16Datagram implements Datagram, DatagramPatch {
      * and a destination port.
      */
     Size16Datagram(ByteBuffer payload, Address address, int port) {
+        timestamp = System.currentTimeMillis();
+
         payload.rewind();
         dstAddr = address;
         dstPort = port;
@@ -135,6 +146,17 @@ class Size16Datagram implements Datagram, DatagramPatch {
     @Override
     public byte getChecksumLength() {
         return (byte)(CHECKSUM_SIZE & 0xFF);
+    }
+
+    /**
+     * Get the Timestamp.
+     * The time the Datagram was created.
+     */
+    @Override
+    public long getTimestamp() {
+        long ts = fullDatagram.getLong(48);
+
+        return ts;
     }
 
     /**
@@ -322,6 +344,25 @@ class Size16Datagram implements Datagram, DatagramPatch {
         return this;
     }
 
+    /**
+     * Get the flow ID
+     */
+    @Override
+    public int getFlowID() {
+        int f = fullDatagram.getInt(56);
+        return f;
+    }
+
+    /**
+     * Set the flow iD
+     */
+    @Override
+    public Datagram setFlowID(int id) {
+        fullDatagram.putInt(56, id);
+
+        return this;
+    }
+
     /** Reduce TTL and return true if packet still valid */
     @Override
     public boolean TTLReduce() {
@@ -376,6 +417,19 @@ class Size16Datagram implements Datagram, DatagramPatch {
         return payloadBytes;
 
     }
+
+
+    /**
+     * View payload as a constituent part of a Datagram
+     */
+    protected ByteBuffer viewPayload() {
+        fullDatagram.position(getHeaderLength());
+        fullDatagram.limit(getTotalLength() - CHECKSUM_SIZE);
+
+        return fullDatagram.slice();
+    }
+
+
 
     /**
      * Get payload
@@ -474,10 +528,20 @@ class Size16Datagram implements Datagram, DatagramPatch {
         // to be filled in later
         fullDatagram.putShort(46, (short)dstPort);
 
+        // put timestamp
+        fullDatagram.putLong(48, timestamp);
+
+        // put flowID
+        // to be filled in later
+        fullDatagram.position(56);
+        fullDatagram.putInt(0);
+
+
+
         /*
          * copy in payload
          */
-        fullDatagram.position(48);
+        fullDatagram.position(60);
         payload.rewind();
         // Logger.getLogger("log").logln(USR.ERROR, "payload size = " + payload.limit());
 
