@@ -125,10 +125,15 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 	// this method returns a JSONObject with the difference in inbound/outbound traffic between the latest two probes
 	public JSONObject getProcessedData (String localControllerName) {
 		Measurement m = measurements.get(localControllerName);
-		List<ProbeValue> currentProbe = m.getValues();
-		JSONObject jsobj = new JSONObject();
 
-		try {
+                if (m == null) {
+                    return new JSONObject();
+                } else {
+                        
+                    List<ProbeValue> currentProbe = m.getValues();
+                    JSONObject jsobj = new JSONObject();
+
+                    try {
 			jsobj.put("getName", localControllerName);
 
 			jsobj.put("cpuIdle", ((Float) currentProbe.get(3).getValue()) / 100F); // percentage
@@ -137,21 +142,22 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 			jsobj.put("memoryAllocation", (Integer) currentProbe.get(4).getValue() / 1024); // in GBs
 
 			if (previousProbeValues==null) {
-				// starts with zero bytes
-				jsobj.put("networkIncomingBytes", 0);
-				jsobj.put("networkOutboundBytes", 0);
+                            // starts with zero bytes
+                            jsobj.put("networkIncomingBytes", 0);
+                            jsobj.put("networkOutboundBytes", 0);
 			} else {
-				// subtract from previous probe
-				jsobj.put("networkIncomingBytes", (Long) currentProbe.get(8).getValue() - (Long) previousProbeValues.get(8).getValue());
-				jsobj.put("networkOutboundBytes", (Long) currentProbe.get(10).getValue() - (Long) previousProbeValues.get(10).getValue());
+                            // subtract from previous probe
+                            jsobj.put("networkIncomingBytes", (Long) currentProbe.get(8).getValue() - (Long) previousProbeValues.get(8).getValue());
+                            jsobj.put("networkOutboundBytes", (Long) currentProbe.get(10).getValue() - (Long) previousProbeValues.get(10).getValue());
 			}
-		} catch (JSONException e) {
+                    } catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+                    }
 
-		return jsobj;
-	}
+                    return jsobj;
+                }
+        }
 
 
 	protected String showData(Measurement m) {
