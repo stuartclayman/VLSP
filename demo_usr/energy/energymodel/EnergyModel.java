@@ -306,6 +306,12 @@ public class EnergyModel {
 	private double NetworkLoadConsumptionFunction (long networkOutboundBytes, long networkIncomingBytes) {
 
 		// start by having a linear approach
-		return networkOutboundBytesCoefficient * networkOutboundBytes + networkIncomingBytesCoefficient * networkIncomingBytes;
+		double val = networkOutboundBytesCoefficient * networkOutboundBytes + networkIncomingBytesCoefficient * networkIncomingBytes;
+
+                if (val < 0) {
+                    return 0;
+                } else {
+                    return val;
+                }
 	}
 }
