@@ -40,8 +40,14 @@ public class EnergyViewer {
     // A Rest end-point 
     Resty rest;
 
-    // Map of router name to energy consumtion
+    // Map of router name to energy consumption
     Map<String, Double>routerEnergy;
+
+    // Total energy usage
+    double totalEnergyUsage = 0.0;
+
+    double previousEnergyPerCent = 0.0;
+    double alpha = 0.5;
 
     /**
      * Construct a EnergyViewer.
@@ -154,6 +160,10 @@ public class EnergyViewer {
      * Print the data
      */
     protected void presentData(JSONObject localhostInfo, JSONObject routerThreadGroups) {
+        double energyTotalThisTime = 0.0;
+        double energyDeltaThisTime = 0.0;
+
+
         try {
             System.out.print(ANSI.POS(0,0));
 
@@ -194,17 +204,21 @@ public class EnergyViewer {
             System.out.print(ANSI.DOWN(1));
 
 
-            System.out.print("Energy Usage: ");
             double energyUsage = calculateEnergy(energyModel, hostinfo);
-            System.out.printf("%3.2f", energyUsage);
-            System.out.print(" Watts");
+            totalEnergyUsage += energyUsage;
+
+            System.out.print("Energy Usage: ");
+            System.out.printf("%7.2f", totalEnergyUsage);
+            System.out.print(" Total (Watts)");
+            System.out.printf("   %5.2f", energyUsage);
+            System.out.print(" Delta (Watts)");
 
             System.out.print(ANSI.CLEAR_EOL);
             System.out.print(ANSI.COLUMN(0));
             System.out.print(ANSI.DOWN(2));
 
 
-            System.out.printf("%-16s%-12s%-10s%-10s%-10s%-10s%-10s%-10s", "name", "elapsed (s)","cpu (ms)","user (ms)","sys (ms)","mem (k)", "energy (W)", "delta (W)");
+            System.out.printf("%-16s%-12s%-12s%-12s%-12s%-12s%-12s%-12s", "name", "elapsed (s)","cpu (ms)","user (ms)","sys (ms)","mem (k)", "energy (W)", "delta (W)");
             System.out.print(ANSI.COLUMN(0));
             System.out.print(ANSI.DOWN(1));
 
@@ -221,6 +235,7 @@ public class EnergyViewer {
                 JSONArray threadGroups = routerInfo.getJSONArray("threadgroup");
 
 
+                // skip through thread info to find the TOTALs
                 for (int thread = 0;  thread < threadGroups.length(); thread++) {
                     // info per thread
                     // {"cpu":527235,"elapsed":"[40.277]","mem":16528,"name":"TOTAL","starttime":"[2014/11/25 17:26:54.869]","system":44603,"user":482632}
@@ -248,10 +263,21 @@ public class EnergyViewer {
                             // never seen this router
                         } else {
                             energyDelta = routerEnergyConsumption - routerLastEnergyDelta;
+
+                            // the following case should not occur, but it does
+                            // need to look into it further.
+                            if (energyDelta < 0) {
+                                energyDelta = 0;
+                            }
                         }
 
 
-                        System.out.printf("%-16s%-12.2f%-10.3f%-10.3f%-10.3s%-10s%-10.3f%-10.3f", name, elapsed/1000f, cpu/1000f, user/1000f, sys/1000f, mem, routerEnergyConsumption, energyDelta);
+                        // ruuning totals
+                        energyTotalThisTime += routerEnergyConsumption;
+                        energyDeltaThisTime += energyDelta;
+
+
+                        System.out.printf("%-16s%-12.2f%-12.3f%-12.3f%-12.3f%-12s%-12.3f%-12.3f", name, elapsed/1000f, cpu/1000f, user/1000f, sys/1000f, mem, routerEnergyConsumption, energyDelta);
 
                         System.out.print(ANSI.CLEAR_EOL);
                         System.out.print(ANSI.COLUMN(0));
@@ -263,6 +289,33 @@ public class EnergyViewer {
                     }
                 }
             }
+
+
+            System.out.printf("%-16s%-12s%-12s%-12s%-12s%-12s%-12s%-10s", "", "","","","","", "----------", "--------");
+            System.out.print(ANSI.CLEAR_EOL);
+            System.out.print(ANSI.COLUMN(0));
+
+            System.out.print(ANSI.DOWN(1));
+
+            double energyPerCent = (energyDeltaThisTime * 100) / energyUsage;
+
+            // cleanup energyPerCent
+            // sometimes this case happens
+            if (energyPerCent > 100.0) {
+                energyPerCent = 100.0;
+            }
+
+            // setup previousEnergyPerCent
+            if (previousEnergyPerCent == 0.0) {
+                previousEnergyPerCent = energyPerCent;
+            }
+
+            // smooth the percent age
+            double smooth_value  = (1 - alpha) *  previousEnergyPerCent + alpha * energyPerCent;
+
+            System.out.printf("%-16s%-12s%-12s%-12s%-12s%-12s%-12.3f%-10.3f%-4.2f%% %-4.2f%%", "", "","","","","", energyTotalThisTime, energyDeltaThisTime, energyPerCent, smooth_value);
+
+            previousEnergyPerCent = smooth_value;
 
             System.out.print(ANSI.CLEAR_EOS);
 
