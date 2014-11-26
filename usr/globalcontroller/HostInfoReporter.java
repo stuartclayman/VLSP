@@ -36,7 +36,7 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 	int count = 0;
 
 	// keep previous probe values
-	List<ProbeValue> previousProbeValues;
+        HashMap<String, Measurement> previousProbeValues;
 
 	/**
 	 * Constructor
@@ -44,6 +44,7 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 	public HostInfoReporter(GlobalController gc) {
 		globalController = gc;
 		measurements = new HashMap<String, Measurement>();
+                previousProbeValues = new HashMap<String, Measurement>();
 
 		// get logger
 		try {
@@ -51,9 +52,6 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 		} catch (FileNotFoundException fnfe) {
 			Logger.getLogger("log").logln(USR.ERROR, fnfe.toString());
 		}
-
-		// reset previous probe values
-		previousProbeValues = null;
 	}
 
 	/**
@@ -83,12 +81,14 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 			ProbeValue pv0 = values.get(0);
 			String localControllerName = (String)pv0.getValue();
 
-			synchronized (measurements) {
-				// keep the previous probe value, if exists
-				if (measurements.get(localControllerName)!=null)
-					previousProbeValues = measurements.get(localControllerName).getValues();
+                        // keep the previous probe value, if exists
+                        //if (measurements.get(localControllerName)!=null) {
+                            previousProbeValues.put(localControllerName, measurements.get(localControllerName));
+                            //}
 
-				measurements.put(localControllerName, m);
+
+			synchronized (measurements) {
+                            measurements.put(localControllerName, m);
 			}
 
 			Logger.getLogger("log").logln(1<<13, showData(m));
@@ -130,25 +130,31 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
                     return new JSONObject();
                 } else {
                         
-                    List<ProbeValue> currentProbe = m.getValues();
+                    List<ProbeValue> currentProbeValue = m.getValues();
+
+                    Measurement prevM = previousProbeValues.get(localControllerName);
+                    List<ProbeValue> previousProbeValue = null;
+
+                    if (prevM != null) previousProbeValue = prevM.getValues();
+
                     JSONObject jsobj = new JSONObject();
 
                     try {
-			jsobj.put("getName", localControllerName);
+			jsobj.put("name", localControllerName);
 
-			jsobj.put("cpuIdle", ((Float) currentProbe.get(3).getValue()) / 100F); // percentage
-			jsobj.put("cpuLoad", ((Float) currentProbe.get(1).getValue() + (Float) currentProbe.get(2).getValue())/100F); // percentage
-			jsobj.put("freeMemory", (Integer) currentProbe.get(5).getValue() / 1024); // in GBs
-			jsobj.put("memoryAllocation", (Integer) currentProbe.get(4).getValue() / 1024); // in GBs
+			jsobj.put("cpuIdle", ((Float) currentProbeValue.get(3).getValue()) / 100F); // percentage
+			jsobj.put("cpuLoad", ((Float) currentProbeValue.get(1).getValue() + (Float) currentProbeValue.get(2).getValue())/100F); // percentage
+			jsobj.put("freeMemory", (Float) ((Integer)currentProbeValue.get(5).getValue() / 1024f)); // in GBs
+			jsobj.put("usedMemory", (Float) ((Integer)currentProbeValue.get(4).getValue() / 1024f)); // in GBs
 
-			if (previousProbeValues==null) {
+			if (previousProbeValue==null) {
                             // starts with zero bytes
                             jsobj.put("networkIncomingBytes", 0);
                             jsobj.put("networkOutboundBytes", 0);
 			} else {
                             // subtract from previous probe
-                            jsobj.put("networkIncomingBytes", (Long) currentProbe.get(8).getValue() - (Long) previousProbeValues.get(8).getValue());
-                            jsobj.put("networkOutboundBytes", (Long) currentProbe.get(10).getValue() - (Long) previousProbeValues.get(10).getValue());
+                            jsobj.put("networkIncomingBytes", (Long) currentProbeValue.get(8).getValue() - (Long) previousProbeValue.get(8).getValue());
+                            jsobj.put("networkOutboundBytes", (Long) currentProbeValue.get(10).getValue() - (Long) previousProbeValue.get(10).getValue());
 			}
                     } catch (JSONException e) {
 			// TODO Auto-generated catch block

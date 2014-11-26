@@ -103,10 +103,14 @@ public class LocalControllerRestHandler extends BasicRequestHandler {
 			return true;
 
 		} catch (IOException ioe) {
+                    ioe.printStackTrace();
 			System.err.println("IOException " + ioe.getMessage());
 		} catch (JSONException jse) {
+                    jse.printStackTrace();
 			System.err.println("JSONException " + jse.getMessage());
-		}
+		} catch (Exception e) {
+                    e.printStackTrace();
+                }
 
 		return false;
 	}

@@ -80,7 +80,7 @@ class RestyTest2 extends RestyTest {
 
 
             // let the routing tables propogate
-            Thread.sleep(36000);
+            Thread.sleep(66000);
 
 
             // on routerD, Recv on port 4000

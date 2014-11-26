@@ -1095,11 +1095,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         measurementJsobj = hostInfoReporter.getProcessedData(localControllerName); 
 
 
+        /*
         // current status of localcontroller
         float currentCPUUserAndSystem=0;
         float currentCPUIdle=0;
-        int currentMemoryUsed=0;
-        int currentFreeMemory=0;
+        float currentMemoryUsed=0;
+        float currentFreeMemory=0;
         long currentOutputBytes=0;
         long currentInputBytes=0;
 
@@ -1108,7 +1109,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             try {
                 currentCPUUserAndSystem = (float) measurementJsobj.getDouble("cpuLoad");
                 currentCPUIdle = (float) measurementJsobj.getDouble("cpuIdle");
-                currentMemoryUsed = measurementJsobj.getInt("memoryAllocation");
+                currentMemoryUsed = measurementJsobj.getInt("usedMemory");
                 currentFreeMemory = measurementJsobj.getInt("freeMemory");
                 currentOutputBytes = measurementJsobj.getLong("networkOutboundBytes");
                 currentInputBytes = measurementJsobj.getLong("networkIncomingBytes");
@@ -1123,7 +1124,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
             jsobj.put("energyConsumption", energyConsumption);
         }
-
+        */
 
         jsobj.put("hostinfo", measurementJsobj);
 
@@ -1237,11 +1238,17 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      */
     private JSONObject getAllRouterInfoAsJSON(String detail) throws JSONException {
         JSONObject jsobj = new JSONObject();
-        JSONArray array = new JSONArray();
-        JSONArray detailArray = new JSONArray();
+        JSONArray array = new JSONArray();  // ID array
+        JSONArray detailArray = new JSONArray();  // detail array
+
+
+        ThreadGroupListReporter threadGroupListReporter = (ThreadGroupListReporter) findByMeasurementType("ThreadGroupList");
+
 
         for (BasicRouterInfo info : getAllRouterInfo()) {
             int routerID = info.getId();
+
+            String routerName = info.getName();
 
             array.put(routerID);
 
@@ -1251,13 +1258,31 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
                 detailArray.put(record);
 
+            } else if (detail.equals("thread")) {
+                // add a detailed record
+                JSONObject record = routerInfoAsJSON(info);
+
+                detailArray.put(record);
+
+                
+
+            } else if (detail.equals("threadgroup")) {
+                // add a detailed record
+                JSONObject record = routerInfoAsJSON(info);
+                
+                // get threadgroupObj
+                JSONObject threadgroupObj = threadGroupListReporter.getProcessedData(routerName);
+
+                record.put("threadgroup", threadgroupObj.getJSONArray("threadgroup"));
+
+                detailArray.put(record);
             }
         }
 
         jsobj.put("type", "router");
         jsobj.put("list", array);
 
-        if (detail.equals("all")) {
+        if (detail.equals("all") || detail.equals("thread") || detail.equals("threadgroup") ) {
             jsobj.put("detail", detailArray);
         }
 

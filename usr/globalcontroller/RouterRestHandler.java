@@ -227,11 +227,12 @@ public class RouterRestHandler extends BasicRequestHandler {
             detail = query.get("detail");
 
             // check detail
-            if (detail.equals("id") ||
+            if (detail.equals("id") || detail.equals("thread") || detail.equals("threadgroup") || 
                 detail.equals("all")) {
                 // fine
             } else {
                 complain(response, "Bad detail: " + detail);
+                return;
             }
 
         /* process optional args */
@@ -255,6 +256,7 @@ public class RouterRestHandler extends BasicRequestHandler {
         JSONObject jsobj;
 
         if (detail != null) {
+
             jsobj = controller_.listRouters("detail=" + detail);
         } else {
             if (name != null) {

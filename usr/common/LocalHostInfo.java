@@ -210,7 +210,7 @@ public class LocalHostInfo {
 	}
 
 	// returns current energy consumption from the energy model
-	public double GetCurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, int memoryUsed, int freeMemory, long networkOutboundBytes, long networkIncomingBytes) {
+	public double GetCurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes) {
 		return energyModel.CurrentEnergyConsumption (averageCPULoad, averageIdleCPU, memoryUsed, freeMemory, networkOutboundBytes, networkIncomingBytes);
 	}
 

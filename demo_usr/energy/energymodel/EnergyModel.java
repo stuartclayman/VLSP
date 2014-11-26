@@ -48,8 +48,8 @@ public class EnergyModel {
 	float lastAverageIdleCPU;
 
 	// keep track of last memory usage
-	int lastMemoryUsed;
-	int lastFreeMemory;
+	float lastMemoryUsed;
+	float lastFreeMemory;
 
 	// keep track of last data communicated
 	int lastNetworkOutboundBytes;
@@ -131,10 +131,10 @@ public class EnergyModel {
 
 	// Calculate EnergyConsumption for that particular timeframe - the HostInfo probing period (assuming resource usage is relatively stable)
 	// Assuming execution of this function per fixed sampling period
-	public double CurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, int memoryUsed, int freeMemory, long networkOutboundBytes, long networkIncomingBytes) {
+	public double CurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes) {
 		double currentEnergy = baseLineEnergyConsumption +  ProcessingConsumptionFunction (averageCPULoad, averageIdleCPU) + MemoryConsumptionFunction (memoryUsed, freeMemory) + NetworkLoadConsumptionFunction (networkOutboundBytes, networkIncomingBytes);
 
-		System.out.println ("Energy Consumption: baseline " + baseLineEnergyConsumption+" processing " + ProcessingConsumptionFunction (averageCPULoad, averageIdleCPU)+ " memory " + MemoryConsumptionFunction (memoryUsed, freeMemory) + " network " + NetworkLoadConsumptionFunction (networkOutboundBytes, networkIncomingBytes));
+		//System.out.println ("Energy Consumption: baseline " + baseLineEnergyConsumption+" processing " + ProcessingConsumptionFunction (averageCPULoad, averageIdleCPU)+ " memory " + MemoryConsumptionFunction (memoryUsed, freeMemory) + " network " + NetworkLoadConsumptionFunction (networkOutboundBytes, networkIncomingBytes));
 
 		// calculate totalTime (in sampling periods)
 		totalTime += 1;
@@ -156,7 +156,7 @@ public class EnergyModel {
 
 	// Predict energy consumption in physical machine after the deployment of a specific application, knowing its level of impact
 	// in terms of memory, processing and network resource utilisation.
-	public double PredictEnergyConsumptionAfterApplicationDeploymentFromLevelOfImpact (float averageCPULoad, float averageIdleCPU, int memoryUsed, int freeMemory, long networkOutboundBytes, long networkIncomingBytes, ImpactLevel processingImpact, ImpactLevel memoryImpact, ImpactLevel outgoingTrafficImpact, ImpactLevel incomingTrafficImpact) {
+	public double PredictEnergyConsumptionAfterApplicationDeploymentFromLevelOfImpact (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes, ImpactLevel processingImpact, ImpactLevel memoryImpact, ImpactLevel outgoingTrafficImpact, ImpactLevel incomingTrafficImpact) {
 
 		// predict impact of application on processing load
 		float processingImpactValue = 0;
@@ -288,14 +288,14 @@ public class EnergyModel {
 	// function that estimates energy consumption based on the averageCPULoad - could be extended to consider more than one cpu,
 	// multiple cpu running states etc.
 	// returns a value in Watts (at this point we assume to running states, working and idle)
-	private double ProcessingConsumptionFunction (double averageCPULoad, double averageCPUIdle) {
+        public double ProcessingConsumptionFunction (double averageCPULoad, double averageCPUIdle) {
 		// start by having a linear approach
 		return cpuLoadCoefficient * averageCPULoad + cpuIdleCoefficient * averageCPUIdle;
 	}
 
 	// function that estimates energy consumption based on the memory utilisation.
 	// returns a value in Watts
-	private double MemoryConsumptionFunction (int memoryUsed, int freeMemory) {
+	public double MemoryConsumptionFunction (float memoryUsed, float freeMemory) {
 		// start by having a linear approach
 		return memoryAllocationCoefficient * memoryUsed + freeMemoryCoefficient * freeMemory;
 	}
@@ -303,7 +303,7 @@ public class EnergyModel {
 	// function that estimates energy consumption based on the network load - could be extended to consider multiple running states
 	// of network card, etc.
 	// returns a value in Watts - currently assuming two running states: send and receive
-	private double NetworkLoadConsumptionFunction (long networkOutboundBytes, long networkIncomingBytes) {
+	public double NetworkLoadConsumptionFunction (long networkOutboundBytes, long networkIncomingBytes) {
 
 		// start by having a linear approach
 		double val = networkOutboundBytesCoefficient * networkOutboundBytes + networkIncomingBytesCoefficient * networkIncomingBytes;

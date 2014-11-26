@@ -14,7 +14,6 @@ import java.net.UnknownHostException;
 import us.monoid.json.JSONObject;
 import us.monoid.json.JSONException;
 
-import usr.interactor.GlobalControllerInteractor;
 import usr.common.PipeProcess;
 
 import java.net.ConnectException;

@@ -11,6 +11,9 @@ import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
 
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+import us.monoid.json.JSONArray;
 import usr.common.BasicRouterInfo;
 import usr.logging.BitMask;
 import usr.logging.Logger;
@@ -118,6 +121,109 @@ public class ThreadGroupListReporter implements Reporter, ReporterMeasurementTyp
         return measurements.get(routerName);
     }
 
+    // this method returns a JSONObject 
+    public JSONObject getProcessedData (String routerName) {
+        Measurement m = measurements.get(routerName);
+
+        if (m == null) {
+            return new JSONObject();
+        } else {
+                        
+            // totals
+            long startTimeR = 0;
+            long elapsedTimeR = 0;
+            long cpuT = 0;  // in milliseconds
+            long userT = 0;  // in milliseconds
+            long sysT = 0;  // in milliseconds
+            long memT = 0;  // in Kb
+        
+
+            List<ProbeValue> values = m.getValues();
+
+            // ProbeValue 0 is the router name
+            //ProbeValue pv0 = values.get(0);
+            //String routerName = (String)pv0.getValue();
+
+            // ProbeValue 1 is the Table
+            ProbeValue pv1 = values.get(1);
+            Table table = (Table)pv1.getValue();
+
+            // visit all rows
+            List<TableRow> rows = table.toList();
+
+            // result object
+            JSONObject jsobj = new JSONObject();
+
+            JSONArray array = new JSONArray();
+
+            // create result
+            try {
+
+                for (TableRow row : rows) {
+                    String name = (String)row.get(0).getValue();
+                    Long time = (Long)row.get(1).getValue();
+                    Long elapsed = (Long)row.get(2).getValue();
+                    Long cpu = (Long)row.get(3).getValue();
+                    Long user = (Long)row.get(4).getValue();
+                    Long sys = (Long)row.get(5).getValue();
+                    Long mem = (Long)row.get(6).getValue();
+
+
+                    // add up
+                    cpuT += (cpu / 1000);
+                    userT += (user / 1000);
+                    sysT += (sys / 1000);
+                    memT += (mem / 1000);
+
+
+                    // the first time through we set the startTime and the elapsedTime
+                    // the first row has the first ThreadGroup of a router
+                    // this data is what we need
+                    if (startTimeR == 0 && elapsedTimeR == 0) {
+                        startTimeR = time;
+                        elapsedTimeR = elapsed;
+                    }
+
+                    JSONObject jsRow = new JSONObject();
+
+                    jsRow.put("name", name);
+                    jsRow.put("starttime", new MillisecondTimestamp(time));
+                    jsRow.put("elapsed", elapsed);
+                    jsRow.put("cpu",  cpu/1000);
+                    jsRow.put("user",  user/1000);
+                    jsRow.put("system", sys/1000);
+                    jsRow.put("mem", mem/1000);
+                    
+                    array.put(jsRow);
+                }
+
+
+                // totals
+                JSONObject jsRow = new JSONObject();
+
+                jsRow.put("name", "TOTAL");
+                jsRow.put("starttime", new MillisecondTimestamp(startTimeR));
+                jsRow.put("elapsed", elapsedTimeR);
+                jsRow.put("cpu",  cpuT);
+                jsRow.put("user",  userT);
+                jsRow.put("system", sysT);
+                jsRow.put("mem", memT);
+                    
+                array.put(jsRow);
+
+
+                jsobj.put("threadgroup", array);
+
+
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            return jsobj;
+        }
+
+    }
 
 
     protected String showData(Measurement m) {
