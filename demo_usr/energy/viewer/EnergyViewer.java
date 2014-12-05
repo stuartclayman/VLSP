@@ -204,21 +204,27 @@ public class EnergyViewer {
             System.out.print(ANSI.DOWN(1));
 
 
+            // Calculate Energy Usage
             double energyUsage = calculateEnergy(energyModel, hostinfo);
             totalEnergyUsage += energyUsage;
 
             System.out.print("Energy Usage: ");
             System.out.printf("%7.2f", totalEnergyUsage);
-            System.out.print(" Total (Watts)");
+            System.out.print(" Total (Wh)");
             System.out.printf("   %5.2f", energyUsage);
-            System.out.print(" Delta (Watts)");
+            System.out.print(" Delta (Wh)");
 
             System.out.print(ANSI.CLEAR_EOL);
             System.out.print(ANSI.COLUMN(0));
-            System.out.print(ANSI.DOWN(2));
+            System.out.print(ANSI.DOWN(1));
+            System.out.print(ANSI.CLEAR_EOL);
+            System.out.print(ANSI.DOWN(1));
 
 
-            System.out.printf("%-16s%-12s%-12s%-12s%-12s%-12s%-12s%-12s", "name", "elapsed (s)","cpu (ms)","user (ms)","sys (ms)","mem (k)", "energy (W)", "delta (W)");
+            // Now output info for each router
+            System.out.printf("%-16s%-12s%-12s%-12s%-12s%-12s%-12s%-12s", "name", "elapsed (s)","cpu (ms)","user (ms)","sys (ms)","mem (k)", "energy (Wh)", "delta (Wh)");
+
+            System.out.print(ANSI.CLEAR_EOL);
             System.out.print(ANSI.COLUMN(0));
             System.out.print(ANSI.DOWN(1));
 
@@ -243,6 +249,7 @@ public class EnergyViewer {
 
                     String threadName = threadInfo.getString("name");
 
+                    // we've found the TOTAL row
                     if (threadName.equals("TOTAL")) {
 
                         long elapsed = threadInfo.getLong("elapsed");
@@ -252,7 +259,7 @@ public class EnergyViewer {
                         long mem = threadInfo.getLong("mem");
 
 
-                        // try energy
+                        // Calculate energy consumption
                         double routerEnergyConsumption = energyModel.ProcessingConsumptionFunction((cpu + user + sys)/1000000f, 0) + energyModel.MemoryConsumptionFunction (mem/1000f, 0);
 
                         double energyDelta = 0.0;
@@ -277,24 +284,25 @@ public class EnergyViewer {
                         energyDeltaThisTime += energyDelta;
 
 
+                        // output info for this router
                         System.out.printf("%-16s%-12.2f%-12.3f%-12.3f%-12.3f%-12s%-12.3f%-12.3f", name, elapsed/1000f, cpu/1000f, user/1000f, sys/1000f, mem, routerEnergyConsumption, energyDelta);
 
                         System.out.print(ANSI.CLEAR_EOL);
                         System.out.print(ANSI.COLUMN(0));
-
                         System.out.print(ANSI.DOWN(1));
 
+                        // save for next time
                         routerEnergy.put(name, routerEnergyConsumption);
 
                     }
                 }
             }
 
-
+            // output summary line
             System.out.printf("%-16s%-12s%-12s%-12s%-12s%-12s%-12s%-10s", "", "","","","","", "----------", "--------");
+
             System.out.print(ANSI.CLEAR_EOL);
             System.out.print(ANSI.COLUMN(0));
-
             System.out.print(ANSI.DOWN(1));
 
             double energyPerCent = (energyDeltaThisTime * 100) / energyUsage;
