@@ -2,9 +2,11 @@ package usr.router;
 
 import java.io.IOException;
 import java.net.NoRouteToHostException;
-import java.net.Socket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.concurrent.CountDownLatch;
 
@@ -15,16 +17,16 @@ import usr.common.TimedThreadGroup;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
-import usr.net.ConnectionOverTCP;
+import usr.net.ConnectionOverUDP;
 import usr.net.Datagram;
 import usr.net.DatagramFactory;
 import usr.net.DatagramPatch;
-import usr.net.TCPEndPointDst;
-import usr.net.TCPEndPointSrc;
+import usr.net.UDPEndPointDst;
+import usr.net.UDPEndPointSrc;
 import usr.protocol.Protocol;
 
 /**
- * A Network Interface for a Router using TCP
+ * A Network Interface for a Router using UDP
  * <p>
  * On the reading side, it queues up Datagrams that come
  * from the remote end.
@@ -32,10 +34,10 @@ import usr.protocol.Protocol;
  * It also implements control datagrams, so one end can inform the
  * other end of stuff.
  */
-public class TCPNetIF implements NetIF, Runnable {
+public class UDPNetIF implements NetIF, Runnable {
 
     // The connection
-    ConnectionOverTCP connection;
+    ConnectionOverUDP connection;
     // The name of this
     String name;
     // The weight
@@ -77,19 +79,19 @@ public class TCPNetIF implements NetIF, Runnable {
 
 
     /**
-     * Construct a TCPNetIF around a Socket.
+     * Construct a UDPNetIF around a Socket.
      */
-    public TCPNetIF(TCPEndPointSrc src, NetIFListener l) throws IOException {
-        connection = new ConnectionOverTCP(src);
+    public UDPNetIF(UDPEndPointSrc src, NetIFListener l) throws IOException {
+        connection = new ConnectionOverUDP(src);
         listener = l;
 
     }
 
     /**
-     * Construct a TCPNetIF around a Socket.
+     * Construct a UDPNetIF around a Socket.
      */
-    public TCPNetIF(TCPEndPointDst dst, NetIFListener l) throws IOException {
-        connection = new ConnectionOverTCP(dst);
+    public UDPNetIF(UDPEndPointDst dst, NetIFListener l) throws IOException {
+        connection = new ConnectionOverUDP(dst);
         listener = l;
     }
 
@@ -98,7 +100,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * control
      */
     public synchronized void start() {
-        ThreadGroup group = new TimedThreadGroup("TCPNetIF-" + connection.getSocket().getPort());
+        ThreadGroup group = new TimedThreadGroup("UDPNetIF-" + connection.getSocket().getPort());
 
         running_ = true;
         //System.err.println("New fabric device listener "+listener);
@@ -207,8 +209,7 @@ public class TCPNetIF implements NetIF, Runnable {
      */
     @Override
     public void setWeight(int w) {
-        Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin() + ANSI.YELLOW + " NetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + " NetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
         weight = w;
     }
 
@@ -281,7 +282,7 @@ public class TCPNetIF implements NetIF, Runnable {
     /**
      * Get the socket.
      */
-    private Socket getSocket() {
+    private DatagramSocket getSocket() {
         return connection.getSocket();
     }
 
@@ -317,7 +318,17 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the remote InetAddress and port
      */
     public void setRemoteAddress(InetAddress addr, int port) throws IOException {
+        // patch in this addr:port into the socket
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + "UDPNetIF " + name + " setRemoteAddress " + addr + ":" + port + ANSI.RESET_COLOUR);
+
+        DatagramSocket socket = getSocket();
+        DatagramChannel channel = socket.getChannel();
+
+        InetSocketAddress sockAddr = new InetSocketAddress(addr, port);
+
+        channel.connect(sockAddr);
     }
+
 
     /**
      * Get the Listener of this NetIF.
@@ -391,18 +402,10 @@ public class TCPNetIF implements NetIF, Runnable {
 
             sent = connection.sendDatagram(dg);
 
-            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF " + name + " sent " + dg);
-        } catch (ClosedByInterruptException cbie) {
-            //Logger.getLogger("log").logln(USR.ERROR, leadin() + " ClosedByInterruptException connection.send
-            // "+address+"->"+remoteRouterAddress);
-
-            //cbie.printStackTrace();
-
-            listener.closedDevice(this);
-            return false;
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF " + name + " sent " + dg);
 
         } catch (IOException e) {
-            //Logger.getLogger("log").logln(USR.ERROR, leadin() + " failure in connection.send "+address+"->"+remoteRouterAddress);
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " failure in connection.send "+address+"->"+remoteRouterAddress);
             //Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
 
             //e.printStackTrace();
@@ -585,7 +588,7 @@ public class TCPNetIF implements NetIF, Runnable {
     }
 
     String leadin() {
-        return "TCPNetIF "+name+":";
+        return "UDPNetIF "+name+":";
     }
 
     /** Thread to perform remote close on netif */

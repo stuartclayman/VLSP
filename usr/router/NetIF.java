@@ -1,6 +1,7 @@
 package usr.router;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 import usr.net.Address;
 
@@ -94,5 +95,31 @@ public interface NetIF extends DatagramDevice {
      * Set the RouterPort a NetIF is plugIged into.
      */
     public void setRouterPort(RouterPort rp);
+
+    /**
+     * Get the remote address to which this socket is connected.
+     */
+    public InetAddress getInetAddress();
+
+    /**
+     * Get the remote port number to which this socket is connected.
+     */
+    public int getPort();
+
+    /**
+     * Gets the local address to which the socket is bound.
+     */
+    public InetAddress getLocalAddress();
+
+    /**
+     * Get the port number on the local host to which this socket is bound.
+     */
+    public int getLocalPort();
+
+
+    /**
+     * Set the remote InetAddress and port
+     */
+    public void setRemoteAddress(InetAddress addr, int port) throws IOException;
 
 }

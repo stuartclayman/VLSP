@@ -8,6 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CountDownLatch;
+
 import usr.APcontroller.APController;
 import usr.APcontroller.APInfo;
 import usr.APcontroller.ConstructAPController;
@@ -16,6 +23,8 @@ import usr.applications.ApplicationManager;
 import usr.applications.ApplicationResponse;
 import usr.console.ComponentController;
 import usr.common.TimedThread;
+import usr.common.SimpleThreadFactory;
+import usr.common.ANSI;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
@@ -76,6 +85,8 @@ public class RouterController implements ComponentController, Runnable {
     // The ApplicationManager
     ApplicationManager appManager;
 
+    // Executor Service to start new apps
+    ExecutorService executorService;
 
     // The ThreadGroup
     ThreadGroup threadGroup;
@@ -98,6 +109,9 @@ public class RouterController implements ComponentController, Runnable {
 
     // The probes
     ArrayList<RouterProbe> probeList = null;
+
+    CountDownLatch latch = null;
+
 
     /**
      * Construct a RouterController, given a specific port.
@@ -134,7 +148,10 @@ public class RouterController implements ComponentController, Runnable {
         //newConnectionPort = r2rPort;
 
         // delegate listening for new connections to RouterConnections object
-        connections = new RouterConnections(this, r2rPort);
+
+        //connections = new RouterConnectionsUDP(this, r2rPort);
+        connections = new RouterConnectionsTCP(this, r2rPort);
+
         connectionCount = 0;
         // a map of NetIFs
         tempNetIFMap = new HashMap<Integer, NetIF>();
@@ -246,8 +263,12 @@ public class RouterController implements ComponentController, Runnable {
      * Get the ManagementConsole.
      */
     @Override
-	public ManagementConsole getManagementConsole() {
+    public ManagementConsole getManagementConsole() {
         return management;
+    }
+
+    protected RouterConnections getRouterConnections() {
+        return connections;
     }
 
     /**
@@ -278,6 +299,12 @@ public class RouterController implements ComponentController, Runnable {
         appSocketMux = new AppSocketMux(this);
         appSocketMux.start();
 
+
+        // executorService used to start Apps in their own thread
+        executorService = Executors.newSingleThreadExecutor(new SimpleThreadFactory(getThreadGroup(), "AppStart-" + router.getName()));
+
+
+
         return startedL && startedC;
     }
 
@@ -304,6 +331,9 @@ public class RouterController implements ComponentController, Runnable {
             stopMonitoring();
         }
 
+
+        // shutdown executorService used to start Apps in their own thread
+        executorService.shutdown();
 
         // stop applications
         stopApplications();
@@ -354,10 +384,33 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * Keep a handle on a NetIF created from INCOMING_CONNECTION
      */
+    void registerTemporaryNetIFIncoming(NetIF netIF) {
+        int id = netIF.getID();
+
+        latch = new CountDownLatch(1);
+
+        registerTemporaryNetIF(netIF);
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.CYAN + "LATCH SET for id: " + id + ANSI.RESET_COLOUR);
+
+        try {
+            latch.await();
+        } catch (InterruptedException ie) {
+        }
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() +  ANSI.CYAN + "LATCH FREE for id: " + id + ANSI.RESET_COLOUR);
+
+
+    }
+
+    /**
+     * Keep a handle on a NetIF created from INCOMING_CONNECTION
+     */
     synchronized void registerTemporaryNetIF(NetIF netIF) {
         int id = netIF.getID();
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "temporary addNetIF ID: " + id + "address: " + netIF.getAddress() + " for " + netIF);
+
         tempNetIFMap.put(id, netIF);
 
     }
@@ -366,7 +419,11 @@ public class RouterController implements ComponentController, Runnable {
      * Find a NetIF by an id.
      */
     public synchronized NetIF getTemporaryNetIFByID(int id) {
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "getNetIF " + id);
+        // reduce latch count by 1
+        latch.countDown();
+
+        Logger.getLogger("log").logln(USR.ERROR, leadin() +  ANSI.CYAN + "LATCH DOWN for id:" + id + ANSI.RESET_COLOUR);
+
         return tempNetIFMap.get(id);
     }
 
@@ -402,20 +459,49 @@ public class RouterController implements ComponentController, Runnable {
      * It takes a class name and some args.
      * It returns app_name ~= /Router-1/App/class.blah.Blah/1
      */
-    public synchronized ApplicationResponse appStart(String commandstr) {
-        String[] split = commandstr.split(" ");
+    public synchronized ApplicationResponse appStart(String command) {
+        // This starts an app within the context of the Router's thread groups
+        // rather than the context of the caller
+        //
 
-        if (split.length == 0) {
-            return new ApplicationResponse(false, "appStart needs application class name");
-        } else {
-            String className = split[0].trim();
+        final String commandstr = command;
 
-            String rest = commandstr.substring(className.length()).trim();
-            String[] args = rest.split(" ");
+        // We create a Callable to enable this
+        // The call() gets the ApplicationManager to start the App
+        Callable callable = new Callable() {
+                public ApplicationResponse call() throws Exception {
+                    String[] split = commandstr.split(" ");
 
-            return appManager.startApp(className, args);
+                    if (split.length == 0) {
+                        return new ApplicationResponse(false, "appStart needs application class name");
+                    } else {
+                        String className = split[0].trim();
+
+                        String rest = commandstr.substring(className.length()).trim();
+                        String[] args = rest.split(" ");
+
+                        return appManager.startApp(className, args);
+                    }
+                }
+            };
+
+        try {
+            // Start Callable, and wait for the response
+            Future future = executorService.submit(callable);
+
+            // Get the response
+            ApplicationResponse resp = (ApplicationResponse)future.get();
+
+            return resp;
+        } catch (ExecutionException ee) {
+            return new ApplicationResponse(false, ee.getMessage());
+        } catch (InterruptedException ie) {
+            return new ApplicationResponse(false, ie.getMessage());
         }
+
     }
+            
+        
 
     /**
      * Stop an App.

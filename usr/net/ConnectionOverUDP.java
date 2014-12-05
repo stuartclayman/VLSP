@@ -6,6 +6,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
+import usr.logging.Logger;
+import usr.logging.USR;
+
 /**
  * Create a connection that sends data
  * as USR Datagrams over UDP.
@@ -27,6 +30,8 @@ public class ConnectionOverUDP implements Connection {
 
     // current position in the ByteBuffer
     int current = 0;
+    boolean socketClosing_ = false;
+
 
     /**
      * Construct a ConnectionOverUDP given a UDPEndPointSrc
@@ -52,7 +57,7 @@ public class ConnectionOverUDP implements Connection {
      * Connect.
      */
     @Override
-	public boolean connect() throws IOException {
+    public boolean connect() throws IOException {
         endPoint.connect();
 
         DatagramSocket socket = endPoint.getSocket();
@@ -68,7 +73,7 @@ public class ConnectionOverUDP implements Connection {
      * Get the Address for this connection.
      */
     @Override
-	public Address getAddress() {
+    public Address getAddress() {
         return localAddress;
     }
 
@@ -76,7 +81,7 @@ public class ConnectionOverUDP implements Connection {
      * Set the Address for this connection.
      */
     @Override
-	public Connection setAddress(Address addr) {
+    public Connection setAddress(Address addr) {
         localAddress = addr;
         return this;
     }
@@ -85,13 +90,12 @@ public class ConnectionOverUDP implements Connection {
      * Send a Datagram.
      */
     @Override
-	public boolean sendDatagram(Datagram dg) {
+    public boolean sendDatagram(Datagram dg) throws IOException {
         DatagramSocket socket = getSocket();
 
         // set the address
         dg.setSrcAddress(localAddress);
 
-        try {
             // convert byte buffer to a DatagramPacket
             byte[] data = ((DatagramPatch)dg).toByteBuffer().array();
             DatagramPacket packet = new DatagramPacket(data, data.length);
@@ -109,23 +113,20 @@ public class ConnectionOverUDP implements Connection {
                 throw new Error("ConnectionOverUDP: cannot send from an EndPoitn destination");
             }
 
-            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP sendDatagram: packet = " + packet);
+            Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP sendDatagram: packet = " + packet);
 
             // send it
             socket.send(packet);
 
             return true;
 
-        } catch (IOException ioe) {
-            return false;
-        }
     }
 
     /**
      * Read a Datagram.
      */
     @Override
-	public Datagram readDatagram() {
+    public Datagram readDatagram() {
         DatagramSocket socket = getSocket();
 
         try {
@@ -166,10 +167,29 @@ public class ConnectionOverUDP implements Connection {
     }
 
     /**
+     * Close the connection -- must be synchronized to prevent close while
+     * we are in sendDatagram
+     */
+    public synchronized void close() {
+        if (socketClosing_) {
+            return;
+        }
+        socketClosing_ = true;
+
+        DatagramSocket socket = getSocket();
+        try {
+            socket.close();
+        } catch (Exception ioe) {
+            throw new Error("Socket: " + socket + " can't close");
+        }
+    }
+
+
+    /**
      * Get the EndPoint of this Connection.
      */
     @Override
-	public EndPoint getEndPoint() {
+    public EndPoint getEndPoint() {
         return endPoint;
     }
 
@@ -184,7 +204,7 @@ public class ConnectionOverUDP implements Connection {
      * To String
      */
     @Override
-	public String toString() {
+    public String toString() {
         return endPoint.toString();
     }
 

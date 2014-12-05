@@ -39,7 +39,7 @@ public class StubUDPSend {
     /**
      * Write stuff
      */
-    void writeALot(int count) {
+    void writeALot(int count) throws IOException {
         Datagram datagram;
 
         for (int i = 0; i < count; i++) {

@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.Future;
 
 import usr.common.TimedThread;
-import usr.common.TimedThreadGroup;
+import usr.common.SimpleThreadFactory;
 
 import usr.interactor.RouterInteractor;
 import usr.net.Address;
@@ -105,7 +105,11 @@ public class RouterEnv {
         Future future = executer.submit(starter);
 
         // Get a handle on the Router itself
-        return getRouter();
+        Router r = getRouter();
+
+        executer.shutdown();
+
+        return r;
     }
 
     /**
@@ -232,31 +236,6 @@ class Starter implements Runnable {
         }
 
         return router;
-    }
-
-}
-
-/**
- * Generate a Thread in a specified ThreadGroup.
- */
-class SimpleThreadFactory implements ThreadFactory {
-    String name;
-    ThreadGroup group;
-
-    /**
-     * Construct a ThreadFactory with a name
-     */
-    public SimpleThreadFactory(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Create a new Thread in a specific ThreadGroup
-     */
-    @Override
-    public Thread newThread(Runnable r) {
-        group = new TimedThreadGroup(name);
-        return new TimedThread(group, r, name);
     }
 
 }

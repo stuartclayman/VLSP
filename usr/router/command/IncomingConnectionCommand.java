@@ -3,6 +3,7 @@ package usr.router.command;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.util.Scanner;
 
 import org.simpleframework.http.Request;
@@ -20,8 +21,8 @@ import usr.router.NetIF;
 
 /**
  * The INCOMING_CONNECTION command.
- * INCOMING_CONNECTION connectionID routerName routerID weight TCP-port
- * INCOMING_CONNECTION /Router283836798/Connection-1 Router283836798 4132 20 57352
+ * INCOMING_CONNECTION connectionID routerName routerID weight connection-hash-code end-point-host end-point-port
+ * INCOMING_CONNECTION /Router283836798/Connection-1 Router283836798 4132 20 573523232 127.0.0.1 54125
  */
 public class IncomingConnectionCommand extends RouterCommand {
     /**
@@ -48,34 +49,38 @@ public class IncomingConnectionCommand extends RouterCommand {
 
             String[] parts = args.split(" ");
 
-            if (parts.length == 5) {
+            if (parts.length == 7) {
 
                 String connectionID = parts[0];
                 String remoteRouterName = parts[1];
                 String remoteRouterID = parts[2];
                 String weightStr = parts[3];
-                String remotePort = parts[4];
+                String connectionHashCodeStr = parts[4];
+                String endPointHostStr = parts[5];
+                String endPointPortStr = parts[6];
 
                 Scanner scanner;
 
-                // get remote port
-                scanner = new Scanner(remotePort);
-                int port;
+                // get connectionHashCode
+                scanner = new Scanner(connectionHashCodeStr);
+                int connectionHashCode;
 
                 try {
-                    port = scanner.nextInt();
+                    connectionHashCode = scanner.nextInt();
                     scanner.close();
                 } catch (Exception e) {
                     response.setCode(302);
 
                     JSONObject jsobj = new JSONObject();
-                    jsobj.put("error", getName() + " bad port number");
+                    jsobj.put("error", getName() + " bad hash code");
 
                     out.println(jsobj.toString());
                     response.close();
 
                     return false;
                 }
+
+                Logger.getLogger("log").logln(USR.STDOUT, "IncomingConnectionCommand hashCode => " + " # " + connectionHashCode);
 
                 // get connection weight
                 scanner = new Scanner(weightStr);
@@ -96,11 +101,46 @@ public class IncomingConnectionCommand extends RouterCommand {
                     return false;
                 }
 
-                // create an address from the same host, but
-                // using the passed in port number
-                InetSocketAddress client = request.getClientAddress();
-                InetSocketAddress refAddr = new InetSocketAddress(client.getAddress(), port);
-                //Logger.getLogger("log").logln(USR.ERROR, "ManagementConsole => " + refAddr + " # " + refAddr.hashCode());
+                // Get the remote host end point info
+
+
+                InetAddress endPointHost = null;
+
+                try {
+                    endPointHost = InetAddress.getByName(endPointHostStr);
+                }  catch (Exception e) {
+                    response.setCode(302);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("error", getName() + " invalid value for endPointHost " + endPointHostStr);
+
+                    out.println(jsobj.toString());
+                    response.close();
+                    scanner.close();
+
+                    return false;
+                }
+
+                // and now end point port
+
+                scanner = new Scanner(endPointPortStr);
+                int endPointPort = 0;
+
+                try {
+                    endPointPort = scanner.nextInt();
+                } catch (Exception e) {
+                    response.setCode(302);
+
+                    JSONObject jsobj = new JSONObject();
+                    jsobj.put("error", getName() + " invalid value for endPointPort " + endPointPortStr);
+
+                    out.println(jsobj.toString());
+                    response.close();
+                    scanner.close();
+
+                    return false;
+                }
+
 
                 String remoteAddr = remoteRouterID;
 
@@ -108,10 +148,10 @@ public class IncomingConnectionCommand extends RouterCommand {
                 /*
                  * Lookup netif and set its name
                  */
-                NetIF netIF = controller.getTemporaryNetIFByID(refAddr.hashCode());
+                NetIF netIF = controller.getTemporaryNetIFByID(connectionHashCode);
 
                 if (netIF != null) {
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Found temporary NetIF with id " + refAddr.hashCode());
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Found temporary NetIF with id " + connectionHashCode);
 
                     // set its name
                     netIF.setName(connectionID);
@@ -145,7 +185,18 @@ public class IncomingConnectionCommand extends RouterCommand {
 
                     netIF.setRemoteRouterAddress(addr);
 
-                    // netif attributes set
+                    // set the remote actually Address
+                    netIF.setRemoteAddress(endPointHost, endPointPort);
+
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "endPointHostStr = " + endPointHostStr + " endPointPortStr = " + endPointPortStr + " endPointHost = " + endPointHost + " endPointPort = " + endPointPort);
+
+
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF: " + netIF.getLocalAddress() + ":" + netIF.getLocalPort() +  " <-> " + netIF.getInetAddress() + ":" + netIF.getPort() );
+                
+                    // netif attributes all set
+
+
+
 
                     // now plug netIF into Router
                     controller.plugTemporaryNetIFIntoPort(netIF);
@@ -167,7 +218,7 @@ public class IncomingConnectionCommand extends RouterCommand {
                     response.setCode(302);
 
                     JSONObject jsobj = new JSONObject();
-                    jsobj.put("error", "Cannot find NetIF for port " + port);
+                    jsobj.put("error", "Cannot find NetIF for hashCode " + connectionHashCode);
 
                     out.println(jsobj.toString());
                     response.close();

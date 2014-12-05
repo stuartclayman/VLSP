@@ -1,20 +1,23 @@
 package usr.router;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.channels.ServerSocketChannel;
 
 import usr.common.TimedThread;
 import usr.logging.Logger;
 import usr.logging.USR;
+import usr.net.TCPEndPointSrc;
 import usr.net.TCPEndPointDst;
 
 /**
- * A RouterConnections accepts new connections from exisiting routers.
+ * A RouterConnections accepts new connections from exisiting routers,
+ * using TCP as the router to router connection mechanism.
  */
-public class RouterConnections implements Runnable {
+public class RouterConnectionsTCP implements RouterConnections, Runnable {
     // The RouterController
     RouterController controller;
 
@@ -34,7 +37,7 @@ public class RouterConnections implements Runnable {
     /**
      * Construct a RouterConnections, given a specific port.
      */
-    public RouterConnections(RouterController cont, int port) {
+    public RouterConnectionsTCP(RouterController cont, int port) {
         controller = cont;
         this.port = port;
     }
@@ -95,31 +98,37 @@ public class RouterConnections implements Runnable {
      * The main thread loop.
      */
     @Override
-	public void run() {
+    public void run() {
         while (running) {
             try {
                 TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
                 NetIF netIF = new TCPNetIF(dst, controller.getListener());
                 netIF.setName("RouterConnections");
+
+                // this connect() waits (actually does an accept() ) 
+                // by waiting for an incoming connect() from another router
                 netIF.connect();
 
-                Socket local = dst.getSocket();
-
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Did accept on: " + serverSocket);
+                port = netIF.getPort();
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "newConnection: " + dst.getSocket());
 
-                InetSocketAddress refAddr = new InetSocketAddress(local.getInetAddress(), local.getPort());
 
-                Logger.getLogger("log").logln(USR.STDOUT, "RouterConnections  => " + refAddr + " # " + refAddr.hashCode());
+                int netIFHashCode = getLocalHashCode(netIF);
 
 
-                netIF.setID(refAddr.hashCode());
+                Logger.getLogger("log").logln(USR.STDOUT, "RouterConnections hashCode => " + " # " + netIFHashCode);
+
+
+                netIF.setID(netIFHashCode);
 
                 //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
 
-                controller.registerTemporaryNetIF(netIF);
+                // The following method is latched, awaiting a getTemporaryNetIFByID() call
+                controller.registerTemporaryNetIFIncoming(netIF);
 
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF: " + netIF.getLocalAddress() + ":" + netIF.getLocalPort() +  " <-> " + netIF.getInetAddress() + ":" + netIF.getPort() );
+                
             } catch (IOException ioe) {
                 // only print if running, not when stopping
                 if (running) {
@@ -129,6 +138,36 @@ public class RouterConnections implements Runnable {
 
         }
 
+    }
+
+    /**
+     * Create an EndPoint source for a TCPNetIF
+     */
+    public NetIF getNetIFSrc(String host, int connectionPort) throws UnknownHostException, IOException {
+            TCPEndPointSrc src = new TCPEndPointSrc(host, connectionPort);
+            NetIF netIF = new TCPNetIF(src, controller.getListener());
+
+            return netIF;
+    }
+
+    /**
+     * Return an hash code for locally created NetIF.
+     */
+    public int getLocalHashCode(NetIF netIF) {
+        InetSocketAddress refAddr = new InetSocketAddress(netIF.getInetAddress(), netIF.getPort());
+
+        return refAddr.hashCode();
+    }
+
+
+    /**
+     * Return a hash code for a NetIF in Create Connection.
+     */
+    public int getCreateConnectionHashCode(NetIF netIF, InetAddress addr, int port) {
+        // get an InetSocketAddress
+        InetSocketAddress refAddr = new InetSocketAddress(netIF.getInetAddress(), netIF.getLocalPort());
+
+        return refAddr.hashCode();
     }
 
     /**

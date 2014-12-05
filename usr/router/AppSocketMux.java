@@ -2,6 +2,7 @@ package usr.router;
 
 import java.io.IOException;
 import java.net.NoRouteToHostException;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -535,6 +536,45 @@ public class AppSocketMux implements NetIF {
     LinkedBlockingQueue<Datagram> getQueueForPort(int port) {
         return socketQueue.get(port);
     }
+
+    /**
+     * Get the remote address to which this socket is connected.
+     */
+    public InetAddress getInetAddress() {
+        throw new UnsupportedOperationException("no underyling socket");
+    }
+
+    /**
+     * Gets the local address to which the socket is bound.
+     */
+    public InetAddress getLocalAddress() {
+        throw new UnsupportedOperationException("no underyling socket");
+    }
+
+
+    /**
+     * Get the remote port number to which this socket is connected.
+     */
+    public int getPort() {
+        throw new UnsupportedOperationException("no underyling socket");
+    }
+
+
+    /**
+     * Get the port number on the local host to which this socket is bound.
+     */
+    public int getLocalPort() {
+        throw new UnsupportedOperationException("no underyling socket");
+    }
+
+
+    /**
+     * Set the remote InetAddress and port
+     */
+    public void setRemoteAddress(InetAddress addr, int port) {
+        throw new UnsupportedOperationException("no underyling socket");
+    }
+
 
     /**
      * Create the String to print out before a message

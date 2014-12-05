@@ -267,12 +267,12 @@ public class RouterInteractor {
      * @param name the name of the router making the connection
      * @param addr the address of the router making the connection
      * @param weight the weight of the connection
-     * @param port the port number
+     * @param hashCode the hashCode for a connection
+     * @param endPointHost the host address for this host 
+     * @param endPointPort the host port for this host
      */
-    public RouterInteractor incomingConnection(String connectionID, String name, Address addr, int weight,
-                                               int port) throws IOException, JSONException {
-        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + addr.asTransmitForm() + " " +
-            weight  + " " + port;
+    public RouterInteractor incomingConnection(String connectionID, String name, Address addr, int weight, int hash, InetAddress endPointHost, int endPointPort) throws IOException, JSONException {
+        String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + addr.asTransmitForm() + " " + weight  + " " + hash + " " + endPointHost.getHostAddress() + " " + endPointPort;
         interact(toSend);
         return this;
     }

@@ -33,7 +33,7 @@ public class UDPEndPointDst implements UDPEndPoint {
 	public boolean connect() throws IOException {
         if (isConnected) {
             throw new IOException("Cannot connect again to: " + socket);
-        } else {
+        } else {            
             isConnected = true;
             return true;
         }

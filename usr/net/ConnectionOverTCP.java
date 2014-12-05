@@ -179,7 +179,7 @@ public class ConnectionOverTCP implements Connection {
      * Read a Datagram.
      */
     @Override
-	public Datagram readDatagram() throws IOException {
+    public Datagram readDatagram() throws IOException {
         Datagram dg;
 
         dg = decodeDatagram();

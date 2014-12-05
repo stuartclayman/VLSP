@@ -1,8 +1,10 @@
 package usr.net;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.DatagramSocket;
 import java.net.UnknownHostException;
+import java.nio.channels.DatagramChannel;
 
 /**
  * A source end point for connections over UDP.
@@ -16,6 +18,8 @@ public class UDPEndPointSrc implements UDPEndPoint {
 
     // socket
     DatagramSocket socket;
+    // and channel
+    DatagramChannel channel;
 
     // isConnected
     boolean isConnected;
@@ -27,6 +31,8 @@ public class UDPEndPointSrc implements UDPEndPoint {
         this.host = host;
         this.port = port;
         isConnected = false;
+
+        channel = DatagramChannel.open();
     }
 
     /**
@@ -37,7 +43,9 @@ public class UDPEndPointSrc implements UDPEndPoint {
         if (isConnected) {
             throw new IOException("Cannot connect again to: " + socket);
         } else {
-            socket = new DatagramSocket();
+            socket = channel.socket();
+            //socket = new DatagramSocket();
+            socket.connect(new InetSocketAddress(host, port));
             isConnected = true;
             return true;
         }

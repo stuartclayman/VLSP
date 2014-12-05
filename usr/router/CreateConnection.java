@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
@@ -17,8 +16,6 @@ import usr.interactor.RouterInteractor;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
-import usr.net.TCPEndPointSrc;
-
 
 
 /**
@@ -175,10 +172,9 @@ public class CreateConnection {
          */
 
         // make a socket connection for the router - to - router path
-        Socket socket = null;
         NetIF netIF = null;
-        InetSocketAddress refAddr;
         String latestConnectionName = null;
+        int connectionHashCode;
 
         if (connectionName == null || connectionName.equals("")) {
             latestConnectionName = controller.getName() + ".Connection-" + controller.getConnectionCount();
@@ -188,8 +184,7 @@ public class CreateConnection {
 
         try {
             // make a connection to a remote router
-            TCPEndPointSrc src = new TCPEndPointSrc(host, connectionPort);
-            netIF = new TCPNetIF(src, controller.getListener());
+            netIF = controller.getRouterConnections().getNetIFSrc(host, connectionPort);
 
             // set its name
             netIF.setName(latestConnectionName);
@@ -199,19 +194,17 @@ public class CreateConnection {
             // set its Address
             netIF.setAddress(controller.getAddress());
 
+            // connect to other router
             netIF.connect();
 
-            // get socket so we can determine the Inet Address
-            socket = src.getSocket();
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "connection socket: " + socket);
+            connectionHashCode = controller.getRouterConnections().getCreateConnectionHashCode(netIF, InetAddress.getByName(host), connectionPort);
 
-
-
-            refAddr = new InetSocketAddress(socket.getInetAddress(), socket.getLocalPort());;
+            Logger.getLogger("log").logln(USR.STDOUT, "CreateConnection hashCode => "  + " # " + connectionHashCode);
+                
 
             // set its ID
-            netIF.setID(refAddr.hashCode());
+            netIF.setID(connectionHashCode);
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "netif = " + netIF);
 
@@ -281,9 +274,11 @@ public class CreateConnection {
 
                 // send INCOMING_CONNECTION command
 
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "incomingConnection: " + " host = " + netIF.getLocalAddress() + " port = " + netIF.getLocalPort());
                 try {
                     interactor.incomingConnection(latestConnectionName, controller.getName(),
-                                                  controller.getAddress(), weight, socket.getLocalPort());
+                                                  controller.getAddress(), weight, connectionHashCode,
+                                                  netIF.getLocalAddress(), netIF.getLocalPort());
 
                     // connection setup ok
                     interactionOK = true;
