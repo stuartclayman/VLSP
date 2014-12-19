@@ -109,8 +109,6 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
                 // by waiting for an incoming connect() from another router
                 netIF.connect();
 
-                port = netIF.getPort();
-
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "newConnection: " + dst.getSocket());
 
 
