@@ -194,7 +194,19 @@ public class AppSocketMux implements NetIF {
      * Connect to my local Router.
      */
     @Override
-    public boolean connect() throws IOException {
+    public boolean connectPhase1() throws IOException {
+        return connect();
+    }
+
+    /**
+     * Connect to my local Router.
+     */
+    @Override
+    public boolean connectPhase2() throws IOException {
+        return true;
+    }
+
+    private boolean connect() throws IOException {
         setID(0);
         setName("localnet");
         setWeight(0);

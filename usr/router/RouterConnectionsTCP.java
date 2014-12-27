@@ -101,13 +101,14 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
     public void run() {
         while (running) {
             try {
+                // Set up a new end point
                 TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
                 NetIF netIF = new TCPNetIF(dst, controller.getListener());
                 netIF.setName("RouterConnections");
 
                 // this connect() waits (actually does an accept() ) 
                 // by waiting for an incoming connect() from another router
-                netIF.connect();
+                netIF.connectPhase1();
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "newConnection: " + dst.getSocket());
 
@@ -125,7 +126,11 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
                 // The following method is latched, awaiting a getTemporaryNetIFByID() call
                 controller.registerTemporaryNetIFIncoming(netIF);
 
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF: " + netIF.getLocalAddress() + ":" + netIF.getLocalPort() +  " <-> " + netIF.getInetAddress() + ":" + netIF.getPort() );
+                if (running) {
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF: " + netIF.getLocalAddress() + ":" + netIF.getLocalPort() +  " <-> " + netIF.getInetAddress() + ":" + netIF.getPort() );
+
+                    netIF.connectPhase2();
+                }
                 
             } catch (IOException ioe) {
                 // only print if running, not when stopping
@@ -172,7 +177,7 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
      * Create the String to print out before a message
      */
     String leadin() {
-        final String R2R = "R2R: ";
+        final String R2R = "R2R-TCP: ";
 
         if (controller == null) {
             return R2R;

@@ -64,6 +64,14 @@ public class RouterInteractor {
     }
 
     /**
+     * Get the address of the host this RouterInteractor is connecting to
+     */
+    public InetAddress getInetAddress() {
+        return addr;
+    }
+
+
+    /**
      * Get the port this RouterInteractor is connecting to
      */
     public int getPort() {

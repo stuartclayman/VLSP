@@ -182,18 +182,18 @@ public class ConnectionOverTCP implements Connection {
     public Datagram readDatagram() throws IOException {
         Datagram dg;
 
-        dg = decodeDatagram();
-
         if (eof) {
             // hit eof, so really return null
             return null;
         }
 
+        dg = decodeDatagram();
+
         if (dg != null) {
             inCounter++;
             return dg;
         } else {
-            throw new IOException("ConnectionOverTCP: Unexpected Null in readDatagram()");
+            throw new IOException("ConnectionOverTCP: Null in readDatagram()");
         }
     }
 
@@ -363,8 +363,7 @@ public class ConnectionOverTCP implements Connection {
             return;
         }
         socketClosing_ = true;
-        Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: close() inCounter = " +
-                                      inCounter + " outCounter = " + outCounter);
+
         Socket socket = getSocket();
         try {
             eof = true;
@@ -372,6 +371,9 @@ public class ConnectionOverTCP implements Connection {
         } catch (IOException ioe) {
             throw new Error("Socket: " + socket + " can't close");
         }
+
+        Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverTCP: closed inCounter = " + inCounter + " outCounter = " + outCounter);
+
     }
 
     /**

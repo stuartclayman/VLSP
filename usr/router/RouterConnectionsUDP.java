@@ -50,12 +50,11 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
      * Start the connections listening.
      */
     public boolean start() {
-        // initialise the socket
-            myThread = new TimedThread(controller.getThreadGroup(), this, "/" + controller.getName() + "/RouterConnections/" + hashCode());
-            running = true;
-            myThread.start();
+        myThread = new TimedThread(controller.getThreadGroup(), this, "/" + controller.getName() + "/RouterConnections/" + hashCode());
+        running = true;
+        myThread.start();
 
-            return true;
+        return true;
     }
 
     /**
@@ -63,6 +62,8 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
      */
     public boolean stop() {
         try {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
+
             running = false;
             myThread.interrupt();
 
@@ -81,24 +82,33 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
     public void run() {
         while (running) {
             try {
+                // Need a new socket each time for UDP
+                // There is no equivalent of TCP accept
 
+                /*
+                 * DatagramChannel 
                 DatagramChannel channel = DatagramChannel.open();
                 //channel.configureBlocking(true);
                 DatagramSocket socket = channel.socket();
-                socket.bind(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 0));
+                socket.bind(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+                */
 
+                // Listen on all interfaces
+                DatagramSocket socket = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+
+                // Set the port for the next incoming call
                 port = socket.getLocalPort();
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Listening on port: " + port);
 
-
+                // Set up a new end point
                 UDPEndPointDst dst = new UDPEndPointDst(socket);
                 NetIF netIF = new UDPNetIF(dst, controller.getListener());
                 netIF.setName("RouterConnections");
 
-                // We dont do a connect in RouterConnectionsUDP
+                // We dont do a real connect in RouterConnectionsUDP
                 // This is handled when we do a setRemoteAddress() in INCOMING_CONNECTION
-                //netIF.connect();
+                netIF.connectPhase1();
 
 
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "newConnection: " + dst.getSocket());
@@ -115,13 +125,20 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
                 // The following method is latched, awaiting a getTemporaryNetIFByID() call
                 controller.registerTemporaryNetIFIncoming(netIF);
 
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF: " + netIF.getLocalAddress() + ":" + netIF.getLocalPort() +  " <-> " + netIF.getInetAddress() + ":" + netIF.getPort() );
+                // only continue if running
+                if (running) {
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF: " + netIF.getLocalAddress() + ":" + netIF.getLocalPort() +  " <-> " + netIF.getInetAddress() + ":" + netIF.getPort() );
                 
+                    netIF.connectPhase2();
+                } else {
+                    break;
+                }
 
             } catch (IOException ioe) {
                 // only print if running, not when stopping
                 if (running) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "accept failed");
+                    ioe.printStackTrace();
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "socket failed");
                 }
             }
 
@@ -133,11 +150,18 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
      * Return an hash code for locally created NetIF.
      */
     public int getLocalHashCode(NetIF netIF) {
-        InetSocketAddress refAddr = new InetSocketAddress(netIF.getLocalAddress(), netIF.getLocalPort());
+        try {
+            // Hash code is a function of the local host IP
+            InetSocketAddress refAddr = new InetSocketAddress(InetAddress.getLocalHost(), netIF.getLocalPort());
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "getLocalHashCode -> " + refAddr);
 
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "getLocalHashCode -> " + refAddr);
-
-        return refAddr.hashCode();
+            return refAddr.hashCode();
+        } catch (UnknownHostException uhe) {
+            // If local host addr is not available then
+            // Hash code is a function of the NetIF local address
+            InetSocketAddress refAddr = new InetSocketAddress(netIF.getLocalAddress(), netIF.getLocalPort());
+            return refAddr.hashCode();
+        }
     }
 
     /**
@@ -167,7 +191,7 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
      * Create the String to print out before a message
      */
     String leadin() {
-        final String R2R = "R2R: ";
+        final String R2R = "R2R-UDP: ";
 
         if (controller == null) {
             return R2R;

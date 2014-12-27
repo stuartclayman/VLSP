@@ -11,6 +11,7 @@ import java.util.concurrent.Semaphore;
 import usr.common.TimedThread;
 import usr.logging.Logger;
 import usr.logging.USR;
+import usr.common.ANSI;
 import usr.net.Address;
 import usr.net.AddressFactory;
 import usr.net.Datagram;
@@ -58,6 +59,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
     String name_ = "";
 
+    FabricState state = FabricState.PRE_INIT;
+
     Semaphore semaphore;
 
 
@@ -93,6 +96,9 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
         // 20120905 sclayman datagramQueue_= new LinkedBlockingQueue<DatagramHandle>();
 
         semaphore = new Semaphore(1);
+
+        state = FabricState.POST_INIT;
+
         return true;
     }
 
@@ -118,6 +124,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
         routingTableTransmitter = new RoutingTableTransmitter(this);
         routingTableTransmitter.start();
 
+        state = FabricState.STARTED;
+
         return true;
     }
 
@@ -126,6 +134,9 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
      */
     @Override
     public boolean stop() {
+
+        state = FabricState.STOPPING;
+
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router fabric stop");
         // stop RoutingTableTransmitter thread
         routingTableTransmitter.terminate();
@@ -136,8 +147,20 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
         closePorts();
         fabricDevice_.stop();
 
+        state = FabricState.STOPPED;
+
         return true;
     }
+
+
+    /**
+     * Get the state 
+     */
+    public FabricState getState() {
+        return state;
+    }
+
+
 
     /** Send routing table to all other interfaces apart from inter*/
     void sendToOtherInterfaces(NetIF inter) {
@@ -489,9 +512,10 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
         NetIF netif = null;
 
-        if (device != null && device.getClass().equals(TCPNetIF.class )) {
-            netif = (TCPNetIF)device;
+        if (device != null && device instanceof NetIF) {
+            netif = (NetIF)device;
         }
+
 
         // forward datagram if there is a local NetIF and port is not zero
         if (localNetIF != null && dg.getDstPort() != 0) {
@@ -746,6 +770,18 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
             Logger.getLogger("log").logln(1<<6, leadin()+ System.currentTimeMillis() + " merging routing table received on "+netIF);
         }
 
+
+        // 25122014 sclayman
+        long now = System.currentTimeMillis();
+
+        Logger.getLogger("log").logln(1<<6, leadin() + now+ " recv table to interface "+ netIF);
+        Logger.getLogger("log").logln(1<<6,
+                                      leadin() + "\nsize " + bytes.length + " = 5+" +
+                                      (bytes.length-5) + " -> " + t.showTransmitted());
+
+
+
+
         boolean merged = false;
         synchronized (table_) {
             merged = table_.mergeTables(t, netIF, options_);
@@ -755,7 +791,7 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
         }
 
         if (merged) {
-            //Logger.getLogger("log").logln(USR.STDOUT, "Send to other interfaces");
+            //Logger.getLogger("log").logln(USR.STDOUT, ANSI.GREEN + "Send to other interfaces" + ANSI.RESET_COLOUR);
             sendToOtherInterfaces(netIF);
         }
     }
@@ -1121,6 +1157,13 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
      */
     public boolean remoteRemoveNetIF(NetIF netIF) {
         //synchronized (ports) { // this can lock up on link end
+
+        if (state == RouterFabric.FabricState.STOPPING || state == RouterFabric.FabricState.STOPPED) {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already stopping when remoteRemoveNetIF() called");
+            return false;
+        }
+            
+
         return doRemove(netIF, true);
         //}
     }
@@ -1164,6 +1207,9 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
                 netIF.setRouterPort(null);
                 resetPort(port.getPortNo());
 
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "Unplug " + netIF.getName()+ " from port " + port.getPortNo());
+
+
                 synchronized (table_) {
                     if (table_.removeNetIF(netIF)) {
                         sendToOtherInterfaces(netIF);
@@ -1172,8 +1218,7 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
                 routingTableTransmitter.informNewData();
                 return true;
             } else {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin()+netIF+
-                                              " second attempt to remove");
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+netIF+ " second attempt to remove");
                 // didn't find netIF in any RouterPort
                 return false;
             }

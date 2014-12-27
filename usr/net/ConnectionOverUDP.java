@@ -17,20 +17,29 @@ public class ConnectionOverUDP implements Connection {
     // End point
     UDPEndPoint endPoint;
 
+    static final byte [] checkbytes = "USRD".getBytes();
+
     // The local address for this connection
     Address localAddress;
 
     // A ByteBuffer to read into
     int BUF_SIZE = 2048;
+    int bufferSize_ = BUF_SIZE;
     ByteBuffer buffer;
 
     // reveice array
     byte[] recvArray;
     DatagramPacket recvPacket;
 
-    // current position in the ByteBuffer
     int current = 0;
     boolean socketClosing_ = false;
+
+    // counts
+    int inCounter = 0;
+    int outCounter = 0;
+
+    // eof
+    boolean eof = false;
 
 
     /**
@@ -90,43 +99,90 @@ public class ConnectionOverUDP implements Connection {
      * Send a Datagram.
      */
     @Override
-    public boolean sendDatagram(Datagram dg) throws IOException {
+    public synchronized boolean sendDatagram(Datagram dg) throws IOException {
+        if (dg == null) {
+            Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP: received null datagram");
+            return false;
+        }
+
         DatagramSocket socket = getSocket();
 
-        // set the address
-        dg.setSrcAddress(localAddress);
+        if (! socket.isClosed()) {
 
             // convert byte buffer to a DatagramPacket
             byte[] data = ((DatagramPatch)dg).toByteBuffer().array();
+
+            // UDP packet
             DatagramPacket packet = new DatagramPacket(data, data.length);
 
+            /*
             // set destination address
             // These are in the endPoint
             if (endPoint instanceof UDPEndPointSrc) {
                 // this is good
                 UDPEndPointSrc src = (UDPEndPointSrc)endPoint;
 
-                InetAddress addr = InetAddress.getByName(src.getHostName());
+                InetAddress addr = src.getRemoteHost();
                 packet.setAddress(addr);
-                packet.setPort(src.getPort());
-            } else {
-                throw new Error("ConnectionOverUDP: cannot send from an EndPoitn destination");
-            }
+                packet.setPort(src.getRemotePort());
+            } else if (endPoint instanceof UDPEndPointDst) {
+                // this is good
+                UDPEndPointDst dst = (UDPEndPointDst)endPoint;
 
-            Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP sendDatagram: packet = " + packet);
+                InetAddress addr = dst.getRemoteHost();
+                packet.setAddress(addr);
+                packet.setPort(dst.getRemotePort());
+            } else {
+                throw new Error("ConnectionOverUDP: cannot send from a NON EndPoint destination");
+            }
+            */
+
+            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP sendDatagram: packet = " + packet);
 
             // send it
             socket.send(packet);
+            outCounter++;
 
             return true;
 
+        } else {
+            Logger.getLogger("log").logln(USR.STDOUT,
+                                          "ConnectionOverUDP: " + endPoint + " outCounter = " + outCounter +
+                                          " ALREADY CLOSED -- channel is closed");
+
+            return false;
+        }
     }
 
     /**
      * Read a Datagram.
      */
     @Override
-    public Datagram readDatagram() {
+    public Datagram readDatagram() throws IOException {
+        Datagram dg;
+
+        if (eof) {
+            // hit eof, so really return null
+            return null;
+        }
+
+        dg = decodeDatagram();
+
+        if (dg != null) {
+            inCounter++;
+            return dg;
+        } else {
+            throw new IOException("ConnectionOverUDP: Unexpected Null in readDatagram()");
+        }
+    }
+
+    /** look at buffer and try to decode a datagram from it without reading more data */
+    Datagram decodeDatagram() {
+        // if we hit EOF an anytime, return null
+        if (eof) {
+            return null;
+        }
+
         DatagramSocket socket = getSocket();
 
         try {
@@ -143,8 +199,7 @@ public class ConnectionOverUDP implements Connection {
             buffer.clear();
             buffer.limit(count);
 
-            // Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP readDatagram: buffer = " + buffer.position() + " < " +
-            // buffer.limit() + " < " + buffer.capacity());
+            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP readDatagram: buffer = " + buffer.position() + " < " + buffer.limit() + " < " + buffer.capacity());
 
             totalLen = (short)count;
 
@@ -152,17 +207,39 @@ public class ConnectionOverUDP implements Connection {
             byte[] latestDGData = new byte[totalLen];
             buffer.get(latestDGData);
             ByteBuffer newBB = ByteBuffer.wrap(latestDGData);
-
+            // get an empty Datagram
             Datagram dg = DatagramFactory.newDatagram();
+            // and fill in contents
+            // not just the payload, but all headers too
             ((DatagramPatch)dg).fromByteBuffer(newBB);
 
-            buffer.clear();
+            //buffer.clear();
 
+            checkDatagram(latestDGData, dg);
             return dg;
 
         } catch (IOException ioe) {
             // TODO:  return Datagram.ERROR object
+            eof = true;
+
+            //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP Exception in readDatagram: " + ioe);
+            //ioe.printStackTrace();
+
+
             return null;
+        }
+    }
+
+    void checkDatagram (byte [] latestDGData, Datagram dg) {
+        if (latestDGData[0] != checkbytes[0] ||
+            latestDGData[1] != checkbytes[1] ||
+            latestDGData[2] != checkbytes[2] ||
+            latestDGData[3] != checkbytes[3]) {
+            Logger.getLogger("log").logln(USR.ERROR, "Read incorrect datagram "+latestDGData);
+            //Logger.getLogger("log").logln(USR.ERROR, "Buffer size "+bufferSize_+" start pos "+bufferStartData_ + " end Pos "+bufferEndData_);
+            ByteBuffer b = ((DatagramPatch)dg).toByteBuffer();
+            Logger.getLogger("log").logln(USR.ERROR, "READ as bytes "+ b.asCharBuffer());
+            System.exit(-1);
         }
     }
 
@@ -178,10 +255,14 @@ public class ConnectionOverUDP implements Connection {
 
         DatagramSocket socket = getSocket();
         try {
+            eof = true;
             socket.close();
         } catch (Exception ioe) {
             throw new Error("Socket: " + socket + " can't close");
         }
+
+
+        Logger.getLogger("log").logln(USR.STDOUT, "ConnectionOverUDP: closed inCounter = " + inCounter + " outCounter = " + outCounter);
     }
 
 

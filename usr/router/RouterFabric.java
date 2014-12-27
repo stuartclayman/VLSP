@@ -7,7 +7,12 @@ import usr.net.Address;
 /**
  * A RouterFabric within UserSpaceRouting.
  */
-public interface RouterFabric extends NetIFListener {
+public interface RouterFabric {
+    /**
+     * Get it's name
+     */
+    public String getName();
+
     /**
      * Add a Network Interface to this Router.
      */
@@ -101,4 +106,24 @@ public interface RouterFabric extends NetIFListener {
 
     /** Echo -- send datagram to id */
     public boolean echo(Address addr);
+
+
+    /**
+     * Get the state 
+     */
+    public FabricState getState();
+
+    /**
+     * The states of the RouterFabric
+     */
+    public enum FabricState {
+        PRE_INIT,        // initial state
+        POST_INIT,       // after for init()
+        STARTED,         // we have entered started
+        STOPPING,        // we have called stop() and the RouterFabric should stop
+        STOPPED          // the RouterFabric is stopped
+    }
+
+
+
 }

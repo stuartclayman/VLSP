@@ -2,9 +2,9 @@ package usr.net;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.net.DatagramSocket;
 import java.net.UnknownHostException;
-import java.nio.channels.DatagramChannel;
 
 /**
  * A source end point for connections over UDP.
@@ -16,10 +16,11 @@ public class UDPEndPointSrc implements UDPEndPoint {
     // Port
     int port;
 
+    // InetAddress of host
+    InetAddress inetAddr;
+
     // socket
     DatagramSocket socket;
-    // and channel
-    DatagramChannel channel;
 
     // isConnected
     boolean isConnected;
@@ -32,20 +33,26 @@ public class UDPEndPointSrc implements UDPEndPoint {
         this.port = port;
         isConnected = false;
 
-        channel = DatagramChannel.open();
+        inetAddr = InetAddress.getByName(host);
     }
 
     /**
      * Connect
      */
     @Override
-	public boolean connect() throws IOException {
+    public boolean connect() throws IOException {
         if (isConnected) {
             throw new IOException("Cannot connect again to: " + socket);
         } else {
-            socket = channel.socket();
-            //socket = new DatagramSocket();
-            socket.connect(new InetSocketAddress(host, port));
+            socket = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+
+            if (host.equals("localhost")) {
+                socket.connect(new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(), port));
+            } else {
+                socket.connect(new InetSocketAddress(InetAddress.getByName(host), port));
+            }
+
+            System.err.println("UDPEndPointSrc connect " +  socket.getLocalAddress() + ":" + socket.getLocalPort() + " to " + socket.getInetAddress() + ":" + socket.getPort());
             isConnected = true;
             return true;
         }
@@ -54,8 +61,15 @@ public class UDPEndPointSrc implements UDPEndPoint {
     /**
      * Get the remote host.
      */
-    public String getHostName() {
-        return host;
+    public InetAddress getRemoteHost() {
+        return inetAddr;
+    }
+
+    /**
+     * Get the port no.
+     */
+    public int getRemotePort() {
+        return port;
     }
 
     /**
@@ -69,7 +83,7 @@ public class UDPEndPointSrc implements UDPEndPoint {
      * Get the Socket.
      */
     @Override
-	public DatagramSocket getSocket() {
+    public DatagramSocket getSocket() {
         return socket;
     }
 
@@ -77,11 +91,11 @@ public class UDPEndPointSrc implements UDPEndPoint {
      * TO String
      */
     @Override
-	public String toString() {
+    public String toString() {
         if (socket == null) {
-            return host + ":" + port + " ? ";
+            return host + ":" + port + " (no socket)";
         } else {
-            return host + ":" + port + " -> ";
+            return host + ":" + port + (socket.isConnected() ? " (connected)" : " (NOT connected)");
         }
     }
 

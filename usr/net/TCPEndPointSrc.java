@@ -2,6 +2,7 @@ package usr.net;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
@@ -15,6 +16,9 @@ public class TCPEndPointSrc implements TCPEndPoint {
 
     // Port
     int port;
+
+    // InetAddress of host
+    InetAddress inetAddr;
 
     // socket
     Socket socket;
@@ -32,6 +36,8 @@ public class TCPEndPointSrc implements TCPEndPoint {
         this.port = port;
         isConnected = false;
 
+        inetAddr = InetAddress.getByName(host);
+
         channel = SocketChannel.open();
     }
 
@@ -39,7 +45,7 @@ public class TCPEndPointSrc implements TCPEndPoint {
      * Connect
      */
     @Override
-	public boolean connect() throws IOException {
+    public boolean connect() throws IOException {
         if (isConnected) {
             throw new IOException("Cannot connect again to: " + socket);
         } else {
@@ -69,7 +75,7 @@ public class TCPEndPointSrc implements TCPEndPoint {
      * Get the Socket.
      */
     @Override
-	public Socket getSocket() {
+    public Socket getSocket() {
         return socket;
     }
 
@@ -77,11 +83,11 @@ public class TCPEndPointSrc implements TCPEndPoint {
      * TO String
      */
     @Override
-	public String toString() {
+    public String toString() {
         if (socket == null) {
-            return host + ":" + port + " ? ";
+            return host + ":" + port + " (no socket)";
         } else {
-            return host + ":" + port + " -> ";
+            return host + ":" + port + (socket.isConnected() ? " (connected)" : " ( NOT connected)");
         }
     }
 

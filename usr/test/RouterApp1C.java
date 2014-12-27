@@ -7,6 +7,7 @@ import usr.net.*;
 import usr.interactor.RouterInteractor;
 import java.util.Scanner;
 import java.nio.ByteBuffer;
+import java.net.InetAddress;
 import java.net.SocketException;
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
@@ -42,7 +43,8 @@ public class RouterApp1C {
 
                 // connnect to the other router
                 // first we tal kto my own ManagementConsole
-                RouterInteractor selfInteractor = new RouterInteractor("localhost", 18181);
+                String address = InetAddress.getLocalHost().getHostAddress();
+                RouterInteractor selfInteractor = new RouterInteractor(address, 18181);
 
                 // then set up Router-to-Router data connection
                 selfInteractor.createConnection(remHost + ":" + remPort, 20);
@@ -74,7 +76,8 @@ public class RouterApp1C {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        //String host = InetAddress.getLocalHost().getHostAddress();
         String host = "localhost";
         int count = 10;
 

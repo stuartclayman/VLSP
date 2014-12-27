@@ -10,10 +10,14 @@ import usr.net.Address;
  */
 public interface NetIF extends DatagramDevice {
     /**
-     * Connect
+     * Connect - phase 1
      */
-    public boolean connect() throws IOException;
+    public boolean connectPhase1() throws IOException;
 
+    /**
+     * Connect - phase 2
+     */
+    public boolean connectPhase2() throws IOException;
 
     /**
      * Get the ID of this NetIF.
@@ -115,7 +119,6 @@ public interface NetIF extends DatagramDevice {
      * Get the port number on the local host to which this socket is bound.
      */
     public int getLocalPort();
-
 
     /**
      * Set the remote InetAddress and port

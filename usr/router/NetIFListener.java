@@ -6,7 +6,7 @@ import usr.net.Datagram;
 /**
  * Interface is for "glue" to hold together netifs -- it allows routing between them
  */
-public interface NetIFListener {
+public interface NetIFListener extends RouterFabric {
 
 
     /** Return the router Fabric device for this datagram -- this is
@@ -22,8 +22,4 @@ public interface NetIFListener {
     /** A datagram device has closed and must be removed */
     void closedDevice(DatagramDevice dd);
 
-    /**
-     * Get it's name
-     */
-    public String getName();
 }

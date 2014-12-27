@@ -34,7 +34,7 @@ public class StubUDPRecv {
     /**
      * Read stuff
      */
-    void readALot() {
+    void readALot() throws IOException {
         Datagram datagram;
         int count = 0;
 

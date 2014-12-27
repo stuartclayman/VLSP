@@ -77,6 +77,7 @@ import eu.reservoir.monitoring.core.Reporter;
 import eu.reservoir.monitoring.core.ReporterMeasurementType;
 import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneForwardingConsumerWithNames;
+import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneConsumerWithNames;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
 
 /**
@@ -534,7 +535,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Notification for an event execution success 
      */
     public void onEventSuccess(long time, Event ev) {
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event "+ev+" success");
+        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event "+ev+" success");
     }
 
     /**
@@ -2127,8 +2128,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         }
 
         // set up DataPlane
-        DataPlane inputDataPlane = new UDPDataPlaneForwardingConsumerWithNames(addr, forwardAddress);
-        // WITH NO FORAWRDING. DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(addr);
+        // WITH FORWARDING
+        // DataPlane inputDataPlane = new UDPDataPlaneForwardingConsumerWithNames(addr, forwardAddress);
+        // WITH NO FORAWRDING
+        DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(addr);
 
         dataConsumer.setDataPlane(inputDataPlane);
 

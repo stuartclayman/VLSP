@@ -3,6 +3,7 @@ package usr.net;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -33,7 +34,7 @@ public class TCPEndPointDst implements TCPEndPoint {
      * Connect
      */
     @Override
-	public boolean connect() throws IOException {
+    public boolean connect() throws IOException {
         if (isConnected) {
             throw new IOException("Cannot connect again to: " + socket);
         } else {
@@ -46,8 +47,15 @@ public class TCPEndPointDst implements TCPEndPoint {
     /**
      * Get the remote host.
      */
-    public String getHostName() {
-        return socket.getInetAddress().toString();
+    public InetAddress getRemoteHost() {
+        return socket.getInetAddress();
+    }
+
+    /**
+     * Get the remote host.
+     */
+    public int getRemotePort() {
+        return socket.getPort();
     }
 
     /**
@@ -61,7 +69,7 @@ public class TCPEndPointDst implements TCPEndPoint {
      * Get the Socket.
      */
     @Override
-	public Socket getSocket() {
+    public Socket getSocket() {
         return socket;
     }
 
@@ -69,11 +77,11 @@ public class TCPEndPointDst implements TCPEndPoint {
      * TO String
      */
     @Override
-	public String toString() {
+    public String toString() {
         if (socket == null) {
-            return " @ " + serverSocket.getInetAddress().getHostName() + ":" + port;
+            return serverSocket.getInetAddress().getHostName() + ":" + port + " (no socket)";
         } else {
-            return " -> " + serverSocket.getInetAddress().getHostName() + ":" + port;
+            return serverSocket.getInetAddress().getHostName() + ":" + port + " (connected)";
         }
     }
 

@@ -5,11 +5,11 @@ import us.monoid.json.JSONObject;
 /**
  * Test some calls to GlobalController using Resty
  */
-class RestyTest1 extends RestyTest {
+class RestyTest1B extends RestyTest {
 
     public static void main(String[] args) {
         try {
-            RestyTest1 test = new RestyTest1();
+            RestyTest1B test = new RestyTest1B();
 
             JSONObject r1 = test.createRouter();
             System.out.println("r1 = " + r1);
@@ -41,8 +41,17 @@ class RestyTest1 extends RestyTest {
             System.out.println("a1 = " + a1);
             Thread.sleep(500);
 
-            JSONObject a2 = test.createApp(router1, "usr.applications.Send", router2 + " 4000 10000 -i 1 -b 20");  // id 4000 count
+            JSONObject a2 = test.createApp(router1, "usr.applications.Send", router2 + " 4000 1000 -i 1 -b 20");  // id 4000 count
             System.out.println("a2 = " + a2);
+
+            Thread.sleep(60000);
+
+            JSONObject a3 = test.createApp(router1, "usr.applications.Recv", "4000");
+            System.out.println("a3 = " + a3);
+            Thread.sleep(500);
+
+            JSONObject a4 = test.createApp(router2, "usr.applications.Send", router1 + " 4000 1000 -i 1 -b 20");  // id 4000 count
+            System.out.println("a4 = " + a4);
 
 
             /* sleep 60 seconds - 1 minute */

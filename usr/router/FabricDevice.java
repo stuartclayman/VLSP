@@ -546,8 +546,6 @@ public class FabricDevice implements FabricDeviceInterface {
         }
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" out queue stop");
-        Logger.getLogger("log").logln(USR.STDOUT, leadin()+" fabric device stop");
-
     }
 
     void setName(String name) {

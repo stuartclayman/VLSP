@@ -128,7 +128,11 @@ public class CreateConnection {
 
 
         try {
-            interactor = new RouterInteractor(InetAddress.getByName(host), portNumber);
+            if (host.equals("localhost")) {
+                interactor = new RouterInteractor(InetAddress.getLocalHost().getHostAddress(), portNumber);
+            } else {
+                interactor = new RouterInteractor(InetAddress.getByName(host), portNumber);
+            }
 
         } catch (UnknownHostException uhe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unknown host: " + host);
@@ -195,10 +199,10 @@ public class CreateConnection {
             netIF.setAddress(controller.getAddress());
 
             // connect to other router
-            netIF.connect();
+            netIF.connectPhase1();
 
 
-            connectionHashCode = controller.getRouterConnections().getCreateConnectionHashCode(netIF, InetAddress.getByName(host), connectionPort);
+            connectionHashCode = controller.getRouterConnections().getCreateConnectionHashCode(netIF, interactor.getInetAddress(), connectionPort);
 
             Logger.getLogger("log").logln(USR.STDOUT, "CreateConnection hashCode => "  + " # " + connectionHashCode);
                 
@@ -274,16 +278,18 @@ public class CreateConnection {
 
                 // send INCOMING_CONNECTION command
 
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "incomingConnection: " + " host = " + netIF.getLocalAddress() + " port = " + netIF.getLocalPort());
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "incomingConnection: " + " host = " + netIF.getLocalAddress() + " port = " + netIF.getLocalPort() + " hashCode = " + connectionHashCode);
                 try {
+                    // send connectionHashCode and the details for the socket at this end
                     interactor.incomingConnection(latestConnectionName, controller.getName(),
                                                   controller.getAddress(), weight, connectionHashCode,
-                                                  netIF.getLocalAddress(), netIF.getLocalPort());
+                                                  netIF.getLocalAddress(), netIF.getLocalPort()  );
 
                     // connection setup ok
                     interactionOK = true;
                     break;
                 } catch (Exception e) {
+                    e.printStackTrace();
                     Logger.getLogger("log").logln(USR.ERROR,
                                                   leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " +
                                                   attempts);
@@ -293,6 +299,10 @@ public class CreateConnection {
 
             if (interactionOK) {
                 // everything ok
+
+                // connect to other router
+                netIF.connectPhase2();
+
             } else {
                 // connection setup failed
                 respondError("CREATE_CONNECTION Cannot interact with host: " + host);
@@ -300,6 +310,7 @@ public class CreateConnection {
             }
 
         } catch (Exception exc) {
+            exc.printStackTrace();
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc);
             respondError("CREATE_CONNECTION Cannot interact with host: " + host);
             return false;

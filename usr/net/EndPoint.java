@@ -12,4 +12,9 @@ public interface EndPoint {
      */
     public boolean connect() throws IOException;
 
+    /**
+     * Get the port no.
+     */
+    public int getPort();
+
 }

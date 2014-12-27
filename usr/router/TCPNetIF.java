@@ -110,7 +110,7 @@ public class TCPNetIF implements NetIF, Runnable {
         fabricDevice_.setName(name);
         fabricDevice_.start();
         latch = new CountDownLatch(1);
-        runThread_ = new TimedThread(group, this, "/" + name + "/NetIF");
+        runThread_ = new TimedThread(group, this, "/" + name + "/TCPNetIF");
         runThread_.start();
     }
 
@@ -133,15 +133,16 @@ public class TCPNetIF implements NetIF, Runnable {
             try {
                 datagram = connection.readDatagram();
             } catch (Exception ioe) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              "NetIF readDatagram error " + connection +
-                                              " IOException " + ioe);
-                ioe.printStackTrace();
+                // Probably EOF
+                //Logger.getLogger("log").logln(USR.ERROR,
+                //                              "TCPNetIF readDatagram error " + connection +
+                //                              " IOException " + ioe);
+                //ioe.printStackTrace();
             }
 
             if (datagram == null) {
                 eof = true;
-                continue;
+                break;
             }
             try {
                 if (fabricDevice_.inIsBlocking()) {
@@ -159,15 +160,27 @@ public class TCPNetIF implements NetIF, Runnable {
     }
 
     /**
-     * Activate
+     * Connect - phase1
      */
     @Override
-    public boolean connect() throws IOException {
+    public boolean connectPhase1() throws IOException {
+        //Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF " + connection.getEndPoint().getClass().getName() + " connect() " + connection.getEndPoint());
+
         boolean conn = connection.connect();
 
         closed = false;
         start();
         return conn;
+    }
+
+    /**
+     * Connect - phase2
+     */
+    @Override
+    public boolean connectPhase2() throws IOException {
+        // For TCP everything is done in phase 1
+        // Nothing to do here
+        return true;
     }
 
     /**
@@ -190,7 +203,7 @@ public class TCPNetIF implements NetIF, Runnable {
         }
 
         if (runThread_ != null) {
-            runThread_.setName("/" + n + "/NetIF");
+            runThread_.setName("/" + n + "/TCPNetIF");
         }
     }
 
@@ -208,7 +221,7 @@ public class TCPNetIF implements NetIF, Runnable {
     @Override
     public void setWeight(int w) {
         Logger.getLogger("log").logln(USR.STDOUT,
-                                      leadin() + ANSI.YELLOW + " NetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
+                                      leadin() + ANSI.YELLOW + " TCPNetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
         weight = w;
     }
 
@@ -317,6 +330,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Set the remote InetAddress and port
      */
     public void setRemoteAddress(InetAddress addr, int port) throws IOException {
+        // For TCP there is nothing to do
     }
 
     /**
@@ -333,7 +347,7 @@ public class TCPNetIF implements NetIF, Runnable {
     @Override
     public void setNetIFListener(NetIFListener l) {
         if (listener != null) {
-            Logger.getLogger("log").logln(USR.ERROR, "NetIF: already has a NetIFListener");
+            Logger.getLogger("log").logln(USR.ERROR, "TCPNetIF: already has a NetIFListener");
         } else {
             listener = l;
 
@@ -393,9 +407,7 @@ public class TCPNetIF implements NetIF, Runnable {
 
             //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF " + name + " sent " + dg);
         } catch (ClosedByInterruptException cbie) {
-            //Logger.getLogger("log").logln(USR.ERROR, leadin() + " ClosedByInterruptException connection.send
-            // "+address+"->"+remoteRouterAddress);
-
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + " ClosedByInterruptException connection.send "+address+"->"+remoteRouterAddress);
             //cbie.printStackTrace();
 
             listener.closedDevice(this);
@@ -425,10 +437,10 @@ public class TCPNetIF implements NetIF, Runnable {
     @Override
     public void remoteClose() {
         if (closed) {
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when remoteClose() called");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Already closed when remoteClose() called");
             return;
         }
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() +"RemoteClose");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() +" RemoteClose");
         remoteClose = true;
 
 
@@ -445,10 +457,10 @@ public class TCPNetIF implements NetIF, Runnable {
     @Override
     public void close() {
         synchronized (closed) { // prevent this running twice by blocking
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() +"  Close");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() +" Close");
 
             if (closed) {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when close() called");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Already closed when close() called");
                 return;
             }
             closed = true;
@@ -461,21 +473,21 @@ public class TCPNetIF implements NetIF, Runnable {
             }
 
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" About to stop fabricDevice_");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" About to stop fabricDevice");
 
             // tell the fabricDevice to stop
             if (fabricDevice_ != null) {
                 fabricDevice_.stop();
             }
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Did stop fabricDevice_");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Did stop fabricDevice");
 
             running_ = false;
 
             // close the connection
-            if (!remoteClose) {
+            //if (!remoteClose) {
                 connection.close();
-            }
+            //}
 
             runThread_.interrupt();
 
@@ -485,14 +497,7 @@ public class TCPNetIF implements NetIF, Runnable {
             } catch (InterruptedException ie) {
             }
 
-            /*
-             * try {
-             *   runThread_.join();
-             * } catch (InterruptedException e) {
-             *
-             * }
-             */
-
+            // notify the run()
             if (runWait_ != null) {
                 synchronized (runWait_) {
                     runWait_.notify();

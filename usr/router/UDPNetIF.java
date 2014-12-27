@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import usr.common.ANSI;
 import usr.common.TimedThread;
@@ -16,6 +17,7 @@ import usr.common.TimedThreadGroup;
 
 import usr.logging.Logger;
 import usr.logging.USR;
+import usr.net.EndPoint;
 import usr.net.Address;
 import usr.net.ConnectionOverUDP;
 import usr.net.Datagram;
@@ -52,7 +54,7 @@ public class UDPNetIF implements NetIF, Runnable {
     String remoteRouterName;
     // Remote Router Address
     Address remoteRouterAddress;
-    // The Listener
+    // The Listener - Actually a RouterFabric
     NetIFListener listener = null;
     // The RouterPort
     RouterPort port = null;
@@ -76,6 +78,7 @@ public class UDPNetIF implements NetIF, Runnable {
     Object runWait_ = null;
 
     CountDownLatch latch = null;
+    CountDownLatch connectLatch = null;
 
 
     /**
@@ -100,7 +103,7 @@ public class UDPNetIF implements NetIF, Runnable {
      * control
      */
     public synchronized void start() {
-        ThreadGroup group = new TimedThreadGroup("UDPNetIF-" + connection.getSocket().getPort());
+        ThreadGroup group = new TimedThreadGroup("UDPNetIF-" + connection.getEndPoint().getPort());
 
         running_ = true;
         //System.err.println("New fabric device listener "+listener);
@@ -112,7 +115,7 @@ public class UDPNetIF implements NetIF, Runnable {
         fabricDevice_.setName(name);
         fabricDevice_.start();
         latch = new CountDownLatch(1);
-        runThread_ = new TimedThread(group, this, "/" + name + "/NetIF");
+        runThread_ = new TimedThread(group, this, "/" + name + "/UDPNetIF");
         runThread_.start();
     }
 
@@ -132,19 +135,23 @@ public class UDPNetIF implements NetIF, Runnable {
                     }
                 }
             }
+
             try {
                 datagram = connection.readDatagram();
             } catch (Exception ioe) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              "NetIF readDatagram error " + connection +
-                                              " IOException " + ioe);
-                ioe.printStackTrace();
+                // Probably EOF
+                //Logger.getLogger("log").logln(USR.ERROR,
+                //                              "UDPNetIF readDatagram error " + connection +
+                //                              " IOException " + ioe);
+                //ioe.printStackTrace();
+                datagram = null;
             }
 
             if (datagram == null) {
                 eof = true;
-                continue;
+                break;
             }
+
             try {
                 if (fabricDevice_.inIsBlocking()) {
                     fabricDevice_.blockingAddToInQueue(datagram, this);
@@ -155,21 +162,60 @@ public class UDPNetIF implements NetIF, Runnable {
             }
         }
 
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " About to Latch count down");
+
         // reduce latch count by 1
         latch.countDown();
 
     }
 
     /**
-     * Activate
+     * Connect - phase 1
      */
     @Override
-    public boolean connect() throws IOException {
-        boolean conn = connection.connect();
+    public boolean connectPhase1() throws IOException {
+        if (eof) {
+            return false;
+        }
 
+        EndPoint endPoint = connection.getEndPoint();
+
+        //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectPhase1() " + endPoint);
+
+        boolean conn = connection.connect();
         closed = false;
+
+        return true;
+    }
+
+    /**
+     * Connect - phase 2
+     */
+    @Override
+    public boolean connectPhase2() throws IOException {
+        if (eof) {
+            return false;
+        }
+
+        EndPoint endPoint = connection.getEndPoint();
+
+        //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectPhase2() " + endPoint);
+
+
+        if (endPoint instanceof UDPEndPointDst) {
+            // wait until someone calls setRemoteAddress()
+            // so set the latch
+            connectLatch = new CountDownLatch(1);
+
+            // and wait
+            try {
+                connectLatch.await();
+            } catch (InterruptedException ie) {
+            }
+        }
+
         start();
-        return conn;
+        return true;
     }
 
     /**
@@ -192,7 +238,7 @@ public class UDPNetIF implements NetIF, Runnable {
         }
 
         if (runThread_ != null) {
-            runThread_.setName("/" + n + "/NetIF");
+            runThread_.setName("/" + n + "/UDPNetIF");
         }
     }
 
@@ -209,7 +255,7 @@ public class UDPNetIF implements NetIF, Runnable {
      */
     @Override
     public void setWeight(int w) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + " NetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + " UDPNetIF " + name + " set weight " + w + ANSI.RESET_COLOUR);
         weight = w;
     }
 
@@ -234,7 +280,7 @@ public class UDPNetIF implements NetIF, Runnable {
      */
     @Override
     public Address getAddress() {
-        return address; // WAS connection.getAddress();
+        return address;
     }
 
     /**
@@ -319,14 +365,24 @@ public class UDPNetIF implements NetIF, Runnable {
      */
     public void setRemoteAddress(InetAddress addr, int port) throws IOException {
         // patch in this addr:port into the socket
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + "UDPNetIF " + name + " setRemoteAddress " + addr + ":" + port + ANSI.RESET_COLOUR);
+        // It is only at this point we know who the other end is
+        // and so we can carry on setting up the NetIF
 
-        DatagramSocket socket = getSocket();
-        DatagramChannel channel = socket.getChannel();
+        // connectPhase2() is waiting for the latch
+        // in order to progress
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + " UDPNetIF " + name + " setRemoteAddress " + addr + ":" + port + ANSI.RESET_COLOUR);
 
-        InetSocketAddress sockAddr = new InetSocketAddress(addr, port);
+        EndPoint endPoint = connection.getEndPoint();
 
-        channel.connect(sockAddr);
+        if (endPoint instanceof UDPEndPointDst) {
+            UDPEndPointDst ep = (UDPEndPointDst)endPoint;
+
+            ep.setRemoteAddress(addr, port);
+
+            // reduce latch count by 1
+            connectLatch.countDown();
+        }
+
     }
 
 
@@ -344,7 +400,7 @@ public class UDPNetIF implements NetIF, Runnable {
     @Override
     public void setNetIFListener(NetIFListener l) {
         if (listener != null) {
-            Logger.getLogger("log").logln(USR.ERROR, "NetIF: already has a NetIFListener");
+            Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF: already has a NetIFListener");
         } else {
             listener = l;
 
@@ -402,13 +458,13 @@ public class UDPNetIF implements NetIF, Runnable {
 
             sent = connection.sendDatagram(dg);
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF " + name + " sent " + dg);
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " UDPNetIF " + name + " sent " + dg);
 
         } catch (IOException e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " failure in connection.send "+address+"->"+remoteRouterAddress);
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + " failure in connection.send "+address+"->"+remoteRouterAddress);
             //Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
 
-            //e.printStackTrace();
+            e.printStackTrace();
 
             listener.closedDevice(this);
             return false;
@@ -427,11 +483,14 @@ public class UDPNetIF implements NetIF, Runnable {
         to be written to during close*/
     @Override
     public void remoteClose() {
+        //RouterFabric.FabricState state  = getNetIFListener().getState();
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+" remoteClose() with state: " + state);
+
         if (closed) {
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when remoteClose() called");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Already closed when remoteClose() called");
             return;
         }
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() +"RemoteClose");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() +" RemoteClose");
         remoteClose = true;
 
 
@@ -448,10 +507,10 @@ public class UDPNetIF implements NetIF, Runnable {
     @Override
     public void close() {
         synchronized (closed) { // prevent this running twice by blocking
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() +"  Close");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() +" Close");
 
             if (closed) {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Already closed when close() called");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Already closed when close() called");
                 return;
             }
             closed = true;
@@ -464,21 +523,21 @@ public class UDPNetIF implements NetIF, Runnable {
             }
 
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" About to stop fabricDevice_");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" About to stop fabricDevice");
 
             // tell the fabricDevice to stop
             if (fabricDevice_ != null) {
                 fabricDevice_.stop();
             }
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Did stop fabricDevice_");
+            Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Did stop fabricDevice");
 
             running_ = false;
 
             // close the connection
-            if (!remoteClose) {
+            //if (!remoteClose) {
                 connection.close();
-            }
+                //}
 
             runThread_.interrupt();
 
@@ -488,14 +547,7 @@ public class UDPNetIF implements NetIF, Runnable {
             } catch (InterruptedException ie) {
             }
 
-            /*
-             * try {
-             *   runThread_.join();
-             * } catch (InterruptedException e) {
-             *
-             * }
-             */
-
+            // notify the run()
             if (runWait_ != null) {
                 synchronized (runWait_) {
                     runWait_.notify();

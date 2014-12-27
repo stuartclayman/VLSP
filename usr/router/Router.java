@@ -23,7 +23,7 @@ public class Router {
      */
 
     // The Router switching fabric
-    RouterFabric fabric;
+    NetIFListener fabric;
 
     // Router options
     RouterOptions options_;
@@ -119,7 +119,7 @@ public class Router {
 
         // add some extra output channels, using mask bit 6
         try {
-            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/router-" + port1 + "-channel6.out")), new BitMask(1<<6));
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/" + name + "-channel6.out")), new BitMask(1<<6));
             //logger.addOutput(System.out, new BitMask(1<<6));
         } catch (Exception e) {
             e.printStackTrace();
@@ -318,9 +318,7 @@ public class Router {
      * Plug in a NetIF to the Router.
      */
     public RouterPort plugInNetIF(NetIF netIF) {
-        RouterPort rp = fabric.addNetIF(netIF);
-        netIF.setRouterPort(rp);
-        return rp;
+        return controller.plugInNetIF(netIF);
     }
 
     /**

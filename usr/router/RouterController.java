@@ -111,6 +111,7 @@ public class RouterController implements ComponentController, Runnable {
     ArrayList<RouterProbe> probeList = null;
 
     CountDownLatch latch = null;
+    NetIF latchForNetIF = null;
 
 
     /**
@@ -145,12 +146,10 @@ public class RouterController implements ComponentController, Runnable {
         // delegate listening of commands to a ManagementConsole object
         management = new RouterManagementConsole(this, mPort);
 
-        //newConnectionPort = r2rPort;
-
         // delegate listening for new connections to RouterConnections object
 
-        //connections = new RouterConnectionsUDP(this, r2rPort);
-        connections = new RouterConnectionsTCP(this, r2rPort);
+        connections = new RouterConnectionsUDP(this, r2rPort);
+        //connections = new RouterConnectionsTCP(this, r2rPort);
 
         connectionCount = 0;
         // a map of NetIFs
@@ -178,7 +177,7 @@ public class RouterController implements ComponentController, Runnable {
      * Get the name of this RouterController.
      */
     @Override
-	public String getName() {
+    public String getName() {
         return name;
     }
 
@@ -388,6 +387,7 @@ public class RouterController implements ComponentController, Runnable {
         int id = netIF.getID();
 
         latch = new CountDownLatch(1);
+        latchForNetIF = netIF;
 
         registerTemporaryNetIF(netIF);
 
@@ -419,10 +419,13 @@ public class RouterController implements ComponentController, Runnable {
      * Find a NetIF by an id.
      */
     public synchronized NetIF getTemporaryNetIFByID(int id) {
-        // reduce latch count by 1
-        latch.countDown();
+        if (latch != null && latchForNetIF.getID() == id) {
+            // reduce latch count by 1
+            latch.countDown();
 
-        Logger.getLogger("log").logln(USR.ERROR, leadin() +  ANSI.CYAN + "LATCH DOWN for id:" + id + ANSI.RESET_COLOUR);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() +  ANSI.CYAN + "LATCH DOWN for id:" + id + ANSI.RESET_COLOUR);
+        }
+
 
         return tempNetIFMap.get(id);
     }
@@ -438,13 +441,25 @@ public class RouterController implements ComponentController, Runnable {
      * Plug a NetIF into the RouterFabric
      */
     public RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
-        RouterPort rp = router.plugInNetIF(netIF);
+        RouterPort rp = plugInNetIF(netIF);
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
 
         tempNetIFMap.remove(netIF.getID());
 
         return rp;
     }
+
+    /**
+     * Plug in a NetIF to the Router.
+     */
+    public RouterPort plugInNetIF(NetIF netIF) {
+        RouterFabric fabric = router.getRouterFabric();
+        RouterPort rp = fabric.addNetIF(netIF);
+        netIF.setRouterPort(rp);
+
+        return rp;
+    }
+
 
     /**
      * Get the AppSockMux this talks to.
