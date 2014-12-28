@@ -71,7 +71,13 @@ public class AppSocket {
     public AppSocket(Router r, int port) throws SocketException {
         appSockMux = r.getAppSocketMux();
 
-        bind(port);
+        if (port == 0) {
+            // find the next free port number for the local end
+            int freePort = appSockMux.findNextFreePort();
+            bind(freePort);
+        } else {
+            bind(port);
+        }
     }
 
     /**
@@ -83,10 +89,13 @@ public class AppSocket {
     public AppSocket(Router r, Address addr, int port) throws SocketException {
         appSockMux = r.getAppSocketMux();
 
-        // find the next free port number for the local end
-        int freePort = appSockMux.findNextFreePort();
-
-        bind(freePort);
+        if (port == 0) {
+            // find the next free port number for the local end
+            int freePort = appSockMux.findNextFreePort();
+            bind(freePort);
+        } else {
+            bind(port);
+        }
 
         connect(addr, port);
     }
