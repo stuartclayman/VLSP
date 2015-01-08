@@ -353,6 +353,14 @@ class Size4Datagram implements Datagram, DatagramPatch {
         return this;
     }
 
+
+    /**
+     * Get the Socket Address of the src.
+     */
+    public SocketAddress getSocketAddress() {
+        return new SocketAddress(getSrcAddress(), getSrcPort());
+    }
+
     /**
      * Get the flow ID
      */

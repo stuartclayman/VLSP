@@ -58,6 +58,11 @@ public interface Datagram {
     public Datagram setProtocol(int p);
 
     /**
+     * Get the Socket Address of the src.
+     */
+    public SocketAddress getSocketAddress();
+
+    /**
      * Get src address.
      */
     public Address getSrcAddress();
