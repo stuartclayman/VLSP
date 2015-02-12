@@ -3021,7 +3021,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             detail = "id";
         }
 
-        jsobj = getAllRouterInfoAsJSON(detail);
+        jsobj = getAllLinkInfoAsJSON(detail);
 
         return jsobj;
     }

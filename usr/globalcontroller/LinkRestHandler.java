@@ -403,7 +403,7 @@ public class LinkRestHandler extends BasicRequestHandler {
         // and send them back as the return value
         PrintStream out = response.getPrintStream();
 
-        JSONObject jsobj = controller_.listRouters("detail=" + detail);
+        JSONObject jsobj = controller_.listLinks("detail=" + detail);
 
         out.println(jsobj.toString());
 
