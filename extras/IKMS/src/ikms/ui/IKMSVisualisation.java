@@ -110,13 +110,17 @@ public class IKMSVisualisation {
 				}
 			});
 
-			ikmsFrame.setTitle("Information & Knowledge Management System");
+			ikmsFrame.setTitle("DOLFIN Information Database");
 			ikmsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			ikmsFrame.setBounds (windowX_, windowY_, windowWidth_, windowHeight_);
 			//setBounds(100, 100, 1105, 845);
 			contentPane = new JPanel();
 			ikmsFrame.setContentPane(contentPane);
-			contentPane.setLayout(new GridLayout(0, 2, 0, 0));
+			
+			// set white background
+			contentPane.setBackground(Color.white);
+
+			contentPane.setLayout(new GridLayout(0, 1, 0, 0));
 			// current path: System.out.println (this.getClass().getResource("").getPath());
 			JLabel label = new JLabel(new ImageIcon(getClass().getResource("resources/ikms.png")));
 			label.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -127,6 +131,9 @@ public class IKMSVisualisation {
 			flowLayout_1.setVgap(50);
 			flowLayout_1.setHgap(50);
 
+			// set white background
+			performanceGraphPanel.setBackground(Color.white);
+			
 			contentPane.add(performanceGraphPanel);
 
 			if (showResponseTimeGraph) {
