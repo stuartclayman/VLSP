@@ -380,9 +380,9 @@ public class ColouredNetworkAndApplicationVisualizationWithoutClustering impleme
 		// Change name of applications for visualization purposes
 		String name = app.substring(app.lastIndexOf(".") + 1, app.length());
 		
-		name = name.replace("GenericSourceMA", "MCESource");
-		name = name.replace("GenericSinkMA", "MCESink");
-		name = name.replace("IKMSForwarder", "FISNode");
+		name = name.replace("GenericSourceMA", "DolfinSource");
+		name = name.replace("GenericSinkMA", "DolfinSink");
+		name = name.replace("IKMSForwarder", "DDBNode");
 
 		// 2. strip the string of the complete name
 		return name;
