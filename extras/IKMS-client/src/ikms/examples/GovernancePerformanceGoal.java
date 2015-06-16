@@ -1,6 +1,7 @@
 package ikms.examples;
 
 import ikms.client.IKMSEnabledEntity;
+import ikms.data.IKMSOptimizationGoals;
 
 import java.io.IOException;
 
@@ -74,8 +75,14 @@ public class GovernancePerformanceGoal extends IKMSEnabledEntity {
 			performanceGoal.put("optGoalParameters", "");
 			performanceGoal.put("optGoalLevelofEnforcement", "high");
 			
+			//JSONObject performanceGoal = new JSONObject();
+			//performanceGoal.put("optGoalId", 2);
+			//performanceGoal.put("optGoalName", "Pull from Entity");
+			//performanceGoal.put("optGoalParameters", "");
+			//performanceGoal.put("optGoalLevelofEnforcement", "high");
+
 			// The KnowOptimizationGoal data structure example
-			// JSONObject performanceGoal = KnowOptimizationGoals.GetDirectEntityGoal().toJSONString();
+			//JSONObject performanceGoal = IKMSOptimizationGoals.GetPullFromEntityGoal().toJSONString();
 			
 			// Updating global performance goal
 			System.out.println (informationManagementInterface.UpdatePerformanceGoal(entityid, performanceGoal));
