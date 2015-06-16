@@ -1,0 +1,7 @@
+#./rungovstats ScenarioFlowsPullFromEntityGOV-30 "Flows" "1 2 3 5" 30 "1 2 3 5" 0 10
+#./rungovstats ScenarioFlowsPullFromStorageGOV-30 "Flows" "1 2 3 5" 30 "1 2 3 5" 1 10
+#./rungovstats ScenarioFlowsPubSubGOV-30 "Flows" "1 2 3 5" 30 "1 2 3 5" 2 10
+
+./rundolfin ScenarioFlowsPullFromStorageGOV-dolfin "Flows" "5" 20 "5" 2 1
+
+#./stop

@@ -1,0 +1,9 @@
+export CLASSPATH=./:./libs/*:./bin/
+
+echo "Creating 10 Information Flows with Pull from Storage Method"
+cd ..
+#java -Xmx1024m ikms.examples.LocalInformationFlowsExperiment 10 3 1 2>&1 | tee /tmp/kb-expriment-$$.out
+
+#for distributed deployment
+java -Xmx1024m demo_usr.ikms.LocalInformationFlowsExperiment 10 3 1 2>&1 | tee /tmp/kb-expriment-$$.out
+

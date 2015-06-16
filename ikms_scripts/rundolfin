@@ -1,0 +1,28 @@
+export CLASSPATH=./:./libs/*:./bin/
+# Retrieve input parameters
+scenarioname=$1
+echo "Scenario name:$scenarioname"
+figuresrangetype=$2
+echo "Figures range type:$figuresrangetype"
+fr=$3
+echo "Figures range:$fr"
+nr=$4
+echo "Nodes range set:$nr"
+fr=$5
+echo "Flows range set:$fr"
+gr=$6
+echo "Goals range set:$gr"
+
+# Set scenario name (for figures)
+echo "$scenarioname" > output/scenario
+# Set figures range (defines the names of figure curves)
+echo "$fr" > output/range
+# Set figures range type (defines the type of figure curves)
+echo "$figuresrangetype" > output/rangetype
+
+# Syntax: nodesNumber informationSourcesNumber urisPerInformationSourceNumber totalTime method goalId monitoredFlows monitoredMethod monitoredGoalId
+# method: 3 (All)
+# goalID: 0 (Pull from Entity), 1 (Pull from Storage), 2 (Pub/Sub), 3 (Direct Communication), 4 (Compact 0), 5 (Compact 1), 6 (Compact 2), 7 (Compact 3)
+
+./singleExperiment $nr $fr 1 100000 3 $gr 3 30000 2>&1 | tee /tmp/ikms-experiment-$$.out
+        

@@ -23,7 +23,7 @@ echo "$figuresrange" > output/range
 echo "$figuresrangetype" > output/rangetype
 
 # Shutting down IKMS (in case it is still running)
-./shutDownIKMS 2> /dev/null
+#./shutDownIKMS 2> /dev/null
 
 echo "Scenario: $scenarioname"
 count=0
@@ -43,31 +43,31 @@ do
 		else
 			count=`echo $count+1 | bc`
 			#echo Starting IKMS
-			./IKMS &
+			#./IKMS &
 			echo Waiting 5 secs
-			sleep 5
+			#sleep 5
 			./startIKMSMeasurements
 			# Syntax: nodesNumber informationSourcesNumber urisPerInformationSourceNumber totalTime method goalId monitoredFlows monitoredMethod monitoredGoalId
 			# method: 3 (All)
 			# goalID: 0 (Pull from Entity), 1 (Pull from Storage), 2 (Pub/Sub), 3 (Direct Communication), 4 (Compact 0), 5 (Compact 1), 6 (Compact 2), 7 (Compact 3)
-			./singleExperiment $nr $fr 1 100000 3 $gr 2>&1 | tee /tmp/ikms-experiment-$$.out
+			#./singleExperiment $nr $fr 1 100000 3 $gr 2>&1 | tee /tmp/ikms-experiment-$$.out
 			echo "Waiting 10"
-			sleep 10
-			./stopIKMSMeasurements
+			#sleep 10
+			#./stopIKMSMeasurements
 			echo Waiting 5 secs
-			sleep 5
+			#sleep 5
 			echo "Shutting down IKMS"
-			./shutDownIKMS &
-			sleep 10
-			./killikms
+			#./shutDownIKMS &
+			#sleep 10
+			#./killikms
 			echo Collecting results
 			mkdir output/`cat output/scenario` 2> /dev/null
 			cp ../output.txt output/`cat output/scenario`/results-$nr-$fr-$gr.$it
 			echo Waiting 5 secs
-			sleep 5
+			#sleep 5
 			#echo Stopping global controller and waiting to reboot
-			./stop
-			sleep 20
+			#./stop
+			#sleep 20
 		fi
 	done
 	# calculate average output file
@@ -81,8 +81,8 @@ do
 	fi
 
 	# Restarting global controller and waiting to reboot
-	./stop
-	sleep 20
+	#./stop
+	#sleep 20
       done
    done
 done

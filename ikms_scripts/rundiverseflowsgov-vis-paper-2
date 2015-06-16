@@ -1,0 +1,2 @@
+./creatediverseflowgovstatsfigures ScenarioDiverseFlowsDirectToPullFromStorageGOV-100 "Flows" "4+1 8+2 12+3 16+4" 100 "5 10 15 20" 1 10 0.2
+#./rundiverseflowsgovstats ScenarioDiverseFlowsDirectToPullFromStorageGOV-30 "Flows" "2 3 4 5" 30 "2 3 4 5" 1 10 1
