@@ -1,0 +1,46 @@
+<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <StartLocalControllers>true</StartLocalControllers>
+     <ConnectedNetwork>false</ConnectedNetwork>
+
+     <PlacementEngineClass>usr.globalcontroller.LeastBusyPlacement</PlacementEngineClass>
+
+     <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass> -->
+     <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualizationWithoutClustering</VisualizationClass>
+
+     <Monitoring>
+       <LatticeMonitoring>true</LatticeMonitoring>
+       <Consumer>
+         <!-- <Name>usr.globalcontroller.NetIFStatsCumulativeReporter</Name> -->
+         <Name>usr.globalcontroller.NetIFStatsReporter</Name>
+       </Consumer>
+       <Consumer>
+         <Name>usr.globalcontroller.RouterAppsReporter</Name>
+       </Consumer>
+     </Monitoring>
+  </GlobalController>
+
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10000</Port>
+     <LowPort>11001</LowPort>
+     <HighPort>12000</HighPort>
+     <MaxRouters>30</MaxRouters>
+  </LocalController>
+
+  <EventEngine>
+     <Name>Empty</Name>
+     <EndTime>86400</EndTime> <!-- 86400 seconds == 1 day -->
+  </EventEngine>
+
+  <RouterOptions>
+      scripts/routeroptions-ikms-Pressure.xml
+  </RouterOptions>
+
+<!-- manual placement -->
+<!-- <RouterOptions>
+      scripts/routeroptions-noap.xml
+  </RouterOptions>-->
+
+</SimOptions>
