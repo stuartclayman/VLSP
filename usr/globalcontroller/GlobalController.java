@@ -251,7 +251,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             e.printStackTrace();
         }
 
-
         network_ = new AbstractNetwork();
         shutdownRouters_ = new ArrayList<BasicRouterInfo>();
         linkInfo = new HashMap<Integer, LinkInfo>();
@@ -680,9 +679,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * TimeoutException if acquisition timesout*/
     private JSONObject semaphoredOperation(Operation op) throws Exception, TimeoutException, InterruptedException {
         try {
+            long t0 = System.currentTimeMillis();
+            
             // Wait to aquire a lock -- only one event at once
             //
             boolean acquired = semaphore.tryAcquire(options_.getMaxLag(), TimeUnit.MILLISECONDS);
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + "GOT SEMAPHORE" + ANSI.RESET_COLOUR);
 
             if (!acquired) {
                 throw new TimeoutException(leadin()+"GlobalController lagging too much");
@@ -696,9 +698,16 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
             js = op.call();
 
+            long t1 = System.currentTimeMillis();
+
+            // time in millis
+            long opTime = t1 - t0;
+            js.put("op_time", opTime);
+            
             return js;
         } finally {
             semaphore.release();
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.YELLOW + "RELEASE SEMAPHORE" + ANSI.RESET_COLOUR);
         }
     }
 
@@ -780,6 +789,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
             // Do the Operation in the semaphore code block
             JSONObject jsobj = semaphoredOperation(execute);
+
             return jsobj;
         } catch (TimeoutException te) {
             //te.printStackTrace();
@@ -2317,12 +2327,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             if (!connected) {
 
                 String [] cmd = options_.localControllerStartCommand(lh);
-
                 try {
                     Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting process " + Arrays.asList(cmd));
-
                     child = new ProcessBuilder(cmd).start();
-
                 } catch (IOException e) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute remote command " + Arrays.asList(cmd));
                     Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
@@ -2377,7 +2384,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                     try {
                         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Trying to make connection to "
                                                       + lcInfo.getName() + " " + lcInfo.getPort());
-
                         inter = new LocalControllerInteractor(lcInfo);
 
                         localControllers_.add(inter);
@@ -2593,6 +2599,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         for (int i = 0; i < localControllers_.size(); i++) {
             inter = localControllers_.get(i);
             try {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Shutdown LocalController " + inter);
                 inter.shutDown();
 
                 //ThreadTools.findAllThreads("GC post kill :" + i);

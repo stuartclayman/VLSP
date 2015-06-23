@@ -172,7 +172,7 @@ public class LocalController implements ComponentController {
     /** Received shut Down data gram from global */
     public void shutDown() {
 
-        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Local controller got shutdown message from global controller.");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Local controller " + getName() + " got shutdown message from global controller.");
 
         //ThreadTools.findAllThreads("LC top of shutDown:");
 
@@ -198,6 +198,12 @@ public class LocalController implements ComponentController {
             }
 
         }
+
+        // Stop monitoring
+        if (latticeMonitoring) {
+            stopMonitoring();
+        }
+
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping process wrappers");
         Collection<ProcessWrapper> pws = childProcessWrappers_.values();
@@ -921,6 +927,8 @@ public class LocalController implements ComponentController {
         }
 
         // set up DataPlane
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "startMonitoring to " + addr);
+
         DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
         dataSource.setDataPlane(outputDataPlane);
 
@@ -1022,7 +1030,7 @@ public class LocalController implements ComponentController {
                 // find Constructor for when arg is RouterController
                 Constructor<? extends LocalControllerProbe> cons = cc.getDeclaredConstructor(LocalController.class);
 
-		LocalControllerProbe probe = cons.newInstance(this);
+                LocalControllerProbe probe = cons.newInstance(this);
 
                 // Set datarate, iff we need to
                 if (datarate > 0) {

@@ -259,7 +259,7 @@ public class FabricDevice implements FabricDeviceInterface {
                     boolean processed = addToInQueue(dg, dd, waker);
                     return processed;
                 } catch (usr.net.InterfaceBlockedException e) {
-                    //Logger.getLogger("log").logln(USR.ERROR, leadin() + "InterfaceBlockedException for blockingAddToInQueue " + dg);
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "InterfaceBlockedException for blockingAddToInQueue " + dg);
 
                     waker.await(250);
                 }

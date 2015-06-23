@@ -485,9 +485,9 @@ public class TCPNetIF implements NetIF, Runnable {
             running_ = false;
 
             // close the connection
-            //if (!remoteClose) {
+            if (!remoteClose) {
                 connection.close();
-            //}
+            }
 
             runThread_.interrupt();
 

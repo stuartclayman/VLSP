@@ -26,14 +26,14 @@ public class InformationFlowEstablishmentAndOptimizationFunction {
 	private InformationQualityControllerOperation informationQualityController=null;
 	private InformationFlowConfigurationAndStatisticsOperation informationFlowConfigurationAndStatistics=null;
 
-	public InformationFlowEstablishmentAndOptimizationFunction (IKMS ikms) {
+	public InformationFlowEstablishmentAndOptimizationFunction (IKMS ikms, String gcHost, String gcPort) {
 		// keep a handle on the IKMS
 		this.ikms = ikms;
 
 		informationStorageAndIndexingFunction = ikms.getInformationStorageAndIndexingFunction();
 
 		// Initialize operations
-		informationFlowConfigurationAndStatistics = new InformationFlowConfigurationAndStatisticsOperation(informationStorageAndIndexingFunction);
+		informationFlowConfigurationAndStatistics = new InformationFlowConfigurationAndStatisticsOperation(informationStorageAndIndexingFunction, gcHost, gcPort);
 		informationQualityController=new InformationQualityControllerOperation(informationFlowConfigurationAndStatistics, informationStorageAndIndexingFunction.entityRegistration);
 	}
 	

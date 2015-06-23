@@ -86,7 +86,7 @@ public class RouterInteractor {
 
         Logger.getLogger("log").logln(USR.STDOUT, ANSI.YELLOW + "R call: " + uri.substring(0, Math.min(72, uri.length())) + ANSI.RESET_COLOUR);
 
-        JSONObject jsobj;
+        JSONObject jsobj = null;
 
         try {
             jsobj = rest.json(uri).toObject();
@@ -104,6 +104,9 @@ public class RouterInteractor {
             throw ioe;
         } catch (JSONException je) {
             Logger.getLogger("log").logln(USR.STDOUT, ANSI.RED + "R JSONException: " + je.getMessage() + ANSI.RESET_COLOUR);
+            Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + uri);
+            Logger.getLogger("log").logln(USR.STDOUT, "Recv: " + jsobj);
+
             je.printStackTrace();
             throw je;
         }

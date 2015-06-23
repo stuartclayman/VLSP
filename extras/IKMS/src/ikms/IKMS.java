@@ -82,14 +82,14 @@ public class IKMS {
 		return true;
 	}
 
-	public boolean init(int port, String goalJSON, String dbHost, String dbPassword) {
+	public boolean init(int port, String goalJSON, String dbHost, String dbPassword, String gcHost, String gcPort) {
 		try {
 			console = new IKMSManagementConsole(this, port);
 
 			// Initialize functions
 			informationStorageAndIndexingFunction = new InformationStorageAndIndexingFunction(this, dbHost, dbPassword);
 			informationCollectionAndDissemination = new InformationCollectionAndDisseminationFunction(this);
-			informationFlowEstablishmentAndOptimizationFunction = new InformationFlowEstablishmentAndOptimizationFunction(this);
+			informationFlowEstablishmentAndOptimizationFunction = new InformationFlowEstablishmentAndOptimizationFunction(this, gcHost, gcPort);
 			informationProcessingAndKnowledgeProductionFunction = new InformationProcessingAndKnowledgeProductionFunction(this);
 
 			// Initialize interfaces

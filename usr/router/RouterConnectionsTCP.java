@@ -157,6 +157,37 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
      * Return an hash code for locally created NetIF.
      */
     public int getLocalHashCode(NetIF netIF) {
+        try {
+            // Hash code is a function of the local host IP
+            InetSocketAddress refAddr = new InetSocketAddress(InetAddress.getLocalHost(), netIF.getLocalPort());
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "getLocalHashCode -> " + refAddr);
+
+            return refAddr.hashCode();
+        } catch (UnknownHostException uhe) {
+            // If local host addr is not available then
+            // Hash code is a function of the NetIF local address
+            InetSocketAddress refAddr = new InetSocketAddress(netIF.getLocalAddress(), netIF.getLocalPort());
+            return refAddr.hashCode();
+        }
+    }
+
+    /**
+     * Return a hash code for a NetIF in Create Connection.
+     */
+    public int getCreateConnectionHashCode(NetIF netIF, InetAddress addr, int port) {
+        // get an InetSocketAddress
+        InetSocketAddress refAddr = new InetSocketAddress(addr, port);
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "getCreateConnectionHashCode -> " + refAddr);
+
+        return refAddr.hashCode();
+    }
+
+
+    /**
+     * Return an hash code for locally created NetIF.
+     */
+    public int getLocalHashCodeOrig(NetIF netIF) {
         InetSocketAddress refAddr = new InetSocketAddress(netIF.getInetAddress(), netIF.getPort());
 
         return refAddr.hashCode();
@@ -166,7 +197,7 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
     /**
      * Return a hash code for a NetIF in Create Connection.
      */
-    public int getCreateConnectionHashCode(NetIF netIF, InetAddress addr, int port) {
+    public int getCreateConnectionHashCodeOrig(NetIF netIF, InetAddress addr, int port) {
         // get an InetSocketAddress
         InetSocketAddress refAddr = new InetSocketAddress(netIF.getInetAddress(), netIF.getLocalPort());
 

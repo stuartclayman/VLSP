@@ -1,5 +1,8 @@
 package demo_usr.energy.energymodel;
 
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
+
 public class EnergyModel {
 
 	// hardware related coefficient for energy consumption of cpu (user+system mode)
@@ -75,6 +78,10 @@ public class EnergyModel {
 		// initialise baseline energy consumption 
 		baseLineEnergyConsumption = baseLineEnergyConsumption_;
 
+		InitModel ();
+	}
+
+	private void InitModel () {
 		// reset application coefficients - adding some indicative default values
 		HighProcessingImpactValueCoefficient = 0.10F;
 		MediumProcessingImpactValueCoefficient = 0.05F;
@@ -97,6 +104,42 @@ public class EnergyModel {
 
 		// initialise last energy measurement
 		lastEnergyMeasurement = 0;
+	}
+
+	public EnergyModel (JSONObject jsonObj) throws JSONException {
+		//json string example
+		//{"IP":"localhost/127.0.0.1",
+		//   "energyFactors":
+		//	{"baseLineEnergyConsumption":300,
+		//	 "cpuIdleCoefficient":20,
+		//	 "cpuLoadCoefficient":50,
+		//	 "freeMemoryCoefficient":2,
+		//	 "memoryAllocationCoefficient":4,
+		//	 "networkIncomingBytesCoefficient":5.0E-4,
+		//	 "networkOutboundBytesCoefficient":0.001},
+		//    "hostinfo":
+		//    {"cpuIdle":0.8119000196456909,
+		//     "cpuLoad":0.18790000677108765,
+		//     "freeMemory":1.8964844,
+		//     "name":"localhost:10000",
+		//     "networkIncomingBytes":0,
+		//     "networkOutboundBytes":0,
+		//     "usedMemory":1.7314453},
+		//    "maxRouters":30,
+		//    "name":"localhost:10000",
+		//    "noRouters":0,
+		//    "port":10000,
+		//    "usage":0}
+
+		cpuLoadCoefficient = jsonObj.getDouble("cpuLoadCoefficient");
+		cpuIdleCoefficient = jsonObj.getDouble("cpuIdleCoefficient");
+		memoryAllocationCoefficient = jsonObj.getDouble("memoryAllocationCoefficient");
+		freeMemoryCoefficient = jsonObj.getDouble("freeMemoryCoefficient");
+		networkOutboundBytesCoefficient = jsonObj.getDouble("networkOutboundBytesCoefficient");
+		networkIncomingBytesCoefficient = jsonObj.getDouble("networkIncomingBytesCoefficient");
+		baseLineEnergyConsumption = jsonObj.getDouble("baseLineEnergyConsumption");
+
+		InitModel ();
 	}
 
 	// configure application related coefficients
@@ -152,6 +195,26 @@ public class EnergyModel {
 		lastEnergyMeasurement = currentEnergy;
 
 		return currentEnergy;
+	}
+
+	// calculate current energy consumption from relevant jsonobject
+	public double CurrentEnergyConsumption (JSONObject jsonObj) throws JSONException {
+		// initialize variables
+		float averageCPULoad=0;
+		float averageIdleCPU=0; 
+		float memoryUsed=0;
+		float freeMemory=0;
+		long networkOutboundBytes=0; 
+		long networkIncomingBytes=0;
+
+		averageCPULoad=(float) jsonObj.getDouble("cpuLoad");
+		averageIdleCPU=(float) jsonObj.getDouble("cpuIdle"); 
+		memoryUsed=(float) jsonObj.getDouble("usedMemory");
+		freeMemory=(float) jsonObj.getDouble("freeMemory");
+		networkOutboundBytes=jsonObj.getLong("networkOutboundBytes");
+		networkIncomingBytes=jsonObj.getLong("networkIncomingBytes");
+
+		return CurrentEnergyConsumption(averageCPULoad, averageIdleCPU, memoryUsed, freeMemory, networkOutboundBytes, networkIncomingBytes);
 	}
 
 	// Predict energy consumption in physical machine after the deployment of a specific application, knowing its level of impact
@@ -288,7 +351,7 @@ public class EnergyModel {
 	// function that estimates energy consumption based on the averageCPULoad - could be extended to consider more than one cpu,
 	// multiple cpu running states etc.
 	// returns a value in Watts (at this point we assume to running states, working and idle)
-        public double ProcessingConsumptionFunction (double averageCPULoad, double averageCPUIdle) {
+	public double ProcessingConsumptionFunction (double averageCPULoad, double averageCPUIdle) {
 		// start by having a linear approach
 		return cpuLoadCoefficient * averageCPULoad + cpuIdleCoefficient * averageCPUIdle;
 	}
@@ -308,10 +371,10 @@ public class EnergyModel {
 		// start by having a linear approach
 		double val = networkOutboundBytesCoefficient * networkOutboundBytes + networkIncomingBytesCoefficient * networkIncomingBytes;
 
-                if (val < 0) {
-                    return 0;
-                } else {
-                    return val;
-                }
+		if (val < 0) {
+			return 0;
+		} else {
+			return val;
+		}
 	}
 }

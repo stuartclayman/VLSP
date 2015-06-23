@@ -14,6 +14,8 @@ public class Main {
 	static String optimizationGoal;
 	static String dbHost;
 	static String dbPassword;
+	static String gcHost;
+	static String gcPort;
 	static boolean showResponseTimeGraph;
 	static boolean showInformationFreshnessGraph;
 	static boolean showResponseTimeGraphForMonitoredEntities;
@@ -56,6 +58,8 @@ public class Main {
 			windowWidth = GetIntegerProperty (prop, "windowWidth", 1105);
 			windowHeight = GetIntegerProperty (prop, "windowHeight", 845);
 			textMode = GetBooleanProperty (prop, "textMode", false);
+			gcHost = GetStringProperty (prop, "gchost", "localhost");
+			gcPort = GetStringProperty (prop, "gcport", "8888");
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
@@ -69,7 +73,7 @@ public class Main {
 		
 		if (! ikms.config()) return;
 
-		if (! ikms.init(port, optimizationGoal, dbHost, dbPassword)) return;
+		if (! ikms.init(port, optimizationGoal, dbHost, dbPassword, gcHost, gcPort)) return;
 
 		if (! ikms.start()) return;
 

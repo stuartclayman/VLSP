@@ -52,7 +52,7 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
     public HostInfoProbe(LocalController cont) {
         setController(cont);
 
-	
+
         String osName = System.getProperty("os.name").toLowerCase();
 
         if (osName.startsWith("mac")) {
@@ -103,6 +103,7 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
         addProbeAttribute(new DefaultProbeAttribute(9, "out-packets", ProbeAttributeType.LONG, "n"));
         addProbeAttribute(new DefaultProbeAttribute(10, "out-bytes", ProbeAttributeType.LONG, "n"));
+
     }
 
     /**
@@ -110,17 +111,20 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
      */
     @Override
     public ProbeMeasurement collect() {
+        try {
+            String osName = System.getProperty("os.name").toLowerCase();
 
-        String osName = System.getProperty("os.name").toLowerCase();
-
-        if (osName.startsWith("mac")) {
-            // Mac OS
-            return macos();
-        } else if (osName.startsWith("linux")) {
-            // Linux
-            return linux();
-        } else {
-            throw new Error("HostInfoProbe: not implemented for " + osName + " yet!");
+            if (osName.startsWith("mac")) {
+                // Mac OS
+                return macos();
+            } else if (osName.startsWith("linux")) {
+                // Linux
+                return linux();
+            } else {
+                throw new Error("HostInfoProbe: not implemented for " + osName + " yet!");
+            }
+        } catch (Exception e) {
+            return null;
         }
     }
 

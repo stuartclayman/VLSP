@@ -278,6 +278,9 @@ public class IKMSVisualisation {
 				numberOfDirectFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfDirectFlows();
 				numberOfPubSubFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfPubSubFlows();
 				
+				// Retrieve energy efficiency related measurements from global controller
+				//informationFlowConfigurationAndStatisticsOperation.RetrieveLocalControllerInformation ();
+				
 				logOutput.Log(step+"\t"+responseTime+"\t"+informationFreshness+"\t"+responseTimeForMonitoredEntities+"\t"+informationFreshnessForMonitoredEntities+"\t"+cpu+"\t"+storage+"\t"+SelectedOptimizationGoal.GetOptimizationGoal().getOptGoalName()+"\t"+numberOfFlows+"\t"+numberOfPushPullFlows+"\t"+numberOfDirectFlows+"\t"+numberOfPubSubFlows);
 			}
 		}

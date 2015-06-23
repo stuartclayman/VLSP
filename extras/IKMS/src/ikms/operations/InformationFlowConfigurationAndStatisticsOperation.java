@@ -1,16 +1,26 @@
 package ikms.operations;
 
+import ikms.client.GlobalControllerClient;
 import ikms.data.FlowRegistry;
 import ikms.data.IKMSOptimizationGoal;
 import ikms.data.InformationExchangePolicies;
 import ikms.functions.InformationStorageAndIndexingFunction;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+
+import us.monoid.json.JSONArray;
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
 
 import com.jezhumble.javasysmon.JavaSysMon;
+
+import demo_usr.energy.energymodel.EnergyModel;
 
 public class InformationFlowConfigurationAndStatisticsOperation {
 
@@ -41,13 +51,125 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	static private int countIKMSCPUProcessingRequests = 0;
 
 	static private boolean firstMeasurementReceived = false;
+	
+	// connectivity information for the global controller
+	static private String gcHost;
+	static private String gcPort;
+	
+	static private GlobalControllerClient gcClient;
+	
+	static private Map <String, EnergyModel> energyConsumptionPerLocalController = new HashMap <String, EnergyModel> ();
+	static private ArrayList<String> localControllers = new ArrayList();
+	static private ArrayList<Double> energyConsumedPerLocalController = new ArrayList();
 
-	public InformationFlowConfigurationAndStatisticsOperation (InformationStorageAndIndexingFunction informationStorageAndIndexingFunction_) {
+	public InformationFlowConfigurationAndStatisticsOperation (InformationStorageAndIndexingFunction informationStorageAndIndexingFunction_, String gcHost_, String gcPort_) {
 		informationStorageAndIndexingFunction = informationStorageAndIndexingFunction_;
 
+		// connectivity information for the global controller
+		gcHost = gcHost_;
+		gcPort = gcPort_;
+		
+		gcClient = new GlobalControllerClient (gcHost, gcPort);
+		
+		RetrieveLocalControllerInformation ();
+		//RetrieveLocalControllerInformation ();
+		//RetrieveLocalControllerInformation ();
+
+		//System.exit(0);
+		
 		flowRegistry = new FlowRegistry();
 	}
 
+	public static void RetrieveLocalControllerInformation () {
+		try {
+			boolean firstTime=true;
+			JSONObject result = gcClient.retrieveLocalControllerInfo();
+			JSONArray listArray = null;
+
+			if (!localControllers.isEmpty()) {
+				// it is not executed for a first time, so the objects do not need to be initialized
+				firstTime=false;
+			}
+			// get local controller information (do that once)
+			if (result.getJSONArray("list")!=null&&firstTime) {
+				listArray = result.getJSONArray("list");
+				final int n = listArray.length();
+			    for (int i = 0; i < n; ++i) {
+			      String currentDetail = listArray.getString(i);
+				  System.out.println ("Adding localcontroller information to IKMS:"+currentDetail);
+				  // add all localcontroller names to the arraylist
+				  localControllers.add(i, currentDetail);
+				}
+			}
+			
+			JSONArray detailArray = null;
+			JSONObject coefficientsArray = null;
+			double currentEnergy = 0;
+			
+			// initialize EnergyModel Objects
+			if (result.getJSONArray("detail")!=null) {
+				detailArray = result.getJSONArray("detail");
+				
+				final int n = detailArray.length();
+			    for (int i = 0; i < n; ++i) {
+		    		  JSONObject currentDetail = detailArray.getJSONObject(i);
+
+			      // create a new EnergyModel per localcontroller (do that once)
+			    	  if (firstTime) {
+			    		  //System.out.println (currentDetail.toString());
+			    		  coefficientsArray = currentDetail.getJSONObject("energyFactors");
+			    		  energyConsumptionPerLocalController.put(localControllers.get(i), new EnergyModel (coefficientsArray));
+			    	  }
+				  // update energy values
+				  EnergyModel model = energyConsumptionPerLocalController.get(localControllers.get(i));
+				  currentEnergy = model.CurrentEnergyConsumption (currentDetail.getJSONObject("hostinfo"));
+				  System.out.println ("Current energy consumption is:"+currentEnergy+" "+firstTime);
+				  energyConsumedPerLocalController.add(i, currentEnergy);
+			    }
+			}
+			
+			//System.out.println (result.toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//calculate max energy value
+		System.out.println ("Maximum energy value is:"+CalculateMaxValueFromArrayList (energyConsumedPerLocalController));
+		
+		//calculate min energy value
+		System.out.println ("Minimum energy value is:"+CalculateMinValueFromArrayList (energyConsumedPerLocalController));
+
+		//calculate average energy value
+		System.out.println ("Average energy value is:"+CalculateAverageValueFromArrayList (energyConsumedPerLocalController));
+
+	}
+	
+	private static double CalculateMaxValueFromArrayList (ArrayList arrayList) {
+		return (double) Collections.max(arrayList);
+	}
+	
+	private static double CalculateMinValueFromArrayList (ArrayList<Double> arrayList) {
+		return (double) Collections.min(arrayList);
+	}
+	
+	public static double CalculateAverageValueFromArrayList (ArrayList<Double> arrayList) {
+	    // 'average' is undefined if there are no elements in the list.
+	    if (arrayList == null || arrayList.isEmpty())
+	        return 0.0;
+	    // Calculate the summation of the elements in the list
+	    double sum = 0;
+	    int n = arrayList.size();
+	    // Iterating manually is faster than using an enhanced for loop.
+	    for (int i = 0; i < n; i++)
+	        sum += arrayList.get(i);
+	    // We don't want to perform an integer division, so the cast is mandatory.
+	    return ((double) sum) / n;
+	}
+			
 	public static void MonitorEntity (int entityid) {
 		monitoredEntities.add(entityid);
 	}
