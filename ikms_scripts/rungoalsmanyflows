@@ -1,0 +1,4 @@
+./runstats ScenarioGoals-100-20 "" "PullFromEntity PullFromStorage PubSub Direct" 100 20 "0 1 2 3" 10
+./runstats ScenarioGoals-100-30 "" "PullFromEntity PullFromStorage PubSub Direct" 100 30 "0 1 2 3" 10
+./runstats ScenarioGoals-200-40 "" "PullFromEntity PullFromStorage PubSub Direct" 200 40 "0 1 2 3" 10
+./runstats ScenarioGoals-200-50 "" "PullFromEntity PullFromStorage PubSub Direct" 200 50 "0 1 2 3" 10

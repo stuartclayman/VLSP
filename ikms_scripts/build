@@ -1,0 +1,4 @@
+cd ..
+ant clean
+ant build
+./synchronise

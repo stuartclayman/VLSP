@@ -1,0 +1,7 @@
+#ps ax | grep LocalController | awk '{print $1}' | xargs kill
+for i in {1..1}
+do
+	for h in clayone claytwo claythree clayfour claydesk1 claydesk2 ethane methane butane propane pentane; do echo "Counting virtual routers in $h"; ssh $h "ps -x | grep Router | wc" 2> /dev/null; done
+	sleep 5
+	#clear
+done

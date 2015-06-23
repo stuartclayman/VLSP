@@ -1,0 +1,4 @@
+./run ScenarioPlacementPullFromEntity-100 "Placement" "Random Pressure HotSpot" 100 "10 10 10" 0
+./run ScenarioPlacementPullFromStorage-100 "Placement" "Random Pressure HotSpot" 100 "10 10 10" 1
+./run ScenarioPlacementPubSub-100 "Placement" "Random Pressure HotSpot" 100 "10 10 10" 2
+./run ScenarioPlacementDirect-100 "Placement" "Random Pressure HotSpot" 100 "10 10 10" 3

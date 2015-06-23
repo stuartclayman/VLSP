@@ -1,0 +1,67 @@
+export CLASSPATH=./:./libs/*:./bin/
+# Retrieve input parameters
+scenarioname=$1
+echo "Scenario name:$scenarioname"
+figuresrangetype=$2
+echo "Figures range type:$figuresrangetype"
+figuresrange=$3
+echo "Figures range:$figuresrange"
+nodesrange=$4
+echo "Nodes range set:$nodesrange"
+flowsrange=$5
+echo "Flows range set:$flowsrange"
+goalsrange=$6
+echo "Goals range set:$goalsrange"
+
+# Set scenario name (for figures)
+echo "$scenarioname" > output/scenario
+# Set figures range (defines the names of figure curves)
+echo "$figuresrange" > output/range
+# Set figures range type (defines the type of figure curves)
+echo "$figuresrangetype" > output/rangetype
+
+# Shutting down IKMS (in case it is still running)
+./shutDownIKMS 2> /dev/null
+
+echo "Scenario: $scenarioname"
+count=0
+for nr in $nodesrange
+do
+   for fr in $flowsrange
+   do
+      for gr in $goalsrange
+      do
+	count=`echo $count+1 | bc`
+	echo Starting IKMS
+	./IKMS &
+	echo Waiting 5 secs
+	sleep 5
+	./startIKMSMeasurements
+	# Syntax: nodesNumber informationSourcesNumber urisPerInformationSourceNumber totalTime method goalId monitoredFlows monitoredMethod monitoredGoalId
+	# method: 3 (All)
+	# goalID: 0 (Pull from Entity), 1 (Pull from Storage), 2 (Pub/Sub), 3 (Direct Communication), 4 (Compact 0), 5 (Compact 1), 6 (Compact 2), 7 (Compact 3)
+	./singleExperiment $nr $fr 1 100000 3 $gr 3 20000 2>&1 | tee /tmp/ikms-experiment-$$.out
+	echo "Waiting 10"
+	sleep 10
+	./stopIKMSMeasurements
+	echo Waiting 5 secs
+	sleep 5
+	./shutDownIKMS
+	echo Collecting results
+	mkdir output/`cat output/scenario` 2> /dev/null
+	cp ../output.txt output/`cat output/scenario`/results-$nr-$fr-$gr-$count.txt
+	echo Waiting 5 secs
+	sleep 5
+	#echo Stopping global controller and waiting to reboot
+	#./stop
+	#sleep 20
+      done
+   done
+done
+# Create latex file
+cd output
+./plotall
+latex results.tex
+dvipdf results.dvi
+cp results.* `cat scenario`/
+cd ..

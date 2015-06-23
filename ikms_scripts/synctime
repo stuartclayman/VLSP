@@ -1,0 +1,2 @@
+#ps ax | grep LocalController | awk '{print $1}' | xargs kill
+for h in clayone claytwo claythree clayfour claydesk1 claydesk2 ethane methane butane propane pentane; do echo "Checking time in $h"; ssh $h "date" 2> /dev/null; done

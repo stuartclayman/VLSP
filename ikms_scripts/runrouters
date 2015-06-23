@@ -1,0 +1,4 @@
+./runstats ScenarioRoutersPullFromEntity-5 "Routers" "20 30 50 100" "20 30 50 100" 5 0 10
+./runstats ScenarioRoutersPullFromStorage-5 "Routers" "20 30 50 100" "20 30 50 100" 5 1 10
+./runstats ScenarioRoutersPubSub-5 "Routers" "20 30 50 100" "20 30 50 100" 5 2 10
+./runstats ScenarioRoutersDirect-5 "Routers" "20 30 50 100" "20 30 50 100" 5 3 10
