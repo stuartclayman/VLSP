@@ -1022,7 +1022,7 @@ public class LocalController implements ComponentController {
                 // find Constructor for when arg is RouterController
                 Constructor<? extends LocalControllerProbe> cons = cc.getDeclaredConstructor(LocalController.class);
 
-                LocalControllerProbe probe = cons.newInstance(this);
+		LocalControllerProbe probe = cons.newInstance(this);
 
                 // Set datarate, iff we need to
                 if (datarate > 0) {

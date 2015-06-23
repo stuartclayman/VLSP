@@ -1,1 +1,0 @@
-ps ax | grep ikms.Main | grep -v grep | awk '{print $1}' | xargs kill -9 2> /dev/null

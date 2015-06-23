@@ -20,7 +20,7 @@
        </Consumer>
      </Monitoring>
   </GlobalController>
-
+<!--
   <LocalController>
      <Name>localhost</Name>
      <Port>10000</Port>
@@ -28,6 +28,48 @@
      <HighPort>12000</HighPort>
      <MaxRouters>30</MaxRouters>
   </LocalController>
+-->
+
+<LocalController>
+     <Name>claydesk1</Name>
+     <Port>10004</Port>
+     <LowPort>15001</LowPort>
+     <HighPort>16000</HighPort>
+     <MaxRouters>100</MaxRouters>
+  </LocalController>
+
+<LocalController>
+     <Name>claydesk2</Name>
+     <Port>10005</Port>
+     <LowPort>16001</LowPort>
+     <HighPort>17000</HighPort>
+     <MaxRouters>100</MaxRouters>
+  </LocalController>
+<!--
+ <LocalController>
+     <Name>ethane</Name>
+     <Port>10006</Port>
+     <LowPort>17001</LowPort>
+     <HighPort>18000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+ <LocalController>
+     <Name>methane</Name>
+     <Port>10007</Port>
+     <LowPort>18001</LowPort>
+     <HighPort>19000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+  <LocalController>
+     <Name>butane</Name>
+     <Port>10008</Port>
+     <LowPort>19001</LowPort>
+     <HighPort>20000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+-->
 
   <EventEngine>
      <Name>Empty</Name>

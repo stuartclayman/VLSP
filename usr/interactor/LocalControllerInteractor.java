@@ -249,6 +249,7 @@ public class LocalControllerInteractor {
      * Check with a local controller.
      */
     public Boolean checkLocalController(String host, int port) throws IOException, JSONException {
+
         Logger.getLogger("log").logln(USR.ERROR, "LocalControllerInteractor: checkLocalController: " + host + ":" + port);
         String toSend = MCRP.CHECK_LOCAL_CONTROLLER.CMD + " " + host + " " + port;
         JSONObject response = interact(toSend);
@@ -259,9 +260,11 @@ public class LocalControllerInteractor {
      * Check with a local controller.
      */
     public Boolean checkLocalController(LocalHostInfo gc) throws IOException, JSONException {
+
         String host = gc.getName();
         int port = gc.getPort();
         String toSend = MCRP.CHECK_LOCAL_CONTROLLER.CMD + " " + host + " " + port;
+
         JSONObject response = interact(toSend);
         return (Boolean)response.get("success");
     }

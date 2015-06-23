@@ -170,7 +170,6 @@ public class ProcessWrapper {
             running = true;
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-
             String line;
 
             while (running) {

@@ -20,7 +20,7 @@ echo "set ytic auto" >> plot.p
 echo "set title '${p[2]}'" >> plot.p
 echo "set xlabel '${p[3]}'" >> plot.p
 echo "set ylabel '${p[4]}'" >> plot.p
-#echo "set yrange [0:1]" >> plot.p
+echo "set yrange [0:80]" >> plot.p
 #echo "set xrange [0:120]" >> plot.p
 echo "set key top right" >> plot.p
 #echo "set key box" >> plot.p

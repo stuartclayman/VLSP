@@ -45,7 +45,6 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 		globalController = gc;
 		measurements = new HashMap<String, Measurement>();
                 previousProbeValues = new HashMap<String, Measurement>();
-
 		// get logger
 		try {
 			Logger.getLogger("log").addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel13.out")), new BitMask(1<<13));
@@ -125,7 +124,6 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 	// this method returns a JSONObject with the difference in inbound/outbound traffic between the latest two probes
 	public JSONObject getProcessedData (String localControllerName) {
 		Measurement m = measurements.get(localControllerName);
-
                 if (m == null) {
                     return new JSONObject();
                 } else {

@@ -76,7 +76,6 @@ public class NetIFStatsReporter implements Reporter, ReporterMeasurementType, Ro
      */
     @Override
     public void report(Measurement m) {
-
         if (m.getType().equals("NetIFStats")) {
             count++;
 

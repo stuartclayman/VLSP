@@ -20,7 +20,19 @@ echo "set ytic auto" >> plot.p
 echo "set title '${p[2]}'" >> plot.p
 echo "set xlabel '${p[3]}'" >> plot.p
 echo "set ylabel '${p[4]}'" >> plot.p
-#echo "set yrange [0:1]" >> plot.p
+
+# Check if an alternative y range requested
+yrangefile="`cat scenario`/responsetime-yrange"
+echo $yrangefile
+if [ -f $yrangefile ];
+then
+        yrange="`cat $yrangefile`"
+        echo "Changing yrange to:$yrange"
+        echo "set yrange $yrange" >> plot.p
+else
+        echo "set yrange [0:80]" >> plot.p
+fi
+
 #echo "set xrange [0:120]" >> plot.p
 echo "set key top right" >> plot.p
 #echo "set key box" >> plot.p

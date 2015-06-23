@@ -1,3 +1,0 @@
-export CLASSPATH=./:bin/.:libs/*:./extras/IKMS-client/src/
-cd ..
-java demo_usr.ikms.GovernanceLocalApplication

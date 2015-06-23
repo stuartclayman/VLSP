@@ -27,6 +27,17 @@ echo "\subsection{Information Freshness}" >> results.tex
 ./addlatexfigures freshness.eps freshness
 echo "\clearpage" >> results.tex
 
+counter=0
+for a in `cat range`
+do
+	echo "Ploting Flow Types:`cat rangetype`_${a}"
+	echo "\subsection{Flow Types:`cat rangetype` ${a}}" >> results.tex
+	./plotflowtypes $counter
+	./addlatexfigures flowtypes-$counter.eps flowtypes-$counter
+	echo "\clearpage" >> results.tex
+	let counter+=1
+done
+
 echo "Ploting Response Time of Selected Flows"
 echo "\subsection{Response Time of Selected Flows}" >> results.tex
 ./plotresponsetimemonitoredflows

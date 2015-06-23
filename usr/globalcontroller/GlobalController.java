@@ -251,6 +251,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             e.printStackTrace();
         }
 
+
         network_ = new AbstractNetwork();
         shutdownRouters_ = new ArrayList<BasicRouterInfo>();
         linkInfo = new HashMap<Integer, LinkInfo>();
@@ -2316,9 +2317,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             if (!connected) {
 
                 String [] cmd = options_.localControllerStartCommand(lh);
+
                 try {
                     Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting process " + Arrays.asList(cmd));
+
                     child = new ProcessBuilder(cmd).start();
+
                 } catch (IOException e) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute remote command " + Arrays.asList(cmd));
                     Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
@@ -2373,6 +2377,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                     try {
                         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Trying to make connection to "
                                                       + lcInfo.getName() + " " + lcInfo.getPort());
+
                         inter = new LocalControllerInteractor(lcInfo);
 
                         localControllers_.add(inter);

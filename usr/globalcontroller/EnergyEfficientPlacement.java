@@ -84,14 +84,15 @@ public class EnergyEfficientPlacement implements PlacementEngine {
 			//currentMeasurement = hostInfoReporter.getData(localControllerName); 
 			currentMeasurement = hostInfoReporter.getProcessedData(localControllerName); 
 
-			System.out.println ("Fetching HostInfo Probe:"+currentMeasurement);
+			//System.out.println ("From localcontroller name:"+localControllerName);
+			System.out.println ("Fetching HostInfo Probe:"+currentMeasurement+" from "+localControllerName);
 		
 			if (currentMeasurement!=null) {
 				// extracted required measurements for the energy model
 				try {
 					currentCPUUserAndSystem = (float) currentMeasurement.getDouble("cpuLoad");
 					currentCPUIdle = (float) currentMeasurement.getDouble("cpuIdle");
-					currentMemoryUsed = currentMeasurement.getInt("memoryAllocation");
+					currentMemoryUsed = currentMeasurement.getInt("usedMemory");
 					currentFreeMemory = currentMeasurement.getInt("freeMemory");
 					currentOutputBytes = currentMeasurement.getLong("networkOutboundBytes");
 					currentInputBytes = currentMeasurement.getLong("networkIncomingBytes");

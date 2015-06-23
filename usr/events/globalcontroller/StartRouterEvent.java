@@ -137,7 +137,8 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
                     return true;
                 }
             } catch (IOException e) {
-                Logger.getLogger("log").logln(USR.ERROR,
+                //e.printStackTrace();
+            		Logger.getLogger("log").logln(USR.ERROR,
                                               leadin()
                                               + "Could not start new router on "
                                               + leastUsed + " out of ports ");

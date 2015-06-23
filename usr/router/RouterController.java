@@ -148,8 +148,8 @@ public class RouterController implements ComponentController, Runnable {
 
         // delegate listening for new connections to RouterConnections object
 
-        connections = new RouterConnectionsUDP(this, r2rPort);
-        //connections = new RouterConnectionsTCP(this, r2rPort);
+        //connections = new RouterConnectionsUDP(this, r2rPort);
+        connections = new RouterConnectionsTCP(this, r2rPort);
 
         connectionCount = 0;
         // a map of NetIFs

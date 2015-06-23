@@ -4,7 +4,7 @@
   <target name="init">    
     <echo message="------------ Building User Space Routing ----------"/>
     <echo message=""/>
-    <property name="sources" value="${basedir}"/>
+    <property name="sources" value="${basedir}:${basedir}/extras/IKMS-client/src/"/>
     <property name="classes" value="${basedir}/classes"/>
     <property name="external.jars" value="./libs/monitoring-0.7.1.jar:./libs/timeindex-20130121.jar:./libs/aggregator-0.3.jar:./libs/rgcprobdistributions.jar:./libs/rgcxmlparse.jar:./libs/rgcmathfunctions.jar:./libs/resty-0.3.1.jar:./libs/simple-4.1.21.jar:./libs/restconsole-0.1.0.jar:./libs/IKMS-client.jar" />
 
