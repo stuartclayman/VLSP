@@ -1,0 +1,19 @@
+echo "Creating totalenergy figure"
+
+counter=2
+result="`cat scenario`/totalenergy.txt Total_Energy_Consumed Time Total_Energy_Consumed"
+
+./totalenergy > `cat scenario`/totalenergy.txt
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plottotalenergyfigure $result
+
+./createpicture totalenergy

@@ -1,0 +1,19 @@
+echo "Creating minenergy figure"
+
+counter=2
+result="`cat scenario`/minenergy.txt Minimum_Energy_Consumed Time Minimum_Energy_Consumed"
+
+./minenergy > `cat scenario`/minenergy.txt
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotminenergyfigure $result
+
+./createpicture minenergy

@@ -27,6 +27,31 @@ echo "\subsection{Information Freshness}" >> results.tex
 ./addlatexfigures freshness.eps freshness
 echo "\clearpage" >> results.tex
 
+echo "Ploting Minimum Energy Consumed"
+echo "\subsection{Minimum Energy Consumed}" >> results.tex
+./plotminenergy
+./addlatexfigures minenergy.eps minenergy
+echo "\clearpage" >> results.tex
+
+echo "Ploting Maximum Energy Consumed"
+echo "\subsection{Maximum Energy Consumed}" >> results.tex
+./plotmaxenergy
+./addlatexfigures maxenergy.eps maxenergy
+echo "\clearpage" >> results.tex
+
+echo "Ploting Average Energy Consumed"
+echo "\subsection{Average Energy Consumed}" >> results.tex
+./plotaverageenergy
+./addlatexfigures averageenergy.eps averageenergy
+echo "\clearpage" >> results.tex
+
+echo "Ploting Total Energy Consumed"
+echo "\subsection{Total Energy Consumed}" >> results.tex
+./plottotalenergy
+./addlatexfigures totalenergy.eps totalenergy
+echo "\clearpage" >> results.tex
+
+
 counter=0
 for a in `cat range`
 do

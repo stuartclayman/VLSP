@@ -1,0 +1,19 @@
+echo "Creating averageenergy figure"
+
+counter=2
+result="`cat scenario`/averageenergy.txt Average_Energy_Consumed Time Average_Energy_Consumed"
+
+./averageenergy > `cat scenario`/averageenergy.txt
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotaverageenergyfigure $result
+
+./createpicture averageenergy
