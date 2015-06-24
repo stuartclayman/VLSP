@@ -1,0 +1,42 @@
+<IKMSEngine>
+  <NodeBirthDist>
+    <ProbElement>
+      <Type>Uniform</Type>  <!-- Uniform -->
+      <Weight>1.0</Weight>  <!-- 100% Type -->
+      <Parameter>0</Parameter>  <!-- one every N seconds --> <!-- was 3 -->
+      <Parameter>19</Parameter> <!-- was 6 -->
+    </ProbElement>
+  </NodeBirthDist>
+
+  <NodeDeathDist>
+    <!--  first 0.9 -->
+    <ProbElement>
+      <Type>Exponential</Type>
+      <Weight>0.00001</Weight>
+      <Parameter>90</Parameter>
+    </ProbElement>
+
+    <ProbElement>
+      <Type>LogNormal</Type>
+      <Weight>1.0</Weight>
+      <Parameter>10.0</Parameter>
+      <Parameter>1.5</Parameter>
+    </ProbElement>
+  </NodeDeathDist>
+
+  <LinkCreateDist>
+    <ProbElement>
+      <Type>PoissonPlus</Type>
+      <Weight>1.0</Weight>
+      <Parameter>2.0</Parameter>
+      <Parameter>1.0</Parameter>
+    </ProbElement>
+  </LinkCreateDist>
+
+  <Parameters>
+    <PreferentialAttachment>false</PreferentialAttachment>
+    <InitialNumberOfNodes>20</InitialNumberOfNodes>
+    <StaticTopology>true</StaticTopology>
+  </Parameters>
+
+</IKMSEngine>
