@@ -1,0 +1,16 @@
+#!/bin/sh
+die () {
+    echo >&2 "$@"
+    exit 1
+}
+
+[ "$#" -eq 1 ] || die "1 argument required, $# provided. Syntax: combinecvs column_to_combine"
+echo $1 | grep -E -q '^[0-9]+$' || die "Numeric argument required for number_of_files parameter, $1 provided"
+
+# retrieve all results files and place them in an array
+FOLDER=`cat scenario`
+#FILES=(`ls -t -r $FOLDER/results*.txt`)
+FILES=(`cat filenames`)
+FILESCOUNT=${#FILES[@]}
+
+cat ${FILES[$1]} | awk '{print $1,$10,$11,$12}'

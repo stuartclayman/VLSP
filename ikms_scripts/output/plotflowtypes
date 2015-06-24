@@ -1,0 +1,19 @@
+echo "Creating flowtypes figure"
+
+counter=2
+result="`cat scenario`/flowtypes-$1.txt Number_Of_Flows_Per_Communication_Method Time Number_Of_Flows"
+
+./flowtypes $1 > `cat scenario`/flowtypes-$1.txt
+
+for a in "Push/Pull" "Direct_Communication" "PubSub"
+do
+        rangetype="${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotflowtypesfigure $result
+
+./createpicture flowtypes-$1
