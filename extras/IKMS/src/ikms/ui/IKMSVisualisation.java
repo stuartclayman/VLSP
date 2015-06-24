@@ -279,9 +279,9 @@ public class IKMSVisualisation {
 				numberOfPubSubFlows = informationFlowConfigurationAndStatisticsOperation.GetNumberOfPubSubFlows();
 				
 				// Retrieve energy efficiency related measurements from global controller
-				//informationFlowConfigurationAndStatisticsOperation.RetrieveLocalControllerInformation ();
+				informationFlowConfigurationAndStatisticsOperation.RetrieveLocalControllerInformation();
 				
-				logOutput.Log(step+"\t"+responseTime+"\t"+informationFreshness+"\t"+responseTimeForMonitoredEntities+"\t"+informationFreshnessForMonitoredEntities+"\t"+cpu+"\t"+storage+"\t"+SelectedOptimizationGoal.GetOptimizationGoal().getOptGoalName()+"\t"+numberOfFlows+"\t"+numberOfPushPullFlows+"\t"+numberOfDirectFlows+"\t"+numberOfPubSubFlows);
+				logOutput.Log(step+"\t"+responseTime+"\t"+informationFreshness+"\t"+responseTimeForMonitoredEntities+"\t"+informationFreshnessForMonitoredEntities+"\t"+cpu+"\t"+storage+"\t"+SelectedOptimizationGoal.GetOptimizationGoal().getOptGoalName()+"\t"+numberOfFlows+"\t"+numberOfPushPullFlows+"\t"+numberOfDirectFlows+"\t"+numberOfPubSubFlows+"\t"+informationFlowConfigurationAndStatisticsOperation.GetMinEnergyValue()+"\t"+informationFlowConfigurationAndStatisticsOperation.GetMaxEnergyValue()+"\t"+informationFlowConfigurationAndStatisticsOperation.GetAverageEnergyValue()+"\t"+informationFlowConfigurationAndStatisticsOperation.GetTotalEnergyValue());
 			}
 		}
 	}
