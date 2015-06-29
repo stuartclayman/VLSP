@@ -286,6 +286,28 @@ public class VimClient implements VimFunctions {
         }
     }
 
+
+    /**
+     * Equivalent of: curl PUT http://localhost:8888/localcontroller/name?status=online
+     *
+     * Returns JSONObject:  {TBA}
+     */
+    public JSONObject setLocalControllerStatus(String name, String status) throws JSONException {
+        try {
+            String uri = vimURI + "/localcontroller/" + name + "?status="+status;
+
+            // PUT
+            JSONObject jsobj = rest.json(uri, put(content(""))).toObject();
+
+            return jsobj;
+
+        } catch (IOException ioe) {
+            throw new JSONException("setLocalControllerStatus FAILED" + " IOException: " + ioe.getMessage());
+        }
+    }
+
+
+
     /**
      * Equivalent of: curl GET http://localhost:8888/router/id/link_stats
      *
