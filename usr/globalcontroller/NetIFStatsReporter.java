@@ -126,7 +126,7 @@ public class NetIFStatsReporter implements Reporter, ReporterMeasurementType, Ro
      */
     @Override
     public List<Object> getTraffic(String routerSrc, String routerDst) {
-        System.out.println("getTraffic: " + routerSrc + " -> " + routerDst);
+        //System.out.println("getTraffic: " + routerSrc + " -> " + routerDst);
 
         Table tablePrev = previousMeasurements.get(routerSrc);
 
@@ -186,7 +186,7 @@ public class NetIFStatsReporter implements Reporter, ReporterMeasurementType, Ro
                     data.add(diff);
                 }
 
-                System.err.println("return: " + data);
+                //System.err.println("return: " + data);
 
                 return data;
             }

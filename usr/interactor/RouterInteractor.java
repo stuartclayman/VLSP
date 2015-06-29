@@ -107,7 +107,7 @@ public class RouterInteractor {
             Logger.getLogger("log").logln(USR.STDOUT, "Sent: " + uri);
             Logger.getLogger("log").logln(USR.STDOUT, "Recv: " + jsobj);
 
-            je.printStackTrace();
+            //je.printStackTrace();
             throw je;
         }
     }

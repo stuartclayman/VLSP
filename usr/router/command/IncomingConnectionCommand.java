@@ -36,7 +36,7 @@ public class IncomingConnectionCommand extends RouterCommand {
      * Evaluate the Command.
      */
     @Override
-	public boolean evaluate(Request request, Response response) {
+    public boolean evaluate(Request request, Response response) {
         try {
             PrintStream out = response.getPrintStream();
 
@@ -241,6 +241,8 @@ public class IncomingConnectionCommand extends RouterCommand {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + jex.getMessage());
+        } catch (Exception e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
         }
 
         return false;

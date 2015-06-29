@@ -79,6 +79,13 @@ public class RouterOptions {
     String extendedOutputFile_ = null;            // File name for more output
     boolean gracefulExit_ = true;                 // Routers send a message before leaving
 
+
+    // Link type - one of UDP or TCP
+    enum LinkType { UDP, TCP };
+
+    LinkType linkType = LinkType.UDP;
+
+    
     /** Constructor for router Options */
 
     public RouterOptions (Router router) {
@@ -363,6 +370,31 @@ public class RouterOptions {
             throw new SAXException("Class name "+addrtype+" must be sub type of Address in Routing options");
         } catch (XMLNoTagException e) {
 
+        }
+
+        // Process LinkType - either UDP or TCP
+        String linktype = "";
+        try {
+            linktype = ReadXMLUtils.parseSingleString(rp, "LinkType", "RoutingParameters", true);
+            ReadXMLUtils.removeNode(rp, "LinkType", "RoutingParameters");
+
+            if (linktype.equals("UDP")) {
+                linkType = LinkType.UDP;
+            } else if (linktype.equals("TCP")) {
+                linkType = LinkType.TCP;
+            } else {
+                throw new Exception("Unknown LinkType " + linktype);
+            }
+
+        } catch (ClassNotFoundException e) {
+            throw new SAXException("Class not found for class name "+addrtype+" in Routing options");
+        } catch (SAXException e) {
+            throw new SAXException("Unable to parse class name "+addrtype+" in Routing options"+e.getMessage());
+        } catch (ClassCastException e) {
+            throw new SAXException("Class name "+addrtype+" must be sub type of Address in Routing options");
+        } catch (XMLNoTagException e) {
+        } catch (Exception e) {
+            throw new SAXException(e.getMessage());
         }
 
         try {
@@ -855,6 +887,13 @@ public class RouterOptions {
      */
     public boolean gracefulExit() {
         return gracefulExit_;
+    }
+
+    /**
+     * Get the LinkType
+     */
+    public LinkType getLinkType() {
+        return linkType;
     }
 
     /**

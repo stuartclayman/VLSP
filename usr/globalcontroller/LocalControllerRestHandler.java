@@ -90,9 +90,13 @@ public class LocalControllerRestHandler extends BasicRequestHandler {
 					notFound(response, "GET bad request");
 				}
 			} else if (method.equals("PUT")) {
-				{
-					badRequest(response, "PUT bad request");
-				}
+                            if (segments.length == 2) {   // set localcontroller attributes
+                                setLCAttributes(request, response);
+                            } else {
+                                notFound(response, "PUT bad request. segment size = " + segments.length + " " + segments);
+                            }
+
+
 			} else {
 				badRequest(response, "Unknown method" + method);
 			}
@@ -118,98 +122,9 @@ public class LocalControllerRestHandler extends BasicRequestHandler {
 	/**
 	 * Create a local controller given a request and send a response.
 	 */
-	//   public void createLocalController(Request request, Response response) throws IOException, JSONException {
-	// Args:
-	// [name]
-	// [address]
-
-	/*        String name = "";
-        String address = "";
-
-        Query query = request.getQuery();*/
-
-	/* process optional args */
-
-	/*      if (query.containsKey("name")) {
-            name = query.get("name");
-        }
-
-        if (query.containsKey("address")) {
-            address = query.get("address");
-        }*/
-
-
-	/* do work */
-
-	// start a router, and get it's ID
-
-	/*       boolean success = true;
-        String failMessage = null;
-        JSONObject jsobj = null;
-
-        jsobj = controller_.createRouter(name, address);
-
-        if (jsobj.get("success").equals(false)) {
-            success = false;
-            failMessage = (String)jsobj.get("msg");
-        }
-
-        if (success) {
-            // now lookup all the saved details
-            // and send them back as the return value
-            PrintStream out = response.getPrintStream();
-
-            // WAS JSONObject jsobj = controller_.findRouterInfoAsJSON(rID);
-
-            out.println(jsobj.toString());
-        } else {
-            complain(response, "Error creating router: " + failMessage);
-        }
-
-    }*/
-
 	/**
 	 * Delete a local controller given a request and send a response.
 	 */
-	/*  public void deleteLocalController(Request request, Response response) throws IOException, JSONException {
-        // if we got here we have 2 parts
-        // /router/ and another bit
-        String name = request.getPath().getName();
-        Scanner sc = new Scanner(name);
-
-        JSONObject jsobj = null;
-        boolean success = true;
-        String failMessage = null;
-
-        if (sc.hasNextInt()) {
-            int id = sc.nextInt();
-            sc.close();
-            // if it exists, stop it, otherwise complain
-            if (controller_.isValidRouterID(id)) {
-                // delete a router
-                jsobj = controller_.deleteRouter(id);
-
-                if (success) {
-                    // now lookup all the saved details
-                    // and send them back as the return value
-                    PrintStream out = response.getPrintStream();
-
-                    //jsobj.put("routerID", id);
-                    //jsobj.put("status", "deleted");
-
-                    out.println(jsobj.toString());
-                } else {
-                    complain(response, "Error deleting Router router: " + failMessage);
-                }
-
-            } else {
-                complain(response, "deleteRouter arg is not valid router id: " + name);
-            }
-
-        } else {
-            complain(response, "deleteRouter arg is not Integer: " + name);
-        }
-    }*/
 
 	/**
 	 * List local controllers given a request and send a response.
@@ -424,5 +339,97 @@ public class LocalControllerRestHandler extends BasicRequestHandler {
 
     }*/
 
+
+
+        /**
+     * Set the attributes of a localcontroller given a request and send a response.
+     * Currently can only modify the online/offline status.
+     */
+    public void setLCAttributes(Request request, Response response) throws IOException, JSONException {
+        String status = null;
+        Scanner scanner;
+
+        Query query = request.getQuery();
+
+        /* process compulsory args */
+
+        // process arg weight
+        if (query.containsKey("status")) {
+            scanner = new Scanner(query.get("status"));
+
+            if (scanner.hasNext()) {
+                status = scanner.next();
+                scanner.close();
+
+
+                if (! (status.equals("online") || status.equals("offline"))) {
+                    complain(response, "arg status is not appropriate - must be 'online' or 'offline'");
+                    response.close();
+                    return;
+                }
+                
+            } else {
+            	scanner.close();
+                complain(response, "arg status is not appropriate");
+                response.close();
+                return;
+            }
+        } else {
+            complain(response, "missing arg status");
+            response.close();
+            return;
+        }
+
+        // /localcontroller/ and another bit
+        String name = request.getPath().getName();
+        Scanner sc = new Scanner(name);
+
+        if (sc.hasNext()) {
+            String lcValue = sc.next();
+            sc.close();
+
+            // if it exists, stop it, otherwise complain
+            if (controller_.isValidLocalControllerID(lcValue)) {
+            } else {
+                complain(response, " arg is not valid localcontroller id: " + name);
+                return;
+            }
+
+
+            JSONObject jsobj = null;
+            boolean success = true;
+            String failMessage = null;
+
+            if (status.equals("online")) {
+
+                jsobj = controller_.takeLocalControllerOnlineJSON(lcValue);
+            } else  if (status.equals("offline")) {
+
+                jsobj = controller_.takeLocalControllerOfflineJSON(lcValue);
+            } else {
+                throw new Error("LocalControllerRestHandler: coding error");
+            }
+
+            if (jsobj.get("success").equals(false)) {
+                success = false;
+                failMessage = (String)jsobj.get("msg");
+            }
+
+            if (success) {
+                PrintStream out = response.getPrintStream();
+
+                // jsobj = controller_.findLinkInfoAsJSON(id);
+
+                out.println(jsobj.toString());
+            } else {
+                complain(response, "Error: " + failMessage);
+            }
+
+
+
+        } else {
+            complain(response, "arg is not valid: " + name);
+        }
+    }
 
 }

@@ -183,27 +183,6 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
         return refAddr.hashCode();
     }
 
-
-    /**
-     * Return an hash code for locally created NetIF.
-     */
-    public int getLocalHashCodeOrig(NetIF netIF) {
-        InetSocketAddress refAddr = new InetSocketAddress(netIF.getInetAddress(), netIF.getPort());
-
-        return refAddr.hashCode();
-    }
-
-
-    /**
-     * Return a hash code for a NetIF in Create Connection.
-     */
-    public int getCreateConnectionHashCodeOrig(NetIF netIF, InetAddress addr, int port) {
-        // get an InetSocketAddress
-        InetSocketAddress refAddr = new InetSocketAddress(netIF.getInetAddress(), netIF.getLocalPort());
-
-        return refAddr.hashCode();
-    }
-
     /**
      * Create the String to print out before a message
      */

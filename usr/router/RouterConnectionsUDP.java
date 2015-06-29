@@ -85,14 +85,6 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
                 // Need a new socket each time for UDP
                 // There is no equivalent of TCP accept
 
-                /*
-                 * DatagramChannel 
-                DatagramChannel channel = DatagramChannel.open();
-                //channel.configureBlocking(true);
-                DatagramSocket socket = channel.socket();
-                socket.bind(new InetSocketAddress(InetAddress.getLocalHost(), 0));
-                */
-
                 // Listen on all interfaces
                 DatagramSocket socket = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
 
@@ -137,7 +129,7 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
             } catch (IOException ioe) {
                 // only print if running, not when stopping
                 if (running) {
-                    ioe.printStackTrace();
+                    //ioe.printStackTrace();
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "socket failed");
                 }
             }

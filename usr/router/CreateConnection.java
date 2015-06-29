@@ -16,6 +16,7 @@ import usr.interactor.RouterInteractor;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
+import usr.common.ANSI;
 
 
 /**
@@ -289,10 +290,9 @@ public class CreateConnection {
                     interactionOK = true;
                     break;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                     Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " +
-                                                  attempts);
+                                                  ANSI.RED + leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e + ". Attempt: " + attempts + ANSI.RESET_COLOUR);
                 }
 
             }
@@ -310,27 +310,27 @@ public class CreateConnection {
             }
 
         } catch (Exception exc) {
-            exc.printStackTrace();
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc);
+            //exc.printStackTrace();
+            Logger.getLogger("log").logln(USR.ERROR,  ANSI.RED_BG +leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + exc + ANSI.RESET_COLOUR);
             respondError("CREATE_CONNECTION Cannot interact with host: " + host);
             return false;
         }
 
         /*
          * Close connection to management port of remote router.
+         */
            try {
             // close connection to management connection of remote router
             interactor.quit();
 
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed = " + host);
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "closed = " + host);
 
            } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "INCOMING_CONNECTION with host error " + host + " -> " + e);
             respondError("CREATE_CONNECTION Cannot quit with host: " + host);
             return false;
            }
-         */
 
         // now plug the temporary netIF into Router
         RouterPort port = controller.plugTemporaryNetIFIntoPort(netIF);

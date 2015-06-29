@@ -162,7 +162,7 @@ public class UDPNetIF implements NetIF, Runnable {
             }
         }
 
-        Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " About to Latch count down");
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " About to Latch count down");
 
         // reduce latch count by 1
         latch.countDown();
@@ -180,7 +180,7 @@ public class UDPNetIF implements NetIF, Runnable {
 
         EndPoint endPoint = connection.getEndPoint();
 
-        //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectPhase1() " + endPoint);
+        Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectPhase1() " + endPoint);
 
         boolean conn = connection.connect();
         closed = false;
@@ -199,7 +199,7 @@ public class UDPNetIF implements NetIF, Runnable {
 
         EndPoint endPoint = connection.getEndPoint();
 
-        //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectPhase2() " + endPoint);
+        Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectPhase2() " + endPoint);
 
 
         if (endPoint instanceof UDPEndPointDst) {
@@ -207,11 +207,16 @@ public class UDPNetIF implements NetIF, Runnable {
             // so set the latch
             connectLatch = new CountDownLatch(1);
 
+            //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectLatch SET " + endPoint);
+
             // and wait
             try {
                 connectLatch.await();
             } catch (InterruptedException ie) {
             }
+
+            //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectLatch await finished " + endPoint);
+
         }
 
         start();
@@ -363,7 +368,7 @@ public class UDPNetIF implements NetIF, Runnable {
     /**
      * Set the remote InetAddress and port
      */
-    public void setRemoteAddress(InetAddress addr, int port) throws IOException {
+    public synchronized void setRemoteAddress(InetAddress addr, int port) throws IOException {
         // patch in this addr:port into the socket
         // It is only at this point we know who the other end is
         // and so we can carry on setting up the NetIF
@@ -381,6 +386,9 @@ public class UDPNetIF implements NetIF, Runnable {
 
             // reduce latch count by 1
             connectLatch.countDown();
+
+            //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectLatch DOWN " + endPoint);
+
         }
 
     }

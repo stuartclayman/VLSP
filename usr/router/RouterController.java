@@ -148,8 +148,14 @@ public class RouterController implements ComponentController, Runnable {
 
         // delegate listening for new connections to RouterConnections object
 
-        //connections = new RouterConnectionsUDP(this, r2rPort);
-        connections = new RouterConnectionsTCP(this, r2rPort);
+
+        RouterOptions.LinkType linkType = o.getLinkType();
+        
+        if (linkType == RouterOptions.LinkType.UDP) {
+            connections = new RouterConnectionsUDP(this, r2rPort);
+        } else {
+            connections = new RouterConnectionsTCP(this, r2rPort);
+        }
 
         connectionCount = 0;
         // a map of NetIFs
@@ -389,9 +395,9 @@ public class RouterController implements ComponentController, Runnable {
         latch = new CountDownLatch(1);
         latchForNetIF = netIF;
 
-        registerTemporaryNetIF(netIF);
-
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.CYAN + "LATCH SET for id: " + id + ANSI.RESET_COLOUR);
+
+        registerTemporaryNetIF(netIF);
 
         try {
             latch.await();
@@ -404,18 +410,6 @@ public class RouterController implements ComponentController, Runnable {
     }
 
     /**
-     * Keep a handle on a NetIF created from INCOMING_CONNECTION
-     */
-    synchronized void registerTemporaryNetIF(NetIF netIF) {
-        int id = netIF.getID();
-
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "temporary addNetIF ID: " + id + "address: " + netIF.getAddress() + " for " + netIF);
-
-        tempNetIFMap.put(id, netIF);
-
-    }
-
-    /**
      * Find a NetIF by an id.
      */
     public synchronized NetIF getTemporaryNetIFByID(int id) {
@@ -424,10 +418,25 @@ public class RouterController implements ComponentController, Runnable {
             latch.countDown();
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() +  ANSI.CYAN + "LATCH DOWN for id:" + id + ANSI.RESET_COLOUR);
+            return tempNetIFMap.get(id);
+        } else {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() +  ANSI.RED + "CANT FIND NetIF id:" + id + ANSI.RESET_COLOUR);
+            return null;
+        }
+    }
+
+    /**
+     * Keep a handle on a NetIF created from INCOMING_CONNECTION
+     */
+    void registerTemporaryNetIF(NetIF netIF) {
+        int id = netIF.getID();
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "temporary addNetIF ID: " + id + "address: " + netIF.getAddress() + " for " + netIF);
+
+        synchronized (tempNetIFMap) {
+            tempNetIFMap.put(id, netIF);
         }
 
-
-        return tempNetIFMap.get(id);
     }
 
     /**
@@ -440,7 +449,7 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * Plug a NetIF into the RouterFabric
      */
-    public RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
+    public synchronized RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
         RouterPort rp = plugInNetIF(netIF);
         //Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
 

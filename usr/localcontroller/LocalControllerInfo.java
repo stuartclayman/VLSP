@@ -1,6 +1,8 @@
 package usr.localcontroller;
 
 import usr.common.LocalHostInfo;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * LocalHostInfo contains basic info about one host in the system
@@ -9,8 +11,17 @@ import usr.common.LocalHostInfo;
 public class LocalControllerInfo extends LocalHostInfo {
     private int maxRouters_ = 100;
     private int currRouters_ = 0;
+    private List routerList = new ArrayList<Integer>();
     private String remoteLoginUser_ = null;
     private String remoteStartController_ = null;
+    private LocalControllerActiveStatus activeStatus_ = LocalControllerActiveStatus.ONLINE; // Set default status as ONLINE
+
+    public enum LocalControllerActiveStatus {
+        ONLINE,                                      // A LocalController is ONLINE and usable
+        OFFLINE                                      // A LocalController is OFFLINE and not usable
+    };
+
+
 
     public LocalControllerInfo(String hostName, int port) throws java.net.UnknownHostException {
         super(hostName, port);
@@ -32,11 +43,17 @@ public class LocalControllerInfo extends LocalHostInfo {
         return currRouters_;
     }
 
-    public void addRouter() {
-        currRouters_++;
+    public List<Integer> getRouters() {
+        return routerList;
     }
 
-    public void delRouter() {
+    public void addRouter(int id) {
+        currRouters_++;
+        routerList.add(id);
+    }
+
+    public void delRouter(int id) {
+        routerList.remove((Integer)id);
         currRouters_--;
     }
 
@@ -66,4 +83,11 @@ public class LocalControllerInfo extends LocalHostInfo {
         return remoteStartController_;
     }
 
+    public void setActiveStatus(LocalControllerActiveStatus status) {
+        activeStatus_ = status;
+    }
+
+    public LocalControllerActiveStatus getActiveStatus() {
+        return activeStatus_;
+    }
 }

@@ -15,11 +15,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Properties;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.UnknownHostException;
-import java.net.SocketException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -51,12 +46,8 @@ import usr.output.OutputType;
 import usr.router.RouterOptions;
 
 public class ControlOptions {
-    private ArrayList<LocalControllerInfo> localControllers_;
+    private ArrayList<LocalControllerInfo> localControllers_;  // A list of the LocalController details
     private int globalControlPort_ = 8888;           // Port global  controller listens on
-    private String remoteLoginCommand_ = null;       // Command used  to login to start local controller
-    private String remoteStartController_ = null;    // Command used on local controller to start it
-    private String remoteLoginFlags_ = null;         //  Flags used for ssh to login to remote machine
-    private String remoteLoginUser_ = null;          // User on remote machines to login with.
     private boolean startLocalControllers_ = true;   // If true Global Controller starts local controllers
     private boolean isSimulation_ = false;           // If true simulation in software not emulation in hardware
     private boolean allowIsolatedNodes_ = true;      // If true, check for isolated nodes
@@ -70,6 +61,7 @@ public class ControlOptions {
     private int highPort_ = 20000;                   // Default highest port to be used on local controller
     private int maxLag_ = 100000;                     // Maximum lag tolerable in simulation in millisec
     // (was 10000, changed by lefteris - used to cause shutting down of GC in case of large topologies > 100 nodes)
+
     private String routerOptionsString_ = "";        //
     private RouterOptions routerOptions_ = null;
     private ArrayList<EventEngine> engines_ = null;  // Engines used to create new events for sim
@@ -77,17 +69,14 @@ public class ControlOptions {
     private ArrayList<OutputType> outputs_ = null;  // The name of the class to use to place a Router
     private String placementEngineClass = null;     // The name of the class to use to visualize the network
     private String visualizationClass = null;
+    private String remoteStartController_ = null;    // Command used on local controller to start it
+    private String remoteLoginUser_ = null;          // User on remote machines to login with.
 
     /** init function sets up basic information */
     public void init() {
         engines_ = new ArrayList<EventEngine>();
         localControllers_ = new ArrayList<LocalControllerInfo>();
         outputs_ = new ArrayList<OutputType>();
-        remoteLoginCommand_ = "ssh";   // WAS /usr/bin/ssh
-        remoteLoginFlags_ = "-n";
-        Properties prop = System.getProperties();
-        remoteStartController_
-            = "java -cp " + prop.getProperty("java.class.path", null) + " usr.localcontroller.LocalController";
         routerOptions_ = new RouterOptions(null);
         consumerInfoMap = new HashMap<String, String>();
     }
@@ -559,6 +548,24 @@ public class ControlOptions {
             } catch (XMLNoTagException e) {
             }
 
+            /* check if there is a LocalControllerActiveStatus */
+            try {
+                String status = ReadXMLUtils.parseSingleString(lc, "ActiveStatus", "LocalController", true);
+                ReadXMLUtils.removeNode(lc, "ActiveStatus", "LocalController");
+
+                if (status.equals("ONLINE")) {
+                    lh.setActiveStatus(LocalControllerInfo.LocalControllerActiveStatus.ONLINE);
+                } else if (status.equals("OFFLINE")) {
+                    lh.setActiveStatus(LocalControllerInfo.LocalControllerActiveStatus.OFFLINE);
+                } else {
+                    throw new SAXException("Unknown ActiveStatus " + status);
+                }
+
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+
             // parse energy efficiency related parameters (hardware related coefficients regarding the energy behavior of the physical host)
             try {
                 double c1
@@ -922,78 +929,6 @@ public class ControlOptions {
         return ot;
     }
 
-    /** Return string to launch local controller on remote
-     * machine given machine name
-     */
-    public String [] localControllerStartCommand(LocalControllerInfo lh) {
-        boolean isLocal = false;
-        InetAddress addr = null;
-
-        try {
-            addr = InetAddress.getByName(lh.getName());
-        } catch (UnknownHostException uhe) {
-            throw new Error(uhe.getMessage());
-        }
-        
-        // Check if the address is a valid special local or loop back
-        if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
-            isLocal = true;
-        
-        } else {
-            // Check if the address is defined on any interface
-            try {
-                isLocal = NetworkInterface.getByInetAddress(addr) != null;
-            } catch (SocketException e) {
-                isLocal = false;
-            }
-        }
-
-        if (isLocal) {
-
-            // no need to do remote command
-            String classpath = System.getProperty("java.class.path");
-
-            String [] cmd = new String[6];
-            cmd[0] = "java";
-            cmd[1] = "-classpath";
-            cmd[2] = classpath;
-            cmd[3] = "usr.localcontroller.LocalController";
-            cmd[4] = String.valueOf(lh.getName());
-            cmd[5] = String.valueOf(lh.getPort());
-
-            return cmd;
-
-        } else {
-            // its a remote command
-            String [] cmd = new String[6];
-            cmd[0] = remoteLoginCommand_;
-            cmd[1] = remoteLoginFlags_;
-
-            // For user name in turn try info from remote, or info
-            // from global or fall back to no username
-            String user = lh.getRemoteLoginUser();
-
-            if (user == null) {
-                user = remoteLoginUser_;
-            }
-
-            if (user == null) {
-                cmd[2] = lh.getName();
-            } else {
-                cmd[2] = user + "@" + lh.getName();
-            }
-
-            String remote = lh.getRemoteStartController();
-
-            if (remote == null) {
-                remote = remoteStartController_;
-            }
-            cmd[3] = remote;
-            cmd[4] = String.valueOf(lh.getName());
-            cmd[5] = String.valueOf(lh.getPort());
-            return cmd;
-        }
-    }
 
     public ArrayList<OutputType> getEventOutput() {
         ArrayList<OutputType> eo = new ArrayList<OutputType>();
@@ -1032,6 +967,13 @@ public class ControlOptions {
      */
     public boolean startLocalControllers() {
         return startLocalControllers_;
+    }
+
+    /**
+     * Get remote login user
+     */
+    String getRemoteLoginUser() {
+        return remoteLoginUser_;
     }
 
     /** Are we simulating nodes or executing them with virtual

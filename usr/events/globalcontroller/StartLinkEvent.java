@@ -210,12 +210,19 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent implements Sta
                     json.put("name2", name2_);
                 }
 
-                if (linkName_ != null) {
+                /*
+                if (linkName_ != null || ! linkName_.equals("") ) {
                     json.put("linkName", linkName_);
-                } else if (!gc.isSimulation()) {
+                } else { // if (!gc.isSimulation()) {
                     LinkInfo li = gc.findLinkInfo(linkNo);
-                    json.put("linkName", li.getLinkName());
-                }
+                    if (li != null) {
+                        json.put("linkName", li.getLinkName());
+                    }
+                }*/
+
+                LinkInfo li = gc.findLinkInfo(linkNo);
+                json.put("linkName", li.getLinkName());
+
             } else {
                 json.put("success", (Boolean)false);
                 json.put("msg", "Could not start link " + getName());
@@ -312,6 +319,13 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent implements Sta
                                                          br2.getHost(), br2.getManagementPort(),
                                                          weight, name);
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Got lci response:"+response);
+
+                // if we get an error - bomb out
+                if (response.has("error")) {
+                    throw new IOException(response.toString());
+                }
+
+                
                 String connectionName = (String)response.get("name");
 
                 // add Pair<router1Id, router2Id> -> connectionName to  linkNames
@@ -345,7 +359,7 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent implements Sta
         if (i == MAX_TRIES) {
             Logger.getLogger("log").logln(USR.ERROR,
                                           leadin() + "Giving up on linking");
-            gc.shutDown();
+            //gc.shutDown();
         }
 
         return linkID;

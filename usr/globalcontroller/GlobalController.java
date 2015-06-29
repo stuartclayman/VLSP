@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -455,7 +457,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 executeEvent(ev);
 
             } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Event exception " + e );
+                Logger.getLogger("log").logln(USR.ERROR, ANSI.RED + leadin() + "Event exception " + e + ANSI.RESET_COLOUR);
                 isActive_ = false;
             }
             /*
@@ -847,9 +849,25 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
 
     /**
-     * Get the LocalControllers
+     * Get the LocalControllers which are online.
      */
     public Set<LocalControllerInfo> getLocalControllers() {
+        Set<LocalControllerInfo> lcSet = interactorMap_.keySet();
+        Set<LocalControllerInfo> result = new HashSet<LocalControllerInfo>();
+
+        for (LocalControllerInfo lc : lcSet) {
+            if (lc.getActiveStatus() == LocalControllerInfo.LocalControllerActiveStatus.ONLINE) {
+                result.add(lc);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get all the LocalControllers
+     */
+    public Set<LocalControllerInfo> getAllLocalControllers() {
         return interactorMap_.keySet();
     }
 
@@ -872,6 +890,57 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /** Return the local controller attached to router info*/
     public LocalControllerInteractor getLocalController(LocalControllerInfo lcinf) {
         return interactorMap_.get(lcinf);
+    }
+
+    /**
+     * Turn on an offline LocalController.
+     * If the LocalController is OFFLINE and the operation is
+     * successful, then return true.
+     * If the LocalController is already ONLINE, return false.
+     */
+    public boolean takeLocalControllerOnline(String value) {
+        if (isValidLocalControllerID(value)) {
+
+            LocalControllerInfo lci = findLocalControllerInfo(value);
+
+            if (lci.getActiveStatus() == LocalControllerInfo.LocalControllerActiveStatus.OFFLINE) {
+                lci.setActiveStatus(LocalControllerInfo.LocalControllerActiveStatus.ONLINE);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Turn on an online LocalController.
+     * If the LocalController is ONLINE and the operation is
+     * successful, then return true.
+     * If the LocalController is already OFFLINE, return false.
+     * Note an ONLINE LocalController can only be made OFFLINE
+     * if it has Zero managed routers.
+     */
+    public boolean takeLocalControllerOffline(String value) {
+        if (isValidLocalControllerID(value)) {
+
+            LocalControllerInfo lci = findLocalControllerInfo(value);
+
+            if (lci.getActiveStatus() == LocalControllerInfo.LocalControllerActiveStatus.ONLINE) {
+                // now check no of routers
+                if (lci.getNoRouters() == 0) {
+                    lci.setActiveStatus(LocalControllerInfo.LocalControllerActiveStatus.OFFLINE);
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /** Get the port pool associated with a local controller */
@@ -978,22 +1047,56 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      */
     public LocalControllerInfo findLocalControllerInfo(String value) {
         // skip through all the LocalControllerInfo objects
-        for (LocalControllerInfo info : getLocalControllers()) {
-            if (info.getIp() !=
-                null &&info.getIp().equals(value)) {
-                // we found a match
-                return info;
-            } else if (info.getName() !=
-                       null &&info.getName().equals(value)) {
-                // we found a match
-                return info;
+        for (LocalControllerInfo info : getAllLocalControllers()) {
+            if (value.contains(":")) {
+                // a name and port has been passed in
+                String[] parts = value.split(":");
+                String name = parts[0];
+                int port = 0;
+
+                // try port
+                Scanner scanner = new Scanner(parts[1]);
+
+                if (scanner.hasNextInt()) {
+                    port = scanner.nextInt();
+                    scanner.close();
+                } else {
+                    scanner.close();
+                }
+
+                if (info.getName() != null && info.getName().equals(name) &&
+                    info.getPort() == port) {
+                    // we found a match
+                    return info;
+                }
+
+            } else {
+                if (info.getIp() != null && info.getIp().equals(value)) {
+                    // we found a match
+                    return info;
+                } else if (info.getName() != null && info.getName().equals(value)) {
+                    // we found a match
+                    return info;
+                }
             }
         }
-
         // we got here and found nothing
         return null;
     }
 
+
+    /**
+     * Is a LocalController name valid
+     */
+    public boolean isValidLocalControllerID(String value) {
+        LocalControllerInfo info = findLocalControllerInfo(value);
+
+        if (info == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
     /**
      * List all RouterInfo.
      */
@@ -1078,6 +1181,18 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         jsobj.put("maxRouters", lci.getMaxRouters());
         jsobj.put("noRouters", lci.getNoRouters());
         jsobj.put("usage", lci.getUsage());
+
+        // show router IDs
+        JSONArray array = new JSONArray();  // ID array
+        for (int routerID : lci.getRouters()) {
+            array.put(routerID);
+        }
+        jsobj.put("routers", array);
+
+
+        // get status
+        jsobj.put("status", lci.getActiveStatus());
+
 
         if (lci.getRemoteLoginUser() != null) {
             jsobj.put("remoteLoginUser", lci.getRemoteLoginUser());
@@ -1309,7 +1424,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         JSONArray array = new JSONArray();
         JSONArray detailArray = new JSONArray();
 
-        for (LocalControllerInfo info : getLocalControllers()) {
+        for (LocalControllerInfo info : getAllLocalControllers()) {
             String localControllerName = info.getName() + ":" + info.getPort();
 
             array.put(localControllerName);
@@ -1368,21 +1483,145 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         JSONArray detailArray = new JSONArray();
 
         LocalControllerInfo lci = findLocalControllerInfo(value);
+
+        if (lci != null) {
+            String localControllerName = lci.getName() + ":" + lci.getPort();
+
+            array.put(localControllerName);
+
+            JSONObject record = localControllerInfoAsJSON(lci);
+
+            detailArray.put(record);
+
+            jsobj.put("type", "localcontroller");
+            jsobj.put("list", array);
+
+            jsobj.put("detail", detailArray);
+
+            return jsobj;
+        } else {
+            
+            try {
+                jsobj.put("msg", "ERROR: " + "no localcontroller at " + value);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, "JSON creation error in getOneLocalControllerInfoAsJSON");
+            }
+
+            return jsobj;
+
+        }
+    }
+
+
+    
+    /**
+     * Make LocalController Online, return data as a JSON object
+     */
+    public JSONObject takeLocalControllerOnlineJSON(String value) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+
+        LocalControllerInfo lci = findLocalControllerInfo(value);
         String localControllerName = lci.getName() + ":" + lci.getPort();
 
-        array.put(localControllerName);
+        if (lci != null) {
+            boolean opResult = takeLocalControllerOnline(value);
 
-        JSONObject record = localControllerInfoAsJSON(lci);
+            jsobj.put("name", localControllerName);
+            jsobj.put("type", "localcontroller");
+            jsobj.put("status", lci.getActiveStatus());
+            jsobj.put("success", opResult);
 
-        detailArray.put(record);
+            if (opResult == false) {
+                jsobj.put("msg", "LocalController " + localControllerName + " already ONLINE");
+            }
+            
+            return jsobj;
 
-        jsobj.put("type", "localcontroller");
-        jsobj.put("list", array);
+        } else {
+            
+            try {
+                jsobj.put("msg", "ERROR: " + "no localcontroller at " + value);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, "JSON creation error in getOneLocalControllerInfoAsJSON");
+            }
 
-        jsobj.put("detail", detailArray);
+            return jsobj;
 
-        return jsobj;
+        }
     }
+
+
+    /**
+     * Make LocalController Offline, return data as a JSON object
+     */
+    public JSONObject takeLocalControllerOfflineJSON(String value) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+
+        // first we check if this is the last online LocalController
+        // if it is, we cannot take it offline
+        int locCount = getLocalControllers().size();
+
+        if (locCount == 1) {
+            // this is the last one
+            // failed to make offline
+            jsobj.put("name", value);
+            jsobj.put("type", "localcontroller");
+            jsobj.put("status", LocalControllerInfo.LocalControllerActiveStatus.ONLINE);
+            jsobj.put("success", false);
+                
+            jsobj.put("msg", "LocalController cannot be shutdown. Last ONLINE localController");
+
+            return jsobj;
+
+        } else {
+            // try and take the LocalController offline
+            LocalControllerInfo lci = findLocalControllerInfo(value);
+            String localControllerName = lci.getName() + ":" + lci.getPort();
+
+            if (lci != null) {
+                boolean opResult = takeLocalControllerOffline(value);
+
+                if (opResult) { // successfully made offline
+
+                    jsobj.put("name", localControllerName);
+                    jsobj.put("type", "localcontroller");
+                    jsobj.put("status", lci.getActiveStatus());
+                    jsobj.put("success", true);
+
+                    return jsobj;
+                } else {
+                    // failed to make offline
+                    jsobj.put("name", localControllerName);
+                    jsobj.put("type", "localcontroller");
+                    jsobj.put("status", lci.getActiveStatus());
+                    jsobj.put("success", false);
+                
+                    if (lci.getNoRouters() == 0) {
+                        jsobj.put("msg", "LocalController " + localControllerName + " already OFFLINE");
+                    } else {
+                        jsobj.put("noRouters", lci.getNoRouters());
+                        jsobj.put("msg", "LocalController " + localControllerName + " has active routers");
+                    }
+                }
+
+                return jsobj;
+
+            } else {
+            
+                try {
+                    jsobj.put("msg", "ERROR: " + "no localcontroller at " + value);
+                } catch (Exception e) {
+                    Logger.getLogger("log").logln(USR.ERROR, "JSON creation error in getOneLocalControllerInfoAsJSON");
+                }
+
+                return jsobj;
+
+            }
+        }
+    }
+
+
+
 
     /**
      * Is the router ID valid.
@@ -2326,7 +2565,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             // Can't see it, so start a new one
             if (!connected) {
 
-                String [] cmd = options_.localControllerStartCommand(lh);
+                String [] cmd = LocalControllerInitiator.localControllerStartCommand(lh, options_);
                 try {
                     Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting process " + Arrays.asList(cmd));
                     child = new ProcessBuilder(cmd).start();
@@ -2350,6 +2589,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         }
     }
+
 
     /**
      * Check all controllers listed are functioning and
@@ -2413,9 +2653,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                         }
                     } catch (Exception e) {
                         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exception from " + lcInfo + ". " + e.getMessage());
-                        e.printStackTrace();
-                        shutDown();
-                        return;
+                        //e.printStackTrace();
+                        //shutDown();
+                        //return;
                     }
                 }
             }

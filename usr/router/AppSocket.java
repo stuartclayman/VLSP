@@ -254,8 +254,9 @@ public class AppSocket {
         }
 
         if (isConnected) {
-            dg.setDstAddress(remoteAddress);
-            dg.setDstPort(remotePort);
+            // if connected and values are empty, then set them
+            if (dg.getDstAddress() == null) dg.setDstAddress(remoteAddress);
+            if (dg.getDstPort() == 0) dg.setDstPort(remotePort);
         }
 
         if (appSockMux.sendDatagram(dg) == false) {

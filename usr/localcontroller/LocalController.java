@@ -66,12 +66,12 @@ public class LocalController implements ComponentController {
     private int routerMonitoringTimeout;
 
     // A BasicDataSource for the stats of a Router
-    BasicDataSource dataSource = null;
+    private BasicDataSource dataSource = null;
 
     // The probes
-    ArrayList<LocalControllerProbe> probeList = null;
+    private ArrayList<LocalControllerProbe> probeList = null;
 
-    HashMap<String, Integer> probeInfoMap = null;
+    private HashMap<String, Integer> probeInfoMap = null;
 
 
     /**
@@ -255,8 +255,6 @@ public class LocalController implements ComponentController {
             Logger.getLogger("log").logln(USR.STDOUT, "Sending to "+gc.getName()+":"+gc.getPort());
             gcInteractor_ = new GlobalControllerInteractor(gc);
 
-            //sclayman 20131209 - not needed any more
-            // gcInteractor_.respondToGlobalController(hostInfo_);
         } catch (UnknownHostException e) {
             Logger.getLogger("log").logln(USR.ERROR, "Cannot contact global controller");
             Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
@@ -302,7 +300,7 @@ public class LocalController implements ComponentController {
 
         Process child = null;
         ProcessWrapper pw = null;
-// was 9
+        // was 9
         String [] cmd = new String[9];
         cmd[0] = "java";
         cmd[1] = "-cp";

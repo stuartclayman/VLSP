@@ -189,7 +189,7 @@ public class EndRouterEvent extends AbstractGlobalControllerEvent implements End
         PortPool pp = gc.getPortPool(lcinf);
         pp.freePort(br.getManagementPort());
         pp.freePort(br.getRoutingPort());
-        lcinf.delRouter();
+        lcinf.delRouter(rId);
         gc.removeRouterInfo(rId);
 
         return true;

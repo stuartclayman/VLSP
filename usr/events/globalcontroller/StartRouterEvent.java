@@ -125,15 +125,15 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
             return false;
         }
 
-        leastUsed.addRouter(); // Increment count
         LocalControllerInteractor lci = gc.getLocalController(leastUsed);
         int MAX_TRIES = 5;
 
         for (int i = 0; i < MAX_TRIES; i++) {
             try {
-                if (tryRouterStart(gc, id, address, name, leastUsed,
-                                   lci)) {
+                if (tryRouterStart(gc, id, address, name, leastUsed, lci)) {
                     //System.err.println("Started");
+                    leastUsed.addRouter(id); // Increment count
+                    
                     return true;
                 }
             } catch (IOException e) {
