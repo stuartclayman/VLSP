@@ -181,11 +181,11 @@ public class EntityRegistrationOperation {
 
 		//use hasNext() and next() methods of Iterator to iterate through the elements
 		while(itr.hasNext()) {
-			if (typeofuri=="available")
+			if (typeofuri.equals("available"))
 				uri = "EntityProvidingInfo://"+typeofuri+"/"+itr.next();
-			if (typeofuri=="required")
+			if (typeofuri.equals("required"))
 				uri = "EntityRequiringInfo://"+typeofuri+"/"+itr.next();
-			if (typeofuri=="knowledge production")
+			if (typeofuri.equals("knowledge production"))
 				uri = "EntityProducingKnowledge://"+typeofuri+"/"+itr.next();
 
 			output = DataStoreManager.IKMSDBSet(uri, String.valueOf(entityid));
@@ -206,11 +206,11 @@ public class EntityRegistrationOperation {
 
 		//use hasNext() and next() methods of Iterator to iterate through the elements
 		while(itr.hasNext()) {
-			if (typeofuri=="available")
+			if (typeofuri.equals("available"))
 				uri = "EntityProvidingInfo://"+typeofuri+"/"+itr.next();
-			if (typeofuri=="required")
+			if (typeofuri.equals("required"))
 				uri = "EntityRequiringInfo://"+typeofuri+"/"+itr.next();
-			if (typeofuri=="knowledge production")
+			if (typeofuri.equals("knowledge production"))
 				uri = "EntityProducingKnowledge://"+typeofuri+"/"+itr.next();
 
 			output = DataStoreManager.IKMSDBDel(uri);
@@ -271,11 +271,11 @@ public class EntityRegistrationOperation {
 		//use hasNext() and next() methods of Iterator to iterate through the elements
 		while(itr.hasNext()) {
 
-			if (typeofuri=="available") {
+			if (typeofuri.equals("available")) {
 				uri = "EntityProvidingInfo://"+typeofuri+"/"+itr.next();
-			} else if (typeofuri=="required") {
+			} else if (typeofuri.equals("required")) {
 				uri = "EntityRequiringInfo://"+typeofuri+"/"+itr.next();
-			} else if (typeofuri=="knowledge production") {
+			} else if (typeofuri.equals("knowledge production")) {
 				uri = "EntityProducingKnowledge://"+typeofuri+"/"+itr.next();
 			} else { return null;}
 
@@ -284,7 +284,7 @@ public class EntityRegistrationOperation {
 			System.out.println ("Looking up Entity by uri:"+uri+" output:"+output+" type of uri:"+typeofuri);
 
 			ArrayList<String> tempUris=null;
-			if (output!=null&&output!="") {
+			if (output!=null&&(!output.equals(""))) {
 				tempId = Integer.valueOf(output);
 			} else {
 				// flow with IKMS block
@@ -363,7 +363,7 @@ public class EntityRegistrationOperation {
 			if (result=="EntityInfo:")
 				result+="/";
 
-			if (result!="")
+			if (!result.equals(""))
 				result+="/";
 
 			result+=uris[i];

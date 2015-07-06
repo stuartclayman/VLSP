@@ -73,16 +73,17 @@ public class DataStoreManager {
 		DataStoreManager mgr = singleton;
 
 		Jedis result = null;
-		if (mgr != null) {
-			try {
-				result = mgr.kvManager.getKeyValueStore();
-			} catch (Throwable t) {
+		while (result==null) {
 
-			}
-			// It breaks some times, in that case, try again
-			int delay=1000;
+			if (mgr != null) {
+				try {
+					result = mgr.kvManager.getKeyValueStore();
+				} catch (Throwable t) {
 
-			while (true) {
+				}
+				// It breaks some times, in that case, try again
+				int delay=1000;
+
 				if (result == null) {
 					System.out.println ("Problem in getKeyValueStore. Trying again after "+delay+"ms");
 					try {
@@ -96,12 +97,11 @@ public class DataStoreManager {
 					//System.out.println ("GetKeyValueStore completed.");
 					break;
 				}
+			} else {
+				throw new IllegalStateException("DataStoreManager not configured correctly");
 			}
-			return result;
-		} else {
-			throw new IllegalStateException("DataStoreManager not configured correctly");
 		}
-
+		return result;
 	}
 
 	public static boolean FlushKeyValueStore () {

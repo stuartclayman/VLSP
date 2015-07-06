@@ -5,6 +5,7 @@ import ikms.core.Response;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import cc.clayman.logging.Logger;
@@ -43,7 +44,7 @@ public class RouterMeasurementProcessor implements Processor {
      * Initialize with some args
      */
     public Response init(String[] args) {
-        Logger.getLogger("log").logln(MASK.STDOUT, leadin()+ " init with args " + args);
+        Logger.getLogger("log").logln(MASK.STDOUT, leadin()+ " init with args " + Arrays.toString(args));
 
         // setup DataConsumer
         dataConsumer = new BasicConsumer();

@@ -118,11 +118,11 @@ public class LoggerFrame {
 	public static boolean workflowvisualisationlog (int entityid, String sender, String receiver, String msg, String loggerframe) {
 		// do not visualize in text mode
 		if (!textMode) {
-			if (sender=="") {
+			if (sender.equals("")) {
 				//workflow from an Entity
 				log(loggerframe, getActiveEntityName(entityid), receiver, msg, GetColourFromentityid (entityid));
 
-			} else if (receiver=="") {
+			} else if (receiver.equals("")) {
 				//workflow to an Entity
 				log(loggerframe, sender, getActiveEntityName(entityid), msg, GetColourFromentityid (entityid));
 

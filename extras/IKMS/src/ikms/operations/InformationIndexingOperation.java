@@ -84,7 +84,7 @@ public class InformationIndexingOperation {
 			if (result=="Index:")
 				result+="/";
 
-			if (result!="")
+			if (!result.equals(""))
 				result+="/";
 
 			result+=uris[i];

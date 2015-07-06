@@ -25,13 +25,13 @@ import demo_usr.energy.energymodel.EnergyModel;
 public class InformationFlowConfigurationAndStatisticsOperation {
 
 	// keeps track of all flow registrations
-	static FlowRegistry flowRegistry = null;
+	static FlowRegistry flowRegistry = new FlowRegistry();
 
 	// monitored entities
 	static ArrayList<Integer> monitoredEntities = new ArrayList<Integer> ();
 
 	// Defining communicating functions
-	static InformationStorageAndIndexingFunction informationStorageAndIndexingFunction = null;
+	InformationStorageAndIndexingFunction informationStorageAndIndexingFunction = null;
 
 	// measurements for all flows
 	static private long responseTimeRequestsInPeriod = 0;
@@ -53,20 +53,20 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	static private boolean firstMeasurementReceived = false;
 	
 	// connectivity information for the global controller
-	static private String gcHost;
-	static private String gcPort;
+	private String gcHost;
+	private String gcPort;
 	
 	// calculated energy values
-	static double maxEnergyValue;
-	static double minEnergyValue;
-	static double averageEnergyValue;
-	static double totalEnergyValue;
+	double maxEnergyValue;
+	double minEnergyValue;
+	double averageEnergyValue;
+	double totalEnergyValue;
 	
-	static private GlobalControllerClient gcClient;
+	private GlobalControllerClient gcClient;
 	
 	static private Map <String, EnergyModel> energyConsumptionPerLocalController = new HashMap <String, EnergyModel> ();
-	static private ArrayList<String> localControllers = new ArrayList();
-	static private ArrayList<Double> energyConsumedPerLocalController = new ArrayList();
+	static private ArrayList<String> localControllers = new ArrayList<String>();
+	static private ArrayList<Double> energyConsumedPerLocalController = new ArrayList<Double>();
 
 	static private boolean firstTime=true;
 	
@@ -89,12 +89,10 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 		maxEnergyValue=0;
 		minEnergyValue=0;
 		averageEnergyValue=0;
-		totalEnergyValue=0;
-		
-		flowRegistry = new FlowRegistry();
+		totalEnergyValue=0;		
 	}
 
-	public static void RetrieveLocalControllerInformation () {
+	public void RetrieveLocalControllerInformation () {
 		try {
 			JSONObject result = gcClient.retrieveLocalControllerInfo();
 			JSONArray listArray = null;
@@ -163,19 +161,19 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 
 	}
 	
-	private static double CalculateMaxValueFromArrayList (ArrayList arrayList) {
+	private double CalculateMaxValueFromArrayList (ArrayList arrayList) {
 		maxEnergyValue=(double) Collections.max(arrayList);
 
 		return maxEnergyValue;
 	}
 	
-	private static double CalculateMinValueFromArrayList (ArrayList<Double> arrayList) {
+	private double CalculateMinValueFromArrayList (ArrayList<Double> arrayList) {
 		minEnergyValue=(double) Collections.min(arrayList);
 
 		return minEnergyValue;
 	}
 	
-	public static double CalculateAverageValueFromArrayList (ArrayList<Double> arrayList) {
+	public double CalculateAverageValueFromArrayList (ArrayList<Double> arrayList) {
 	    // 'average' is undefined if there are no elements in the list.
 	    if (arrayList == null || arrayList.isEmpty())
 	        return 0.0;
@@ -249,7 +247,7 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 		return reverseKeys;
 	}*/
 
-	public static int GetStorageMemoryUsed () {
+	public int GetStorageMemoryUsed () {
 		return informationStorageAndIndexingFunction.GetStorageMemoryUsed();
 	}
 
@@ -278,22 +276,22 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	}
 	
 	// Returns the maximum energy consumed in a host
-	public static double GetMaxEnergyValue () {
+	public double GetMaxEnergyValue () {
 		return maxEnergyValue;
 	}
 	
 	// Returns the minimum energy consumed in a host
-	public static double GetMinEnergyValue () {
+	public double GetMinEnergyValue () {
 		return minEnergyValue;
 	}
 	
 	// Returns the average energy consumed in the hosts
-	public static double GetAverageEnergyValue () {
+	public double GetAverageEnergyValue () {
 		return averageEnergyValue;
 	}
 
 	// Returns the total energy consumed in the hosts
-	public static double GetTotalEnergyValue () {
+	public double GetTotalEnergyValue () {
 		return totalEnergyValue;
 	}
 	

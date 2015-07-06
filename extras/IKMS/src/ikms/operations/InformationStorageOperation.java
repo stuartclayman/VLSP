@@ -210,7 +210,7 @@ public class InformationStorageOperation {
 		@SuppressWarnings("unused")
 		Boolean logoutput;
 
-		ArrayList<String> urisToUnsubscribe = new ArrayList<String>();
+		//ArrayList<String> urisToUnsubscribe = new ArrayList<String>();
 		for (String uri : uris) {
 			// Logging for internal IKMS functions workflow diagram
 			logoutput = LoggerFrame.workflowvisualisationlog(entityid, LoggerFrame.ICDFunctionName, LoggerFrame.ISIName, "Unsubscribing information with uri:"+uri, "ikmsfunctions");				
@@ -237,7 +237,7 @@ public class InformationStorageOperation {
 			if (result=="Storage:")
 				result+="/";
 
-			if (result!="")
+			if (!result.equals(""))
 				result+="/";
 
 			result+=uris[i];

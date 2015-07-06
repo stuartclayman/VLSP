@@ -395,7 +395,7 @@ public class DataHandler extends BasicRequestHandler implements RequestHandler {
 			jsobj.put("extra", "stats:1 uri:"+uriPath);
 
 		} else {
-			if (output=="") {
+			if (output.equals("")) {
 				jsobj.put("message", "entity is not registered");
 				jsobj.put("output", "");
 				jsobj.put("extra", "publish:"+(publish ? 1 : 0)+" uri:"+uriPath);

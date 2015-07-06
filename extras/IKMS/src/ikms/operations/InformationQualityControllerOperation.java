@@ -375,7 +375,7 @@ public class InformationQualityControllerOperation {
 
 		String sourceEntityRegistration = null;
 		String destinationEntityRegistration = null;
-		
+
 		if (sourceEntityId!=-1)
 			sourceEntityRegistration = entityRegistrationOperation.GetEntityRegistrationInfoFromStorage(sourceEntityId);
 		if (destinationEntityId!=-1)
@@ -395,19 +395,22 @@ public class InformationQualityControllerOperation {
 			// retrieve other entity's registration information
 			destinationEntity = new EntityRegistrationInformation(destinationEntityRegistration);
 		}
-		negotiationResult = EstablishInformationFlow (sourceEntity, destinationEntity);
+		if (sourceEntity!=null) {
+			negotiationResult = EstablishInformationFlow (sourceEntity, destinationEntity);
 
-		// add Uris to negotiation results
-		negotiationResult.EmbeddURIs(uris);
+			// add Uris to negotiation results
+			negotiationResult.EmbeddURIs(uris);
+		}
 
 		// Add empty IKMS entity registration info to finalize information flow.
 		if (sourceEntity==null)
 			sourceEntity = entityRegistrationOperation.GetIKMSEntityRegistrationInformation();
-		
+
 		if (destinationEntity==null)
 			destinationEntity = entityRegistrationOperation.GetIKMSEntityRegistrationInformation();
-		
-		FinalizeInformationFlowEstablishment (negotiationResult, sourceEntity, destinationEntity);		
+
+		if (negotiationResult!=null)
+			FinalizeInformationFlowEstablishment (negotiationResult, sourceEntity, destinationEntity);		
 		return negotiationResult;
 	}
 
