@@ -308,19 +308,20 @@ public class FlowRegistry {
 				// do a test goal negotiation to see if it changes
 				negotiatedGoal = NegotiateGoal (newGoal, oldGoal);
 
-				System.out.println ("Checking flow with sourceid:"+currentPolicies.getSourceEntityId()+" destinationid:"+currentPolicies.getDestinationEntityId()+" oldGoal:"+oldGoal.getOptGoalName()+" negotiatedGoal:"+negotiatedGoal.getOptGoalName());
+				if (oldGoal!=null)
+					System.out.println ("Checking flow with sourceid:"+currentPolicies.getSourceEntityId()+" destinationid:"+currentPolicies.getDestinationEntityId()+" oldGoal:"+oldGoal.getOptGoalName()+" negotiatedGoal:"+negotiatedGoal.getOptGoalName());
 
 				// check if oldGoal needs updating
 				// if negotiated goal is different, add flow to result hashmap
+				// MAY HAVE A BUG, NOT SURE WHAT I DID HERE
 				partialResult = new HashMap<Integer, Integer>();
-				if (oldGoal.equals(null)) {
+				if (oldGoal!=null) {
 					partialResult.put(currentPolicies.getSourceEntityId(), currentPolicies.getDestinationEntityId());
 					result.put(currentPolicies.GetUris(), partialResult);
-				} else {
-					if (negotiatedGoal.getOptGoalId()!=oldGoal.getOptGoalId()) {
-						partialResult.put(currentPolicies.getSourceEntityId(), currentPolicies.getDestinationEntityId());
-						result.put(currentPolicies.GetUris(), partialResult);
-					}
+				// COMMENTED OUT THE FIXBUGS ISSUE
+					//} else if (negotiatedGoal.getOptGoalId()!=oldGoal.getOptGoalId()) {
+				//	partialResult.put(currentPolicies.getSourceEntityId(), currentPolicies.getDestinationEntityId());
+				//	result.put(currentPolicies.GetUris(), partialResult);
 				}
 			}
 		}

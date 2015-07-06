@@ -242,18 +242,18 @@ public class InformationExchangePolicies extends InformationFlowRequirementsAndC
 				jsWriter.value(getFlowOptimizationGoal().toJSONString());
 			}
 
-			if (exchangeRateNegotiationRemarks!="") {
+			if (!exchangeRateNegotiationRemarks.equals("")) {
 				jsWriter.key("exchangeRateNegotiationRemarks");
 				jsWriter.value(exchangeRateNegotiationRemarks);				
 			}
 
-			if (methodNegotiationRemarks!="") {
+			if (!methodNegotiationRemarks.equals("")) {
 				jsWriter.key("methodNegotiationRemarks");
 				jsWriter.value(methodNegotiationRemarks);
 
 			}
 
-			if (optimizationGoalNegotiationRemarks!="") {
+			if (!optimizationGoalNegotiationRemarks.equals("")) {
 				jsWriter.key("optimizationGoalNegotiationRemarks");
 				jsWriter.value(optimizationGoalNegotiationRemarks);
 			}

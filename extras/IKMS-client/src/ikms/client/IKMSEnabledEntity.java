@@ -98,7 +98,7 @@ public class IKMSEnabledEntity implements EntityInterface {
 	public void Shutdown () {
 		restListener.stop();
 	}
-	
+
 	// Initializes and registers entity with the IKMS
 	protected void initializeAndRegister(JSONObject registrationInfo) {
 
@@ -110,7 +110,7 @@ public class IKMSEnabledEntity implements EntityInterface {
 		// sets up Rest Listener for callbacks (i.e., for information subscribe or information flow negotiation updates)
 		restListener = new IKMSClientRestListener(this, entityPort);
 		restListener.start();
-		
+
 		// Allocate InformationManagementInterface & InformationExchangeInterface
 		informationManagementInterface = new InformationManagement(ikmsHost, String.valueOf(ikmsPort));
 		informationExchangeInterface = new InformationExchange(ikmsHost, String.valueOf(ikmsPort));
@@ -211,7 +211,7 @@ public class IKMSEnabledEntity implements EntityInterface {
 			directEntity = activeInformationExchangePolicies.getFlowOptimizationGoal().CheckOptimizationRule(OptimizationRules.DirectEntity2EntityCommunication);
 			pubsub = activeInformationExchangePolicies.getFlowOptimizationGoal().CheckOptimizationRule(OptimizationRules.PubSub);
 			doNotCommunicateMeasurements = activeInformationExchangePolicies.getFlowOptimizationGoal().CheckOptimizationRule(OptimizationRules.DoNotCommunicateMeasurements);
-			
+
 			if (activeInformationExchangePolicies.getFlowOptimizationGoal()!=null) {
 				Logging.Log(entityid, activeInformationExchangePolicies.getFlowOptimizationGoal().getOptGoalName());
 			}
@@ -288,8 +288,9 @@ public class IKMSEnabledEntity implements EntityInterface {
 				}
 				String tempURI=null;
 				try {
-					if (result.has("url"))
-						tempURI = result.getString("url");
+					if (result!=null)
+						if (result.has("url"))
+							tempURI = result.getString("url");
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -481,16 +482,19 @@ public class IKMSEnabledEntity implements EntityInterface {
 		// add new flow to flowRegistry
 		// updating goal with complete values (optimization policies are not
 		// included in the goal data structure that is being communicated)
-		if (policies.getFlowOptimizationGoal() != null)
-			policies.setFlowOptimizationGoal(IKMSOptimizationGoals
-					.GetGoalById(policies.getFlowOptimizationGoal()
-							.getOptGoalId()));
+		if (policies!=null)
+			if (policies.getFlowOptimizationGoal() != null)
+				policies.setFlowOptimizationGoal(IKMSOptimizationGoals
+						.GetGoalById(policies.getFlowOptimizationGoal()
+								.getOptGoalId()));
 
-		Logging.Log(entityid, "Information flow policies updated:"+informationFlowPolicies
-				+" "+policies.getFlowOptimizationGoal().getOptGoalName());
+		if (policies!=null)
+			Logging.Log(entityid, "Information flow policies updated:"+informationFlowPolicies
+					+" "+policies.getFlowOptimizationGoal().getOptGoalName());
 
 		// update flow registry
-		flowRegistry.UpdateFlowRegistration(policies);
+		if (policies!=null)
+			flowRegistry.UpdateFlowRegistration(policies);
 	}
 
 	// Communicating statistical information for each flow to IKMS. Currently, response time and information freshness are supported.

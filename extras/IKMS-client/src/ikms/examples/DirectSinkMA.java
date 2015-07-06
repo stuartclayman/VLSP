@@ -12,9 +12,6 @@ import us.monoid.json.JSONObject;
 // At the beginning, the Sink MA registers itself to IKMS and retrieves communication information for the source MA.
 public class DirectSinkMA extends IKMSEnabledEntity {
 
-	// Source Entity's rest URI for direct communication is being kept here
-	String directURI = null;
-
 	// Basic constructor. For a distributed deployment use:
 	// Constructor (entityHost_, entityPort_, ikmsHost_, ikmsPort_) 
 	public DirectSinkMA () {
