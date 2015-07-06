@@ -201,7 +201,7 @@ public class BasicRouterInfo {
      * Check if this is equal to another BasicRouterInfo
      */
     @Override
-	public boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -222,12 +222,20 @@ public class BasicRouterInfo {
     }
 
     /**
+     * hashCode for BasicRouterInfo
+     */
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
+
+    /**
      * To string
      */
     @Override
-	public String toString() {
+    public String toString() {
         return getHost() + ":" + getManagementPort() + " % " + getId() +
-               " -> " + getName() + "/" + getAddress();
+            " -> " + getName() + "/" + getAddress();
     }
 
 }

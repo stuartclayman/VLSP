@@ -411,13 +411,16 @@ public class RouterRestHandler extends BasicRequestHandler {
             if (segments.length == 3) {
                 // get all link stats
                 jsobj = controller_.getRouterLinkStats(routerID);
+                out.println(jsobj.toString());
+
             } else if (segments.length == 4) {
                 // get specified link stats
                 jsobj = controller_.getRouterLinkStats(routerID, dstID);
+                out.println(jsobj.toString());
+
             }
 
 
-            out.println(jsobj.toString());
 
         } else {
             complain(response, "getRouterOtherData arg is not appropriate: " + name);

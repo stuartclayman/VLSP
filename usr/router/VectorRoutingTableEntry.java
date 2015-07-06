@@ -19,16 +19,20 @@ public class VectorRoutingTableEntry implements RoutingTableEntry {
     private int topology = 0;   // the current chosen topology
 
     VectorRoutingTableEntry(Address addr, List<Integer> costs, List<NetIF> inters) {
-        this(addr, costs.toArray(new Integer[costs.size()]), (inters == null ? null : inters.toArray(new NetIF[inters.size()])));
+        this(addr, (costs == null ? null : costs.toArray(new Integer[costs.size()])), (inters == null ? null : inters.toArray(new NetIF[inters.size()])) );
     }
 
     VectorRoutingTableEntry(Address addr, Integer[] costs, NetIF[] inters) {
-        if (costs.length != inters.length) {
-            throw new Error("costs length != interfaces length");
+        if (costs == null || costs.length == 0) {
+            throw new Error("costs null OR length == 0");
         }
 
-        if (costs.length == 0) {
-            throw new Error("costs length == 0");
+        if (inters == null || inters.length == 0) {
+            throw new Error("inters null OR length == 0");
+        }
+
+        if (costs.length != inters.length) {
+            throw new Error("costs length != interfaces length");
         }
 
         address_ = addr;

@@ -136,7 +136,7 @@ class IKMSUSRClient {
 		
 		JSONObject jsobj = null;
 
-		if (resultstr.equals(null)||resultstr.equals(""))
+		if (resultstr == null || resultstr.equals(""))
 			jsobj = new JSONObject("{}");
 		else
 			jsobj = new JSONObject(resultstr);

@@ -235,7 +235,7 @@ public class ConnectionOverUDP implements Connection {
             latestDGData[1] != checkbytes[1] ||
             latestDGData[2] != checkbytes[2] ||
             latestDGData[3] != checkbytes[3]) {
-            Logger.getLogger("log").logln(USR.ERROR, "Read incorrect datagram "+latestDGData);
+            Logger.getLogger("log").logln(USR.ERROR, "Read incorrect datagram "+ java.util.Arrays.toString(latestDGData));
             //Logger.getLogger("log").logln(USR.ERROR, "Buffer size "+bufferSize_+" start pos "+bufferStartData_ + " end Pos "+bufferEndData_);
             ByteBuffer b = ((DatagramPatch)dg).toByteBuffer();
             Logger.getLogger("log").logln(USR.ERROR, "READ as bytes "+ b.asCharBuffer());

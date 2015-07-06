@@ -189,10 +189,12 @@ public class AbstractNetwork {
         ArrayList <Integer> lns= linkFinder_.get(node1);
         if (lns == null) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error in unschedule link");
+            return;
+        } else {
+            lns.remove(lns.indexOf(node2));
+            lns= linkFinder_.get(node2);
+            lns.remove(lns.indexOf(node1));
         }
-        lns.remove(lns.indexOf(node2));
-        lns= linkFinder_.get(node2);
-        lns.remove(lns.indexOf(node1));
 
     }
 

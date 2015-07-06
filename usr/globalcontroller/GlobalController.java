@@ -140,6 +140,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     // Variables relate to traffic output of statistics
     private ArrayList<OutputType> trafficOutputRequests_ = null;
     private String routerStats_ = "";
+    private Object routerStatsSyncObj_ = new Object();
     private int statsCount_ = 0;
     private ArrayList<Long> trafficOutputTime_ = null;
     private HashMap<String, int []> trafficLinkCounts_ = null;
@@ -494,7 +495,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                     Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "runLoop_ wait");
                     runLoop_.wait();
                 } catch (InterruptedException ie) {
-                } catch (IllegalMonitorStateException ims) {
+                //} catch (IllegalMonitorStateException ims) {
                 }
             }
         }
@@ -770,7 +771,14 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                                 if (js.getBoolean("success")) {
                                     ee.followEvent(js, gc);
                                 }
-                            } catch (JSONException je) { }
+
+                                //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT done: " + e );
+                                String str = js.toString();
+
+                                Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " "+str.substring(0, Math.min(str.length(), 60)));
+
+                            } catch (JSONException je) {
+                            }
                         }
 
 
@@ -778,11 +786,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                         for (OutputType t : eventOutput_) {
                             produceEventOutput(e, js, t);
                         }
-
-                        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT done: " + e );
-                        String str = js.toString();
-
-                        //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " "+str.substring(0, Math.min(str.length(), 60)));
 
                         return js;
                     }
@@ -1071,7 +1074,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 }
 
             } else {
-                if (info.getIp() != null && info.getIp().equals(value)) {
+                if (info.getIp() != null && info.getIp().toString().equals(value)) {
                     // we found a match
                     return info;
                 } else if (info.getName() != null && info.getName().equals(value)) {
@@ -1521,9 +1524,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         JSONObject jsobj = new JSONObject();
 
         LocalControllerInfo lci = findLocalControllerInfo(value);
-        String localControllerName = lci.getName() + ":" + lci.getPort();
 
         if (lci != null) {
+            String localControllerName = lci.getName() + ":" + lci.getPort();
             boolean opResult = takeLocalControllerOnline(value);
 
             jsobj.put("name", localControllerName);
@@ -1576,9 +1579,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         } else {
             // try and take the LocalController offline
             LocalControllerInfo lci = findLocalControllerInfo(value);
-            String localControllerName = lci.getName() + ":" + lci.getPort();
 
             if (lci != null) {
+                String localControllerName = lci.getName() + ":" + lci.getPort();
                 boolean opResult = takeLocalControllerOffline(value);
 
                 if (opResult) { // successfully made offline
@@ -2310,7 +2313,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
     /** Receiver router traffic -- if it completes a set then output it */
     public void receiveRouterStats(String stats) {
-        synchronized (routerStats_) {
+        synchronized (routerStatsSyncObj_) {
             // System.err.println("receiveRouterStats: top");
             statsCount_++;
 

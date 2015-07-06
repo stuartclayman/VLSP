@@ -22,8 +22,8 @@ public class RouterApp1SD {
     AppSocket socket;
 
     // Timer stuff
-    Timer timer;
-    TimerTask timerTask;
+    Timer timer = null;
+    TimerTask timerTask = null;
 
     // total no of Datagrams in
     int count = 0;

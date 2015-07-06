@@ -244,7 +244,7 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     }
 
     void closeLocalNetIF() {
-        synchronized (localNetIF) {
+        synchronized (ports) {
             if (localNetIF != null) {
                 //Logger.getLogger("log").logln(USR.ERROR, "TRYING TO CLOSE LOCALNETIF");
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Closing " + localNetIF + " stats = " + localNetIF.getStats());
@@ -495,7 +495,7 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
                                       leadin() + " Fabric received ordinary datagram from "  + datagram.getSrcAddress() + ":" + datagram.getSrcPort() + " => " + datagram.getDstAddress() + ":" +
                                       datagram.getDstPort());
         byte [] payl = datagram.getPayload();
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Length "+ payl.length + " Contents "+payl.toString());
+        Logger.getLogger("log").logln(USR.ERROR, leadin() + "Length "+ payl.length + " Contents "+ java.util.Arrays.toString(payl));
 
         if (payl.length > 0) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "First char is "+(char)payl[0]);
@@ -766,33 +766,35 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
         if (t == null) {
             Logger.getLogger("log").logln(1<<6, leadin()+ System.currentTimeMillis() + " not merging null routing table received on "+netIF);
+
+            return;
         } else {
             Logger.getLogger("log").logln(1<<6, leadin()+ System.currentTimeMillis() + " merging routing table received on "+netIF);
-        }
-
-
-        // 25122014 sclayman
-        long now = System.currentTimeMillis();
-
-        Logger.getLogger("log").logln(1<<6, leadin() + now+ " recv table to interface "+ netIF);
-        Logger.getLogger("log").logln(1<<6,
-                                      leadin() + "\nsize " + bytes.length + " = 5+" +
-                                      (bytes.length-5) + " -> " + t.showTransmitted());
 
 
 
+            // 25122014 sclayman
+            long now = System.currentTimeMillis();
 
-        boolean merged = false;
-        synchronized (table_) {
-            merged = table_.mergeTables(t, netIF, options_);
+            Logger.getLogger("log").logln(1<<6, leadin() + now+ " recv table to interface "+ netIF);
+            Logger.getLogger("log").logln(1<<6, leadin() + "\nsize " + bytes.length + " = 5+" +
+                                          (bytes.length-5) + " -> " + t.showTransmitted());
 
-            Logger.getLogger("log").logln(1<<6, leadin()+ System.currentTimeMillis() + " merged routing table received on "+netIF + "\nResult = " + table_);
 
-        }
 
-        if (merged) {
-            //Logger.getLogger("log").logln(USR.STDOUT, ANSI.GREEN + "Send to other interfaces" + ANSI.RESET_COLOUR);
-            sendToOtherInterfaces(netIF);
+
+            boolean merged = false;
+            synchronized (table_) {
+                merged = table_.mergeTables(t, netIF, options_);
+
+                Logger.getLogger("log").logln(1<<6, leadin()+ System.currentTimeMillis() + " merged routing table received on "+netIF + "\nResult = " + table_);
+
+            }
+
+            if (merged) {
+                //Logger.getLogger("log").logln(USR.STDOUT, ANSI.GREEN + "Send to other interfaces" + ANSI.RESET_COLOUR);
+                sendToOtherInterfaces(netIF);
+            }
         }
     }
 

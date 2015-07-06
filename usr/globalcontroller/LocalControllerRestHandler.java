@@ -93,7 +93,7 @@ public class LocalControllerRestHandler extends BasicRequestHandler {
                             if (segments.length == 2) {   // set localcontroller attributes
                                 setLCAttributes(request, response);
                             } else {
-                                notFound(response, "PUT bad request. segment size = " + segments.length + " " + segments);
+                                notFound(response, "PUT bad request. segment size = " + segments.length + " " + java.util.Arrays.toString(segments));
                             }
 
 

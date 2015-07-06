@@ -166,7 +166,7 @@ public class TFTPOptions extends Hashtable
    {
       if (!(option instanceof String)) return null;
       if (!(value instanceof String)) return null;
-      ((String)option).toLowerCase();
+      option = ((String)option).toLowerCase();
      return  super.put(option, value);
    }
    

@@ -118,7 +118,7 @@ public class RemoteEventDelegate implements EventDelegate {
                     Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "runLock wait");
                     runLock.wait();
                 } catch (InterruptedException ie) {
-                } catch (IllegalMonitorStateException ims) {
+                //} catch (IllegalMonitorStateException ims) {
                 }
             }
         }
@@ -215,15 +215,17 @@ public class RemoteEventDelegate implements EventDelegate {
                     if (js.getBoolean("success")) {
                         ee.followEvent(js, this);
                     }
+
+                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT done: " + e );
+                    String str = js.toString();
+
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " result "+str);
+                    
                 } catch (JSONException je) { }
             }
 
 
 
-            //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"EVENT done: " + e );
-            String str = js.toString();
-
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()+ " result "+str);
             return js;
         } catch (Error err) {
             err.printStackTrace();

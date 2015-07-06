@@ -35,8 +35,8 @@ public class USRForwarder implements Callable <Object>{
 
 
     // Timer stuff
-    Timer timer;
-    TimerTask dataRateEvaluator;
+    Timer timer = null;
+    TimerTask dataRateEvaluator = null;
     long startTime = 0;
     long lastTime = 0;
 

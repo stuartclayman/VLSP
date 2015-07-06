@@ -55,7 +55,7 @@ public class AdaptIngress implements Application {
      * -v verbose
      */
     @Override
-	public ApplicationResponse init(String[] args) {
+    public ApplicationResponse init(String[] args) {
         if (args.length >= 2) {
             Scanner scanner;
 
@@ -87,7 +87,7 @@ public class AdaptIngress implements Application {
                     port = scanner.nextInt();
                     scanner.close();
                 } else {
-                	scanner.close();
+                    scanner.close();
                     return new ApplicationResponse(false, "Bad port " + addrParts[1]);
                 }
                 scanner.close();
@@ -191,7 +191,7 @@ public class AdaptIngress implements Application {
      * Start application
      */
     @Override
-	public ApplicationResponse start() {
+    public ApplicationResponse start() {
         try {
             // set up socket
             socket = new DatagramSocket();
@@ -221,7 +221,7 @@ public class AdaptIngress implements Application {
      * Implement graceful shut down
      */
     @Override
-	public ApplicationResponse stop() {
+    public ApplicationResponse stop() {
         running = false;
 
         if (socket != null) {
@@ -238,7 +238,7 @@ public class AdaptIngress implements Application {
      * Run the application
      */
     @Override
-	public void run() {
+    public void run() {
         Datagram datagram = null;
 
         // Start Delay
@@ -283,11 +283,12 @@ public class AdaptIngress implements Application {
             }
         }
 
-        if (socket != null) {
-            socket.close();
+        // cannot be null, if we get here
+        //if (socket != null) {
+        socket.close();
 
-            Logger.getLogger("log").logln(USR.ERROR, "AdaptIngress close socket");
-        }
+        Logger.getLogger("log").logln(USR.ERROR, "AdaptIngress close socket");
+        //}
 
         Logger.getLogger("log").logln(USR.ERROR, "AdaptIngress: end of run()");
 

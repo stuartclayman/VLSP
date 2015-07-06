@@ -41,7 +41,7 @@ public class RunCommand extends RouterCommand {
             // strip off COMMAND
             String rest = value.substring(MCRP.RUN.CMD.length()).trim();
 
-            if (rest == "") {
+            if (rest.equals("")) {
                 response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();

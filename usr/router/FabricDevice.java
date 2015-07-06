@@ -17,10 +17,10 @@ import usr.net.InterfaceBlockedException;
 import usr.protocol.Protocol;
 
 /** A fabric device is a device with an Inbound and an outbound queue.
-   Inboud is "towards fabric" and Outbound is "from fabric" -- see diagram
-   Different queueing disciplines can be chosen for incoming and outgoing
-   queues
- */
+    Inboud is "towards fabric" and Outbound is "from fabric" -- see diagram
+    Different queueing disciplines can be chosen for incoming and outgoing
+    queues
+*/
 public class FabricDevice implements FabricDeviceInterface {
 
     String name_ = "Unnamed Fabric Device";  // Device name
@@ -43,6 +43,9 @@ public class FabricDevice implements FabricDeviceInterface {
 
     BlockingDeque<DatagramHandle> inQueue_ = null;  // queue for inbound -- towards fabric
     BlockingDeque<DatagramHandle> outQueue_ = null;  // queue for outgoing -- away from fabric
+    Object inQueueSyncObj_ = new Object();
+    Object outQueueSyncObj_ = new Object();
+    
     DatagramDevice device_;
     InQueueHandler inQueueHandler_ = null;
     OutQueueHandler outQueueHandler_ = null;
@@ -144,7 +147,7 @@ public class FabricDevice implements FabricDeviceInterface {
 
     /*
 
-       /** Start inqueue and out queue threads if necessary */
+      /** Start inqueue and out queue threads if necessary */
     @Override
     public synchronized void start() {
         stopped_ = false;
@@ -236,7 +239,7 @@ public class FabricDevice implements FabricDeviceInterface {
     }
 
     /** Return the fabric device that this datagram may route to or no
-       such fabric */
+        such fabric */
     FabricDevice getRouteFabric(Datagram dg) throws NoRouteToHostException {
         if (listener_ == null) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+" no listener");
@@ -248,8 +251,8 @@ public class FabricDevice implements FabricDeviceInterface {
     /** Add a datagram to the in queue -- blocking call, will continue to wait until
         datagram is added */
     @Override
-	public boolean blockingAddToInQueue(Datagram dg, DatagramDevice dd)
-    throws NoRouteToHostException {
+    public boolean blockingAddToInQueue(Datagram dg, DatagramDevice dd)
+        throws NoRouteToHostException {
 
         Waker waker = new Waker();
         synchronized (waker) {
@@ -269,8 +272,8 @@ public class FabricDevice implements FabricDeviceInterface {
 
     /** Returns true if datagram is sent or false if dropped */
     @Override
-	public boolean addToInQueue(Datagram dg, DatagramDevice dd)
-    throws NoRouteToHostException {
+    public boolean addToInQueue(Datagram dg, DatagramDevice dd)
+        throws NoRouteToHostException {
         try {
             return addToInQueue(dg, dd, null);
         } catch (usr.net.InterfaceBlockedException e) {
@@ -284,7 +287,7 @@ public class FabricDevice implements FabricDeviceInterface {
 
     /** Add a datagram to the in queue -- true means sent to out queue, false means blocked */
     public boolean addToInQueue(Datagram dg, DatagramDevice dd, Waker waitObj)
-    throws NoRouteToHostException, usr.net.InterfaceBlockedException {
+        throws NoRouteToHostException, usr.net.InterfaceBlockedException {
 
         DatagramHandle dh = new DatagramHandle(dg, dd);
 
@@ -320,7 +323,8 @@ public class FabricDevice implements FabricDeviceInterface {
 
 
             // Queue the packet if possible
-            synchronized (inQueue_) {
+            
+            synchronized (inQueueSyncObj_) {
                 if (inQueueLen_ == 0 || inQueue_.size() < inQueueLen_) {
                     inQueue_.offerLast(dh);
 
@@ -383,7 +387,7 @@ public class FabricDevice implements FabricDeviceInterface {
     /** Add a datagram to the out queue -- blocking call, will continue to wait until
         datagram is added */
     public boolean blockingAddToOutQueue(DatagramHandle dh)
-    throws NoRouteToHostException {
+        throws NoRouteToHostException {
 
         Waker waker = new Waker();
 
@@ -407,16 +411,16 @@ public class FabricDevice implements FabricDeviceInterface {
     }
 
     /** Add a datagram to the out queue -- return true if datagram
-       added to out queue, false means rejected*/
+        added to out queue, false means rejected*/
     public boolean addToOutQueue(DatagramHandle dh) throws
-    NoRouteToHostException, InterfaceBlockedException {
+        NoRouteToHostException, InterfaceBlockedException {
         return addToOutQueue(dh, null);
     }
 
     /** Add a datagram to the out queue --
-       true means added to out queue, false means rejected*/
+        true means added to out queue, false means rejected*/
     public boolean addToOutQueue(DatagramHandle dh, Waker waitObj)
-    throws NoRouteToHostException, InterfaceBlockedException {
+        throws NoRouteToHostException, InterfaceBlockedException {
 
         if (outQueueDiscipline_ == QUEUE_NOQUEUE) {
             if (dh.datagram.TTLReduce() == false) {
@@ -430,7 +434,8 @@ public class FabricDevice implements FabricDeviceInterface {
             // QUEUE_BLOCKING || QUEUE_DROPPING
 
             // Queue the packet if possible
-            synchronized (outQueue_) {
+
+            synchronized (outQueueSyncObj_) {
                 if (outQueueLen_ == 0 || outQueue_.size() < outQueueLen_) {
                     outQueue_.offerLast(dh);
 
@@ -475,7 +480,7 @@ public class FabricDevice implements FabricDeviceInterface {
 
     /** transfer datagram from in queue to out queue using no queue discipline
         add right now or drop
-     */
+    */
     public boolean transferDatagram(DatagramHandle dh) throws NoRouteToHostException {
 
         if (dh.datagram.TTLReduce() == false) {
@@ -522,7 +527,7 @@ public class FabricDevice implements FabricDeviceInterface {
 
     /** Stop any running threads */
     @Override
-	public void stop() {
+    public void stop() {
 
         stopped_ = true;
 
@@ -576,10 +581,11 @@ class InQueueHandler implements Runnable {
     int queueDiscipline_ = 0;
     BlockingQueue<DatagramHandle> queue_ = null;
     FabricDevice fabricDevice_ = null;
-    Boolean running_ = false;
+    boolean running_ = false;
     Thread runThread_ = null;
     CountDownLatch latch = null;
     String name_;
+    Object threadSyncObj_ = new Object();
 
     /** Constructor sets up */
     InQueueHandler(int discipline, BlockingQueue<DatagramHandle> q, FabricDevice f) {
@@ -591,7 +597,7 @@ class InQueueHandler implements Runnable {
     }
 
     @Override
-	public void run() {
+    public void run() {
         running_ = true;
         runThread_ = Thread.currentThread();
         while (running_ || queue_.size() > 0) {
@@ -665,7 +671,7 @@ class InQueueHandler implements Runnable {
     }
 
     public void stopThread() {
-        synchronized (running_) {
+        synchronized (threadSyncObj_) {
             running_ = false;
 
             if (queue_.size() == 0) {
@@ -698,11 +704,12 @@ class InQueueHandler implements Runnable {
 class OutQueueHandler implements Runnable {
     int queueDiscipline_ = 0;
     FabricDevice fabricDevice_ = null;
-    Boolean outRunning_ = false;
+    boolean outRunning_ = false;
     Thread outThread_ = null;
     CountDownLatch latch = null;
     String name_ = null;
     BlockingQueue<DatagramHandle> queue_;
+    Object threadSyncObj_ = new Object();
 
     OutQueueHandler(int discipline, BlockingQueue<DatagramHandle> q, FabricDevice f) {
         queueDiscipline_ = discipline;
@@ -713,7 +720,7 @@ class OutQueueHandler implements Runnable {
     }
 
     @Override
-	public void run() {
+    public void run() {
         outRunning_ = true;
         outThread_ = Thread.currentThread();
 
@@ -731,13 +738,16 @@ class OutQueueHandler implements Runnable {
             }
 
             // process DatagramHandle
-            if (dh.datagram.TTLReduce() == false) {
+
+            // TTL is reduced to zero - so drop
+            if (dh != null && dh.datagram.TTLReduce() == false) {
                 fabricDevice_.listener_.TTLDrop(dh.datagram);
                 // Logger.getLogger("log").logln(USR.ERROR, leadin() + " Dropped Packet: OutQueueHandler run() for " + dh.datagram);
                 fabricDevice_.inDroppedPacketNR(dh.datagram);
                 continue;
             }
 
+            // send out
             while (dh != null) {
                 try {
                     fabricDevice_.sendOutDatagram(dh);
@@ -760,7 +770,7 @@ class OutQueueHandler implements Runnable {
     }
 
     public void stopThread() {
-        synchronized (outRunning_) {
+        synchronized (threadSyncObj_) {
             if (outRunning_ == false) {
                 return;
             }

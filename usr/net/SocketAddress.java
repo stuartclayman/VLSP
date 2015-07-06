@@ -45,7 +45,7 @@ public class SocketAddress {
      * Equals
      */
     @Override
-	public boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (obj instanceof SocketAddress) {
             SocketAddress sockaddr = (SocketAddress)obj;
 
@@ -61,10 +61,18 @@ public class SocketAddress {
     }
 
     /**
+     * hashCode for SocketAddress
+     */
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
+
+    /**
      * To String
      */
     @Override
-	public String toString() {
+    public String toString() {
         return address + ":" + port;
     }
 

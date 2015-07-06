@@ -73,9 +73,7 @@ public class DatagramFactory {
         } catch (Exception e) {
             e.printStackTrace();
             Logger.getLogger("log").logln(USR.ERROR, "DatagramFactory: Exception: " + e);
-            throw new Error(
-                      "DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: " + dfi.className + " for protocol " +
-                      protocol);
+            throw new Error("DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: " + (dfi == null ? "null" : dfi.className) + " for protocol " + protocol);
         }
 
     }

@@ -9,9 +9,8 @@ import usr.logging.Logger;
 import usr.logging.USR;
 import usr.net.Address;
 
-/** Class holds a routing table deals with getting updated routing
-   tables
- */
+/** Class holds a routing table deals with getting updated routing tables
+*/
 public class SimpleRoutingTable implements RoutingTable {
     // The routing table
     HashMap<Address, SimpleRoutingTableEntry> table_ = null;
@@ -34,7 +33,7 @@ public class SimpleRoutingTable implements RoutingTable {
      * everything on it comes down a given interface -- note the first byte is T
      */
     SimpleRoutingTable(byte [] bytes, NetIF netif)
-    throws Exception {
+        throws Exception {
         table_ = new HashMap<Address, SimpleRoutingTableEntry>();
         fromBytes(bytes, netif);
     }
@@ -84,7 +83,7 @@ public class SimpleRoutingTable implements RoutingTable {
 
     /** remove address from table.  Return true if address was in table*/
     @Override
-	public boolean removeAddress(Address addr) {
+    public boolean removeAddress(Address addr) {
         SimpleRoutingTableEntry en = table_.remove(addr);
  
         if (en == null) {
@@ -97,7 +96,7 @@ public class SimpleRoutingTable implements RoutingTable {
 
     /** Set the NetIFListener */
     @Override
-	public void setListener(NetIFListener l) {
+    public void setListener(NetIFListener l) {
         listener_ = l;
     }
 
@@ -105,7 +104,7 @@ public class SimpleRoutingTable implements RoutingTable {
      * The size of the RoutingTable.
      */
     @Override
-	public synchronized int size() {
+    public synchronized int size() {
         return table_.size();
     }
 
@@ -113,14 +112,14 @@ public class SimpleRoutingTable implements RoutingTable {
      * Get all the RoutingTable entries.
      */
     @Override
-	public synchronized Collection<SimpleRoutingTableEntry> getEntries() {
+    public synchronized Collection<SimpleRoutingTableEntry> getEntries() {
         return table_.values();
     }
 
     /** Return the interface on which to send a packet to a given address
-       or null if not known */
+        or null if not known */
     @Override
-	public synchronized NetIF getInterface(Address addr) {
+    public synchronized NetIF getInterface(Address addr) {
 
         if (addr == null) {
             return null;
@@ -135,9 +134,9 @@ public class SimpleRoutingTable implements RoutingTable {
     }
 
     /** A new network interface arrives -- add to
-       routing table if necessary return true if change was made */
+        routing table if necessary return true if change was made */
     @Override
-	public synchronized boolean addNetIF(NetIF inter, RouterOptions options) {
+    public synchronized boolean addNetIF(NetIF inter, RouterOptions options) {
         Logger.getLogger("log").logln(USR.STDOUT, "SimpleRoutingTable: ADD LOCAL NET IF "+inter.getAddress());
         //Logger.getLogger("log").logln(USR.ERROR, "SimpleRoutingTable: addNetIF: table before = " + this);
 
@@ -178,7 +177,7 @@ public class SimpleRoutingTable implements RoutingTable {
      * Merge a RoutingTable into this one.
      */
     @Override
-	public synchronized boolean mergeTables(RoutingTable table2, NetIF inter, RouterOptions options) {
+    public synchronized boolean mergeTables(RoutingTable table2, NetIF inter, RouterOptions options) {
         //Logger.getLogger("log").logln(USR.STDOUT, "MERGING TABLES");
 
         boolean changed = false;
@@ -247,14 +246,14 @@ public class SimpleRoutingTable implements RoutingTable {
 
     /** Get an entry from the table */
     @Override
-	public synchronized SimpleRoutingTableEntry getEntry(Address a) {
+    public synchronized SimpleRoutingTableEntry getEntry(Address a) {
         return table_.get(a);
     }
 
     /**
      * Merge an entry in this RoutingTable returns true if there has been
-       a change
-     */
+     a change
+    */
     public synchronized boolean  mergeEntry(SimpleRoutingTableEntry newEntry, NetIF inter, RouterOptions options) {
 
         //Logger.getLogger("log").logln(USR.STDOUT, "MERGING ENTRY");
@@ -264,9 +263,9 @@ public class SimpleRoutingTable implements RoutingTable {
             return false;
         }
         /* if (inter == null) {
-             System.err.println("Merging entry "+newEntry+" from null");
+           System.err.println("Merging entry "+newEntry+" from null");
            } else {
-             System.err.println("Merging entry "+newEntry+" from "+inter+" "+inter.getClass());
+           System.err.println("Merging entry "+newEntry+" from "+inter+" "+inter.getClass());
            }*/
         Address addr = newEntry.getAddress();
 
@@ -340,9 +339,9 @@ public class SimpleRoutingTable implements RoutingTable {
     }
 
     /** Removes a network interface from a router returns true if
-       routing table has changed*/
+        routing table has changed*/
     @Override
-	public synchronized boolean removeNetIF(NetIF netif) {
+    public synchronized boolean removeNetIF(NetIF netif) {
         boolean changed = false;
         //Logger.getLogger("log").logln(USR.ERROR, "REMOVE NET IF CALLED");
         ArrayList<Address> toRemove = new ArrayList<Address>();
@@ -366,7 +365,7 @@ public class SimpleRoutingTable implements RoutingTable {
      * Sets a weight on a link on the specified NetIF.
      */
     @Override
-	public boolean setNetIFWeight(NetIF inter, int weight) {
+    public boolean setNetIFWeight(NetIF inter, int weight) {
         boolean changed = false;
 
         for (SimpleRoutingTableEntry e : getEntries()) {
@@ -391,9 +390,9 @@ public class SimpleRoutingTable implements RoutingTable {
      */
     String addressAsString(Address addr) {
         /*
-           int id = addr.asInteger();
-           return Integer.toString(id);
-         */
+          int id = addr.asInteger();
+          return Integer.toString(id);
+        */
         return addr.asTransmitForm();
     }
 
@@ -401,7 +400,7 @@ public class SimpleRoutingTable implements RoutingTable {
      * SHow only data transmitted
      */
     @Override
-	public synchronized String showTransmitted() {
+    public synchronized String showTransmitted() {
         StringBuilder table = new StringBuilder();
         table.append("\n");
 
@@ -419,7 +418,7 @@ public class SimpleRoutingTable implements RoutingTable {
      * To string
      */
     @Override
-	public synchronized String toString() {
+    public synchronized String toString() {
         StringBuilder table = new StringBuilder();
         table.append("\n");
 
@@ -438,7 +437,7 @@ public class SimpleRoutingTable implements RoutingTable {
      * To byte[]
      */
     @Override
-	public synchronized byte[] toBytes() {
+    public synchronized byte[] toBytes() {
 
         // TODO add T to start
         // add size of each entry
@@ -452,16 +451,14 @@ public class SimpleRoutingTable implements RoutingTable {
         //int entrySize = rtes.iterator().next().size();
 
         if (entrySize == 0) {
+            //Logger.getLogger("log").logln(USR.ERROR, "SRT: entry size is zero!");
+            //return null;
             throw new Error("SimpleRoutingTable: entrySize is 0");
         }
 
         // create a byte[] big enough for
         // T entryCount entrySize all_the_entries_as_byte[]
         // 5 + (entrySize * no_of_entires)
-        if (entrySize == 0) {
-            Logger.getLogger("log").logln(USR.ERROR, "SRT: entry size is zero!");
-            return null;
-        }
         byte [] bytes = new byte[5 + entrySize*count];
 
         ByteBuffer wrapper = ByteBuffer.wrap(bytes);

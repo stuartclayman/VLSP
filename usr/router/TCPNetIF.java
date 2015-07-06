@@ -62,6 +62,9 @@ public class TCPNetIF implements NetIF, Runnable {
     Boolean closed = true;
     // got a remote close
     boolean remoteClose = false;
+
+    // synchronization object
+    Object closedSyncObj = new Object();
     // Is the current reading thread running
     boolean running_ = false;
     // Has the stream closed
@@ -72,6 +75,8 @@ public class TCPNetIF implements NetIF, Runnable {
     Thread runThread_ = null;
 
     Object runWait_ = null;
+    Object runWaitSyncObj_ = new Object();
+    boolean waiting_ = false;
 
     CountDownLatch latch = null;
 
@@ -82,7 +87,7 @@ public class TCPNetIF implements NetIF, Runnable {
     public TCPNetIF(TCPEndPointSrc src, NetIFListener l) throws IOException {
         connection = new ConnectionOverTCP(src);
         listener = l;
-
+        runWait_ = new Object();
     }
 
     /**
@@ -91,6 +96,7 @@ public class TCPNetIF implements NetIF, Runnable {
     public TCPNetIF(TCPEndPointDst dst, NetIFListener l) throws IOException {
         connection = new ConnectionOverTCP(dst);
         listener = l;
+        runWait_ = new Object();
     }
 
     /**
@@ -119,13 +125,14 @@ public class TCPNetIF implements NetIF, Runnable {
     @Override
     public void run() {
         Datagram datagram = null;
-        runWait_ = new Object();
 
         while (running_) {
             if (eof) {
-                synchronized (runWait_) {
+                synchronized (runWaitSyncObj_) {
                     try {
-                        runWait_.wait();
+                        waiting_ = true;
+                        runWaitSyncObj_.wait();
+                        waiting_ = false;
                     } catch (InterruptedException e) {
                     }
                 }
@@ -456,7 +463,7 @@ public class TCPNetIF implements NetIF, Runnable {
      */
     @Override
     public void close() {
-        synchronized (closed) { // prevent this running twice by blocking
+        synchronized (closedSyncObj) { // prevent this running twice by blocking
             Logger.getLogger("log").logln(USR.STDOUT, leadin() +" Close");
 
             if (closed) {
@@ -498,9 +505,9 @@ public class TCPNetIF implements NetIF, Runnable {
             }
 
             // notify the run()
-            if (runWait_ != null) {
-                synchronized (runWait_) {
-                    runWait_.notify();
+            if (waiting_) {
+                synchronized (runWaitSyncObj_) {
+                    runWaitSyncObj_.notify();
                 }
             }
         }
@@ -518,7 +525,7 @@ public class TCPNetIF implements NetIF, Runnable {
      * Consturct and send a control message.
      */
     protected boolean controlClose() {
-        synchronized (closed) {
+        synchronized (closedSyncObj) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin()+" Sending controlClose to "+remoteRouterAddress);
             ByteBuffer buffer = ByteBuffer.allocate(1);
             String c = "C";
@@ -579,6 +586,14 @@ public class TCPNetIF implements NetIF, Runnable {
         }
 
     }
+
+    /**
+     * hashcode
+     */
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }    
 
     @Override
     public boolean isLocal() {

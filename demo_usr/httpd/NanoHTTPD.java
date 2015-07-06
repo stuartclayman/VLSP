@@ -77,7 +77,7 @@ import java.util.Vector;
  */
 
 @SuppressWarnings(value = { })
-public class NanoHTTPD
+public final class NanoHTTPD
 {
 // ==================================================
 // API parts
@@ -951,38 +951,40 @@ public Response serveFile(String uri,
                         1) + "\">..</a></b><br/>";
             }
 
-            for (int i = 0; i < files.length; ++i) {
-                File curFile = new File(f, files[i]);
-                boolean dir = curFile.isDirectory();
-                if (dir) {
-                    msg += "<b>";
-                    files[i] += "/";
-                }
-
-                msg += "<a href=\"" +
-                       encodeUri(uri + files[i]) + "\">" +
-                       files[i] + "</a>";
-
-                // Show file size
-                if (curFile.isFile()) {
-                    long len = curFile.length();
-                    msg += " &nbsp;<font size=2>(";
-                    if (len < 1024) {
-                        msg += len + " bytes";
-                    } else if (len < 1024 * 1024) {
-                        msg += len / 1024 + "." +
-                               (len % 1024 / 10 % 100) + " KB";
-                    } else {
-                        msg += len /
-                               (1024 *
-                                1024) + "." + len %
-                               (1024 * 1024) / 10 % 100 + " MB";
+            if (files != null) {
+                for (int i = 0; i < files.length; ++i) {
+                    File curFile = new File(f, files[i]);
+                    boolean dir = curFile.isDirectory();
+                    if (dir) {
+                        msg += "<b>";
+                        files[i] += "/";
                     }
 
-                    msg += ")</font>";
+                    msg += "<a href=\"" +
+                        encodeUri(uri + files[i]) + "\">" +
+                        files[i] + "</a>";
+
+                    // Show file size
+                    if (curFile.isFile()) {
+                        long len = curFile.length();
+                        msg += " &nbsp;<font size=2>(";
+                        if (len < 1024) {
+                            msg += len + " bytes";
+                        } else if (len < 1024 * 1024) {
+                            msg += len / 1024 + "." +
+                                (len % 1024 / 10 % 100) + " KB";
+                        } else {
+                            msg += len /
+                                (1024 *
+                                 1024) + "." + len %
+                                (1024 * 1024) / 10 % 100 + " MB";
+                        }
+
+                        msg += ")</font>";
+                    }
+                    msg += "<br/>";
+                    if (dir) msg += "</b>";
                 }
-                msg += "<br/>";
-                if (dir) msg += "</b>";
             }
             msg += "</body></html>";
             return new Response(HTTP_OK, MIME_HTML, msg);
