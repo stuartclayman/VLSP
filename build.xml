@@ -4,7 +4,7 @@
   <target name="init">    
     <echo message="------------ Building User Space Routing ----------"/>
     <echo message=""/>
-    <property name="sources" value="${basedir}:${basedir}/extras/IKMS-client/src/"/>
+    <property name="sources" value="${basedir}:${basedir}/extras/IKMS/src/:${basedir}/extras/IKMS-client/src/"/>
     <property name="classes" value="${basedir}/classes"/>
 <property name="external.jars" value="./libs/monitoring-0.7.1.jar:./libs/timeindex-20130121.jar:./libs/aggregator-0.3.jar:./libs/rgcprobdistributions.jar:./libs/rgcxmlparse.jar:./libs/rgcmathfunctions.jar:./libs/resty-0.3.1.jar:./libs/simple-4.1.21.jar:./libs/restconsole-0.1.0.jar:./libs/Logger-0.1.0.jar:./extras/IKMS/libs/commons-pool-1.6.jar:./extras/IKMS/libs/jcommon-1.0.17.jar:./extras/IKMS/libs/jfreechart-1.0.14.jar:./extras/IKMS/libs/javasysmon-0.3.4.jar:./extras/IKMS/libs/jedis-2.1.0.jar" />
 <!--
@@ -27,8 +27,8 @@
       <include name="usr/**" />
       <include name="plugins_usr/**" />
       <include name="demo_usr/**" />
- <!--     <include name="extras/IKMS/src/ikms/**" />-->
-<include name="extras/IKMS-client/src/**" />
+      <!--     <include name="extras/IKMS/src/ikms/**" />-->
+      <include name="extras/IKMS-client/src/**" />
       <include name="extras/IKMS/**" />
 
       <!-- <compilerarg value="-Xlint:unchecked" /> -->
