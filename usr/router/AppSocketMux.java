@@ -40,7 +40,6 @@ public class AppSocketMux implements NetIF {
     // My Thread
     Thread myThread;
     boolean running = false;
-    boolean waiting = false;
     Object threadSyncObj = new Object();
 
     boolean removeRequested_ = false;
@@ -149,7 +148,6 @@ public class AppSocketMux implements NetIF {
             //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"waiting");
             synchronized (this) {
                 setTheEnd();
-                waiting = true;
                 wait();
             }
         } catch (InterruptedException ie) {
@@ -172,10 +170,8 @@ public class AppSocketMux implements NetIF {
         }
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"notifying");
-        if (waiting) {
-            synchronized (this) {
-                notify();
-            }
+        synchronized (this) {
+            notify();
         }
 
     }
@@ -190,9 +186,7 @@ public class AppSocketMux implements NetIF {
 
     private synchronized void pause() {
         try {
-            waiting = true;
             wait();
-            waiting = false;
         } catch (InterruptedException ie) {
         }
     }

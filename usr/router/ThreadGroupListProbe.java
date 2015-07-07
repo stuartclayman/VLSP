@@ -110,7 +110,7 @@ public class ThreadGroupListProbe extends RouterProbe implements Probe {
             ThreadGroup[] subGroups = ThreadTools.getGroupThreadGroupsRecursive(threadGroup1);
 
             // add current ThreadGroup into list
-            List<ThreadGroup> threadGroups = new ArrayList(Arrays.asList(subGroups));
+            List<ThreadGroup> threadGroups = new ArrayList<ThreadGroup>(Arrays.asList(subGroups));
             threadGroups.add(0, threadGroup1);
 
             if (threadGroups == null || threadGroups.size() == 0) {

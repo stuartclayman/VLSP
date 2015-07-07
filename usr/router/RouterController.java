@@ -492,7 +492,7 @@ public class RouterController implements ComponentController, Runnable {
 
         // We create a Callable to enable this
         // The call() gets the ApplicationManager to start the App
-        Callable callable = new Callable() {
+        Callable<ApplicationResponse> callable = new Callable<ApplicationResponse>() {
                 public ApplicationResponse call() throws Exception {
                     String[] split = commandstr.split(" ");
 

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class LocalControllerInfo extends LocalHostInfo {
     private int maxRouters_ = 100;
     private int currRouters_ = 0;
-    private List routerList = new ArrayList<Integer>();
+    private List<Integer> routerList = new ArrayList<Integer>();
     private String remoteLoginUser_ = null;
     private String remoteStartController_ = null;
     private LocalControllerActiveStatus activeStatus_ = LocalControllerActiveStatus.ONLINE; // Set default status as ONLINE

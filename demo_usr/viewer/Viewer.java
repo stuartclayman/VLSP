@@ -504,7 +504,7 @@ public class Viewer {
     }
 
     private static void help() {
-        System.err.println("Viewer [-t timeout] [-l layout] [-w web_port] [-h gc_host]  [-p gc_port] ");
+        System.err.println("Viewer [-t timeout] [-l layout] [-w web_port] [-g gc_host]  [-p gc_port] ");
         System.exit(1);
     }
 
