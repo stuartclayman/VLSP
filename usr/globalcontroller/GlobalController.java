@@ -201,20 +201,23 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         try {
             GlobalController gControl = new GlobalController();
+            boolean initOK = false;
 
             if (args.length > 1) {
                 gControl.setStartupFile(args[1]);
-                gControl.init();
+                initOK = gControl.init();
             } else {
                 gControl.setStartupFile(args[0]);
-                gControl.init();
+                initOK = gControl.init();
             }
 
-            gControl.start();
+            if (initOK) {
+                gControl.start();
 
 
-            Logger.getLogger("log").logln(USR.STDOUT, gControl.leadin() + "Simulation complete");
-            System.out.flush();
+                Logger.getLogger("log").logln(USR.STDOUT, gControl.leadin() + "Simulation complete");
+                System.out.flush();
+            }
 
         } catch (Throwable t) {
             System.exit(1);
@@ -230,7 +233,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     }
 
     /** Basic initialisation for the global controller */
-    public void init() {
+    public boolean init() {
         // allocate a new logger
         Logger logger = Logger.getLogger("log");
 
@@ -371,43 +374,52 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         // Set up specific details if this is actually emulation not
         // simulation
+        boolean initEmulationOK = true;
+        
         if (!options_.isSimulation()) {
-            initEmulation();
+            initEmulationOK = initEmulation();
         }
 
+        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "initEmulationOK = " + initEmulationOK);
+        
+        if (! initEmulationOK) {
+            return false;
+        } else {
+            // Setup Placement Engine
+            String placementEngineClassName = options_.getPlacementEngineClassName();
 
-        // Setup Placement Engine
-        String placementEngineClassName = options_.getPlacementEngineClassName();
-
-        if (placementEngineClassName == null) {
-            // there is no PlacementEngine defined in the options
-            // use the built-in one
-            placementEngineClassName = "usr.globalcontroller.LeastUsedLoadBalancer";
-        }
-
-        setupPlacementEngine(placementEngineClassName);  //new LeastBusyPlacement(this); // new LeastUsedLoadBalancer(this);
-
-        //Initialise events for schedules
-        scheduler_ = new SimpleEventScheduler(options_.isSimulation(), this);
-        options_.initialEvents(scheduler_, this);
-
-        // Clear output files where needed
-        for (OutputType o : options_.getOutputs()) {
-            if (o.clearOutputFile()) {
-                File f = new File(o.getFileName());
-                f.delete();
+            if (placementEngineClassName == null) {
+                // there is no PlacementEngine defined in the options
+                // use the built-in one
+                placementEngineClassName = "usr.globalcontroller.LeastUsedLoadBalancer";
             }
-        }
 
-        // If any Engines need a Warm up - do it now
-        if (options_.getWarmUpPeriod() > 0) {
-            for (EventEngine e : options_.getEngines()) {
-                if (e instanceof APWarmUp) {
-                    ((APWarmUp)e).warmUp(scheduler_, options_.getWarmUpPeriod(), APController_, this);
+            setupPlacementEngine(placementEngineClassName);  //new LeastBusyPlacement(this); // new LeastUsedLoadBalancer(this);
+
+            //Initialise events for schedules
+            scheduler_ = new SimpleEventScheduler(options_.isSimulation(), this);
+            options_.initialEvents(scheduler_, this);
+
+            // Clear output files where needed
+            for (OutputType o : options_.getOutputs()) {
+                if (o.clearOutputFile()) {
+                    File f = new File(o.getFileName());
+                    f.delete();
                 }
             }
-        }
 
+            // If any Engines need a Warm up - do it now
+            if (options_.getWarmUpPeriod() > 0) {
+                for (EventEngine e : options_.getEngines()) {
+                    if (e instanceof APWarmUp) {
+                        ((APWarmUp)e).warmUp(scheduler_, options_.getWarmUpPeriod(), APController_, this);
+                    }
+                }
+            }
+
+            return true;
+
+        }
     }
 
     /**
@@ -552,7 +564,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Initialisation if we are emulating on hardware.
      */
-    private void initEmulation() {
+    private boolean initEmulation() {
         childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
         childNames_ = new ArrayList<String>();
         routerIdMap_ = new ConcurrentHashMap<Integer, BasicRouterInfo>();
@@ -563,8 +575,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         for (int i = 0; i < noControllers_; i++) {
             lh = options_.getController(i);
-            portPools_.put(lh,
-                           new PortPool(lh.getLowPort(), lh.getHighPort()));
+            portPools_.put(lh, new PortPool(lh.getLowPort(), lh.getHighPort()));
         }
 
         if (options_.startLocalControllers()) {
@@ -572,8 +583,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             startLocalControllers();
         }
 
-        //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Checking existence of local Controllers");
-        checkAllControllers();
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Checking existence of local Controllers");
+        boolean localControllersOK = checkAllControllers();
+
+        return localControllersOK;
     }
 
     /** Event for start Simulation */
@@ -2598,7 +2611,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Check all controllers listed are functioning and
      * creates interactors with the LocalControllers.
      */
-    private void checkAllControllers() {
+    private boolean checkAllControllers() {
         // try 20 times, with 500 millisecond gap
         int MAX_TRIES = 20;
         int tries = 0;
@@ -2680,7 +2693,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             // We can keep a list of failures if we need to.
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Can't talk to all LocalControllers");
             shutDown();
-            return;
+            return false;
         }
 
         /*
@@ -2690,7 +2703,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
          for (int i = 0; i < options_.getControllerWaitTime(); i++) {
          if (aliveCount == noControllers_) {
          Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All controllers responded with alive message.");
-         return;
+         return true;
          }
 
          try {
@@ -2703,12 +2716,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         // alternate
         if (aliveCount == noControllers_) {
-            return;
+            return true;
         } else {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Only " + aliveCount
                                           + " from " + noControllers_ + " local Controllers responded.");
             shutDown();
-            return;
+            return false;
         }
     }
 
