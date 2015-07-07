@@ -77,7 +77,7 @@ import java.util.Vector;
  */
 
 @SuppressWarnings(value = { })
-public final class NanoHTTPD
+public class NanoHTTPD
 {
 // ==================================================
 // API parts
