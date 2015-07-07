@@ -37,20 +37,20 @@ public class NullAPController implements APController {
 
     /** Return number of access points */
     @Override
-	public int getNoAPs() {
+    public int getNoAPs() {
         return APGIDs_.size();
     }
 
     /** Return list of access points */
     @Override
-	public ArrayList<Integer> getAPList() {
+    public ArrayList<Integer> getAPList() {
         //System.out.println("List is now "+APGIDs_);
         return APGIDs_;
     }
 
     /** is node an AP */
     @Override
-	public boolean isAP(int gid) {
+    public boolean isAP(int gid) {
         Integer AP = APs_.get(gid);
 
         if (AP == null) {
@@ -85,8 +85,7 @@ public class NullAPController implements APController {
                     continue;
                 }
 
-                if (bestNode == -1 || (max && fixedScore[n] > bestScore) ||
-                    (!max & fixedScore[n] < bestScore)) {
+                if (bestNode == -1 || (max && fixedScore[n] > bestScore) || (!max && fixedScore[n] < bestScore)) {
                     bestScore = fixedScore[n];
                     bestNode = n;
                 }
@@ -122,16 +121,16 @@ public class NullAPController implements APController {
         for (Integer node : nodes) {
             //System.err.println("Score was "+score[node]);
             score[node] *= Math.pow(lifeEstimates[node]/maxEstimate, lifeBias);
-/*			System.err.println("Score is now "+score[node]);
-                  System.err.println("Node "+node+" life so far "+getNodeLife(node,time)+
-                " estimate "+lifeEstimates[node]+" factor "+ Math.pow(lifeEstimates[node]/maxEstimate, lifeBias));*/
+            /*			System.err.println("Score is now "+score[node]);
+                                System.err.println("Node "+node+" life so far "+getNodeLife(node,time)+
+                                " estimate "+lifeEstimates[node]+" factor "+ Math.pow(lifeEstimates[node]/maxEstimate, lifeBias));*/
         }
 
         return score;
     }
     /** Return AP for given gid (or 0 if none) */
     @Override
-	public int getAP(int gid) {
+    public int getAP(int gid) {
         Integer AP = APs_.get(gid);
 
         if (AP == null) {
@@ -143,7 +142,7 @@ public class NullAPController implements APController {
 
     /** Return APCost for given gid (or max dist if none) */
     @Override
-	public int getAPCost(int gid) {
+    public int getAPCost(int gid) {
         Integer APCost = APCosts_.get(gid);
 
         if (APCost == null) {
@@ -180,13 +179,13 @@ public class NullAPController implements APController {
 
     /** Router regular AP update action */
     @Override
-	public void routerUpdate(RouterController r) {
+    public void routerUpdate(RouterController r) {
         //System.err.println ("Controller called");
     }
 
     /** Controller regular AP update action */
     @Override
-	public void controllerUpdate(long time, GlobalController g) {
+    public void controllerUpdate(long time, GlobalController g) {
         //System.err.println ("Null Controller called");
         if (!changedNet_ && !changedAPs_) {
             return;
@@ -208,7 +207,7 @@ public class NullAPController implements APController {
 
     /** Use the controller to remove the least efficient AP */
     @Override
-	public void controllerRemove(long time, GlobalController g) {
+    public void controllerRemove(long time, GlobalController g) {
         System.err.println("To write");
     }
 
@@ -226,7 +225,7 @@ public class NullAPController implements APController {
 
     /** Return an estimate of traffic for all nodes and APs*/
     @Override
-	public int APTrafficEstimate(GlobalController g) {
+    public int APTrafficEstimate(GlobalController g) {
         int traffic = 0;
 
         for (int i : g.getRouterList()) {
@@ -243,7 +242,7 @@ public class NullAPController implements APController {
 
     /** Add new access point with ID gid*/
     @Override
-	public void addAccessPoint(long time, int gid, GlobalController g) {
+    public void addAccessPoint(long time, int gid, GlobalController g) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Node "+gid+" becomes AP");
 
         if (APGIDs_.indexOf(gid) != -1) {
@@ -257,7 +256,7 @@ public class NullAPController implements APController {
 
     /** Remove access point with ID gid */
     @Override
-	public void removeAccessPoint(long time, int gid) {
+    public void removeAccessPoint(long time, int gid) {
         int index;
 
         if ((index = APGIDs_.indexOf(gid)) == -1) {
@@ -361,7 +360,7 @@ public class NullAPController implements APController {
 
     /** Add node to network */
     @Override
-	public void addNode(long time, int gid) {
+    public void addNode(long time, int gid) {
         while (APs_.size() <= gid) {
             APs_.add(0);
             APCosts_.add(options_.getMaxAPWeight());
@@ -373,7 +372,7 @@ public class NullAPController implements APController {
 
     /** Node has been removed from network and hence can no longer be AP */
     @Override
-	public void removeNode(long time, int gid) {
+    public void removeNode(long time, int gid) {
         changedNet_ = true;
 
         int index = APGIDs_.indexOf(gid);
@@ -387,13 +386,13 @@ public class NullAPController implements APController {
 
     /** Add warm up (not real) node*/
     @Override
-	public void addWarmUpNode(long time) {
+    public void addWarmUpNode(long time) {
         lse_.addWarmUpNode(time);
     }
 
     /** Remove warm up (not real) node */
     @Override
-	public void removeWarmUpNode(long startTime, long endTime) {
+    public void removeWarmUpNode(long startTime, long endTime) {
         lse_.removeWarmUpNode(startTime, endTime);
     }
 
@@ -425,19 +424,19 @@ public class NullAPController implements APController {
 
     /** Add link to network */
     @Override
-	public void addLink(long time, int gid1, int gid2) {
+    public void addLink(long time, int gid1, int gid2) {
         changedNet_ = true;
     }
 
     /** Remove link from network */
     @Override
-	public void removeLink(long time, int gid1, int gid2) {
+    public void removeLink(long time, int gid1, int gid2) {
         changedNet_ = true;
     }
 
     /** No score for this function */
     @Override
-	public int getScore(long tim, int gid, GlobalController g) {
+    public int getScore(long tim, int gid, GlobalController g) {
         return 0;
     }
 
@@ -505,7 +504,7 @@ public class NullAPController implements APController {
     }
 
     /** Return true if we can remove a single AP  -- do we still
-       have minimum number if we remove AP*/
+        have minimum number if we remove AP*/
     boolean canRemoveAP(GlobalController g) {
         if (getNoAPs()-1 >= getMinNoAPs(g)) {
             return true;
@@ -515,22 +514,22 @@ public class NullAPController implements APController {
     }
 
     /** Return the mean life of a node -- this only includes
-       nodes which have died*/
+        nodes which have died*/
     @Override
-	public double meanNodeLife() {
+    public double meanNodeLife() {
         return lse_.meanNodeLife();
     }
 
     /** Return the mean life of an AP -- this only includes APs which have
-       died*/
+        died*/
     @Override
-	public double meanAPLife() {
+    public double meanAPLife() {
         return lse_.meanAPLife();
     }
 
     /** Return the mean life of an AP -- includes all*/
     @Override
-	public double meanAPLifeSoFar(long time) {
+    public double meanAPLifeSoFar(long time) {
         return lse_.meanAPLifeSoFar(time);
     }
 
@@ -542,7 +541,7 @@ public class NullAPController implements APController {
        /** Create new APInfo */
 
     @Override
-	public APInfo newAPInfo() {
+    public APInfo newAPInfo() {
         return new NullAPInfo();
     }
 

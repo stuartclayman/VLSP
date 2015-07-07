@@ -79,7 +79,7 @@ public class LocalController implements ComponentController {
      */
     public static void main(String[] args) {
 
-        LocalController self_;
+        final LocalController self_;
 
         if (args.length != 2) {
             Logger.getLogger("log").logln(USR.ERROR, "Command line must specify "+

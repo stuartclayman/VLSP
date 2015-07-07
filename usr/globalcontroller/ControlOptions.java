@@ -239,7 +239,7 @@ public class ControlOptions {
                                                  "GlobalController",
                                                  true);
 
-            if (s != "") {
+            if (!s.equals("")) {
                 remoteLoginUser_ = s;
             }
 
@@ -256,7 +256,7 @@ public class ControlOptions {
                                                       "GlobalController",
                                                       true);
 
-            if (s != "") {
+            if (! s.equals("")) {
                 remoteStartController_ = s;
             }
 

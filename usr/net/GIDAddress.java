@@ -11,10 +11,10 @@ import java.util.Scanner;
  */
 public class GIDAddress extends Size4 implements Address, Serializable {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 6415450506543742461L;
-	int globalAddress;
+     * 
+     */
+    private static final long serialVersionUID = 6415450506543742461L;
+    int globalAddress;
 
     /**
      * Create a GIDAddress from a String
@@ -33,7 +33,7 @@ public class GIDAddress extends Size4 implements Address, Serializable {
 
 
         } else {
-        	scanner.close();
+            scanner.close();
             throw new UnknownHostException("Not a GID: " + gidStr);
         }
     }
@@ -70,7 +70,7 @@ public class GIDAddress extends Size4 implements Address, Serializable {
      * Get GIDAddress as an Integer.
      */
     @Override
-	public int asInteger() {
+    public int asInteger() {
         return globalAddress;
     }
 
@@ -78,7 +78,7 @@ public class GIDAddress extends Size4 implements Address, Serializable {
      * Get GIDAddress as an InetAddress
      */
     @Override
-	public InetAddress asInetAddress() {
+    public InetAddress asInetAddress() {
         try {
             return InetAddress.getByAddress(bytes);
         } catch (UnknownHostException uhe) {
@@ -90,7 +90,7 @@ public class GIDAddress extends Size4 implements Address, Serializable {
      * Address in transmittable form
      */
     @Override
-	public String asTransmitForm() {
+    public String asTransmitForm() {
         return Integer.toString(globalAddress);
     }
 
@@ -98,7 +98,7 @@ public class GIDAddress extends Size4 implements Address, Serializable {
      * Compare this Address to another one
      */
     @Override
-	public int compareTo(Object other) {
+    public int compareTo(Object other) {
         int val1 = this.asInteger();
         int val2 = ((Address)other).asInteger();
 
@@ -115,7 +115,7 @@ public class GIDAddress extends Size4 implements Address, Serializable {
      * Equals
      */
     @Override
-	public boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (obj instanceof Address) {
             Address addr = (Address)obj;
             return addr.asInteger() == this.asInteger();
@@ -125,10 +125,18 @@ public class GIDAddress extends Size4 implements Address, Serializable {
     }
 
     /**
+     * hashcode
+     */
+    @Override
+    public int hashCode() {
+        return asTransmitForm().hashCode();
+    }
+
+    /**
      * To String
      */
     @Override
-	public String toString() {
+    public String toString() {
         return "@("+globalAddress + ")";
     }
 

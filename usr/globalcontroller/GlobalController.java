@@ -2640,7 +2640,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                             aliveCount++;
                         }
 
-                        if (options_.getRouterOptionsString() != "") {
+                        if (! options_.getRouterOptionsString().equals("")) {
                             inter.setConfigString(options_.getRouterOptionsString());
                         }
 

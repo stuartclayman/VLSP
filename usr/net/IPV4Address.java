@@ -10,10 +10,10 @@ import java.nio.ByteBuffer;
  */
 public class IPV4Address extends Size4 implements Address, Serializable {
     /**
-	 *
-	 */
-	private static final long serialVersionUID = 2090554822014106211L;
-	InetAddress addr;
+     *
+     */
+    private static final long serialVersionUID = 2090554822014106211L;
+    InetAddress addr;
 
     /**
      * Create a IPV4Address from a hostname
@@ -62,7 +62,7 @@ public class IPV4Address extends Size4 implements Address, Serializable {
      * Get IPV4Address as an InetAddress
      */
     @Override
-	public InetAddress asInetAddress() {
+    public InetAddress asInetAddress() {
         return addr;
     }
 
@@ -70,7 +70,7 @@ public class IPV4Address extends Size4 implements Address, Serializable {
      * Get IPV4Address as an Integer.
      */
     @Override
-	public int asInteger() {
+    public int asInteger() {
         // convert byte[] to int
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         return buf.getInt();
@@ -80,7 +80,7 @@ public class IPV4Address extends Size4 implements Address, Serializable {
      * Address in transmittable form
      */
     @Override
-	public String asTransmitForm() {
+    public String asTransmitForm() {
         return numericToTextFormat(bytes);
     }
 
@@ -88,7 +88,7 @@ public class IPV4Address extends Size4 implements Address, Serializable {
      * Compare this Address to another one
      */
     @Override
-	public int compareTo(Object other) {
+    public int compareTo(Object other) {
         int val1 = this.asInteger();
         int val2 = ((Address)other).asInteger();
 
@@ -105,7 +105,7 @@ public class IPV4Address extends Size4 implements Address, Serializable {
      * Equals
      */
     @Override
-	public boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (obj instanceof Address) {
             Address addr = (Address)obj;
             return addr.asInteger() == this.asInteger();
@@ -115,10 +115,18 @@ public class IPV4Address extends Size4 implements Address, Serializable {
     }
 
     /**
+     * hashcode
+     */
+    @Override
+    public int hashCode() {
+        return asTransmitForm().hashCode();
+    }
+
+    /**
      * To String
      */
     @Override
-	public String toString() {
+    public String toString() {
         return numericToTextFormat(bytes);
     }
 

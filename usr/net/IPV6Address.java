@@ -10,10 +10,10 @@ import java.nio.ByteBuffer;
  */
 public class IPV6Address extends Size16 implements Address, Serializable {
     /**
-	 *
-	 */
-	private static final long serialVersionUID = -2923876667308091383L;
-	InetAddress addr;
+     *
+     */
+    private static final long serialVersionUID = -2923876667308091383L;
+    InetAddress addr;
 
     /**
      * Create a IPV6Address from a hostname
@@ -57,7 +57,7 @@ public class IPV6Address extends Size16 implements Address, Serializable {
      * Get IPV6Address as an InetAddress
      */
     @Override
-	public InetAddress asInetAddress() {
+    public InetAddress asInetAddress() {
         return addr;
     }
 
@@ -65,7 +65,7 @@ public class IPV6Address extends Size16 implements Address, Serializable {
      * Get IPV6Address as an Integer.
      */
     @Override
-	public int asInteger() {
+    public int asInteger() {
         throw new UnsupportedOperationException("IPV6Address does not support asInteger()");
     }
 
@@ -73,7 +73,7 @@ public class IPV6Address extends Size16 implements Address, Serializable {
      * Address in transmittable form
      */
     @Override
-	public String asTransmitForm() {
+    public String asTransmitForm() {
         return numericToTextFormat(bytes);
     }
 
@@ -81,7 +81,7 @@ public class IPV6Address extends Size16 implements Address, Serializable {
      * Compare this Address to another one
      */
     @Override
-	public int compareTo(Object other) {
+    public int compareTo(Object other) {
         throw new UnsupportedOperationException("IPV6Address does not support compareTo");
     }
 
@@ -89,7 +89,7 @@ public class IPV6Address extends Size16 implements Address, Serializable {
      * Equals
      */
     @Override
-	public boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (obj instanceof Address) {
             Address addr = (Address)obj;
             byte[] me = this.asByteArray();
@@ -108,29 +108,18 @@ public class IPV6Address extends Size16 implements Address, Serializable {
     }
 
     /**
-     * hash code
+     * hashcode
      */
     @Override
-	public int hashCode() {
-        // convert byte [] to int
-        // get 4 ints and add them up
-        ByteBuffer buf = ByteBuffer.wrap(bytes);
-
-        int i1 = buf.getInt();
-        int i2 = buf.getInt();
-        int i3 = buf.getInt();
-        int i4 = buf.getInt();
-
-        int sum = i1+ i2 + i3 + i4;
-
-        return sum;
+    public int hashCode() {
+        return asTransmitForm().hashCode();
     }
 
     /**
      * To String
      */
     @Override
-	public String toString() {
+    public String toString() {
         return numericToTextFormat(bytes);
     }
 

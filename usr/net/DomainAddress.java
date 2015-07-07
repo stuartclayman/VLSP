@@ -14,10 +14,10 @@ import java.util.regex.MatchResult;
  */
 public class DomainAddress extends Size4 implements Address, Serializable {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 5297065237202912602L;
-	int domainPart;
+     * 
+     */
+    private static final long serialVersionUID = 5297065237202912602L;
+    int domainPart;
     int hostPart;
 
     /**
@@ -56,7 +56,7 @@ public class DomainAddress extends Size4 implements Address, Serializable {
 
 
         } else {
-        	scanner.close();
+            scanner.close();
             throw new UnknownHostException("Not a Domain: " + addrStr);
         }
     }
@@ -115,7 +115,7 @@ public class DomainAddress extends Size4 implements Address, Serializable {
      * Get DomainAddress as an Integer.
      */
     @Override
-	public int asInteger() {
+    public int asInteger() {
         int integerView = ((domainPart << 16)) | hostPart;
         return integerView;
     }
@@ -124,7 +124,7 @@ public class DomainAddress extends Size4 implements Address, Serializable {
      * Get DomainAddress as an InetAddress
      */
     @Override
-	public InetAddress asInetAddress() {
+    public InetAddress asInetAddress() {
         try {
             return InetAddress.getByAddress(bytes);
         } catch (UnknownHostException uhe) {
@@ -136,7 +136,7 @@ public class DomainAddress extends Size4 implements Address, Serializable {
      * Address in transmittable form
      */
     @Override
-	public String asTransmitForm() {
+    public String asTransmitForm() {
         return domainPart + "." + hostPart;
     }
 
@@ -144,7 +144,7 @@ public class DomainAddress extends Size4 implements Address, Serializable {
      * Compare this Address to another one
      */
     @Override
-	public int compareTo(Object other) {
+    public int compareTo(Object other) {
         int val1 = this.asInteger();
         int val2 = ((Address)other).asInteger();
 
@@ -161,21 +161,29 @@ public class DomainAddress extends Size4 implements Address, Serializable {
      * Equals
      */
     @Override
-	public boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (obj instanceof DomainAddress) {
             DomainAddress addr = (DomainAddress)obj;
             return addr.domainPart == this.domainPart &&
-                   addr.hostPart == this.hostPart;
+                addr.hostPart == this.hostPart;
         } else {
             return false;
         }
     }
 
     /**
+     * hashcode
+     */
+    @Override
+    public int hashCode() {
+        return asTransmitForm().hashCode();
+    }
+
+    /**
      * To String
      */
     @Override
-	public String toString() {
+    public String toString() {
         return asTransmitForm();
     }
 

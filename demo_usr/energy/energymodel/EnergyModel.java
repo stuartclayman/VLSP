@@ -55,8 +55,8 @@ public class EnergyModel {
 	float lastFreeMemory;
 
 	// keep track of last data communicated
-	int lastNetworkOutboundBytes;
-	int lastNetworkIncomingBytes;
+	long lastNetworkOutboundBytes;
+	long lastNetworkIncomingBytes;
 
 	// keep track of last energy measurement
 	double lastEnergyMeasurement; 
@@ -190,6 +190,8 @@ public class EnergyModel {
 		lastAverageIdleCPU = averageIdleCPU;
 		lastMemoryUsed = memoryUsed;
 		lastFreeMemory = freeMemory;
+                lastNetworkOutboundBytes = networkOutboundBytes;
+                lastNetworkIncomingBytes = networkIncomingBytes;
 
 		// keep track of last energy measurement
 		lastEnergyMeasurement = currentEnergy;

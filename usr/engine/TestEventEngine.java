@@ -17,8 +17,6 @@ import usr.events.vim.EndRouterEvent;
 import usr.globalcontroller.GlobalController;
 
 public class TestEventEngine extends EmptyEventEngine implements EventEngine {
-    int timeToEnd_;
-    
     int routerID;   // the ID of the created router
 
     /** Contructor from Parameter string */
@@ -28,7 +26,7 @@ public class TestEventEngine extends EmptyEventEngine implements EventEngine {
 
     /** Start up and shut down events */
     @Override
-	public void startStopEvents(EventScheduler s, EventDelegate g) {
+    public void startStopEvents(EventScheduler s, EventDelegate g) {
         // simulation start
         StartSimulationEvent e0 = new StartSimulationEvent(0);
 
@@ -49,13 +47,13 @@ public class TestEventEngine extends EmptyEventEngine implements EventEngine {
 
     /** Add or remove events following a simulation event */
     @Override
-	public void preceedEvent(Event e, EventScheduler s, EventDelegate g) {
+    public void preceedEvent(Event e, EventScheduler s, EventDelegate g) {
     }
 
     /** Add or remove events following a simulation event */
     @Override
     public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate g) {
-         try {
+        try {
             routerID = response.getInt("routerID");
         } catch (JSONException jse) {
             routerID = -1;
