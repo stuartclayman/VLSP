@@ -70,6 +70,10 @@ public class RouterController implements ComponentController, Runnable {
     // are we running
     boolean running = false;
 
+    // have we been informed of a failure
+    boolean failureNotification = false;
+    Object failureNotificationSyncObj = new Object();
+    
     // My name
     String name = null;
 
@@ -374,11 +378,31 @@ public class RouterController implements ComponentController, Runnable {
         router.shutDown();
     }
 
+    void informFailure() {
+        synchronized (failureNotificationSyncObj) {
+            failureNotification = true;
+            failureNotificationSyncObj.notify();
+        }
+    }
+
     /**
      * The main thread loop.
      */
     @Override
     public void run() {
+        while (failureNotification == false && running == true) {
+            synchronized (failureNotificationSyncObj) {
+                try {
+                    failureNotificationSyncObj.wait();
+                } catch (InterruptedException ie) {
+                    if (running == false) {
+                        System.err.println(ANSI.YELLOW + "Interrupted on stop()" + ANSI.RESET_COLOUR);
+                    } else {
+                        System.err.println(ANSI.RED + "Interrupted on informFailure()" + ANSI.RESET_COLOUR);
+                    }
+                }
+            }
+        }
     }
 
     /** Return a routing table as a string */

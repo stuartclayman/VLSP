@@ -82,13 +82,10 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
                     jsobj.put("r2rPort", bri.getRoutingPort());
                 }
 
-                jsobj.put("msg", "Created router " + rNo + " "
-                          + getName());
+                jsobj.put("msg", "Created router " + rNo + " " + getName());
             }
         } catch (JSONException je) {
-            Logger.getLogger("log").logln(
-                                          USR.ERROR,
-                                          "JSONException in StartLinkEvent should not occur");
+            Logger.getLogger("log").logln(USR.ERROR, "JSONException in StartLinkEvent should not occur");
         }
 
         return jsobj;
@@ -138,9 +135,8 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
                 }
             } catch (IOException e) {
                 //e.printStackTrace();
-            		Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin()
-                                              + "Could not start new router on "
+                Logger.getLogger("log").logln(USR.ERROR,
+                                              leadin() + "Could not start new router on "
                                               + leastUsed + " out of ports ");
 
                 //System.err.println("Out of ports");
@@ -157,9 +153,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
     }
 
     /** Make one attempt to start a router */
-    private boolean tryRouterStart(GlobalController gc, int id, String address, String name, LocalControllerInfo local,
-                                          LocalControllerInteractor lci)
-        throws IOException {
+    private boolean tryRouterStart(GlobalController gc, int id, String address, String name, LocalControllerInfo local, LocalControllerInteractor lci) throws IOException {
         int port = 0;
         PortPool pp = gc.getPortPool(local);
         JSONObject routerAttrs;
@@ -170,34 +164,28 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin()
                                           + "Creating router: " + id
-                                          + (address != null ?
-                                             (
-                                              " address = "
-                                              + address) : "")
+                                          + (address != null ? (" address = " + address) : "")
                                           + (name != null ? (" name = " + name) : ""));
 
             // create the new router and get it's name
             routerAttrs = lci.newRouter(id, port, port + 1, address, name);
 
-            BasicRouterInfo br = new BasicRouterInfo
-                ((Integer)routerAttrs.get(
-                                          "routerID"),
-                 gc.getElapsedTime(), local,
-                 (Integer)routerAttrs.get("mgmtPort"),
-                 (Integer)routerAttrs.get("r2rPort"));
+            BasicRouterInfo br = new BasicRouterInfo ((Integer)routerAttrs.get("routerID"),
+                                                      gc.getElapsedTime(), local,
+                                                      (Integer)routerAttrs.get("mgmtPort"),
+                                                      (Integer)routerAttrs.get("r2rPort"));
             br.setName((String)routerAttrs.get("name"));
             br.setAddress((String)routerAttrs.get("address"));
 
             // keep a handle on this router
             gc.addRouterInfo(id, br);
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()
-                                          + "Created router " + routerAttrs);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Created router " + routerAttrs);
             return true;
+
         } catch (JSONException e) {
             // Failed to start#
             Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()
-                                          + "Could not create router " + id
+                                          leadin() + "Could not create router " + id
                                           + " on " + lci);
 
             if (port != 0) {

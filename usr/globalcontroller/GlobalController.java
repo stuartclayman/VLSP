@@ -394,7 +394,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 placementEngineClassName = "usr.globalcontroller.LeastUsedLoadBalancer";
             }
 
-            setupPlacementEngine(placementEngineClassName);  //new LeastBusyPlacement(this); // new LeastUsedLoadBalancer(this);
+            boolean placementEngineInitOK = setupPlacementEngine(placementEngineClassName);  //new LeastBusyPlacement(this); // new LeastUsedLoadBalancer(this);
 
             //Initialise events for schedules
             scheduler_ = new SimpleEventScheduler(options_.isSimulation(), this);
@@ -619,22 +619,32 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Set up the PlacementEngine
      */
-    private void setupPlacementEngine(String placementEngineClassName) {
+    private boolean setupPlacementEngine(String placementEngineClassName) {
         try {
+            PlacementEngine newPlacementEngine = null;
+            
             Class<?> c = Class.forName(placementEngineClassName);
             Class<? extends PlacementEngine> cc = c.asSubclass(PlacementEngine.class);
 
             // find Constructor for when arg is GlobalController
             Constructor<? extends PlacementEngine> cons = cc.getDeclaredConstructor(GlobalController.class);
 
-            placementEngine = cons.newInstance(this);
+            newPlacementEngine = cons.newInstance(this);
 
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Setup PlacementEngine: " + placementEngine);
 
+            // if we get here we instantiated the PlacementEngine OK
+            // so set it for further use
+            placementEngine = newPlacementEngine;
+
+            return true;
+
         } catch (ClassNotFoundException cnfe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Class not found " + placementEngineClassName);
+            return false;
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot instantiate class " + placementEngineClassName);
+            return false;
         }
     }
 
@@ -1238,7 +1248,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         measurementJsobj = hostInfoReporter.getProcessedData(localControllerName); 
 
 
-        /*
         // current status of localcontroller
         float currentCPUUserAndSystem=0;
         float currentCPUIdle=0;
@@ -1267,7 +1276,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
             jsobj.put("energyConsumption", energyConsumption);
         }
-        */
 
         jsobj.put("hostinfo", measurementJsobj);
 

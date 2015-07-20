@@ -88,7 +88,7 @@ public class LocalControllerInteractor {
         try {
             jsobj = rest.json(uri).toObject();
 
-            Logger.getLogger("log").logln(USR.STDOUT, ANSI.MAGENTA + "LC response: " + jsobj.toString() + ANSI.RESET_COLOUR);
+            Logger.getLogger("log").logln(USR.STDOUT, ANSI.GREEN + "LC response: " + jsobj.toString() + ANSI.RESET_COLOUR);
 
             return jsobj;
 

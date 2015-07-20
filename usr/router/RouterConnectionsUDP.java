@@ -80,6 +80,8 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
      */
     @Override
     public void run() {
+        int failCount = 0;
+        
         while (running) {
             try {
                 // Need a new socket each time for UDP
@@ -131,6 +133,14 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
                 if (running) {
                     //ioe.printStackTrace();
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "socket failed");
+
+                    failCount++;
+
+                    if (failCount == 10) {
+                        // too many failures - bomb out
+                        stop();
+                        controller.informFailure();
+                    }
                 }
             }
 

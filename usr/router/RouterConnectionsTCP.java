@@ -99,6 +99,8 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
      */
     @Override
     public void run() {
+        int failCount = 0;
+        
         while (running) {
             try {
                 // Set up a new end point
@@ -136,6 +138,15 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
                 // only print if running, not when stopping
                 if (running) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "accept failed");
+
+                    failCount++;
+
+                    if (failCount == 10) {
+                        // too many failures - bomb out
+                        stop();
+                        controller.informFailure();
+                    }
+
                 }
             }
 
