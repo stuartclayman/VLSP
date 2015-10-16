@@ -31,7 +31,7 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	static ArrayList<Integer> monitoredEntities = new ArrayList<Integer> ();
 
 	// Defining communicating functions
-	InformationStorageAndIndexingFunction informationStorageAndIndexingFunction = null;
+	static InformationStorageAndIndexingFunction informationStorageAndIndexingFunction = null;
 
 	// measurements for all flows
 	static private long responseTimeRequestsInPeriod = 0;
@@ -247,7 +247,7 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 		return reverseKeys;
 	}*/
 
-	public int GetStorageMemoryUsed () {
+	public static int GetStorageMemoryUsed () {
 		return informationStorageAndIndexingFunction.GetStorageMemoryUsed();
 	}
 
