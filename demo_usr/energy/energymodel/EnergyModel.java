@@ -198,7 +198,33 @@ public class EnergyModel {
 
 		return currentEnergy;
 	}
+	
+	// return latest measurements
+	public double getLastAverageCPULoad () {
+		return lastAverageCPULoad;
+	}
 
+	public double getLastAverageIdleCPU () {
+		return lastAverageIdleCPU;
+	}
+
+	public double getLastMemoryUsed () {
+		return lastMemoryUsed;
+	}
+
+	public double getLastFreeMemory () {
+		return lastFreeMemory;
+	}
+
+	public double getLastNetworkOutboundBytes () {
+		return lastNetworkOutboundBytes;
+	}
+
+	public double getLastNetworkIncomingBytes () {
+		return lastNetworkIncomingBytes;
+	}
+
+	
 	// calculate current energy consumption from relevant jsonobject
 	public double CurrentEnergyConsumption (JSONObject jsonObj) throws JSONException {
 		// initialize variables
