@@ -45,12 +45,16 @@ public class ThreadGroupListReporter implements Reporter, ReporterMeasurementTyp
     // count of no of measurements
     int count = 0;
 
+    // keep previous probe values
+    HashMap<String, Measurement> previousProbeValues;
+
     /**
      * Constructor
      */
     public ThreadGroupListReporter(GlobalController gc) {
         globalController = gc;
         measurements = new HashMap<String, Measurement>();
+        previousProbeValues = new HashMap<String, Measurement>();
 
         // get logger
         try {
@@ -87,6 +91,8 @@ public class ThreadGroupListReporter implements Reporter, ReporterMeasurementTyp
             ProbeValue pv0 = values.get(0);
             String routerName = (String)pv0.getValue();
 
+            previousProbeValues.put(routerName, measurements.get(routerName));
+
             synchronized (measurements) {
                 measurements.put(routerName, m);
             }
@@ -121,6 +127,11 @@ public class ThreadGroupListReporter implements Reporter, ReporterMeasurementTyp
         return measurements.get(routerName);
     }
 
+    public Measurement getPreviousData(String localControllerName) {
+        return previousProbeValues.get(localControllerName);
+    }
+
+    
     // this method returns a JSONObject 
     public JSONObject getProcessedData (String routerName) {
         Measurement m = measurements.get(routerName);

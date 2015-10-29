@@ -20,8 +20,8 @@ public class Vim {
     /**
      * Init the Vim
      */
-    protected void init() {
-        gc.init();
+    protected boolean init() {
+        return gc.init();
     }
 
 

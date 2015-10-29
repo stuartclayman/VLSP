@@ -122,6 +122,10 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 		return measurements.get(localControllerName);
 	}
 
+	public Measurement getPreviousData(String localControllerName) {
+		return previousProbeValues.get(localControllerName);
+	}
+
 	// this method returns a JSONObject with the difference in inbound/outbound traffic between the latest two probes
 	public JSONObject getProcessedData (String localControllerName) {
 		Measurement m = measurements.get(localControllerName);

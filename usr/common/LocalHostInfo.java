@@ -20,18 +20,18 @@ public class LocalHostInfo {
     // hardware related coefficient for energy consumption of cpu
     // assuming maximum average consumption per machine
     // 50 watts at working state, 20 watts per idle state
-    private double cpuLoadCoefficient = 5;
-    private double cpuIdleCoefficient = 2;
+    private double cpuLoadCoefficient = 50;
+    private double cpuIdleCoefficient = 20;
 
     // hardware related coefficient for energy consumption of memory
-    // assuming 40 watt per gigabyte
-    private double memoryAllocationCoefficient=40;
-    private double freeMemoryCoefficient=20;
+    // assuming 4 watt per gigabyte
+    private double memoryAllocationCoefficient=4;
+    private double freeMemoryCoefficient=2;
 
     // hardware related coefficient for energy consumption of network
-    // assuming 0.1 watts to send and 0.05 watts to receive (per byte)
-    private double networkOutboundBytesCoefficient=0.001;
-    private double networkIncomingBytesCoefficient=0.0005;
+    // assuming 0.00001 watts to send and 0.000005 watts to receive (per byte)
+    private double networkOutboundBytesCoefficient=0.00001;
+    private double networkIncomingBytesCoefficient=0.000005;
 
     // average energy consumption of all server devices, besides newtwork, cpu and memory
     // assuming 300Watts in total

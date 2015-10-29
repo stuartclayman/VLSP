@@ -321,6 +321,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         try {
             myHostInfo_ = new LocalHostInfo(options_.getGlobalPort());
+            myName = myHostInfo_.getName();
         } catch (UnknownHostException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             System.exit(-1);
@@ -383,7 +384,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "initEmulationOK = " + initEmulationOK);
         
         if (! initEmulationOK) {
+            initFailHook();
             return false;
+            
         } else {
             // Setup Placement Engine
             String placementEngineClassName = options_.getPlacementEngineClassName();
@@ -417,33 +420,90 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 }
             }
 
+            postInitHook();
             return true;
 
         }
     }
 
     /**
+     * A hook for subclasses to call.
+     */
+    public boolean initFailHook() {
+        return true;
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean postInitHook() {
+        return true;
+    }
+
+    
+
+    /**
      * Start the GlobalController.
      */
     public void start() {
+        preStartHook();
+        
         if (options_.isSimulation()) {
             runSimulation();
         } else {
             runEmulation();
         }
+
     }
 
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean preStartHook() {
+        return true;
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean postStartHook() {
+        return true;
+    }
+
+    
     /**
      * Stop the GlobalController.
      */
     public void stop() {
+        preStopHook();
+        
         if (options_.isSimulation()) {
             endSimulation(System.currentTimeMillis());
         } else {
             shutDown();
         }
+
+        postStopHook();
     }
 
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean preStopHook() {
+        return true;
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean postStopHook() {
+        return true;
+    }
+
+    
+    
     /**
      * Wrap and and clean up
      */
@@ -457,6 +517,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      */
     private void runSimulation() {
         isActive_ = true;
+
+        postStartHook();
 
         while (isActive_) {
             Event ev = scheduler_.getFirstEvent();
@@ -496,6 +558,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
     private void runEmulation() {
         isActive_ = true;
+
+        postStartHook();
+
         synchronized (runLoop_) {
 
             // Start Scheduler as thread
@@ -504,8 +569,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
             while (isActive_) {
                 try {
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "runLoop_ wait");
-                    runLoop_.wait();
+                    //Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "runLoop_ wait");
+                    runLoop_.wait(1000);
+
+                    runLoopHook();
                 } catch (InterruptedException ie) {
                 //} catch (IllegalMonitorStateException ims) {
                 }
@@ -517,6 +584,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         shutDown();
     }
 
+    public boolean runLoopHook() {
+        return true;
+    }
+    
     /** 
      * Checks if the event controller is active 
      */
@@ -1242,44 +1313,49 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         jsobj.put("energyFactors", energyFactors);
 
         // retrieve current status information
-        HostInfoReporter hostInfoReporter = (HostInfoReporter) findByMeasurementType("HostInfo");
-        JSONObject measurementJsobj = null;
 
-        measurementJsobj = hostInfoReporter.getProcessedData(localControllerName); 
+        if (lci.getNoRouters() > 0) {
+            HostInfoReporter hostInfoReporter = (HostInfoReporter) findByMeasurementType("HostInfo");
+            JSONObject measurementJsobj = null;
+
+            measurementJsobj = hostInfoReporter.getProcessedData(localControllerName); 
 
 
-        // current status of localcontroller
-        float currentCPUUserAndSystem=0;
-        float currentCPUIdle=0;
-        float currentMemoryUsed=0;
-        float currentFreeMemory=0;
-        long currentOutputBytes=0;
-        long currentInputBytes=0;
+            // current status of localcontroller
+            float currentCPUUserAndSystem=0;
+            float currentCPUIdle=0;
+            float currentMemoryUsed=0;
+            float currentFreeMemory=0;
+            long currentOutputBytes=0;
+            long currentInputBytes=0;
 
-        if (measurementJsobj!=null) {
-            // extracted required measurements for the energy model
-            try {
-                currentCPUUserAndSystem = (float) measurementJsobj.getDouble("cpuLoad");
-                currentCPUIdle = (float) measurementJsobj.getDouble("cpuIdle");
-                currentMemoryUsed = measurementJsobj.getInt("usedMemory");
-                currentFreeMemory = measurementJsobj.getInt("freeMemory");
-                currentOutputBytes = measurementJsobj.getLong("networkOutboundBytes");
-                currentInputBytes = measurementJsobj.getLong("networkIncomingBytes");
-            } catch (JSONException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            if (measurementJsobj!=null) {
+                // extracted required measurements for the energy model
+                try {
+                    currentCPUUserAndSystem = (float) measurementJsobj.getDouble("cpuLoad");
+                    currentCPUIdle = (float) measurementJsobj.getDouble("cpuIdle");
+                    currentMemoryUsed = measurementJsobj.getInt("usedMemory");
+                    currentFreeMemory = measurementJsobj.getInt("freeMemory");
+                    currentOutputBytes = measurementJsobj.getLong("networkOutboundBytes");
+                    currentInputBytes = measurementJsobj.getLong("networkIncomingBytes");
+
+
+                    // Get energy usage
+                    double energyConsumption = lci.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
+
+                    jsobj.put("energyConsumption", energyConsumption);
+
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+
             }
 
+            jsobj.put("hostinfo", measurementJsobj);
 
-            // Get energy usage
-            double energyConsumption = lci.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
-
-            jsobj.put("energyConsumption", energyConsumption);
         }
-
-        jsobj.put("hostinfo", measurementJsobj);
-
-
 
         
 
@@ -1293,7 +1369,19 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         routerIdMap_.put(id, br);
 
         informRouterStarted(br.getName());
+
+        routerStartedHook(id);
+
     }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean routerStartedHook(int id) {
+        return true;
+    }
+
+
 
     /** remove some router info*/
     public void removeRouterInfo(int rId) {
@@ -1321,7 +1409,17 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         // inform anyone that a Router has Ended
         informRouterEnded(rInfo.getName());
 
+        
+        routerEndedHook(rId);
     }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean routerEndedHook(int id) {
+        return true;
+    }
+
 
     /**
      * Called after a router is started.
@@ -2200,6 +2298,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Shutdown
      */
     public void shutDown() {
+        preShutdownHook();
+        
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "SHUTDOWN CALLED!");
 
         wrapUp();
@@ -2235,8 +2335,27 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All stopped, shut down now!");
 
+        postShutdownHook();
 
     }
+
+    
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean preShutdownHook() {
+        return true;
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean postShutdownHook() {
+        return true;
+    }
+
+    
+
 
     /** Produce some output */
     public void produceOutput(long time, OutputType o) {
@@ -2569,6 +2688,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         while (i.hasNext()) {
             LocalControllerInfo lh = i.next();
 
+            preLocalControllerStartHook(lh);
+
             // try and see if we can talk to an exisiting LocalController
             boolean connected = false;
             try {
@@ -2610,10 +2731,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                     System.exit(-1);
                 }
             }
-
         }
     }
 
+    /**
+       
 
     /**
      * Check all controllers listed are functioning and
@@ -2670,11 +2792,14 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                         // only work if address is real
                         // and/ or there is a consumer
                         if (latticeMonitoring) {
-                            Logger.getLogger("log").logln(USR.STDOUT,
-                                                          leadin() + "Setting  monitoring address: " + monitoringAddress + " timeout: " + monitoringTimeout);
+                            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Setting  monitoring address: " + monitoringAddress + " timeout: " + monitoringTimeout);
 
                             inter.monitoringStart(monitoringAddress, monitoringTimeout);
                         }
+
+                        postLocalControllerStartHook(lcInfo);
+
+
                     } catch (Exception e) {
                         Logger.getLogger("log").logln(USR.ERROR, leadin() + "Exception from " + lcInfo + ". " + e.getMessage());
                         //e.printStackTrace();
@@ -2688,8 +2813,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             // check if the no of controllers == the no of interactors
             // if so, we dont have to do all lopps
             if (noControllers_ == localControllers_.size()) {
-                Logger.getLogger("log").logln(USR.STDOUT,
-                                              leadin() + "All LocalControllers connected after " + (tries + 1) + " tries");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All LocalControllers connected after " + (tries + 1) + " tries");
                 isOK = true;
                 break;
             }
@@ -2731,6 +2855,20 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             shutDown();
             return false;
         }
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean preLocalControllerStartHook(LocalControllerInfo lcInfo) {
+        return true;
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean postLocalControllerStartHook(LocalControllerInfo lcInfo) {
+        return true;
     }
 
 
@@ -2858,26 +2996,33 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         }
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping all controllers");
-        LocalControllerInteractor inter;
 
-        for (int i = 0; i < localControllers_.size(); i++) {
-            inter = localControllers_.get(i);
+        Iterator<LocalControllerInfo> i = options_.getControllersIterator();
+
+
+        while (i.hasNext()) {
+            LocalControllerInfo lh = i.next();
+
+            preLocalControllerStopHook(lh);
+
             try {
+                LocalControllerInteractor inter = new LocalControllerInteractor(lh);
+
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Shutdown LocalController " + inter);
                 inter.shutDown();
 
                 //ThreadTools.findAllThreads("GC post kill :" + i);
             } catch (IOException e) {
-                System.err.println(
-                                   leadin()
-                                   + "Cannot send shut down to local Controller");
+                System.err.println(leadin() + "Cannot send shut down to local Controller");
                 System.err.println(e.getMessage());
             } catch (JSONException e) {
-                System.err.println(
-                                   leadin()
-                                   + "Cannot send shut down to local Controller");
+                System.err.println(leadin() + "Cannot send shut down to local Controller");
                 System.err.println(e.getMessage());
+            } finally {
+                postLocalControllerStopHook(lh);
             }
+
+
         }
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stop messages sent to all controllers");
@@ -2889,6 +3034,21 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             pw.stop();
         }
     }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean preLocalControllerStopHook(LocalControllerInfo lcInfo) {
+        return true;
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean postLocalControllerStopHook(LocalControllerInfo lcInfo) {
+        return true;
+    }
+
 
     /**
      * List all APs

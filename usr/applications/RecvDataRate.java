@@ -45,7 +45,7 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
      * Recv port
      */
     @Override
-	public ApplicationResponse init(String[] args) {
+    public ApplicationResponse init(String[] args) {
         if (args.length == 1) {
             // try port
             Scanner scanner = new Scanner(args[0]);
@@ -67,7 +67,7 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
 
     /** Start application with argument  */
     @Override
-	public ApplicationResponse start() {
+    public ApplicationResponse start() {
         try {
             // set up socket
             socket = new DatagramSocket();
@@ -83,43 +83,43 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
 
         // set up timer to count throughput
         timerTask = new TimerTask() {
-            boolean running = true;
+                boolean running = true;
 
-            @Override
-			public void run() {
-                if (running) {
-                    diffs = count - lastTimeCount;
-                    lastTime = System.currentTimeMillis();
-                    long elaspsedSecs = (lastTime - startTime)/1000;
-                    long elaspsedMS = (lastTime - startTime)%1000;
+                @Override
+                public void run() {
+                    if (running) {
+                        diffs = count - lastTimeCount;
+                        lastTime = System.currentTimeMillis();
+                        long elaspsedSecs = (lastTime - startTime)/1000;
+                        long elaspsedMS = (lastTime - startTime)%1000;
 
-                    usr.net.Address address = usr.router.RouterDirectory.getRouter().getAddress();
-                    Logger.getLogger("log").logln(USR.STDOUT,
-                                                  address + ": Task count: " + count + " time:" + elaspsedSecs + "." + elaspsedMS + " diff: "  +
-                                                  diffs);
-                    lastTimeCount = count;
-                }
-            }
-
-            @Override
-			public boolean cancel() {
-                Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
-
-                if (running) {
-                    running = false;
+                        usr.net.Address address = usr.router.RouterDirectory.getRouter().getAddress();
+                        Logger.getLogger("log").logln(USR.STDOUT,
+                                                      address + ": Task count: " + count + " time:" + elaspsedSecs + "." + elaspsedMS + " diff: "  +
+                                                      diffs);
+                        lastTimeCount = count;
+                    }
                 }
 
+                @Override
+                public boolean cancel() {
+                    Logger.getLogger("log").log(USR.STDOUT, "cancel @ " + count);
 
-                return running;
-            }
+                    if (running) {
+                        running = false;
+                    }
 
-            @Override
-			public long scheduledExecutionTime() {
-                Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
-                return 0;
-            }
 
-        };
+                    return running;
+                }
+
+                @Override
+                public long scheduledExecutionTime() {
+                    Logger.getLogger("log").log(USR.STDOUT, "scheduledExecutionTime:");
+                    return 0;
+                }
+
+            };
 
         // if there is no timer, start one
         if (timer == null) {
@@ -136,7 +136,7 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
 
     /** Implement graceful shut down */
     @Override
-	public ApplicationResponse stop() {
+    public ApplicationResponse stop() {
         Logger.getLogger("log").logln(USR.STDOUT, "Recv stop");
 
         running = false;
@@ -152,7 +152,7 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
 
     /** Run the ping application */
     @Override
-	public void run() {
+    public void run() {
         try {
             while ((socket.receive()) != null) {
                 count++;
@@ -168,7 +168,7 @@ public class RecvDataRate implements Application, RuntimeMonitoring {
      * Return a map of monitoring data.
      */
     @Override
-	public HashMap<String, String> getMonitoringData() {
+    public HashMap<String, String> getMonitoringData() {
         HashMap <String,String>theMap = new HashMap<String, String>();
 
         theMap.put("diffs", Integer.toString(diffs));
