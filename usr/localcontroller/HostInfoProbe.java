@@ -210,9 +210,9 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
                 //java.text.DecimalFormat df = new java.text.DecimalFormat("#.##");
 
                 /* System.err.println("CPU: " + df.format(cpu) + 
-                                   " user = " + df.format(user) +
-                                   " system = " + df.format(sys) +
-                                   " idle = " + df.format(idle)); */
+                   " user = " + df.format(user) +
+                   " system = " + df.format(sys) +
+                   " idle = " + df.format(idle)); */
             }
 
 
@@ -233,10 +233,10 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
             int reallyUsed = used - (cached + buffers);
 
             /* System.err.println("memoryInfo => " +
-              " total = " + memTotal +
-              " free = " + memFree +
-              " used = " + used +
-              " reallyUsed = " + reallyUsed); */
+               " total = " + memTotal +
+               " free = " + memFree +
+               " used = " + used +
+               " reallyUsed = " + reallyUsed); */
 
             // convert to Mbs
             list.add(new DefaultProbeValue(4, reallyUsed/1024));
@@ -247,32 +247,39 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
             /* NET */
 
             // read the data
-            netDev.read(true);
+            if (netDev.read(true)) {
+                // got a result
 
-            // now collect up the results	
-            long in_bytes = netDev.getCurrentValue("in_bytes");
-            long in_packets = netDev.getCurrentValue("in_packets");
-            //int in_errors = netDev.getDeltaValue("in_errors");
-            //int in_dropped = netDev.getDeltaValue("in_dropped");
-            long out_bytes = netDev.getCurrentValue("out_bytes");
-            long out_packets = netDev.getCurrentValue("out_packets");
-            //int out_errors = netDev.getDeltaValue("out_errors");
-            //int out_dropped = netDev.getDeltaValue("out_dropped");
-
-
-            /* System.err.println("netInfo => " +
-              " inBytes = " + in_bytes +
-              " inPackets = " + in_packets +
-              " outBytes = " + out_bytes +
-              " outPackets = " + out_packets); */
-
-            // add data to ProbeValue list
-            list.add(new DefaultProbeValue(7,in_packets));
-            list.add(new DefaultProbeValue(8, in_bytes));
-            list.add(new DefaultProbeValue(9, out_packets));
-            list.add(new DefaultProbeValue(10, out_bytes));
+                // now collect up the results	
+                long in_bytes = netDev.getCurrentValue("in_bytes");
+                long in_packets = netDev.getCurrentValue("in_packets");
+                //int in_errors = netDev.getDeltaValue("in_errors");
+                //int in_dropped = netDev.getDeltaValue("in_dropped");
+                long out_bytes = netDev.getCurrentValue("out_bytes");
+                long out_packets = netDev.getCurrentValue("out_packets");
+                //int out_errors = netDev.getDeltaValue("out_errors");
+                //int out_dropped = netDev.getDeltaValue("out_dropped");
 
 
+                /* System.err.println("netInfo => " +
+                   " inBytes = " + in_bytes +
+                   " inPackets = " + in_packets +
+                   " outBytes = " + out_bytes +
+                   " outPackets = " + out_packets); */
+
+                // add data to ProbeValue list
+                list.add(new DefaultProbeValue(7,in_packets));
+                list.add(new DefaultProbeValue(8, in_bytes));
+                list.add(new DefaultProbeValue(9, out_packets));
+                list.add(new DefaultProbeValue(10, out_bytes));
+
+            } else {
+                // add data to ProbeValue list
+                list.add(new DefaultProbeValue(7, 0));
+                list.add(new DefaultProbeValue(8, 0));
+                list.add(new DefaultProbeValue(9, 0));
+                list.add(new DefaultProbeValue(10, 0));
+            }
 
             // Create the Measurement
             ProducerMeasurement m = new ProducerMeasurement(this, list, "HostInfo");

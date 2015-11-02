@@ -81,6 +81,8 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
     @Override
     public void run() {
         int failCount = 0;
+        DatagramSocket socket = null;
+        InetSocketAddress address = null;
         
         while (running) {
             try {
@@ -88,7 +90,8 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
                 // There is no equivalent of TCP accept
 
                 // Listen on all interfaces
-                DatagramSocket socket = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+                address = new InetSocketAddress(InetAddress.getLocalHost(), 0);
+                socket = new DatagramSocket(address);
 
                 // Set the port for the next incoming call
                 port = socket.getLocalPort();
@@ -132,7 +135,7 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
                 // only print if running, not when stopping
                 if (running) {
                     //ioe.printStackTrace();
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "socket failed");
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "socket failed " + ioe.getMessage() + " for socket " + address);
 
                     failCount++;
 
