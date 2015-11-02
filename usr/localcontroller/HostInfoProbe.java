@@ -275,10 +275,10 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
             } else {
                 // add data to ProbeValue list
-                list.add(new DefaultProbeValue(7, 0));
-                list.add(new DefaultProbeValue(8, 0));
-                list.add(new DefaultProbeValue(9, 0));
-                list.add(new DefaultProbeValue(10, 0));
+                list.add(new DefaultProbeValue(7, 0L));
+                list.add(new DefaultProbeValue(8, 0L));
+                list.add(new DefaultProbeValue(9, 0L));
+                list.add(new DefaultProbeValue(10, 0L));
             }
 
             // Create the Measurement
