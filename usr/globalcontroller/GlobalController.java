@@ -2663,18 +2663,22 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      */
     public Reporter findByMeasurementType(String type) {
         // skip through each Reporter
-        for (Reporter reporter :  reporterMap.values()) {
-            if (reporter instanceof ReporterMeasurementType) {
-                List<String> types = ((ReporterMeasurementType)reporter).getMeasurementTypes();
+        Collection<Reporter> values = reporterMap.values();
 
-                if (types.contains(type)) {
-                    // the reporter accepts this type
-                    return reporter;
+        if (values != null) {
+            for (Reporter reporter :  values) {
+                if (reporter instanceof ReporterMeasurementType) {
+                    List<String> types = ((ReporterMeasurementType)reporter).getMeasurementTypes();
+
+                    if (types.contains(type)) {
+                        // the reporter accepts this type
+                        return reporter;
+                    } else {
+                        // skip this one
+                    }
                 } else {
-                    // skip this one
+                    // reporter doesnt advertise - so skip it
                 }
-            } else {
-                // reporter doesnt advertise - so skip it
             }
         }
 
