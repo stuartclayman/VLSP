@@ -83,7 +83,7 @@ public class RouterOptions {
     // Link type - one of UDP or TCP
     enum LinkType { UDP, TCP };
 
-    LinkType linkType = LinkType.UDP;
+    LinkType linkType = null;
 
     
     /** Constructor for router Options */

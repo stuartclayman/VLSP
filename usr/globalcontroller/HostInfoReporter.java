@@ -131,7 +131,7 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 		Measurement m = measurements.get(localControllerName);
 
                 if (m == null) {
-                    return new JSONObject();
+                    return null;
                 } else {
                         
                     List<ProbeValue> currentProbeValue = m.getValues();

@@ -138,12 +138,18 @@ public class ConnectionOverUDP implements Connection {
             */
 
             //Logger.getLogger("log").logln(USR.ERROR, "ConnectionOverUDP sendDatagram: packet = " + packet);
+            try {
 
-            // send it
-            socket.send(packet);
-            outCounter++;
+                // send it
+                socket.send(packet);
+                outCounter++;
 
-            return true;
+                return true;
+            } catch (java.net.PortUnreachableException pue) {
+                DatagramSocket endPointSocket = endPoint.getSocket();
+                Logger.getLogger("log").logln(USR.STDOUT, pue.getMessage() + " to " + endPointSocket.getLocalAddress() + endPointSocket.getLocalPort() + " <-> " + endPointSocket.getInetAddress() + endPointSocket.getPort());
+                return false;
+            }
 
         } else {
             Logger.getLogger("log").logln(USR.STDOUT,

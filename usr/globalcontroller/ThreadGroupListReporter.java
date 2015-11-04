@@ -137,7 +137,7 @@ public class ThreadGroupListReporter implements Reporter, ReporterMeasurementTyp
         Measurement m = measurements.get(routerName);
 
         if (m == null) {
-            return new JSONObject();
+            return null;
         } else {
                         
             // totals
