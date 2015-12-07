@@ -124,8 +124,13 @@ public class EndRouterEvent extends AbstractGlobalControllerEvent implements End
     public void followEvent(JSONObject response, GlobalController g) {
         // Schedule a check on network connectivity
         if (g.connectedNetwork()) {
-            ConnectNetworkEvent cne= new ConnectNetworkEvent (g.getElapsedTime());
-            getEventScheduler().addEvent(cne);
+            EventScheduler scheduler = getEventScheduler();
+            if (scheduler != null) {
+                ConnectNetworkEvent cne= new ConnectNetworkEvent (g.getElapsedTime());
+                scheduler.addEvent(cne);
+            } else {
+                Logger.getLogger("log").logln(USR.ERROR, "EndRouterEvent followEvent() cannot access EventScheduler");
+            }
         } else if (!g.allowIsolatedNodes()) {
             g.getAbstractNetwork().checkIsolated(time);
         }

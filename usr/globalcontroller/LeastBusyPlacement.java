@@ -4,10 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 
 import usr.common.ANSI;
 import usr.common.BasicRouterInfo;
 import usr.localcontroller.LocalControllerInfo;
+import usr.logging.BitMask;
 import usr.logging.Logger;
 import usr.logging.USR;
 import usr.common.ANSI;
@@ -33,6 +37,13 @@ public class LeastBusyPlacement implements PlacementEngine {
 
         oldVolumes = new HashMap<LocalControllerInfo, Long>();
 
+        // get logger
+        try {
+            Logger.getLogger("log").addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel12.out")), new BitMask(1<<12));
+        } catch (FileNotFoundException fnfe) {
+            Logger.getLogger("log").logln(USR.ERROR, fnfe.toString());
+        }
+        
         Logger.getLogger("log").logln(USR.STDOUT, "LeastBusyPlacement: localcontrollers = " + getPlacementDestinations());
     }
 
@@ -134,7 +145,7 @@ public class LeastBusyPlacement implements PlacementEngine {
         Logger.getLogger("log").logln(USR.STDOUT, "LeastBusyPlacement: choose " + leastUsed + " volume " + lowestVolume);
 
 
-        Logger.getLogger("log").logln(1<<10, gc.elapsedToString(elapsedTime) + ANSI.CYAN +  " LeastBusyPlacement: choose " + leastUsed + " lowestVolume: " + lowestVolume + " for " + name + "/" + address + ANSI.RESET_COLOUR);
+        Logger.getLogger("log").logln(1<<12, gc.elapsedToString(elapsedTime) + ANSI.CYAN +  " LeastBusyPlacement: choose " + leastUsed + " lowestVolume: " + lowestVolume + " for " + name + "/" + address + ANSI.RESET_COLOUR);
 
         // save volumes
         oldVolumes = lcVolumes;

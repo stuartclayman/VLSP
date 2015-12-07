@@ -177,7 +177,7 @@ public class RouterController implements ComponentController, Runnable {
         apInfo_ = apController_.newAPInfo();
 
         // setup DataSource
-        dataSource = new BasicDataSource(name + ".dataSource");
+        dataSource = new RouterDataSource(name + ".dataSource");
         probeList = new ArrayList<RouterProbe>();
 
         System.out.println(leadin() + "Setup DataSource: " + dataSource);
@@ -884,4 +884,23 @@ public class RouterController implements ComponentController, Runnable {
         return getName() + " " + RC;
     }
 
+}
+
+
+class RouterDataSource extends BasicDataSource {
+    public RouterDataSource(String s) {
+        super(s);
+    }
+
+    /**
+     * Recieve a measurment from the Probe
+     * and pass it onto the data source delegate.
+     * @return -1 if something goes wrong
+     * @return 0 if there is no delegate or no data plane
+     */
+    public int notifyMeasurement(eu.reservoir.monitoring.core.Measurement m) {
+	//System.err.println("DataSource: " + name + ": " + m);
+        Logger.getLogger("log").logln(1<<6, "> " +  m.getType() + "." + m.getProbeID() + "." + m.getSequenceNo());
+        return super.notifyMeasurement(m);
+    }
 }

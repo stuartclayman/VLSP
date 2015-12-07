@@ -1,9 +1,13 @@
 package usr.globalcontroller;
 
 import java.util.Set;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 
 import usr.common.ANSI;
 import usr.localcontroller.LocalControllerInfo;
+import usr.logging.BitMask;
 import usr.logging.Logger;
 import usr.logging.USR;
 
@@ -94,7 +98,7 @@ public class NupPlacement implements PlacementEngine {
 
         Logger.getLogger("log").logln(USR.STDOUT, "NupPlacement: choose " + toUse + " use: " + thisUsage);
 
-        Logger.getLogger("log").logln(1<<10, gc.elapsedToString(elapsedTime) + ANSI.CYAN +  " NupPlacement: choose " + toUse + " use: " + thisUsage + " for " + name + "/" + address + ANSI.RESET_COLOUR);
+        Logger.getLogger("log").logln(1<<12, gc.elapsedToString(elapsedTime) + ANSI.CYAN +  " NupPlacement: choose " + toUse + " use: " + thisUsage + " for " + name + "/" + address + ANSI.RESET_COLOUR);
 
         return toUse;
     }

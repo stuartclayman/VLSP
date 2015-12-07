@@ -10,11 +10,13 @@ import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -167,7 +169,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
     // A monitoring address
     InetSocketAddress monitoringAddress;
-    int monitoringPort = 22997;
+    int monitoringPort = 10997;
     int monitoringTimeout = 1;
 
     // Forwarding address
@@ -253,6 +255,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel8.out")), new BitMask(1<<8));
             logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel9.out")), new BitMask(1<<9));
             logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel10.out")), new BitMask(1<<10));
+            logger.addOutput(new PrintWriter(new FileOutputStream("/tmp/gc-channel11.out")), new BitMask(1<<11));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -336,7 +339,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting monitoring");
 
             // setup DataConsumer
-            dataConsumer = new BasicConsumer();
+            dataConsumer = new GCBasicConsumer();
 
             // and reporterList
             reporterMap = new HashMap<String, Reporter>();
@@ -349,8 +352,52 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             String gcAddress = "localhost";
 
             try {
-                gcAddress = InetAddress.getLocalHost().getHostAddress();
-            } catch (UnknownHostException uhe) {
+
+                String hostAddr = null;
+                Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+                {
+                    while (interfaces.hasMoreElements()) {
+                        NetworkInterface nic = interfaces.nextElement();
+
+                        // we shouldn't care about loopback addresses
+                        if (nic.isLoopback())
+                            continue;
+
+                        // if you don't expect the interface to be up you can skip this
+                        // though it would question the usability of the rest of the code
+                        if (!nic.isUp())
+                            continue;
+
+                        Enumeration<InetAddress> addresses = nic.getInetAddresses();
+                        while (hostAddr == null && addresses.hasMoreElements()) {
+                            InetAddress address = addresses.nextElement();
+
+                            // look only for ipv4 addresses
+                            if (address instanceof java.net.Inet6Address) {
+                                continue;
+                            }
+                            
+                            if (!address.isLoopbackAddress()) {
+                                hostAddr = address.getHostAddress();
+                            }
+                        }
+                    }
+                }
+
+                if (hostAddr != null) {
+                    gcAddress = hostAddr;
+                }
+
+                //gcAddress = InetAddress.getLocalHost().getHostAddress(); 
+
+                // InetAddress.getByName(hostName).getHostAddress();
+                // InetAddress.getByName(System.getenv("HOSTNAME")).getHostAddress();
+                // InetAddress.getLocalHost().getHostAddress();  // getHostName();
+                // or InetAddress.getByName(ip).getHostName()
+                //} catch (UnknownHostException uhe) {
+                //Logger.getLogger("log").logln(USR.ERROR, leadin()+ uhe.getMessage());
+            } catch (java.net.SocketException se) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+ se.getMessage());
             }
 
             monitoringAddress = new InetSocketAddress(gcAddress, monitoringPort);
@@ -360,7 +407,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             // Forwarding address
             forwardAddress = new InetSocketAddress(gcAddress, monitoringPort + 1);
 
-            startMonitoringConsumer(monitoringAddress);
+            startMonitoringConsumer(new InetSocketAddress(monitoringPort)); // was monitoringAddress);
 
 
             /* set up probes to send out data */
@@ -1314,51 +1361,45 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         // retrieve current status information
 
-        if (lci.getNoRouters() > 0) {
-            HostInfoReporter hostInfoReporter = (HostInfoReporter) findByMeasurementType("HostInfo");
-            JSONObject measurementJsobj = null;
+        HostInfoReporter hostInfoReporter = (HostInfoReporter) findByMeasurementType("HostInfo");
+        JSONObject measurementJsobj = null;
 
-            measurementJsobj = hostInfoReporter.getProcessedData(localControllerName); 
-
-
-            // current status of localcontroller
-            float currentCPUUserAndSystem=0;
-            float currentCPUIdle=0;
-            float currentMemoryUsed=0;
-            float currentFreeMemory=0;
-            long currentOutputBytes=0;
-            long currentInputBytes=0;
-
-            if (measurementJsobj!=null) {
-                // extracted required measurements for the energy model
-                try {
-                    currentCPUUserAndSystem = (float) measurementJsobj.getDouble("cpuLoad");
-                    currentCPUIdle = (float) measurementJsobj.getDouble("cpuIdle");
-                    currentMemoryUsed = measurementJsobj.getInt("usedMemory");
-                    currentFreeMemory = measurementJsobj.getInt("freeMemory");
-                    currentOutputBytes = measurementJsobj.getLong("networkOutboundBytes");
-                    currentInputBytes = measurementJsobj.getLong("networkIncomingBytes");
+        measurementJsobj = hostInfoReporter.getProcessedData(localControllerName); 
 
 
-                    // Get energy usage
-                    double energyConsumption = lci.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
+        // current status of localcontroller
+        float currentCPUUserAndSystem=0;
+        float currentCPUIdle=0;
+        float currentMemoryUsed=0;
+        float currentFreeMemory=0;
+        long currentOutputBytes=0;
+        long currentInputBytes=0;
 
-                    jsobj.put("energyConsumption", energyConsumption);
+        if (measurementJsobj!=null) {
+            // extracted required measurements for the energy model
+            try {
+                currentCPUUserAndSystem = (float) measurementJsobj.getDouble("cpuLoad");
+                currentCPUIdle = (float) measurementJsobj.getDouble("cpuIdle");
+                currentMemoryUsed = measurementJsobj.getInt("usedMemory");
+                currentFreeMemory = measurementJsobj.getInt("freeMemory");
+                currentOutputBytes = measurementJsobj.getLong("networkOutboundBytes");
+                currentInputBytes = measurementJsobj.getLong("networkIncomingBytes");
 
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
 
+                // Get energy usage
+                double energyConsumption = lci.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
 
+                jsobj.put("energyConsumption", energyConsumption);
+
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
 
-            jsobj.put("hostinfo", measurementJsobj);
 
         }
 
-        
-
+        jsobj.put("hostinfo", measurementJsobj);
 
 
         return jsobj;
@@ -1505,13 +1546,18 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 // add a detailed record
                 JSONObject record = routerInfoAsJSON(info);
 
-                detailArray.put(record);
+                if (record != null) {
+                    detailArray.put(record);
+                }
 
             } else if (detail.equals("thread")) {
                 // add a detailed record
                 JSONObject record = routerInfoAsJSON(info);
 
-                detailArray.put(record);
+                if (record != null) {
+
+                    detailArray.put(record);
+                }
 
                 
 
@@ -1522,9 +1568,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 // get threadgroupObj
                 JSONObject threadgroupObj = threadGroupListReporter.getProcessedData(routerName);
 
-                record.put("threadgroup", threadgroupObj.getJSONArray("threadgroup"));
+                if (threadgroupObj != null) {
+                    record.put("threadgroup", threadgroupObj.getJSONArray("threadgroup"));
 
-                detailArray.put(record);
+                    detailArray.put(record);
+                }
             }
         }
 
@@ -2749,7 +2797,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         // try 20 times, with 500 millisecond gap
         int MAX_TRIES = 20;
         int tries = 0;
-        int millis = 500;
+        int millis = 1000;
         boolean isOK = false;
 
         localControllers_ = new ArrayList<LocalControllerInteractor>();
@@ -2827,7 +2875,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         if (!isOK) {
             // couldnt reach all LocalControllers
             // We can keep a list of failures if we need to.
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Can't talk to all LocalControllers");
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Can't talk to all LocalControllers after " + MAX_TRIES + " attempts");
             shutDown();
             return false;
         }
@@ -3590,3 +3638,13 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 }
 
 
+class GCBasicConsumer extends BasicConsumer {
+        /**
+     * Receiver of a measurement, with the measurement.
+     * It passes the Measurement on to all of the Reporters.
+     */
+    public Measurement report(Measurement m) {
+        Logger.getLogger("log").logln(1<<11, "< " +  m.getType() + "." + m.getProbeID() + "." + m.getSequenceNo());
+        return super.report(m);
+    }
+}
