@@ -62,8 +62,9 @@ public class LocalControllerInteractor {
         this.port = port;
         //URI uri = new URI("http", null, addr.toString(), port, null, null, null);
         localControllerURI = "http://" + addr.getHostName() + ":" + Integer.toString(port);
+        //localControllerURI = "http://" + addr.getHostAddress() + ":" + Integer.toString(port);
 
-        //Logger.getLogger("log").logln(USR.STDOUT, "localControllerURI: " + localControllerURI);
+        Logger.getLogger("log").logln(USR.STDOUT, "localControllerURI: " + localControllerURI);
 
         rest = new Resty();
     }
@@ -86,6 +87,7 @@ public class LocalControllerInteractor {
         JSONObject jsobj;
 
         try {
+            rest.setOptions(Resty.Option.timeout(200));
             jsobj = rest.json(uri).toObject();
 
             Logger.getLogger("log").logln(USR.STDOUT, ANSI.GREEN + "LC response: " + jsobj.toString() + ANSI.RESET_COLOUR);
