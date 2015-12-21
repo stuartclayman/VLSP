@@ -53,6 +53,7 @@ public class ControlOptions {
     private boolean allowIsolatedNodes_ = true;      // If true, check for isolated nodes
     private boolean connectedNetwork_ = false;       // If true, keep network connected
     private boolean latticeMonitoring = false;       // If true, turn on Lattice Monitoring
+    private int latticeMonitoringPort = 8997;        // Port for Monitoring listener
     private HashMap<String, String> consumerInfoMap = null;   // A map of class names for Monitoring consumers and their label
     private long warmUpPeriod_ = 0;
 
@@ -243,7 +244,7 @@ public class ControlOptions {
                 remoteLoginUser_ = s;
             }
 
-            ReadXMLUtils.removeNode(gcn, "Port", "GlobalController");
+            ReadXMLUtils.removeNode(gcn, "RemoteLoginUser", "GlobalController");
         } catch (SAXException e) {
             throw e;
         } catch (XMLNoTagException e) {
@@ -373,6 +374,17 @@ public class ControlOptions {
                 throw e;
             } catch (XMLNoTagException e) {
             }
+
+            try {
+                int l = ReadXMLUtils.parseSingleInt(el, "MonitoringPort", "Monitoring", true);
+                latticeMonitoringPort = l;
+                ReadXMLUtils.removeNode(el, "MonitoringPort", "Monitoring");
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+
+            
 
             // get Consumers
             try {
@@ -1016,6 +1028,13 @@ public class ControlOptions {
      */
     public boolean latticeMonitoring() {
         return latticeMonitoring;
+    }
+
+    /**
+     * Get Lattice Monitoring port
+     */
+    public int latticeMonitoringPort() {
+        return latticeMonitoringPort;
     }
 
     /**

@@ -169,7 +169,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
     // A monitoring address
     InetSocketAddress monitoringAddress;
-    int monitoringPort = 10997;
+    int monitoringPort = 0;
     int monitoringTimeout = 1;
 
     // Forwarding address
@@ -398,6 +398,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 //Logger.getLogger("log").logln(USR.ERROR, leadin()+ uhe.getMessage());
             } catch (java.net.SocketException se) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+ se.getMessage());
+            }
+
+
+            // check latticeMonitoring port
+            if (options_.latticeMonitoringPort() != monitoringPort) {
+                monitoringPort = options_.latticeMonitoringPort();
             }
 
             monitoringAddress = new InetSocketAddress(gcAddress, monitoringPort);
@@ -2799,6 +2805,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         int tries = 0;
         int millis = 1000;
         boolean isOK = false;
+        int sleepTime = millis;
 
         localControllers_ = new ArrayList<LocalControllerInteractor>();
         interactorMap_ = new HashMap<LocalControllerInfo, LocalControllerInteractor>();
@@ -2807,8 +2814,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         // lopp a bit and try and talk to the LocalControllers
         for (tries = 0; tries < MAX_TRIES; tries++) {
             // sleep a bit
+            sleepTime += (tries * millis);
+            
             try {
-                Thread.sleep(millis);
+                Thread.sleep(sleepTime);
             } catch (InterruptedException ie) {
             }
 
@@ -2880,25 +2889,26 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             return false;
         }
 
-        /*
-         * sclayman 20131209 - not sure this is needed
-         *
-         // Wait to see if we have all controllers.
-         for (int i = 0; i < options_.getControllerWaitTime(); i++) {
-         if (aliveCount == noControllers_) {
-         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All controllers responded with alive message.");
-         return true;
-         }
+        // Wait to see if we have all controllers.
+        // reset  sleepTime
+        sleepTime = 500;
+        
+        for (int i = 0; i < options_.getControllerWaitTime(); i++) {
+            if (aliveCount == noControllers_) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All controllers responded with alive message.");
+                return true;
+            }
 
-         try {
-         Thread.sleep(500);
-         } catch (InterruptedException e) {
-         }
-         }
+            sleepTime += (i * millis);
+            
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException ie) {
+            }
 
-        */
+        }
 
-        // alternate
+
         if (aliveCount == noControllers_) {
             return true;
         } else {
@@ -2907,6 +2917,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             shutDown();
             return false;
         }
+         
     }
 
     /**
