@@ -297,6 +297,16 @@ public class LocalController implements ComponentController {
             routerName = name;
         }
 
+        // Setup router class
+        String routerClassName = routerOptions_.getRouterClassName();
+
+        if (routerClassName == null) {
+            // there is no routerClassName defined in the options
+            // use the built-in one
+            routerClassName = "usr.router.Router";
+        }
+
+        
 
         Process child = null;
         ProcessWrapper pw = null;
@@ -310,7 +320,7 @@ public class LocalController implements ComponentController {
         cmd[3] = "-Xms32m";
         cmd[4] = "-Xmx128m";
         // for better scalability (Lefteris)
-        cmd[5] = "usr.router.Router";
+        cmd[5] = routerClassName;
         cmd[6] = String.valueOf(port1);
         cmd[7] = String.valueOf(port2);
         cmd[8] = routerName;

@@ -64,6 +64,10 @@ public class RouterOptions {
     String [] APParms_ = {}; // Parameters for AP Options
     
 
+     // The name of the class to use to start a Router
+    String routerClass = null;
+    String routerArgs = null;       // some  optional args for a Router
+
      // The name of the class to use to start an Agg Point on a Router
     String apClass = null;
     String apArgs = null;       // some  optional args for an Agg Point
@@ -144,6 +148,12 @@ public class RouterOptions {
 
         if (!basenodeName.equals("RouterOptions")) {
             throw new SAXException("Base tag should be RouterOptions");
+        }
+
+        NodeList rt = doc.getElementsByTagName("Router");
+
+        if (rt != null) {
+            processRouter(rt);
         }
 
         NodeList rps = doc.getElementsByTagName("RoutingParameters");
@@ -256,6 +266,60 @@ public class RouterOptions {
 
         }
         o.getParentNode().removeChild(o);
+    }
+
+    /** Process the part of the XML related to Router setup */
+    void processRouter(NodeList router) throws SAXException {
+        if (router.getLength() > 1) {
+            throw new SAXException ("Only one Router tag allowed.");
+        }
+
+        if (router.getLength() == 0) {
+            return;
+        }
+        Node a = router.item(0);
+
+        // What is the name of the class for PlacementEngine
+        try {
+            routerClass = ReadXMLUtils.parseSingleString(a, "RouterClass", "Router", true);
+
+            ReadXMLUtils.removeNode(a, "RouterClass", "Router");
+
+            Logger.getLogger("log").logln(USR.STDOUT, "RouterClass = " + routerClass);
+
+            Class.forName(routerClass).asSubclass(Router.class);
+        } catch (SAXException e) {
+            throw new SAXException("Unable to parse class name " + routerClass + " in Router options" + e.getMessage());
+        } catch (XMLNoTagException e) {
+        } catch (ClassNotFoundException e) {
+            throw new Error("Class not found for class name " + routerClass); 
+        } catch (ClassCastException e) {
+            throw new Error("Class name " + routerClass + " must be sub type of Router");
+        }
+
+
+        try {
+            routerArgs = ReadXMLUtils.parseSingleString(a, "RouterArgs", "Router", true);
+            ReadXMLUtils.removeNode(a, "RouterArgs", "Router");
+        } catch (SAXException e) {
+            throw e;
+        } catch (XMLNoTagException e) {
+
+        }
+
+
+        NodeList nl = a.getChildNodes();
+
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node n = nl.item(i);
+
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                throw new SAXException("Unrecognised tag "+n.getNodeName());
+            }
+
+        }
+        a.getParentNode().removeChild(a);
+
     }
 
     /** Process the part of the XML related to routing parameters */
@@ -778,6 +842,14 @@ public class RouterOptions {
     public int getMaxNetIFUpdateTime() {
         return maxNetIFUpdateTime_;
     }
+
+    /** Accessor function for name of Router class*/
+    public String getRouterClassName() {
+        return routerClass;
+    }
+
+
+
 
     /** Accessor function for name of AP controller */
     public String getAPControllerName() {

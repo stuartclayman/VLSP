@@ -388,14 +388,27 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                     gcAddress = hostAddr;
                 }
 
-                //gcAddress = InetAddress.getLocalHost().getHostAddress(); 
+                /*
+                try {
+                    System.err.println("gcAddress = " + gcAddress + " hostAddr = " + hostAddr);
 
-                // InetAddress.getByName(hostName).getHostAddress();
-                // InetAddress.getByName(System.getenv("HOSTNAME")).getHostAddress();
-                // InetAddress.getLocalHost().getHostAddress();  // getHostName();
-                // or InetAddress.getByName(ip).getHostName()
-                //} catch (UnknownHostException uhe) {
-                //Logger.getLogger("log").logln(USR.ERROR, leadin()+ uhe.getMessage());
+                    //gcAddress = InetAddress.getLocalHost().getHostAddress(); 
+
+                    System.err.println("ALT gcAddress = " + InetAddress.getLocalHost().getHostAddress());
+
+                    // InetAddress.getByName(hostName).getHostAddress();
+
+                    System.err.println("ALT gcAddress = " + InetAddress.getByName("localhost").getHostAddress());
+
+
+                    // InetAddress.getByName(System.getenv("HOSTNAME")).getHostAddress();
+                    // InetAddress.getLocalHost().getHostAddress();  // getHostName();
+                    // or InetAddress.getByName(ip).getHostName()
+                } catch (UnknownHostException uhe) {
+                    Logger.getLogger("log").logln(USR.ERROR, leadin()+ uhe.getMessage());
+                }
+                */
+                
             } catch (java.net.SocketException se) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+ se.getMessage());
             }
@@ -695,6 +708,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         startConsole();
         portPools_ = new HashMap<LocalControllerInfo, PortPool>();
         noControllers_ = options_.noControllers();
+        localControllers_ = new ArrayList<LocalControllerInteractor>();
+        interactorMap_ = new HashMap<LocalControllerInfo, LocalControllerInteractor>();
         LocalControllerInfo lh;
 
         for (int i = 0; i < noControllers_; i++) {
@@ -2620,6 +2635,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
         dataSource.setDataPlane(outputDataPlane);
 
+        Logger.getLogger("log").logln(USR.STDOUT,
+                                      leadin() + " data source: " +  dataSource.getName() + " on " + addr);
+        
         // now setup a RouterLifecycleProbe to send out details
         // of the creation and shutdown of each Router
 
@@ -2807,8 +2825,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         boolean isOK = false;
         int sleepTime = millis;
 
-        localControllers_ = new ArrayList<LocalControllerInteractor>();
-        interactorMap_ = new HashMap<LocalControllerInfo, LocalControllerInteractor>();
         LocalControllerInteractor inter = null;
 
         // lopp a bit and try and talk to the LocalControllers
