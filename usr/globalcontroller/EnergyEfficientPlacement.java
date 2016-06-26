@@ -32,6 +32,7 @@ public class EnergyEfficientPlacement implements PlacementEngine {
     private int currentFreeMemory=0;
     private long currentOutputBytes=0;
     private long currentInputBytes=0;
+	private float currentLoadAverage=0;
 
     /**
      * Constructor
@@ -98,6 +99,24 @@ public class EnergyEfficientPlacement implements PlacementEngine {
             //System.out.println ("From localcontroller name:"+localControllerName);
             System.out.println ("Fetching HostInfo Probe:"+currentMeasurement+" from "+localControllerName);
 		
+<<<<<<< .mine
+			if (currentMeasurement!=null) {
+				// extracted required measurements for the energy model
+				try {
+					currentCPUUserAndSystem = (float) currentMeasurement.getDouble("cpuLoad");
+					currentCPUIdle = (float) currentMeasurement.getDouble("cpuIdle");
+					currentMemoryUsed = currentMeasurement.getInt("usedMemory");
+					currentFreeMemory = currentMeasurement.getInt("freeMemory");
+					currentOutputBytes = currentMeasurement.getLong("networkOutboundBytes");
+					currentInputBytes = currentMeasurement.getLong("networkIncomingBytes");
+					currentLoadAverage = (float) currentMeasurement.getDouble("loadAverage");
+					//Logger.getLogger("log").logln(USR.STDOUT, "EnergyEfficientPlacement: log-values " + localInfo.getName() + ":" + currentCPUUserAndSystem + " " + currentCPUIdle + " " + currentMemoryUsed + " " + currentFreeMemory + " " + currentOutputBytes + " " + currentInputBytes);
+
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+=======
             if (currentMeasurement!=null) {
                 // extracted required measurements for the energy model
                 try {
@@ -111,9 +130,15 @@ public class EnergyEfficientPlacement implements PlacementEngine {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+>>>>>>> .r1333
 				
+<<<<<<< .mine
+				// calculate current energy consumption of particular physical server 
+				currentEnergyVolume = localInfo.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes, currentLoadAverage);
+=======
                 // calculate current energy consumption of particular physical server 
                 currentEnergyVolume = localInfo.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
+>>>>>>> .r1333
 
                 // convert double to long
                 lcEnergyVolumes.put(localInfo, currentEnergyVolume.longValue());
