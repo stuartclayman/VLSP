@@ -47,6 +47,8 @@ public class IKMSEventEngine implements EventEngine  {
     ProbDistribution nodeDeathDist_ = null;        // Distribution of node lifetimes
     ProbDistribution linkCreateDist_ = null;       // Distribution for number of links created
     ProbDistribution linkDeathDist_ = null;        // Distribution for link lifetimes
+    ProbDistribution nodeCPULoadDist_ = null;      // Distribution of cpu load (stress parameter c)
+    ProbDistribution nodeMemoryLoadDist_ = null;   // Distribution of memory-related load (stress parameter m)
     private boolean preferentialAttachment_ = false;     // If true links are chosen using P.A.
 
     private boolean staticTopology_ = false;     // whether the topology is static or not
@@ -150,6 +152,46 @@ public class IKMSEventEngine implements EventEngine  {
             routerId = response.getInt("routerID");  // WAS g.getMaxRouterId();
             // keep track of routerIds for later on when the engine ends
             routerIDs.add(routerId);
+            
+            // deploy stress application with correct parameters
+            double loadCPU=0;
+            double loadMemory=0;
+            
+            if (nodeCPULoadDist_ == null) {
+                try {
+					loadCPU = (double)(nodeCPULoadDist_.getVariate());
+				} catch (ProbException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					loadCPU = 0;
+				}
+            }
+            
+            if (nodeMemoryLoadDist_ == null) {
+                try {
+					loadMemory = (double)(nodeMemoryLoadDist_.getVariate());
+				} catch (ProbException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					loadMemory = 0;
+				}
+            }
+            
+            if (loadCPU==0&&loadMemory>0) {
+            		// deploy stress with parameter m
+    				v.createApp(routerId, "demo_usr.stress.Stress", "-m "+loadMemory);
+            }
+            
+            if (loadCPU>0&&loadMemory==0) {
+        			// deploy stress with parameter c
+        			v.createApp(routerId, "demo_usr.stress.Stress", "-c "+loadCPU);
+            }
+ 
+            if (loadCPU>0&&loadMemory>0) {
+         		// deploy stress with parameter c & m
+            		v.createApp(routerId, "demo_usr.stress.Stress", "-c "+loadCPU+" -m "+loadMemory);
+            }
+            
         } catch (JSONException jse) {
             routerId = -1;
         }
@@ -283,6 +325,13 @@ public class IKMSEventEngine implements EventEngine  {
             if (linkCreateDist_ == null) {
                 throw new SAXException ("Must specific LinkCreateDist");
             }
+            
+            NodeList ncld = doc.getElementsByTagName("NodeCPULoadDist");
+            nodeCPULoadDist_ = ProbDistribution.parseProbDist(ncld, "NodeCPULoadDist");
+ 
+            NodeList nmld = doc.getElementsByTagName("NodeMemoryLoadDist");
+            nodeMemoryLoadDist_ = ProbDistribution.parseProbDist(nmld, "NodeMemoryLoadDist");
+            
             NodeList ndd = doc.getElementsByTagName("NodeDeathDist");
             nodeDeathDist_ = ProbDistribution.parseProbDist(ndd, "NodeDeathDist");
             NodeList ldd = doc.getElementsByTagName("LinkDeathDist");

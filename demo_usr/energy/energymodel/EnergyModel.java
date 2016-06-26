@@ -5,43 +5,38 @@ import us.monoid.json.JSONObject;
 
 public class EnergyModel {
 
-	// hardware related coefficient for energy consumption of cpu (user+system mode)
-	private double cpuLoadCoefficient;
+	// Energy related coefficients for cpu 
+	private double a1;
+	private double b1;
+	private double c1;
+	private double r1;
 
-	// hardware related coefficient for energy consumption of cpu (idle mode)
-	private double cpuIdleCoefficient;
+	// Energy related coefficients for memory
+	private double a2;
+	private double b2;
+	private double c2;
+	private double r2;
 
-	// hardware related coefficient for energy consumption of used memory
-	private double memoryAllocationCoefficient;
+	// Energy related coefficients for network
+	private double a3;
+	private double b3;
+	private double c3;
+	private double r3;
 
-	// hardware related coefficient for energy consumption of unused memory
-	private double freeMemoryCoefficient;
+	// Energy related coefficients for HD - TBD
+	private double a4;
+	private double b4;
+	private double c4;
+	private double r4;
 
-	// hardware related coefficient for energy consumption of network (outbound traffic) - per byte
-	private double networkOutboundBytesCoefficient;
+	// Energy coefficient for energy consumption of all server devices, besides network, cpu and memory
+	private double c;
 
-	// hardware related coefficient for energy consumption of network (incoming traffic) - per byte
-	private double networkIncomingBytesCoefficient;
-
-	// average energy consumption of all server devices, besides network, cpu and memory
-	private double baseLineEnergyConsumption;
+	// keep maximum bytes that can be transmitted via the particular physical host (i.e. for normalizing the network utilization measurements)
+	long maxNetworkTransmissionBytes;
 
 	// keeps track of cumulative energy consumption of particular server
 	private double cumulativeEnergyConsumption;
-
-	// coefficients for application performance in terms of energy consumption
-	private float HighProcessingImpactValueCoefficient;
-	private float MediumProcessingImpactValueCoefficient;
-	private float LowProcessingImpactValueCoefficient;
-	private int HighMemoryImpactValueCoefficient;
-	private int MediumMemoryImpactValueCoefficient;
-	private int LowMemoryImpactValueCoefficient;
-	private long HighOutgoingTrafficValueCoefficient;
-	private long MediumOutgoingTrafficValueCoefficient;
-	private long LowOutgoingTrafficValueCoefficient;
-	private long HighIncomingTrafficValueCoefficient;
-	private long MediumIncomingTrafficValueCoefficient;
-	private long LowIncomingTrafficValueCoefficient;
 
 	// calculate total time (for cumulative energy calculation) - in sampling periods
 	private int totalTime;
@@ -61,40 +56,38 @@ public class EnergyModel {
 	// keep track of last energy measurement
 	double lastEnergyMeasurement; 
 
-	// enumeration with level of application impact on the physical server resources
-	public enum ImpactLevel {Low, Medium, High};
-
 	// EnergyModel constructor function
-	public EnergyModel (double cpuLoadCoefficient_, double cpuIdleCoefficient_, double memoryAllocationCoefficient_, double freeMemoryCoefficient_, double networkOutboundBytesCoefficient_, double networkIncomingBytesCoefficient_, double baseLineEnergyConsumption_) {
+	public EnergyModel (double a1_, double b1_, double c1_, double r1_, double a2_, double b2_, double c2_,double r2_, double a3_, double b3_, double c3_, double r3_, double a4_, double b4_, double c4_, double r4_, double c_, long maxNetworkTransmissionBytes_) {
 		// initialise hardware related coefficients
-		cpuLoadCoefficient = cpuLoadCoefficient_;
-		cpuIdleCoefficient = cpuIdleCoefficient_;
-
-		memoryAllocationCoefficient = memoryAllocationCoefficient_;
-		freeMemoryCoefficient = freeMemoryCoefficient_;
-		networkOutboundBytesCoefficient = networkOutboundBytesCoefficient_;
-		networkIncomingBytesCoefficient = networkIncomingBytesCoefficient_;
+		a1 = a1_;
+		b1 = b1_;
+		c1 = c1_;
+		r1 = r1_;
+		
+		a2 = a2_;
+		b2 = b2_;
+		c2 = c2_;
+		r2 = r2_;
+		
+		a3 = a3_;
+		b3 = b3_;
+		c3 = c3_;
+		r3 = r3_;
+		
+		a4 = a4_;
+		b4 = b4_;
+		c4 = c4_;
+		r4 = r4_;
 
 		// initialise baseline energy consumption 
-		baseLineEnergyConsumption = baseLineEnergyConsumption_;
+		c = c_;
+		
+		maxNetworkTransmissionBytes = maxNetworkTransmissionBytes_;
 
 		InitModel ();
 	}
 
 	private void InitModel () {
-		// reset application coefficients - adding some indicative default values
-		HighProcessingImpactValueCoefficient = 0.10F;
-		MediumProcessingImpactValueCoefficient = 0.05F;
-		LowProcessingImpactValueCoefficient = 0.01F;
-		HighMemoryImpactValueCoefficient = 1000; //1GB
-		MediumMemoryImpactValueCoefficient = 500; //500MB
-		LowMemoryImpactValueCoefficient = 50; //50MB
-		HighOutgoingTrafficValueCoefficient = 1000000000; //100MB
-		MediumOutgoingTrafficValueCoefficient = 10000000; //10MB
-		LowOutgoingTrafficValueCoefficient = 100000; //100KB
-		HighIncomingTrafficValueCoefficient = 1000000000; //100MB
-		MediumIncomingTrafficValueCoefficient = 10000000; //10MB
-		LowIncomingTrafficValueCoefficient = 100000; //100KB
 
 		// start keeping track of cumulative energy consumption
 		cumulativeEnergyConsumption=0.0;
@@ -131,51 +124,39 @@ public class EnergyModel {
 		//    "port":10000,
 		//    "usage":0}
 
-		cpuLoadCoefficient = jsonObj.getDouble("cpuLoadCoefficient");
-		cpuIdleCoefficient = jsonObj.getDouble("cpuIdleCoefficient");
-		memoryAllocationCoefficient = jsonObj.getDouble("memoryAllocationCoefficient");
-		freeMemoryCoefficient = jsonObj.getDouble("freeMemoryCoefficient");
-		networkOutboundBytesCoefficient = jsonObj.getDouble("networkOutboundBytesCoefficient");
-		networkIncomingBytesCoefficient = jsonObj.getDouble("networkIncomingBytesCoefficient");
-		baseLineEnergyConsumption = jsonObj.getDouble("baseLineEnergyConsumption");
+		a1 = jsonObj.getDouble("a1");
+		b1 = jsonObj.getDouble("b1");
+		c1 = jsonObj.getDouble("c1");
+		r1 = jsonObj.getDouble("r1");
+		
+		a2 = jsonObj.getDouble("a2");
+		b2 = jsonObj.getDouble("b2");
+		c2 = jsonObj.getDouble("c2");
+		r2 = jsonObj.getDouble("r2");
+		
+		a3 = jsonObj.getDouble("a3");
+		b3 = jsonObj.getDouble("b3");
+		c3 = jsonObj.getDouble("c3");
+		r3 = jsonObj.getDouble("r3");
+		
+		c = jsonObj.getDouble("c");
+		
+		maxNetworkTransmissionBytes = jsonObj.getLong("maxNetworkTransmissionBytes");
 
 		InitModel ();
 	}
 
-	// configure application related coefficients
-	public void ConfigureApplicationCoefficients (		
-			float HighProcessingImpactValueCoefficient_,
-			float MediumProcessingImpactValueCoefficient_,
-			float LowProcessingImpactValueCoefficient_,
-			int HighMemoryImpactValueCoefficient_,
-			int MediumMemoryImpactValueCoefficient_,
-			int LowMemoryImpactValueCoefficient_,
-			long HighOutgoingTrafficValueCoefficient_,
-			long MediumOutgoingTrafficValueCoefficient_,
-			long LowOutgoingTrafficValueCoefficient_,
-			long HighIncomingTrafficValueCoefficient_,
-			long MediumIncomingTrafficValueCoefficient_,
-			long LowIncomingTrafficValueCoefficient_) {
-
-		// configure application related coefficients
-		HighProcessingImpactValueCoefficient = HighProcessingImpactValueCoefficient_;
-		MediumProcessingImpactValueCoefficient = MediumProcessingImpactValueCoefficient_;
-		LowProcessingImpactValueCoefficient = LowProcessingImpactValueCoefficient_;
-		HighMemoryImpactValueCoefficient = HighMemoryImpactValueCoefficient_;
-		MediumMemoryImpactValueCoefficient = MediumMemoryImpactValueCoefficient_;
-		LowMemoryImpactValueCoefficient = LowMemoryImpactValueCoefficient_;
-		HighOutgoingTrafficValueCoefficient = HighOutgoingTrafficValueCoefficient_;
-		MediumOutgoingTrafficValueCoefficient = MediumOutgoingTrafficValueCoefficient_;
-		LowOutgoingTrafficValueCoefficient = LowOutgoingTrafficValueCoefficient_;
-		HighIncomingTrafficValueCoefficient = HighIncomingTrafficValueCoefficient_;
-		MediumIncomingTrafficValueCoefficient = MediumIncomingTrafficValueCoefficient_;
-		LowIncomingTrafficValueCoefficient = LowIncomingTrafficValueCoefficient_;
-	}
-
+	
 	// Calculate EnergyConsumption for that particular timeframe - the HostInfo probing period (assuming resource usage is relatively stable)
 	// Assuming execution of this function per fixed sampling period
 	public double CurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes) {
-		double currentEnergy = baseLineEnergyConsumption +  ProcessingConsumptionFunction (averageCPULoad, averageIdleCPU) + MemoryConsumptionFunction (memoryUsed, freeMemory) + NetworkLoadConsumptionFunction (networkOutboundBytes, networkIncomingBytes);
+		
+		// should normalize measurements first
+		float normalizedCPU = averageCPULoad;
+		float normalizedMemory = memoryUsed / (memoryUsed + freeMemory);
+		float normalizedNetwork = (networkOutboundBytes + networkIncomingBytes) / maxNetworkTransmissionBytes;
+		
+		double currentEnergy = c +  ProcessingConsumptionFunction (normalizedCPU) + MemoryConsumptionFunction (normalizedMemory) + NetworkLoadConsumptionFunction (normalizedNetwork);
 
 		//System.out.println ("Energy Consumption: baseline " + baseLineEnergyConsumption+" processing " + ProcessingConsumptionFunction (averageCPULoad, averageIdleCPU)+ " memory " + MemoryConsumptionFunction (memoryUsed, freeMemory) + " network " + NetworkLoadConsumptionFunction (networkOutboundBytes, networkIncomingBytes));
 
@@ -190,8 +171,8 @@ public class EnergyModel {
 		lastAverageIdleCPU = averageIdleCPU;
 		lastMemoryUsed = memoryUsed;
 		lastFreeMemory = freeMemory;
-                lastNetworkOutboundBytes = networkOutboundBytes;
-                lastNetworkIncomingBytes = networkIncomingBytes;
+        lastNetworkOutboundBytes = networkOutboundBytes;
+        lastNetworkIncomingBytes = networkIncomingBytes;
 
 		// keep track of last energy measurement
 		lastEnergyMeasurement = currentEnergy;
@@ -245,127 +226,6 @@ public class EnergyModel {
 		return CurrentEnergyConsumption(averageCPULoad, averageIdleCPU, memoryUsed, freeMemory, networkOutboundBytes, networkIncomingBytes);
 	}
 
-	// Predict energy consumption in physical machine after the deployment of a specific application, knowing its level of impact
-	// in terms of memory, processing and network resource utilisation.
-	public double PredictEnergyConsumptionAfterApplicationDeploymentFromLevelOfImpact (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes, ImpactLevel processingImpact, ImpactLevel memoryImpact, ImpactLevel outgoingTrafficImpact, ImpactLevel incomingTrafficImpact) {
-
-		// predict impact of application on processing load
-		float processingImpactValue = 0;
-		if (processingImpact==ImpactLevel.High) {
-			processingImpactValue = HighProcessingImpactValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Medium) {
-			processingImpactValue = MediumProcessingImpactValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Low) {
-			processingImpactValue = LowProcessingImpactValueCoefficient;
-		} 
-
-		// predict impact of application on memory utilisation
-		int memoryImpactValue = 0;
-		if (memoryImpact==ImpactLevel.High) {
-			memoryImpactValue = HighMemoryImpactValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Medium) {
-			memoryImpactValue = MediumMemoryImpactValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Low) {
-			memoryImpactValue = LowMemoryImpactValueCoefficient;
-		}
-
-		// predict impact of application on outgoing traffic
-		long outgoingTrafficImpactValue = 0;
-		if (outgoingTrafficImpact==ImpactLevel.High) {
-			outgoingTrafficImpactValue = HighOutgoingTrafficValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Medium) {
-			outgoingTrafficImpactValue = MediumOutgoingTrafficValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Low) {
-			outgoingTrafficImpactValue = LowOutgoingTrafficValueCoefficient;
-		}
-
-		// predict impact of application on incoming traffic
-		long incomingTrafficImpactValue = 0;
-		if (incomingTrafficImpact==ImpactLevel.High) {
-			incomingTrafficImpactValue = HighIncomingTrafficValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Medium) {
-			incomingTrafficImpactValue = MediumIncomingTrafficValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Low) {
-			incomingTrafficImpactValue = LowIncomingTrafficValueCoefficient;
-		}
-
-		double predictedEnergy = baseLineEnergyConsumption +  ProcessingConsumptionFunction (averageCPULoad + processingImpactValue, averageIdleCPU - processingImpactValue) + MemoryConsumptionFunction (memoryUsed + memoryImpactValue, freeMemory - memoryImpactValue) + NetworkLoadConsumptionFunction (networkOutboundBytes + outgoingTrafficImpactValue, networkIncomingBytes + incomingTrafficImpactValue);
-
-		System.out.println ("Predicted Energy Consumption of application: baseline " + baseLineEnergyConsumption+" processing " + ProcessingConsumptionFunction (averageCPULoad + processingImpactValue, averageIdleCPU - processingImpactValue)+ " memory " + MemoryConsumptionFunction (memoryUsed + memoryImpactValue, freeMemory - memoryImpactValue) + " network " + NetworkLoadConsumptionFunction (networkOutboundBytes + outgoingTrafficImpactValue, networkIncomingBytes + incomingTrafficImpactValue));
-
-		return predictedEnergy;
-	}
-
-	// Predict energy consumption in physical machine after the deployment of a specific application, knowing its level of impact
-	// in terms of memory, processing and network resource utilisation (uses latest measurements)
-	public double PredictEnergyConsumptionAfterApplicationDeploymentFromLevelOfImpact (ImpactLevel processingImpact, ImpactLevel memoryImpact, ImpactLevel outgoingTrafficImpact, ImpactLevel incomingTrafficImpact) {
-		// predict impact of application on processing load
-		float processingImpactValue = 0;
-		if (processingImpact==ImpactLevel.High) {
-			processingImpactValue = HighProcessingImpactValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Medium) {
-			processingImpactValue = MediumProcessingImpactValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Low) {
-			processingImpactValue = LowProcessingImpactValueCoefficient;
-		} 
-
-		// predict impact of application on memory utilisation
-		int memoryImpactValue = 0;
-		if (memoryImpact==ImpactLevel.High) {
-			memoryImpactValue = HighMemoryImpactValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Medium) {
-			memoryImpactValue = MediumMemoryImpactValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Low) {
-			memoryImpactValue = LowMemoryImpactValueCoefficient;
-		}
-
-		// predict impact of application on outgoing traffic
-		long outgoingTrafficImpactValue = 0;
-		if (outgoingTrafficImpact==ImpactLevel.High) {
-			outgoingTrafficImpactValue = HighOutgoingTrafficValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Medium) {
-			outgoingTrafficImpactValue = MediumOutgoingTrafficValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Low) {
-			outgoingTrafficImpactValue = LowOutgoingTrafficValueCoefficient;
-		}
-
-		// predict impact of application on incoming traffic
-		long incomingTrafficImpactValue = 0;
-		if (incomingTrafficImpact==ImpactLevel.High) {
-			incomingTrafficImpactValue = HighIncomingTrafficValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Medium) {
-			incomingTrafficImpactValue = MediumIncomingTrafficValueCoefficient;
-		} else if (processingImpact==ImpactLevel.Low) {
-			incomingTrafficImpactValue = LowIncomingTrafficValueCoefficient;
-		}
-
-		double predictedEnergy = baseLineEnergyConsumption +  ProcessingConsumptionFunction (lastAverageCPULoad + processingImpactValue, lastAverageIdleCPU - processingImpactValue) + MemoryConsumptionFunction (lastMemoryUsed + memoryImpactValue, lastFreeMemory - memoryImpactValue) + NetworkLoadConsumptionFunction (lastNetworkOutboundBytes + outgoingTrafficImpactValue, lastNetworkIncomingBytes + incomingTrafficImpactValue);
-
-		System.out.println ("Predicted Energy Consumption of application: baseline " + baseLineEnergyConsumption+" processing " + ProcessingConsumptionFunction (lastAverageCPULoad + processingImpactValue, lastAverageIdleCPU - processingImpactValue)+ " memory " + MemoryConsumptionFunction (lastMemoryUsed + memoryImpactValue, lastFreeMemory - memoryImpactValue) + " network " + NetworkLoadConsumptionFunction (lastNetworkOutboundBytes + outgoingTrafficImpactValue, lastNetworkIncomingBytes + incomingTrafficImpactValue));
-
-		return predictedEnergy;
-	}
-
-	// Predict energy consumption in physical machine after the deployment of a specific application, knowing its average impact
-	// in terms of memory, processing and network resource utilisation.
-	public double PredictEnergyConsumptionAfterApplicationDeploymentFromHistoricalInformation (float averageCPULoad, float averageIdleCPU, int memoryUsed, int freeMemory, long networkOutboundBytes, long networkIncomingBytes, float applicationAverageProcessingImpact, int applicationAverageMemoryImpact, long applicationAverageIncomingTrafficImpact, long applicationAverageOutgoingTrafficImpact) {
-		double predictedEnergy = baseLineEnergyConsumption +  ProcessingConsumptionFunction (averageCPULoad + applicationAverageProcessingImpact, averageIdleCPU - applicationAverageProcessingImpact) + MemoryConsumptionFunction (memoryUsed + applicationAverageMemoryImpact, freeMemory - applicationAverageMemoryImpact) + NetworkLoadConsumptionFunction (networkOutboundBytes + applicationAverageOutgoingTrafficImpact, networkIncomingBytes - applicationAverageIncomingTrafficImpact);
-
-		System.out.println ("Energy Consumption: baseline " + baseLineEnergyConsumption+" processing " + ProcessingConsumptionFunction (averageCPULoad, averageIdleCPU)+ " memory " + MemoryConsumptionFunction (memoryUsed, freeMemory) + " network " + NetworkLoadConsumptionFunction (networkOutboundBytes, networkIncomingBytes));
-
-		return predictedEnergy;
-	}
-
-	// Predict energy consumption in physical machine after the deployment of a specific application, knowing its average impact
-	// in terms of memory, processing and network resource utilisation (uses latest measurements)
-	public double PredictEnergyConsumptionAfterApplicationDeploymentFromHistoricalInformation (float applicationAverageProcessingImpact, int applicationAverageMemoryImpact, long applicationAverageIncomingTrafficImpact, long applicationAverageOutgoingTrafficImpact) {
-		double predictedEnergy = baseLineEnergyConsumption +  ProcessingConsumptionFunction (lastAverageCPULoad + applicationAverageProcessingImpact, lastAverageIdleCPU - applicationAverageProcessingImpact) + MemoryConsumptionFunction (lastMemoryUsed + applicationAverageMemoryImpact, lastFreeMemory - applicationAverageMemoryImpact) + NetworkLoadConsumptionFunction (lastNetworkOutboundBytes + applicationAverageOutgoingTrafficImpact, lastNetworkIncomingBytes + applicationAverageIncomingTrafficImpact);
-
-		System.out.println ("Energy Consumption: baseline " + baseLineEnergyConsumption+" processing " + ProcessingConsumptionFunction (lastAverageCPULoad, lastAverageIdleCPU)+ " memory " + MemoryConsumptionFunction (lastMemoryUsed, lastFreeMemory) + " network " + NetworkLoadConsumptionFunction (lastNetworkOutboundBytes, lastNetworkIncomingBytes));
-
-		return predictedEnergy;
-	}
-
 	// returns cumulative energy consumption of particular physical machine
 	public double GetCumulativeEnergyConsumption () {
 		return cumulativeEnergyConsumption;
@@ -379,25 +239,37 @@ public class EnergyModel {
 	// function that estimates energy consumption based on the averageCPULoad - could be extended to consider more than one cpu,
 	// multiple cpu running states etc.
 	// returns a value in Watts (at this point we assume to running states, working and idle)
-	public double ProcessingConsumptionFunction (double averageCPULoad, double averageCPUIdle) {
-		// start by having a linear approach
-		return cpuLoadCoefficient * averageCPULoad + cpuIdleCoefficient * averageCPUIdle;
+	public double ProcessingConsumptionFunction (double normalizedCPU) {
+		// non-linear approach, linear for r1=0
+		double val = a1 * normalizedCPU + b1 * Math.pow(normalizedCPU, r1) + c1;
+		
+		if (val < 0) {
+			return 0;
+		} else {
+			return val;
+		}
 	}
 
 	// function that estimates energy consumption based on the memory utilisation.
 	// returns a value in Watts
-	public double MemoryConsumptionFunction (float memoryUsed, float freeMemory) {
-		// start by having a linear approach
-		return memoryAllocationCoefficient * memoryUsed + freeMemoryCoefficient * freeMemory;
+	public double MemoryConsumptionFunction (float normalizedMemory) {
+		// non-linear approach, linear for r1=0
+		double val = a2 * normalizedMemory + b2 * Math.pow(normalizedMemory, r2) + c2;
+		
+		if (val < 0) {
+			return 0;
+		} else {
+			return val;
+		}
 	}
 
 	// function that estimates energy consumption based on the network load - could be extended to consider multiple running states
 	// of network card, etc.
 	// returns a value in Watts - currently assuming two running states: send and receive
-	public double NetworkLoadConsumptionFunction (long networkOutboundBytes, long networkIncomingBytes) {
+	public double NetworkLoadConsumptionFunction (float normalizedNetwork) {
 
-		// start by having a linear approach
-		double val = networkOutboundBytesCoefficient * networkOutboundBytes + networkIncomingBytesCoefficient * networkIncomingBytes;
+		// non-linear approach, linear for r1=0
+		double val = a3 * normalizedNetwork + b3 * Math.pow(normalizedNetwork, r3) + c3;
 
 		if (val < 0) {
 			return 0;

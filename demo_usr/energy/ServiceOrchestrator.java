@@ -6,8 +6,8 @@ import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.vim.VimClient;
-import demo_usr.energy.energymodel.EnergyModel;
-import demo_usr.energy.energymodel.EnergyModel.ImpactLevel;
+import demo_usr.energy.energymodel.EnergyModelLinear;
+import demo_usr.energy.energymodel.EnergyModelLinear.ImpactLevel;
 
 public class ServiceOrchestrator {
 
@@ -92,13 +92,13 @@ public class ServiceOrchestrator {
 		// THE APPROPRIATE ROUTING POSITIONS TO DEPLOY THE APPLICATIONS
 
 		// A map of LocalController EnergyModels
-		HashMap<String, EnergyModel> energyModelsPerLocalController = new HashMap<String, EnergyModel>();
+		HashMap<String, EnergyModelLinear> energyModelsPerLocalController = new HashMap<String, EnergyModelLinear>();
 
 		// retrieve local controllers
 		JSONArray localControllerIDs = vim.listLocalControllers().getJSONArray("list");
 
 		JSONArray currentLocalControllerInformation=null;
-		EnergyModel currentLocalControllerEnergyModel=null;
+		EnergyModelLinear currentLocalControllerEnergyModel=null;
 
 		// Coefficients per energy model
 		// hardware related coefficient for energy consumption of cpu (user+system mode)
@@ -148,7 +148,7 @@ public class ServiceOrchestrator {
 			baseLineEnergyConsumption = currentLocalControllerInformation.getJSONObject(0).getDouble("baseLineEnergyConsumption");
 
 			// add one energy model per localcontroller
-			currentLocalControllerEnergyModel = 	new EnergyModel (cpuLoadCoefficient, cpuIdleCoefficient, memoryAllocationCoefficient, freeMemoryCoefficient, networkOutboundBytesCoefficient, networkIncomingBytesCoefficient, baseLineEnergyConsumption);
+			currentLocalControllerEnergyModel = 	new EnergyModelLinear (cpuLoadCoefficient, cpuIdleCoefficient, memoryAllocationCoefficient, freeMemoryCoefficient, networkOutboundBytesCoefficient, networkIncomingBytesCoefficient, baseLineEnergyConsumption);
 
 			// get latest status information for each localcontroller
 			currentCPUUserAndSystem = (float) currentLocalControllerInformation.getJSONObject(0).getDouble("cpuLoad");

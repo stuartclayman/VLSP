@@ -32,6 +32,7 @@ public class DistributedInformationFlowsExperiment {
 	int topologyTime = 40;
 	int newGoal=-1; // no new goal set (i.e., for experiments that change the global goal after some time)
 	int newGoalDelay=0; // waiting time before applying the new goal
+	
 	ArrayList<Integer> routerIDs; // arraylist with existing routerIDs
 	ArrayList<Integer> ikmsForwarderPerRouter; // arraylist that keeps IKMS forwarders assigned to existing routers
 	VimClient vimClient;
@@ -149,7 +150,14 @@ public class DistributedInformationFlowsExperiment {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+			
+			try {
+				JSONObject json=vimClient.listApps(200);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			// calculating topology duration (it is in seconds) - set something big
 			topologyTime = 100000; //1000 + 12 + (totalTime+warmupTime) / 1000;
 		}
