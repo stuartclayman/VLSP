@@ -310,10 +310,8 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
                 list.add(new DefaultProbeValue(9, out_packets));
                 list.add(new DefaultProbeValue(10, out_bytes));
 
-<<<<<<< .mine
 	    // Lefteris: I added the CPU Load average from /proc/loadavg
 	    list.add(new DefaultProbeValue(11, GetLoadAverage() ));
-=======
             } else {
                 // add data to ProbeValue list
                 list.add(new DefaultProbeValue(7, 0L));
@@ -321,7 +319,6 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
                 list.add(new DefaultProbeValue(9, 0L));
                 list.add(new DefaultProbeValue(10, 0L));
             }
->>>>>>> .r1333
 
             // Create the Measurement
             ProducerMeasurement m = new ProducerMeasurement(this, list, "HostInfo");

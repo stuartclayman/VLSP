@@ -1376,8 +1376,21 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         energyFactors.put("networkIncomingBytesCoefficient", lci.GetNetworkIncomingBytesCoefficient());
         energyFactors.put("networkOutboundBytesCoefficient", lci.GetNetworkOutboundBytesCoefficient());
         energyFactors.put("baseLineEnergyConsumption", lci.GetBaseLineEnergyConsumption());
-
-                
+        energyFactors.put("a1", lci.GetA1());
+        energyFactors.put("b1", lci.GetB1());
+        energyFactors.put("c1", lci.GetC1());
+        energyFactors.put("r1", lci.GetR1());
+        energyFactors.put("a2", lci.GetA2());
+        energyFactors.put("b2", lci.GetB2());
+        energyFactors.put("c2", lci.GetC2());
+        energyFactors.put("r2", lci.GetR2());
+        energyFactors.put("a3", lci.GetA3());
+        energyFactors.put("b3", lci.GetB3());
+        energyFactors.put("c3", lci.GetC3());
+        energyFactors.put("r3", lci.GetR3());
+        energyFactors.put("c", lci.GetC());
+        energyFactors.put("maxNetworkTransmissionBytes", lci.GetMaxNetworkTransmissionBytes());   
+        
         jsobj.put("energyFactors", energyFactors);
 
         // retrieve current status information
@@ -1393,9 +1406,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         float currentCPUIdle=0;
         float currentMemoryUsed=0;
         float currentFreeMemory=0;
+        float currentLoadAverage=0;
         long currentOutputBytes=0;
         long currentInputBytes=0;
-
+        
         if (measurementJsobj!=null) {
             // extracted required measurements for the energy model
             try {
@@ -1405,10 +1419,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                 currentFreeMemory = measurementJsobj.getInt("freeMemory");
                 currentOutputBytes = measurementJsobj.getLong("networkOutboundBytes");
                 currentInputBytes = measurementJsobj.getLong("networkIncomingBytes");
+                currentLoadAverage = (float) measurementJsobj.getDouble("loadAverage");
 
 
                 // Get energy usage
-                double energyConsumption = lci.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes);
+                double energyConsumption = lci.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes, currentLoadAverage);
 
                 jsobj.put("energyConsumption", energyConsumption);
 

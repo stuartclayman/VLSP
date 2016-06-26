@@ -20,15 +20,10 @@ public class LocalHostInfo {
     // hardware related coefficient for energy consumption of cpu
     // assuming maximum average consumption per machine
     // 50 watts at working state, 20 watts per idle state
-<<<<<<< .mine
+
     private double cpuLoadCoefficient = 50;
     private double cpuIdleCoefficient = 20;
     
-=======
-    private double cpuLoadCoefficient = 50;
-    private double cpuIdleCoefficient = 20;
-
->>>>>>> .r1333
     // hardware related coefficient for energy consumption of memory
     // assuming 4 watt per gigabyte
     private double memoryAllocationCoefficient=4;

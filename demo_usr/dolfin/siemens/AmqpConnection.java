@@ -7,6 +7,8 @@ package demo_usr.dolfin.siemens;
 
 import java.io.IOException;
 
+import java.util.concurrent.TimeoutException;
+
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 import usr.logging.Logger;
@@ -90,11 +92,18 @@ public class AmqpConnection {
 		
 		try {
 		
-		Connection newConnection = factory.newConnection(); 					// creating the connection		
-		setConnection(newConnection);
+		Connection newConnection;
+		try {
+			newConnection = factory.newConnection();
+			setConnection(newConnection);
+			Channel newChannel = newConnection.createChannel();
+			setChannel(newChannel);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 					// creating the connection		
 		
-		Channel newChannel = newConnection.createChannel();
-		setChannel(newChannel);
+		
 		
 		} catch (IOException ioe) {
                     log.logln(USR.ERROR, "IOexception: " + ioe);
@@ -110,7 +119,12 @@ public class AmqpConnection {
 		
 		try {
                     //log.logln(USR.STDOUT, "Closing the channel.");
-                    channel.close(); // clearing up the resources
+                    try {
+						channel.close();
+					} catch (TimeoutException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} // clearing up the resources
 
                     //log.logln(USR.STDOUT, "Closing the connection.");
                     connection.close();

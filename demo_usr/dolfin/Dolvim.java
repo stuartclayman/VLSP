@@ -17,7 +17,7 @@ import eu.reservoir.monitoring.core.table.*;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import demo_usr.energy.energymodel.EnergyModel;
+import demo_usr.energy.energymodel.EnergyModelLinear;
 
 import java.io.IOException;
 
@@ -592,7 +592,7 @@ public class Dolvim extends GlobalController {
                 double networkIncomingBytesCoefficient = lcInfo.GetNetworkIncomingBytesCoefficient();
                 double networkOutboundBytesCoefficient = lcInfo.GetNetworkOutboundBytesCoefficient();
              
-                EnergyModel energyModel = new EnergyModel (cpuLoadCoefficient, cpuIdleCoefficient, memoryAllocationCoefficient, freeMemoryCoefficient, networkOutboundBytesCoefficient, networkIncomingBytesCoefficient,  baseLineEnergyConsumption);
+                EnergyModelLinear energyModel = new EnergyModelLinear (cpuLoadCoefficient, cpuIdleCoefficient, memoryAllocationCoefficient, freeMemoryCoefficient, networkOutboundBytesCoefficient, networkIncomingBytesCoefficient,  baseLineEnergyConsumption);
 
                 // Calculate energy consumption
                 double routerEnergyConsumption = energyModel.ProcessingConsumptionFunction((cpuT + userT + sysT)/1000000f, 0) + energyModel.MemoryConsumptionFunction (memT/1000f, 0);

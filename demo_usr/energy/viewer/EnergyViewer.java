@@ -21,7 +21,7 @@ import java.net.ConnectException;
 import us.monoid.web.Resty;
 
 import usr.common.ANSI;
-import demo_usr.energy.energymodel.EnergyModel;
+import demo_usr.energy.energymodel.EnergyModelLinear;
 
 
 
@@ -46,7 +46,7 @@ public class EnergyViewer {
     // Map of router ID to energy consumption
     Map<Integer, Double>routerEnergyLastTime;
     // Map of router ID to energy model to use to calculate energy 
-    Map<Integer, EnergyModel>routerEnergyModel;
+    Map<Integer, EnergyModelLinear>routerEnergyModel;
     // Map of localcontroller name to total energy used
     Map<String, Double>localcontrollerEnergy;
     // Map of localcontroller name to total energy used
@@ -103,7 +103,7 @@ public class EnergyViewer {
 
         routerEnergy = new HashMap<Integer, Double>();
         routerEnergyLastTime = new HashMap<Integer, Double>();
-        routerEnergyModel = new HashMap<Integer, EnergyModel>();
+        routerEnergyModel = new HashMap<Integer, EnergyModelLinear>();
         localcontrollerEnergy = new HashMap<String, Double>();
         localcontrollerEnergyLastTime = new HashMap<String, Double>();
         localcontrollerEnergyVM = new HashMap<String, Double>();
@@ -235,7 +235,7 @@ public class EnergyViewer {
                 double networkIncomingBytesCoefficient = energyFactors.getDouble("networkIncomingBytesCoefficient");
                 double networkOutboundBytesCoefficient = energyFactors.getDouble("networkOutboundBytesCoefficient");
              
-                EnergyModel energyModel = new EnergyModel (cpuLoadCoefficient, cpuIdleCoefficient, memoryAllocationCoefficient, freeMemoryCoefficient, networkOutboundBytesCoefficient, networkIncomingBytesCoefficient,  baseLineEnergyConsumption);
+                EnergyModelLinear energyModel = new EnergyModelLinear (cpuLoadCoefficient, cpuIdleCoefficient, memoryAllocationCoefficient, freeMemoryCoefficient, networkOutboundBytesCoefficient, networkIncomingBytesCoefficient,  baseLineEnergyConsumption);
 
                 // save energy model per router
                 JSONArray routers = hostDetail.getJSONObject(local).getJSONArray("routers");
@@ -322,7 +322,7 @@ public class EnergyViewer {
 
 
                             // Calculate energy consumption
-                            EnergyModel energyModel = routerEnergyModel.get(routerID);
+                            EnergyModelLinear energyModel = routerEnergyModel.get(routerID);
 
                             double routerEnergyConsumption = (energyModel.ProcessingConsumptionFunction((cpu + user + sys)/1000000f, 0) + energyModel.MemoryConsumptionFunction (mem/1000f, 0)) / 60;
 
@@ -618,7 +618,7 @@ public class EnergyViewer {
     }
 
     
-    protected double calculateEnergy(EnergyModel energyModel, JSONObject measurementJsobj) {
+    protected double calculateEnergy(EnergyModelLinear energyModel, JSONObject measurementJsobj) {
         // current status of localcontroller
         float currentCPUUserAndSystem=0;
         float currentCPUIdle=0;
