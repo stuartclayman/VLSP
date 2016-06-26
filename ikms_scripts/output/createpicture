@@ -1,3 +1,3 @@
-echo "gnuplot plot.p > `cat scenario`/$1.eps"
-gnuplot plot.p > `cat scenario`/$1.eps
-epstopdf `cat scenario`/$1.eps 
+echo "gnuplot plot.p > $1.eps"
+gnuplot plot.p > $1.eps
+epstopdf $1.eps 

@@ -1,9 +1,7 @@
 echo "Creating memory storage figure"
 
 counter=2
-result="`cat scenario`/memorystorage.txt Memory_State Time Memory_State"
-
-./memorystorage > `cat scenario`/memorystorage.txt
+result="`cat scenario`/$1.txt Memory_State Time Memory_State"
 
 for a in `cat range`
 do
@@ -16,4 +14,4 @@ echo $result
 
 ./plotmemorystoragefigure $result
 
-./createpicture memorystorage
+./createpicture `cat scenario`/$1

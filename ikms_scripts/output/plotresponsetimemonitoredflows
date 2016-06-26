@@ -1,9 +1,7 @@
 echo "Creating response time for monitored flows figure"
 
 counter=2
-result="`cat scenario`/responsetimemonitoredflows.txt Average_Response_Time_(Selected_Flows) Time Response_Time"
-
-./responsetimemonitoredflows > `cat scenario`/responsetimemonitoredflows.txt
+result="`cat scenario`/$1.txt Average_Response_Time_(Selected_Flows) Time Response_Time"
 
 for a in `cat range`
 do
@@ -16,4 +14,4 @@ echo $result
 
 ./plotresponsetimemonitoredflowsfigure $result
 
-./createpicture responsetimemonitoredflows
+./createpicture `cat scenario`/$1

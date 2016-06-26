@@ -11,7 +11,7 @@ done
 #echo "set terminal png" > plot.p         
 #echo "set output 'output.png' >> plot.p  
 
-echo "set term postscript eps enhanced" > plot.p
+echo "set term postscript eps color" > plot.p
 echo "set autoscale" >> plot.p
 echo "unset log" >> plot.p
 echo "unset label" >> plot.p
@@ -39,19 +39,7 @@ fi
 echo "set key top right" >> plot.p
 #echo "set key box" >> plot.p
 
-echo "set style line 1 lt 1 lw 1 lc rgb 'black'" >> plot.p
-echo "set style line 2 lt 2 lw 1 lc rgb 'black'" >> plot.p
-echo "set style line 3 lt 3 lw 1 lc rgb 'black'" >> plot.p
-echo "set style line 4 lt 6 lw 1 lc rgb 'black'" >> plot.p
-echo "set style line 5 lt 1 lw 5 lc rgb 'black'" >> plot.p
-echo "set style line 6 lt 1 lw 5 lc rgb 'gray'" >> plot.p
-echo "set style line 7 lt 3 lw 3 lc rgb 'black'" >> plot.p
-echo "set style line 8 lt 6 lw 3 lc rgb 'black'" >> plot.p
-echo "set style line 9 lt 1 lw 3 lc rgb 'black'" >> plot.p
-echo "set style line 10 lt 2 lw 5 lc rgb 'black'" >> plot.p
-echo "set style line 11 lt 3 lw 5 lc rgb 'black'" >> plot.p
-echo "set style line 12 lt 6 lw 5 lc rgb 'black'" >> plot.p
-echo "set style line 13 lt 2 lw 3 lc rgb 'black'" >> plot.p
+./setlinestyles
 
 if [ $# -eq 6 ]
 then

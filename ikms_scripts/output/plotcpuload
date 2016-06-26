@@ -1,9 +1,8 @@
 echo "Creating cpuload figure"
 
 counter=2
-result="`cat scenario`/cpuload.txt Average_CPU_Load Time CPU_Load"
+result="`cat scenario`/$1.txt Average_CPU_Load Time CPU_Load"
 
-./cpuload > `cat scenario`/cpuload.txt
 
 for a in `cat range`
 do
@@ -16,4 +15,4 @@ echo $result
 
 ./plotcpuloadfigure $result
 
-./createpicture cpuload
+./createpicture `cat scenario`/$1

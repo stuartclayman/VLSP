@@ -33,7 +33,7 @@
 
   </GlobalController>
 
-<!--  <LocalController>
+  <LocalController>
      <Name>localhost</Name>
      <Port>10000</Port>
      <LowPort>11001</LowPort>
@@ -47,7 +47,6 @@
      <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
   </LocalController>
--->
 <!-- could add application related coefficients here, in case it is needed -->
 
 <!--
@@ -59,7 +58,7 @@
      <MaxRouters>150</MaxRouters>
   </LocalController>
 -->
-
+<!--
   <LocalController>
      <Name>claytwo</Name>
      <Port>10001</Port>
@@ -74,6 +73,7 @@
      <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
   </LocalController>
+-->
 <!--
   <LocalController>
      <Name>claythree</Name>
@@ -90,6 +90,7 @@
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
   </LocalController>
 -->
+<!--
   <LocalController>
      <Name>clayfour</Name>
      <Port>10003</Port>
@@ -134,6 +135,7 @@
      <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
   </LocalController>
+-->
 <!--
    <LocalController>
      <Name>ethane</Name>

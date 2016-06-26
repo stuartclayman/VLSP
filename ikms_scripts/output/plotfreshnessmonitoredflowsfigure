@@ -11,33 +11,42 @@ done
 #echo "set terminal png" > plot.p         
 #echo "set output 'output.png' >> plot.p  
 
-echo "set term postscript eps enhanced" > plot.p
+echo "set term postscript eps color" > plot.p
 echo "set autoscale" >> plot.p
 echo "unset log" >> plot.p
 echo "unset label" >> plot.p
 echo "set xtic auto" >> plot.p
 echo "set ytic auto" >> plot.p
+
+echo "set xtics font 'Arial,16'" >> plot.p
+echo "set ytics font 'Arial,16'" >> plot.p
+echo "set xlabel font 'Arial,16'" >> plot.p
+echo "set ylabel font 'Arial,16'" >> plot.p
+echo "set title font 'Arial,16'" >> plot.p
+echo "set key font 'Arial,16'" >> plot.p
+
 echo "set title '${p[2]}'" >> plot.p
 echo "set xlabel '${p[3]}'" >> plot.p
 echo "set ylabel '${p[4]}'" >> plot.p
+
+# Check if an alternative y range requested
+yrangefile="`cat scenario`/freshnessmonitoredflows-yrange"
+echo $yrangefile
+if [ -f $yrangefile ];
+then
+        yrange="`cat $yrangefile`"
+        echo "Changing yrange to:$yrange"
+        echo "set yrange $yrange" >> plot.p
+#else
+        #echo "set yrange [0:1]" >> plot.p
+fi
+
 #echo "set yrange [0:1]" >> plot.p
 #echo "set xrange [0:120]" >> plot.p
-echo "set key top right" >> plot.p
+echo "set key top left" >> plot.p
 #echo "set key box" >> plot.p
 
-echo "set style line 1 lt 1 lw 1 lc rgb 'black'" >> plot.p
-echo "set style line 2 lt 2 lw 1 lc rgb 'black'" >> plot.p
-echo "set style line 3 lt 3 lw 1 lc rgb 'black'" >> plot.p
-echo "set style line 4 lt 6 lw 1 lc rgb 'black'" >> plot.p
-echo "set style line 5 lt 1 lw 5 lc rgb 'black'" >> plot.p
-echo "set style line 6 lt 1 lw 5 lc rgb 'gray'" >> plot.p
-echo "set style line 7 lt 3 lw 3 lc rgb 'black'" >> plot.p
-echo "set style line 8 lt 6 lw 3 lc rgb 'black'" >> plot.p
-echo "set style line 9 lt 1 lw 3 lc rgb 'black'" >> plot.p
-echo "set style line 10 lt 2 lw 5 lc rgb 'black'" >> plot.p
-echo "set style line 11 lt 3 lw 5 lc rgb 'black'" >> plot.p
-echo "set style line 12 lt 6 lw 5 lc rgb 'black'" >> plot.p
-echo "set style line 13 lt 2 lw 3 lc rgb 'black'" >> plot.p
+./setlinestyles
 
 if [ $# -eq 6 ]
 then

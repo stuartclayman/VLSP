@@ -1,9 +1,7 @@
 echo "Creating freshness for selected flows figure"
 
 counter=2
-result="`cat scenario`/freshnessmonitoredflows.txt Average_Information_Freshness_(Selected_Flows) Time Information_Freshness"
-
-./freshnessmonitoredflows > `cat scenario`/freshnessmonitoredflows.txt
+result="`cat scenario`/$1.txt Average_Information_Freshness_(Selected_Flows) Time Information_Freshness"
 
 for a in `cat range`
 do
@@ -16,4 +14,4 @@ echo $result
 
 ./plotfreshnessmonitoredflowsfigure $result
 
-./createpicture freshnessmonitoredflows
+./createpicture `cat scenario`/$1
