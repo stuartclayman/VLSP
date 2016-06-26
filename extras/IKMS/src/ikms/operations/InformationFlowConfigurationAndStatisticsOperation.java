@@ -457,6 +457,13 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 					return Double.valueOf(line);
 			}
 		//}
+			
+			Float a;
+			a=0.0;
+			a=0.0f;
+			if (a>0.0) a=1;
+			
+			
 		return 0.0;
 	}
 
