@@ -1,0 +1,11 @@
+echo "impact-of-flows" > scenario
+echo "5 10 20 30" > range
+echo "Flows" > rangetype
+echo "/Users/lmamatas/Desktop/ijnm-2016-revision/images/scenario1/impact-of-flows/" > targetfolder
+./plotcpuload cpuload-pullfromentities-100 
+
+echo "ScenarioGoals-100-10" > scenario
+echo "Pull_From_Entity Pull_From_Storage Pub/Sub Direct_Communication" > range
+echo "" > rangetype
+echo "/Users/lmamatas/Desktop/ijnm-2016-revision/images/scenario1/impact-of-method/" > targetfolder
+./plotcpuload cpuload
