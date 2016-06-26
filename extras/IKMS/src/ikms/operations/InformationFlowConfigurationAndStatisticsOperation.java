@@ -459,9 +459,9 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 		//}
 			
 			Float a;
-			a=0.0;
+			a=(float) 0.0;
 			a=0.0f;
-			if (a>0.0) a=1;
+			if (a>0.0) a=(float) 1;
 			
 			
 		return 0.0;
