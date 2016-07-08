@@ -156,6 +156,12 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
             processTopData(topData, list);
 
+            // need to pick out loadavg
+            // and save it for later
+            int listSize = list.size();
+            ProbeValue loadavgProbeValue = list.get(listSize-1);
+            list.remove(listSize-1);
+
 
             // get some data from "netstat"
             PipeProcess netstat = startMacOSProcess("/usr/bin/env netstat -b -i -n");
@@ -165,6 +171,10 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
             processNetstatData(netData, list);
 
+            // Lefteris: I added the CPU Load average 
+            list.add(loadavgProbeValue);
+
+            
 
             // Create the Measurement
             ProducerMeasurement m = new ProducerMeasurement(this, list, "HostInfo");
@@ -406,9 +416,15 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
             // split lines
             String[] parts = raw.split("\n");
 
+            String loadavg = parts[2];
             String cpu = parts[3];
             String mem = parts[5];
             String net = parts[7];
+
+            // split loadavg
+            String[] loadavgParts = loadavg.split("\\s+");
+
+            float loadavgVal = toFloat(loadavgParts[2]);
 
             // split cpu
             // CPU usage: 3.82% user, 11.6% sys, 85.10% idle 
@@ -462,7 +478,10 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
             list.add(new DefaultProbeValue(6, memTotal));
 
 
+            list.add(new DefaultProbeValue(11, loadavgVal));
 
+            /*
+             * not used currently
             // split net
             // Networks: packets: 86128340/51G in, 76539791/19G out.
             String[] netParts = net.split("\\s+");
@@ -478,6 +497,7 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
             int outPackets = toInt(outParts[0]);
             int outVolume = toInt(outParts[1]);
+            */
 
         } catch (TypeException te) {
             return;
