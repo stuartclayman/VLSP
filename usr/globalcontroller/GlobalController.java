@@ -326,6 +326,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             myHostInfo_ = new LocalHostInfo(options_.getGlobalPort());
             myName = myHostInfo_.getName();
         } catch (UnknownHostException e) {
+            e.printStackTrace();
             Logger.getLogger("log").logln(USR.ERROR, leadin() + e.getMessage());
             System.exit(-1);
         }
@@ -384,33 +385,33 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
                     }
                 }
 
-                if (hostAddr != null) {
-                    gcAddress = hostAddr;
+                //System.err.println("ORIG hostAddr = " + hostAddr);
+
+                // make sure we dont get a hard to use address
+                if (hostAddr.startsWith("169.254")) {
+                    try {
+
+                        gcAddress = InetAddress.getLocalHost().getHostAddress(); 
+
+                        //System.err.println("ALT gcAddress = " + InetAddress.getLocalHost().getHostAddress());
+
+                        // InetAddress.getByName(hostName).getHostAddress();
+
+                        //System.err.println("ALT gcAddress = " + InetAddress.getByName("localhost").getHostAddress());
+
+
+                        // InetAddress.getByName(System.getenv("HOSTNAME")).getHostAddress();
+                        // InetAddress.getLocalHost().getHostAddress();  // getHostName();
+                        // or InetAddress.getByName(ip).getHostName()
+                    } catch (UnknownHostException uhe) {
+                        Logger.getLogger("log").logln(USR.ERROR, leadin()+ uhe.getMessage());
+                        uhe.printStackTrace();
+                    }
                 }
-
-                /*
-                try {
-                    System.err.println("gcAddress = " + gcAddress + " hostAddr = " + hostAddr);
-
-                    //gcAddress = InetAddress.getLocalHost().getHostAddress(); 
-
-                    System.err.println("ALT gcAddress = " + InetAddress.getLocalHost().getHostAddress());
-
-                    // InetAddress.getByName(hostName).getHostAddress();
-
-                    System.err.println("ALT gcAddress = " + InetAddress.getByName("localhost").getHostAddress());
-
-
-                    // InetAddress.getByName(System.getenv("HOSTNAME")).getHostAddress();
-                    // InetAddress.getLocalHost().getHostAddress();  // getHostName();
-                    // or InetAddress.getByName(ip).getHostName()
-                } catch (UnknownHostException uhe) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin()+ uhe.getMessage());
-                }
-                */
                 
             } catch (java.net.SocketException se) {
                 Logger.getLogger("log").logln(USR.ERROR, leadin()+ se.getMessage());
+                se.printStackTrace();
             }
 
 

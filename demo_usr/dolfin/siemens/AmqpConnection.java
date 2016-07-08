@@ -36,182 +36,178 @@ public class AmqpConnection {
 
     static final Logger log = Logger.getLogger("log");
 	
-	private static PropertiesLoader propertiesLoader;
+    private static PropertiesLoader propertiesLoader;
 	
-	private String brokerIP;
-	private int port;
-	private String virtualHost;
-	private String userName;
-	private String password;
-	private boolean connectionDurability;
+    private String brokerIP;
+    private int port;
+    private String virtualHost;
+    private String userName;
+    private String password;
+    private boolean connectionDurability;
 	
-	private Channel channel;
-	private Connection connection;
+    private Channel channel;
+    private Connection connection;
 
-        private BasicProperties messageProperties;
+    private BasicProperties messageProperties;
 	
-	public AmqpConnection() {
-		initConnectionParameters();			
-		createAmqpConnection();
-	}
+    public AmqpConnection() {
+        initConnectionParameters();			
+        createAmqpConnection();
+    }
 	
-	/**
-	 * Initializes the fields of a new AmqpConnection with the ones loaded from the configuration file
-	 */
-	private void initConnectionParameters(){
+    /**
+     * Initializes the fields of a new AmqpConnection with the ones loaded from the configuration file
+     */
+    private void initConnectionParameters(){
 
-		if ( propertiesLoader == null ) propertiesLoader = PropertiesLoader.getInstanceFromFile();
+        if ( propertiesLoader == null ) propertiesLoader = PropertiesLoader.getInstanceFromFile();
 
-			brokerIP = propertiesLoader.getBrokerIP();
-			port = propertiesLoader.getPort();
-			virtualHost = propertiesLoader.getVirtualHost();
-			userName = propertiesLoader.getUserName();
-			password = propertiesLoader.getPassword();
-			connectionDurability = propertiesLoader.isConnectionDurability();
-			messageProperties = propertiesLoader.getMessageProperties();
+        brokerIP = propertiesLoader.getBrokerIP();
+        port = propertiesLoader.getPort();
+        virtualHost = propertiesLoader.getVirtualHost();
+        userName = propertiesLoader.getUserName();
+        password = propertiesLoader.getPassword();
+        connectionDurability = propertiesLoader.isConnectionDurability();
+        messageProperties = propertiesLoader.getMessageProperties();
 			
-			log.logln(USR.STDOUT, "Initializing AMQP Connection [brokerIP=" + brokerIP
-					+ ", port=" + port + ", virtualHost=" + virtualHost
-					+ ", userName=" + userName + ", password=" + password
-					+ ", connectionDurability=" + connectionDurability
-					+ ", messageProperties=" + messageProperties + "]");		
-	}
+        log.logln(USR.STDOUT, "Initializing AMQP Connection [brokerIP=" + brokerIP
+                  + ", port=" + port + ", virtualHost=" + virtualHost
+                  + ", userName=" + userName + ", password=" + password
+                  + ", connectionDurability=" + connectionDurability
+                  + ", messageProperties=" + messageProperties + "]");		
+    }
 	
-	/**
-	 * Uses the above parameters to create an AMQP connection and a channel.
-	 * After the channel and connection are made they are set to their specific fields of an AmqpConnection
-	 * object as they are required in further operations down the publishing process.
-	 */
-	private void createAmqpConnection(){
-		ConnectionFactory factory = new ConnectionFactory(); 					// configuring the connection with broker
-		factory.setUsername(userName); 																			
-		factory.setPassword(password); 											
-		factory.setVirtualHost(virtualHost);
-		factory.setHost(brokerIP);
-		factory.setPort(port);
+    /**
+     * Uses the above parameters to create an AMQP connection and a channel.
+     * After the channel and connection are made they are set to their specific fields of an AmqpConnection
+     * object as they are required in further operations down the publishing process.
+     */
+    private void createAmqpConnection(){
+        ConnectionFactory factory = new ConnectionFactory(); 					// configuring the connection with broker
+        factory.setUsername(userName); 																			
+        factory.setPassword(password); 											
+        factory.setVirtualHost(virtualHost);
+        factory.setHost(brokerIP);
+        factory.setPort(port);
 		
-		try {
+        Connection newConnection;
+        try {
+            // creating the connection
+            newConnection = factory.newConnection();
+            setConnection(newConnection);
+            Channel newChannel = newConnection.createChannel();
+            setChannel(newChannel);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
 		
-		Connection newConnection;
-		try {
-			newConnection = factory.newConnection();
-			setConnection(newConnection);
-			Channel newChannel = newConnection.createChannel();
-			setChannel(newChannel);
-		} catch (TimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 					// creating the connection		
+        } catch (IOException ioe) {
+            log.logln(USR.ERROR, "IOexception: " + ioe);
+        }
+    }
 		
-		
-		
-		} catch (IOException ioe) {
-                    log.logln(USR.ERROR, "IOexception: " + ioe);
-		}
-		
-	}
 	
-	/**
-	 * Is used for clearing up the AMQP resources.
-	 */
-	public void closeConnection( ) {
-            log.logln(USR.STDOUT, "AmqpConnection Closing.");
+    /**
+     * Is used for clearing up the AMQP resources.
+     */
+    public void closeConnection( ) {
+        log.logln(USR.STDOUT, "AmqpConnection Closing.");
 		
-		try {
-                    //log.logln(USR.STDOUT, "Closing the channel.");
-                    try {
-						channel.close();
-					} catch (TimeoutException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} // clearing up the resources
+        try {
+            //log.logln(USR.STDOUT, "Closing the channel.");
+            try {
+                channel.close();
+            } catch (TimeoutException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } // clearing up the resources
 
-                    //log.logln(USR.STDOUT, "Closing the connection.");
-                    connection.close();
+            //log.logln(USR.STDOUT, "Closing the connection.");
+            connection.close();
 			
-		} catch (IOException ioe) {
-                    log.logln (USR.ERROR,"IOexception: " + ioe);
-		} 	
-                log.logln(USR.STDOUT, "AmqpConnection closed.");
-	}
+        } catch (IOException ioe) {
+            log.logln (USR.ERROR,"IOexception: " + ioe);
+        } 	
+        log.logln(USR.STDOUT, "AmqpConnection closed.");
+    }
 	
-	/**
-	 * 
-	 * Setters and Getters for the members
-	 * 
-	 */
+    /**
+     * 
+     * Setters and Getters for the members
+     * 
+     */
 	
-	/**
-	 * @return channel after is is instanced
-	 */
-	public Channel getChannel() {
-		return channel;
-	}
+    /**
+     * @return channel after is is instanced
+     */
+    public Channel getChannel() {
+        return channel;
+    }
 
-	/**
-	 * Sets the channel after its created
-	 * @param channel
-	 */
-	private void setChannel(Channel channel) {
-		this.channel = channel;
-	}
+    /**
+     * Sets the channel after its created
+     * @param channel
+     */
+    private void setChannel(Channel channel) {
+        this.channel = channel;
+    }
 
-	/**
-	 * @return connection
-	 */
-	public Connection getConnection() {
-		return connection;
-	}
+    /**
+     * @return connection
+     */
+    public Connection getConnection() {
+        return connection;
+    }
 
-	/**
-	 * Sets the connection after its created
-	 * @param connection
-	 */
-	private void setConnection(Connection connection) {
-		this.connection = connection;
-	}
+    /**
+     * Sets the connection after its created
+     * @param connection
+     */
+    private void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 
-	/**
-	 * @return brokerIP from the properties object
-	 */
-	public String getBrokerIP() {
-		return brokerIP;
-	}
+    /**
+     * @return brokerIP from the properties object
+     */
+    public String getBrokerIP() {
+        return brokerIP;
+    }
 
-	/**
-	 * @return port from the properties object
-	 */
-	public int getPort() {
-		return port;
-	}
+    /**
+     * @return port from the properties object
+     */
+    public int getPort() {
+        return port;
+    }
 
-	/**
-	 * @return virtualHost from the properties object
-	 */
-	public String getVirtualHost() {
-		return virtualHost;
-	}
+    /**
+     * @return virtualHost from the properties object
+     */
+    public String getVirtualHost() {
+        return virtualHost;
+    }
 
-	/**
-	 * @return userName from the properties object
-	 */
-	public String getUserName() {
-		return userName;
-	}
+    /**
+     * @return userName from the properties object
+     */
+    public String getUserName() {
+        return userName;
+    }
 
-	/**
-	 * @return password from the properties object
-	 */
-	public String getPassword() {
-		return password;
-	}
+    /**
+     * @return password from the properties object
+     */
+    public String getPassword() {
+        return password;
+    }
 
-	/**
-	 * @return connectionDurability from the properties object
-	 */
-	public boolean isConnectionDurability() {
-		return connectionDurability;
-	}
+    /**
+     * @return connectionDurability from the properties object
+     */
+    public boolean isConnectionDurability() {
+        return connectionDurability;
+    }
 
 
     /**

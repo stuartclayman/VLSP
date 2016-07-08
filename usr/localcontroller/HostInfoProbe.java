@@ -50,37 +50,6 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
     NetDev netDev;
 
-    // Lefteris: I added a function that looks up /proc/loadavg
-    // this should go to CPUDev
-
-    // The /proc/loadavg file
-    File loadstat = new File("/proc/loadavg");
-
-    private float GetLoadAverage() {
-	String line;
-	float result=0.0f;
-
-	try {
-            BufferedReader reader = new BufferedReader(new FileReader(loadstat));
-
-            // find all lines starting with cpu
-            if ((line = reader.readLine()) != null) {
-		String[] parts = line.split(" ");
-
-		reader.close();
-		result = toFloat(parts[0]);
-		
-		if (result>100.0) result=100.0f;
-		return result;
-	    } else {
-		reader.close();
-		return result;
-	    }
-	} catch (IOException ioex) {
-		ioex.printStackTrace();
-		return result;
-	}
-    }
 
     /**
      * Construct a HostInfoProbe
@@ -139,6 +108,7 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
         addProbeAttribute(new DefaultProbeAttribute(9, "out-packets", ProbeAttributeType.LONG, "n"));
         addProbeAttribute(new DefaultProbeAttribute(10, "out-bytes", ProbeAttributeType.LONG, "n"));
+
 	// Lefteris: I added the CPU Load average from /proc/loadavg
 	addProbeAttribute(new DefaultProbeAttribute(11, "load-average", ProbeAttributeType.FLOAT, "percent"));
     }
@@ -309,9 +279,6 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
                 list.add(new DefaultProbeValue(8, in_bytes));
                 list.add(new DefaultProbeValue(9, out_packets));
                 list.add(new DefaultProbeValue(10, out_bytes));
-
-	    // Lefteris: I added the CPU Load average from /proc/loadavg
-	    list.add(new DefaultProbeValue(11, GetLoadAverage() ));
             } else {
                 // add data to ProbeValue list
                 list.add(new DefaultProbeValue(7, 0L));
@@ -319,6 +286,11 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
                 list.add(new DefaultProbeValue(9, 0L));
                 list.add(new DefaultProbeValue(10, 0L));
             }
+
+
+            // Lefteris: I added the CPU Load average from /proc/loadavg
+            list.add(new DefaultProbeValue(11, getLoadAverageLinux() ));
+
 
             // Create the Measurement
             ProducerMeasurement m = new ProducerMeasurement(this, list, "HostInfo");
@@ -336,6 +308,38 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
         }
 
 
+    }
+
+    private float getLoadAverageLinux() {
+        // Lefteris: I added a function that looks up /proc/loadavg
+        // this should go to CPUDev
+
+        // The /proc/loadavg file
+        final File loadstat = new File("/proc/loadavg");
+        
+	String line;
+	float result=0.0f;
+
+	try {
+            BufferedReader reader = new BufferedReader(new FileReader(loadstat));
+
+            // find all lines starting with cpu
+            if ((line = reader.readLine()) != null) {
+		String[] parts = line.split(" ");
+
+		reader.close();
+		result = toFloat(parts[0]);
+		
+		if (result>100.0) result=100.0f;
+		return result;
+	    } else {
+		reader.close();
+		return result;
+	    }
+	} catch (IOException ioex) {
+            ioex.printStackTrace();
+            return result;
+	}
     }
 
     /**

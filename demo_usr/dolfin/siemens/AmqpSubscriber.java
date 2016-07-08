@@ -107,7 +107,13 @@ public class AmqpSubscriber {
  
         try {
             // setup queue
-            String queueName = amqpSubscriber.setupQueue("vim", "key.#");
+            String queueName = amqpSubscriber.setupQueue("vim", "key.manager");
+            amqpSubscriber.consume(queueName);
+            queueName = amqpSubscriber.setupQueue("vim", "key.vm");
+            amqpSubscriber.consume(queueName);
+            queueName = amqpSubscriber.setupQueue("vim", "key.host");
+            amqpSubscriber.consume(queueName);
+            queueName = amqpSubscriber.setupQueue("vim", "key.host.green");
             amqpSubscriber.consume(queueName);
 
             /*
