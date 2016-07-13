@@ -18,12 +18,12 @@ echo "unset label" >> plot.p
 echo "set xtic auto" >> plot.p
 echo "set ytic auto" >> plot.p
 
-echo "set xtics font 'Arial,16'" >> plot.p
-echo "set ytics font 'Arial,16'" >> plot.p
-echo "set xlabel font 'Arial,16'" >> plot.p
-echo "set ylabel font 'Arial,16'" >> plot.p
-echo "set title font 'Arial,16'" >> plot.p
-echo "set key font 'Arial,16'" >> plot.p
+echo "set xtics font 'Arial,18'" >> plot.p
+echo "set ytics font 'Arial,18'" >> plot.p
+echo "set xlabel font 'Arial,18'" >> plot.p
+echo "set ylabel font 'Arial,18'" >> plot.p
+echo "set title font 'Arial,18'" >> plot.p
+echo "set key font 'Arial,18'" >> plot.p
 
 echo "set title '${p[2]}'" >> plot.p
 echo "set xlabel '${p[3]}'" >> plot.p
