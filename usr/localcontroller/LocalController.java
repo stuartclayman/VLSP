@@ -360,16 +360,18 @@ public class LocalController implements ComponentController {
         // try 20 times, with 250 millisecond gap (max 5 seconds)
         int MAX_TRIES = 20;
         int tries = 0;
+        int firstMillis = 1000;
         int millis = 250;
+        int loopMillis = millis;
         boolean isOK = false;
 
-        for (tries = 0; tries < MAX_TRIES; tries++) {
-            // sleep a bit
-            try {
-                Thread.sleep(millis);
-            } catch (InterruptedException ie) {
-            }
+        // sleep a bit
+        try {
+            Thread.sleep(firstMillis);
+        } catch (InterruptedException ie) {
+        }
 
+        for (tries = 0; tries < MAX_TRIES; tries++) {
             // try and connect
             try {
                 // connect to ManagementConsole of the router on port port1
@@ -385,6 +387,15 @@ public class LocalController implements ComponentController {
             } catch (IOException e) {
             } catch (JSONException ex) {
             }
+
+            // sleep a bit
+            try {
+                Thread.sleep(loopMillis);
+            } catch (InterruptedException ie) {
+            }
+
+            // and then a bit more
+            loopMillis += millis;
         }
 
         if (!isOK) {

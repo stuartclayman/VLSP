@@ -2874,6 +2874,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         LocalControllerInteractor inter = null;
 
+        // sleep a bit
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ie) {
+        }
+
         // lopp a bit and try and talk to the LocalControllers
         for (tries = 0; tries < MAX_TRIES; tries++) {
             // sleep a bit

@@ -78,6 +78,9 @@ public class AggPointCreator implements AP {
             apCount_++;
             apName_ = resp.getMessage();
         }
+
+        delay(50);
+
     }
 
     /** This node stops as an AP*/
@@ -87,6 +90,8 @@ public class AggPointCreator implements AP {
             controller.appStop(apName_);
             apName_ = null;
         }
+
+        delay(50);
     }
 
 
@@ -111,6 +116,8 @@ public class AggPointCreator implements AP {
         // WAS "/3000 -p rt -t 1 -d 3 -n info-source-"+gid+"-"+isCount_);
         isCount_++;
         infoSourceName_ = resp.getMessage();
+
+        delay(50);
     }
 
 
@@ -122,9 +129,17 @@ public class AggPointCreator implements AP {
             //System.err.println("APP STOP");
             controller.appStop(infoSourceName_);
 
+            delay(50);
         }
     }
 
+    private void delay(int ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ie) {
+        }
+    }
+    
     /**
      * Create the String to print out before a message
      */
