@@ -311,19 +311,25 @@ public class LocalController implements ComponentController {
         Process child = null;
         ProcessWrapper pw = null;
         // was 9
-        String [] cmd = new String[9];
+        String [] cmd = new String[10];
         cmd[0] = "java";
         cmd[1] = "-cp";
         cmd[2] = classPath_;
+
+        // to run more apps
         //cmd[3] = "-Xms32m";
         //cmd[4] = "-Xmx512m";
-        cmd[3] = "-Xms32m";
-        cmd[4] = "-Xmx128m";
         // for better scalability (Lefteris)
-        cmd[5] = routerClassName;
-        cmd[6] = String.valueOf(port1);
-        cmd[7] = String.valueOf(port2);
-        cmd[8] = routerName;
+        cmd[3] = "-Xms16m";  // was 32
+        cmd[4] = "-Xmx64m";  // was 128
+
+        // for better scalability (sclayman)
+        cmd[5] = "-Xss256k";
+        
+        cmd[6] = routerClassName;
+        cmd[7] = String.valueOf(port1);
+        cmd[8] = String.valueOf(port2);
+        cmd[9] = routerName;
 
         try {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting Router on ports "+port1+" "+port2);
@@ -935,7 +941,7 @@ public class LocalController implements ComponentController {
         }
 
         // set up DataPlane
-        Logger.getLogger("log").logln(USR.ERROR, leadin() + "startMonitoring to " + addr);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "startMonitoring to " + addr);
 
         DataPlane outputDataPlane = new UDPDataPlaneProducerWithNames(addr);
         dataSource.setDataPlane(outputDataPlane);

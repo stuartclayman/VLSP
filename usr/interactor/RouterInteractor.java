@@ -282,10 +282,10 @@ public class RouterInteractor {
      * @param endPointHost the host address for this host 
      * @param endPointPort the host port for this host
      */
-    public RouterInteractor incomingConnection(String connectionID, String name, Address addr, int weight, int hash, InetAddress endPointHost, int endPointPort) throws IOException, JSONException {
+    public JSONObject incomingConnection(String connectionID, String name, Address addr, int weight, int hash, InetAddress endPointHost, int endPointPort) throws IOException, JSONException {
         String toSend = MCRP.INCOMING_CONNECTION.CMD + " " + connectionID + " " + name + " " + addr.asTransmitForm() + " " + weight  + " " + hash + " " + endPointHost.getHostAddress() + " " + endPointPort;
-        interact(toSend);
-        return this;
+        JSONObject response = interact(toSend);
+        return response;
     }
 
     /**

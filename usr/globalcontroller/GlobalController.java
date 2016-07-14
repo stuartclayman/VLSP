@@ -277,6 +277,101 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         runLoop_ = new Object();
 
+        // try and rationalize the hostname
+        String gcAddress = "localhost";
+
+        try {
+
+            String hostAddr = null;
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            {
+                while (interfaces.hasMoreElements()) {
+                    NetworkInterface nic = interfaces.nextElement();
+
+                    System.out.println("check addresses: " + nic);
+                    
+                    // we shouldn't care about loopback addresses
+                    if (nic.isLoopback()) {
+                        System.out.println(" LOOPBACK");
+                        continue;
+                    }
+
+                    // if you don't expect the interface to be up you can skip this
+                    // though it would question the usability of the rest of the code
+                    if (!nic.isUp()) {
+                        System.out.println(" NOT UP");
+                        continue;
+                    }
+
+                    Enumeration<InetAddress> addresses = nic.getInetAddresses();
+
+                    while (addresses.hasMoreElements()) {
+                        InetAddress address = addresses.nextElement();
+
+                        System.out.print("check addresses:\t " + address);
+                        
+                        // look only for ipv4 addresses
+                        if (address instanceof java.net.Inet6Address) {
+                            System.out.println(" REJECT");
+                            continue;
+                        }
+                            
+                        if (!address.isLoopbackAddress()) {
+                            String addr = address.getHostAddress();
+                            if (addr.startsWith("169.254")) {
+                                System.out.println(" REJECT");
+                            } else {
+                                hostAddr = addr;
+                                System.out.println(" ACCEPT " + hostAddr);
+                            }
+                        } else {
+                            System.out.println(" REJECT");
+                        }
+                    }
+
+                    System.out.println("");
+                }
+            }
+
+            System.err.println("ORIG hostAddr = " + hostAddr);
+
+            // make sure we dont get a hard to use address
+            if (hostAddr != null && ! hostAddr.startsWith("169.254")) {
+                /*
+                  try {
+                        
+                  //gcAddress = InetAddress.getLocalHost().getHostAddress(); 
+
+                  //System.err.println("ALT gcAddress = " + InetAddress.getLocalHost().getHostAddress());
+
+                  // InetAddress.getByName(hostName).getHostAddress();
+
+                  //System.err.println("ALT gcAddress = " + InetAddress.getByName("localhost").getHostAddress());
+
+
+                  // InetAddress.getByName(System.getenv("HOSTNAME")).getHostAddress();
+                  // InetAddress.getLocalHost().getHostAddress();  // getHostName();
+                  // or InetAddress.getByName(ip).getHostName()
+                  } catch (UnknownHostException uhe) {
+                  Logger.getLogger("log").logln(USR.ERROR, leadin()+ uhe.getMessage());
+                  uhe.printStackTrace();
+                  }
+                */
+
+                gcAddress = hostAddr;
+
+            } else {
+            }
+                
+        } catch (java.net.SocketException se) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+ se.getMessage());
+            se.printStackTrace();
+        }
+
+        System.err.println("Actual gcAddress = " + gcAddress);
+            
+
+
         // Redirect output for error and normal output if requested in
         // router options file
         String fileName = routerOptions_.getOutputFile();
@@ -323,7 +418,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         APController_ = ConstructAPController.constructAPController(routerOptions_);
 
         try {
-            myHostInfo_ = new LocalHostInfo(options_.getGlobalPort());
+            myHostInfo_ = new LocalHostInfo(gcAddress, options_.getGlobalPort());
             myName = myHostInfo_.getName();
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -350,70 +445,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
             // start monitoring
             // listening on the GlobalController address
-            String gcAddress = "localhost";
-
-            try {
-
-                String hostAddr = null;
-                Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-                {
-                    while (interfaces.hasMoreElements()) {
-                        NetworkInterface nic = interfaces.nextElement();
-
-                        // we shouldn't care about loopback addresses
-                        if (nic.isLoopback())
-                            continue;
-
-                        // if you don't expect the interface to be up you can skip this
-                        // though it would question the usability of the rest of the code
-                        if (!nic.isUp())
-                            continue;
-
-                        Enumeration<InetAddress> addresses = nic.getInetAddresses();
-                        while (hostAddr == null && addresses.hasMoreElements()) {
-                            InetAddress address = addresses.nextElement();
-
-                            // look only for ipv4 addresses
-                            if (address instanceof java.net.Inet6Address) {
-                                continue;
-                            }
-                            
-                            if (!address.isLoopbackAddress()) {
-                                hostAddr = address.getHostAddress();
-                            }
-                        }
-                    }
-                }
-
-                //System.err.println("ORIG hostAddr = " + hostAddr);
-
-                // make sure we dont get a hard to use address
-                if (hostAddr.startsWith("169.254")) {
-                    try {
-
-                        gcAddress = InetAddress.getLocalHost().getHostAddress(); 
-
-                        //System.err.println("ALT gcAddress = " + InetAddress.getLocalHost().getHostAddress());
-
-                        // InetAddress.getByName(hostName).getHostAddress();
-
-                        //System.err.println("ALT gcAddress = " + InetAddress.getByName("localhost").getHostAddress());
-
-
-                        // InetAddress.getByName(System.getenv("HOSTNAME")).getHostAddress();
-                        // InetAddress.getLocalHost().getHostAddress();  // getHostName();
-                        // or InetAddress.getByName(ip).getHostName()
-                    } catch (UnknownHostException uhe) {
-                        Logger.getLogger("log").logln(USR.ERROR, leadin()+ uhe.getMessage());
-                        uhe.printStackTrace();
-                    }
-                }
-                
-            } catch (java.net.SocketException se) {
-                Logger.getLogger("log").logln(USR.ERROR, leadin()+ se.getMessage());
-                se.printStackTrace();
-            }
-
 
             // check latticeMonitoring port
             if (options_.latticeMonitoringPort() != monitoringPort) {

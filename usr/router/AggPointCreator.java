@@ -95,7 +95,7 @@ public class AggPointCreator implements AP {
      */
     public void startInfoSource(int gid, int ap) {
         String command = new String("plugins_usr.aggregator.appl.InfoSource -o "+ap+
-                                    "/3000 -t 1 -d 3");
+                                    "/3000 -t 1 -d 30");
         command += (" -p "+options_.getMonType());    // What type of data do we monitor
         //command+= (" -n info-source-"+gid+"-"+isCount_);  // Make source name unique
         command += (" -n info-source-"+gid);  // Make source name

@@ -603,8 +603,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
                                           +":"+dg.getSrcPort());
             return pingResponse(dg);
         }
-        Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Received unknown control packet type "+
-                                      (char)controlChar);
+        Logger.getLogger("log").logln(USR.ERROR, leadin()+ "Received unknown control packet type from "+
+                                      dg.getDstAddress() + ": " + Integer.toString((int)controlChar));
 
         return false;
 

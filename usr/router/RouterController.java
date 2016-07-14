@@ -62,7 +62,7 @@ public class RouterController implements ComponentController, Runnable {
     RouterConnections connections;
 
     // The port the router listening on for new connections
-    //int newConnectionPort;
+    int newConnectionPort;
 
     // The Thread
     Thread myThread;
@@ -147,19 +147,14 @@ public class RouterController implements ComponentController, Runnable {
         }
 
         this.managementConsolePort = mPort;
+        this.newConnectionPort = r2rPort;
+
         // delegate listening of commands to a ManagementConsole object
         management = new RouterManagementConsole(this, mPort);
 
-        // delegate listening for new connections to RouterConnections object
+        // default connections
+        connections = new RouterConnectionsTCP(this, newConnectionPort);
 
-
-        RouterOptions.LinkType linkType = o.getLinkType();
-        
-        if (linkType == RouterOptions.LinkType.UDP) {
-            connections = new RouterConnectionsUDP(this, r2rPort);
-        } else {
-            connections = new RouterConnectionsTCP(this, r2rPort);
-        }
 
         connectionCount = 0;
         // a map of NetIFs
@@ -378,6 +373,10 @@ public class RouterController implements ComponentController, Runnable {
         router.shutDown();
     }
 
+    /**
+     * A function used by the RouterConnectionsXXX objects
+     * to tell the RouterController there is a kind of failure.
+     */
     void informFailure() {
         synchronized (failureNotificationSyncObj) {
             failureNotification = true;
@@ -396,7 +395,8 @@ public class RouterController implements ComponentController, Runnable {
                     failureNotificationSyncObj.wait();
                 } catch (InterruptedException ie) {
                     if (running == false) {
-                        System.err.println(ANSI.YELLOW + "Interrupted on stop()" + ANSI.RESET_COLOUR);
+                        // We might get an informFailure() during a stop()
+                        //System.err.println(ANSI.YELLOW + "Interrupted on stop()" + ANSI.RESET_COLOUR);
                     } else {
                         System.err.println(ANSI.RED + "Interrupted on informFailure()" + ANSI.RESET_COLOUR);
                     }
@@ -676,6 +676,19 @@ public class RouterController implements ComponentController, Runnable {
     /** Read a string containing router options */
     public boolean readOptionsString(String str) {
         boolean read = router.readOptionsString(str);
+
+        // delegate listening for new connections to RouterConnections object
+
+
+        RouterOptions.LinkType linkType = options_.getLinkType();
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "LinkType = " + linkType);
+        
+        if (linkType == RouterOptions.LinkType.UDP) {
+            connections = new RouterConnectionsUDP(this, newConnectionPort);
+        } else {
+            connections = new RouterConnectionsTCP(this, newConnectionPort);
+        }
 
         // Setup AP
         String apClassName = options_.getAPClassName();

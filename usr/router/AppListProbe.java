@@ -139,71 +139,75 @@ public class AppListProbe extends RouterProbe implements Probe {
                     // get it's thread group
                     TimedThreadGroup threadGroup = (TimedThreadGroup)appThread.getThreadGroup();
 
-                    long [] usage = threadGroup.getUsage();
+                    if (threadGroup == null) {
+                        System.err.println("AppListProbe: Thread " + appThread + " has no TimedThreadGroup");
+                    } else {
 
-                    //System.out.println(" " + new MillisecondTimestamp(now) + " " + threadGroup.getName()  + " elapsed: " + new MillisecondTimestamp((now - ah.getStartTime())) + " cpu: " + new MicrosecondTimestamp(usage[0]/1000) + " user: " + new MicrosecondTimestamp(usage[1]/1000) + " system: " + new MicrosecondTimestamp(usage[2]/1000) + " - " + appThread.getName() );
+                        long [] usage = threadGroup.getUsage();
 
-                    // create a row for ApplicationHandle data
-                    TableRow appHRow = new DefaultTableRow();
+                        //System.out.println(" " + new MillisecondTimestamp(now) + " " + threadGroup.getName()  + " elapsed: " + new MillisecondTimestamp((now - ah.getStartTime())) + " cpu: " + new MicrosecondTimestamp(usage[0]/1000) + " user: " + new MicrosecondTimestamp(usage[1]/1000) + " system: " + new MicrosecondTimestamp(usage[2]/1000) + " - " + appThread.getName() );
 
-                    // AID
-                    appHRow.add(new DefaultTableValue(ah.getID()));
+                        // create a row for ApplicationHandle data
+                        TableRow appHRow = new DefaultTableRow();
 
-                    // StartTime
-                    appHRow.add(new DefaultTableValue(ah.getStartTime()));
+                        // AID
+                        appHRow.add(new DefaultTableValue(ah.getID()));
 
-                    // ElapsedTime
-                    appHRow.add(new DefaultTableValue(now - ah.getStartTime()));
+                        // StartTime
+                        appHRow.add(new DefaultTableValue(ah.getStartTime()));
 
-                    // RunTime
-                    appHRow.add(new DefaultTableValue(usage[0]));
+                        // ElapsedTime
+                        appHRow.add(new DefaultTableValue(now - ah.getStartTime()));
 
-                    // UserTime
-                    appHRow.add(new DefaultTableValue(usage[1]));
+                        // RunTime
+                        appHRow.add(new DefaultTableValue(usage[0]));
 
-                    // SysTime
-                    appHRow.add(new DefaultTableValue(usage[2]));
+                        // UserTime
+                        appHRow.add(new DefaultTableValue(usage[1]));
 
-                    // State
-                    appHRow.add(new DefaultTableValue(ah.getState().toString()));
+                        // SysTime
+                        appHRow.add(new DefaultTableValue(usage[2]));
 
-                    // ClassName
-                    appHRow.add(new DefaultTableValue(ah.getApplication().getClass().getName()));
+                        // State
+                        appHRow.add(new DefaultTableValue(ah.getState().toString()));
 
-                    // Args
-                    appHRow.add(new DefaultTableValue(Arrays.asList(ah.getArgs()).toString()));
+                        // ClassName
+                        appHRow.add(new DefaultTableValue(ah.getApplication().getClass().getName()));
 
-                    // Name
-                    appHRow.add(new DefaultTableValue(ah.getName()));
+                        // Args
+                        appHRow.add(new DefaultTableValue(Arrays.asList(ah.getArgs()).toString()));
 
-                    // check if we should get run time monitoring data
-                    if (ah.getApplication() instanceof RuntimeMonitoring) {
-                        // yes
-                        MList keys = new DefaultMList(ProbeAttributeType.STRING);
-                        MList values = new DefaultMList(ProbeAttributeType.STRING);
+                        // Name
+                        appHRow.add(new DefaultTableValue(ah.getName()));
 
-                        // get the data
-                        Map<String, String> theMap = ((RuntimeMonitoring)ah.getApplication()).getMonitoringData();
+                        // check if we should get run time monitoring data
+                        if (ah.getApplication() instanceof RuntimeMonitoring) {
+                            // yes
+                            MList keys = new DefaultMList(ProbeAttributeType.STRING);
+                            MList values = new DefaultMList(ProbeAttributeType.STRING);
 
-                        // add the keys and values
-                        for (Map.Entry<String, String> entry : theMap.entrySet()) {
-                            keys.add(entry.getKey());
-                            values.add(entry.getValue());
+                            // get the data
+                            Map<String, String> theMap = ((RuntimeMonitoring)ah.getApplication()).getMonitoringData();
+
+                            // add the keys and values
+                            for (Map.Entry<String, String> entry : theMap.entrySet()) {
+                                keys.add(entry.getKey());
+                                values.add(entry.getValue());
+                            }
+
+                            appHRow.add(new DefaultTableValue(keys));
+                            appHRow.add(new DefaultTableValue(values));
+
+                        } else {
+                            // no
+                            appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
+                            appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
+
                         }
 
-                        appHRow.add(new DefaultTableValue(keys));
-                        appHRow.add(new DefaultTableValue(values));
-
-                    } else {
-                        // no
-                        appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
-                        appHRow.add(new DefaultTableValue(new DefaultMList(ProbeAttributeType.STRING)));
-
+                        // add this row to the table
+                        statsTable.addRow(appHRow);
                     }
-
-                    // add this row to the table
-                    statsTable.addRow(appHRow);
-
 
                 }
 

@@ -7,6 +7,7 @@ import eu.reservoir.monitoring.core.AbstractProbe;
 import eu.reservoir.monitoring.core.Measurement;
 import eu.reservoir.monitoring.core.Timestamp;
 import eu.reservoir.monitoring.core.Probe;
+import eu.reservoir.monitoring.core.ProbeManager;
 
 
 /**
@@ -51,7 +52,19 @@ public abstract class RouterProbe extends AbstractProbe implements Probe {
         //System.out.println("NetIFStatsProbe: last collect for " + controller.getName());
         try {
             Measurement m = collectThenCheck();
-            getProbeManager().notifyMeasurement(m);
+            ProbeManager pm = getProbeManager();
+
+            if (pm.isProbeOn(this)) {
+                int result = pm.notifyMeasurement(m);
+
+                if (result == 0) {
+                    // Measurement was not queued - probably shutting down
+                    System.err.println("NetIFStatsProbe: queued Measurement failed");
+                }
+            } else {
+                System.err.println("NetIFStatsProbe: Measurement not queued - probe NOT on");
+            }
+            
         } catch (Exception e) {
             //System.err.println("NetIFStatsProbe: last collect failed - " + e);
         }

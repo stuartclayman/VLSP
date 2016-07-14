@@ -161,7 +161,7 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
                             jsobj.put("networkOutboundBytes", (Long) currentProbeValue.get(10).getValue() - (Long) previousProbeValue.get(10).getValue());
 			}
 
-                        jsobj.put("loadavg", ((Float) currentProbeValue.get(11).getValue()));
+                        jsobj.put("loadAverage", ((Float) currentProbeValue.get(11).getValue()));
                     } catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

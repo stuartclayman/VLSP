@@ -130,8 +130,11 @@ public class CreateConnection {
 
         try {
             if (host.equals("localhost")) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "createConnection: 'localhost' -> " + InetAddress.getByName(host)); //InetAddress.getLocalHost().getHostAddress());
+                //interactor = new RouterInteractor(InetAddress.getByName(host), portNumber);
                 interactor = new RouterInteractor(InetAddress.getLocalHost().getHostAddress(), portNumber);
             } else {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "createConnection: " + host + " -> " + InetAddress.getLocalHost().getHostAddress());
                 interactor = new RouterInteractor(InetAddress.getByName(host), portNumber);
             }
 
@@ -168,8 +171,7 @@ public class CreateConnection {
         // now get connection port
         int connectionPort = scanner.nextInt();
         scanner.close();
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "createConnection: connectionPort at " + host + " is " +
-                                      connectionPort);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "createConnection: connectionPort at " + host + " is " + connectionPort);
 
 
         /*
@@ -205,7 +207,7 @@ public class CreateConnection {
 
             connectionHashCode = controller.getRouterConnections().getCreateConnectionHashCode(netIF, interactor.getInetAddress(), connectionPort);
 
-            Logger.getLogger("log").logln(USR.STDOUT, "CreateConnection hashCode => "  + " # " + connectionHashCode);
+            Logger.getLogger("log").logln(USR.STDOUT,  leadin() + "CreateConnection hashCode for address " + interactor.getInetAddress() + " => "  + " # " + connectionHashCode);
                 
 
             // set its ID
@@ -282,12 +284,17 @@ public class CreateConnection {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "incomingConnection: " + " host = " + netIF.getLocalAddress() + " port = " + netIF.getLocalPort() + " hashCode = " + connectionHashCode);
                 try {
                     // send connectionHashCode and the details for the socket at this end
-                    interactor.incomingConnection(latestConnectionName, controller.getName(),
+                    JSONObject result = interactor.incomingConnection(latestConnectionName, controller.getName(),
                                                   controller.getAddress(), weight, connectionHashCode,
                                                   netIF.getLocalAddress(), netIF.getLocalPort()  );
 
-                    // connection setup ok
-                    interactionOK = true;
+                    String errMSg = result.optString("error");
+
+                    if ("".equals(errMSg)) {  // no error msg
+                        // connection setup ok
+                        interactionOK = true;
+                    }
+                    
                     break;
                 } catch (Exception e) {
                     //e.printStackTrace();
