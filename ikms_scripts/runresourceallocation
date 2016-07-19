@@ -1,3 +1,5 @@
+#!/bin/sh
+
 export CLASSPATH=./:./libs/*:./bin/
 # Retrieve input parameters
 scenarioname=$1
@@ -12,7 +14,9 @@ flowsrange=$5
 echo "Flows range set:$flowsrange"
 goalsrange=$6
 echo "Goals range set:$goalsrange"
-iterations=$7
+flowsnumber=$7
+echo "Flows number set:$flowsnumber"
+iterations=$8
 echo "Running experiment with $iterations iterations"
 
 # Set scenario name (for figures)
@@ -31,13 +35,19 @@ for nr in $nodesrange
 do
    for fr in $flowsrange
    do
+	echo Stopping global controller and waiting to reboot
+        echo "SETTING PLACEMENT ALGORITHM FOR: $fr"
+        echo $fr > currentplacement
+        ./stop
+        sleep 50
+
       for gr in $goalsrange
       do
 	#for it in 1 2 3 4 5 6 7 8 9 10
 	for (( it=1; it<=$iterations; it++ ))
 	do
 		echo "Iteration: $it"
-		if [ -f output/`cat output/scenario`/results-$nr-$fr-$gr.$it ];
+		if [ -f output/`cat output/scenario`/results-$nr-$flowsnumber-$gr-$fr.$it ];
 		then
    			echo "File output/`cat output/scenario`/results-$nr-$fr-$gr.$it exists."
 		else
@@ -50,7 +60,7 @@ do
 			# Syntax: nodesNumber informationSourcesNumber urisPerInformationSourceNumber totalTime method goalId monitoredFlows monitoredMethod monitoredGoalId
 			# method: 3 (All)
 			# goalID: 0 (Pull from Entity), 1 (Pull from Storage), 2 (Pub/Sub), 3 (Direct Communication), 4 (Compact 0), 5 (Compact 1), 6 (Compact 2), 7 (Compact 3)
-			#./singleExperiment $nr $fr 1 100000 3 $gr 2>&1 | tee /tmp/ikms-experiment-$$.out
+			./singleExperiment $nr $flowsnumber 1 150000 3 $gr 2>&1 | tee /tmp/ikms-experiment-$$.out
 			echo "Waiting 10"
 			sleep 10
 			./stopIKMSMeasurements
@@ -62,22 +72,35 @@ do
 			./killikms
 			echo Collecting results
 			mkdir output/`cat output/scenario` 2> /dev/null
-			cp ../output.txt output/`cat output/scenario`/results-$nr-$fr-$gr.$it
+			cp ../output.txt output/`cat output/scenario`/results-$nr-$flowsnumber-$gr-$fr.$it
 			echo Waiting 5 secs
 			sleep 5
 			#echo Stopping global controller and waiting to reboot
-			./stop
-			sleep 20
+			#./stop
+			#sleep 20
+
+
+			#echo Stopping stress tool
+			#./killstress
+			#sleep 500
+
+
+
 		fi
 	done
+	#echo Stopping global controller and waiting to reboot
+        #echo "SETTING PLACEMENT ALGORITHM FOR: $fr"
+        #echo $fr > currentplacement
+        #./stop
+        #sleep 30
 	# calculate average output file
 	echo "calculating average output file"
-	./output/averageoutputfile output/`cat output/scenario`/results-$nr-$fr-$gr 
+	./output/averageoutputfile output/`cat output/scenario`/results-$nr-$flowsnumber-$gr-$fr 
 	# check if filenames is empty
 	if [ -z "$filenames" ]; then
-		filenames="`cat output/scenario`/results-$nr-$fr-$gr.txt"
+		filenames="`cat output/scenario`/results-$nr-$flowsnumber-$gr-$fr.txt"
 	else
-		filenames="$filenames `cat output/scenario`/results-$nr-$fr-$gr.txt"
+		filenames="$filenames `cat output/scenario`/results-$nr-$flowsnumber-$gr-$fr.txt"
 	fi
 
 	# Restarting global controller and waiting to reboot

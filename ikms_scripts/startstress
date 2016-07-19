@@ -1,0 +1,4 @@
+#!/bin/sh
+
+for h in `cat machines`; do echo "Starting stress in $h"; ssh $h "nohup /usr/local/bin/stress-ng $* >& /dev/null &"; done
+# ethane methane butane propane pentane

@@ -1,18 +1,19 @@
+#!/bin/bash
+
 #./killrouters
 #./killlocalcontrollers
-#export CLASSPATH=$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/bin/.:$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/.:$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/libs/*:$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/extras/IKMS-client/src/
+export CLASSPATH=$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/bin/.:$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/.:$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/libs/*:$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacerouter/extras/IKMS-client/src/
 # We should have absolute paths here, otherwise remote localcontrollers do not boot up!
 
 # mac os x version
-export CLASSPATH=./:bin/.:libs/*:./extras/IKMS-client/src/
+#export CLASSPATH=./:bin/.:libs/*:./extras/IKMS-client/src/
 
 cd ..
 # run 16 times
 #for i in {1..16}
 for i in {1..32}
 do
-	#java usr.globalcontroller.GlobalController scripts/control-wait-ikms.xml
-	java usr.globalcontroller.GlobalController scripts/control-wait-energy-ikms-Pressure.xml
-        #java usr.globalcontroller.GlobalController scripts/control-wait-ikms-HotSpot.xml
-	#java usr.globalcontroller.GlobalController scripts/control-wait.xml
+	# ENERGY
+	java usr.globalcontroller.GlobalController scripts/control-wait-`cat ikms_scripts/currentplacement`-ikms-Pressure.xml
+
 done

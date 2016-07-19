@@ -1,0 +1,5 @@
+#!/bin/sh
+
+#ps ax | grep LocalController | awk '{print $1}' | xargs kill
+for h in `cat machines`; do echo "Killing stress in $h"; ssh $h "ps ax | grep -e 'stress-ng' | grep -v grep | awk '{print \$1}' | xargs kill -9"; done
+# ethane methane butane propane pentane
