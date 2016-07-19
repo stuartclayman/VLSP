@@ -113,14 +113,6 @@ public class IKMSEventEngine implements EventEngine  {
     /** Add or remove events following a simulation event */
     @Override
     public void preceedEvent(Event e, EventScheduler s, EventDelegate obj){
-	Logger.getLogger("log").logln(USR.STDOUT,leadin() + "preceedEvent " + e);
-
-	if (e instanceof ExecutableEvent && e instanceof StartRouter) {
-            ExecutableEvent ee = (ExecutableEvent)e;
-            preceedRouter(ee, s, (VimFunctions)ee.getContextObject());
-            return;
-        }
-
 
     }
 
@@ -146,13 +138,6 @@ public class IKMSEventEngine implements EventEngine  {
             } catch (Exception ex) {
             }
         }
-    }
-
-    private void preceedRouter(Event e, EventScheduler s, VimFunctions v) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "followRouter " + e);
-	
-
-
     }
 
 
@@ -209,7 +194,6 @@ public class IKMSEventEngine implements EventEngine  {
             
         } catch (JSONException jse) {
             routerId = -1;
-	    jse.printStackTrace();
         }
 
 
@@ -417,26 +401,6 @@ public class IKMSEventEngine implements EventEngine  {
         } catch (JSONException jse) {
             return null;
         }        
-    }
-
-    /**
-      * Get active applications
-      */
-    private ArrayList<Integer> getAppsList (VimFunctions v, int routerId) {
-	try {
-            JSONObject jsobj = v.listApps(routerId);
-            JSONArray list = jsobj.getJSONArray("list");
-
-            ArrayList<Integer> result = new ArrayList<Integer>();
-
-            for (int i=0; i<list.length(); i++) {
-                result.add(list.getInt(i));
-            }
-
-            return result;
-        } catch (JSONException jse) {
-            return null;
-        }
     }
 
     /**

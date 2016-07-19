@@ -134,7 +134,7 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 				  // update energy values
 				  EnergyModel model = energyConsumptionPerLocalController.get(localControllers.get(i));
 				  currentEnergy = model.CurrentEnergyConsumption (currentDetail.getJSONObject("hostinfo"));
-				  System.out.println ("Current energy consumption is:"+i+", "+model.getLastLoadAverage()+", "+model.getLastAverageCPULoad()+", " + model.getLastAverageIdleCPU()+", "+model.getLastMemoryUsed()+", "+model.getLastFreeMemory()+", "+model.getLastNetworkIncomingBytes()+", "+model.getLastNetworkOutboundBytes()+", " + currentEnergy+" "+firstTime);
+				  System.out.println ("Current energy consumption is:"+i+", "+model.getLastAverageCPULoad()+", " + model.getLastAverageIdleCPU()+", "+model.getLastMemoryUsed()+", "+model.getLastFreeMemory()+", "+model.getLastNetworkIncomingBytes()+", "+model.getLastNetworkOutboundBytes()+", " + currentEnergy+" "+firstTime);
 				  if (!firstTime)
 					  energyConsumedPerLocalController.remove(i);
 				  energyConsumedPerLocalController.add(i, currentEnergy);

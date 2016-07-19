@@ -1,4 +1,3 @@
-#!/bin/sh
 echo "" >> results.tex
 echo "\begin{figure}[ht]" >> results.tex
 echo "\centering" >> results.tex

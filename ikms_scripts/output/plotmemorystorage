@@ -1,17 +1,7 @@
-#!/bin/sh
 echo "Creating memory storage figure"
 
-if [[ $# -eq 0 ]] ; then
-    echo 'No parameters passed, using default filename.'
-    filename="memorystorage"
-    # create file  
-    ./memorystorage > `cat scenario`/$filename.txt
-else
-    filename=$1
-fi
-
 counter=2
-result="`cat scenario`/$filename.txt Memory_State Time Memory_State"
+result="`cat scenario`/$1.txt Memory_State Time Memory_State"
 
 for a in `cat range`
 do
@@ -24,4 +14,4 @@ echo $result
 
 ./plotmemorystoragefigure $result
 
-./createpicture `cat scenario`/$filename
+./createpicture `cat scenario`/$1

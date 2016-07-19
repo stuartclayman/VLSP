@@ -1,17 +1,7 @@
-#!/bin/sh
 echo "Creating cpuload figure"
 
-if [[ $# -eq 0 ]] ; then
-    echo 'No parameters passed, using default filename.'
-    filename="cpuload"
-    # create file  
-    ./cpuload > `cat scenario`/$filename.txt
-else
-    filename=$1
-fi
-
 counter=2
-result="`cat scenario`/$filename.txt Average_CPU_Load Time CPU_Load"
+result="`cat scenario`/$1.txt Average_CPU_Load Time CPU_Load"
 
 
 for a in `cat range`
@@ -25,4 +15,4 @@ echo $result
 
 ./plotcpuloadfigure $result
 
-./createpicture `cat scenario`/$filename
+./createpicture `cat scenario`/$1

@@ -1,17 +1,7 @@
-#!/bin/sh
 echo "Creating freshness for selected flows figure"
 
-if [[ $# -eq 0 ]] ; then
-    echo 'No parameters passed, using default filename.'
-    filename="freshnessmonitoredflows"
-    # create file  
-    ./freshnessmonitoredflows > `cat scenario`/$filename.txt
-else
-    filename=$1
-fi
-
 counter=2
-result="`cat scenario`/$filename.txt Average_Information_Freshness_(Selected_Flows) Time Information_Freshness"
+result="`cat scenario`/$1.txt Average_Information_Freshness_(Selected_Flows) Time Information_Freshness"
 
 for a in `cat range`
 do
@@ -24,4 +14,4 @@ echo $result
 
 ./plotfreshnessmonitoredflowsfigure $result
 
-./createpicture `cat scenario`/$filename
+./createpicture `cat scenario`/$1

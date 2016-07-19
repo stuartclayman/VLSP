@@ -1,32 +1,40 @@
 #!/bin/sh
 
-# energy experiment stressing memory
-#./startstress -m 5
-#echo Waiting 500 secs
-#sleep 500
+#
+#./runstats ScenarioFlowsPullFromEntity-100 "Flows" "1 2 5 10" 100 "1 2 5 10" 0 10
+#./runstats ScenarioFlowsPullFromStorage-100 "Flows" "1 2 5 10" 100 "1 2 5 10" 1 10
+#./runstats ScenarioFlowsPubSub-100 "Flows" "1 2 5 10" 100 "1 2 5 10" 2 10
 
-# set nodes number
-#nodesnum=30
-
-# use nodes with particular load level
-#cp ../scripts/ikms$nodesnum-m1.xml ../scripts/ikms$nodesnum.xml
-
-#./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-m5 "Placement" "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
-
-# revert back configuration file to nodes without load
-#cp ../scripts/ikms$nodesnum.xml.bak ../scripts/ikms$nodesnum.xml
-
-#./killstress
+#./runresourceallocation ScenarioPlacementDirect-30 "Placement" "EnergyEfficient LeastBusy LeastUsed" 30 "EnergyEfficient LeastBusy LeastUsed" 3 5 3
 
 
-# Energy experiment stressing cpu
-./startstress -c 5
+# ENERGY
+./startstress -m 5
 echo Waiting 500 secs
 sleep 500
 
 # set nodes number
 nodesnum=30
 
-./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-c5 "Placement" "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+# use nodes with particular load level
+#cp ../scripts/ikms$nodesnum-m1.xml ../scripts/ikms$nodesnum.xml
+
+./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-m5 "Placement" "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+
+# revert back configuration file to nodes without load
+#cp ../scripts/ikms$nodesnum.xml.bak ../scripts/ikms$nodesnum.xml
 
 ./killstress
+
+#./runresourceallocation ScenarioPlacementDirect-100-1-busy "Placement" "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 100 "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+
+
+#./runresourceallocation ScenarioPlacementDirect-50 "Placement" "EnergyEfficient LeastBusy LeastUsed" 50 "EnergyEfficient LeastBusy LeastUsed" 3 5 3
+
+#./runresourceallocation ScenarioPlacementDirect-100 "Placement" "EnergyEfficient LeastBusy LeastUsed" 100 "EnergyEfficient LeastBusy LeastUsed" 3 5 3
+
+#./runresourceallocation ScenarioPlacementDirect-300 "Placement" "EnergyEfficient LeastBusy LeastUsed" 300 "EnergyEfficient LeastBusy LeastUsed" 3 5 3
+
+#./runresourceallocation ScenarioPlacementDirect-function-100 "Placement" "EnergyEfficient" 100 "EnergyEfficient" 3 5 1
+
+#./runstats ScenarioFlowsDirect-100 "Flows" "1 2 5 10" 100 "1 2 5 10" 3 10

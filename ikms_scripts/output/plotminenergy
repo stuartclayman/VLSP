@@ -1,17 +1,9 @@
-#!/bin/sh
 echo "Creating minenergy figure"
 
-if [[ $# -eq 0 ]] ; then
-    echo 'No parameters passed, using default filename.'
-    filename="minenergy"
-    # create file  
-    ./minenergy > `cat scenario`/$filename.txt
-else
-    filename=$1
-fi
-
 counter=2
-result="`cat scenario`/$filename.txt Minimum_Energy_Consumed Time Minimum_Energy_Consumed"
+result="`cat scenario`/minenergy.txt Minimum_Energy_Consumed Time Minimum_Energy_Consumed"
+
+./minenergy > `cat scenario`/minenergy.txt
 
 for a in `cat range`
 do
@@ -24,4 +16,4 @@ echo $result
 
 ./plotminenergyfigure $result
 
-./createpicture `cat scenario`/$filename
+./createpicture minenergy

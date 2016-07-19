@@ -1,10 +1,9 @@
-#!/bin/sh
-echo "set style line 1 lt 1 lw 5 lc rgb 'black'" >> plot.p
-echo "set style line 2 lt 1 lw 5 lc rgb 'gray'" >> plot.p
-echo "set style line 3 lt 1 lw 5 lc rgb 'red'" >> plot.p
-echo "set style line 4 lt 1 lw 5 lc rgb 'blue'" >> plot.p
-echo "set style line 5 lt 1 lw 5 lc rgb 'yellow'" >> plot.p
-echo "set style line 6 lt 1 lw 5 lc rgb 'green'" >> plot.p
+echo "set style line 1 dt 1 lt 1 lw 5 lc rgb 'black'" >> plot.p
+echo "set style line 2 dt 1 lt 1 lw 5 lc rgb 'gray'" >> plot.p
+echo "set style line 3 dt 2 lt 1 lw 5 lc rgb 'black'" >> plot.p
+echo "set style line 4 dt 3 lt 1 lw 5 lc rgb 'black'" >> plot.p
+echo "set style line 5 dt 4 lt 1 lw 5 lc rgb 'black'" >> plot.p
+echo "set style line 6 dt 2 lt 1 lw 5 lc rgb 'gray'" >> plot.p
 echo "set style line 7 lt 3 lw 3 lc rgb 'black'" >> plot.p
 echo "set style line 8 lt 6 lw 3 lc rgb 'black'" >> plot.p
 echo "set style line 9 lt 1 lw 3 lc rgb 'black'" >> plot.p

@@ -1,2 +1,1 @@
-#!/bin/sh
 curl http://localhost:8888/command/SHUT_DOWN

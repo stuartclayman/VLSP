@@ -1,5 +1,3 @@
-#!/bin/sh
-
 echo "Plotting all figures for `cat scenario`"
 echo "Creating latex file"
 cat results-template.tex > results.tex

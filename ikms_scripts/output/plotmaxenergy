@@ -1,17 +1,9 @@
-#!/bin/sh
 echo "Creating maxenergy figure"
 
-if [[ $# -eq 0 ]] ; then
-    echo 'No parameters passed, using default filename.'
-    filename="maxenergy"
-    # create file  
-    ./maxenergy > `cat scenario`/$filename.txt
-else
-    filename=$1
-fi
-
 counter=2
-result="`cat scenario`/$filename.txt Maximum_Energy_Consumed Time Maximum_Energy_Consumed"
+result="`cat scenario`/maxenergy.txt Maximum_Energy_Consumed Time Maximum_Energy_Consumed"
+
+./maxenergy > `cat scenario`/maxenergy.txt
 
 for a in `cat range`
 do
@@ -24,4 +16,4 @@ echo $result
 
 ./plotmaxenergyfigure $result
 
-./createpicture `cat scenario`/$filename
+./createpicture maxenergy

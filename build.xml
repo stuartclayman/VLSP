@@ -32,8 +32,8 @@
       <include name="extras/IKMS-client/src/**" />
       <include name="extras/IKMS/**" />
 
-      <!--<compilerarg value="-Xlint:unchecked" />--> 
-      <!--<compilerarg value="-verbose" /> -->
+      <!-- <compilerarg value="-Xlint:unchecked" /> -->
+      <!-- <compilerarg value="-verbose" /> -->
       <compilerarg value="-Xlint:deprecation" />
 
     </javac>

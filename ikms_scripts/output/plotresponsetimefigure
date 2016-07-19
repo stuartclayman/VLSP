@@ -1,4 +1,3 @@
-#!/bin/sh
 #echo "Syntax: ./plotfigure filename title xlabel ylabel column1title column1position column2title column2position column3title column3position column4title column4position"
 
 counter=1

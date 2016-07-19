@@ -1,2 +1,1 @@
-#!/bin/sh
 curl 'http://localhost:9900/register/measureon?warmup=60000&totaltime=90000'

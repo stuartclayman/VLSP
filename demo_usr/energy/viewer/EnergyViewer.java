@@ -18,10 +18,9 @@ import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 
 import java.net.ConnectException;
-
 import us.monoid.web.Resty;
+
 import usr.common.ANSI;
-import demo_usr.energy.energymodel.EnergyModelLinear;
 import demo_usr.energy.energymodel.EnergyModelLinear;
 
 

@@ -43,41 +43,21 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
   </LocalController>
 <!-- could add application related coefficients here, in case it is needed -->
 
-
+<!--
    <LocalController>
      <Name>clayone</Name>
      <Port>10000</Port>
      <LowPort>11001</LowPort>
      <HighPort>12000</HighPort>
      <MaxRouters>150</MaxRouters>
-     <CPULoadCoefficient>50</CPULoadCoefficient>
-     <CPUIdleCoefficient>20</CPUIdleCoefficient>
-     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
-     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
-     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
+-->
 <!--
   <LocalController>
      <Name>claytwo</Name>
@@ -89,23 +69,9 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
 -->
 <!--
@@ -119,25 +85,11 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
-
+-->
 <!--
   <LocalController>
      <Name>clayfour</Name>
@@ -149,23 +101,9 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
 
   <LocalController>
@@ -178,23 +116,9 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
 
 <LocalController>
@@ -207,23 +131,9 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
 -->
 <!--
@@ -237,23 +147,9 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
 
  <LocalController>
@@ -266,23 +162,9 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
 
   <LocalController>
@@ -295,23 +177,9 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
 
  <LocalController>
@@ -324,23 +192,9 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
 
 <LocalController>
@@ -353,23 +207,9 @@
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
-     <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
-     <b2>0</b2>
-     <c2>0</c2>
-     <r2>0</r2>
-     <a3>6</a3>
-     <b3>0</b3>
-     <c3>0</c3>
-     <r3>0</r3>
-     <c>300</c>
-     <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
 -->
   <EventEngine>

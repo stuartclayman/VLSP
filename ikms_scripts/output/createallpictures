@@ -1,4 +1,4 @@
-#!/bin/sh
+
 echo "impact-of-flows" > scenario
 echo "5 10 20 30" > range
 echo "Flows" > rangetype

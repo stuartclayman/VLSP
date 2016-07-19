@@ -151,12 +151,6 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
 			jsobj.put("freeMemory", (Float) ((Integer)currentProbeValue.get(5).getValue() / 1024f)); // in GBs
 			jsobj.put("usedMemory", (Float) ((Integer)currentProbeValue.get(4).getValue() / 1024f)); // in GBs
 
-			Float load=(Float) currentProbeValue.get(11).getValue();
-
-			load = load / 100f;
-	
-			jsobj.put("loadAverage", load); // percentage
-			
 			if (previousProbeValue==null) {
                             // starts with zero bytes
                             jsobj.put("networkIncomingBytes", 0);
