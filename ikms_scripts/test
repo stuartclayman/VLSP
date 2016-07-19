@@ -1,0 +1,9 @@
+#!/bin/sh
+verbose=true
+
+if [$verbose] then 
+	echo "verbose mode"
+
+
+fi
+

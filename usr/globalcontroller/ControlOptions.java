@@ -662,6 +662,224 @@ public class ControlOptions {
                 throw e;
             } catch (XMLNoTagException e) {
             }
+            
+            try {
+                double c8
+                    = ReadXMLUtils.parseSingleDouble(lc, "a1",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "a1", "LocalController");
+                lh.SetA1(c8);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c9
+                    = ReadXMLUtils.parseSingleDouble(lc, "b1",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "b1", "LocalController");
+                lh.SetB1(c9);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c10
+                    = ReadXMLUtils.parseSingleDouble(lc, "c1",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "c1", "LocalController");
+                lh.SetC1(c10);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c11
+                    = ReadXMLUtils.parseSingleDouble(lc, "r1",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "r1", "LocalController");
+                lh.SetR1(c11);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c12
+                    = ReadXMLUtils.parseSingleDouble(lc, "a2",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "a2", "LocalController");
+                lh.SetA2(c12);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c13
+                    = ReadXMLUtils.parseSingleDouble(lc, "b2",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "b2", "LocalController");
+                lh.SetB2(c13);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c14
+                    = ReadXMLUtils.parseSingleDouble(lc, "c2",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "c2", "LocalController");
+                lh.SetC2(c14);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c15
+                    = ReadXMLUtils.parseSingleDouble(lc, "r2",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "r2", "LocalController");
+                lh.SetR2(c15);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c16
+                    = ReadXMLUtils.parseSingleDouble(lc, "a3",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "a3", "LocalController");
+                lh.SetA3(c16);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c17
+                    = ReadXMLUtils.parseSingleDouble(lc, "b3",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "b3", "LocalController");
+                lh.SetB3(c17);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c18
+                    = ReadXMLUtils.parseSingleDouble(lc, "c3",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "c3", "LocalController");
+                lh.SetC3(c18);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c19
+                    = ReadXMLUtils.parseSingleDouble(lc, "r3",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "r3", "LocalController");
+                lh.SetR3(c19);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c20
+                    = ReadXMLUtils.parseSingleDouble(lc, "a4",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "a4", "LocalController");
+                lh.SetA4(c20);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c21
+                    = ReadXMLUtils.parseSingleDouble(lc, "b4",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "b4", "LocalController");
+                lh.SetB4(c21);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c22
+                    = ReadXMLUtils.parseSingleDouble(lc, "c4",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "c4", "LocalController");
+                lh.SetC4(c22);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                double c23
+                    = ReadXMLUtils.parseSingleDouble(lc, "r4",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "r4", "LocalController");
+                lh.SetR4(c23);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+         
+            
+            try {
+                double c24
+                    = ReadXMLUtils.parseSingleDouble(lc, "c",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "c", "LocalController");
+                lh.SetC(c24);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
+            try {
+                long c25
+                    = ReadXMLUtils.parseSingleLong(lc, "MaxNetworkTransmissionBytes",
+                                                     "LocalController",
+                                                     true);
+                ReadXMLUtils.removeNode(lc, "MaxNetworkTransmissionBytes", "LocalController");
+                lh.SetMaxNetworkTransmissionBytes(c25);
+            } catch (SAXException e) {
+                throw e;
+            } catch (XMLNoTagException e) {
+            }
+            
             // initializing energy model, since all parameters are set
             lh.InitEnergyModel();
 

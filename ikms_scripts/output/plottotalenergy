@@ -1,9 +1,17 @@
+#!/bin/sh
 echo "Creating totalenergy figure"
 
-counter=2
-result="`cat scenario`/totalenergy.txt Total_Energy_Consumed Time Total_Energy_Consumed"
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="totalenergy"
+    # create file  
+    ./totalenergy > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
 
-./totalenergy > `cat scenario`/totalenergy.txt
+counter=2
+result="`cat scenario`/$filename.txt Total_Energy_Consumed Time Total_Energy_Consumed"
 
 for a in `cat range`
 do
@@ -16,4 +24,4 @@ echo $result
 
 ./plottotalenergyfigure $result
 
-./createpicture totalenergy
+./createpicture `cat scenario`/$filename

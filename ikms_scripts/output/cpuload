@@ -1,1 +1,2 @@
+#!/bin/sh
 ./combinecvs 6

@@ -1,3 +1,5 @@
+#!/bin/sh
+
 export CLASSPATH=extras/IKMS/src/:extras/IKMS-client/src/:./libs/*:extras/IKMS/libs/*:extras/IKMS-client/libs/*:./
 cd ..
 #java -Xmx1024m ikms.Main 2>&1 | tee /tmp/ikms$$.out

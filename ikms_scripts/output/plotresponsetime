@@ -1,7 +1,17 @@
+#!/bin/sh
 echo "Creating response time figure"
 
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="responsetime"
+    # create file  
+    ./responsetime > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
+
 counter=2
-result="`cat scenario`/$1.txt Average_Response_Time Time Response_Time"
+result="`cat scenario`/$filename.txt Average_Response_Time Time Response_Time"
 
 for a in `cat range`
 do
@@ -14,4 +24,4 @@ echo $result
 
 ./plotresponsetimefigure $result
 
-./createpicture `cat scenario`/$1
+./createpicture `cat scenario`/$filename

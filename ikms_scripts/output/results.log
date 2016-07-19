@@ -1,0 +1,249 @@
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=latex 2016.6.7)  19 JUL 2016 16:50
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**results.tex
+(./results.tex
+LaTeX2e <2011/06/27>
+Babel <v3.8m> and hyphenation patterns for english, dumylang, nohyphenation, lo
+aded.
+(./elsart.cls
+Document Class: elsart 2007/08/16, 2.20: Elsevier
+\@frontmatterwidth=\dimen102
+\@bls=\dimen103
+\eqntopsep=\skip41
+\eqnarraycolsep=\dimen104
+\labelwidthi=\dimen105
+\labelwidthii=\dimen106
+\labelwidthiii=\dimen107
+\labelwidthiv=\dimen108
+\@maxlistdepth=\count79
+\eqnbaselineskip=\skip42
+\eqnlineskip=\skip43
+\mathindent=\dimen109
+\rulepreskip=\dimen110
+\rulepostskip=\dimen111
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+(/usr/share/texlive/texmf-dist/tex/latex/base/latexsym.sty
+Package: latexsym 1998/08/17 v2.2e Standard LaTeX package (lasy symbols)
+\symlasy=\mathgroup4
+LaTeX Font Info:    Overwriting symbol font `lasy' in version `bold'
+(Font)                  U/lasy/m/n --> U/lasy/b/n on input line 47.
+)
+\c@thm=\count85
+\c@alg=\count86
+\c@algorithm=\count87
+\c@note=\count88
+\c@summ=\count89
+\c@case=\count90
+\@tempcntc=\count91
+\c@figure=\count92
+\c@table=\count93
+\t@glob@notes=\toks14
+\t@loc@notes=\toks15
+\note@cnt=\count94
+\corauth@text=\toks16
+\email@text=\toks17
+\url@text=\toks18
+\c@corauth=\count95
+\c@author=\count96
+\n@author=\count97
+\c@collab=\count98
+\n@collab=\count99
+\c@address=\count100
+\sv@mathsurround=\dimen112
+\sv@hyphenpenalty=\count101
+\prev@elem=\count102
+\cur@elem=\count103
+\fm@box=\box26
+\fm@size=\dimen113
+\t@abstract=\box27
+\t@keyword=\box28
+\t@xtheight=\dimen114
+\@logoheight=\dimen115
+\@pubyear=\count104
+\c@firstpage=\count105
+\c@lastpage=\count106
+\slashbox=\box29
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 1415.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 1415.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 1415.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 1415.
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
+File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
+)
+\Slashbox=\box30
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <14.4> on input line 1416.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 1416.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks19
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: dvips.def on input line 91.
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/dvips.def
+File: dvips.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
+))
+\Gin@req@height=\dimen116
+\Gin@req@width=\dimen117
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\@emptytoks=\toks20
+\symAMSa=\mathgroup5
+\symAMSb=\mathgroup6
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)) (./results.aux)
+\openout1 = `results.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+
+Overfull \hbox (33.09314pt too wide) in paragraph at lines 9--9
+[]\OT1/cmr/bx/n/12 Plotting all fig-ures for ScenarioEnergyPlacementDirectBusyM
+achines-
+ []
+
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/cpuload.eps Graphic file 
+(type eps)
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/cpuload.eps> [1]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/memorystorage.eps Graphic
+ file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/memorystorage.eps> [2
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/responsetime.eps Graphic 
+file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/responsetime.eps> [3
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshness.eps Graphic fil
+e (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshness.eps> [4
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/minenergy.eps Graphic fil
+e (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/minenergy.eps> [5
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/maxenergy.eps Graphic fil
+e (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/maxenergy.eps> [6
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/averageenergy.eps Graphic
+ file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/averageenergy.eps> [7
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/totalenergy.eps Graphic f
+ile (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/totalenergy.eps> [8
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-0.eps Graphic f
+ile (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-0.eps> [9
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-1.eps Graphic f
+ile (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-1.eps> [10
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-2.eps Graphic f
+ile (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-2.eps> [11
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-3.eps Graphic f
+ile (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-3.eps> [12
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-4.eps Graphic f
+ile (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-4.eps> [13
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.eps Graphic f
+ile (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.eps> [14
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/responsetimemonitoredflow
+s.eps Graphic file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/responsetimemonitoredflows.eps
+> [15
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.e
+ps Graphic file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.eps>
+[16
+
+] (./results.aux) ) 
+Here is how much of TeX's memory you used:
+ 1361 strings out of 495064
+ 16010 string characters out of 3182225
+ 58383 words of memory out of 3000000
+ 4571 multiletter control sequences out of 15000+200000
+ 8879 words of font info for 35 fonts, out of 3000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 25i,4n,26p,197b,242s stack positions out of 5000i,500n,10000p,200000b,50000s
+
+Output written on results.dvi (16 pages, 5444 bytes).

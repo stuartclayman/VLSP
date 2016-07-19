@@ -1,0 +1,13 @@
+\documentclass{article}
+
+\makeatletter
+\def\getversion{\expandafter\get@version\pdftexbanner\@nil}
+\def\get@version#1201#2)#3\@nil{\def\TeXLiveVersion{201#2}}
+\makeatother
+\getversion
+
+\begin{document}
+This has been run with \TeX~Live~\TeXLiveVersion.
+
+\texttt{\pdftexbanner}
+\end{document}

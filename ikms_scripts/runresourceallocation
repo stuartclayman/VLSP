@@ -26,8 +26,12 @@ echo "$figuresrange" > output/range
 # Set figures range type (defines the type of figure curves)
 echo "$figuresrangetype" > output/rangetype
 
+# Set createpictures mode (value 1) to create the figures, default value 0
+createpictures=1
+
 # Shutting down IKMS (in case it is still running)
-./shutDownIKMS 2> /dev/null
+if [ $createpictures -eq "0" ]; then ./shutDownIKMS 2> /dev/null
+fi
 
 echo "Scenario: $scenarioname"
 count=0
@@ -35,11 +39,13 @@ for nr in $nodesrange
 do
    for fr in $flowsrange
    do
-	echo Stopping global controller and waiting to reboot
-        echo "SETTING PLACEMENT ALGORITHM FOR: $fr"
-        echo $fr > currentplacement
-        ./stop
-        sleep 50
+      echo Stopping global controller and waiting to reboot
+      echo "SETTING PLACEMENT ALGORITHM FOR: $fr"
+      echo $fr > currentplacement
+      if [ $createpictures -eq "0" ]; then 
+        	./stop
+        	sleep 50
+      fi
 
       for gr in $goalsrange
       do
