@@ -33,7 +33,7 @@
 
   </GlobalController>
 
-  <LocalController>
+<!--  <LocalController>
      <Name>localhost</Name>
      <Port>10000</Port>
      <LowPort>11001</LowPort>
@@ -47,6 +47,7 @@
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
   </LocalController>
+-->
 <!-- could add application related coefficients here, in case it is needed -->
 
 
@@ -63,22 +64,22 @@
      <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
+     <a1>150</a1>
+     <b1>-75</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>160</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
      <c>300</c>
      <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
-<!--
+
   <LocalController>
      <Name>claytwo</Name>
      <Port>10001</Port>
@@ -92,23 +93,22 @@
      <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
+     <a1>150</a1>
+     <b1>-75</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>160</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
      <c>300</c>
      <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
--->
-<!--
+
   <LocalController>
      <Name>claythree</Name>
      <Port>10002</Port>
@@ -122,22 +122,21 @@
      <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
+     <a1>150</a1>
+     <b1>-75</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>160</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
      <c>300</c>
      <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
-
 <!--
   <LocalController>
      <Name>clayfour</Name>
@@ -152,22 +151,22 @@
      <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
+     <a1>150</a1>
+     <b1>-75</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>160</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
      <c>300</c>
      <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
-
+-->
   <LocalController>
      <Name>claydesk1</Name>
      <Port>10004</Port>
@@ -182,14 +181,14 @@
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
      <a1>60</a1>
-     <b1>0</b1>
+     <b1>-30</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>40</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
@@ -211,22 +210,21 @@
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
      <a1>60</a1>
-     <b1>0</b1>
+     <b1>-30</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>40</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
      <c>300</c>
      <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
--->
-<!--
+
    <LocalController>
      <Name>ethane</Name>
      <Port>10006</Port>
@@ -240,15 +238,15 @@
      <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
+     <a1>150</a1>
+     <b1>-75</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>160</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
@@ -269,15 +267,15 @@
      <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
+     <a1>150</a1>
+     <b1>-75</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>160</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
@@ -298,15 +296,15 @@
      <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
+     <a1>150</a1>
+     <b1>-75</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>160</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
@@ -327,15 +325,15 @@
      <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
+     <a1>150</a1>
+     <b1>-75</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>160</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
@@ -356,22 +354,22 @@
      <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
      <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
-     <a1>60</a1>
-     <b1>0</b1>
+     <a1>150</a1>
+     <b1>-75</b1>
      <c1>0</c1>
-     <r1>0</r1>
-     <a2>5</a2>
+     <r1>1.4</r1>
+     <a2>160</a2>
      <b2>0</b2>
      <c2>0</c2>
      <r2>0</r2>
-     <a3>6</a3>
+     <a3>8</a3>
      <b3>0</b3>
      <c3>0</c3>
      <r3>0</r3>
      <c>300</c>
      <MaxNetworkTransmissionBytes>12500000</MaxNetworkTransmissionBytes>
   </LocalController>
--->
+
   <EventEngine>
      <Name>Empty</Name>
      <EndTime>86400</EndTime> <!-- 86400 seconds == 1 day -->

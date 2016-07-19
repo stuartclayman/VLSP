@@ -33,27 +33,9 @@
     </ProbElement>
   </LinkCreateDist>
 
-  <NodeCPULoadDist>
-   <ProbElement>
-    <Type>Uniform</Type>  <!-- Uniform -->
-      <Weight>1.0</Weight>  <!-- 100% Type -->
-      <Parameter>1</Parameter>  <!-- one every N seconds --> <!-- was 3 -->
-      <Parameter>1</Parameter> <!-- was 6 -->
-    </ProbElement>
-  </NodeCPULoadDist>
-
-  <NodeMemoryLoadDist>
-   <ProbElement>
-    <Type>Uniform</Type>  <!-- Uniform -->
-      <Weight>1.0</Weight>  <!-- 100% Type -->
-      <Parameter>0</Parameter>  <!-- one every N seconds --> <!-- was 3 -->
-      <Parameter>0</Parameter> <!-- was 6 -->
-    </ProbElement>
-  </NodeMemoryLoadDist>
-
   <Parameters>
     <PreferentialAttachment>false</PreferentialAttachment>
-    <InitialNumberOfNodes>50</InitialNumberOfNodes>
+    <InitialNumberOfNodes>3</InitialNumberOfNodes>
     <StaticTopology>true</StaticTopology>
   </Parameters>
 

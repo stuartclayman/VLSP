@@ -53,7 +53,7 @@
 
   <Parameters>
     <PreferentialAttachment>false</PreferentialAttachment>
-    <InitialNumberOfNodes>50</InitialNumberOfNodes>
+    <InitialNumberOfNodes>30</InitialNumberOfNodes>
     <StaticTopology>true</StaticTopology>
   </Parameters>
 
