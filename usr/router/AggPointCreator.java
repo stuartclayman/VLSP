@@ -129,7 +129,7 @@ public class AggPointCreator implements AP {
             //System.err.println("APP STOP");
             controller.appStop(infoSourceName_);
 
-            delay(50);
+            delay(250);
         }
     }
 

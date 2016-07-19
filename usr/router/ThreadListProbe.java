@@ -141,10 +141,19 @@ public class ThreadListProbe extends RouterProbe implements Probe {
                 for (int i=0; i<threads.length; i++) {
                     Thread t = threads[i];
 
+                    // no need to report on dead threads
+                    if (!t.isAlive()) {
+                        continue;
+                    }
+                    
                     long id = t.getId();
 
                     ThreadGroup threadGroup = t.getThreadGroup();
 
+                    if (threadGroup == null) {
+                        System.err.println("ThreadListProbe: Thread " + t + " has no TimedThreadGroup");
+                        continue;
+                    }                    
 
                     if (t instanceof TimedThread) {
                         TimedThread tt = (TimedThread) t;

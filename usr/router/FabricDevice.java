@@ -256,8 +256,7 @@ public class FabricDevice implements FabricDeviceInterface {
 
         Waker waker = new Waker();
         synchronized (waker) {
-            while (true) {
-
+            while (!stopped_) {          // sclayman 20160718 was (true)
                 try {
                     boolean processed = addToInQueue(dg, dd, waker);
                     return processed;
@@ -267,6 +266,7 @@ public class FabricDevice implements FabricDeviceInterface {
                     waker.await(250);
                 }
             }
+            return false;
         }
     }
 
@@ -392,7 +392,7 @@ public class FabricDevice implements FabricDeviceInterface {
         Waker waker = new Waker();
 
         synchronized (waker) {
-            while (true) {
+            while (!stopped_) {          // sclayman 20160718 was (true)
 
                 if (Thread.currentThread().isInterrupted()) {
                     Logger.getLogger("log").logln(USR.STDOUT, leadin()+"blockingAddToOutQueue() isInterrupted");
@@ -407,6 +407,8 @@ public class FabricDevice implements FabricDeviceInterface {
                     waker.await(250);
                 }
             }
+            return false;
+
         }
     }
 
@@ -497,7 +499,7 @@ public class FabricDevice implements FabricDeviceInterface {
 
         Waker waker = new Waker();
 
-        while (true) {
+        while (!stopped_) {          // sclayman 20160718 was (true)
             try {
                 return f.addToOutQueue(dh, waker);
             } catch (java.net.NoRouteToHostException e) {
@@ -511,6 +513,8 @@ public class FabricDevice implements FabricDeviceInterface {
                 }
             }
         }
+        return false;
+
     }
 
     /** Send the outbound Datagram onwards */
@@ -627,7 +631,7 @@ class InQueueHandler implements Runnable {
                 continue;
             }
 
-            while (true) {
+            while (running_) {          // sclayman 20160718 was (true)
                 boolean sent = false;
                 try {
                     // try and forward to out queue

@@ -106,7 +106,7 @@ public class RouterConnectionsTCP implements RouterConnections, Runnable {
                 // Set up a new end point
                 TCPEndPointDst dst = new TCPEndPointDst(serverSocket);
                 NetIF netIF = new TCPNetIF(dst, controller.getListener());
-                netIF.setName("RouterConnections");
+                //netIF.setName("RouterConnections");
 
                 // this connect() waits (actually does an accept() ) 
                 // by waiting for an incoming connect() from another router

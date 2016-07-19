@@ -7,16 +7,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +36,7 @@ import usr.common.LocalHostInfo;
 import usr.common.Pair;
 import usr.common.PortPool;
 import usr.common.ProcessWrapper;
+import usr.common.IPAddress;
 import usr.console.ComponentController;
 import usr.engine.APWarmUp;
 import usr.engine.EventEngine;
@@ -278,98 +276,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         runLoop_ = new Object();
 
         // try and rationalize the hostname
-        String gcAddress = "localhost";
-
-        try {
-
-            String hostAddr = null;
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            {
-                while (interfaces.hasMoreElements()) {
-                    NetworkInterface nic = interfaces.nextElement();
-
-                    System.out.println("check addresses: " + nic);
-                    
-                    // we shouldn't care about loopback addresses
-                    if (nic.isLoopback()) {
-                        System.out.println(" LOOPBACK");
-                        continue;
-                    }
-
-                    // if you don't expect the interface to be up you can skip this
-                    // though it would question the usability of the rest of the code
-                    if (!nic.isUp()) {
-                        System.out.println(" NOT UP");
-                        continue;
-                    }
-
-                    Enumeration<InetAddress> addresses = nic.getInetAddresses();
-
-                    while (addresses.hasMoreElements()) {
-                        InetAddress address = addresses.nextElement();
-
-                        System.out.print("check addresses:\t " + address);
-                        
-                        // look only for ipv4 addresses
-                        if (address instanceof java.net.Inet6Address) {
-                            System.out.println(" REJECT");
-                            continue;
-                        }
-                            
-                        if (!address.isLoopbackAddress()) {
-                            String addr = address.getHostAddress();
-                            if (addr.startsWith("169.254")) {
-                                System.out.println(" REJECT");
-                            } else {
-                                hostAddr = addr;
-                                System.out.println(" ACCEPT " + hostAddr);
-                            }
-                        } else {
-                            System.out.println(" REJECT");
-                        }
-                    }
-
-                    System.out.println("");
-                }
-            }
-
-            System.err.println("ORIG hostAddr = " + hostAddr);
-
-            // make sure we dont get a hard to use address
-            if (hostAddr != null && ! hostAddr.startsWith("169.254")) {
-                /*
-                  try {
-                        
-                  //gcAddress = InetAddress.getLocalHost().getHostAddress(); 
-
-                  //System.err.println("ALT gcAddress = " + InetAddress.getLocalHost().getHostAddress());
-
-                  // InetAddress.getByName(hostName).getHostAddress();
-
-                  //System.err.println("ALT gcAddress = " + InetAddress.getByName("localhost").getHostAddress());
-
-
-                  // InetAddress.getByName(System.getenv("HOSTNAME")).getHostAddress();
-                  // InetAddress.getLocalHost().getHostAddress();  // getHostName();
-                  // or InetAddress.getByName(ip).getHostName()
-                  } catch (UnknownHostException uhe) {
-                  Logger.getLogger("log").logln(USR.ERROR, leadin()+ uhe.getMessage());
-                  uhe.printStackTrace();
-                  }
-                */
-
-                gcAddress = hostAddr;
-
-            } else {
-            }
-                
-        } catch (java.net.SocketException se) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+ se.getMessage());
-            se.printStackTrace();
-        }
-
-        System.err.println("Actual gcAddress = " + gcAddress);
-            
+        
+        String gcAddress = IPAddress.getLocalHost();
 
 
         // Redirect output for error and normal output if requested in

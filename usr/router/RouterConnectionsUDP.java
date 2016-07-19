@@ -101,7 +101,7 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
                 // Set up a new end point
                 UDPEndPointDst dst = new UDPEndPointDst(socket);
                 NetIF netIF = new UDPNetIF(dst, controller.getListener());
-                netIF.setName("RouterConnections");
+                //netIF.setName("RouterConnections");
 
                 // We dont do a real connect in RouterConnectionsUDP
                 // This is handled when we do a setRemoteAddress() in INCOMING_CONNECTION

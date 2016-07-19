@@ -830,7 +830,7 @@ public class RouterController implements ComponentController, Runnable {
                                               leadin() + " data source: " +  dataSource.getName() + " turn off probe " +
                                               probe.getName());
 
-                probe.lastMeasurement();
+                //probe.lastMeasurement();
 
                 dataSource.turnOffProbe(probe);
 

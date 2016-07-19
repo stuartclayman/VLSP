@@ -116,7 +116,7 @@ public class TCPNetIF implements NetIF, Runnable {
         fabricDevice_.setName(name);
         fabricDevice_.start();
         latch = new CountDownLatch(1);
-        runThread_ = new TimedThread(group, this, "/" + name + "/TCPNetIF");
+        runThread_ = new TimedThread(group, this, "/" + name + "/TCPNetIF-" + connection.getSocket().getPort());
         runThread_.start();
     }
 
