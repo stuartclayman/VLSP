@@ -103,6 +103,11 @@ public class ProcessWrapper {
             // disconnect the process
             //System.err.println("ProcessWrapper: STOPPING "+name);
 
+	    // send control + c
+	    //char ctrlBreak = (char)3;
+ 	    //process.getOutputStream().write(ctrlBreak);
+            //process.getOutputStream().flush();
+
             //System.err.println("ProcessWrapper: close input");
             process.getOutputStream().close();
 
@@ -122,6 +127,7 @@ public class ProcessWrapper {
             destroy();
 
         } catch (IOException ioe) {
+		 ioe.getMessage();
         }
     }
 
@@ -193,6 +199,7 @@ public class ProcessWrapper {
                 //System.err.println("ProcessListener: close " + label);
                 input.close();
             } catch (IOException ioe) {
+		wrapper.ioerror(label, ioe);
             }
 
             //wrapper.print(label, "EOF");

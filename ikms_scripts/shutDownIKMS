@@ -1,3 +1,4 @@
+#!/bin/sh
 curl 'http://localhost:9900/register/terminate' 2> /dev/null
 sleep 1
 #./killikms 2> /dev/null

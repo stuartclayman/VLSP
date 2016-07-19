@@ -1,0 +1,229 @@
+<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <StartLocalControllers>true</StartLocalControllers>
+     <ConnectedNetwork>false</ConnectedNetwork>
+
+     <PlacementEngineClass>usr.globalcontroller.EnergyEfficientPlacement</PlacementEngineClass>
+
+     <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass> -->
+     <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualization</VisualizationClass>
+
+     <Monitoring>
+      <LatticeMonitoring>true</LatticeMonitoring>
+
+      <Consumer> <!-- data from LocalControllers -->
+        <Name>usr.globalcontroller.HostInfoReporter</Name>
+      </Consumer>
+
+      <Consumer>
+        <!-- <Name>usr.globalcontroller.NetIFStatsCumulativeReporter</Name> -->
+        <Name>usr.globalcontroller.NetIFStatsReporter</Name>
+      </Consumer>
+      <Consumer>
+        <Name>usr.globalcontroller.RouterAppsReporter</Name>
+      </Consumer>
+      <Consumer>
+        <Name>usr.globalcontroller.ThreadGroupListReporter</Name>
+      </Consumer>
+      <Consumer>
+        <Name>usr.globalcontroller.ThreadListReporter</Name>
+      </Consumer>
+    </Monitoring>
+
+  </GlobalController>
+
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10000</Port>
+     <LowPort>11001</LowPort>
+     <HighPort>12000</HighPort>
+     <MaxRouters>30</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+<!-- could add application related coefficients here, in case it is needed -->
+
+<!--
+   <LocalController>
+     <Name>clayone</Name>
+     <Port>10000</Port>
+     <LowPort>11001</LowPort>
+     <HighPort>12000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+-->
+<!--
+  <LocalController>
+     <Name>claytwo</Name>
+     <Port>10001</Port>
+     <LowPort>12001</LowPort>
+     <HighPort>13000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+-->
+<!--
+  <LocalController>
+     <Name>claythree</Name>
+     <Port>10002</Port>
+     <LowPort>13001</LowPort>
+     <HighPort>14000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+-->
+<!--
+  <LocalController>
+     <Name>clayfour</Name>
+     <Port>10003</Port>
+     <LowPort>14001</LowPort>
+     <HighPort>15000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+
+  <LocalController>
+     <Name>claydesk1</Name>
+     <Port>10004</Port>
+     <LowPort>15001</LowPort>
+     <HighPort>16000</HighPort>
+     <MaxRouters>80</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+
+<LocalController>
+     <Name>claydesk2</Name>
+     <Port>10005</Port>
+     <LowPort>16001</LowPort>
+     <HighPort>17000</HighPort>
+     <MaxRouters>100</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+-->
+<!--
+   <LocalController>
+     <Name>ethane</Name>
+     <Port>10006</Port>
+     <LowPort>17001</LowPort>
+     <HighPort>18000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+
+ <LocalController>
+     <Name>methane</Name>
+     <Port>10007</Port>
+     <LowPort>18001</LowPort>
+     <HighPort>19000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+
+  <LocalController>
+     <Name>butane</Name>
+     <Port>10008</Port>
+     <LowPort>19001</LowPort>
+     <HighPort>20000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+
+ <LocalController>
+     <Name>propane</Name>
+     <Port>10009</Port>
+     <LowPort>20001</LowPort>
+     <HighPort>21000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+
+<LocalController>
+     <Name>pentane</Name>
+     <Port>10010</Port>
+     <LowPort>21001</LowPort>
+     <HighPort>22000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+  </LocalController>
+-->
+  <EventEngine>
+     <Name>Empty</Name>
+     <EndTime>86400</EndTime> <!-- 86400 seconds == 1 day -->
+  </EventEngine>
+
+  <RouterOptions>
+      scripts/routeroptions-energy-ikms-Pressure.xml
+  </RouterOptions>
+
+<!-- manual placement -->
+<!-- <RouterOptions>
+      scripts/routeroptions-noap.xml
+  </RouterOptions>-->
+
+</SimOptions>

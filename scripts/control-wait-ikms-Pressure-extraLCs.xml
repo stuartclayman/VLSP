@@ -1,0 +1,128 @@
+<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <StartLocalControllers>true</StartLocalControllers>
+     <ConnectedNetwork>false</ConnectedNetwork>
+     <!--<PlacementEngineClass>usr.globalcontroller.LeastBusyPlacement</PlacementEngineClass>-->
+<PlacementEngineClass>usr.globalcontroller.LeastUsedLoadBalancer</PlacementEngineClass>
+     <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass> -->
+     <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualizationWithoutClustering</VisualizationClass>
+
+     <Monitoring>
+       <LatticeMonitoring>true</LatticeMonitoring>
+       <Consumer>
+         <!-- <Name>usr.globalcontroller.NetIFStatsCumulativeReporter</Name> -->
+         <Name>usr.globalcontroller.NetIFStatsReporter</Name>
+       </Consumer>
+       <Consumer>
+         <Name>usr.globalcontroller.RouterAppsReporter</Name>
+       </Consumer>
+     </Monitoring>
+  </GlobalController>
+<!--
+ <LocalController>
+     <Name>localhost</Name>
+     <Port>10000</Port>
+     <LowPort>11001</LowPort>
+     <HighPort>12000</HighPort>
+     <MaxRouters>30</MaxRouters>
+  </LocalController>
+-->
+   <LocalController>
+     <Name>clayone</Name>
+     <Port>10000</Port>
+     <LowPort>11001</LowPort>
+     <HighPort>12000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+  <LocalController>
+     <Name>claytwo</Name>
+     <Port>10001</Port>
+     <LowPort>12001</LowPort>
+     <HighPort>13000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+  <LocalController>
+     <Name>claythree</Name>
+     <Port>10002</Port>
+     <LowPort>13001</LowPort>
+     <HighPort>14000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+  <LocalController>
+     <Name>clayfour</Name>
+     <Port>10003</Port>
+     <LowPort>14001</LowPort>
+     <HighPort>15000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+  <LocalController>
+     <Name>claydesk1</Name>
+     <Port>10004</Port>
+     <LowPort>15001</LowPort>
+     <HighPort>16000</HighPort>
+     <MaxRouters>80</MaxRouters>
+  </LocalController>
+
+  <LocalController>
+     <Name>claydesk2</Name>
+     <Port>10005</Port>
+     <LowPort>16001</LowPort>
+     <HighPort>17000</HighPort>
+     <MaxRouters>100</MaxRouters>
+  </LocalController>
+
+   <LocalController>
+     <Name>ethane</Name>
+     <Port>10006</Port>
+     <LowPort>17001</LowPort>
+     <HighPort>18000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+ <LocalController>
+     <Name>methane</Name>
+     <Port>10007</Port>
+     <LowPort>18001</LowPort>
+     <HighPort>19000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+  <LocalController>
+     <Name>butane</Name>
+     <Port>10008</Port>
+     <LowPort>19001</LowPort>
+     <HighPort>20000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+ <LocalController>
+     <Name>propane</Name>
+     <Port>10009</Port>
+     <LowPort>20001</LowPort>
+     <HighPort>21000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+ <LocalController>
+     <Name>pentane</Name>
+     <Port>10010</Port>
+     <LowPort>21001</LowPort>
+     <HighPort>22000</HighPort>
+     <MaxRouters>150</MaxRouters>
+  </LocalController>
+
+  <EventEngine>
+     <Name>Empty</Name>
+     <EndTime>86400</EndTime> <!-- 86400 seconds == 1 day -->
+  </EventEngine>
+
+  <RouterOptions>
+      scripts/routeroptions-ikms-Pressure.xml
+  </RouterOptions>
+
+</SimOptions>

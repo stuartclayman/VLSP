@@ -1,9 +1,18 @@
+#!/bin/sh
+
 echo "Creating averageenergy figure"
 
-counter=2
-result="`cat scenario`/averageenergy.txt Average_Energy_Consumed Time Average_Energy_Consumed"
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="averageenergy"
+    # create file  
+    ./averageenergy > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
 
-./averageenergy > `cat scenario`/averageenergy.txt
+counter=2
+result="`cat scenario`/$filename.txt Average_Energy_Consumed Time Average_Energy_Consumed"
 
 for a in `cat range`
 do
@@ -16,4 +25,4 @@ echo $result
 
 ./plotaverageenergyfigure $result
 
-./createpicture averageenergy
+./createpicture `cat scenario`/$filename

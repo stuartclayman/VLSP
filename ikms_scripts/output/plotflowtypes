@@ -1,7 +1,8 @@
+#!/bin/sh
 echo "Creating flowtypes figure"
 
 counter=2
-result="`cat scenario`/$1.txt Number_Of_Flows_Per_Communication_Method Time Number_Of_Flows"
+result="`cat scenario`/flowtypes-$1.txt Number_Of_Flows_Per_Communication_Method Time Number_Of_Flows"
 
 ./flowtypes $1 > `cat scenario`/flowtypes-$1.txt
 
@@ -16,4 +17,4 @@ echo $result
 
 ./plotflowtypesfigure $result
 
-./createpicture `cat scenario`/$1
+./createpicture `cat scenario`/flowtypes-$1

@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # remove file if it is there
 #echo "Removing file $1.txt, if it is there"
 rm $1.txt 2> /dev/null
