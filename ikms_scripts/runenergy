@@ -1,9 +1,9 @@
 #!/bin/sh
 
 # energy experiment stressing memory
-#./startstress -m 5
+./startstress -m 5
 echo Waiting 500 secs
-#sleep 500
+sleep 500
 
 # set nodes number
 nodesnum=30
@@ -11,7 +11,7 @@ nodesnum=30
 # use nodes with particular load level
 #cp ../scripts/ikms$nodesnum-m1.xml ../scripts/ikms$nodesnum.xml
 
-./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-m5 "Placement" "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-m5 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
 
 # revert back configuration file to nodes without load
 #cp ../scripts/ikms$nodesnum.xml.bak ../scripts/ikms$nodesnum.xml

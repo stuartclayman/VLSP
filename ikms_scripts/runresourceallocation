@@ -27,7 +27,7 @@ echo "$figuresrange" > output/range
 echo "$figuresrangetype" > output/rangetype
 
 # Set createpictures mode (value 1) to create the figures, default value 0
-createpictures=1
+createpictures=0
 
 # Shutting down IKMS (in case it is still running)
 if [ $createpictures -eq "0" ]; then ./shutDownIKMS 2> /dev/null

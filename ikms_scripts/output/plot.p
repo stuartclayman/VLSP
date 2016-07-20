@@ -10,9 +10,9 @@ set xlabel font 'Arial,18'
 set ylabel font 'Arial,18'
 set title font 'Arial,18'
 set key font 'Arial,18'
-set title 'Average Information Freshness (Selected Flows)'
+set title 'Number Of Flows Per Communication Method'
 set xlabel 'Time'
-set ylabel 'Information Freshness'
+set ylabel 'Number Of Flows'
 set key top left
 set style line 1 lt 1 lw 5 lc rgb 'black'
 set style line 2 lt 1 lw 5 lc rgb 'gray'
@@ -27,4 +27,4 @@ set style line 10 lt 2 lw 5 lc rgb 'black'
 set style line 11 lt 3 lw 5 lc rgb 'black'
 set style line 12 lt 6 lw 5 lc rgb 'black'
 set style line 13 lt 2 lw 3 lc rgb 'black'
-plot 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.txt' using 1:2 title 'Placement EnergyLinear' with lines linestyle 1                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.txt' using 1:3 title 'Placement EnergyPaper' with lines linestyle 2                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.txt' using 1:4 title 'Placement EnergyTranscritical' with lines linestyle 3                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.txt' using 1:5 title 'Placement EnergyPichfork' with lines linestyle 4                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.txt' using 1:6 title 'Placement LeastBusy' with lines linestyle 5                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.txt' using 1:7 title 'Placement LeastUsed' with lines linestyle 6
+plot 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.txt' using 1:2 title 'EnergyLinear' with lines linestyle 1                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.txt' using 1:3 title 'EnergyPaper' with lines linestyle 2                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.txt' using 1:4 title 'EnergyQuadratic' with lines linestyle 3                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.txt' using 1:5 title 'EnergyTranscritical' with lines linestyle 4                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.txt' using 1:6 title 'EnergyPichfork' with lines linestyle 5                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.txt' using 1:7 title 'LeastBusy' with lines linestyle 6                , 'ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.txt' using 1:8 title 'LeastUsed' with lines linestyle 7
