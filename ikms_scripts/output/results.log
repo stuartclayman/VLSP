@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=latex 2016.6.7)  19 JUL 2016 12:47
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=latex 2016.6.7)  22 JUL 2016 14:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -142,99 +142,114 @@ Overfull \hbox (33.09314pt too wide) in paragraph at lines 9--9
 achines-
  []
 
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/cpuload.eps Graphic fi
+le (type eps)
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/cpuload.eps> [1]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/memorystorage.eps Grap
+hic file (type eps)
 
-LaTeX Warning: File `ScenarioEnergyPlacementDirectBusyMachines-30-m5/cpuload.ep
-s' not found on input line 14.
-
-
-! LaTeX Error: File `ScenarioEnergyPlacementDirectBusyMachines-30-m5/cpuload.ep
-s' not found.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.14 ...ementDirectBusyMachines-30-m5/cpuload.eps}
-                                                  
-? .
-Type <return> to proceed, S to scroll future error messages,
-R to run without stopping, Q to run quietly,
-I to insert something, E to edit your file,
-1 or ... or 9 to ignore the next 1 to 9 tokens of input,
-H for help, X to quit.
-? 
-! Emergency stop.
- ...                                              
-                                                  
-l.14 ...ementDirectBusyMachines-30-m5/cpuload.eps}
-                                                  
-Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
- 
-Here is how much of TeX's memory you used:
- 1321 strings out of 495064
- 14778 string characters out of 3182225
- 58383 words of memory out of 3000000
- 4548 multiletter control sequences out of 15000+200000
- 8579 words of font info for 34 fonts, out of 3000000 for 9000
- 14 hyphenation exceptions out of 8191
- 25i,1n,26p,197b,240s stack positions out of 5000i,500n,10000p,200000b,50000s
-No pages of output.
-usyMachines-30-m5/flowtypes-0.eps> [9
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/memorystorage.eps> [2
 
 ]
-File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-1.eps Graphic f
-ile (type eps)
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/responsetime.eps Graph
+ic file (type eps)
 
-<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-1.eps> [10
-
-]
-File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-2.eps Graphic f
-ile (type eps)
-
-<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-2.eps> [11
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/responsetime.eps> [3
 
 ]
-File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-3.eps Graphic f
-ile (type eps)
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/freshness.eps Graphic 
+file (type eps)
 
-<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-3.eps> [12
-
-]
-File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-4.eps Graphic f
-ile (type eps)
-
-<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-4.eps> [13
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/freshness.eps> [4
 
 ]
-File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.eps Graphic f
-ile (type eps)
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/minenergy.eps Graphic 
+file (type eps)
 
-<ScenarioEnergyPlacementDirectBusyMachines-30-m5/flowtypes-5.eps> [14
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/minenergy.eps> [5
 
 ]
-File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/responsetimemonitoredflow
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/maxenergy.eps Graphic 
+file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/maxenergy.eps> [6
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/averageenergy.eps Grap
+hic file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/averageenergy.eps> [7
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/totalenergy.eps Graphi
+c file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/totalenergy.eps> [8
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-0.eps Graphi
+c file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-0.eps> [9
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-1.eps Graphi
+c file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-1.eps> [10
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-2.eps Graphi
+c file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-2.eps> [11
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-3.eps Graphi
+c file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-3.eps> [12
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-4.eps Graphi
+c file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-4.eps> [13
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-5.eps Graphi
+c file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-5.eps> [14
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-6.eps Graphi
+c file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/flowtypes-6.eps> [15
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/responsetimemonitoredf
+lows.eps Graphic file (type eps)
+
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/responsetimemonitoredflows.
+eps> [16
+
+]
+File: ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/freshnessmonitoredflow
 s.eps Graphic file (type eps)
 
-<ScenarioEnergyPlacementDirectBusyMachines-30-m5/responsetimemonitoredflows.eps
-> [15
-
-]
-File: ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.e
-ps Graphic file (type eps)
-
-<ScenarioEnergyPlacementDirectBusyMachines-30-m5/freshnessmonitoredflows.eps>
-[16
+<ScenarioEnergyPlacementDirectBusyMachines-50-c5-m5/freshnessmonitoredflows.eps
+> [17
 
 ] (./results.aux) ) 
 Here is how much of TeX's memory you used:
- 1361 strings out of 495064
- 16010 string characters out of 3182225
+ 1364 strings out of 495064
+ 16159 string characters out of 3182225
  58383 words of memory out of 3000000
- 4571 multiletter control sequences out of 15000+200000
+ 4573 multiletter control sequences out of 15000+200000
  8879 words of font info for 35 fonts, out of 3000000 for 9000
  14 hyphenation exceptions out of 8191
- 25i,4n,26p,197b,242s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 25i,4n,26p,199b,242s stack positions out of 5000i,500n,10000p,200000b,50000s
 
-Output written on results.dvi (16 pages, 5444 bytes).
+Output written on results.dvi (17 pages, 5828 bytes).

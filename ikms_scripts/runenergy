@@ -1,22 +1,22 @@
 #!/bin/sh
 
 # energy experiment stressing memory
-./startstress -m 5
-echo Waiting 500 secs
-sleep 500
+#./startstress -m 5
+#echo Waiting 500 secs
+#sleep 500
 
 # set nodes number
-nodesnum=30
+#nodesnum=30
 
 # use nodes with particular load level
 #cp ../scripts/ikms$nodesnum-m1.xml ../scripts/ikms$nodesnum.xml
 
-./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-m5 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+#./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-m5 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
 
 # revert back configuration file to nodes without load
 #cp ../scripts/ikms$nodesnum.xml.bak ../scripts/ikms$nodesnum.xml
 
-./killstress
+#./killstress
 
 
 # Energy experiment stressing cpu
@@ -27,6 +27,62 @@ nodesnum=30
 # set nodes number
 #nodesnum=30
 
-#./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-c5 "Placement" "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+#./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-c5 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
 
 #./killstress
+
+
+
+
+# Energy experiment stressing cpu more
+#./startstress -c 10
+#echo Waiting 500 secs
+#sleep 500
+
+# set nodes number
+#nodesnum=30
+
+#./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-c10 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+
+#./killstress
+
+
+
+# Energy experiment stressing cpu and memory
+#./startstress -c 5 -m 5
+#echo Waiting 500 secs
+#sleep 500
+
+# set nodes number
+#nodesnum=30
+
+#./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-c5-m5 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+
+#./killstress
+
+# Energy experiment stressing cpu and memory bigger contention
+#./startstress -c 5 -m 5
+#echo Waiting 500 secs
+#sleep 500
+
+# set nodes number
+#nodesnum=50
+
+#./runresourceallocation ScenarioEnergyPlacementDirectBusyMachines-$nodesnum-c5-m5 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+
+#./killstress
+
+
+
+# Energy experiment stressing VMs
+
+# set nodes number
+nodesnum=30
+
+# use nodes with particular load level
+cp ../scripts/ikms$nodesnum-c1.xml ../scripts/ikms$nodesnum.xml
+
+./runresourceallocation ScenarioEnergyPlacementDirectBusyVMs-$nodesnum-c1 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+
+# revert back configuration file to nodes without load
+cp ../scripts/ikms$nodesnum.xml.bak ../scripts/ikms$nodesnum.xml
