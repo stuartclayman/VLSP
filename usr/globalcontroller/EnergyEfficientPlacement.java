@@ -32,7 +32,7 @@ public class EnergyEfficientPlacement implements PlacementEngine {
     private int currentFreeMemory=0;
     private long currentOutputBytes=0;
     private long currentInputBytes=0;
-	private float currentLoadAverage=0;
+    private float currentLoadAverage=0;
 
     /**
      * Constructor

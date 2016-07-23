@@ -157,7 +157,7 @@ public class IKMSEventEngine implements EventEngine  {
 
 
     private void followRouter(Event e, EventScheduler s, JSONObject response, VimFunctions v) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "followRouter " + e);
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "followRouter" + e);
 
         int routerId;
         long now = e.getTime();
@@ -167,12 +167,13 @@ public class IKMSEventEngine implements EventEngine  {
             routerId = response.getInt("routerID");  // WAS g.getMaxRouterId();
             // keep track of routerIds for later on when the engine ends
             routerIDs.add(routerId);
-            
+           
+
             // deploy stress application with correct parameters
             double loadCPU=0;
             double loadMemory=0;
             
-            if (nodeCPULoadDist_ == null) {
+            if (nodeCPULoadDist_ != null) {
                 try {
 					loadCPU = (double)(nodeCPULoadDist_.getVariate());
 				} catch (ProbException e1) {
@@ -182,7 +183,7 @@ public class IKMSEventEngine implements EventEngine  {
 				}
             }
             
-            if (nodeMemoryLoadDist_ == null) {
+            if (nodeMemoryLoadDist_ != null) {
                 try {
 					loadMemory = (double)(nodeMemoryLoadDist_.getVariate());
 				} catch (ProbException e1) {
@@ -206,6 +207,8 @@ public class IKMSEventEngine implements EventEngine  {
          		// deploy stress with parameter c & m
             		v.createApp(routerId, "demo_usr.stress.Stress", "-c "+loadCPU+" -m "+loadMemory);
             }
+
+	    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stress parameters:" + Double.toString(loadCPU)+" "+Double.toString(loadMemory));
             
         } catch (JSONException jse) {
             routerId = -1;
