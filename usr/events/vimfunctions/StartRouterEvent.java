@@ -55,7 +55,7 @@ public class StartRouterEvent extends AbstractExecutableEvent implements
 				VimFunctions vim = (VimFunctions) context;
 
 				if (address == null) {
-					if (parameters == null) { // added option for parameters
+					if (parameters != null) { // added option for parameters
 						return vim.createRouter(parameters);
 					} else {
 						return vim.createRouter();

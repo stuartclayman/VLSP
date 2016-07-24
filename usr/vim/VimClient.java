@@ -93,15 +93,14 @@ public class VimClient implements VimFunctions {
     /**
      * Equivalent of: curl -X POST http://localhost:8888/router/?parameters=ppp
      *
-     * Returns JSONObject: {"address":"1","parameters":"-c 1","mgmtPort":11000,"name":"Router-1","r2rPort":11001,"routerID":1}
+     * Returns JSONObject: {"address":"1","parameters":"-c%201","mgmtPort":11000,"name":"Router-1","r2rPort":11001,"routerID":1}
      */
     public JSONObject createRouter(String parameters) throws JSONException {
         try {
-            String uri = vimURI + "/router/?parameters=" + parameters;
+            String uri = vimURI + "/router/?parameters=" +  parameters.replace(" ", "%20");
 
             // adding form data causes a POST
             JSONObject jsobj = rest.json(uri, form("")).toObject();
-
             return jsobj;
 
         } catch (IOException ioe) {
@@ -132,11 +131,11 @@ public class VimClient implements VimFunctions {
     /**
      * Equivalent of: curl -X POST http://localhost:8888/router/?name=nnn&address=aaa&parameters=ccc
      *
-     * Returns JSONObject: {"address":"1","parameters":"-c 1","mgmtPort":11000,"name":"Router-1","r2rPort":11001,"routerID":1}
+     * Returns JSONObject: {"address":"1","parameters":"-c%201","mgmtPort":11000,"name":"Router-1","r2rPort":11001,"routerID":1}
      */
     public JSONObject createRouter(String name, String address, String parameters) throws JSONException {
         try {
-            String uri = vimURI + "/router/?name=" + name + "&address=" + address + "&parameters=" + parameters;
+            String uri = vimURI + "/router/?name=" + name + "&address=" + address + "&parameters=" + parameters.replace(" ", "%20");
 
             // adding form data causes a POST
             JSONObject jsobj = rest.json(uri, form("")).toObject();
