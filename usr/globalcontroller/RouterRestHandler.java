@@ -122,6 +122,7 @@ public class RouterRestHandler extends BasicRequestHandler {
 
         String name = "";
         String address = "";
+        String parameters = "";
 
         Query query = request.getQuery();
 
@@ -135,6 +136,10 @@ public class RouterRestHandler extends BasicRequestHandler {
             address = query.get("address");
         }
 
+        if (query.containsKey("parameters")) {
+        		parameters = query.get("parameters").replace("%20", " ");
+        }
+
 
         /* do work */
 
@@ -144,7 +149,7 @@ public class RouterRestHandler extends BasicRequestHandler {
         String failMessage = null;
         JSONObject jsobj = null;
 
-        jsobj = controller_.createRouter(name, address);
+        jsobj = controller_.createRouter(name, address, parameters);
 
         if (jsobj.get("success").equals(false)) {
             success = false;
