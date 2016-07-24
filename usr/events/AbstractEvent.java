@@ -20,7 +20,7 @@ public abstract class AbstractEvent implements Event {
         engine = eng;
         parameters = null;
     }
-    
+ 
     /**
      * Important constructor to create Event (with parameters).
      */

@@ -46,12 +46,18 @@ public class StartRouterEvent extends AbstractExecutableEvent implements StartRo
             try {
                 VimFunctions vim = (VimFunctions)context;
 
+
                 if (address == null) {
+
                     return vim.createRouter();
                 } else {
                 		if (parameters == null) { // added option for parameters (Lefteris)
+
                 			return vim.createRouter(name, address);
+
                 		} else {
+
+
                 			return vim.createRouter(name, address, parameters);
                 		}
                 }
