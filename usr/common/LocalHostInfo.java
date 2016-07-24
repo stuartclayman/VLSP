@@ -358,6 +358,11 @@ public class LocalHostInfo {
     public double GetCurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes, float loadAverage) {
         return energyModel.CurrentEnergyConsumption (averageCPULoad, averageIdleCPU, memoryUsed, freeMemory, networkOutboundBytes, networkIncomingBytes, loadAverage);
     }
+    
+    // returns future energy consumption from the energy model
+    public double GetCurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes, float loadAverage, double extraCPU, double extraMemory) {
+        return energyModel.CurrentEnergyConsumption (averageCPULoad, averageIdleCPU, memoryUsed, freeMemory, networkOutboundBytes, networkIncomingBytes, loadAverage, extraCPU, extraMemory);
+    }
 
     /**
      * Check if this is equal to another LocalHostInfo
