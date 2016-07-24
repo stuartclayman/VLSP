@@ -150,15 +150,21 @@ public class EnergyModel {
 	
 	// Calculate EnergyConsumption for that particular timeframe - the HostInfo probing period (assuming resource usage is relatively stable)
 	// Assuming execution of this function per fixed sampling period
-	public double CurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes, float loadAverage) {
+	public double CurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes, float loadAverage, double extraCPU, double extraMemory) {
 		
 		// should normalize measurements first
-		float normalizedCPU = loadAverage;
-		float normalizedMemory = memoryUsed / (memoryUsed + freeMemory);
+		float normalizedCPU = loadAverage + (float) extraCPU;
+		if (normalizedCPU>1)
+			normalizedCPU=1;
+		float normalizedMemory = memoryUsed / (memoryUsed + freeMemory) + (float) extraMemory;
+		if (normalizedMemory>1)
+			normalizedMemory=1;
 		float normalizedNetwork = (networkOutboundBytes + networkIncomingBytes) / maxNetworkTransmissionBytes;
 		
 		double currentEnergy = c +  ProcessingConsumptionFunction (normalizedCPU) + MemoryConsumptionFunction (normalizedMemory) + NetworkLoadConsumptionFunction (normalizedNetwork);
 
+		System.out.println ("Energy Consumption: CPU load was:"+loadAverage+", it is now "+normalizedCPU);
+		System.out.println ("Energy Consumption: Memory was:"+memoryUsed / (memoryUsed + freeMemory)+", it is now "+normalizedMemory);
 		System.out.println ("Energy Consumption: baseline " + c+" processing " + ProcessingConsumptionFunction (normalizedCPU)+ " memory " + MemoryConsumptionFunction (normalizedMemory) + " network " + NetworkLoadConsumptionFunction (normalizedNetwork));
 
 		// calculate totalTime (in sampling periods)
@@ -174,11 +180,15 @@ public class EnergyModel {
 		lastFreeMemory = freeMemory;
         lastNetworkOutboundBytes = networkOutboundBytes;
         lastNetworkIncomingBytes = networkIncomingBytes;
-	lastLoadAverage = loadAverage;
+        lastLoadAverage = loadAverage;
 		// keep track of last energy measurement
 		lastEnergyMeasurement = currentEnergy;
 
 		return currentEnergy;
+	}
+	
+	public double CurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes, float loadAverage) {
+		return CurrentEnergyConsumption (averageCPULoad, averageIdleCPU, memoryUsed, freeMemory, networkOutboundBytes, networkIncomingBytes, loadAverage, 0, 0);
 	}
 	
 	// return latest measurements

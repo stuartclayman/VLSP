@@ -193,6 +193,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Main entry point.
      */
     public static void main(String[] args) {
+    		
         if (args.length < 1 || args.length > 2) {
             System.err.println("Command line must specify "
                                + "XML file to read and nothing else.");
