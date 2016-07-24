@@ -7,6 +7,7 @@ public interface VimFunctions {
 
     public JSONObject createRouter() throws JSONException;
     public JSONObject createRouter(String name, String address) throws JSONException;
+    public JSONObject createRouter(String name, String address, String parameters) throws JSONException;
     public JSONObject createRouterWithName(String name) throws JSONException;
     public JSONObject createRouterWithAddress(String address) throws JSONException;
     public JSONObject deleteRouter(int routerID) throws JSONException;

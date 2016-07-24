@@ -2,15 +2,12 @@ package usr.events.globalcontroller;
 
 import java.io.IOException;
 
-import usr.events.Event;
-import usr.events.EventDelegate;
-import usr.events.EventScheduler;
-import usr.events.vim.StartRouter;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.BasicRouterInfo;
 import usr.common.PortPool;
 import usr.engine.EventEngine;
+import usr.events.vim.StartRouter;
 import usr.globalcontroller.GlobalController;
 import usr.interactor.LocalControllerInteractor;
 import usr.localcontroller.LocalControllerInfo;
@@ -21,6 +18,7 @@ import usr.logging.USR;
 public class StartRouterEvent extends AbstractGlobalControllerEvent implements StartRouter {
     String address_ = null;
     String name_ = null;
+    String parameters_ = null;
 
     public StartRouterEvent(long time, EventEngine eng) {
         super(time, eng);
@@ -32,11 +30,18 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
         address_ = address;
     }
 
+    public StartRouterEvent(long time, EventEngine eng, String address, String name, String parameters) {
+        super(time, eng);
+        name_ = name;
+        address_ = address;
+        parameters_ = parameters;
+    }
+    
     /**
      * Create a StartRouterEvent from an existing generic StartRouterEvent.
      */
     public StartRouterEvent(usr.events.vim.StartRouterEvent sre) {
-        this(sre.time, sre.engine, sre.address, sre.name);
+        this(sre.time, sre.engine, sre.address, sre.name, sre.parameters);
     }
 
     @Override
@@ -63,7 +68,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
 
     @Override
     public JSONObject execute(GlobalController gc) {
-        int rNo = startRouter(gc, time, address_, name_);
+        int rNo = startRouter(gc, time, address_, name_, parameters_);
         JSONObject jsobj = new JSONObject();
 
         try {
@@ -91,10 +96,10 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
         return jsobj;
     }
 
-    public int startRouter(GlobalController gc, long time, String address, String name) {
+    public int startRouter(GlobalController gc, long time, String address, String name, String parameters) {
         int rId = gc.getNextNodeId();
         if (!gc.isSimulation()) {
-            if (doRouterStart(gc, rId, address, name) == false) {
+            if (doRouterStart(gc, rId, address, name, parameters) == false) {
                 return -1;
             }
         }
@@ -103,7 +108,7 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
         return rId;
     }
 
-    private boolean doRouterStart(GlobalController gc, int id, String address, String name) {
+    private boolean doRouterStart(GlobalController gc, int id, String address, String name, String parameters) {
         // If we have no address or name fake these
         if (name == null) {
             name = new String("Router-" + id);
@@ -112,9 +117,14 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
         if (address == null) {
             address = new String("" + id);
         }
-
-        // Find least used local controller
-        LocalControllerInfo leastUsed = gc.placementForRouter(name, address);
+        
+		// Find least used local controller (either by passing extra parameters or not)
+        LocalControllerInfo leastUsed = null;
+        if (parameters == null) {
+            leastUsed = gc.placementForRouter(name, address);
+        } else {
+            leastUsed = gc.placementForRouter(name, address, parameters);
+        }
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Choose LocalControllerInfo " + leastUsed);
 

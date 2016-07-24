@@ -20,7 +20,7 @@ import demo_usr.ikms.eventengine.StaticTopology;
 public class DistributedInformationFlowsExperiment {
 
 	int warmupTime=100000; // 50000
-	int totalTime=150000; // 80000
+	int totalTime=150000; // 80000 
 	int nodesNumber=3;
 	int informationSourcesNumber=1;
 	int urisPerInformationSourceNumber=1;

@@ -14,24 +14,27 @@ import us.monoid.json.JSONException;
 public class StartRouterEvent extends AbstractExecutableEvent implements StartRouter {
     public final String address;
     public final String name;
+    public final String parameters;
 
     public StartRouterEvent(long time, EventEngine eng) {
         super(time, eng);
         this.name = null;
         this.address = null;
+        this.parameters = null;
     }
 
-    public StartRouterEvent(long time, EventEngine eng, String address, String name) {
+    public StartRouterEvent(long time, EventEngine eng, String address, String name, String parameters) {
         super(time, eng);
         this.name = name;
         this.address = address;
+        this.parameters = parameters;
     }
 
     /**
      * Create a StartRouterEvent from an existing generic StartRouterEvent.
      */
     public StartRouterEvent(usr.events.vim.StartRouterEvent sre) {
-        this(sre.time, sre.engine, sre.address, sre.name);
+        this(sre.time, sre.engine, sre.address, sre.name, sre.parameters); // added parameters here (Lefteris)
     }
 
     /** Execute the event, pass in a context object, and return a JSON object with information*/
@@ -46,7 +49,11 @@ public class StartRouterEvent extends AbstractExecutableEvent implements StartRo
                 if (address == null) {
                     return vim.createRouter();
                 } else {
-                    return vim.createRouter(name, address);
+                		if (parameters == null) { // added option for parameters (Lefteris)
+                			return vim.createRouter(name, address);
+                		} else {
+                			return vim.createRouter(name, address, parameters);
+                		}
                 }
             } catch (JSONException jse) {
                 return fail("JSONException " + jse.getMessage());

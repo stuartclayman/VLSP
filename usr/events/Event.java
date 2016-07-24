@@ -14,6 +14,9 @@ public interface Event {
     /** Accessor function for time*/
     public long getTime();
 
+    /** Accessor function for parameters*/
+    public String getParameters();
+    
     /**
      * Get the event scheduler that processes this event
      */

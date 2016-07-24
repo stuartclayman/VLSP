@@ -1084,6 +1084,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         return placementEngine.routerPlacement(name, address);
     }
 
+    /**
+     * Do some placement calculation with extra parameter passing (Lefteris)
+     */
+    public LocalControllerInfo placementForRouter(String name, String address, String parameters) {
+        return placementEngine.routerPlacement(name, address, parameters);
+    }
 
     /** Register existence of router */
     public void registerRouter(long time,int rId) {
@@ -3302,6 +3308,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
     public JSONObject createRouter(String name, String address) throws JSONException {
         StartRouterEvent ev = new StartRouterEvent(getElapsedTime(), null, address, name);
+        return executeEvent(ev);
+    }
+    
+    public JSONObject createRouter(String name, String address, String parameters) throws JSONException {
+        StartRouterEvent ev = new StartRouterEvent(getElapsedTime(), null, address, name, parameters);
         return executeEvent(ev);
     }
 

@@ -159,6 +159,16 @@ public class EnergyEfficientPlacement implements PlacementEngine {
         return leastUsed;
     }
 
+    /**
+     * Get the relevant LocalControllerInfo for a placement of a router with 
+     * a specified name and address. This placement method is not using the 
+     * extra parameters.
+     */
+    public LocalControllerInfo routerPlacement(String name, String address, String parameters) {
+        Logger.getLogger("log").logln(USR.STDOUT, "EnergyEfficientPlacement - Extra parameters passed:" + parameters);
+    		// execute the regular routerPlacement method
+    		return routerPlacement(name, address);
+    }
 
     /**
      * Get all the possible placement destinations

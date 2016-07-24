@@ -6,6 +6,7 @@ import usr.engine.EventEngine;
 /** Class represents a global controller event*/
 public abstract class AbstractEvent implements Event {
     public final long time;
+    public final String parameters;
     protected EventScheduler scheduler_;
     public final EventEngine engine;
     protected Object context;
@@ -17,6 +18,17 @@ public abstract class AbstractEvent implements Event {
         // this sets the public final variables: time and engine
         time = t;
         engine = eng;
+        parameters = null;
+    }
+    
+    /**
+     * Important constructor to create Event (with parameters).
+     */
+    protected AbstractEvent(long t, EventEngine eng, String p) {
+        // this sets the public final variables: time and engine
+        time = t;
+        engine = eng;
+        parameters = p;
     }
         
     /** Return event as string*/
@@ -27,6 +39,12 @@ public abstract class AbstractEvent implements Event {
     @Override
     public long getTime() {
         return time;
+    }
+    
+    /** Accessor function for parameters*/
+    @Override
+    public String getParameters() {
+        return parameters;
     }
 
     /**

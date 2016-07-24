@@ -1,6 +1,7 @@
 package usr.globalcontroller;
 
 import usr.localcontroller.LocalControllerInfo;
+
 import java.util.Set;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -85,6 +86,15 @@ public class LeastUsedLoadBalancer implements PlacementEngine {
         }
     }
 
+    /**
+     * Get the relevant LocalControllerInfo for a placement of a router with 
+     * a specified name and address. This placement method is not using the 
+     * extra parameters.
+     */
+    public LocalControllerInfo routerPlacement(String name, String address, String parameters) {
+    		// execute the regular routerPlacement method
+    		return routerPlacement(name, address);
+    }
 
 
     /**

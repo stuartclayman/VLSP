@@ -38,451 +38,497 @@ import usr.logging.USR;
 import usr.vim.VimFunctions;
 
 /**
-   This engine uses probability distributions to add events into the
-   event library
+ * This engine uses probability distributions to add events into the event
+ * library
  */
-public class IKMSEventEngine implements EventEngine  {
-    int timeToEnd_;       // Time to end of simulation (ms)
-    ProbDistribution nodeCreateDist_ = null;       //  Distribution for creating nodes
-    ProbDistribution nodeDeathDist_ = null;        // Distribution of node lifetimes
-    ProbDistribution linkCreateDist_ = null;       // Distribution for number of links created
-    ProbDistribution linkDeathDist_ = null;        // Distribution for link lifetimes
-    ProbDistribution nodeCPULoadDist_ = null;      // Distribution of cpu load (stress parameter c)
-    ProbDistribution nodeMemoryLoadDist_ = null;   // Distribution of memory-related load (stress parameter m)
-    private boolean preferentialAttachment_ = false;     // If true links are chosen using P.A.
+public class IKMSEventEngine implements EventEngine {
+	int timeToEnd_; // Time to end of simulation (ms)
+	ProbDistribution nodeCreateDist_ = null; // Distribution for creating nodes
+	ProbDistribution nodeDeathDist_ = null; // Distribution of node lifetimes
+	ProbDistribution linkCreateDist_ = null; // Distribution for number of links
+												// created
+	ProbDistribution linkDeathDist_ = null; // Distribution for link lifetimes
+	ProbDistribution nodeCPULoadDist_ = null; // Distribution of cpu load
+												// (stress parameter c)
+	ProbDistribution nodeMemoryLoadDist_ = null; // Distribution of
+													// memory-related load
+													// (stress parameter m)
+	private boolean preferentialAttachment_ = false; // If true links are chosen
+														// using P.A.
 
-    private boolean staticTopology_ = false;     // whether the topology is static or not
+	private boolean staticTopology_ = false; // whether the topology is static
+												// or not
 
-    int initialNumberOfRouters_ = 1;     // Initial number of routers
-    
-    List<Integer>routerIDs = null;
+	int initialNumberOfRouters_ = 1; // Initial number of routers
 
-    /** Constructor from Parameter string */
-    public IKMSEventEngine(int time, String parms) throws EventEngineException {
-        timeToEnd_ = time*1000;
-        parseXMLFile(parms);
-        
-        routerIDs = new ArrayList<Integer>();
-    }
+	List<Integer> routerIDs = null;
 
-    /** Start up and shut down events */    
-    @Override
-    public void startStopEvents(EventScheduler s, EventDelegate obj) {
-        // simulation start
-        StartSimulationEvent e0 = new StartSimulationEvent(0);
+	/** Constructor from Parameter string */
+	public IKMSEventEngine(int time, String parms) throws EventEngineException {
+		timeToEnd_ = time * 1000;
+		parseXMLFile(parms);
 
-        s.addEvent(e0);
+		routerIDs = new ArrayList<Integer>();
+	}
 
-        // simulation end
-        EndSimulationEvent e = new EndSimulationEvent(timeToEnd_);
-        s.addEvent(e);
-    }
+	/** Start up and shut down events */
+	@Override
+	public void startStopEvents(EventScheduler s, EventDelegate obj) {
+		// simulation start
+		StartSimulationEvent e0 = new StartSimulationEvent(0);
 
-    /** Initial events to add to schedule */
-    @Override
-    public void initialEvents(EventScheduler s, EventDelegate obj) {
-        // Start initial router
-        long time;
+		s.addEvent(e0);
 
-        Event[] e = new Event[initialNumberOfRouters_];
-        // create a number of initial routers (based on the initial number of nodes parameter)
-        try {
-            for (int i = 0; i<initialNumberOfRouters_; i++) {
+		// simulation end
+		EndSimulationEvent e = new EndSimulationEvent(timeToEnd_);
+		s.addEvent(e);
+	}
 
-                //  Schedule new node
-                try {
-                    time = (long)(nodeCreateDist_.getVariate()*1000);
-                } catch (ProbException x) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin()+" Error generating trafficArriveDist variate");
-                    time = 0;
-                }
+	/** Initial events to add to schedule */
+	@Override
+	public void initialEvents(EventScheduler s, EventDelegate obj) {
+		// Start initial router
+		long time;
 
-                //Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
-                Logger.getLogger("log").logln(USR.STDOUT,"Starting router number:"+i+" of routers:"+initialNumberOfRouters_);
+		Event[] e = new Event[initialNumberOfRouters_];
+		// create a number of initial routers (based on the initial number of
+		// nodes parameter)
+		try {
+			for (int i = 0; i < initialNumberOfRouters_; i++) {
 
-                e[i] = new StartRouterEvent(time, this);
-                s.addEvent(e[i]);
-
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-    /** Add or remove events following a simulation event */
-    @Override
-    public void preceedEvent(Event e, EventScheduler s, EventDelegate obj){
-	Logger.getLogger("log").logln(USR.STDOUT,leadin() + "preceedEvent " + e);
-
-	if (e instanceof ExecutableEvent && e instanceof StartRouter) {
-            ExecutableEvent ee = (ExecutableEvent)e;
-            preceedRouter(ee, s, (VimFunctions)ee.getContextObject());
-            return;
-        }
-
-
-    }
-
-    /** Add or remove events following a simulation event */
-    @Override
-    public void followEvent(Event e, EventScheduler s, JSONObject response, EventDelegate obj){
-        Logger.getLogger("log").logln(USR.STDOUT,leadin() + "followEvent " + e);
-
-        if (e instanceof ExecutableEvent && e instanceof StartRouter) {
-            ExecutableEvent ee = (ExecutableEvent)e;
-            followRouter(ee, s, response, (VimFunctions)ee.getContextObject());
-            return;
-        }
-    }
-    
-    @Override
-    public void finalEvents(EventDelegate obj) {
-        for (Integer routerID : routerIDs) {
-            try {
-                EndRouterEvent e2 = new EndRouterEvent(0, this, routerID);
-                
-                obj.executeEvent(e2);
-            } catch (Exception ex) {
-            }
-        }
-    }
-
-    private void preceedRouter(Event e, EventScheduler s, VimFunctions v) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "followRouter " + e);
-	
-
-
-    }
-
-
-    private void followRouter(Event e, EventScheduler s, JSONObject response, VimFunctions v) {
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "followRouter" + e);
-
-        int routerId;
-        long now = e.getTime();
-        long time;
-
-        try {
-            routerId = response.getInt("routerID");  // WAS g.getMaxRouterId();
-            // keep track of routerIds for later on when the engine ends
-            routerIDs.add(routerId);
-           
-
-            // deploy stress application with correct parameters
-            double loadCPU=0;
-            double loadMemory=0;
-            
-            if (nodeCPULoadDist_ != null) {
-                try {
-					loadCPU = (double)(nodeCPULoadDist_.getVariate());
-				} catch (ProbException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-					loadCPU = 0;
+				// Schedule new node
+				try {
+					time = (long) (nodeCreateDist_.getVariate() * 1000);
+				} catch (ProbException x) {
+					Logger.getLogger("log")
+							.logln(USR.ERROR,
+									leadin()
+											+ " Error generating trafficArriveDist variate");
+					time = 0;
 				}
-            }
-            
-            if (nodeMemoryLoadDist_ != null) {
-                try {
-					loadMemory = (double)(nodeMemoryLoadDist_.getVariate());
-				} catch (ProbException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-					loadMemory = 0;
+
+				// calculate stress parameters
+				double loadCPU = 0;
+				double loadMemory = 0;
+
+				if (nodeCPULoadDist_ != null) {
+					try {
+						loadCPU = (double) (nodeCPULoadDist_.getVariate());
+					} catch (ProbException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						loadCPU = 0;
+					}
 				}
-            }
-            
-            if (loadCPU==0&&loadMemory>0) {
-            		// deploy stress with parameter m
-    				v.createApp(routerId, "demo_usr.stress.Stress", "-m "+loadMemory);
-            }
-            
-            if (loadCPU>0&&loadMemory==0) {
-        			// deploy stress with parameter c
-        			v.createApp(routerId, "demo_usr.stress.Stress", "-c "+loadCPU);
-            }
- 
-            if (loadCPU>0&&loadMemory>0) {
-         		// deploy stress with parameter c & m
-            		v.createApp(routerId, "demo_usr.stress.Stress", "-c "+loadCPU+" -m "+loadMemory);
-            }
 
-	    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stress parameters:" + Double.toString(loadCPU)+" "+Double.toString(loadMemory));
-            
-        } catch (JSONException jse) {
-            routerId = -1;
-	    jse.printStackTrace();
-        }
+				if (nodeMemoryLoadDist_ != null) {
+					try {
+						loadMemory = (double) (nodeMemoryLoadDist_.getVariate());
+					} catch (ProbException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						loadMemory = 0;
+					}
+				}
+				String parameters = null;
 
+				if (loadCPU == 0 && loadMemory > 0) {
+					// deploy stress with parameter m
+					parameters = "-m " + loadMemory;
+				}
 
+				if (loadCPU > 0 && loadMemory == 0) {
+					// deploy stress with parameter c
+					parameters = "-c " + loadCPU;
+				}
 
-        //  Schedule new node, if topology is not static
-        if (!staticTopology_) {
-            try {
-                time = (long)(nodeCreateDist_.getVariate()*1000);
-            } catch (ProbException x) {
-                Logger.getLogger("log").logln(USR.ERROR,
-                                              leadin()+" Error generating trafficArriveDist variate");
-                time = 0;
-            }
+				if (loadCPU > 0 && loadMemory > 0) {
+					// deploy stress with parameter c & m
+					parameters = "-c " + loadCPU + " -m " + loadMemory;
+				}
 
-            //Logger.getLogger("log").logln(USR.ERROR, "Time to next router "+time);
-            StartRouterEvent e1 = new StartRouterEvent(now+time, this);
-            s.addEvent(e1);
-        }
+				// Logger.getLogger("log").logln(USR.ERROR,
+				// "Time to next router "+time);
+				Logger.getLogger("log").logln(
+						USR.STDOUT,
+						"Starting router number:" + i + " of routers:"
+								+ initialNumberOfRouters_);
 
+				if (parameters == null) {
+					e[i] = new StartRouterEvent(time, this);
+				} else {
+					Logger.getLogger("log").logln(
+							USR.STDOUT,
+							leadin() + "Stress parameters:" + parameters);
+					
+					e[i] = new StartRouterEvent(time, parameters, this);
+				}
+				s.addEvent(e[i]);
 
-        
-        System.err.println("Router list" + getRouterList(v) + " Router ID " + routerId);
-        
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
 
-        if (getRouterList(v).indexOf(routerId) == -1) {
-            System.err.println("Router did not start -- adding no links");
-            return;
-        }
+	/** Add or remove events following a simulation event */
+	@Override
+	public void preceedEvent(Event e, EventScheduler s, EventDelegate obj) {
+		Logger.getLogger("log").logln(USR.STDOUT,
+				leadin() + "preceedEvent " + e);
 
-        // Schedule node death if this will happen, in case of a non static topology
-        if (!staticTopology_) {
-            if (nodeDeathDist_ != null) {
-                try {
-                    time = (long)(nodeDeathDist_.getVariate()*1000);
-                } catch (ProbException x) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin()+" Error generating nodeDeathDist variate");
-                    time = 0;
-                }
+		if (e instanceof ExecutableEvent && e instanceof StartRouter) {
+			ExecutableEvent ee = (ExecutableEvent) e;
+			preceedRouter(ee, s, (VimFunctions) ee.getContextObject());
+			return;
+		}
 
-                EndRouterEvent e2 = new EndRouterEvent(now + time, this, new Integer(routerId));
-                s.addEvent(e2);
-            }
-        }
-        // Schedule links
-        int noLinks = 1;
-        try {
-            noLinks = linkCreateDist_.getIntVariate();
-        } catch (ProbException x) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          leadin()+" Error generating linkCreateDist variate");
+	}
 
-        }
+	/** Add or remove events following a simulation event */
+	@Override
+	public void followEvent(Event e, EventScheduler s, JSONObject response,
+			EventDelegate obj) {
+		Logger.getLogger("log")
+				.logln(USR.STDOUT, leadin() + "followEvent " + e);
 
-        ArrayList<Integer> nodes = getRouterList(v);
-        nodes.remove(nodes.indexOf(routerId));
-        ArrayList<Integer> outlinks = getOutLinks(routerId, v);
+		if (e instanceof ExecutableEvent && e instanceof StartRouter) {
+			ExecutableEvent ee = (ExecutableEvent) e;
+			followRouter(ee, s, response, (VimFunctions) ee.getContextObject());
+			return;
+		}
+	}
 
-        for (Integer l : outlinks) {
-            nodes.remove(nodes.indexOf(l));
-        }
+	@Override
+	public void finalEvents(EventDelegate obj) {
+		for (Integer routerID : routerIDs) {
+			try {
+				EndRouterEvent e2 = new EndRouterEvent(0, this, routerID);
 
-        //Logger.getLogger("log").logln(USR.ERROR, "Trying to pick "+noLinks+" links");
+				obj.executeEvent(e2);
+			} catch (Exception ex) {
+			}
+		}
+	}
 
-        for (int i = 0; i < noLinks; i++) {
-            if (nodes.size() <= 0) {
-                break;
-            }
+	private void preceedRouter(Event e, EventScheduler s, VimFunctions v) {
+		Logger.getLogger("log").logln(USR.STDOUT,
+				leadin() + "followRouter " + e);
 
-            if (preferentialAttachment_) {              // Choose a node using pref. attach.
-                int totLinks = 0;
+	}
 
-                for (int l : nodes) {
-                    totLinks += getOutLinksCount(l, v);
-                }
+	private void followRouter(Event e, EventScheduler s, JSONObject response,
+			VimFunctions v) {
+		Logger.getLogger("log")
+				.logln(USR.STDOUT, leadin() + "followRouter" + e);
 
-                int index = (int)Math.floor(Math.random()*totLinks);
+		int routerId;
+		long now = e.getTime();
+		long time;
 
-                for (int j = 0; j < nodes.size(); j++) {
-                    int l = nodes.get(j);
-                    index -= getOutLinksCount(l,v);
+		try {
+			routerId = response.getInt("routerID"); // WAS g.getMaxRouterId();
+			// keep track of routerIds for later on when the engine ends
+			routerIDs.add(routerId);
+			
+			// if there are parameters set, execute stress
+			if (e.getParameters()!=null)
+				v.createApp(routerId, "demo_usr.stress.Stress", e.getParameters());
 
-                    if (index < 0 || j == nodes.size() - 1) {
-                        nodes.remove(j);
-                        StartLinkEvent e3 = new StartLinkEvent(now, this, l, routerId);
-                        s.addEvent(e3);
-                        break;
-                    }
-                }
-            } else { 
-                //Logger.getLogger("log").logln(USR.ERROR, "Choice set "+nodes);
-                int index = (int)Math.floor( Math.random()*nodes.size());
-                int newLink = nodes.get(index);
-                //Logger.getLogger("log").logln(USR.ERROR, "Picked "+newLink);
-                nodes.remove(index);
+		} catch (JSONException jse) {
+			routerId = -1;
+			jse.printStackTrace();
+		}
 
-                StartLinkEvent e4 = new StartLinkEvent(now, this, newLink, routerId);
-                s.addEvent(e4);
+		// Schedule new node, if topology is not static
+		if (!staticTopology_) {
+			try {
+				time = (long) (nodeCreateDist_.getVariate() * 1000);
+			} catch (ProbException x) {
+				Logger.getLogger("log")
+						.logln(USR.ERROR,
+								leadin()
+										+ " Error generating trafficArriveDist variate");
+				time = 0;
+			}
 
-            }
-        }
-    }
+			// Logger.getLogger("log").logln(USR.ERROR,
+			// "Time to next router "+time);
+			StartRouterEvent e1 = new StartRouterEvent(now + time, this);
+			s.addEvent(e1);
+		}
 
-    /** Parse the XML to get probability distribution information*/
-    private void parseXMLFile(String fName) throws EventEngineException {
-        try {
-            DocumentBuilderFactory docBuilderFactory =
-                DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-            Document doc = docBuilder.parse (new File(fName));
+		System.err.println("Router list" + getRouterList(v) + " Router ID "
+				+ routerId);
 
-            // normalize text representation
-            doc.getDocumentElement ().normalize ();
-            String basenode = doc.getDocumentElement().getNodeName();
+		if (getRouterList(v).indexOf(routerId) == -1) {
+			System.err.println("Router did not start -- adding no links");
+			return;
+		}
 
-            if (!basenode.equals("IKMSEngine")) {
-                throw new SAXException("Base tag should be IKMSEngine");
-            }
+		// Schedule node death if this will happen, in case of a non static
+		// topology
+		if (!staticTopology_) {
+			if (nodeDeathDist_ != null) {
+				try {
+					time = (long) (nodeDeathDist_.getVariate() * 1000);
+				} catch (ProbException x) {
+					Logger.getLogger("log")
+							.logln(USR.ERROR,
+									leadin()
+											+ " Error generating nodeDeathDist variate");
+					time = 0;
+				}
 
-            NodeList nbd = doc.getElementsByTagName("NodeBirthDist");
-            nodeCreateDist_ = ProbDistribution.parseProbDist(nbd, "NodeBirthDist");
+				EndRouterEvent e2 = new EndRouterEvent(now + time, this,
+						new Integer(routerId));
+				s.addEvent(e2);
+			}
+		}
+		// Schedule links
+		int noLinks = 1;
+		try {
+			noLinks = linkCreateDist_.getIntVariate();
+		} catch (ProbException x) {
+			Logger.getLogger("log").logln(USR.ERROR,
+					leadin() + " Error generating linkCreateDist variate");
 
-            if (nodeCreateDist_ == null) {
-                throw new SAXException ("Must specific NodeBirthDist");
-            }
-            NodeList lcd = doc.getElementsByTagName("LinkCreateDist");
-            linkCreateDist_ = ProbDistribution.parseProbDist(lcd, "LinkCreateDist");
+		}
 
-            if (linkCreateDist_ == null) {
-                throw new SAXException ("Must specific LinkCreateDist");
-            }
-            
-            NodeList ncld = doc.getElementsByTagName("NodeCPULoadDist");
-            nodeCPULoadDist_ = ProbDistribution.parseProbDist(ncld, "NodeCPULoadDist");
- 
-            NodeList nmld = doc.getElementsByTagName("NodeMemoryLoadDist");
-            nodeMemoryLoadDist_ = ProbDistribution.parseProbDist(nmld, "NodeMemoryLoadDist");
-            
-            NodeList ndd = doc.getElementsByTagName("NodeDeathDist");
-            nodeDeathDist_ = ProbDistribution.parseProbDist(ndd, "NodeDeathDist");
-            NodeList ldd = doc.getElementsByTagName("LinkDeathDist");
+		ArrayList<Integer> nodes = getRouterList(v);
+		nodes.remove(nodes.indexOf(routerId));
+		ArrayList<Integer> outlinks = getOutLinks(routerId, v);
 
-            linkDeathDist_ = ProbDistribution.parseProbDist(ldd, "LinkDeathDist");
-            try {
+		for (Integer l : outlinks) {
+			nodes.remove(nodes.indexOf(l));
+		}
 
-                NodeList misc = doc.getElementsByTagName("Parameters");
+		// Logger.getLogger("log").logln(USR.ERROR,
+		// "Trying to pick "+noLinks+" links");
 
-                if (misc.getLength() > 1) {
-                    throw new SAXException ("Only one GlobalController tags allowed.");
-                }
+		for (int i = 0; i < noLinks; i++) {
+			if (nodes.size() <= 0) {
+				break;
+			}
 
-                if (misc.getLength() == 1) {
-                    Node miscnode = misc.item(0);
-                    preferentialAttachment_ = ReadXMLUtils.parseSingleBool(miscnode,
-                                                                           "PreferentialAttachment", "Parameters", true);
+			if (preferentialAttachment_) { // Choose a node using pref. attach.
+				int totLinks = 0;
 
-                    initialNumberOfRouters_ = ReadXMLUtils.parseSingleInt(miscnode,
-                                                                          "InitialNumberOfNodes", "Parameters", true);
+				for (int l : nodes) {
+					totLinks += getOutLinksCount(l, v);
+				}
 
-                    staticTopology_ = ReadXMLUtils.parseSingleBool(miscnode,
-                                                                   "StaticTopology", "Parameters", true);
+				int index = (int) Math.floor(Math.random() * totLinks);
 
-                    ReadXMLUtils.removeNode( miscnode, "PreferentialAttachment", "Parameters");
-                    ReadXMLUtils.removeNode( miscnode, "InitialNumberOfNodes", "Parameters");
-                    ReadXMLUtils.removeNode( miscnode, "StaticTopology", "Parameters");
-                }
-            } catch (SAXException e) {
-                throw e;
-            } catch (XMLNoTagException e) {
+				for (int j = 0; j < nodes.size(); j++) {
+					int l = nodes.get(j);
+					index -= getOutLinksCount(l, v);
 
-            }
+					if (index < 0 || j == nodes.size() - 1) {
+						nodes.remove(j);
+						StartLinkEvent e3 = new StartLinkEvent(now, this, l,
+								routerId);
+						s.addEvent(e3);
+						break;
+					}
+				}
+			} else {
+				// Logger.getLogger("log").logln(USR.ERROR,
+				// "Choice set "+nodes);
+				int index = (int) Math.floor(Math.random() * nodes.size());
+				int newLink = nodes.get(index);
+				// Logger.getLogger("log").logln(USR.ERROR, "Picked "+newLink);
+				nodes.remove(index);
 
-        } catch (java.io.FileNotFoundException e) {
-            throw new EventEngineException("Parsing IKMSEventEngine: Cannot find file "+fName);
-        } catch (SAXParseException err) {
-            throw new EventEngineException ("Parsing IKMSEventEngine: error" + ", line "
-                                            + err.getLineNumber () + ", uri " + err.getSystemId ());
+				StartLinkEvent e4 = new StartLinkEvent(now, this, newLink,
+						routerId);
+				s.addEvent(e4);
 
-        } catch (SAXException e) {
-            throw new EventEngineException(
-                      "Parsing IKMSEventEngine: Exception in SAX XML parser"+ e.getMessage());
+			}
+		}
+	}
 
+	/** Parse the XML to get probability distribution information */
+	private void parseXMLFile(String fName) throws EventEngineException {
+		try {
+			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
+					.newInstance();
+			DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+			Document doc = docBuilder.parse(new File(fName));
 
-        } catch (Throwable t) {
-            throw new EventEngineException("Parsing IKMSEventEngine: "+t.getMessage());
-        }
-    }
+			// normalize text representation
+			doc.getDocumentElement().normalize();
+			String basenode = doc.getDocumentElement().getNodeName();
 
+			if (!basenode.equals("IKMSEngine")) {
+				throw new SAXException("Base tag should be IKMSEngine");
+			}
 
-    /**
-     * Get a router list
-     */
-    private ArrayList<Integer> getRouterList(VimFunctions v) {
-        try {
-            JSONObject jsobj = v.listRouters();
-            JSONArray list = jsobj.getJSONArray("list");
+			NodeList nbd = doc.getElementsByTagName("NodeBirthDist");
+			nodeCreateDist_ = ProbDistribution.parseProbDist(nbd,
+					"NodeBirthDist");
 
-            ArrayList<Integer> result = new ArrayList<Integer>();
+			if (nodeCreateDist_ == null) {
+				throw new SAXException("Must specific NodeBirthDist");
+			}
+			NodeList lcd = doc.getElementsByTagName("LinkCreateDist");
+			linkCreateDist_ = ProbDistribution.parseProbDist(lcd,
+					"LinkCreateDist");
 
-            for (int i=0; i<list.length(); i++) {
-                result.add(list.getInt(i));
-            }
+			if (linkCreateDist_ == null) {
+				throw new SAXException("Must specific LinkCreateDist");
+			}
 
-            return result;
-        } catch (JSONException jse) {
-            return null;
-        }        
-    }
+			NodeList ncld = doc.getElementsByTagName("NodeCPULoadDist");
+			nodeCPULoadDist_ = ProbDistribution.parseProbDist(ncld,
+					"NodeCPULoadDist");
 
-    /**
-      * Get active applications
-      */
-    private ArrayList<Integer> getAppsList (VimFunctions v, int routerId) {
-	try {
-            JSONObject jsobj = v.listApps(routerId);
-            JSONArray list = jsobj.getJSONArray("list");
+			NodeList nmld = doc.getElementsByTagName("NodeMemoryLoadDist");
+			nodeMemoryLoadDist_ = ProbDistribution.parseProbDist(nmld,
+					"NodeMemoryLoadDist");
 
-            ArrayList<Integer> result = new ArrayList<Integer>();
+			NodeList ndd = doc.getElementsByTagName("NodeDeathDist");
+			nodeDeathDist_ = ProbDistribution.parseProbDist(ndd,
+					"NodeDeathDist");
+			NodeList ldd = doc.getElementsByTagName("LinkDeathDist");
 
-            for (int i=0; i<list.length(); i++) {
-                result.add(list.getInt(i));
-            }
+			linkDeathDist_ = ProbDistribution.parseProbDist(ldd,
+					"LinkDeathDist");
+			try {
 
-            return result;
-        } catch (JSONException jse) {
-            return null;
-        }
-    }
+				NodeList misc = doc.getElementsByTagName("Parameters");
 
-    /**
-     * Get router outlinks
-     */
-    private ArrayList<Integer> getOutLinks(int routerID, VimFunctions v) {
-        try {
-            JSONObject jsobj = v.getRouterInfo(routerID);
-            JSONArray list = jsobj.getJSONArray("links");
+				if (misc.getLength() > 1) {
+					throw new SAXException(
+							"Only one GlobalController tags allowed.");
+				}
 
-            ArrayList<Integer> result = new ArrayList<Integer>();
+				if (misc.getLength() == 1) {
+					Node miscnode = misc.item(0);
+					preferentialAttachment_ = ReadXMLUtils.parseSingleBool(
+							miscnode, "PreferentialAttachment", "Parameters",
+							true);
 
-            for (int i=0; i<list.length(); i++) {
-                result.add(list.getInt(i));
-            }
+					initialNumberOfRouters_ = ReadXMLUtils.parseSingleInt(
+							miscnode, "InitialNumberOfNodes", "Parameters",
+							true);
 
-            return result;
-        } catch (JSONException jse) {
-            return null;
-        }        
-    }
+					staticTopology_ = ReadXMLUtils.parseSingleBool(miscnode,
+							"StaticTopology", "Parameters", true);
 
-    /**
-     * Get count of router outlinks
-     */
-    private int getOutLinksCount(int routerID, VimFunctions v) {
-        try {
-            JSONObject jsobj = v.getRouterInfo(routerID);
-            JSONArray list = jsobj.getJSONArray("links");
+					ReadXMLUtils.removeNode(miscnode, "PreferentialAttachment",
+							"Parameters");
+					ReadXMLUtils.removeNode(miscnode, "InitialNumberOfNodes",
+							"Parameters");
+					ReadXMLUtils.removeNode(miscnode, "StaticTopology",
+							"Parameters");
+				}
+			} catch (SAXException e) {
+				throw e;
+			} catch (XMLNoTagException e) {
 
-            return list.length();
+			}
 
-        } catch (JSONException jse) {
-            return 0;
-        }        
-    }
+		} catch (java.io.FileNotFoundException e) {
+			throw new EventEngineException(
+					"Parsing IKMSEventEngine: Cannot find file " + fName);
+		} catch (SAXParseException err) {
+			throw new EventEngineException("Parsing IKMSEventEngine: error"
+					+ ", line " + err.getLineNumber() + ", uri "
+					+ err.getSystemId());
 
-    /**
-     * Header for errors
-     */
+		} catch (SAXException e) {
+			throw new EventEngineException(
+					"Parsing IKMSEventEngine: Exception in SAX XML parser"
+							+ e.getMessage());
 
-    private String leadin() {
-        return "IKMSTrafficEngine:";
-    }
+		} catch (Throwable t) {
+			throw new EventEngineException("Parsing IKMSEventEngine: "
+					+ t.getMessage());
+		}
+	}
+
+	/**
+	 * Get a router list
+	 */
+	private ArrayList<Integer> getRouterList(VimFunctions v) {
+		try {
+			JSONObject jsobj = v.listRouters();
+			JSONArray list = jsobj.getJSONArray("list");
+
+			ArrayList<Integer> result = new ArrayList<Integer>();
+
+			for (int i = 0; i < list.length(); i++) {
+				result.add(list.getInt(i));
+			}
+
+			return result;
+		} catch (JSONException jse) {
+			return null;
+		}
+	}
+
+	/**
+	 * Get active applications
+	 */
+	private ArrayList<Integer> getAppsList(VimFunctions v, int routerId) {
+		try {
+			JSONObject jsobj = v.listApps(routerId);
+			JSONArray list = jsobj.getJSONArray("list");
+
+			ArrayList<Integer> result = new ArrayList<Integer>();
+
+			for (int i = 0; i < list.length(); i++) {
+				result.add(list.getInt(i));
+			}
+
+			return result;
+		} catch (JSONException jse) {
+			return null;
+		}
+	}
+
+	/**
+	 * Get router outlinks
+	 */
+	private ArrayList<Integer> getOutLinks(int routerID, VimFunctions v) {
+		try {
+			JSONObject jsobj = v.getRouterInfo(routerID);
+			JSONArray list = jsobj.getJSONArray("links");
+
+			ArrayList<Integer> result = new ArrayList<Integer>();
+
+			for (int i = 0; i < list.length(); i++) {
+				result.add(list.getInt(i));
+			}
+
+			return result;
+		} catch (JSONException jse) {
+			return null;
+		}
+	}
+
+	/**
+	 * Get count of router outlinks
+	 */
+	private int getOutLinksCount(int routerID, VimFunctions v) {
+		try {
+			JSONObject jsobj = v.getRouterInfo(routerID);
+			JSONArray list = jsobj.getJSONArray("links");
+
+			return list.length();
+
+		} catch (JSONException jse) {
+			return 0;
+		}
+	}
+
+	/**
+	 * Header for errors
+	 */
+
+	private String leadin() {
+		return "IKMSTrafficEngine:";
+	}
 
 }
