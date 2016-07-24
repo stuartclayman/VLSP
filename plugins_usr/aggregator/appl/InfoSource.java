@@ -24,6 +24,7 @@ import com.timeindexing.data.SerializableItem;
 import com.timeindexing.index.IndexType;
 import com.timeindexing.index.IndexView;
 import com.timeindexing.index.TimeIndexException;
+import com.timeindexing.index.IndexCloseException;
 import com.timeindexing.index.TimeIndexFactory;
 import com.timeindexing.time.MillisecondTimestamp;
 
@@ -430,7 +431,15 @@ public class InfoSource implements Application
             Logger.getLogger("log").logln(
                                           USR.STDOUT,
                                           "InfoSource: TimeIndex setup failed in start");
-            //tie.printStackTrace();
+            tie.printStackTrace();
+
+            // got an Exception so try ans close the index.
+            try {
+                dataIndex.close();
+            } catch (IndexCloseException ice) {
+                ice.printStackTrace();
+            }
+
             return new ApplicationResponse(
                                            false, "Cannot create TimeIndex " + dataIndexPath);
         }
@@ -493,54 +502,57 @@ public class InfoSource implements Application
     @Override
     public ApplicationResponse stop(){
         synchronized (threadSyncObj) {
-            if (closing_) {
-                Logger.getLogger("log").logln(
-                                              USR.STDOUT, "InfoSource: stop already called");
-                return new ApplicationResponse(
-                                               false, "Stop already called for InfoSource");
-            }
-
-            closing_ = true;
-
-            // we might stop while the Application is in the
-            // inInitialDelay
-            // stage
-            if (inInitialDelay) {
-                // so interrupt the sleep
-                Logger.getLogger("log").logln(
-                                              USR.STDOUT,
-                                              "InfoSource: about to interrupt initial delay");
-                myThread.interrupt();
-            }
-
-            dataSource.disconnect();
-
-            if (dataSource.isProbeOn(probe))
-                dataSource.turnOffProbe(probe);
-
-            dataSource.removeProbe(probe);
-
             try {
-                dataIndex.close();
-
-                Logger.getLogger("log").logln(
-                                              USR.STDOUT,
-                                              "InfoSource: TimeIndex closed in stop");
-                return new ApplicationResponse(true, "");
-            } catch (TimeIndexException tie) {
-                Logger.getLogger("log").logln(
-                                              USR.STDOUT, "Cannot close index " + dataIndex +
-                                              " because " + tie.getMessage());
-                //tie.printStackTrace();
-
-                return new ApplicationResponse(
-                                               false,
-                                               "Cannot close TimeIndex " + dataIndexPath);
-            }
-            finally {
-                synchronized (this) {
-                    notifyAll();
+                if (closing_) {
+                    Logger.getLogger("log").logln(
+                                                  USR.STDOUT, "InfoSource: stop already called");
+                    return new ApplicationResponse(
+                                                   false, "Stop already called for InfoSource");
                 }
+
+                closing_ = true;
+
+                // we might stop while the Application is in the
+                // inInitialDelay
+                // stage
+                if (inInitialDelay) {
+                    // so interrupt the sleep
+                    Logger.getLogger("log").logln(
+                                                  USR.STDOUT,
+                                                  "InfoSource: about to interrupt initial delay");
+                    myThread.interrupt();
+                }
+
+                if (dataSource.isProbeOn(probe))
+                    dataSource.turnOffProbe(probe);
+
+                dataSource.removeProbe(probe);
+
+                dataSource.disconnect();
+
+                try {
+                    dataIndex.close();
+
+                    Logger.getLogger("log").logln(
+                                                  USR.STDOUT,
+                                                  "InfoSource: TimeIndex closed in stop");
+                    return new ApplicationResponse(true, "");
+                } catch (TimeIndexException tie) {
+                    Logger.getLogger("log").logln(
+                                                  USR.STDOUT, "Cannot close index " + dataIndex +
+                                                  " because " + tie.getMessage());
+                    //tie.printStackTrace();
+
+                    return new ApplicationResponse(
+                                                   false,
+                                                   "Cannot close TimeIndex " + dataIndexPath);
+                }
+                
+            } finally {
+                //synchronized (this) {
+                threadSyncObj.notifyAll();
+                //}
+
             }
         }
     }
@@ -595,8 +607,8 @@ public class InfoSource implements Application
         // so this one can wait and do nothing.
         if (!closing_) {
             try {
-                synchronized (this) {
-                    wait();
+                synchronized (threadSyncObj) {
+                    threadSyncObj.wait();
                 }
             } catch (InterruptedException ie) {
             }
@@ -819,6 +831,7 @@ public class InfoSource implements Application
                                               dataIndex.getName() +
                                               " because of exception " +
                                               tie.getMessage());
+
                 return result;
             }
         }

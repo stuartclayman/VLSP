@@ -103,20 +103,11 @@ public class ProcessWrapper {
             // disconnect the process
             //System.err.println("ProcessWrapper: STOPPING "+name);
 
-	    // send control + c
-	    //char ctrlBreak = (char)3;
- 	    //process.getOutputStream().write(ctrlBreak);
-            //process.getOutputStream().flush();
-
             //System.err.println("ProcessWrapper: close input");
             process.getOutputStream().close();
 
             /*
-             * close moved into thread for better reliability
-               System.err.println("ProcessWrapper: close InputStream");
-               process.getInputStream().close();
-               System.err.println("ProcessWrapper: close ErrorStream");
-               process.getErrorStream().close();
+             * close of input streams moved into thread for better reliability
              */
 
             // stop listeners
@@ -127,7 +118,7 @@ public class ProcessWrapper {
             destroy();
 
         } catch (IOException ioe) {
-		 ioe.getMessage();
+            ioe.getMessage();
         }
     }
 
@@ -172,7 +163,7 @@ public class ProcessWrapper {
          * Main Loop.
          */
         @Override
-		public void run() {
+        public void run() {
             running = true;
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));

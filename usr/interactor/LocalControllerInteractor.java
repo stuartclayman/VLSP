@@ -82,7 +82,7 @@ public class LocalControllerInteractor {
     private JSONObject interact(String str) throws IOException, JSONException {
         String uri = localControllerURI +  "/command/" + java.net.URLEncoder.encode(str, "UTF-8");
 
-        Logger.getLogger("log").logln(USR.STDOUT, ANSI.CYAN + "LC call: " + str.substring(0, Math.min(84, str.length())) + ANSI.RESET_COLOUR);
+        Logger.getLogger("log").logln(USR.STDOUT, ANSI.CYAN_BG + ANSI.WHITE + "LC call: " + str.substring(0, Math.min(84, str.length())) + ANSI.RESET_COLOUR);
 
         JSONObject jsobj;
 
@@ -90,16 +90,16 @@ public class LocalControllerInteractor {
             rest.setOptions(Resty.Option.timeout(200));
             jsobj = rest.json(uri).toObject();
 
-            Logger.getLogger("log").logln(USR.STDOUT, ANSI.GREEN + "LC response: " + jsobj.toString() + ANSI.RESET_COLOUR);
+            Logger.getLogger("log").logln(USR.STDOUT, ANSI.GREEN_BG + ANSI.WHITE + "LC response: " + jsobj.toString() + ANSI.RESET_COLOUR);
 
             return jsobj;
 
         } catch (IOException ioe) {
-            Logger.getLogger("log").logln(USR.STDOUT, ANSI.RED + "LC IOException: " + ioe.getMessage() + ANSI.RESET_COLOUR);
+            Logger.getLogger("log").logln(USR.STDOUT, ANSI.RED + "LC fail IOException: " + ioe.getMessage() + ANSI.RESET_COLOUR);
             //e.printStackTrace();
             throw ioe;
         } catch (JSONException je) {
-            Logger.getLogger("log").logln(USR.STDOUT, ANSI.RED + "LC JSONException: " + je.getMessage() + ANSI.RESET_COLOUR);
+            Logger.getLogger("log").logln(USR.STDOUT, ANSI.RED + "LC fail JSONException: " + je.getMessage() + ANSI.RESET_COLOUR);
             //e.printStackTrace();
             throw je;
         }

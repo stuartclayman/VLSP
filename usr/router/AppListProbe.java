@@ -55,7 +55,7 @@ public class AppListProbe extends RouterProbe implements Probe {
         setController(cont);
 
         // set probe name
-        setName(cont.getName()+".appList");
+        setName(cont.getName()+".probe.AppList");
         // set data rate
         setDataRate(new EveryNSeconds(10));
 

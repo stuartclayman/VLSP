@@ -89,28 +89,30 @@ public class AppSocketMux implements NetIF {
      * Start me up.
      */
     public boolean start() {
-        try {
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
+        synchronized (threadSyncObj) {
+            try {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
-            // start my own thread
-            ThreadGroup group = new TimedThreadGroup("localnet");
+                // start my own thread
+                ThreadGroup group = new TimedThreadGroup("localnet");
 
 
-            running = true;
-            address = AddressFactory.newAddress(0);
-            fabricDevice_ = new FabricDevice(group, this, controller.getListener());
+                running = true;
+                address = AddressFactory.newAddress(0);
+                fabricDevice_ = new FabricDevice(group, this, controller.getListener());
 
-            fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
-            fabricDevice_.setInQueueLength(1000);
-            fabricDevice_.setName("localnet");
-            fabricDevice_.start();
-            boolean connected = connect();
-            return connected;
-        } catch (Exception e) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin() + " AppSocketMux not started");
-            e.printStackTrace();
-            running = false;
-            return false;
+                fabricDevice_.setInQueueDiscipline(FabricDevice.QUEUE_BLOCKING);
+                fabricDevice_.setInQueueLength(1000);
+                fabricDevice_.setName("localnet");
+                fabricDevice_.start();
+                boolean connected = connect();
+                return connected;
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + " AppSocketMux not started");
+                e.printStackTrace();
+                running = false;
+                return false;
+            }
         }
     }
 
@@ -120,7 +122,7 @@ public class AppSocketMux implements NetIF {
     public boolean stop() {
         synchronized (threadSyncObj) {
             if (running == true) {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
+                //Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");
                 fabricDevice_.stop();
                 // stop my own thread
                 running = false;
@@ -132,7 +134,7 @@ public class AppSocketMux implements NetIF {
                 }
 
                 close();
-                // Logger.getLogger("log").logln(USR.STDOUT, leadin() + "reached end of stop");
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stopped");
                 return true;
             } else {
                 return false;
@@ -146,7 +148,7 @@ public class AppSocketMux implements NetIF {
     private void waitFor() {
         try {
             //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"waiting");
-            synchronized (this) {
+            synchronized (threadSyncObj) {
                 setTheEnd();
                 wait();
             }
@@ -170,8 +172,8 @@ public class AppSocketMux implements NetIF {
         }
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"notifying");
-        synchronized (this) {
-            notify();
+        synchronized (threadSyncObj) {
+            threadSyncObj.notify();
         }
 
     }
@@ -184,10 +186,12 @@ public class AppSocketMux implements NetIF {
         return theEnd;
     }
 
-    private synchronized void pause() {
-        try {
-            wait();
-        } catch (InterruptedException ie) {
+    private void pause() {
+        synchronized (threadSyncObj) {
+            try {
+                threadSyncObj.wait();
+            } catch (InterruptedException ie) {
+            }
         }
     }
 

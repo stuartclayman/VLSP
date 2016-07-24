@@ -506,7 +506,7 @@ public class FabricDevice implements FabricDeviceInterface {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + "NoRouteToHostException for transferDatagram " + dh.datagram);
                 return false;
             } catch (usr.net.InterfaceBlockedException ex) {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "InterfaceBlockedException for transferDatagram " + dh.datagram);
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "InterfaceBlockedException " + name_ + " for transferDatagram " + dh.datagram);
 
                 synchronized (waker) {
                     waker.await(250);
@@ -828,6 +828,7 @@ class Waker {
     int notifyCount = 0;
     boolean isWaiting = false;
     long waitTimeOut = 0;
+    final Object syncObject = new Object();
 
     public Waker() {
     }
@@ -835,38 +836,40 @@ class Waker {
     /**
      * Wait for some milliseconds.
      */
-    public synchronized void await(long millisTimeout) {
-        if (notifyCount > waitCount) {
-            //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " notified waitCount: " + waitCount + " notifyCount:
-            // " + notifyCount);
-            waitCount++;
-            return;
-        } else {
-
-            if (isWaiting) {
-                // already waiting - nothing to do
-                //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " already waiting");
+    public void await(long millisTimeout) {
+        synchronized (syncObject) {
+            if (notifyCount > waitCount) {
+                //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " notified waitCount: " + waitCount + " notifyCount:
+                // " + notifyCount);
+                waitCount++;
                 return;
             } else {
-                try {
-                    isWaiting = true;
-                    waitCount++;
 
-                    long t0 = System.currentTimeMillis();
+                if (isWaiting) {
+                    // already waiting - nothing to do
+                    //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " already waiting");
+                    return;
+                } else {
+                    try {
+                        isWaiting = true;
+                        waitCount++;
 
-                    //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " wait " + millisTimeout);
+                        long t0 = System.currentTimeMillis();
 
-                    this.wait(millisTimeout);
+                        //Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " wait " + millisTimeout);
 
-                    waitTimeOut = System.currentTimeMillis() - t0;
+                        syncObject.wait(millisTimeout);
 
-                } catch (InterruptedException ie) {
-                    Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " interrupted");
-                } finally {
-                    isWaiting = false;
+                        waitTimeOut = System.currentTimeMillis() - t0;
 
-                    if (waitTimeOut > 10) {
-                        Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " waitTimeOut = " + waitTimeOut);
+                    } catch (InterruptedException ie) {
+                        Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " interrupted");
+                    } finally {
+                        isWaiting = false;
+
+                        if (waitTimeOut > 10) {
+                            Logger.getLogger("log").logln(USR.ERROR, "Waker " + hashCode() + " waitTimeOut = " + waitTimeOut);
+                        }
                     }
                 }
             }
@@ -876,14 +879,16 @@ class Waker {
     /**
      * Signal with a notify
      */
-    public synchronized void signal() {
-        notifyCount++;
+    public void signal() {
+        synchronized (syncObject) {
+            notifyCount++;
 
-        if (isWaiting) {
-            this.notify();
+            if (isWaiting) {
+                syncObject.notify();
 
-        } else {
-            // nothing to do
+            } else {
+                // nothing to do
+            }
         }
     }
 

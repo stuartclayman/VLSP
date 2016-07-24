@@ -5,6 +5,7 @@ package usr.events;
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
+import usr.common.ANSI;
 import usr.common.TimedThread;
 import usr.logging.Logger;
 import usr.logging.USR;
@@ -101,7 +102,7 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
 
             long lag = now - expectedStart;
 
-            Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Lag is "+lag+" starting event "+ev);
+            //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Lag is "+lag+" starting event "+ev);
 
             if (lag > delegate_.getMaximumLag()) {
                 Logger.getLogger("log").logln(USR.ERROR,
@@ -115,7 +116,7 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
 
             // now process the event
 
-            Logger.getLogger("log").logln(USR.STDOUT, elapsedToString(getElapsedTime()) + " " + leadin()+" starting event "+ev);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.CYAN + elapsedToString(getElapsedTime()) + " " + " starting event "+ev + ANSI.RESET_COLOUR);
 
 
             try {
@@ -161,7 +162,7 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
                 delegate_.onEventFailure(now, ev);
             }
 
-            Logger.getLogger("log").logln(USR.STDOUT, elapsedToString(getElapsedTime()) + " " + leadin()+" finishing event "+ev);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + ANSI.MAGENTA + elapsedToString(getElapsedTime()) + " " + " finishing event "+ev + ANSI.RESET_COLOUR);
 
             lag = System.currentTimeMillis() - expectedStart;
             //Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Lag is "+lag+" finishing event "+ev);
@@ -240,7 +241,7 @@ public abstract class AbstractEventScheduler  implements EventScheduler {
     @Override
     public void addEvent(Event e) {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() +
-                                      "Adding Event at time: " + e.getTime() + " Event " + e );
+                                      ANSI.CYAN + "Adding Event at time: " + e.getTime() + " Event " + e + ANSI.RESET_COLOUR);
 
         // set the Scheduler for the event
         e.setEventScheduler(this);

@@ -62,7 +62,7 @@ public class ThreadGroupListProbe extends RouterProbe implements Probe {
         setController(cont);
 
         // set probe name
-        setName(cont.getName()+".threadGroupList");
+        setName(cont.getName()+".probe.ThreadGroupList");
         // set data rate
         setDataRate(new EveryNSeconds(10));
 

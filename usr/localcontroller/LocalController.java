@@ -320,8 +320,8 @@ public class LocalController implements ComponentController {
         //cmd[3] = "-Xms32m";
         //cmd[4] = "-Xmx512m";
         // for better scalability (Lefteris)
-        cmd[3] = "-Xms16m";  // was 32
-        cmd[4] = "-Xmx64m";  // was 128
+        cmd[3] = "-Xms8m";  // was 32
+        cmd[4] = "-Xmx96m";  // was 128
 
         // for better scalability (sclayman)
         cmd[5] = "-Xss256k";

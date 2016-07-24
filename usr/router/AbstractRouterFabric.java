@@ -137,7 +137,6 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
         state = FabricState.STOPPING;
 
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router fabric stop");
         // stop RoutingTableTransmitter thread
         routingTableTransmitter.terminate();
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " routingTableTransmitter terminated");
@@ -149,6 +148,8 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
         state = FabricState.STOPPED;
 
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Router Fabric stopped");
+        
         return true;
     }
 

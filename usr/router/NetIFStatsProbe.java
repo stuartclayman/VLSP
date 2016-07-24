@@ -37,7 +37,7 @@ public class NetIFStatsProbe extends RouterProbe implements Probe {
         setController(cont);
 
         // set probe name
-        setName(cont.getName()+".NetIFStats");
+        setName(cont.getName()+".probe.NetIFStats");
         // set data rate
         setDataRate(new EveryNSeconds(10));
 

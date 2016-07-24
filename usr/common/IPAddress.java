@@ -19,7 +19,7 @@ import usr.logging.USR;
 public class IPAddress {
 
     public static String getLocalHost() {
-        String gcAddress = "localhost";
+        String gcAddress = "::1";  // was localhost
         String hostAddr = null;
 
         try {
