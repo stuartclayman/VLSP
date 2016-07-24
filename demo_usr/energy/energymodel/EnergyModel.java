@@ -153,7 +153,7 @@ public class EnergyModel {
 	public double CurrentEnergyConsumption (float averageCPULoad, float averageIdleCPU, float memoryUsed, float freeMemory, long networkOutboundBytes, long networkIncomingBytes, float loadAverage, double extraCPU, double extraMemory) {
 		
 		// should normalize measurements first
-		float normalizedCPU = loadAverage + (float) extraCPU;
+		float normalizedCPU = (loadAverage / 100) + (float) extraCPU;
 		if (normalizedCPU>1)
 			normalizedCPU=1;
 		float normalizedMemory = memoryUsed / (memoryUsed + freeMemory) + (float) extraMemory;
@@ -163,7 +163,7 @@ public class EnergyModel {
 		
 		double currentEnergy = c +  ProcessingConsumptionFunction (normalizedCPU) + MemoryConsumptionFunction (normalizedMemory) + NetworkLoadConsumptionFunction (normalizedNetwork);
 
-		System.out.println ("Energy Consumption: CPU load was:"+loadAverage+", it is now "+normalizedCPU);
+		System.out.println ("Energy Consumption: CPU load was:" + (loadAverage / 100) +", it is now "+normalizedCPU);
 		System.out.println ("Energy Consumption: Memory was:"+memoryUsed / (memoryUsed + freeMemory)+", it is now "+normalizedMemory);
 		System.out.println ("Energy Consumption: baseline " + c+" processing " + ProcessingConsumptionFunction (normalizedCPU)+ " memory " + MemoryConsumptionFunction (normalizedMemory) + " network " + NetworkLoadConsumptionFunction (normalizedNetwork));
 

@@ -123,4 +123,3 @@ cp ../scripts/ikms$nodesnum-c1.xml ../scripts/ikms$nodesnum.xml
 # revert back configuration file to nodes without load
 cp ../scripts/ikms$nodesnum.xml.bak ../scripts/ikms$nodesnum.xml
 
-

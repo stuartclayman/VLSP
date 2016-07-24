@@ -1,0 +1,460 @@
+#!/bin/sh
+
+placementalgorithm=$1
+
+# desktops
+desk_a1=$2
+desk_b1=$3
+desk_c1=$4
+desk_r1=$5
+desk_a2=$6
+desk_b2=$7
+desk_c2=$8
+desk_r2=$9
+desk_a3=${10}
+desk_b3=${11}
+desk_c3=${12}
+desk_r3=${13}
+desk_c=${14}
+desk_maxnet=${15}
+
+# clayservers
+clay_a1=${16}
+clay_b1=${17}
+clay_c1=${18}
+clay_r1=${19}
+clay_a2=${20}
+clay_b2=${21}
+clay_c2=${22}
+clay_r2=${23}
+clay_a3=${24}
+clay_b3=${25}
+clay_c3=${26}
+clay_r3=${27}
+clay_c=${28}
+clay_maxnet=${29}
+
+# gassservers
+gass_a1=${30}
+gass_b1=${31}
+gass_c1=${32}
+gass_r1=${33}
+gass_a2=${34}
+gass_b2=${35}
+gass_c2=${36}
+gass_r2=${37}
+gass_a3=${38}
+gass_b3=${39}
+gass_c3=${40}
+gass_r3=${41}
+gass_c=${42}
+gass_maxnet=${43}
+
+
+echo "<SimOptions>
+  <GlobalController>
+     <Port>8888</Port>
+     <StartLocalControllers>true</StartLocalControllers>
+     <ConnectedNetwork>false</ConnectedNetwork>
+
+     <PlacementEngineClass>usr.globalcontroller.$placementalgorithm</PlacementEngineClass>
+
+     <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass> -->
+     <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualization</VisualizationClass>
+
+     <Monitoring>
+      <LatticeMonitoring>true</LatticeMonitoring>
+
+      <Consumer> <!-- data from LocalControllers -->
+        <Name>usr.globalcontroller.HostInfoReporter</Name>
+      </Consumer>
+
+      <Consumer>
+        <!-- <Name>usr.globalcontroller.NetIFStatsCumulativeReporter</Name> -->
+        <Name>usr.globalcontroller.NetIFStatsReporter</Name>
+      </Consumer>
+      <Consumer>
+        <Name>usr.globalcontroller.RouterAppsReporter</Name>
+      </Consumer>
+      <Consumer>
+        <Name>usr.globalcontroller.ThreadGroupListReporter</Name>
+      </Consumer>
+      <Consumer>
+        <Name>usr.globalcontroller.ThreadListReporter</Name>
+      </Consumer>
+    </Monitoring>
+  </GlobalController>
+"
+
+for h in `cat machines`; do 
+	if [ $h ==  "clayone" ]  
+	then
+echo "<LocalController>
+     <Name>clayone</Name>
+     <Port>10000</Port>
+     <LowPort>11001</LowPort>
+     <HighPort>12000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$clay_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$clay_b1</b1>
+     <c1>$clay_c1</c1>
+     <r1>$clay_r1</r1>
+     <a2>$clay_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$clay_b2</b2>
+     <c2>$clay_c2</c2>
+     <r2>$clay_r2</r2>
+     <a3>$clay_a3</a3>
+     <b3>$clay_b3</b3>
+     <c3>$clay_c3</c3>
+     <r3>$clay_r3</r3>
+     <c>$clay_c</c>
+     <MaxNetworkTransmissionBytes>$clay_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+	fi
+
+	if [ $h ==  "claytwo" ]
+        then
+echo "<LocalController>
+     <Name>claytwo</Name>
+     <Port>10001</Port>
+     <LowPort>12001</LowPort>
+     <HighPort>13000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$clay_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$clay_b1</b1>
+     <c1>$clay_c1</c1>
+     <r1>$clay_r1</r1>
+     <a2>$clay_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$clay_b2</b2>
+     <c2>$clay_c2</c2>
+     <r2>$clay_r2</r2>
+     <a3>$clay_a3</a3>
+     <b3>$clay_b3</b3>
+     <c3>$clay_c3</c3>
+     <r3>$clay_r3</r3>
+     <c>$clay_c</c>
+     <MaxNetworkTransmissionBytes>$clay_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+	fi
+
+	if [ $h ==  "claythree" ]
+        then
+echo "<LocalController>
+     <Name>claythree</Name>
+     <Port>10002</Port>
+     <LowPort>13001</LowPort>
+     <HighPort>14000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$clay_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$clay_b1</b1>
+     <c1>$clay_c1</c1>
+     <r1>$clay_r1</r1>
+     <a2>$clay_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$clay_b2</b2>
+     <c2>$clay_c2</c2>
+     <r2>$clay_r2</r2>
+     <a3>$clay_a3</a3>
+     <b3>$clay_b3</b3>
+     <c3>$clay_c3</c3>
+     <r3>$clay_r3</r3>
+     <c>$clay_c</c>
+     <MaxNetworkTransmissionBytes>$clay_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+        fi
+
+
+	if [ $h ==  "clayfour" ]
+        then
+echo "<LocalController>
+     <Name>clayfour</Name>
+     <Port>10003</Port>
+     <LowPort>14001</LowPort>
+     <HighPort>15000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$clay_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$clay_b1</b1>
+     <c1>$clay_c1</c1>
+     <r1>$clay_r1</r1>
+     <a2>$clay_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$clay_b2</b2>
+     <c2>$clay_c2</c2>
+     <r2>$clay_r2</r2>
+     <a3>$clay_a3</a3>
+     <b3>$clay_b3</b3>
+     <c3>$clay_c3</c3>
+     <r3>$clay_r3</r3>
+     <c>$clay_c</c>
+     <MaxNetworkTransmissionBytes>$clay_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+        fi
+
+	if [ $h ==  "claydesk1" ]
+        then
+echo "<LocalController>
+     <Name>claydesk1</Name>
+     <Port>10004</Port>
+     <LowPort>15001</LowPort>
+     <HighPort>16000</HighPort>
+     <MaxRouters>80</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$desk_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$desk_b1</b1>
+     <c1>$desk_c1</c1>
+     <r1>$desk_r1</r1>
+     <a2>$desk_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$desk_b2</b2>
+     <c2>$desk_c2</c2>
+     <r2>$desk_r2</r2>
+     <a3>$desk_a3</a3>
+     <b3>$desk_b3</b3>
+     <c3>$desk_c3</c3>
+     <r3>$desk_r3</r3>
+     <c>$desk_c</c>
+     <MaxNetworkTransmissionBytes>$desk_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+        fi
+
+	if [ $h ==  "claydesk2" ]
+        then
+echo "<LocalController>
+     <Name>claydesk2</Name>
+     <Port>10005</Port>
+     <LowPort>16001</LowPort>
+     <HighPort>17000</HighPort>
+     <MaxRouters>100</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$desk_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$desk_b1</b1>
+     <c1>$desk_c1</c1>
+     <r1>$desk_r1</r1>
+     <a2>$desk_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$desk_b2</b2>
+     <c2>$desk_c2</c2>
+     <r2>$desk_r2</r2>
+     <a3>$desk_a3</a3>
+     <b3>$desk_b3</b3>
+     <c3>$desk_c3</c3>
+     <r3>$desk_r3</r3>
+     <c>$desk_c</c>
+     <MaxNetworkTransmissionBytes>$desk_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+        fi
+
+
+	if [ $h ==  "ethane" ]
+        then
+echo "<LocalController>
+     <Name>ethane</Name>
+     <Port>10006</Port>
+     <LowPort>17001</LowPort>
+     <HighPort>18000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$gass_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$gass_b1</b1>
+     <c1>$gass_c1</c1>
+     <r1>$gass_r1</r1>
+     <a2>$gass_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$gass_b2</b2>
+     <c2>$gass_c2</c2>
+     <r2>$gass_r2</r2>
+     <a3>$gass_a3</a3>
+     <b3>$gass_b3</b3>
+     <c3>$gass_c3</c3>
+     <r3>$gass_r3</r3>
+     <c>$gass_c</c>
+     <MaxNetworkTransmissionBytes>$gass_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+        fi
+
+
+	if [ $h ==  "methane" ]
+        then
+echo "<LocalController>
+     <Name>methane</Name>
+     <Port>10007</Port>
+     <LowPort>18001</LowPort>
+     <HighPort>19000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$gass_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$gass_b1</b1>
+     <c1>$gass_c1</c1>
+     <r1>$gass_r1</r1>
+     <a2>$gass_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$gass_b2</b2>
+     <c2>$gass_c2</c2>
+     <r2>$gass_r2</r2>
+     <a3>$gass_a3</a3>
+     <b3>$gass_b3</b3>
+     <c3>$gass_c3</c3>
+     <r3>$gass_r3</r3>
+     <c>$gass_c</c>
+     <MaxNetworkTransmissionBytes>$gass_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+        fi
+
+
+	if [ $h ==  "butane" ]
+        then
+echo "<LocalController>
+     <Name>butane</Name>
+     <Port>10008</Port>
+     <LowPort>19001</LowPort>
+     <HighPort>20000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$gass_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$gass_b1</b1>
+     <c1>$gass_c1</c1>
+     <r1>$gass_r1</r1>
+     <a2>$gass_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$gass_b2</b2>
+     <c2>$gass_c2</c2>
+     <r2>$gass_r2</r2>
+     <a3>$gass_a3</a3>
+     <b3>$gass_b3</b3>
+     <c3>$gass_c3</c3>
+     <r3>$gass_r3</r3>
+     <c>$gass_c</c>
+     <MaxNetworkTransmissionBytes>$gass_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+        fi
+
+
+	if [ $h ==  "propane" ]
+        then
+echo "<LocalController>
+     <Name>propane</Name>
+     <Port>10009</Port>
+     <LowPort>20001</LowPort>
+     <HighPort>21000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$gass_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$gass_b1</b1>
+     <c1>$gass_c1</c1>
+     <r1>$gass_r1</r1>
+     <a2>$gass_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$gass_b2</b2>
+     <c2>$gass_c2</c2>
+     <r2>$gass_r2</r2>
+     <a3>$gass_a3</a3>
+     <b3>$gass_b3</b3>
+     <c3>$gass_c3</c3>
+     <r3>$gass_r3</r3>
+     <c>$gass_c</c>
+     <MaxNetworkTransmissionBytes>$gass_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+        fi
+
+
+	if [ $h ==  "pentane" ]
+        then
+echo "<LocalController>
+     <Name>pentane</Name>
+     <Port>10010</Port>
+     <LowPort>21001</LowPort>
+     <HighPort>22000</HighPort>
+     <MaxRouters>150</MaxRouters>
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     <a1>$gass_a1</a1> <!-- assuming 150W per fully utilized multi-core CPU-->
+     <b1>$gass_b1</b1>
+     <c1>$gass_c1</c1>
+     <r1>$gass_r1</r1>
+     <a2>$gass_a2</a2> <!-- 5W/GB - 32GB memory-->
+     <b2>$gass_b2</b2>
+     <c2>$gass_c2</c2>
+     <r2>$gass_r2</r2>
+     <a3>$gass_a3</a3>
+     <b3>$gass_b3</b3>
+     <c3>$gass_c3</c3>
+     <r3>$gass_r3</r3>
+     <c>$gass_c</c>
+     <MaxNetworkTransmissionBytes>$gass_maxnet</MaxNetworkTransmissionBytes>
+  </LocalController>"
+        fi
+done
+
+echo "<EventEngine>
+     <Name>Empty</Name>
+     <EndTime>86400</EndTime> <!-- 86400 seconds == 1 day -->
+  </EventEngine>
+
+  <RouterOptions>
+      scripts/routeroptions-energy-ikms-Pressure.xml
+  </RouterOptions>
+
+</SimOptions>
+"
+

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# create EnergyLinear script
+./createscript "EnergyEfficientPlacement" 60 0 0 0 40 0 0 0 8 0 0 0 300 12500000 150 0 0 0 160 0 0 0 8 0 0 0 300 12500000 150 0 0 0 160 0 0 0 8 0 0 0 300 12500000 > ../scripts/control-wait-EnergyLinear-ikms-Pressure.xml
+# create EnergyPaper script
+./createscript "EnergyEfficientPlacement" 60 -30 0 1.4 40 0 0 0 8 0 0 0 300 12500000 150 -75 0 1.4 160 0 0 0 8 0 0 0 300 12500000 150 -75 0 1.4 160 0 0 0 8 0 0 0 300 12500000 > ../scripts/control-wait-EnergyPaper-ikms-Pressure.xml
+# create EnergyQuadratic script
+./createscript "EnergyEfficientPlacement" 60 -30 0 2 40 0 0 0 8 0 0 0 300 12500000 150 -75 0 2 160 0 0 0 8 0 0 0 300 12500000 150 -75 0 2 160 0 0 0 8 0 0 0 300 12500000 > ../scripts/control-wait-EnergyQuadratic-ikms-Pressure.xml
+# create EnergyTranscritical script
+./createscript "EnergyEfficientPlacement" 60 -7.75 0 2 40 0 0 0 8 0 0 0 300 12500000 150 -12.25 0 2 160 0 0 0 8 0 0 0 300 12500000 150 -12.25 0 2 160 0 0 0 8 0 0 0 300 12500000 > ../scripts/control-wait-EnergyTranscritical-ikms-Pressure.xml
+# create EnergyPichfork script
+./createscript "EnergyEfficientPlacement" 60 -7.75 0 3 40 0 0 0 8 0 0 0 300 12500000 150 -12.25 0 3 160 0 0 0 8 0 0 0 300 12500000 150 -12.25 0 3 160 0 0 0 8 0 0 0 300 12500000 > ../scripts/control-wait-EnergyPichfork-ikms-Pressure.xml
+# create LeastUsed script
+./createscript "LeastUsedLoadBalancer" 60 -30 0 1.4 40 0 0 0 8 0 0 0 300 12500000 150 -75 0 1.4 160 0 0 0 8 0 0 0 300 12500000 150 -75 0 1.4 160 0 0 0 8 0 0 0 300 12500000 > ../scripts/control-wait-LeastUsed-ikms-Pressure.xml
+# create LeastBusy script
+./createscript "LeastBusy" 60 -30 0 1.4 40 0 0 0 8 0 0 0 300 12500000 150 -75 0 1.4 160 0 0 0 8 0 0 0 300 12500000 150 -75 0 1.4 160 0 0 0 8 0 0 0 300 12500000 > ../scripts/control-wait-LeastBusy-ikms-Pressure.xml
