@@ -6,6 +6,7 @@ import us.monoid.json.JSONException;
 public interface VimFunctions {
 
     public JSONObject createRouter() throws JSONException;
+    public JSONObject createRouter(String parameters) throws JSONException;
     public JSONObject createRouter(String name, String address) throws JSONException;
     public JSONObject createRouter(String name, String address, String parameters) throws JSONException;
     public JSONObject createRouterWithName(String name) throws JSONException;

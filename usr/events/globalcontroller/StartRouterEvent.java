@@ -37,6 +37,13 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
         parameters_ = parameters;
     }
     
+    public StartRouterEvent(long time, EventEngine eng, String parameters) {
+        super(time, eng);
+        name_ = null;
+        address_ = null;
+        parameters_ = parameters;
+    }
+    
     /**
      * Create a StartRouterEvent from an existing generic StartRouterEvent.
      */

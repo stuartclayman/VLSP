@@ -3306,6 +3306,11 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         return createRouter("", "");
     }
 
+    public JSONObject createRouter(String parameters) throws JSONException {
+        StartRouterEvent ev = new StartRouterEvent(getElapsedTime(), null, parameters);
+        return executeEvent(ev);
+    }
+    
     public JSONObject createRouter(String name, String address) throws JSONException {
         StartRouterEvent ev = new StartRouterEvent(getElapsedTime(), null, address, name);
         return executeEvent(ev);
@@ -3315,7 +3320,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         StartRouterEvent ev = new StartRouterEvent(getElapsedTime(), null, address, name, parameters);
         return executeEvent(ev);
     }
-
+    
     public JSONObject createRouterWithName(String name) throws JSONException {
         return createRouter(name, "");
     }
