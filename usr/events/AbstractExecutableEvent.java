@@ -12,7 +12,14 @@ public abstract class AbstractExecutableEvent extends AbstractEvent implements E
     protected AbstractExecutableEvent(long t, EventEngine eng) {
         super(t, eng);
     }
-        
+ 
+    /**
+     * Important constructor to create Event - with extra parameters.
+     */
+    protected AbstractExecutableEvent(long t, EventEngine eng, String parameters) {
+        super(t, eng, parameters);
+    }
+       
     /** Execute the event, pass in a context object, and return a JSON object with information*/
     @Override
     public  JSONObject execute(EventDelegate ed, Object obj) {

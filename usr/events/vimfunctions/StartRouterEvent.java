@@ -24,7 +24,7 @@ public class StartRouterEvent extends AbstractExecutableEvent implements StartRo
     }
 
     public StartRouterEvent(long time, EventEngine eng, String address, String name, String parameters) {
-        super(time, eng);
+        super(time, eng, parameters);
         this.name = name;
         this.address = address;
         this.parameters = parameters;

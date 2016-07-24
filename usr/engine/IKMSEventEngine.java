@@ -220,7 +220,7 @@ public class IKMSEventEngine implements EventEngine {
 	private void followRouter(Event e, EventScheduler s, JSONObject response,
 			VimFunctions v) {
 		Logger.getLogger("log")
-				.logln(USR.STDOUT, leadin() + "followRouter" + e);
+				.logln(USR.STDOUT, leadin() + "followRouter " + e.getParameters());
 
 		int routerId;
 		long now = e.getTime();
@@ -232,9 +232,11 @@ public class IKMSEventEngine implements EventEngine {
 			routerIDs.add(routerId);
 			
 			// if there are parameters set, execute stress
-			if (e.getParameters()!=null)
+			if (e.getParameters()!=null) {
+			Logger.getLogger("log")
+                                .logln(USR.STDOUT, leadin() + "followRouter starting stress application with parameters" + e.getParameters());
 				v.createApp(routerId, "demo_usr.stress.Stress", e.getParameters());
-
+			}
 		} catch (JSONException jse) {
 			routerId = -1;
 			jse.printStackTrace();

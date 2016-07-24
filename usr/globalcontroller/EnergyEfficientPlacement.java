@@ -165,8 +165,9 @@ public class EnergyEfficientPlacement implements PlacementEngine {
      * extra parameters.
      */
     public LocalControllerInfo routerPlacement(String name, String address, String parameters) {
-        Logger.getLogger("log").logln(USR.STDOUT, "EnergyEfficientPlacement - Extra parameters passed:" + parameters);
-    		// execute the regular routerPlacement method
+ 		Logger.getLogger("log").logln(USR.STDOUT, "EnergyEfficientPlacement: parameters passed " + parameters);
+		System.out.println ("EnergyEfficientPlacement parameters passed "+parameters);
+   		// execute the regular routerPlacement method
     		return routerPlacement(name, address);
     }
 
