@@ -3,9 +3,11 @@
 # regular experiment (without stress) and 100 nodes
 
 # set nodes number
-#nodesnum=100
+nodesnum=100
 
-#./runresourceallocation ScenarioEnergyPlacementDirect-$nodesnum "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+./runresourceallocation ScenarioEnergyPlacementDirect-$nodesnum "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+
+
 
 # energy experiment stressing memory
 #./startstress -m 5
@@ -113,13 +115,13 @@
 # Energy experiment stressing VMs (cpu 1 per VM) - assuming future load knowledge
 
 # set nodes number
-nodesnum=30
+#nodesnum=30
 
 # use nodes with particular load level
-cp ../scripts/ikms$nodesnum-c1.xml ../scripts/ikms$nodesnum.xml
+#cp ../scripts/ikms$nodesnum-c1.xml ../scripts/ikms$nodesnum.xml
 
-./runresourceallocation ScenarioEnergyPlacementDirectBusyVMsFutureLoad-$nodesnum-c1 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+#./runresourceallocation ScenarioEnergyPlacementDirectBusyVMsFutureLoad-$nodesnum-c1 "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
 
 # revert back configuration file to nodes without load
-cp ../scripts/ikms$nodesnum.xml.bak ../scripts/ikms$nodesnum.xml
+#cp ../scripts/ikms$nodesnum.xml.bak ../scripts/ikms$nodesnum.xml
 

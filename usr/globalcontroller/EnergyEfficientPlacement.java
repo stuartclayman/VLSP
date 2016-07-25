@@ -218,13 +218,14 @@ public class EnergyEfficientPlacement implements PlacementEngine {
 		String[] newData = input.split(" ");
 		double extraCPU=0;
 		double extraMemory=0;
+		if (newData.length>0) {
 		for (int i = 0; i < newData.length; i++) {
 			if (newData[i].charAt(0)=='c')
 				extraCPU=Double.valueOf(newData[i].replace("c", "")) / 100;
 			if (newData[i].charAt(0)=='m')
 				extraMemory=Double.valueOf(newData[i].replace("m", "")) / 100;
 		}
-		
+		}
 		// execute placeRouter method
 		return placeRouter(name, address, extraCPU, extraMemory);
 	}

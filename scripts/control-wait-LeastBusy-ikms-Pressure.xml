@@ -4,7 +4,7 @@
      <StartLocalControllers>true</StartLocalControllers>
      <ConnectedNetwork>false</ConnectedNetwork>
 
-     <PlacementEngineClass>usr.globalcontroller.LeastBusy</PlacementEngineClass>
+     <PlacementEngineClass>usr.globalcontroller.LeastBusyPlacement</PlacementEngineClass>
 
      <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass> -->
      <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualization</VisualizationClass>
