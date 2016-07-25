@@ -1,0 +1,27 @@
+#!/bin/sh
+echo "Creating minmemoryallocation figure"
+
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="minmemoryallocation"
+    # create file  
+    ./minmemoryallocation > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
+
+counter=2
+result="`cat scenario`/$filename.txt Minimum_Memory_Allocation Time Minimum_Memory_Allocation"
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotminmemoryallocationfigure $result
+
+./createpicture `cat scenario`/$filename

@@ -1,0 +1,27 @@
+#!/bin/sh
+echo "Creating maxcpuload figure"
+
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="maxcpuload"
+    # create file  
+    ./maxcpuload > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
+
+counter=2
+result="`cat scenario`/$filename.txt Maximum_CPU_Load Time Maximum_CPU_Load"
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotmaxcpuloadfigure $result
+
+./createpicture `cat scenario`/$filename

@@ -1,0 +1,27 @@
+#!/bin/sh
+echo "Creating averageincomingthroughput figure"
+
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="averageincomingthroughput"
+    # create file  
+    ./averageincomingthroughput > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
+
+counter=2
+result="`cat scenario`/$filename.txt Average_Incoming_Throughput Time Average_Incoming_Throughput"
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotaverageincomingthroughputfigure $result
+
+./createpicture `cat scenario`/$filename

@@ -1,0 +1,27 @@
+#!/bin/sh
+echo "Creating maxnetworkutilization figure"
+
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="maxnetworkutilization"
+    # create file  
+    ./maxnetworkutilization > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
+
+counter=2
+result="`cat scenario`/$filename.txt Maximum_Network_Utilization Time Maximum_Network_Utilization"
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotmaxnetworkutilizationfigure $result
+
+./createpicture `cat scenario`/$filename

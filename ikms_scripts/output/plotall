@@ -5,55 +5,83 @@ echo "Creating latex file"
 cat results-template.tex > results.tex
 echo "\section{Plotting all figures for `cat scenario`}" >> results.tex
 
+
+for h in `cat metrics`; do
+        if [ $h ==  "cpuload" ]
+        then
+
 echo "Ploting CPU Load"
 echo "\subsection{CPU Load}" >> results.tex
 ./plotcpuload
 ./addlatexfigures cpuload.eps cpuload
 echo "\clearpage" >> results.tex
+	fi
 
+        if [ $h ==  "memorystorage" ]
+        then
 echo "Ploting Memory State"
 echo "\subsection{Memory State}" >> results.tex
 ./plotmemorystorage
 ./addlatexfigures memorystorage.eps memorystorage
 echo "\clearpage" >> results.tex
+	fi
 
+        if [ $h ==  "responsetime" ]
+        then
 echo "Ploting Response Time"
 echo "\subsection{Response Time}" >> results.tex
 ./plotresponsetime
 ./addlatexfigures responsetime.eps responsetime
 echo "\clearpage" >> results.tex
+	fi
 
+        if [ $h ==  "freshness" ]
+        then
 echo "Ploting Information Freshness"
 echo "\subsection{Information Freshness}" >> results.tex
 ./plotfreshness
 ./addlatexfigures freshness.eps freshness
 echo "\clearpage" >> results.tex
+	fi
 
+        if [ $h ==  "minenergy" ]
+        then
 echo "Ploting Minimum Energy Consumed"
 echo "\subsection{Minimum Energy Consumed}" >> results.tex
 ./plotminenergy
 ./addlatexfigures minenergy.eps minenergy
 echo "\clearpage" >> results.tex
+	fi
 
+        if [ $h ==  "maxenergy" ]
+        then
 echo "Ploting Maximum Energy Consumed"
 echo "\subsection{Maximum Energy Consumed}" >> results.tex
 ./plotmaxenergy
 ./addlatexfigures maxenergy.eps maxenergy
 echo "\clearpage" >> results.tex
+	fi
 
+        if [ $h ==  "averageenergy" ]
+        then
 echo "Ploting Average Energy Consumed"
 echo "\subsection{Average Energy Consumed}" >> results.tex
 ./plotaverageenergy
 ./addlatexfigures averageenergy.eps averageenergy
 echo "\clearpage" >> results.tex
+	fi
 
+        if [ $h ==  "totalenergy" ]
+        then
 echo "Ploting Total Energy Consumed"
 echo "\subsection{Total Energy Consumed}" >> results.tex
 ./plottotalenergy
 ./addlatexfigures totalenergy.eps totalenergy
 echo "\clearpage" >> results.tex
+	fi
 
-
+        if [ $h ==  "flowtypes" ]
+        then
 counter=0
 for a in `cat range`
 do
@@ -64,18 +92,135 @@ do
 	echo "\clearpage" >> results.tex
 	let counter+=1
 done
+	fi
 
+        if [ $h ==  "responsetimemonitoredflows" ]
+        then
 echo "Ploting Response Time of Selected Flows"
 echo "\subsection{Response Time of Selected Flows}" >> results.tex
 ./plotresponsetimemonitoredflows
 ./addlatexfigures responsetimemonitoredflows.eps responsetimemonitoredflows
 echo "\clearpage" >> results.tex
+	fi
 
+        if [ $h ==  "freshnessmonitoredflows" ]
+        then
 echo "Ploting Information Freshness of Selected Flows"
 echo "\subsection{Information Freshness of Selected Flows}" >> results.tex
 ./plotfreshnessmonitoredflows
 ./addlatexfigures freshnessmonitoredflows.eps freshnessmonitoredflows
 echo "\clearpage" >> results.tex
+	fi
+
+	if [ $h ==  "mincpuload" ]
+        then
+echo "Ploting Minimum CPU Load"
+echo "\subsection{Minimum CPU Load}" >> results.tex
+./plotmincpuload
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+	fi
+
+        if [ $h ==  "maxcpuload" ]
+        then
+echo "Ploting Maximum CPU Load"
+echo "\subsection{Maximum CPU Load}" >> results.tex
+./plotmaxcpuload
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+        if [ $h ==  "averagecpuload" ]
+        then
+echo "Ploting Average CPU Load"
+echo "\subsection{Average CPU Load}" >> results.tex
+./plotaveragecpuload
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+        if [ $h ==  "minmemoryallocation" ]
+        then
+echo "Ploting Minimum Memory Allocation"
+echo "\subsection{Minimum Memory Allocation}" >> results.tex
+./plotminmemoryallocation
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+        if [ $h ==  "maxmemoryallocation" ]
+        then
+echo "Ploting Maximum Memory Allocation"
+echo "\subsection{Maximum Memory Allocation}" >> results.tex
+./plotmaxmemoryallocation
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+        if [ $h ==  "averagememoryallocation" ]
+        then
+echo "Ploting Average Memory Allocation"
+echo "\subsection{Average Memory Allocation}" >> results.tex
+./plotaveragememoryallocation
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+        if [ $h ==  "minincomingthroughput" ]
+        then
+echo "Ploting Minimum Incoming Throughput"
+echo "\subsection{Minimum Incoming Throughput}" >> results.tex
+./plotminincomingthroughput
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+        if [ $h ==  "maxincomingthroughput" ]
+        then
+echo "Ploting Maximum Incoming Throughput"
+echo "\subsection{Maximum Incoming Throughput}" >> results.tex
+./plotmaxincomingthroughput
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+        if [ $h ==  "averageincomingthroughput" ]
+        then
+echo "Ploting Average Incoming Throughput"
+echo "\subsection{Average Incoming Throughput}" >> results.tex
+./plotaverageincomingthroughput
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+	if [ $h ==  "minoutgoingthroughput" ]
+        then
+echo "Ploting Minimum Outgoing Throughput"
+echo "\subsection{Minimum Outgoing Throughput}" >> results.tex
+./plotminoutgoingthroughput
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+        if [ $h ==  "maxoutgoingthroughput" ]
+        then
+echo "Ploting Maximum Outgoing Throughput"
+echo "\subsection{Maximum Outgoing Throughput}" >> results.tex
+./plotmaxoutgoingthroughput
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+        if [ $h ==  "averageoutgoingthroughput" ]
+        then
+echo "Ploting Average Outgoing Throughput"
+echo "\subsection{Average Outgoing Throughput}" >> results.tex
+./plotaverageoutgoingthroughput
+./addlatexfigures $h.eps $h
+echo "\clearpage" >> results.tex
+        fi
+
+done
 
 echo "" >> results.tex
 echo "\end{document}" >> results.tex

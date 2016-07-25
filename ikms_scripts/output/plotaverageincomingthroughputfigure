@@ -1,0 +1,199 @@
+#!/bin/sh
+#echo "Syntax: ./plotfigure filename title xlabel ylabel column1title column1position column2title column2position column3title column3position column4title column4position"
+
+counter=1
+
+for str in "$@"
+do
+    	p[$counter]=${str//"_"/" "}
+	let counter+=1
+done
+
+#echo "set terminal png" > plot.p         
+#echo "set output 'output.png' >> plot.p  
+
+echo "set term postscript eps color" > plot.p
+echo "set autoscale" >> plot.p
+echo "unset log" >> plot.p
+echo "unset label" >> plot.p
+echo "set xtic auto" >> plot.p
+echo "set xtics font 'Arial,18'" >> plot.p 
+echo "set ytics font 'Arial,18'" >> plot.p
+echo "set xlabel font 'Arial,18'" >> plot.p
+echo "set ylabel font 'Arial,18'" >> plot.p
+echo "set title font 'Arial,18'" >> plot.p
+echo "set key font 'Arial,16'" >> plot.p
+echo "set ytic auto" >> plot.p
+echo "set title '${p[2]}'" >> plot.p
+echo "set xlabel '${p[3]}'" >> plot.p
+echo "set ylabel '${p[4]}'" >> plot.p
+
+# Check if an alternative y range requested
+yrangefile="`cat scenario`/averageincomingthroughput-yrange"
+echo $yrangefile
+if [ -f $yrangefile ];
+then
+        yrange="`cat $yrangefile`"
+        echo "Changing yrange to:$yrange"
+        echo "set yrange $yrange" >> plot.p
+else
+        echo "set yrange [0:30]" >> plot.p
+fi
+
+#echo "set xrange [0:30]" >> plot.p
+echo "set key top left" >> plot.p
+#echo "set key box" >> plot.p
+
+./setlinestyles
+
+if [ $# -eq 6 ]
+then
+        # add one more figure
+	echo "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1" >> plot.p
+fi
+
+
+if [ $# -eq 8 ]
+then
+        echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+		, '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2" >> plot.p
+fi
+
+
+if [ $# -eq 10 ] 
+then
+       echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+		, '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3" >> plot.p
+fi
+
+if [ $# -eq 12 ]
+then
+	echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+        	, '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4" >> plot.p
+fi
+
+if [ $# -eq 14 ]
+then
+      echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+                , '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4\
+        	, '${p[1]}' using 1:${p[14]} title '${p[13]}' with lines linestyle 5" >> plot.p
+fi
+
+if [ $# -eq 16 ]
+then
+      echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+                , '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4\
+                , '${p[1]}' using 1:${p[14]} title '${p[13]}' with lines linestyle 5\
+                , '${p[1]}' using 1:${p[16]} title '${p[15]}' with lines linestyle 6" >> plot.p
+fi
+
+if [ $# -eq 18 ]
+then
+      echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+                , '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4\
+                , '${p[1]}' using 1:${p[14]} title '${p[13]}' with lines linestyle 5\
+                , '${p[1]}' using 1:${p[16]} title '${p[15]}' with lines linestyle 6\
+                , '${p[1]}' using 1:${p[18]} title '${p[17]}' with lines linestyle 7" >> plot.p
+
+fi
+
+if [ $# -eq 20 ]
+then
+      echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+                , '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4\
+                , '${p[1]}' using 1:${p[14]} title '${p[13]}' with lines linestyle 5\
+                , '${p[1]}' using 1:${p[16]} title '${p[15]}' with lines linestyle 6\
+                , '${p[1]}' using 1:${p[18]} title '${p[17]}' with lines linestyle 7\
+                , '${p[1]}' using 1:${p[20]} title '${p[19]}' with lines linestyle 8" >> plot.p
+
+fi
+
+if [ $# -eq 22 ]
+then
+      echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+                , '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4\
+                , '${p[1]}' using 1:${p[14]} title '${p[13]}' with lines linestyle 5\
+                , '${p[1]}' using 1:${p[16]} title '${p[15]}' with lines linestyle 6\
+                , '${p[1]}' using 1:${p[18]} title '${p[17]}' with lines linestyle 7\
+                , '${p[1]}' using 1:${p[20]} title '${p[19]}' with lines linestyle 8\
+                , '${p[1]}' using 1:${p[22]} title '${p[21]}' with lines linestyle 9" >> plot.p
+fi
+
+if [ $# -eq 24 ]
+then
+      echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+                , '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4\
+                , '${p[1]}' using 1:${p[14]} title '${p[13]}' with lines linestyle 5\
+                , '${p[1]}' using 1:${p[16]} title '${p[15]}' with lines linestyle 6\
+                , '${p[1]}' using 1:${p[18]} title '${p[17]}' with lines linestyle 7\
+                , '${p[1]}' using 1:${p[20]} title '${p[19]}' with lines linestyle 8\
+                , '${p[1]}' using 1:${p[22]} title '${p[21]}' with lines linestyle 9\
+                , '${p[1]}' using 1:${p[24]} title '${p[23]}' with lines linestyle 10" >> plot.p
+fi
+
+if [ $# -eq 26 ]
+then
+
+     echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+                , '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4\
+                , '${p[1]}' using 1:${p[14]} title '${p[13]}' with lines linestyle 5\
+                , '${p[1]}' using 1:${p[16]} title '${p[15]}' with lines linestyle 6\
+                , '${p[1]}' using 1:${p[18]} title '${p[17]}' with lines linestyle 7\
+                , '${p[1]}' using 1:${p[20]} title '${p[19]}' with lines linestyle 8\
+                , '${p[1]}' using 1:${p[22]} title '${p[21]}' with lines linestyle 9\
+                , '${p[1]}' using 1:${p[24]} title '${p[23]}' with lines linestyle 10\
+                , '${p[1]}' using 1:${p[26]} title '${p[25]}' with lines linestyle 11" >> plot.p
+fi
+
+if [ $# -eq 28 ]
+then
+      echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+                , '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4\
+                , '${p[1]}' using 1:${p[14]} title '${p[13]}' with lines linestyle 5\
+                , '${p[1]}' using 1:${p[16]} title '${p[15]}' with lines linestyle 6\
+                , '${p[1]}' using 1:${p[18]} title '${p[17]}' with lines linestyle 7\
+                , '${p[1]}' using 1:${p[20]} title '${p[19]}' with lines linestyle 8\
+                , '${p[1]}' using 1:${p[22]} title '${p[21]}' with lines linestyle 9\
+                , '${p[1]}' using 1:${p[24]} title '${p[23]}' with lines linestyle 10\
+                , '${p[1]}' using 1:${p[26]} title '${p[25]}' with lines linestyle 11\
+                , '${p[1]}' using 1:${p[28]} title '${p[27]}' with lines linestyle 12" >> plot.p
+fi
+
+if [ $# -eq 30 ]
+then
+      echo    "plot '${p[1]}' using 1:${p[6]} title '${p[5]}' with lines linestyle 1\
+                , '${p[1]}' using 1:${p[8]} title '${p[7]}' with lines linestyle 2\
+                , '${p[1]}' using 1:${p[10]} title '${p[9]}' with lines linestyle 3\
+                , '${p[1]}' using 1:${p[12]} title '${p[11]}' with lines linestyle 4\
+                , '${p[1]}' using 1:${p[14]} title '${p[13]}' with lines linestyle 5\
+                , '${p[1]}' using 1:${p[16]} title '${p[15]}' with lines linestyle 6\
+                , '${p[1]}' using 1:${p[18]} title '${p[17]}' with lines linestyle 7\
+                , '${p[1]}' using 1:${p[20]} title '${p[19]}' with lines linestyle 8\
+                , '${p[1]}' using 1:${p[22]} title '${p[21]}' with lines linestyle 9\
+                , '${p[1]}' using 1:${p[24]} title '${p[23]}' with lines linestyle 10\
+                , '${p[1]}' using 1:${p[26]} title '${p[25]}' with lines linestyle 11\
+                , '${p[1]}' using 1:${p[28]} title '${p[27]}' with lines linestyle 12\
+                , '${p[1]}' using 1:${p[30]} title '${p[29]}' with lines linestyle 13" >> plot.p
+fi
+
+
+#gnuplot plot.p

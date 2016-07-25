@@ -1,0 +1,27 @@
+#!/bin/sh
+echo "Creating minincomingthroughput figure"
+
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="maxincomingthroughput"
+    # create file  
+    ./maxincomingthroughput > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
+
+counter=2
+result="`cat scenario`/$filename.txt Maximum_Incoming_Throughput Time Maximum_Incoming_Throughput"
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotmaxincomingthroughputfigure $result
+
+./createpicture `cat scenario`/$filename

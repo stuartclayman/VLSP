@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=latex 2016.6.7)  24 JUL 2016 21:03
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=latex 2016.6.7)  25 JUL 2016 13:56
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -136,121 +136,117 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 7.
 LaTeX Font Info:    ... okay on input line 7.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 7.
 LaTeX Font Info:    ... okay on input line 7.
+File: ScenarioEnergyPlacementDirect-30/responsetime.eps Graphic file (type eps)
 
-Overfull \hbox (74.39871pt too wide) in paragraph at lines 9--9
-[]\OT1/cmr/bx/n/12 Plotting all fig-ures for ScenarioEnergyPlacementDirectBusyV
-MsFutureLoad-
- []
+ <ScenarioEnergyPlacementDirect-30/responsetime.eps> [1]
+File: ScenarioEnergyPlacementDirect-30/freshness.eps Graphic file (type eps)
 
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/cpuload.eps Graphic 
-file (type eps)
-<ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/cpuload.eps> [1]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/memorystorage.eps Gr
-aphic file (type eps)
-
-<ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/memorystorage.eps>
-[2
+<ScenarioEnergyPlacementDirect-30/freshness.eps> [2
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/responsetime.eps Gra
-phic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/responsetime.eps>
-[3
+File: ScenarioEnergyPlacementDirect-30/minenergy.eps Graphic file (type eps)
+
+<ScenarioEnergyPlacementDirect-30/minenergy.eps> [3
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/freshness.eps Graphi
-c file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/freshness.eps>
-[4
+File: ScenarioEnergyPlacementDirect-30/maxenergy.eps Graphic file (type eps)
+
+<ScenarioEnergyPlacementDirect-30/maxenergy.eps> [4
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/minenergy.eps Graphi
-c file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/minenergy.eps>
-[5
+File: ScenarioEnergyPlacementDirect-30/averageenergy.eps Graphic file (type eps
+)
+
+<ScenarioEnergyPlacementDirect-30/averageenergy.eps> [5
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/maxenergy.eps Graphi
-c file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/maxenergy.eps>
-[6
+File: ScenarioEnergyPlacementDirect-30/totalenergy.eps Graphic file (type eps)
+
+<ScenarioEnergyPlacementDirect-30/totalenergy.eps> [6
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/averageenergy.eps Gr
-aphic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/averageenergy.eps>
-[7
+File: ScenarioEnergyPlacementDirect-30/mincpuload.eps Graphic file (type eps)
+
+<ScenarioEnergyPlacementDirect-30/mincpuload.eps> [7
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/totalenergy.eps Grap
-hic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/totalenergy.eps>
-[8
+File: ScenarioEnergyPlacementDirect-30/maxcpuload.eps Graphic file (type eps)
+
+<ScenarioEnergyPlacementDirect-30/maxcpuload.eps> [8
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-0.eps Grap
-hic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-0.eps>
-[9
+File: ScenarioEnergyPlacementDirect-30/averagecpuload.eps Graphic file (type ep
+s)
+
+<ScenarioEnergyPlacementDirect-30/averagecpuload.eps> [9
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-1.eps Grap
-hic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-1.eps>
-[10
+File: ScenarioEnergyPlacementDirect-30/minmemoryallocation.eps Graphic file (ty
+pe eps)
+
+<ScenarioEnergyPlacementDirect-30/minmemoryallocation.eps> [10
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-2.eps Grap
-hic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-2.eps>
-[11
+File: ScenarioEnergyPlacementDirect-30/maxmemoryallocation.eps Graphic file (ty
+pe eps)
+
+<ScenarioEnergyPlacementDirect-30/maxmemoryallocation.eps> [11
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-3.eps Grap
-hic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-3.eps>
-[12
+File: ScenarioEnergyPlacementDirect-30/averagememoryallocation.eps Graphic file
+ (type eps)
+
+<ScenarioEnergyPlacementDirect-30/averagememoryallocation.eps> [12
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-4.eps Grap
-hic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-4.eps>
-[13
+File: ScenarioEnergyPlacementDirect-30/minincomingthroughput.eps Graphic file (
+type eps)
+
+<ScenarioEnergyPlacementDirect-30/minincomingthroughput.eps> [13
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-5.eps Grap
-hic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-5.eps>
-[14
+File: ScenarioEnergyPlacementDirect-30/maxincomingthroughput.eps Graphic file (
+type eps)
+
+<ScenarioEnergyPlacementDirect-30/maxincomingthroughput.eps> [14
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-6.eps Grap
-hic file (type eps)
- <ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/flowtypes-6.eps>
-[15
+File: ScenarioEnergyPlacementDirect-30/averageincomingthroughput.eps Graphic fi
+le (type eps)
+
+<ScenarioEnergyPlacementDirect-30/averageincomingthroughput.eps> [15
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/responsetimemonitore
-dflows.eps Graphic file (type eps)
+File: ScenarioEnergyPlacementDirect-30/minoutgoingthroughput.eps Graphic file (
+type eps)
 
-<ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/responsetimemonitoredflow
-s.eps> [16
+<ScenarioEnergyPlacementDirect-30/minoutgoingthroughput.eps> [16
 
 ]
-File: ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/freshnessmonitoredfl
-ows.eps Graphic file (type eps)
+File: ScenarioEnergyPlacementDirect-30/maxoutgoingthroughput.eps Graphic file (
+type eps)
 
-<ScenarioEnergyPlacementDirectBusyVMsFutureLoad-30-c1/freshnessmonitoredflows.e
-ps> [17
+<ScenarioEnergyPlacementDirect-30/maxoutgoingthroughput.eps> [17
 
-] (./results.aux) ) 
+]
+File: ScenarioEnergyPlacementDirect-30/averageoutgoingthroughput.eps Graphic fi
+le (type eps)
+
+<ScenarioEnergyPlacementDirect-30/averageoutgoingthroughput.eps> [18
+
+]
+(./results.aux)
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
 Here is how much of TeX's memory you used:
- 1364 strings out of 495064
- 16195 string characters out of 3182225
+ 1367 strings out of 495064
+ 16131 string characters out of 3182225
  58383 words of memory out of 3000000
- 4573 multiletter control sequences out of 15000+200000
+ 4575 multiletter control sequences out of 15000+200000
  8879 words of font info for 35 fonts, out of 3000000 for 9000
  14 hyphenation exceptions out of 8191
- 25i,4n,26p,203b,242s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 25i,4n,26p,197b,242s stack positions out of 5000i,500n,10000p,200000b,50000s
 
-Output written on results.dvi (17 pages, 5868 bytes).
+Output written on results.dvi (18 pages, 5828 bytes).

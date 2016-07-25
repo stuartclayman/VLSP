@@ -1,0 +1,27 @@
+#!/bin/sh
+echo "Creating averagememoryallocation figure"
+
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="averagememoryallocation"
+    # create file  
+    ./averagememoryallocation > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
+
+counter=2
+result="`cat scenario`/$filename.txt Average_Memory_Allocation Time Average_Memory_Allocation"
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotaveragememoryallocationfigure $result
+
+./createpicture `cat scenario`/$filename

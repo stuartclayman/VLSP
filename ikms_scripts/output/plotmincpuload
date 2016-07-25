@@ -1,0 +1,27 @@
+#!/bin/sh
+echo "Creating mincpuload figure"
+
+if [[ $# -eq 0 ]] ; then
+    echo 'No parameters passed, using default filename.'
+    filename="mincpuload"
+    # create file  
+    ./mincpuload > `cat scenario`/$filename.txt
+else
+    filename=$1
+fi
+
+counter=2
+result="`cat scenario`/$filename.txt Minimum_CPU_Load Time Minimum_CPU_Load"
+
+for a in `cat range`
+do
+        rangetype="`cat rangetype`_${a}"
+        result="${result} ${rangetype} $counter"
+        let counter+=1
+done
+
+echo $result
+
+./plotmincpuloadfigure $result
+
+./createpicture `cat scenario`/$filename
