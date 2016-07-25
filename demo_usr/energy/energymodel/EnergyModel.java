@@ -56,6 +56,11 @@ public class EnergyModel {
 
 	// keep track of last energy measurement
 	double lastEnergyMeasurement; 
+	
+	// keep track of last normalized values
+	float lastNormalizedCPU;
+	float lastNormalizedMemory;
+	float lastNormalizedNetwork;
 
 	// EnergyModel constructor function
 	public EnergyModel (double a1_, double b1_, double c1_, double r1_, double a2_, double b2_, double c2_,double r2_, double a3_, double b3_, double c3_, double r3_, double a4_, double b4_, double c4_, double r4_, double c_, long maxNetworkTransmissionBytes_) {
@@ -98,6 +103,11 @@ public class EnergyModel {
 
 		// initialise last energy measurement
 		lastEnergyMeasurement = 0;
+		
+		// initialize last normalized values
+		lastNormalizedCPU = 0;
+		lastNormalizedMemory = 0;
+		lastNormalizedNetwork = 0;
 	}
 
 	public EnergyModel (JSONObject jsonObj) throws JSONException {
@@ -156,11 +166,13 @@ public class EnergyModel {
 		float normalizedCPU = (loadAverage / 100) + (float) extraCPU;
 		if (normalizedCPU>1)
 			normalizedCPU=1;
+
 		float normalizedMemory = memoryUsed / (memoryUsed + freeMemory) + (float) extraMemory;
 		if (normalizedMemory>1)
 			normalizedMemory=1;
+
 		float normalizedNetwork = (networkOutboundBytes + networkIncomingBytes) / maxNetworkTransmissionBytes;
-		
+
 		double currentEnergy = c +  ProcessingConsumptionFunction (normalizedCPU) + MemoryConsumptionFunction (normalizedMemory) + NetworkLoadConsumptionFunction (normalizedNetwork);
 
 		System.out.println ("Energy Consumption: CPU load was:" + (loadAverage / 100) +", it is now "+normalizedCPU);
@@ -181,6 +193,11 @@ public class EnergyModel {
         lastNetworkOutboundBytes = networkOutboundBytes;
         lastNetworkIncomingBytes = networkIncomingBytes;
         lastLoadAverage = loadAverage;
+        
+		lastNormalizedCPU = normalizedCPU;
+		lastNormalizedMemory = normalizedMemory;
+		lastNormalizedNetwork = normalizedNetwork;
+
 		// keep track of last energy measurement
 		lastEnergyMeasurement = currentEnergy;
 
@@ -219,7 +236,18 @@ public class EnergyModel {
 	public double getLastNetworkIncomingBytes () {
 		return lastNetworkIncomingBytes;
 	}
+	
+	public double getLastNormalizedCPULoad () {
+		return lastNormalizedCPU;
+	}
 
+	public double getLastNormalizedMemoryAllocation () {
+		return lastNormalizedMemory;
+	}
+	
+	public double getLastNormalizedNetwork () {
+		return lastNormalizedNetwork;
+	}
 	
 	// calculate current energy consumption from relevant jsonobject
 	public double CurrentEnergyConsumption (JSONObject jsonObj) throws JSONException {

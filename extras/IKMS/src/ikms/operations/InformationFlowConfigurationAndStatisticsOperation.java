@@ -62,11 +62,29 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	double averageEnergyValue;
 	double totalEnergyValue;
 	
+	// calculated host CPU values
+	double maxHostCPULoadValue;
+	double minHostCPULoadValue;
+	double averageHostCPULoadValue;
+
+	// calculated host Memory values
+	double maxHostMemoryAllocationValue;
+	double minHostMemoryAllocationValue;
+	double averageHostMemoryAllocationValue;
+
+	// calculated host Network values
+	double maxHostNetworkUtilizationValue;
+	double minHostNetworkUtilizationValue;
+	double averageHostNetworkUtilizationValue;
+	
 	private GlobalControllerClient gcClient;
 	
 	static private Map <String, EnergyModel> energyConsumptionPerLocalController = new HashMap <String, EnergyModel> ();
 	static private ArrayList<String> localControllers = new ArrayList<String>();
 	static private ArrayList<Double> energyConsumedPerLocalController = new ArrayList<Double>();
+	static private ArrayList<Double> normalizedCPUPerLocalController = new ArrayList<Double>();
+	static private ArrayList<Double> normalizedMemoryPerLocalController = new ArrayList<Double>();
+	static private ArrayList<Double> normalizedNetworkPerLocalController = new ArrayList<Double>();
 
 	static private boolean firstTime=true;
 	
@@ -85,11 +103,20 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 
 		//System.exit(0);
 		
-		// reset calculated energy values
+		// reset calculated energy, cpu, memory and network utilization values
 		maxEnergyValue=0;
 		minEnergyValue=0;
 		averageEnergyValue=0;
 		totalEnergyValue=0;		
+		maxHostCPULoadValue=0;
+		minHostCPULoadValue=0;
+		averageHostCPULoadValue=0;
+		maxHostMemoryAllocationValue=0;
+		minHostMemoryAllocationValue=0;
+		averageHostMemoryAllocationValue=0;
+		maxHostNetworkUtilizationValue=0;
+		minHostNetworkUtilizationValue=0;
+		averageHostNetworkUtilizationValue=0;
 	}
 
 	public void RetrieveLocalControllerInformation () {
@@ -116,6 +143,9 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 			JSONArray detailArray = null;
 			JSONObject coefficientsArray = null;
 			double currentEnergy = 0;
+			double currentCPULoad = 0;
+			double currentMemoryAllocation = 0;
+			double currentNetworkUtilization = 0;
 			
 			// initialize EnergyModel Objects
 			if (result.getJSONArray("detail")!=null) {
@@ -134,10 +164,22 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 				  // update energy values
 				  EnergyModel model = energyConsumptionPerLocalController.get(localControllers.get(i));
 				  currentEnergy = model.CurrentEnergyConsumption (currentDetail.getJSONObject("hostinfo"));
-				  System.out.println ("Current energy consumption is:"+i+", "+model.getLastLoadAverage()+", "+model.getLastAverageCPULoad()+", " + model.getLastAverageIdleCPU()+", "+model.getLastMemoryUsed()+", "+model.getLastFreeMemory()+", "+model.getLastNetworkIncomingBytes()+", "+model.getLastNetworkOutboundBytes()+", " + currentEnergy+" "+firstTime);
-				  if (!firstTime)
+				  currentCPULoad = model.getLastNormalizedCPULoad();
+				  currentMemoryAllocation = model.getLastNormalizedMemoryAllocation();
+				  currentNetworkUtilization = model.getLastNormalizedNetwork();
+				  
+				  System.out.println ("Current energy consumption is:"+i+",cpu:"+currentCPULoad+",memory:"+currentMemoryAllocation+",network:" + currentNetworkUtilization+",energy:" + currentEnergy+" "+firstTime);
+				  if (!firstTime) {
+					  // remove previous values
 					  energyConsumedPerLocalController.remove(i);
+					  normalizedCPUPerLocalController.remove(i);
+					  normalizedMemoryPerLocalController.remove(i);
+					  normalizedNetworkPerLocalController.remove(i);
+				  }
 				  energyConsumedPerLocalController.add(i, currentEnergy);
+				  normalizedCPUPerLocalController.add(i, currentCPULoad);
+				  normalizedMemoryPerLocalController.add(i, currentMemoryAllocation);
+				  normalizedNetworkPerLocalController.add(i, currentNetworkUtilization);
 			    }
 			}
 			
@@ -149,31 +191,46 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		maxEnergyValue=CalculateMaxValueFromArrayList (energyConsumedPerLocalController);
+		minEnergyValue=CalculateMinValueFromArrayList (energyConsumedPerLocalController);
+		averageEnergyValue=CalculateAverageValueFromArrayList (energyConsumedPerLocalController);
+		totalEnergyValue=GetTotalValueFromArrayList (energyConsumedPerLocalController);
+				
+		maxHostCPULoadValue=CalculateMaxValueFromArrayList (normalizedCPUPerLocalController);
+		minHostCPULoadValue=CalculateMinValueFromArrayList (normalizedCPUPerLocalController);
+		averageHostCPULoadValue=CalculateAverageValueFromArrayList (normalizedCPUPerLocalController);
+		maxHostMemoryAllocationValue=CalculateMaxValueFromArrayList (normalizedMemoryPerLocalController);
+		minHostMemoryAllocationValue=CalculateMinValueFromArrayList (normalizedMemoryPerLocalController);
+		averageHostMemoryAllocationValue=CalculateAverageValueFromArrayList (normalizedMemoryPerLocalController);
+		maxHostNetworkUtilizationValue=CalculateMaxValueFromArrayList (normalizedNetworkPerLocalController);
+		minHostNetworkUtilizationValue=CalculateMinValueFromArrayList (normalizedNetworkPerLocalController);
+		averageHostNetworkUtilizationValue=CalculateAverageValueFromArrayList (normalizedNetworkPerLocalController);
 		
 		//calculate max energy value
-		System.out.println ("Maximum energy value is:"+CalculateMaxValueFromArrayList (energyConsumedPerLocalController));
+		System.out.println ("Maximum energy value is:"+maxEnergyValue);
 		
 		//calculate min energy value
-		System.out.println ("Minimum energy value is:"+CalculateMinValueFromArrayList (energyConsumedPerLocalController));
+		System.out.println ("Minimum energy value is:"+minEnergyValue);
 
 		//calculate average energy value
-		System.out.println ("Average energy value is:"+CalculateAverageValueFromArrayList (energyConsumedPerLocalController));
+		System.out.println ("Average energy value is:"+averageEnergyValue);
 
 	}
 	
-	private double CalculateMaxValueFromArrayList (ArrayList arrayList) {
-		maxEnergyValue=(double) Collections.max(arrayList);
-
-		return maxEnergyValue;
+	private double CalculateMaxValueFromArrayList (ArrayList<Double> arrayList) {
+		double result=(double) Collections.max(arrayList);
+		
+		return result;
 	}
 	
 	private double CalculateMinValueFromArrayList (ArrayList<Double> arrayList) {
-		minEnergyValue=(double) Collections.min(arrayList);
-
-		return minEnergyValue;
+		double result=(double) Collections.min(arrayList);
+		
+		return result;
 	}
 	
-	public double CalculateAverageValueFromArrayList (ArrayList<Double> arrayList) {
+	private double CalculateAverageValueFromArrayList (ArrayList<Double> arrayList) {
 	    // 'average' is undefined if there are no elements in the list.
 	    if (arrayList == null || arrayList.isEmpty())
 	        return 0.0;
@@ -184,11 +241,24 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	    for (int i = 0; i < n; i++)
 	        sum += arrayList.get(i);
 	    // We don't want to perform an integer division, so the cast is mandatory.
-		totalEnergyValue=sum;
 		
-		averageEnergyValue=((double) sum) / n;
+		double result=((double) sum) / n;
 		
-	    return averageEnergyValue;
+	    return result;
+	}
+	
+	private double GetTotalValueFromArrayList (ArrayList<Double> arrayList) {
+		// 'average' is undefined if there are no elements in the list.
+	    if (arrayList == null || arrayList.isEmpty())
+	        return 0.0;
+	    // Calculate the summation of the elements in the list
+	    double sum = 0;
+	    int n = arrayList.size();
+	    // Iterating manually is faster than using an enhanced for loop.
+	    for (int i = 0; i < n; i++)
+	        sum += arrayList.get(i);
+	    // We don't want to perform an integer division, so the cast is mandatory.
+		return sum;
 	}
 			
 	public static void MonitorEntity (int entityid) {
@@ -293,6 +363,42 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	// Returns the total energy consumed in the hosts
 	public double GetTotalEnergyValue () {
 		return totalEnergyValue;
+	}
+	
+	public double GetMaxHostCPULoadValue () {
+		return maxHostCPULoadValue;
+	}
+
+	public double GetMinHostCPULoadValue () {
+		return minHostCPULoadValue;
+	}
+	
+	public double GetAverageHostCPULoadValue () {
+		return averageHostCPULoadValue;
+	}
+
+	public double GetMaxHostMemoryAllocationValue () {
+		return maxHostMemoryAllocationValue;
+	}
+	
+	public double GetMinHostMemoryAllocationValue () {
+		return minHostMemoryAllocationValue;
+	}
+	
+	public double GetAverageHostMemoryAllocationValue () {
+		return averageHostMemoryAllocationValue;
+	}
+	
+	public double GetMaxHostNetworkUtilizationValue () {
+		return maxHostNetworkUtilizationValue;
+	}
+	
+	public double GetMinHostNetworkUtilizationValue () {
+		return minHostNetworkUtilizationValue;
+	}
+	
+	public double GetAverageHostNetworkUtilizationValue () {
+		return averageHostNetworkUtilizationValue;
 	}
 	
 	public static double GetAverageResponseTime () {
