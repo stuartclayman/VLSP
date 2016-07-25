@@ -3,9 +3,17 @@
 # regular experiment (without stress) and 100 nodes
 
 # set nodes number
-nodesnum=100
+#nodesnum=100
 
-./runresourceallocation ScenarioEnergyPlacementDirect-$nodesnum "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+#./runresourceallocation ScenarioEnergyPlacementDirect-$nodesnum "Placement" "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" $nodesnum "EnergyLinear EnergyPaper EnergyQuadratic EnergyTranscritical EnergyPichfork LeastBusy LeastUsed" 3 5 3
+
+
+# regular experiment (without stress) and 100 nodes
+
+# set nodes number
+nodesnum=30
+
+./runresourceallocation ScenarioEnergyPlacementDirect-$nodesnum "Placement" "EnergyLinear EnergyPaper" $nodesnum "EnergyLinear EnergyPaper" 3 5 3
 
 
 

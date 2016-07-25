@@ -77,6 +77,16 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	double minHostNetworkUtilizationValue;
 	double averageHostNetworkUtilizationValue;
 	
+	// calculated host incoming throughput values
+	double maxHostIncomingThroughput;
+	double minHostIncomingThroughput;
+	double averageHostIncomingThroughput;
+
+	// calculated host outgoing throughput values
+	double maxHostOutgoingThroughput;
+	double minHostOutgoingThroughput;
+	double averageHostOutgoingThroughput;
+
 	private GlobalControllerClient gcClient;
 	
 	static private Map <String, EnergyModel> energyConsumptionPerLocalController = new HashMap <String, EnergyModel> ();
@@ -85,6 +95,9 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 	static private ArrayList<Double> normalizedCPUPerLocalController = new ArrayList<Double>();
 	static private ArrayList<Double> normalizedMemoryPerLocalController = new ArrayList<Double>();
 	static private ArrayList<Double> normalizedNetworkPerLocalController = new ArrayList<Double>();
+
+	static private ArrayList<Double> incomingThroughputPerLocalController = new ArrayList<Double>();
+	static private ArrayList<Double> outgoingThroughputPerLocalController = new ArrayList<Double>();
 
 	static private boolean firstTime=true;
 	
@@ -117,6 +130,12 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 		maxHostNetworkUtilizationValue=0;
 		minHostNetworkUtilizationValue=0;
 		averageHostNetworkUtilizationValue=0;
+		maxHostOutgoingThroughput=0;
+		minHostOutgoingThroughput=0;
+		averageHostOutgoingThroughput=0;
+		minHostIncomingThroughput=0;
+		maxHostIncomingThroughput=0;
+		averageHostIncomingThroughput=0;
 	}
 
 	public void RetrieveLocalControllerInformation () {
@@ -146,6 +165,8 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 			double currentCPULoad = 0;
 			double currentMemoryAllocation = 0;
 			double currentNetworkUtilization = 0;
+			double currentIncomingBytes = 0;
+			double currentOutgoingBytes = 0;
 			
 			// initialize EnergyModel Objects
 			if (result.getJSONArray("detail")!=null) {
@@ -167,19 +188,25 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 				  currentCPULoad = model.getLastNormalizedCPULoad();
 				  currentMemoryAllocation = model.getLastNormalizedMemoryAllocation();
 				  currentNetworkUtilization = model.getLastNormalizedNetwork();
-				  
-				  System.out.println ("Current energy consumption is:"+i+",cpu:"+currentCPULoad+",memory:"+currentMemoryAllocation+",network:" + currentNetworkUtilization+",energy:" + currentEnergy+" "+firstTime);
+				  currentIncomingBytes = model.getLastNetworkIncomingBytes ();
+				  currentOutgoingBytes = model.getLastNetworkOutboundBytes ();
+
+				  System.out.println ("Current energy consumption is:"+i+" ,cpu:"+currentCPULoad+" ,memory:"+currentMemoryAllocation+" ,network:" + currentNetworkUtilization+" ,incomingbytes:"+currentIncomingBytes+" ,currentoutgoingbytes:"+currentOutgoingBytes+" ,energy:" + currentEnergy+" "+firstTime);
 				  if (!firstTime) {
 					  // remove previous values
 					  energyConsumedPerLocalController.remove(i);
 					  normalizedCPUPerLocalController.remove(i);
 					  normalizedMemoryPerLocalController.remove(i);
 					  normalizedNetworkPerLocalController.remove(i);
+					  incomingThroughputPerLocalController.remove(i);
+					  outgoingThroughputPerLocalController.remove(i);
 				  }
 				  energyConsumedPerLocalController.add(i, currentEnergy);
 				  normalizedCPUPerLocalController.add(i, currentCPULoad);
 				  normalizedMemoryPerLocalController.add(i, currentMemoryAllocation);
 				  normalizedNetworkPerLocalController.add(i, currentNetworkUtilization);
+				  incomingThroughputPerLocalController.add(i, currentIncomingBytes);
+				  outgoingThroughputPerLocalController.add(i, currentOutgoingBytes);
 			    }
 			}
 			
@@ -206,7 +233,12 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 		maxHostNetworkUtilizationValue=CalculateMaxValueFromArrayList (normalizedNetworkPerLocalController);
 		minHostNetworkUtilizationValue=CalculateMinValueFromArrayList (normalizedNetworkPerLocalController);
 		averageHostNetworkUtilizationValue=CalculateAverageValueFromArrayList (normalizedNetworkPerLocalController);
-		
+		maxHostIncomingThroughput=CalculateMaxValueFromArrayList (incomingThroughputPerLocalController);
+		minHostIncomingThroughput=CalculateMinValueFromArrayList (incomingThroughputPerLocalController);
+		averageHostIncomingThroughput=CalculateAverageValueFromArrayList (incomingThroughputPerLocalController);
+		maxHostOutgoingThroughput=CalculateMaxValueFromArrayList (outgoingThroughputPerLocalController);
+		minHostOutgoingThroughput=CalculateMinValueFromArrayList (outgoingThroughputPerLocalController);
+		averageHostOutgoingThroughput=CalculateAverageValueFromArrayList (outgoingThroughputPerLocalController);
 		//calculate max energy value
 		System.out.println ("Maximum energy value is:"+maxEnergyValue);
 		
@@ -401,6 +433,30 @@ public class InformationFlowConfigurationAndStatisticsOperation {
 		return averageHostNetworkUtilizationValue;
 	}
 	
+	public double GetMaxHostIncomingThroughput () {
+		return maxHostIncomingThroughput;
+	}
+
+	public double GetMinHostIncomingThroughput () {
+                return minHostIncomingThroughput;
+        }
+
+	public double GetAverageHostIncomingThroughput () {
+                return averageHostIncomingThroughput;
+        }
+
+	public double GetMaxHostOutgoingThroughput () {
+                return maxHostOutgoingThroughput;
+        }
+
+        public double GetMinHostOutgoingThroughput () {
+                return minHostOutgoingThroughput;
+        }
+
+        public double GetAverageHostOutgoingThroughput () {
+                return averageHostOutgoingThroughput;
+        }
+
 	public static double GetAverageResponseTime () {
 		double output = 0.0;
 		if (responseTimeRequestsInPeriod>0)

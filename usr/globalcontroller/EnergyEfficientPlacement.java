@@ -213,18 +213,19 @@ public class EnergyEfficientPlacement implements PlacementEngine {
 		Logger.getLogger("log").logln(USR.STDOUT,
 				"EnergyEfficientPlacement: parameters passed " + parameters);
 		// calculate the extra cpu and memory parameters
-		String input=parameters;
-		input=input.replace("-m ", "m").replace("-c ", "c").replace("-c", "c").replace("-m", "m");
-		String[] newData = input.split(" ");
 		double extraCPU=0;
-		double extraMemory=0;
-		if (newData.length>0) {
-		for (int i = 0; i < newData.length; i++) {
-			if (newData[i].charAt(0)=='c')
-				extraCPU=Double.valueOf(newData[i].replace("c", "")) / 100;
-			if (newData[i].charAt(0)=='m')
-				extraMemory=Double.valueOf(newData[i].replace("m", "")) / 100;
-		}
+                double extraMemory=0;
+
+		String input=parameters;
+		if (input.length()>0) {
+			input=input.replace("-m ", "m").replace("-c ", "c").replace("-c", "c").replace("-m", "m");
+			String[] newData = input.split(" ");
+			for (int i = 0; i < newData.length; i++) {
+				if (newData[i].charAt(0)=='c')
+					extraCPU=Double.valueOf(newData[i].replace("c", "")) / 100;
+				if (newData[i].charAt(0)=='m')
+					extraMemory=Double.valueOf(newData[i].replace("m", "")) / 100;
+			}
 		}
 		// execute placeRouter method
 		return placeRouter(name, address, extraCPU, extraMemory);

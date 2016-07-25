@@ -190,9 +190,9 @@ public class EnergyModel {
 		lastAverageIdleCPU = averageIdleCPU;
 		lastMemoryUsed = memoryUsed;
 		lastFreeMemory = freeMemory;
-        lastNetworkOutboundBytes = networkOutboundBytes;
-        lastNetworkIncomingBytes = networkIncomingBytes;
-        lastLoadAverage = loadAverage;
+        	lastNetworkOutboundBytes = networkOutboundBytes;
+        	lastNetworkIncomingBytes = networkIncomingBytes;
+        	lastLoadAverage = loadAverage;
         
 		lastNormalizedCPU = normalizedCPU;
 		lastNormalizedMemory = normalizedMemory;
