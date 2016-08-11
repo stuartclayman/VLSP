@@ -129,7 +129,9 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
      * col 3: out-packets: LONG
      * col 4: out-bytes: LONG
      * 
-     * HostInfo attributes: [0: STRING LocalController:10000, 1: FLOAT 7.72, 2: FLOAT 14.7, 3: FLOAT 77.57, 4: INTEGER 15964, 5: INTEGER 412, 6: INTEGER 16376, 7: LONG 50728177, 8: LONG 43021697138, 9: LONG 40879848, 10: LONG 7519963728]
+     * HostInfo attributes: [0: STRING LocalController:10000, 1: FLOAT 7.72, 2: FLOAT 14.7, 3: FLOAT 77.57, 4: INTEGER 15964, 5: INTEGER 412, 6: INTEGER 16376, 7: LONG 50728177, 8: [<0: if-name: STRING>, <1: in-packets: LONG>, <2: in-bytes: LONG>, <3: out-packets: LONG>, <4: out-bytes: LONG>]
+[(STRING en0), (LONG 67991652), (LONG 51397761527), (LONG 46334061), (LONG 8412540222)]
+[(STRING awdl0), (LONG 17), (LONG 2750), (LONG 8938), (LONG 3792906)]
      */
     public Measurement getData(String localControllerName) {
         return measurements.get(localControllerName);
@@ -194,13 +196,9 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
                     jsobj.put("networkOutboundBytes", 0);
                 } else {
                     // subtract from previous probe
-                    //jsobj.put("networkIncomingBytes", (Long) currentProbeValue.get(8).getValue() - (Long) previousProbeValue.get(8).getValue());
-                    //jsobj.put("networkOutboundBytes", (Long) currentProbeValue.get(10).getValue() - (Long) previousProbeValue.get(10).getValue());
-
                     Long[] currentTotals = calculateTotals(table);
                     Long[] previousTotals = calculateTotals((Table)previousProbeValue.get(8).getValue());
 
-                    // temporary
                     jsobj.put("networkIncomingPackets", currentTotals[0] - previousTotals[0]);
                     jsobj.put("networkIncomingBytes", currentTotals[1] - previousTotals[1]);
                     jsobj.put("networkOutboundPackets", currentTotals[2] - previousTotals[2]);
@@ -215,10 +213,6 @@ public class HostInfoReporter implements Reporter, ReporterMeasurementType {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-
-
-            System.err.println("HostInfoReporter: " + jsobj);
-
 
             return jsobj;
         }
