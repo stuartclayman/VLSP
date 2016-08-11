@@ -331,7 +331,7 @@ public class LocalControllerInteractor {
      * @param howOften How many seconds between measurements
      */
     public Boolean monitoringStart(InetSocketAddress addr, int howOften) throws IOException, JSONException {
-        String toSend = MCRP.MONITORING_START.CMD + " " + addr.getAddress().getHostAddress() + ":" + addr.getPort() + " " +
+        String toSend = MCRP.MONITORING_START.CMD + " " + addr.getAddress().getHostAddress() + " " + addr.getPort() + " " +
             howOften;
         JSONObject response = interact(toSend);
         return (Boolean)response.get("success");

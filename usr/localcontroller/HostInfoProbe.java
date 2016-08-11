@@ -1,9 +1,14 @@
 package usr.localcontroller;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.Map;
+import java.util.Enumeration;
 import java.util.Scanner;
 import usr.common.PipeProcess;
 import java.util.regex.*;
@@ -11,6 +16,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+
 
 import eu.reservoir.monitoring.appl.datarate.EveryNSeconds;
 import eu.reservoir.monitoring.core.DefaultProbeAttribute;
@@ -32,6 +40,7 @@ import eu.reservoir.monitoring.core.table.TableHeader;
 import eu.reservoir.monitoring.core.table.TableProbeAttribute;
 import eu.reservoir.monitoring.core.table.TableRow;
 import eu.reservoir.monitoring.core.table.TableValue;
+import eu.reservoir.monitoring.core.table.TableException;
 
 import eu.reservoir.monitoring.appl.host.linux.CPUDev;
 import eu.reservoir.monitoring.appl.host.linux.MemoryDev;
@@ -48,13 +57,16 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
     MemoryDev memDev;
 
-    NetDev netDev;
+    HashMap<String, NetDev> netDevs;
 
-
+    TableHeader netStatsHeader;
+    
     /**
      * Construct a HostInfoProbe
      */
     public HostInfoProbe(LocalController cont) {
+        netDevs = new HashMap<String, NetDev>();
+
         setController(cont);
 
 
@@ -62,24 +74,11 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
         if (osName.startsWith("mac")) {
             // Mac OS
+            macosSetup();
 
         } else if (osName.startsWith("linux")) {
             // Linux
-
-            cpuDev = new CPUDev();
-
-            // base reading
-            cpuDev.read(false);
-
-            memDev = new MemoryDev();
-
-            netDev = new NetDev("eth0");
-
-            // read data, but calculate nothing
-            netDev.read(false);
-
-
-
+            linuxSetup();
 
         } else {
             throw new Error("HostInfoProbe: not implemented for " + osName + " yet!");
@@ -99,18 +98,24 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
         addProbeAttribute(new DefaultProbeAttribute(2, "cpu-sys", ProbeAttributeType.FLOAT, "percent"));
         addProbeAttribute(new DefaultProbeAttribute(3, "cpu-idle", ProbeAttributeType.FLOAT, "percent"));
 
-        addProbeAttribute(new DefaultProbeAttribute(4, "mem-used", ProbeAttributeType.INTEGER, "Mb"));
-        addProbeAttribute(new DefaultProbeAttribute(5, "mem-free", ProbeAttributeType.INTEGER, "Mb"));
-        addProbeAttribute(new DefaultProbeAttribute(6, "mem-total", ProbeAttributeType.INTEGER, "Mb"));
+	// Lefteris: I added the CPU Load average from /proc/loadavg on linux
+        // Stuart: Moved to 4 - also for MacOS
+	addProbeAttribute(new DefaultProbeAttribute(4, "load-average", ProbeAttributeType.FLOAT, "percent"));
 
-        addProbeAttribute(new DefaultProbeAttribute(7, "in-packets", ProbeAttributeType.LONG, "n"));
-        addProbeAttribute(new DefaultProbeAttribute(8, "in-bytes", ProbeAttributeType.LONG, "n"));
+        addProbeAttribute(new DefaultProbeAttribute(5, "mem-used", ProbeAttributeType.INTEGER, "Mb"));
+        addProbeAttribute(new DefaultProbeAttribute(6, "mem-free", ProbeAttributeType.INTEGER, "Mb"));
+        addProbeAttribute(new DefaultProbeAttribute(7, "mem-total", ProbeAttributeType.INTEGER, "Mb"));
 
-        addProbeAttribute(new DefaultProbeAttribute(9, "out-packets", ProbeAttributeType.LONG, "n"));
-        addProbeAttribute(new DefaultProbeAttribute(10, "out-bytes", ProbeAttributeType.LONG, "n"));
+        // Add all network interfaces with traffic
+        netStatsHeader = new DefaultTableHeader().
+            add("if-name", ProbeAttributeType.STRING).
+            add("in-packets", ProbeAttributeType.LONG).
+            add("in-bytes", ProbeAttributeType.LONG).
+            add("out-packets", ProbeAttributeType.LONG).
+            add("out-bytes", ProbeAttributeType.LONG);
 
-	// Lefteris: I added the CPU Load average from /proc/loadavg
-	addProbeAttribute(new DefaultProbeAttribute(11, "load-average", ProbeAttributeType.FLOAT, "percent"));
+        addProbeAttribute(new TableProbeAttribute(8, "net-stats", netStatsHeader));
+
     }
 
     /**
@@ -135,11 +140,18 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
         }
     }
 
+    /**
+     * Setup for macos
+     */
+    protected void macosSetup() {
+    }
 
     /**
      * Get data for MacOS
      */
     protected ProducerMeasurement macos() {
+        findNetworkInterfaces();
+        
         try {
             // create a list for Probe Values
             ArrayList<ProbeValue> list = new ArrayList<ProbeValue>();
@@ -154,27 +166,16 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
             String topData = getDataFromPipeProcess(top);
 
-            processTopData(topData, list);
-
-            // need to pick out loadavg
-            // and save it for later
-            int listSize = list.size();
-            ProbeValue loadavgProbeValue = list.get(listSize-1);
-            list.remove(listSize-1);
-
-
+            processMacosTopData(topData, list);
+            
             // get some data from "netstat"
             PipeProcess netstat = startMacOSProcess("/usr/bin/env netstat -b -i -n");
                 
             String netData = getDataFromPipeProcess(netstat);
 
 
-            processNetstatData(netData, list);
+            processMacosNetstatData(netData, list);
 
-            // Lefteris: I added the CPU Load average 
-            list.add(loadavgProbeValue);
-
-            
 
             // Create the Measurement
             ProducerMeasurement m = new ProducerMeasurement(this, list, "HostInfo");
@@ -193,9 +194,26 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
     }
 
     /**
+     * Setup for linux
+     */
+    protected void linuxSetup() {
+
+        cpuDev = new CPUDev();
+
+        // base reading
+        cpuDev.read(false);
+
+        memDev = new MemoryDev();
+            
+        // networks done on the fly 
+    }
+
+    /**
      * Get data for linux
      */
     protected ProducerMeasurement linux() {
+        findNetworkInterfaces();
+        
         try {
             // create a list for Probe Values
             ArrayList<ProbeValue> list = new ArrayList<ProbeValue>();
@@ -233,9 +251,13 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
             }
 
 
-            list.add(new DefaultProbeValue(1,user/cpuNo));
+            list.add(new DefaultProbeValue(1, user/cpuNo));
             list.add(new DefaultProbeValue(2, sys/cpuNo));
             list.add(new DefaultProbeValue(3, idle/cpuNo));
+
+            // Lefteris: I added the CPU Load average from /proc/loadavg
+            list.add(new DefaultProbeValue(4, getLoadAverageLinux() ));
+
 
             /*  MEMORY */
 
@@ -256,52 +278,87 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
                " reallyUsed = " + reallyUsed); */
 
             // convert to Mbs
-            list.add(new DefaultProbeValue(4, reallyUsed/1024));
-            list.add(new DefaultProbeValue(5, memFree/1024));
-            list.add(new DefaultProbeValue(6, memTotal/1024));
+            list.add(new DefaultProbeValue(5, reallyUsed/1024));
+            list.add(new DefaultProbeValue(6, memFree/1024));
+            list.add(new DefaultProbeValue(7, memTotal/1024));
 
 
             /* NET */
 
-            // read the data
-            if (netDev.read(true)) {
-                // got a result
-
-                // now collect up the results	
-                long in_bytes = netDev.getCurrentValue("in_bytes");
-                long in_packets = netDev.getCurrentValue("in_packets");
-                //int in_errors = netDev.getDeltaValue("in_errors");
-                //int in_dropped = netDev.getDeltaValue("in_dropped");
-                long out_bytes = netDev.getCurrentValue("out_bytes");
-                long out_packets = netDev.getCurrentValue("out_packets");
-                //int out_errors = netDev.getDeltaValue("out_errors");
-                //int out_dropped = netDev.getDeltaValue("out_dropped");
+            // now allocate a table
+            Table statsTable = new DefaultTable();
+            statsTable.defineTable(netStatsHeader);
 
 
-                /* System.err.println("netInfo => " +
-                   " inBytes = " + in_bytes +
-                   " inPackets = " + in_packets +
-                   " outBytes = " + out_bytes +
-                   " outPackets = " + out_packets); */
 
-                // add data to ProbeValue list
-                list.add(new DefaultProbeValue(7,in_packets));
-                list.add(new DefaultProbeValue(8, in_bytes));
-                list.add(new DefaultProbeValue(9, out_packets));
-                list.add(new DefaultProbeValue(10, out_bytes));
-            } else {
-                // add data to ProbeValue list
-                list.add(new DefaultProbeValue(7, 0L));
-                list.add(new DefaultProbeValue(8, 0L));
-                list.add(new DefaultProbeValue(9, 0L));
-                list.add(new DefaultProbeValue(10, 0L));
+            // skip through all the network interfaces
+            for (Map.Entry<String, NetDev> entryVal : netDevs.entrySet()) {
+                String name = entryVal.getKey();
+                NetDev netDev = entryVal.getValue();
+                
+                // read the data
+                if (netDev.read(true)) {
+                    // got a result
+
+                    // now collect up the results	
+                    long in_bytes = netDev.getCurrentValue("in_bytes");
+                    long in_packets = netDev.getCurrentValue("in_packets");
+                    //int in_errors = netDev.getDeltaValue("in_errors");
+                    //int in_dropped = netDev.getDeltaValue("in_dropped");
+                    long out_bytes = netDev.getCurrentValue("out_bytes");
+                    long out_packets = netDev.getCurrentValue("out_packets");
+                    //int out_errors = netDev.getDeltaValue("out_errors");
+                    //int out_dropped = netDev.getDeltaValue("out_dropped");
+
+
+                    /* System.err.println("netInfo => " +
+                       " inBytes = " + in_bytes +
+                       " inPackets = " + in_packets +
+                       " outBytes = " + out_bytes +
+                       " outPackets = " + out_packets); */
+
+                    // add data to ProbeValue list
+                    // create a row for data
+                    TableRow netIFRow = new DefaultTableRow();
+
+
+                    // add name of NetIf to row
+                    netIFRow.add(new DefaultTableValue(name));
+
+                    // we found some values
+                    netIFRow.add(new DefaultTableValue(in_packets));
+                    netIFRow.add(new DefaultTableValue(in_bytes));
+                    netIFRow.add(new DefaultTableValue(out_packets));
+                    netIFRow.add(new DefaultTableValue(out_bytes));
+
+                    // add this row to the table
+                    statsTable.addRow(netIFRow);
+
+                } else {
+                    // create a row for data
+                    TableRow netIFRow = new DefaultTableRow();
+
+
+                    // add name of NetIf to row
+                    netIFRow.add(new DefaultTableValue(name));
+
+                    // we found some values
+                    netIFRow.add(new DefaultTableValue(0L));
+                    netIFRow.add(new DefaultTableValue(0L));
+                    netIFRow.add(new DefaultTableValue(0L));
+                    netIFRow.add(new DefaultTableValue(0L));
+
+                    // add this row to the table
+                    statsTable.addRow(netIFRow);
+                }
+
             }
 
+            // add data to ProbeValue list
+            list.add(new DefaultProbeValue(8, statsTable));
 
-            // Lefteris: I added the CPU Load average from /proc/loadavg
-            list.add(new DefaultProbeValue(11, getLoadAverageLinux() ));
 
-
+            
             // Create the Measurement
             ProducerMeasurement m = new ProducerMeasurement(this, list, "HostInfo");
 
@@ -318,6 +375,44 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
         }
 
 
+    }
+
+
+    /**
+     * Find all the network interfaces on the host.
+     */
+    protected void findNetworkInterfaces() {
+        // skip through all Network Interfaces - ignore loopback and down
+        // update the netDevs map with interface name -> NetDev object
+
+        NetDev netDev;
+        
+        try {
+            Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
+            for (NetworkInterface ni : Collections.list(nics)) {
+                if (ni.isLoopback() || ! ni.isUp()) {
+                    continue;
+                } else {
+                    String niName = ni.getName();
+                    netDev = new NetDev(niName);
+
+                    // read data, but calculate nothing
+                    netDev.read(false);
+
+
+                    // now add to map
+                    netDevs.put(niName, netDev);
+                }
+            }
+        } catch (SocketException se) {
+        }
+
+
+        /*
+        for (java.util.Map.Entry<String, NetDev> entry : netDevs.entrySet()) {
+            System.err.println("NetworkInterface: " + entry.getKey());
+        }
+        */
     }
 
     private float getLoadAverageLinux() {
@@ -397,7 +492,7 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
 
     /**
-     * Process the returned data.
+     * Process the data from top, and updates the ProbeValue list.
      * <p>
      * Expecting: <br/>
      * Processes: 246 total, 4 running, 3 stuck, 239 sleeping, 1832 threads 
@@ -410,7 +505,7 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
      * Networks: packets: 86118150/51G in, 76529464/19G out.
      * Disks: 10163200/243G read, 25746920/589G written.
      */
-    protected void processTopData(String raw, ArrayList<ProbeValue> list) {
+    protected void processMacosTopData(String raw, ArrayList<ProbeValue> list) {
         try { 
 
             // split lines
@@ -437,9 +532,11 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
             float cpuSys = toFloat(cpuParts[4]);
             float cpuIdle = toFloat(cpuParts[6]);
 
-            list.add(new DefaultProbeValue(1,cpuUser));
+            list.add(new DefaultProbeValue(1, cpuUser));
             list.add(new DefaultProbeValue(2, cpuSys));
             list.add(new DefaultProbeValue(3, cpuIdle));
+
+            list.add(new DefaultProbeValue(4, loadavgVal));
 
             // split mem
             // PhysMem: 3411M wired, 6513M active, 4309M inactive, 14G used, 2143M free.
@@ -473,12 +570,10 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
             } else {
             }
 
-            list.add(new DefaultProbeValue(4,memUsed));
-            list.add(new DefaultProbeValue(5, memFree));
-            list.add(new DefaultProbeValue(6, memTotal));
+            list.add(new DefaultProbeValue(5, memUsed));
+            list.add(new DefaultProbeValue(6, memFree));
+            list.add(new DefaultProbeValue(7, memTotal));
 
-
-            list.add(new DefaultProbeValue(11, loadavgVal));
 
             /*
              * not used currently
@@ -516,12 +611,14 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
     // en0   1500  fe80::1610: fe80:4::1610:9fff 49615246     - 41909285921 39950842     - 7378437798     -
     // en0   1500  10.111/17     10.111.112.215  49615246     - 41909285921 39950842     - 7378437798     -
     // p2p0  2304  <Link#5>    06:10:9f:ce:34:f9        0     0          0        0     0          0     0
-    protected void processNetstatData(String raw, ArrayList<ProbeValue> list) {
+    /**
+     * Process the data from netstat, and updates the ProbeValue list.
+     */
+    protected void processMacosNetstatData(String raw, ArrayList<ProbeValue> list) {
         try { 
-            long inBytes = 0;
-            long inPackets = 0;
-            long outBytes = 0;
-            long outPackets = 0;
+            // now allocate a table
+            Table statsTable = new DefaultTable();
+            statsTable.defineTable(netStatsHeader);
 
             // split lines
             String[] parts = raw.split("\n");
@@ -530,12 +627,28 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
             for (String part : parts) {
                 String[] words = part.split("\\s+");
 
-                if (words[0].startsWith("en") && words[10].equals("0")) {
-                    // we found an en0 value
-                    inPackets += toLong(words[4]);
-                    inBytes += toLong(words[6]);
-                    outPackets += toLong(words[7]);
-                    outBytes += toLong(words[9]);
+                /* TODO: convert data to Table
+                   if-name as value 0 
+                */
+
+                // found an interface we are interested in
+                if (netDevs.containsKey(words[0]) && words[10].equals("0")) {
+
+                    // create a row for data
+                    TableRow netIFRow = new DefaultTableRow();
+
+
+                    // add name of NetIf to row
+                    netIFRow.add(new DefaultTableValue(words[0]));
+
+                    // we found some values
+                    netIFRow.add(new DefaultTableValue(toLong(words[4])));
+                    netIFRow.add(new DefaultTableValue(toLong(words[6])));
+                    netIFRow.add(new DefaultTableValue(toLong(words[7])));
+                    netIFRow.add(new DefaultTableValue(toLong(words[9])));
+
+                    // add this row to the table
+                    statsTable.addRow(netIFRow);
 
                 } else {
                     continue;
@@ -543,14 +656,12 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
             }
 
             // add data to ProbeValue list
-            list.add(new DefaultProbeValue(7,inPackets));
-            list.add(new DefaultProbeValue(8, inBytes));
-            list.add(new DefaultProbeValue(9, outPackets));
-            list.add(new DefaultProbeValue(10, outBytes));
-
-
+            list.add(new DefaultProbeValue(8, statsTable));
 
         } catch (TypeException te) {
+            return;
+        } catch (TableException tbe) {
+            tbe.printStackTrace();
             return;
         }
     }

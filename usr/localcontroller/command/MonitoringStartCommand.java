@@ -46,95 +46,67 @@ public class MonitoringStartCommand extends LocalCommand {
 
             String [] parts = rest.split(" ");
 
-            if (parts.length != 2) {
+            // get address and port
+            // check ip addr spec
+
+            // process host and port
+            String host = parts[0];
+
+            Scanner sc = new Scanner(parts[1]);
+            int portNumber;
+
+            try {
+                portNumber = sc.nextInt();
+                sc.close();
+            } catch (Exception e) {
                 response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
-                jsobj.put("error", "Expected request: MONITORING_START address:port seconds");
+                jsobj.put("error", "MONITORING_START invalid port: " + parts[1]);
 
                 out.println(jsobj.toString());
                 response.close();
 
                 return false;
-
-            } else {
-                // get address and port
-                // check ip addr spec
-                String[] ipParts = parts[0].split(":");
-
-                if (ipParts.length != 2) {
-                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "INVALID MONITORING_START ip address: " + parts[0]);
-                    response.setCode(302);
-
-                    JSONObject jsobj = new JSONObject();
-                    jsobj.put("error", "MONITORING_START invalid address: " + parts[0]);
-
-                    out.println(jsobj.toString());
-                    response.close();
-
-                    return false;
-
-                } else {
-
-                    // process host and port
-                    String host = ipParts[0];
-
-                    Scanner sc = new Scanner(ipParts[1]);
-                    int portNumber;
-
-                    try {
-                        portNumber = sc.nextInt();
-                        sc.close();
-                    } catch (Exception e) {
-                        response.setCode(302);
-
-                        JSONObject jsobj = new JSONObject();
-                        jsobj.put("error", "MONITORING_START invalid port: " + ipParts[1]);
-
-                        out.println(jsobj.toString());
-                        response.close();
-
-                        return false;
-                    }
-
-                    // get timeout for Probe
-                    int timeout;
-
-                    // get timeout
-                    sc = new Scanner(parts[1]);
-
-                    try {
-                        timeout = sc.nextInt();
-                    } catch (Exception e) {
-                        response.setCode(302);
-
-                        JSONObject jsobj = new JSONObject();
-                        jsobj.put("error", "MONITORING_START invalid timeout: " + parts[1]);
-
-                        out.println(jsobj.toString());
-                        response.close();
-                        sc.close();
-                        return false;
-
-                    }
-
-                    // if we get here all the args seem OK
-                    InetSocketAddress socketAddress = new InetSocketAddress(host, portNumber);
-
-
-                    controller.startMonitoring(socketAddress, timeout);
-
-                    JSONObject jsobj = new JSONObject();
-
-                    jsobj.put("response", "Monitoring Started");
-                    jsobj.put("success", Boolean.TRUE);
-                    out.println(jsobj.toString());
-                    response.close();
-                    sc.close();
-                    return true;
-
-                }
             }
+
+            // get timeout for Probe
+            int timeout;
+
+            // get timeout
+            sc = new Scanner(parts[2]);
+
+            try {
+                timeout = sc.nextInt();
+            } catch (Exception e) {
+                response.setCode(302);
+
+                JSONObject jsobj = new JSONObject();
+                jsobj.put("error", "MONITORING_START invalid timeout: " + parts[1]);
+
+                out.println(jsobj.toString());
+                response.close();
+                sc.close();
+                return false;
+
+            }
+
+            // if we get here all the args seem OK
+            InetSocketAddress socketAddress = new InetSocketAddress(host, portNumber);
+
+
+            controller.startMonitoring(socketAddress, timeout);
+
+            JSONObject jsobj = new JSONObject();
+
+            jsobj.put("response", "Monitoring Started");
+            jsobj.put("success", Boolean.TRUE);
+            out.println(jsobj.toString());
+            response.close();
+            sc.close();
+            return true;
+
+
         } catch (IOException ioe) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + ioe.getMessage());
         } catch (JSONException jex) {
