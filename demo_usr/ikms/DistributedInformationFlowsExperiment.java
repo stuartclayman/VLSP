@@ -16,6 +16,7 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.vim.VimClient;
 import demo_usr.ikms.eventengine.StaticTopology;
+import demo_usr.ikms.eventengine.DynamicTopology;
 
 public class DistributedInformationFlowsExperiment {
 
@@ -38,12 +39,15 @@ public class DistributedInformationFlowsExperiment {
 	VimClient vimClient;
 
 	StaticTopology staticTopology;
+	DynamicTopology dynamicTopology;
 
 	ExecutorService pool;
 	Future executorObj;
 
 	int sourceStartingPeriod;
 	int flowStartingPeriod;
+
+	boolean staticTopologyOption=true;
 
 	public DistributedInformationFlowsExperiment () {
 
@@ -94,73 +98,76 @@ public class DistributedInformationFlowsExperiment {
 		// initialize ikmsForwarderPerRouter map
 		ikmsForwarderPerRouter = new ArrayList<Integer>();
 
-		if (args.length==9) {
-			nodesNumber = Integer.valueOf(args[0]);
-			informationSourcesNumber = Integer.valueOf(args[1]);
-			urisPerInformationSourceNumber = Integer.valueOf(args[2]);
-			totalTime = Integer.valueOf(args[3]);
-			method = Integer.valueOf(args[4]);
-			goalId = Integer.valueOf(args[5]);
-			monitoredFlows = Integer.valueOf(args[6]);
-			monitoredMethod = Integer.valueOf(args[7]);
-			monitoredGoalId = Integer.valueOf(args[8]);	
-		} else {
-			if (args.length==11) {
-				nodesNumber = Integer.valueOf(args[0]);
-				informationSourcesNumber = Integer.valueOf(args[1]);
-				urisPerInformationSourceNumber = Integer.valueOf(args[2]);
-				totalTime = Integer.valueOf(args[3]);
-				method = Integer.valueOf(args[4]);
-				goalId = Integer.valueOf(args[5]);
-				monitoredFlows = Integer.valueOf(args[6]);
-				monitoredMethod = Integer.valueOf(args[7]);
-				monitoredGoalId = Integer.valueOf(args[8]);	
-				newGoal = Integer.valueOf(args[9]);
-				newGoalDelay = Integer.valueOf(args[10]);
-			} else {
-				if (args.length==6) {
-					nodesNumber = Integer.valueOf(args[0]);
-					informationSourcesNumber = Integer.valueOf(args[1]);
-					urisPerInformationSourceNumber = Integer.valueOf(args[2]);
-					totalTime = Integer.valueOf(args[3]);
-					method = Integer.valueOf(args[4]);
-					goalId = Integer.valueOf(args[5]);
-				} else {
-					if (args.length==8) {
-						nodesNumber = Integer.valueOf(args[0]);
-						informationSourcesNumber = Integer.valueOf(args[1]);
-						urisPerInformationSourceNumber = Integer.valueOf(args[2]);
-						totalTime = Integer.valueOf(args[3]);
-						method = Integer.valueOf(args[4]);
-						goalId = Integer.valueOf(args[5]);
-						newGoal = Integer.valueOf(args[6]);
-						newGoalDelay = Integer.valueOf(args[7]);
-					} else {
-						System.out.println ("Syntax: nodesNumber informationSourcesNumber urisPerInformationSourceNumber totalTime method goalId monitoredFlows monitoredMethod monitoredGoalId newGoal newGoalDelay");
-						System.exit(0);
-					}
-				}
-			}
-
-			vimClient=null;
-			try {
-				vimClient = new VimClient();
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			try {
-				JSONObject json=vimClient.listApps(200);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			// calculating topology duration (it is in seconds) - set something big
-			topologyTime = 150000; //1000 + 12 + (totalTime+warmupTime) / 1000;
+		switch (args.length) {
+			case 9: nodesNumber = Integer.valueOf(args[0]);
+                        	informationSourcesNumber = Integer.valueOf(args[1]);
+                        	urisPerInformationSourceNumber = Integer.valueOf(args[2]);
+                        	totalTime = Integer.valueOf(args[3]);
+                        	method = Integer.valueOf(args[4]);
+                        	goalId = Integer.valueOf(args[5]);
+                        	monitoredFlows = Integer.valueOf(args[6]);
+                        	monitoredMethod = Integer.valueOf(args[7]);
+                        	monitoredGoalId = Integer.valueOf(args[8]);
+				break;
+			case 11: nodesNumber = Integer.valueOf(args[0]);
+                                 informationSourcesNumber = Integer.valueOf(args[1]);
+                                 urisPerInformationSourceNumber = Integer.valueOf(args[2]);
+                                 totalTime = Integer.valueOf(args[3]);
+                                 method = Integer.valueOf(args[4]);
+                                 goalId = Integer.valueOf(args[5]);
+                                 monitoredFlows = Integer.valueOf(args[6]);
+                                 monitoredMethod = Integer.valueOf(args[7]);
+                                 monitoredGoalId = Integer.valueOf(args[8]);
+                                 newGoal = Integer.valueOf(args[9]);
+				 break;
+			case 6: nodesNumber = Integer.valueOf(args[0]);
+                                informationSourcesNumber = Integer.valueOf(args[1]);
+                                urisPerInformationSourceNumber = Integer.valueOf(args[2]);
+                                totalTime = Integer.valueOf(args[3]);
+                                method = Integer.valueOf(args[4]);
+                                goalId = Integer.valueOf(args[5]);
+				break;
+			case 7: nodesNumber = Integer.valueOf(args[0]);
+                                informationSourcesNumber = Integer.valueOf(args[1]);
+                                urisPerInformationSourceNumber = Integer.valueOf(args[2]);
+                                totalTime = Integer.valueOf(args[3]);
+                                method = Integer.valueOf(args[4]);
+                                goalId = Integer.valueOf(args[5]);
+				staticTopologyOption = Boolean.valueOf(args[6]);
+                                break;
+			case 8: nodesNumber = Integer.valueOf(args[0]);
+                                informationSourcesNumber = Integer.valueOf(args[1]);
+                                urisPerInformationSourceNumber = Integer.valueOf(args[2]);
+                                totalTime = Integer.valueOf(args[3]);
+                                method = Integer.valueOf(args[4]);
+                                goalId = Integer.valueOf(args[5]);
+                                newGoal = Integer.valueOf(args[6]);
+                                newGoalDelay = Integer.valueOf(args[7]);
+				break;
+			default:
+				System.out.println ("Syntax: nodesNumber informationSourcesNumber urisPerInformationSourceNumber totalTime method goalId monitoredFlows monitoredMethod monitoredGoalId newGoal newGoalDelay");
+                        	System.exit(0);
+				break;
 		}
+
+		vimClient=null;
+		try {
+			vimClient = new VimClient();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+			
+		try {
+			JSONObject json=vimClient.listApps(200);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			
+		// calculating topology duration (it is in seconds) - set something big
+		topologyTime = 150000; //1000 + 12 + (totalTime+warmupTime) / 1000;
 	}
 
 	private void LookingUpRouters () {
@@ -224,7 +231,11 @@ public class DistributedInformationFlowsExperiment {
 			public Object call() {
 
 				try {
-					staticTopology = new StaticTopology(numberOfHosts, totalTime);
+					if (staticTopologyOption) {
+						staticTopology = new StaticTopology(numberOfHosts, totalTime);
+					} else {
+						dynamicTopology = new DynamicTopology(numberOfHosts, totalTime);
+					}
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -233,11 +244,20 @@ public class DistributedInformationFlowsExperiment {
 					e.printStackTrace();
 				}
 
-				staticTopology.init();
+				if (staticTopologyOption) {
+					staticTopology.init();
 
-				staticTopology.start();
+					staticTopology.start();
 
-				staticTopology.run();
+					staticTopology.run();
+				} else {
+					dynamicTopology.init();
+
+                                        dynamicTopology.start();
+
+                                        dynamicTopology.run();
+				}
+
 				System.out.println ("Run stopped.");
 
 				return new Object();
@@ -278,8 +298,11 @@ public class DistributedInformationFlowsExperiment {
 		routerIDs.clear();
 
 		//stop eventengine
-		staticTopology.stop();
-
+		if (staticTopologyOption) {
+			staticTopology.stop();
+		} else {
+			dynamicTopology.stop();
+		}
 		executorObj.cancel(false);
 
 		pool.shutdown();

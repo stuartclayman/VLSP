@@ -1347,7 +1347,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         measurementJsobj = hostInfoReporter.getProcessedData(localControllerName); 
 
-
         // current status of localcontroller
         float currentCPUUserAndSystem=0;
         float currentCPUIdle=0;

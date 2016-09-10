@@ -18,6 +18,8 @@ flowsnumber=$7
 echo "Flows number set:$flowsnumber"
 iterations=$8
 echo "Running experiment with $iterations iterations"
+statictopologyoption=$9
+echo "Static topology option: $statictopologyoption"
 
 # Set scenario name (for figures)
 echo "$scenarioname" > output/scenario
@@ -66,7 +68,7 @@ do
 			# Syntax: nodesNumber informationSourcesNumber urisPerInformationSourceNumber totalTime method goalId monitoredFlows monitoredMethod monitoredGoalId
 			# method: 3 (All)
 			# goalID: 0 (Pull from Entity), 1 (Pull from Storage), 2 (Pub/Sub), 3 (Direct Communication), 4 (Compact 0), 5 (Compact 1), 6 (Compact 2), 7 (Compact 3)
-			./singleExperiment $nr $flowsnumber 1 150000 3 $gr 2>&1 | tee /tmp/ikms-experiment-$$.out
+			./singleExperiment $nr $flowsnumber 1 150000 3 $gr $statictopologyoption 2>&1 | tee /tmp/ikms-experiment-$$.out
 			echo "Waiting 10"
 			sleep 10
 			./stopIKMSMeasurements

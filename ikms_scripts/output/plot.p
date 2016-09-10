@@ -28,4 +28,4 @@ set style line 10 lt 2 lw 5 lc rgb 'black'
 set style line 11 lt 3 lw 5 lc rgb 'black'
 set style line 12 lt 6 lw 5 lc rgb 'black'
 set style line 13 lt 2 lw 3 lc rgb 'black'
-plot 'ScenarioEnergyPlacementDirect-30/averageoutgoingthroughput.txt' using 1:2 title 'Placement EnergyLinear' with lines linestyle 1		, 'ScenarioEnergyPlacementDirect-30/averageoutgoingthroughput.txt' using 1:3 title 'Placement EnergyPaper' with lines linestyle 2
+plot 'ScenarioTest-30-c1/averageoutgoingthroughput.txt' using 1:2 title 'Placement EnergyLinear' with lines linestyle 1		, 'ScenarioTest-30-c1/averageoutgoingthroughput.txt' using 1:3 title 'Placement EnergyPaper' with lines linestyle 2

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=latex 2016.6.7)  25 JUL 2016 13:56
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=latex 2016.6.7)  9 SEP 2016 12:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -136,117 +136,97 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 7.
 LaTeX Font Info:    ... okay on input line 7.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 7.
 LaTeX Font Info:    ... okay on input line 7.
-File: ScenarioEnergyPlacementDirect-30/responsetime.eps Graphic file (type eps)
-
- <ScenarioEnergyPlacementDirect-30/responsetime.eps> [1]
-File: ScenarioEnergyPlacementDirect-30/freshness.eps Graphic file (type eps)
-
-<ScenarioEnergyPlacementDirect-30/freshness.eps> [2
-
-]
-File: ScenarioEnergyPlacementDirect-30/minenergy.eps Graphic file (type eps)
-
-<ScenarioEnergyPlacementDirect-30/minenergy.eps> [3
+File: ScenarioTest-30-c1/responsetime.eps Graphic file (type eps)
+ <ScenarioTest-30-c1/responsetime.eps> [1]
+File: ScenarioTest-30-c1/freshness.eps Graphic file (type eps)
+ <ScenarioTest-30-c1/freshness.eps>
+[2
 
 ]
-File: ScenarioEnergyPlacementDirect-30/maxenergy.eps Graphic file (type eps)
-
-<ScenarioEnergyPlacementDirect-30/maxenergy.eps> [4
-
-]
-File: ScenarioEnergyPlacementDirect-30/averageenergy.eps Graphic file (type eps
-)
-
-<ScenarioEnergyPlacementDirect-30/averageenergy.eps> [5
+File: ScenarioTest-30-c1/minenergy.eps Graphic file (type eps)
+ <ScenarioTest-30-c1/minenergy.eps> [3
 
 ]
-File: ScenarioEnergyPlacementDirect-30/totalenergy.eps Graphic file (type eps)
-
-<ScenarioEnergyPlacementDirect-30/totalenergy.eps> [6
-
-]
-File: ScenarioEnergyPlacementDirect-30/mincpuload.eps Graphic file (type eps)
-
-<ScenarioEnergyPlacementDirect-30/mincpuload.eps> [7
+File: ScenarioTest-30-c1/maxenergy.eps Graphic file (type eps)
+ <ScenarioTest-30-c1/maxenergy.eps>
+[4
 
 ]
-File: ScenarioEnergyPlacementDirect-30/maxcpuload.eps Graphic file (type eps)
-
-<ScenarioEnergyPlacementDirect-30/maxcpuload.eps> [8
-
-]
-File: ScenarioEnergyPlacementDirect-30/averagecpuload.eps Graphic file (type ep
-s)
-
-<ScenarioEnergyPlacementDirect-30/averagecpuload.eps> [9
+File: ScenarioTest-30-c1/averageenergy.eps Graphic file (type eps)
+ <ScenarioTest-30-c1/averageenergy.eps> [5
 
 ]
-File: ScenarioEnergyPlacementDirect-30/minmemoryallocation.eps Graphic file (ty
-pe eps)
+File: ScenarioTest-30-c1/totalenergy.eps Graphic file (type eps)
 
-<ScenarioEnergyPlacementDirect-30/minmemoryallocation.eps> [10
-
-]
-File: ScenarioEnergyPlacementDirect-30/maxmemoryallocation.eps Graphic file (ty
-pe eps)
-
-<ScenarioEnergyPlacementDirect-30/maxmemoryallocation.eps> [11
+<ScenarioTest-30-c1/totalenergy.eps> [6
 
 ]
-File: ScenarioEnergyPlacementDirect-30/averagememoryallocation.eps Graphic file
- (type eps)
-
-<ScenarioEnergyPlacementDirect-30/averagememoryallocation.eps> [12
-
-]
-File: ScenarioEnergyPlacementDirect-30/minincomingthroughput.eps Graphic file (
-type eps)
-
-<ScenarioEnergyPlacementDirect-30/minincomingthroughput.eps> [13
+File: ScenarioTest-30-c1/mincpuload.eps Graphic file (type eps)
+ <ScenarioTest-30-c1/mincpuload.eps>
+[7
 
 ]
-File: ScenarioEnergyPlacementDirect-30/maxincomingthroughput.eps Graphic file (
-type eps)
-
-<ScenarioEnergyPlacementDirect-30/maxincomingthroughput.eps> [14
+File: ScenarioTest-30-c1/maxcpuload.eps Graphic file (type eps)
+ <ScenarioTest-30-c1/maxcpuload.eps> [8
 
 ]
-File: ScenarioEnergyPlacementDirect-30/averageincomingthroughput.eps Graphic fi
-le (type eps)
+File: ScenarioTest-30-c1/averagecpuload.eps Graphic file (type eps)
 
-<ScenarioEnergyPlacementDirect-30/averageincomingthroughput.eps> [15
-
-]
-File: ScenarioEnergyPlacementDirect-30/minoutgoingthroughput.eps Graphic file (
-type eps)
-
-<ScenarioEnergyPlacementDirect-30/minoutgoingthroughput.eps> [16
+<ScenarioTest-30-c1/averagecpuload.eps> [9
 
 ]
-File: ScenarioEnergyPlacementDirect-30/maxoutgoingthroughput.eps Graphic file (
-type eps)
+File: ScenarioTest-30-c1/minmemoryallocation.eps Graphic file (type eps)
 
-<ScenarioEnergyPlacementDirect-30/maxoutgoingthroughput.eps> [17
-
-]
-File: ScenarioEnergyPlacementDirect-30/averageoutgoingthroughput.eps Graphic fi
-le (type eps)
-
-<ScenarioEnergyPlacementDirect-30/averageoutgoingthroughput.eps> [18
+<ScenarioTest-30-c1/minmemoryallocation.eps> [10
 
 ]
-(./results.aux)
+File: ScenarioTest-30-c1/maxmemoryallocation.eps Graphic file (type eps)
 
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+<ScenarioTest-30-c1/maxmemoryallocation.eps> [11
 
- ) 
+]
+File: ScenarioTest-30-c1/averagememoryallocation.eps Graphic file (type eps)
+
+<ScenarioTest-30-c1/averagememoryallocation.eps> [12
+
+]
+File: ScenarioTest-30-c1/minincomingthroughput.eps Graphic file (type eps)
+
+<ScenarioTest-30-c1/minincomingthroughput.eps> [13
+
+]
+File: ScenarioTest-30-c1/maxincomingthroughput.eps Graphic file (type eps)
+
+<ScenarioTest-30-c1/maxincomingthroughput.eps> [14
+
+]
+File: ScenarioTest-30-c1/averageincomingthroughput.eps Graphic file (type eps)
+
+<ScenarioTest-30-c1/averageincomingthroughput.eps> [15
+
+]
+File: ScenarioTest-30-c1/minoutgoingthroughput.eps Graphic file (type eps)
+
+<ScenarioTest-30-c1/minoutgoingthroughput.eps> [16
+
+]
+File: ScenarioTest-30-c1/maxoutgoingthroughput.eps Graphic file (type eps)
+
+<ScenarioTest-30-c1/maxoutgoingthroughput.eps> [17
+
+]
+File: ScenarioTest-30-c1/averageoutgoingthroughput.eps Graphic file (type eps)
+
+<ScenarioTest-30-c1/averageoutgoingthroughput.eps> [18
+
+] (./results.aux) ) 
 Here is how much of TeX's memory you used:
  1367 strings out of 495064
- 16131 string characters out of 3182225
+ 15865 string characters out of 3182225
  58383 words of memory out of 3000000
  4575 multiletter control sequences out of 15000+200000
  8879 words of font info for 35 fonts, out of 3000000 for 9000
  14 hyphenation exceptions out of 8191
  25i,4n,26p,197b,242s stack positions out of 5000i,500n,10000p,200000b,50000s
 
-Output written on results.dvi (18 pages, 5828 bytes).
+Output written on results.dvi (18 pages, 5564 bytes).
