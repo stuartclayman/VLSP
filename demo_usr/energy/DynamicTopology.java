@@ -1,4 +1,4 @@
-package demo_usr.ikms.eventengine;
+package demo_usr.energy;
 
 import usr.events.*;
 import usr.engine.*;

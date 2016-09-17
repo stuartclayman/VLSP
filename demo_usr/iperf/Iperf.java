@@ -1,9 +1,7 @@
 package demo_usr.iperf;
 
-import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
-
 
 import usr.applications.Application;
 import usr.applications.ApplicationResponse;
@@ -13,7 +11,7 @@ import usr.common.ProcessWrapper;
 
 
 /**
- * An application for starting a resource stressing application
+ * An application for starting a network resource stressing application
  */
 public class Iperf implements Application {
 
@@ -43,7 +41,7 @@ public class Iperf implements Application {
             return new ApplicationResponse(false, "Usage: iperf args");
 
         } else {
-            // stressArgs[0] = "iperf"
+            // iperfArgs[0] = "iperf"
             iperfArgs.add("iperf");
 
             // copy args

@@ -74,6 +74,7 @@ public class IKMSForwarderCreator implements AP {
             //    command += " -l "+ options_.getAPOutputPath();
             //}
             ApplicationResponse resp = controller.appStart(command);
+
             // WAS " -t 5 -a average -n agg-point-"+gid+"-"+apCount_);
             apCount_++;
             apName_ = resp.getMessage();

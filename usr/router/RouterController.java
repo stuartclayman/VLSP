@@ -155,7 +155,6 @@ public class RouterController implements ComponentController, Runnable {
         // default connections
         connections = new RouterConnectionsTCP(this, newConnectionPort);
 
-
         connectionCount = 0;
         // a map of NetIFs
         tempNetIFMap = new HashMap<Integer, NetIF>();
@@ -906,7 +905,7 @@ class RouterDataSource extends BasicDataSource {
     }
 
     /**
-     * Recieve a measurment from the Probe
+     * Receive a measurement from the Probe
      * and pass it onto the data source delegate.
      * @return -1 if something goes wrong
      * @return 0 if there is no delegate or no data plane

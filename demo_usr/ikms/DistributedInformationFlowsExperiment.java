@@ -15,8 +15,8 @@ import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.vim.VimClient;
+import demo_usr.energy.DynamicTopology;
 import demo_usr.ikms.eventengine.StaticTopology;
-import demo_usr.ikms.eventengine.DynamicTopology;
 
 public class DistributedInformationFlowsExperiment {
 

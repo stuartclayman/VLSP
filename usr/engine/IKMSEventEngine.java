@@ -53,6 +53,11 @@ public class IKMSEventEngine implements EventEngine {
 	ProbDistribution nodeMemoryLoadDist_ = null; // Distribution of
 													// memory-related load
 													// (stress parameter m)
+	ProbDistribution nodeNetworkLoadDist_ = null; // Distribution of
+												// network load (value in
+												// bits/sec)
+												// (iperf parameter -b)
+
 	private boolean preferentialAttachment_ = false; // If true links are chosen
 														// using P.A.
 
@@ -110,6 +115,7 @@ public class IKMSEventEngine implements EventEngine {
 				// calculate stress parameters
 				double loadCPU = 0;
 				double loadMemory = 0;
+				double loadNetwork = 0;
 
 				if (nodeCPULoadDist_ != null) {
 					try {
@@ -130,21 +136,37 @@ public class IKMSEventEngine implements EventEngine {
 						loadMemory = 0;
 					}
 				}
-				String parameters = null;
+
+				if (nodeNetworkLoadDist_ != null) {
+					try {
+						loadNetwork = (double) (nodeNetworkLoadDist_.getVariate());
+					} catch (ProbException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						loadNetwork = 0;
+					}
+				}
+				String stressParameters = null;
+				String iperfParameters = null;
 
 				if (loadCPU == 0 && loadMemory > 0) {
 					// deploy stress with parameter m
-					parameters = "-m " + loadMemory;
+					stressParameters = "-m " + loadMemory;
 				}
 
 				if (loadCPU > 0 && loadMemory == 0) {
 					// deploy stress with parameter c
-					parameters = "-c " + loadCPU;
+					stressParameters = "-c " + loadCPU;
 				}
 
 				if (loadCPU > 0 && loadMemory > 0) {
 					// deploy stress with parameter c & m
-					parameters = "-c " + loadCPU + " -m " + loadMemory;
+					stressParameters = "-c " + loadCPU + " -m " + loadMemory;
+				}
+
+				// in case network load requested
+				if (loadNetwork > 0) {
+					iperfParameters = "-b " + loadNetwork;
 				}
 
 				// Logger.getLogger("log").logln(USR.ERROR,
@@ -154,14 +176,43 @@ public class IKMSEventEngine implements EventEngine {
 						"Starting router number:" + i + " of routers:"
 								+ initialNumberOfRouters_);
 
-				if (parameters == null) {
+				if (stressParameters == null && iperfParameters == null) {
+					// start router without stress or iperf
 					e[i] = new StartRouterEvent(time, this);
 				} else {
-					Logger.getLogger("log").logln(
-							USR.STDOUT,
-							leadin() + "Stress parameters:" + parameters);
-					
-					e[i] = new StartRouterEvent(time, parameters, this);
+					if (iperfParameters == null) {
+						// pass stress parameters only
+						Logger.getLogger("log").logln(
+								USR.STDOUT,
+								leadin() + "Stress parameters:"
+										+ stressParameters);
+
+						e[i] = new StartRouterEvent(time, stressParameters,
+								this);
+					} else {
+						if (stressParameters == null) {
+							// pass iperf parameters only
+							Logger.getLogger("log").logln(
+									USR.STDOUT,
+									leadin() + "Iperf parameters:"
+											+ iperfParameters);
+
+							e[i] = new StartRouterEvent(time, iperfParameters,
+									this);
+						} else {
+							// pass stress and iperf parameters in one string,
+							// separated by ; character
+							Logger.getLogger("log").logln(
+									USR.STDOUT,
+									leadin() + "Stress parameters:"
+											+ stressParameters
+											+ " Iperf parameters:"
+											+ iperfParameters);
+
+							e[i] = new StartRouterEvent(time, stressParameters
+									+ ";" + iperfParameters, this); // pass parameters for both stress & iperf
+						}
+					}
 				}
 				s.addEvent(e[i]);
 
@@ -219,8 +270,8 @@ public class IKMSEventEngine implements EventEngine {
 
 	private void followRouter(Event e, EventScheduler s, JSONObject response,
 			VimFunctions v) {
-		Logger.getLogger("log")
-				.logln(USR.STDOUT, leadin() + "followRouter " + e.getParameters());
+		Logger.getLogger("log").logln(USR.STDOUT,
+				leadin() + "followRouter " + e.getParameters());
 
 		int routerId;
 		long now = e.getTime();
@@ -230,12 +281,51 @@ public class IKMSEventEngine implements EventEngine {
 			routerId = response.getInt("routerID"); // WAS g.getMaxRouterId();
 			// keep track of routerIds for later on when the engine ends
 			routerIDs.add(routerId);
-			
+
 			// if there are parameters set, execute stress
-			if (e.getParameters()!=null) {
-			Logger.getLogger("log")
-                                .logln(USR.STDOUT, leadin() + "followRouter starting stress application with parameters" + e.getParameters());
-				v.createApp(routerId, "demo_usr.stress.Stress", e.getParameters());
+			String parameters = e.getParameters();
+			if (parameters != null) {
+				// in case parameters string variable includes the ; character,
+				// execute both stress & iperf
+				// otherwise check the -b value, if it exists execute iperf only
+				// if not execute stress only
+				String stressParameters = null;
+				String iperfParameters = null;
+
+				if (parameters.contains(";")) {
+					// run both iperf and stress
+					stressParameters=parameters.split(";")[0];
+					iperfParameters=parameters.split(";")[1];
+				} else {
+					if (parameters.contains("-b")) {
+						// run iperf only
+						iperfParameters=parameters;
+					} else {
+						// run stress only
+						stressParameters=parameters;
+					}
+				}
+
+				// execute iperf if needed
+				if (iperfParameters != null) {
+					Logger.getLogger("log")
+							.logln(USR.STDOUT,
+									leadin()
+											+ "followRouter starting iperf application with parameters"
+											+ iperfParameters);
+					v.createApp(routerId, "demo_usr.stress.Iperf", iperfParameters);
+				}
+
+				// execute stress if needed
+				if (stressParameters != null) {
+					Logger.getLogger("log")
+							.logln(USR.STDOUT,
+									leadin()
+											+ "followRouter starting stress application with parameters"
+											+ stressParameters);
+					v.createApp(routerId, "demo_usr.stress.Stress", stressParameters);
+				}
+
 			}
 		} catch (JSONException jse) {
 			routerId = -1;
@@ -389,6 +479,10 @@ public class IKMSEventEngine implements EventEngine {
 			nodeMemoryLoadDist_ = ProbDistribution.parseProbDist(nmld,
 					"NodeMemoryLoadDist");
 
+			NodeList nnld = doc.getElementsByTagName("NodeNetworkLoadDist");
+			nodeNetworkLoadDist_ = ProbDistribution.parseProbDist(nnld,
+					"NodeNetworkLoadDist");
+			
 			NodeList ndd = doc.getElementsByTagName("NodeDeathDist");
 			nodeDeathDist_ = ProbDistribution.parseProbDist(ndd,
 					"NodeDeathDist");
