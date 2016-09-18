@@ -313,7 +313,7 @@ public class IKMSEventEngine implements EventEngine {
 									leadin()
 											+ "followRouter starting iperf application with parameters"
 											+ iperfParameters);
-					v.createApp(routerId, "demo_usr.stress.Iperf", iperfParameters);
+					v.createApp(routerId, "demo_usr.iperf.Iperf", iperfParameters);
 				}
 
 				// execute stress if needed

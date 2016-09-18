@@ -63,7 +63,7 @@ public class DynamicTopology extends RemoteEventDelegate implements EventDelegat
 
 			//return new usr.engine.ScriptEngine(86400, "scripts/AppScript2Ca");
 
-			return new usr.engine.IKMSEventEngine(totalTime, "scripts/ikmsd"+numberOfHosts+".xml");
+			return new usr.engine.IKMSEventEngine(totalTime, "scripts/energy"+numberOfHosts+".xml");
 		} catch (EventEngineException eee) {
 			throw new Error("Cant start event engine" + eee.getMessage());
 		}

@@ -11,9 +11,11 @@ export CLASSPATH=$HOME/projects/UserSpaceRouting/src/java/ikms-paper/userspacero
 cd ..
 # run 16 times
 #for i in {1..16}
-for i in {1..32}
-do
+#for i in {1..32}
+#do
 	# ENERGY
-	java usr.globalcontroller.GlobalController scripts/control-wait-`cat ikms_scripts/currentplacement`-ikms-Pressure.xml
+	#java usr.globalcontroller.GlobalController scripts/control-wait-`cat ikms_scripts/currentplacement`-ikms-Pressure.xml
 
-done
+#done
+
+java usr.globalcontroller.GlobalController scripts/control-wait-`cat ikms_scripts/currentplacement`-Pressure.xml
