@@ -60,7 +60,6 @@ public class Ingress implements Application, Reconfigure {
     Future<?> usrForwarderFuture;
 
     // Management interface
-
     LinkedBlockingDeque<usr.net.Datagram> mgmtQueue;
 
     // ManagementPort
