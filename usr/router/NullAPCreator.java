@@ -19,7 +19,7 @@ public class NullAPCreator implements AP {
     /**
      * Set the AP does nothing
      */
-    public int setAP(int gid, int ap) {
+    public int setAP(int gid, int ap, String[] ctxArgs) {
         return 0;
     }
 

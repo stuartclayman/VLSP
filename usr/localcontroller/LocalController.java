@@ -696,7 +696,7 @@ public class LocalController implements ComponentController {
     }
 
     /** Set the Aggregation point for a given router */
-    public boolean setAP(int GID, int AP) {
+    public boolean setAP(int GID, int AP, String[] ctxArgs) {
         BasicRouterInfo br = routerMap_.get(GID);
 
         if (br == null) {
@@ -712,7 +712,7 @@ public class LocalController implements ComponentController {
             return false;
         }
         try {
-            ri.setAP(GID, AP);
+            ri.setAP(GID, AP, ctxArgs);
         } catch (Exception e) {
             Logger.getLogger("log").logln(USR.ERROR,
                                           leadin()+"cannot set aggregation point for router "+GID);

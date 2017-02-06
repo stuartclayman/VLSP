@@ -722,8 +722,8 @@ public class RouterController implements ComponentController, Runnable {
     }
 
     /** Set the aggregation point for this router */
-    public synchronized void setAP(int gid, int ap) {
-        apMgr.setAP(gid, ap);
+    public synchronized void setAP(int gid, int ap, String[] ctxArgs) {
+        apMgr.setAP(gid, ap, ctxArgs);
     }
 
 

@@ -273,9 +273,23 @@ public class LocalControllerInteractor {
 
     /** Send a message to a local controller intended for a router to
        set its aggregation point */
-    public Boolean setAP(int GID, int APGID) throws IOException, JSONException {
-        String toSend;
-        toSend = MCRP.SET_AP.CMD + " " + GID + " " + APGID;
+    public Boolean setAP(int GID, int APGID, String[] ctxArgs) throws IOException, JSONException {
+        //toSend = MCRP.SET_AP.CMD + " " + GID + " " + APGID;
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(MCRP.SET_AP.CMD);
+        builder.append(" ");
+        builder.append(GID);
+        builder.append(" ");
+        builder.append(APGID);
+
+        for (String arg : ctxArgs) {
+            builder.append(" ");
+            builder.append(arg);
+        }
+
+        String toSend = java.net.URLEncoder.encode(builder.toString(), "UTF-8");
+
 
         JSONObject response = interact(toSend);
         return (Boolean)response.get("success");

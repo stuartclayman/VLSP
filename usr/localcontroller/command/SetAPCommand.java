@@ -40,7 +40,7 @@ public class SetAPCommand extends LocalCommand {
 
             String[] parts = value.split(" ");
 
-            if (parts.length != 3) {
+            if (parts.length < 3) {
                 response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();
@@ -70,8 +70,17 @@ public class SetAPCommand extends LocalCommand {
                 return false;
             }
 
+            // now try and get some context data into ctxArgs
+            String[] ctxArgs = new String[parts.length - 3];
+
+            for (int a = 3; a < parts.length; a++) {
+                ctxArgs[a-3] = parts[a];
+            }
+
+
+
             // set AP
-            if (controller.setAP(GID, AP)) {
+            if (controller.setAP(GID, AP, ctxArgs)) {
                 JSONObject jsobj = new JSONObject();
 
                 jsobj.put("msg", GID+" has set AP to "+AP);

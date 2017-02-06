@@ -25,7 +25,7 @@ public class NullAPController implements APController {
     ArrayList<Integer> APCosts_ = null;  // Costs to each AP
     LifetimeEstimate lse_ = null;
 
-    NullAPController (RouterOptions o) {
+    public NullAPController (RouterOptions o) {
         APGIDs_ = new ArrayList<Integer>();
         APs_ = new ArrayList<Integer>();
         APCosts_ = new ArrayList<Integer>();
@@ -153,14 +153,20 @@ public class NullAPController implements APController {
     }
 
     /** Set AP for given gid */
+    /*
     public void setAP(long time,int gid, int ap, int cost, GlobalController g) {
+        setAP(time, gid, ap, cost, null, g);
+    }
+    */
+    
+    public void setAP(long time,int gid, int ap, int cost, String[] ctxArgs,  GlobalController g) {
         Integer thisAP = APs_.get(gid);
 
         //System.out.println("SETAP CALLED");
         if (thisAP == null) {
             APs_.set(gid, ap);
             APCosts_.set(gid, cost);
-            g.setAP(time, gid, ap);
+            g.setAP(time, gid, ap, ctxArgs);
         } else {
 
             APCosts_.set(gid, cost);
@@ -170,11 +176,16 @@ public class NullAPController implements APController {
                 thisAP = ap;
                 APs_.set(gid, ap);
                 //System.out.println("Calling g");
-                g.setAP(time, gid, ap);
+                g.setAP(time, gid, ap, ctxArgs);
             }
         }
 
 
+    }
+
+    /** Get some context data **/
+    public String[] getContextData(long time, int gid, int ap, int cost, GlobalController g) {
+        return null;
     }
 
     /** Router regular AP update action */
@@ -198,7 +209,7 @@ public class NullAPController implements APController {
             if (closest == null) {
                 addAccessPoint(time, i, g);
             } else {
-                setAP(time,i, closest.getFirst(), closest.getSecond(), g);
+                setAP(time, i, closest.getFirst(), closest.getSecond(), getContextData(time, i, closest.getFirst(), closest.getSecond(), g), g);
             }
         }
         changedNet_ = false;
@@ -251,7 +262,7 @@ public class NullAPController implements APController {
         }
         lse_.newAP(time, gid);
         APGIDs_.add(gid);
-        setAP(time,gid, gid, 0, g);
+        setAP(time,gid, gid, 0, getContextData(time, gid, gid, 0, g), g);
     }
 
     /** Remove access point with ID gid */

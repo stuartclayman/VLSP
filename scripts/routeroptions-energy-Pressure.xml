@@ -22,7 +22,7 @@
     </AP>-->
 
     <APManager>
-        <Name>Pressure</Name>
+        <Name>demo_usr.energy.APcontroller.IperfPressureAPController</Name>
         <APLifeBias>0.0</APLifeBias>
         <MinAPs>1</MinAPs>
         <RouterConsiderTime>10000</RouterConsiderTime>
@@ -32,7 +32,7 @@
     </APManager>
 
     <AP>
-      <APClass>demo_usr.energy.IperfApplicationCreator</APClass>
+      <APClass>demo_usr.energy.router.IperfApplicationCreator</APClass>
     </AP>
 
    <Monitoring>

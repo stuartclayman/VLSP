@@ -452,10 +452,22 @@ public class RouterInteractor {
 
     /** Send a message to a local controller intended for a router to
        set its status as an aggregation point */
-    public RouterInteractor setAP(int GID, int APGID) throws IOException, JSONException {
-        String toSend;
-        toSend = MCRP.SET_AP.CMD +
-            " " + GID + " " + APGID;
+    public RouterInteractor setAP(int GID, int APGID, String[] ctxArgs) throws IOException, JSONException {
+        //String toSend = MCRP.SET_AP.CMD + " " + GID + " " + APGID;
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(MCRP.SET_AP.CMD);
+        builder.append(" ");
+        builder.append(GID);
+        builder.append(" ");
+        builder.append(APGID);
+
+        for (String arg : ctxArgs) {
+            builder.append(" ");
+            builder.append(arg);
+        }
+
+        String toSend = java.net.URLEncoder.encode(builder.toString(), "UTF-8");
 
         interact(toSend);
         return this;

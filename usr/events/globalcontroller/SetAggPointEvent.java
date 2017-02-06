@@ -15,11 +15,19 @@ import usr.logging.USR;
 public class SetAggPointEvent extends AbstractGlobalControllerEvent {
     int routerNo_;
     int AP_;
+    String [] ctxData = {};
 
     public SetAggPointEvent(long time, EventEngine eng, int rid, int AP) {
         super(time, eng);
         AP_ = AP;
         routerNo_ = rid;
+    }
+
+    public SetAggPointEvent(long time, EventEngine eng, int rid, int AP, String[] ctxArgs) {
+        super(time, eng);
+        AP_ = AP;
+        routerNo_ = rid;
+        ctxData = ctxArgs;
     }
 
     @Override
@@ -32,12 +40,12 @@ public class SetAggPointEvent extends AbstractGlobalControllerEvent {
 
     @Override
     public JSONObject execute(GlobalController gc) {
-        JSONObject json= setAP(time,routerNo_, AP_, gc);
+        JSONObject json= setAP(time,routerNo_, AP_, ctxData, gc);
 
         return json;
     }
 
-    public JSONObject setAP(long time, int gid, int AP, GlobalController gc) {
+    public JSONObject setAP(long time, int gid, int AP, String[] ctxArgs, GlobalController gc) {
         System.out.println("SetAggPointEvent: setAP called");
 
         JSONObject json= new JSONObject();
@@ -54,7 +62,7 @@ public class SetAggPointEvent extends AbstractGlobalControllerEvent {
         }
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + " router " + gid + " now has access point " + AP);
         if (!gc.isSimulation()) {
-            if (!callSetAP(gid,AP,gc)) {
+            if (!callSetAP(gid,AP,ctxArgs,gc)) {
                 try {
                     json.put("success", (Boolean)false);
                 } catch (Exception e) {
@@ -76,7 +84,7 @@ public class SetAggPointEvent extends AbstractGlobalControllerEvent {
         return json;
     }
 
-    private boolean callSetAP (int gid, int AP, GlobalController gc) {
+    private boolean callSetAP (int gid, int AP, String[] ctxArgs, GlobalController gc) {
         BasicRouterInfo br = gc.findRouterInfo(gid);
 
         if (br == null) {
@@ -94,7 +102,7 @@ public class SetAggPointEvent extends AbstractGlobalControllerEvent {
         }
 
         try {
-            lci.setAP(gid, AP);
+            lci.setAP(gid, AP, ctxArgs);
 
             // save data
 

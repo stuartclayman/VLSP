@@ -13,7 +13,7 @@ import usr.router.RouterOptions;
 public class PressureAPController extends NullAPController {
 
 
-    PressureAPController (RouterOptions o) {
+    public PressureAPController (RouterOptions o) {
         super(o);
 
     }
@@ -25,7 +25,9 @@ public class PressureAPController extends NullAPController {
 
     /** Controller regular AP update action */
     @Override
-	public void controllerUpdate(long time, GlobalController g) {
+    public void controllerUpdate(long time, GlobalController g) {
+        // calls super class controllerUpdate()
+        // which does the setAP()
         super.controllerUpdate(time, g);
 
         if (gotMinAPs(g)) {
@@ -46,7 +48,7 @@ public class PressureAPController extends NullAPController {
 
     /** Use the controller to remove the least efficient AP using Pressure alg*/
     @Override
-	public void controllerRemove(long time, GlobalController g) {
+    public void controllerRemove(long time, GlobalController g) {
         System.err.println("To write");
     }
 
@@ -60,7 +62,7 @@ public class PressureAPController extends NullAPController {
             scores[e] = getPressure(e, g);
         }
         ArrayList<Integer> picked = pickNByScore(no, scores,
-                                                      elect, false, time);
+                                                 elect, false, time);
 
         for (Integer p : picked) {
             removeAccessPoint(time, p);
@@ -78,7 +80,7 @@ public class PressureAPController extends NullAPController {
             scores[e] = getPressure(e, g);
         }
         ArrayList<Integer> picked = pickNByScore(no, scores,
-                                                      elect, true, time);
+                                                 elect, true, time);
 
         for (Integer p : picked) {
             addAccessPoint(time, p, g);
@@ -87,7 +89,7 @@ public class PressureAPController extends NullAPController {
 
     /** No score for this function */
     @Override
-	public int getScore(long time, int gid, GlobalController g) {
+    public int getScore(long time, int gid, GlobalController g) {
         if (isAP(gid)) {
             return getAPPressure(gid, g);
         } else {

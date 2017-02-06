@@ -1343,46 +1343,48 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         // retrieve current status information
 
         HostInfoReporter hostInfoReporter = (HostInfoReporter) findByMeasurementType("HostInfo");
-        JSONObject measurementJsobj = null;
 
-        measurementJsobj = hostInfoReporter.getProcessedData(localControllerName); 
+        if (hostInfoReporter != null) {
+            JSONObject measurementJsobj = null;
 
-        // current status of localcontroller
-        float currentCPUUserAndSystem=0;
-        float currentCPUIdle=0;
-        float currentMemoryUsed=0;
-        float currentFreeMemory=0;
-        float currentLoadAverage=0;
-        long currentOutputBytes=0;
-        long currentInputBytes=0;
+            measurementJsobj = hostInfoReporter.getProcessedData(localControllerName); 
+
+            // current status of localcontroller
+            float currentCPUUserAndSystem=0;
+            float currentCPUIdle=0;
+            float currentMemoryUsed=0;
+            float currentFreeMemory=0;
+            float currentLoadAverage=0;
+            long currentOutputBytes=0;
+            long currentInputBytes=0;
         
-        if (measurementJsobj!=null) {
-            // extracted required measurements for the energy model
-            try {
-                currentCPUUserAndSystem = (float) measurementJsobj.getDouble("cpuLoad");
-                currentCPUIdle = (float) measurementJsobj.getDouble("cpuIdle");
-                currentMemoryUsed = measurementJsobj.getInt("usedMemory");
-                currentFreeMemory = measurementJsobj.getInt("freeMemory");
-                currentOutputBytes = measurementJsobj.getLong("networkOutboundBytes");
-                currentInputBytes = measurementJsobj.getLong("networkIncomingBytes");
-                currentLoadAverage = (float) measurementJsobj.getDouble("loadAverage");
+            if (measurementJsobj!=null) {
+                // extracted required measurements for the energy model
+                try {
+                    currentCPUUserAndSystem = (float) measurementJsobj.getDouble("cpuLoad");
+                    currentCPUIdle = (float) measurementJsobj.getDouble("cpuIdle");
+                    currentMemoryUsed = measurementJsobj.getInt("usedMemory");
+                    currentFreeMemory = measurementJsobj.getInt("freeMemory");
+                    currentOutputBytes = measurementJsobj.getLong("networkOutboundBytes");
+                    currentInputBytes = measurementJsobj.getLong("networkIncomingBytes");
+                    currentLoadAverage = (float) measurementJsobj.getDouble("loadAverage");
 
 
-                // Get energy usage
-                double energyConsumption = lci.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes, currentLoadAverage);
+                    // Get energy usage
+                    double energyConsumption = lci.GetCurrentEnergyConsumption(currentCPUUserAndSystem, currentCPUIdle, currentMemoryUsed, currentFreeMemory, currentOutputBytes, currentInputBytes, currentLoadAverage);
 
-                jsobj.put("energyConsumption", energyConsumption);
+                    jsobj.put("energyConsumption", energyConsumption);
 
-            } catch (JSONException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+
             }
 
-
+            jsobj.put("hostinfo", measurementJsobj);
         }
-
-        jsobj.put("hostinfo", measurementJsobj);
-
 
         return jsobj;
     }
@@ -3116,6 +3118,12 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     }
 
     public JSONObject setAP(long time, int gid, int AP) {
+        // pass in null for the ctxArgs
+        return setAP(time, gid, AP, null);
+    }
+
+    
+    public JSONObject setAP(long time, int gid, int AP, String[] ctxArgs) {
         // this should be how we do it, but it is often called
         // from the middle of an event execution
         // therefore it is locked out as the existing event 
@@ -3132,16 +3140,22 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         // print out a message
         if (gid == AP) {
-            Logger.getLogger("log").logln(1<<8, elapsedToString(getElapsedTime()) + ANSI.BLUE + " ROUTER " + gid + " BECOME AP" + ANSI.RESET_COLOUR);
+            Logger.getLogger("log").logln(1<<8, elapsedToString(getElapsedTime()) + ANSI.BLUE + " ROUTER " + gid + " BECOME AP " + (ctxArgs == null ? "" : Arrays.asList(ctxArgs)) + ANSI.RESET_COLOUR);
         } else {
-            Logger.getLogger("log").logln(1<<8, elapsedToString(getElapsedTime()) + ANSI.CYAN + " ROUTER " + gid + " SET AP " + AP + ANSI.RESET_COLOUR);
+            Logger.getLogger("log").logln(1<<8, elapsedToString(getElapsedTime()) + ANSI.CYAN + " ROUTER " + gid + " SET AP " + AP + " " + (ctxArgs == null ? "" : Arrays.asList(ctxArgs)) +ANSI.RESET_COLOUR);
         }
 
 
 
-
         try {
-            SetAggPointEvent ev = new SetAggPointEvent(time, null, gid, AP);
+            SetAggPointEvent ev;
+
+            if (ctxArgs == null) {
+                // there are no context args
+                ev = new SetAggPointEvent(time, null, gid, AP);
+            } else {
+                ev = new SetAggPointEvent(time, null, gid, AP, ctxArgs);
+            }
             scheduler_.addEvent(ev);
             return null;
         } catch (Exception e) {
