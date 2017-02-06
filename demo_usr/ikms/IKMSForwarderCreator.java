@@ -33,7 +33,7 @@ public class IKMSForwarderCreator implements AP {
      * Actually set the AP 
      * with a handle back to a RouterController
      */
-    public int setAP(int gid, int ap) {
+    public int setAP(int gid, int ap, String[] ctxArgs) {
         if (ap == ap_) {  // No change to AP
             return ap;
         }
