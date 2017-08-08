@@ -170,10 +170,11 @@ public class EndLinkEvent extends AbstractGlobalControllerEvent implements EndLi
     /** Event to unlink two routers
      * Returns true for success*/
     private boolean endLink(long time, int router1Id, int router2Id, GlobalController gc) {
+       
         if (gc.isSimulation()) {
             endSimulationLink(router1Id, router2Id, gc);
         } else {
-            return endEmulatedLink(router1Id, router2Id, gc);
+            endEmulatedLink(router1Id, router2Id, gc);
         }
 
         // return 0 for end of link
