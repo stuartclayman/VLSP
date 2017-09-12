@@ -106,6 +106,14 @@ public class ProcessWrapper {
             //System.err.println("ProcessWrapper: close input");
             process.getOutputStream().close();
 
+            // wait a bit to see if it shuts on it's own
+            try {
+                Thread.sleep(1000);
+            } catch (java.lang.InterruptedException e) {
+            }
+
+            process.getInputStream().close();
+
             /*
              * close of input streams moved into thread for better reliability
              */
@@ -123,7 +131,12 @@ public class ProcessWrapper {
     }
 
     protected void destroy() {
-        process.destroy();
+        try {
+            int exitValue = process.exitValue();
+        } catch (IllegalThreadStateException e) {
+            //the subprocess represented by this Process object has not yet terminated
+            process.destroy();
+        }
     }
 
     /**

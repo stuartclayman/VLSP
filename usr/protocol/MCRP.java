@@ -35,12 +35,21 @@ public class MCRP implements Protocol {
 
     /**
      * MCRP request for a Router
- START_APP router_id className args
- e.g. START_APP 1 usr.applications.Ping 2
-     */
+     START_APP router_id className args
+     e.g. START_APP 1 usr.applications.Ping 2
+    */
     public final static class START_APP {
         public final static String CMD = "START_APP";
         public final static int CODE = 202;
+        public final static int ERROR = 401;
+    }
+
+    /**
+     * Status of this Controller.
+     */
+    public final static class STATUS {
+        public final static String CMD = "STATUS";
+        public final static int CODE = 203;
         public final static int ERROR = 401;
     }
 

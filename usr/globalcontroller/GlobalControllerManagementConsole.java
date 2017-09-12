@@ -3,7 +3,7 @@ package usr.globalcontroller;
 
 import usr.console.USRRestConsole;
 import usr.globalcontroller.command.GetRouterStatsCommand;
-//import usr.globalcontroller.command.LocalOKCommand;
+import usr.globalcontroller.command.StatusCommand;
 import usr.globalcontroller.command.QuitCommand;
 import usr.globalcontroller.command.ReportAPCommand;
 import usr.globalcontroller.command.SendRouterStatsCommand;
@@ -57,6 +57,7 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
         //register(new LocalOKCommand());
         register(new QuitCommand());
         register(new ShutDownEventCommand());
+        register(new StatusCommand());
         
         // sclayman 20140104 - not sure if these are needed any more
         register(new ReportAPCommand());

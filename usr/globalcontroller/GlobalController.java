@@ -88,6 +88,12 @@ import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
  * gives set up and tear down instructions directly to them.
  */
 public class GlobalController implements ComponentController, EventDelegate, VimFunctions {
+    public enum Status {
+        S0, INIT, RUNNING, STOPPING, STOPPED;
+    }
+
+    private Status status = Status.S0;
+
     private ControlOptions options_;      // Options affecting the simulation
 
     // Options structure which is given to each router.
@@ -189,6 +195,10 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     // A Semaphore to have single access to some operations
     Semaphore semaphore;
 
+
+    // StdinHandler
+    StdinHandler stdin;
+
     /**
      * Main entry point.
      */
@@ -235,6 +245,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
     /** Basic initialisation for the global controller */
     public boolean init() {
+        status = Status.INIT;
+
         // allocate a new logger
         Logger logger = Logger.getLogger("log");
 
@@ -394,44 +406,55 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             initFailHook();
             return false;
             
-        } else {
-            // Setup Placement Engine
-            String placementEngineClassName = options_.getPlacementEngineClassName();
-
-            if (placementEngineClassName == null) {
-                // there is no PlacementEngine defined in the options
-                // use the built-in one
-                placementEngineClassName = "usr.globalcontroller.LeastUsedLoadBalancer";
-            }
-
-            boolean placementEngineInitOK = setupPlacementEngine(placementEngineClassName);  //new LeastBusyPlacement(this); // new LeastUsedLoadBalancer(this);
-
-            //Initialise events for schedules
-            scheduler_ = new SimpleEventScheduler(options_.isSimulation(), this);
-            options_.initialEvents(scheduler_, this);
-
-            // Clear output files where needed
-            for (OutputType o : options_.getOutputs()) {
-                if (o.clearOutputFile()) {
-                    File f = new File(o.getFileName());
-                    f.delete();
-                }
-            }
-
-            // If any Engines need a Warm up - do it now
-            if (options_.getWarmUpPeriod() > 0) {
-                for (EventEngine e : options_.getEngines()) {
-                    if (e instanceof APWarmUp) {
-                        ((APWarmUp)e).warmUp(scheduler_, options_.getWarmUpPeriod(), APController_, this);
-                    }
-                }
-            }
-
-            postInitHook();
-            return true;
-
         }
+
+        // Carry on
+        
+        // Setup Placement Engine
+        String placementEngineClassName = options_.getPlacementEngineClassName();
+
+        if (placementEngineClassName == null) {
+            // there is no PlacementEngine defined in the options
+            // use the built-in one
+            placementEngineClassName = "usr.globalcontroller.LeastUsedLoadBalancer";
+        }
+
+        boolean placementEngineInitOK = setupPlacementEngine(placementEngineClassName);  //new LeastBusyPlacement(this); // new LeastUsedLoadBalancer(this);
+
+        //Initialise events for schedules
+        scheduler_ = new SimpleEventScheduler(options_.isSimulation(), this);
+        options_.initialEvents(scheduler_, this);
+
+        // Clear output files where needed
+        for (OutputType o : options_.getOutputs()) {
+            if (o.clearOutputFile()) {
+                File f = new File(o.getFileName());
+                f.delete();
+            }
+        }
+
+        // If any Engines need a Warm up - do it now
+        if (options_.getWarmUpPeriod() > 0) {
+            for (EventEngine e : options_.getEngines()) {
+                if (e instanceof APWarmUp) {
+                    ((APWarmUp)e).warmUp(scheduler_, options_.getWarmUpPeriod(), APController_, this);
+                }
+            }
+        }
+
+            
+        // StdinHandler
+        stdin = new StdinHandler(this);
+
+
+        // call postInitHook
+        postInitHook();
+
+
+        return true;
+
     }
+
 
     /**
      * A hook for subclasses to call.
@@ -483,6 +506,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Stop the GlobalController.
      */
     public void stop() {
+        status = Status.STOPPING;
+
         preStopHook();
         
         if (options_.isSimulation()) {
@@ -526,6 +551,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         isActive_ = true;
 
         postStartHook();
+
+        status = Status.RUNNING;
 
         while (isActive_) {
             Event ev = scheduler_.getFirstEvent();
@@ -572,6 +599,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
             // Start Scheduler as thread
             scheduler_.start();
+
+            status = Status.RUNNING;
 
 
             while (isActive_) {
@@ -686,6 +715,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "End of simulation  at " + time
                                       + " " + System.currentTimeMillis());
 
+        status = Status.STOPPING;
+
         for (OutputType o : options_.getOutputs()) {
             if (o.getTimeType() == OutputType.AT_END) {
                 produceOutput(time, o);
@@ -694,6 +725,76 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         wrapUp();
     }
+
+    /*
+     * Shutdown
+     */
+    public void shutDown() {
+        preShutdownHook();
+        
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "SHUTDOWN CALLED!");
+
+        status = Status.STOPPING;
+
+
+        wrapUp();
+
+        if (!options_.isSimulation()) {
+
+            // stop all Routers
+            for (int routerId : new ArrayList<Integer>(getRouterList())) {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "SHUTDOWN router " + routerId);
+
+                // Execution is not through semaphore in shutDown since we have shutDown
+                EndRouterEvent re = new EndRouterEvent(getElapsedTime(), null, routerId);
+                re.execute(this);
+            }
+
+            // stop monitoring
+            if (latticeMonitoring) {
+                stopMonitoringConsumer();
+                stopMonitoringProducer();
+            }
+
+            //ThreadTools.findAllThreads("GC pre killAllControllers:");
+            killAllControllers();
+
+            //ThreadTools.findAllThreads("GC post killAllControllers:");
+
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
+
+            stopConsole();
+
+            stdin.stop();
+
+            //ThreadTools.findAllThreads("GC post stop console:");
+        }
+
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All stopped, shut down now!");
+
+        postShutdownHook();
+
+        status = Status.STOPPED;
+
+
+    }
+
+    
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean preShutdownHook() {
+        return true;
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean postShutdownHook() {
+        return true;
+    }
+
+    
 
 
     /**
@@ -2326,68 +2427,6 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
       }
     */
 
-    /*
-     * Shutdown
-     */
-    public void shutDown() {
-        preShutdownHook();
-        
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "SHUTDOWN CALLED!");
-
-        wrapUp();
-
-        if (!options_.isSimulation()) {
-
-            // stop all Routers
-            for (int routerId : new ArrayList<Integer>(getRouterList())) {
-                Logger.getLogger("log").logln(USR.STDOUT, leadin()+ "SHUTDOWN router " + routerId);
-
-                // Execution is not through semaphore in shutDown since we have shutDown
-                EndRouterEvent re = new EndRouterEvent(getElapsedTime(), null, routerId);
-                re.execute(this);
-            }
-
-            // stop monitoring
-            if (latticeMonitoring) {
-                stopMonitoringConsumer();
-                stopMonitoringProducer();
-            }
-
-            //ThreadTools.findAllThreads("GC pre killAllControllers:");
-            killAllControllers();
-
-            //ThreadTools.findAllThreads("GC post killAllControllers:");
-
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
-
-            stopConsole();
-
-            //ThreadTools.findAllThreads("GC post stop console:");
-        }
-
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "All stopped, shut down now!");
-
-        postShutdownHook();
-
-    }
-
-    
-    /**
-     * A hook for subclasses to call.
-     */
-    public boolean preShutdownHook() {
-        return true;
-    }
-
-    /**
-     * A hook for subclasses to call.
-     */
-    public boolean postShutdownHook() {
-        return true;
-    }
-
-    
-
 
     /** Produce some output */
     public void produceOutput(long time, OutputType o) {
@@ -3309,6 +3348,15 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         final String GC = "GC: ";
 
         return getName() + " " + GC;
+    }
+
+    public JSONObject getStatus() throws JSONException {
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("status", status);
+
+        return jsobj;
+
     }
 
 
