@@ -19,6 +19,7 @@ import usr.localcontroller.command.RouterConfigCommand;
 import usr.localcontroller.command.SetAPCommand;
 import usr.localcontroller.command.SetLinkWeightCommand;
 import usr.localcontroller.command.ShutDownCommand;
+import usr.localcontroller.command.StatusCommand;
 import usr.localcontroller.command.UnknownCommand;
 
 /**
@@ -42,9 +43,12 @@ public class LocalControllerManagementConsole extends USRRestConsole {
     @Override
     public void registerCommands() {
         register(new UnknownCommand());
-        register(new LocalCheckCommand());
         register(new ShutDownCommand());
         register(new QuitCommand());
+        register(new StatusCommand());
+
+        register(new LocalCheckCommand());
+
         register(new NewRouterCommand());
         register(new ConnectRoutersCommand());
         register(new EndRouterCommand());

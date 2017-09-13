@@ -46,6 +46,12 @@ import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
  * Local Controller to give it more state
  */
 public class LocalController implements ComponentController {
+    public enum Status {
+        S0, INIT, RUNNING, STOPPING, STOPPED;
+    }
+
+    private Status status = Status.S0;
+
     private LocalControllerInfo hostInfo_;
     private GlobalControllerInteractor gcInteractor_ = null;
     private LocalControllerManagementConsole console_ = null;
@@ -105,6 +111,16 @@ public class LocalController implements ComponentController {
 
         self_ = new LocalController(hostname, port);
 
+        boolean initOK = false;
+
+        initOK = self_.init();
+
+        if (initOK) {
+            self_.start();
+        }
+
+
+
     }
 
     /** Constructor for local controller starting on port */
@@ -133,15 +149,11 @@ public class LocalController implements ComponentController {
         // hack in a probe
         probeInfoMap.put("usr.localcontroller.HostInfoProbe", 5000);
 
-        init();
-
-        console_.start();
-
-        Logger.getLogger("log").logln(USR.STDOUT, leadin() + hostInfo_.getIp() + ":" + hostInfo_.getPort() +  " Starting.");
-
     }
 
-    private void init() {
+    private boolean init() {
+        status = Status.INIT;
+
         routerOptions_ = new RouterOptions();
         // allocate a new logger
         Logger logger = Logger.getLogger("log");
@@ -159,6 +171,18 @@ public class LocalController implements ComponentController {
         // Setup probes
         setupProbes(probeInfoMap);
 
+        return true;
+    }
+
+
+    private boolean start() {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + hostInfo_.getIp() + ":" + hostInfo_.getPort() +  " Starting.");
+
+        console_.start();
+
+        status = Status.RUNNING;
+
+        return true;
     }
 
     /**
@@ -171,6 +195,8 @@ public class LocalController implements ComponentController {
 
     /** Received shut Down data gram from global */
     public void shutDown() {
+        status = Status.STOPPING;
+
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Local controller " + getName() + " got shutdown message from global controller.");
 
@@ -224,7 +250,7 @@ public class LocalController implements ComponentController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
         console_.stop();
 
-    Logger.getLogger("log").logln(USR.STDOUT, leadin()+ hostInfo_.getIp() + ":" + hostInfo_.getPort() + " Stopping.");
+        Logger.getLogger("log").logln(USR.STDOUT, leadin()+ hostInfo_.getIp() + ":" + hostInfo_.getPort() + " Stopping.");
 
         /*
         try {
@@ -235,6 +261,9 @@ public class LocalController implements ComponentController {
         }
         */
         //ThreadTools.findAllThreads("LC end of shutDown:");
+
+        status = Status.STOPPED;
+
 
 
     }
@@ -266,6 +295,20 @@ public class LocalController implements ComponentController {
         }
 
     }
+
+    /**
+     * Get the status
+     */
+    public JSONObject getStatus() throws JSONException {
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("status", status);
+
+        return jsobj;
+
+    }
+
+
 
 
     /**
