@@ -10,13 +10,14 @@ import usr.applications.ApplicationResponse;
 import usr.logging.BitMask;
 import usr.logging.Logger;
 import usr.logging.USR;
+import usr.common.Lifecycle;
 import usr.net.Address;
 import usr.net.AddressFactory;
 
 /**
  * A Router within UserSpaceRouting.
  */
-public class Router {
+public class Router implements Lifecycle {
     /*
      * A Router is some glue that holds the RouterController
      * and the RouterFabric together.
@@ -125,12 +126,21 @@ public class Router {
             e.printStackTrace();
         }
 
-        options_ = new RouterOptions(this);
-
         // Get current ThreadGroup
         threadGroup = Thread.currentThread().getThreadGroup();
 
+        options_ = new RouterOptions(this);
+
         controller = new RouterController(this, options_, port1, port2, name);
+
+        init();
+
+    }
+
+    /**
+     * init the router
+     */
+     public boolean init() {
 
         fabric = new SimpleRouterFabric(this, options_);
         //fabric = new VectorRouterFabric(this, options_);
@@ -141,12 +151,14 @@ public class Router {
 
         RouterDirectory.register(this);
 
+        return true;
+
     }
 
     /**
      * Start the router
      */
-    boolean start() {
+    public boolean start() {
         if (!isActive) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "start");
 
@@ -178,7 +190,7 @@ public class Router {
     /**
      * Stop the router --- called from internal threads such as management console
      */
-    boolean stop() {
+    public boolean stop() {
         if (isActive) {
             isActive = false;
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "stop");

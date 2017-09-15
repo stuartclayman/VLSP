@@ -17,10 +17,12 @@ import java.util.Set;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
+import usr.common.Lifecycle;
 import usr.common.BasicRouterInfo;
 import usr.common.LocalHostInfo;
 import usr.common.ProcessWrapper;
 import usr.console.ComponentController;
+import usr.common.StdinHandler;
 import usr.interactor.GlobalControllerInteractor;
 import usr.interactor.RouterInteractor;
 import usr.logging.BitMask;
@@ -45,7 +47,7 @@ import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
  * In its own start up the Global Controller will contact each
  * Local Controller to give it more state
  */
-public class LocalController implements ComponentController {
+public class LocalController implements Lifecycle, ComponentController {
     public enum Status {
         S0, INIT, RUNNING, STOPPING, STOPPED;
     }
@@ -78,6 +80,9 @@ public class LocalController implements ComponentController {
     private ArrayList<LocalControllerProbe> probeList = null;
 
     private HashMap<String, Integer> probeInfoMap = null;
+
+    // StdinHandler
+    StdinHandler stdin;
 
 
     /**
@@ -151,7 +156,7 @@ public class LocalController implements ComponentController {
 
     }
 
-    private boolean init() {
+    public boolean init() {
         status = Status.INIT;
 
         routerOptions_ = new RouterOptions();
@@ -171,11 +176,14 @@ public class LocalController implements ComponentController {
         // Setup probes
         setupProbes(probeInfoMap);
 
+        // StdinHandler
+        stdin = new StdinHandler(this);
+
         return true;
     }
 
 
-    private boolean start() {
+    public boolean start() {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + hostInfo_.getIp() + ":" + hostInfo_.getPort() +  " Starting.");
 
         console_.start();
@@ -194,7 +202,11 @@ public class LocalController implements ComponentController {
     }
 
     /** Received shut Down data gram from global */
-    public void shutDown() {
+    public boolean shutDown() {
+        return stop();
+    }
+    
+    public boolean stop() {
         status = Status.STOPPING;
 
 
@@ -214,8 +226,7 @@ public class LocalController implements ComponentController {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot send shut down to Router");
                     Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
                 } catch (JSONException e) {
-                    Logger.getLogger("log").logln(USR.ERROR,
-                                                  leadin() + "Cannot send shut down to Router");
+                    Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot send shut down to Router");
                     Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
                 }
 
@@ -250,6 +261,10 @@ public class LocalController implements ComponentController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
         console_.stop();
 
+
+        stdin.stop();
+
+
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+ hostInfo_.getIp() + ":" + hostInfo_.getPort() + " Stopping.");
 
         /*
@@ -264,7 +279,7 @@ public class LocalController implements ComponentController {
 
         status = Status.STOPPED;
 
-
+        return true;
 
     }
 

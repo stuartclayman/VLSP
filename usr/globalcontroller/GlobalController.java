@@ -29,6 +29,7 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.APcontroller.APController;
 import usr.APcontroller.ConstructAPController;
+import usr.common.Lifecycle;
 import usr.common.ANSI;
 import usr.common.BasicRouterInfo;
 import usr.common.LinkInfo;
@@ -37,6 +38,7 @@ import usr.common.Pair;
 import usr.common.PortPool;
 import usr.common.ProcessWrapper;
 import usr.common.IPAddress;
+import usr.common.StdinHandler;
 import usr.console.ComponentController;
 import usr.engine.APWarmUp;
 import usr.engine.EventEngine;
@@ -87,7 +89,7 @@ import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
  * contacts LocalControllers to set up virtual routers and then
  * gives set up and tear down instructions directly to them.
  */
-public class GlobalController implements ComponentController, EventDelegate, VimFunctions {
+public class GlobalController implements Lifecycle, ComponentController, EventDelegate, VimFunctions {
     public enum Status {
         S0, INIT, RUNNING, STOPPING, STOPPED;
     }
@@ -475,7 +477,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Start the GlobalController.
      */
-    public void start() {
+    public boolean start() {
         preStartHook();
         
         if (options_.isSimulation()) {
@@ -484,6 +486,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
             runEmulation();
         }
 
+        return true;
     }
 
 
@@ -505,11 +508,19 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
     /**
      * Stop the GlobalController.
      */
-    public void stop() {
+    public boolean stop() {
         status = Status.STOPPING;
 
         preStopHook();
         
+        isActive_ = false;
+
+        if (!options_.isSimulation()) {
+            synchronized (runLoop_) {
+                runLoop_.notify();
+            }
+        }
+
         if (options_.isSimulation()) {
             endSimulation(System.currentTimeMillis());
         } else {
@@ -517,6 +528,8 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
         }
 
         postStopHook();
+
+        return true;
     }
 
 
@@ -617,7 +630,9 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
 
         scheduler_.stop();
 
-        shutDown();
+        if (status == Status.RUNNING) {
+            stop();
+        }
     }
 
     public boolean runLoopHook() {
@@ -635,15 +650,7 @@ public class GlobalController implements ComponentController, EventDelegate, Vim
      * Called when an EventScheduler stops
      * Sets isActive_ to false ending the simulation */
     public void onEventSchedulerStop(long time) {
-        isActive_ = false;
-
-        if (!options_.isSimulation()) {
-            synchronized (runLoop_) {
-                runLoop_.notify();
-            }
-        }
-
-        endSimulation(time);
+        stop();
     }
 
     /**
