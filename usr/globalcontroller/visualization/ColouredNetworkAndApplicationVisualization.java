@@ -97,7 +97,7 @@ public class ColouredNetworkAndApplicationVisualization implements Visualization
             LocalControllerInfo localInfo = entry.getKey();
             List<BasicRouterInfo> routersOnHost = entry.getValue();
 
-            s.println("    subgraph cluster_" + localInfo.getName() + "_" + localInfo.getPort() + " {");
+            s.println("    subgraph \"cluster_" + localInfo.getName() + "_" + localInfo.getPort() + "\" {");
             s.print("\tlabel=\"" + localInfo + " routers=" + routersOnHost.size() + "\";");
             s.println("\tgraph [fontname=\"Helvetica\",fontsize=16,fontcolor=red,style=filled,fillcolor=\"0.0, 0.0, 0.97\"];");
             s.println("\tnode [ shape=ellipse, nodesep=2.0 ];");
