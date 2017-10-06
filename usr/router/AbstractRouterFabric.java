@@ -33,7 +33,6 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
     // A List of RouterPorts
     ArrayList<RouterPort> ports;
 
-    // 20120905 sclayman LinkedBlockingQueue<DatagramHandle> datagramQueue_;
     int biggestQueueSeen = 0;
 
     // The localNetIF
@@ -93,7 +92,6 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
         lastTableUpdateTime_ = new HashMap<NetIF, Long>();
         nextTableUpdateTime_ = new HashMap<NetIF, Long>();
-        // 20120905 sclayman datagramQueue_= new LinkedBlockingQueue<DatagramHandle>();
 
         semaphore = new Semaphore(1);
 
@@ -365,7 +363,7 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
     /** Get the Fabric Device which this packet should be sent to */
     @Override
-    public FabricDevice getRouteFabric(Datagram dg) throws NoRouteToHostException {
+    public FabricDevice lookupRoutingFabricDevice(Datagram dg) throws NoRouteToHostException {
 
         if (ourAddress(dg.getDstAddress())) {
             if (dg.getDstPort() == 0 || dg.getProtocol() == Protocol.CONTROL) {
@@ -468,7 +466,7 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
 
     /** Datagram which has arrived is ours */
     @Override
-    public synchronized boolean outQueueHandler(Datagram datagram, DatagramDevice device) {
+    public synchronized boolean recvDatagramFromDevice(Datagram datagram, DatagramDevice device) {
 
         //Logger.getLogger("log").logln(USR.STDOUT, leadin() + " receiveOurDatagram ");
         if (running == false) {  // If we're not running simply pretend to have received it

@@ -5,7 +5,7 @@ import usr.net.Address;
 /**
  * A Datagram.
  */
-public interface Datagram {
+public interface Datagram extends Cloneable {
     /**
      * Get the length of the data, i.e. the payload length.
      */
@@ -134,5 +134,12 @@ public interface Datagram {
      * Get the checksum
      */
     public byte[] getChecksum();
+
+
+    /**
+     * Get a copy of the Datagram
+     */
+    public Object clone() throws CloneNotSupportedException ;
+
 
 }

@@ -2,6 +2,7 @@ package usr.router;
 
 import java.net.NoRouteToHostException;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -24,7 +25,7 @@ import usr.protocol.Protocol;
 public class FabricDevice implements FabricDeviceInterface {
 
     String name_ = "Unnamed Fabric Device";  // Device name
-    NetIFListener listener_;  //  NetIF listener for this device
+    NetIFListener listener_;  //  NetIF listener for this device - the RouterFabric.
     Thread inThread_ = null;  // Thread for incoming queue
     Thread outThread_ = null;  // Thread for outgoing queue
     ThreadGroup group = null;
@@ -41,8 +42,8 @@ public class FabricDevice implements FabricDeviceInterface {
     int maxInQueue_ = 0;
     int maxOutQueue_ = 0;
 
-    BlockingDeque<DatagramHandle> inQueue_ = null;  // queue for inbound -- towards fabric
-    BlockingDeque<DatagramHandle> outQueue_ = null;  // queue for outgoing -- away from fabric
+    BlockingDeque<DatagramHandle> inboundQueue_ = null;  // queue for inbound -- towards fabric
+    BlockingDeque<DatagramHandle> outboundQueue_ = null;  // queue for outgoing -- away from fabric
     Object inQueueSyncObj_ = new Object();
     Object outQueueSyncObj_ = new Object();
     
@@ -71,6 +72,130 @@ public class FabricDevice implements FabricDeviceInterface {
         listener_ = l;
         netStats_ = new NetStats();
         this.group = group;
+    }
+
+    /** Start inqueue and out queue threads if necessary */
+    @Override
+    public synchronized void start() {
+        stopped_ = false;
+
+        if (group == null) {
+            group = new TimedThreadGroup(getName());
+        }
+
+
+        if (inQueueDiscipline_ != QUEUE_NOQUEUE) {
+
+            if (inQueueLen_ == 0) {
+                inboundQueue_ = new LinkedBlockingDeque<DatagramHandle>();
+            } else {
+                inboundQueue_ = new LinkedBlockingDeque<DatagramHandle>(inQueueLen_);
+            }
+            inWaitQueue_ = new LinkedBlockingDeque<Waker>();
+            inQueueHandler_ = new InQueueHandler(inQueueDiscipline_, inboundQueue_, this);
+
+            inThread_ = new TimedThread(group, inQueueHandler_, "/" + name_+"/InQueue");
+            inThread_.start();
+        }
+
+        if (outQueueDiscipline_ != QUEUE_NOQUEUE) {
+            if (outQueueLen_ == 0) {
+                outboundQueue_ = new LinkedBlockingDeque<DatagramHandle>();
+            } else {
+                outboundQueue_ = new LinkedBlockingDeque<DatagramHandle>(outQueueLen_);
+            }
+            outWaitQueue_ = new LinkedBlockingDeque<Waker>();
+            outQueueHandler_ = new OutQueueHandler(outQueueDiscipline_, outboundQueue_, this);
+            outThread_ = new TimedThread(group, outQueueHandler_, "/" + name_+"/OutQueue");
+            outThread_.start();
+        }
+    }
+
+    /**
+     * Set a Datagram Intercepter
+     */
+    public FabricDevice setDatagramIntercepter(NetIF netif) {
+        inQueueHandler_.setDatagramIntercepter(netif);
+
+        return this;
+    }
+
+    /**
+     * Add a DatagramCapture listener
+     */
+    public FabricDevice addDatagramCaptureListener(DatagramCapture dcap) {
+        inQueueHandler_.addDatagramCaptureListener(dcap);
+
+        return this;
+    }
+
+    /**
+     * Remove a DatagramCapture listener
+     */
+    public FabricDevice removeDatagramCaptureListener(DatagramCapture dcap) {
+        inQueueHandler_.removeDatagramCaptureListener(dcap);
+
+        return this;
+    }
+
+    /** Is the output queue blockinig */
+    boolean outIsBlocking() {
+        return (outQueueDiscipline_ == QUEUE_BLOCKING);
+    }
+
+    /** Is the input queue blockinig */
+    boolean inIsBlocking() {
+        return (inQueueDiscipline_ == QUEUE_BLOCKING);
+    }
+
+    /** Register stats using these functions */
+    void inDroppedPacket(Datagram dg) {
+
+        netStats_.increment(NetStats.Stat.InDropped);
+
+        if (inIsBlocking()) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin()+" in dropped packet");
+        }
+    }
+
+    /** Register stats using these functions  --- packet dropped but in expected manner*/
+    void inDroppedPacketNR(Datagram dg) {
+        netStats_.increment(NetStats.Stat.InDropped);
+
+    }
+
+    void outDroppedPacket(Datagram dg) {
+        netStats_.increment(NetStats.Stat.OutDropped);
+        //  This can happen on blocking out interface if interface is shut beforehand
+
+    }
+
+    /** 
+     * Callback for when InQueueHandler sent a Datagram onwards
+     */
+    void inSentPacket(Datagram dg) {
+        // stats
+        netStats_.increment(NetStats.Stat.InPackets);
+        netStats_.add(NetStats.Stat.InBytes, dg.getTotalLength());
+
+        if (dg.getProtocol() == Protocol.DATA) {
+            netStats_.increment(NetStats.Stat.InDataPackets);
+            netStats_.add(NetStats.Stat.InDataBytes, dg.getTotalLength());
+        }
+    }
+
+    /** 
+     * Callback for when OutQueueHandler sent a Datagram onwards
+     */
+    void outSentPacket(Datagram dg) {
+        netStats_.increment(NetStats.Stat.OutPackets);
+        netStats_.add(NetStats.Stat.OutBytes, dg.getTotalLength());
+
+        if (dg.getProtocol() == Protocol.DATA) {
+            netStats_.increment(NetStats.Stat.OutDataPackets);
+            netStats_.add(NetStats.Stat.OutDataBytes, dg.getTotalLength());
+        }
+
     }
 
     /** Set the queue type for the inbound queue */
@@ -145,112 +270,18 @@ public class FabricDevice implements FabricDeviceInterface {
 
     }
 
-    /*
-
-      /** Start inqueue and out queue threads if necessary */
-    @Override
-    public synchronized void start() {
-        stopped_ = false;
-
-        if (group == null) {
-            group = new TimedThreadGroup(getName());
-        }
-
-
-        if (inQueueDiscipline_ != QUEUE_NOQUEUE) {
-
-            if (inQueueLen_ == 0) {
-                inQueue_ = new LinkedBlockingDeque<DatagramHandle>();
-            } else {
-                inQueue_ = new LinkedBlockingDeque<DatagramHandle>(inQueueLen_);
-            }
-            inWaitQueue_ = new LinkedBlockingDeque<Waker>();
-            inQueueHandler_ = new InQueueHandler(inQueueDiscipline_, inQueue_, this);
-
-            inThread_ = new TimedThread(group, inQueueHandler_, "/" + name_+"/InQueue");
-            inThread_.start();
-        }
-
-        if (outQueueDiscipline_ != QUEUE_NOQUEUE) {
-            if (outQueueLen_ == 0) {
-                outQueue_ = new LinkedBlockingDeque<DatagramHandle>();
-            } else {
-                outQueue_ = new LinkedBlockingDeque<DatagramHandle>(outQueueLen_);
-            }
-            outWaitQueue_ = new LinkedBlockingDeque<Waker>();
-            outQueueHandler_ = new OutQueueHandler(outQueueDiscipline_, outQueue_, this);
-            outThread_ = new TimedThread(group, outQueueHandler_, "/" + name_+"/OutQueue");
-            outThread_.start();
-        }
-    }
-
-    /** Is the output queue blockinig */
-    boolean outIsBlocking() {
-        return (outQueueDiscipline_ == QUEUE_BLOCKING);
-    }
-
-    /** Is the input queue blockinig */
-    boolean inIsBlocking() {
-        return (inQueueDiscipline_ == QUEUE_BLOCKING);
-    }
-
-    /** Register stats using these functions */
-    void inDroppedPacket(Datagram dg) {
-
-        netStats_.increment(NetStats.Stat.InDropped);
-
-        if (inIsBlocking()) {
-            Logger.getLogger("log").logln(USR.ERROR, leadin()+" in dropped packet");
-        }
-    }
-
-    /** Register stats using these functions  --- packet dropped but in expected manner*/
-    void inDroppedPacketNR(Datagram dg) {
-        netStats_.increment(NetStats.Stat.InDropped);
-
-    }
-
-    void outDroppedPacket(Datagram dg) {
-        netStats_.increment(NetStats.Stat.OutDropped);
-        //  This can happen on blocking out interface if interface is shut beforehand
-
-    }
-
-    void inSentPacket(Datagram dg) {
-        // stats
-        netStats_.increment(NetStats.Stat.InPackets);
-        netStats_.add(NetStats.Stat.InBytes, dg.getTotalLength());
-
-        if (dg.getProtocol() == Protocol.DATA) {
-            netStats_.increment(NetStats.Stat.InDataPackets);
-            netStats_.add(NetStats.Stat.InDataBytes, dg.getTotalLength());
-        }
-    }
-
-    void outSentPacket(Datagram dg) {
-        netStats_.increment(NetStats.Stat.OutPackets);
-        netStats_.add(NetStats.Stat.OutBytes, dg.getTotalLength());
-
-        if (dg.getProtocol() == Protocol.DATA) {
-            netStats_.increment(NetStats.Stat.OutDataPackets);
-            netStats_.add(NetStats.Stat.OutDataBytes, dg.getTotalLength());
-        }
-
-    }
-
     /** Return the fabric device that this datagram may route to or no
         such fabric */
-    FabricDevice getRouteFabric(Datagram dg) throws NoRouteToHostException {
+    FabricDevice lookupRoutingFabricDevice(Datagram dg) throws NoRouteToHostException {
         if (listener_ == null) {
             Logger.getLogger("log").logln(USR.ERROR, leadin()+" no listener");
             return null;
         }
-        return listener_.getRouteFabric(dg);
+        return listener_.lookupRoutingFabricDevice(dg);
     }
 
     /** Add a datagram to the in queue -- blocking call, will continue to wait until
         datagram is added */
-    @Override
     public boolean blockingAddToInQueue(Datagram dg, DatagramDevice dd)
         throws NoRouteToHostException {
 
@@ -271,7 +302,6 @@ public class FabricDevice implements FabricDeviceInterface {
     }
 
     /** Returns true if datagram is sent or false if dropped */
-    @Override
     public boolean addToInQueue(Datagram dg, DatagramDevice dd)
         throws NoRouteToHostException {
         try {
@@ -315,7 +345,7 @@ public class FabricDevice implements FabricDeviceInterface {
 
             // try and get device
             try {
-                getRouteFabric(dg);
+                lookupRoutingFabricDevice(dg);
             } catch (NoRouteToHostException nrhe) {
                 inDroppedPacketNR(dg);
                 throw nrhe;
@@ -325,11 +355,11 @@ public class FabricDevice implements FabricDeviceInterface {
             // Queue the packet if possible
             
             synchronized (inQueueSyncObj_) {
-                if (inQueueLen_ == 0 || inQueue_.size() < inQueueLen_) {
-                    inQueue_.offerLast(dh);
+                if (inQueueLen_ == 0 || inboundQueue_.size() < inQueueLen_) {
+                    inboundQueue_.offerLast(dh);
 
-                    if (inQueue_.size() > maxInQueue_) {
-                        maxInQueue_ = inQueue_.size();
+                    if (inboundQueue_.size() > maxInQueue_) {
+                        maxInQueue_ = inboundQueue_.size();
                         netStats_.setValue(NetStats.Stat.BiggestInQueue, maxInQueue_);
                     }
                     return true;
@@ -438,11 +468,11 @@ public class FabricDevice implements FabricDeviceInterface {
             // Queue the packet if possible
 
             synchronized (outQueueSyncObj_) {
-                if (outQueueLen_ == 0 || outQueue_.size() < outQueueLen_) {
-                    outQueue_.offerLast(dh);
+                if (outQueueLen_ == 0 || outboundQueue_.size() < outQueueLen_) {
+                    outboundQueue_.offerLast(dh);
 
-                    if (outQueue_.size() > maxOutQueue_) {
-                        maxOutQueue_ = outQueue_.size();
+                    if (outboundQueue_.size() > maxOutQueue_) {
+                        maxOutQueue_ = outboundQueue_.size();
                         netStats_.setValue(NetStats.Stat.BiggestOutQueue, maxOutQueue_);
                     }
                     return true;
@@ -491,7 +521,7 @@ public class FabricDevice implements FabricDeviceInterface {
         }
         FabricDevice f = null;
         try {
-            f = getRouteFabric(dh.datagram);
+            f = lookupRoutingFabricDevice(dh.datagram);
         } catch (NoRouteToHostException e) {
             Logger.getLogger("log").logln(USR.STDOUT, leadin() + "NoRouteToHostException for transferDatagram " + dh.datagram);
             throw (e);
@@ -519,7 +549,7 @@ public class FabricDevice implements FabricDeviceInterface {
 
     /** Send the outbound Datagram onwards */
     public boolean sendOutDatagram(DatagramHandle dh) throws InterfaceBlockedException  {
-        boolean sent = device_.outQueueHandler(dh.datagram, dh.datagramDevice);
+        boolean sent = device_.recvDatagramFromDevice(dh.datagram, dh.datagramDevice);
 
         if (sent) {
             outSentPacket(dh.datagram);
@@ -580,6 +610,9 @@ public class FabricDevice implements FabricDeviceInterface {
 
 }
 
+/**
+ * The InQueueHandler queues packets inbound and sends them onto the fabric.
+ */
 class InQueueHandler implements Runnable {
 
     int queueDiscipline_ = 0;
@@ -590,6 +623,13 @@ class InQueueHandler implements Runnable {
     CountDownLatch latch = null;
     String name_;
     Object threadSyncObj_ = new Object();
+
+    // Datagram Intercepter
+    NetIF intercepter = null;
+
+    // DatagramCapture listeners
+    CopyOnWriteArrayList<DatagramCapture> capture = null;
+
 
     /** Constructor sets up */
     InQueueHandler(int discipline, BlockingQueue<DatagramHandle> q, FabricDevice f) {
@@ -620,9 +660,15 @@ class InQueueHandler implements Runnable {
             }
 
             // Process DatagramHandle
-            FabricDevice f = null;
+            FabricDevice forwardDevice = null;
             try {
-                f = fabricDevice_.getRouteFabric(dh.datagram);
+                // find out what FabricDevice to forward this datagram to
+                if (intercepter != null) {
+                    forwardDevice = intercepter.getFabricDevice();
+                } else {
+                    forwardDevice = fabricDevice_.lookupRoutingFabricDevice(dh.datagram);
+                }
+
             } catch (NoRouteToHostException e) { //  Cannot route
                 Logger.getLogger("log").logln(USR.STDOUT, leadin() + " inDroppedPacketNR: InQueueHandler run() NoRouteToHostException for " + dh.datagram);
 
@@ -635,19 +681,35 @@ class InQueueHandler implements Runnable {
                 boolean sent = false;
                 try {
                     // try and forward to out queue
-                    if (f.outIsBlocking()) {
-                        sent = f.blockingAddToOutQueue(dh);
+                    if (forwardDevice.outIsBlocking()) {
+                        sent = forwardDevice.blockingAddToOutQueue(dh);
                     } else {
-                        sent = f.addToOutQueue(dh);
+                        sent = forwardDevice.addToOutQueue(dh);
                     }
 
                     if (sent) {
                         // if it is sent
                         fabricDevice_.inSentPacket(dh.datagram);
+
+                        //  possibly pass the datagram onto some PCAP style listeners
+                        if (capture != null && capture.size() > 0) {
+
+                            // copy datagrams to all capture listeners
+                            try {
+                                Datagram newDG = (Datagram)dh.datagram.clone();
+
+
+                                for (DatagramCapture dcap : capture) {
+                                    dcap.sendDatagram(newDG);
+                                }
+                            } catch (CloneNotSupportedException e) {
+                            }
+                        }
+
                     } else {
                         // it was dropped
                         fabricDevice_.inSentPacket(dh.datagram);
-                        f.outDroppedPacket(dh.datagram);
+                        forwardDevice.outDroppedPacket(dh.datagram);
                     }
                     break;
                 } catch (NoRouteToHostException e) {
@@ -657,7 +719,7 @@ class InQueueHandler implements Runnable {
                 } catch (InterfaceBlockedException ex) {
                     Logger.getLogger("log").logln(USR.ERROR, leadin() + "InQueueHandler run InterfaceBlockedException");
 
-                    if (f.outIsBlocking() == false) {
+                    if (forwardDevice.outIsBlocking() == false) {
                         Logger.getLogger("log").logln(USR.ERROR, leadin() + " inDroppedPacketNR: InQueueHandler InterfaceBlockedException run() for " + dh.datagram);
                         fabricDevice_.inDroppedPacket(dh.datagram);
                         break;
@@ -672,6 +734,35 @@ class InQueueHandler implements Runnable {
         // reduce latch count by 1
         latch.countDown();
 
+    }
+
+    /**
+     * Set a Datagram Intercepter
+     */
+    public void setDatagramIntercepter(NetIF netif) {
+        intercepter = netif;
+    }
+
+    /**
+     * Add a DatagramCapture listener
+     */
+    public void addDatagramCaptureListener(DatagramCapture dcap) {
+        if (capture == null) {
+            capture = new CopyOnWriteArrayList<DatagramCapture>();
+        }
+
+        capture.addIfAbsent(dcap);
+    }
+
+    /**
+     * Remove a DatagramCapture listener
+     */
+    public void removeDatagramCaptureListener(DatagramCapture dcap) {
+        if (capture == null) {
+            return;
+        }
+
+        capture.remove(dcap);
     }
 
     public void stopThread() {

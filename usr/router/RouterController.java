@@ -465,20 +465,24 @@ public class RouterController implements ComponentController, Runnable {
     /**
      * List all the temporary connections held by the Controller
      */
-    synchronized Collection<NetIF> listTempNetIF() {
-        return tempNetIFMap.values();
+    Collection<NetIF> listTempNetIF() {
+        synchronized (tempNetIFMap) {
+            return tempNetIFMap.values();
+        }
     }
 
     /**
      * Plug a NetIF into the RouterFabric
      */
-    public synchronized RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
-        RouterPort rp = plugInNetIF(netIF);
-        //Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
+    public RouterPort plugTemporaryNetIFIntoPort(NetIF netIF) {
+        synchronized (tempNetIFMap) {
+            RouterPort rp = plugInNetIF(netIF);
+            //Logger.getLogger("log").logln(USR.ERROR, leadin() + "plugInNetIF "  + netIF);
 
-        tempNetIFMap.remove(netIF.getID());
+            tempNetIFMap.remove(netIF.getID());
 
-        return rp;
+            return rp;
+        }
     }
 
     /**

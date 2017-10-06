@@ -44,9 +44,9 @@ public interface DatagramDevice {
     public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException;
 
     /**
-     *   Send the datagram onwards to the world
+     *   Receive a datagram from another device
      */
-    public boolean outQueueHandler(Datagram dg, DatagramDevice dd);
+    public boolean recvDatagramFromDevice(Datagram dg, DatagramDevice dd);
 
 
     /**

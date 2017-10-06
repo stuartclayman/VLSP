@@ -31,29 +31,20 @@ class Size16Datagram implements Datagram, DatagramPatch {
     // The full datagram contents
     ByteBuffer fullDatagram;
 
-    // Dst address
-    Address dstAddr = null;
-
-    // Dst port
-    int dstPort = 0;
-
-    // Creation time
-    long timestamp;
-
     static int initialTTL_ = 64; // TTL used for new
 
     /**
      * Construct a Size16Datagram given a payload.
      */
     Size16Datagram(ByteBuffer payload) {
-        timestamp = System.currentTimeMillis();
+        long timestamp = System.currentTimeMillis();
 
         payload.rewind();
         int payloadSize = payload.limit();
         //Logger.getLogger("log").logln(USR.ERROR, "PAYLOAD SIZE "+payloadSize);
         fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
-        fillDatagram(payload);
+        fillDatagram(payload, timestamp);
     }
 
     /**
@@ -67,16 +58,16 @@ class Size16Datagram implements Datagram, DatagramPatch {
      * Construct a Size16Datagram given a payload and a destination address
      */
     Size16Datagram(ByteBuffer payload, Address address) {
-        timestamp = System.currentTimeMillis();
+        long timestamp = System.currentTimeMillis();
 
         payload.rewind();
-        dstAddr = address;
 
         int payloadSize = payload.limit();
 
         fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
-        fillDatagram(payload);
+        fillDatagram(payload, timestamp);
+        setDstAddress(address);
     }
 
     /**
@@ -91,17 +82,17 @@ class Size16Datagram implements Datagram, DatagramPatch {
      * and a destination port.
      */
     Size16Datagram(ByteBuffer payload, Address address, int port) {
-        timestamp = System.currentTimeMillis();
+        long timestamp = System.currentTimeMillis();
 
         payload.rewind();
-        dstAddr = address;
-        dstPort = port;
 
         int payloadSize = payload.limit();
 
         fullDatagram = ByteBuffer.allocate(payloadSize + HEADER_SIZE + CHECKSUM_SIZE);
 
-        fillDatagram(payload);
+        fillDatagram(payload, timestamp);
+        setDstAddress(address);
+        setDstPort(port);
     }
 
     /**
@@ -270,7 +261,6 @@ class Size16Datagram implements Datagram, DatagramPatch {
             throw new UnsupportedOperationException("Cannot use " + addr.getClass().getName() + " addresses in Size16Datagram");
         }
 
-        dstAddr = addr;
         fullDatagram.position(26);
 
         // put dst addr
@@ -278,7 +268,7 @@ class Size16Datagram implements Datagram, DatagramPatch {
         if (addr == null) {
             fullDatagram.put(Size16.EMPTY, 0, 16);
         } else {
-            fullDatagram.put(dstAddr.asByteArray(), 0, 16);
+            fullDatagram.put(addr.asByteArray(), 0, 16);
         }
 
         return this;
@@ -338,8 +328,7 @@ class Size16Datagram implements Datagram, DatagramPatch {
      */
     @Override
     public Datagram setDstPort(int p) {
-        dstPort = p;
-        fullDatagram.putShort(46, (short)dstPort);
+        fullDatagram.putShort(46, (short)p);
 
         return this;
     }
@@ -396,6 +385,8 @@ class Size16Datagram implements Datagram, DatagramPatch {
 
         fullDatagram.get(headerBytes);
 
+        fullDatagram.rewind();
+
         return headerBytes;
     }
 
@@ -421,6 +412,8 @@ class Size16Datagram implements Datagram, DatagramPatch {
         // Logger.getLogger("log").logln(USR.ERROR, "Size16Datagram getPayload: payload = " + payload.position() + " < " +
         // payload.limit() + " < " + payload.capacity());
 
+        fullDatagram.rewind();
+
         return payloadBytes;
 
     }
@@ -433,7 +426,20 @@ class Size16Datagram implements Datagram, DatagramPatch {
         fullDatagram.position(getHeaderLength());
         fullDatagram.limit(getTotalLength() - CHECKSUM_SIZE);
 
-        return fullDatagram.slice();
+        ByteBuffer slice =  fullDatagram.slice();
+
+        /*
+        System.err.println("sliceBuffer SB(P) = " + slice.position() +
+                           " SB(C) = " + slice.capacity() +
+                           " B(P) = " + fullDatagram.position() + 
+                           " B(L) = " + fullDatagram.limit() +
+                           " B(C) = " + fullDatagram.capacity());
+        */
+
+        fullDatagram.rewind();
+
+        return slice;
+
     }
 
 
@@ -459,6 +465,8 @@ class Size16Datagram implements Datagram, DatagramPatch {
         byte [] checksumBytes = new byte[checksumLen];
 
         fullDatagram.get(checksumBytes);
+
+        fullDatagram.rewind();
 
         return checksumBytes;
     }
@@ -488,7 +496,7 @@ class Size16Datagram implements Datagram, DatagramPatch {
     /**
      * Fill in the Datagram with the relevant values.
      */
-    void fillDatagram(ByteBuffer payload) {
+    void fillDatagram(ByteBuffer payload, long timestamp) {
         // put USRD literal - 4 bytes
         fullDatagram.put("USRD".getBytes(), 0, 4);
         //Logger.getLogger("log").logln(USR.ERROR, "USRD set");
@@ -515,14 +523,8 @@ class Size16Datagram implements Datagram, DatagramPatch {
         fullDatagram.put(Size16.EMPTY, 0, 16);
 
         // put dst addr
-        // to be filled in later
         fullDatagram.position(26);
-
-        if (dstAddr == null) {
-            fullDatagram.put(Size16.EMPTY, 0, 16);
-        } else {
-            fullDatagram.put(dstAddr.asByteArray(), 0, 16);
-        }
+        fullDatagram.put(Size16.EMPTY, 0, 16);
 
         // 2 spare bytes
         fullDatagram.put(42, (byte)0);
@@ -532,8 +534,7 @@ class Size16Datagram implements Datagram, DatagramPatch {
         fullDatagram.putShort(44, (short)0);
 
         // put dst port
-        // to be filled in later
-        fullDatagram.putShort(46, (short)dstPort);
+        fullDatagram.putShort(46, (short)0);
 
         // put timestamp
         fullDatagram.putLong(48, timestamp);
@@ -564,6 +565,14 @@ class Size16Datagram implements Datagram, DatagramPatch {
         // + fullDatagram.limit() + " < " + fullDatagram.capacity());
 
     }
+
+    /**
+     * Get a copy of the Datagram
+     */
+    public Object clone() throws CloneNotSupportedException {
+        return DatagramFactory.copy(this);
+    }
+
 
     /**
      * To String

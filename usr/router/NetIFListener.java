@@ -11,7 +11,7 @@ public interface NetIFListener extends RouterFabric {
 
     /** Return the router Fabric device for this datagram -- this is
        the correct way to route datagrams */
-    public FabricDevice getRouteFabric(Datagram dg) throws NoRouteToHostException;
+    public FabricDevice lookupRoutingFabricDevice(Datagram dg) throws NoRouteToHostException;
 
     /** Is this address an address associated with this netiflistener*/
     public boolean ourAddress(Address a);

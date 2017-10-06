@@ -401,9 +401,9 @@ public class TCPNetIF implements NetIF, Runnable {
         return fabricDevice_.blockingAddToInQueue(dg, this);
     }
 
-    /** Finally send the datagram onwards */
+    /** Finally recv a datagram and send the datagram onwards */
     @Override
-    public boolean outQueueHandler(Datagram dg, DatagramDevice dd) {
+    public boolean recvDatagramFromDevice(Datagram dg, DatagramDevice dd) {
         boolean sent = false;
         try {
             if (dg.getSrcAddress() == null) {

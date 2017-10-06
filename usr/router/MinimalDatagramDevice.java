@@ -123,7 +123,7 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      */
     @Override
     public boolean enqueueDatagram(Datagram dg) throws NoRouteToHostException {
-        FabricDevice fd = listener_.getRouteFabric(dg);
+        FabricDevice fd = listener_.lookupRoutingFabricDevice(dg);
         return fd.addToInQueue(dg, null);
     }
 
@@ -137,7 +137,7 @@ public abstract class MinimalDatagramDevice implements DatagramDevice {
      *   Send the datagram onwards to the world
      */
     @Override
-    public abstract boolean outQueueHandler(Datagram dg, DatagramDevice dd);
+    public abstract boolean recvDatagramFromDevice(Datagram dg, DatagramDevice dd);
 
     /**
      * Get the Listener of a NetIF.

@@ -177,7 +177,7 @@ public class LocalController implements Lifecycle, ComponentController {
         setupProbes(probeInfoMap);
 
         // StdinHandler
-        stdin = new StdinHandler(this);
+        //stdin = new StdinHandler(this);
 
         return true;
     }
@@ -262,7 +262,7 @@ public class LocalController implements Lifecycle, ComponentController {
         console_.stop();
 
 
-        stdin.stop();
+        //stdin.stop();
 
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+ hostInfo_.getIp() + ":" + hostInfo_.getPort() + " Stopping.");

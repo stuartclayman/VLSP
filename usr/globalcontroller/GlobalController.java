@@ -446,7 +446,7 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
 
             
         // StdinHandler
-        stdin = new StdinHandler(this);
+        //stdin = new StdinHandler(this);
 
 
         // call postInitHook
@@ -772,7 +772,7 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
 
             stopConsole();
 
-            stdin.stop();
+            //stdin.stop();
 
             //ThreadTools.findAllThreads("GC post stop console:");
         }

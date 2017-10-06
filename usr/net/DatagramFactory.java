@@ -85,6 +85,45 @@ public class DatagramFactory {
         return newDatagram(protocol, ByteBuffer.wrap(payload));
     }
 
+
+    /**
+     * Copy a Datagram
+     */
+    public static Datagram copy(Datagram dg) {
+        int protocol = dg.getProtocol();
+
+        DatagramFactoryInfo dfi = null;
+
+        try {
+            // get DatagramFactoryInfo for protocol
+            dfi = list.get(protocol);
+
+            // get the array of the Datagram
+            byte[] array = ((DatagramPatch)dg).toByteBuffer().array();
+            int capacity = array.length;
+
+            // copy stuff in to new array
+            byte[] newArray = new byte[capacity];
+            System.arraycopy(array, 0, newArray, 0, capacity);
+
+
+            // create a new ByteBuffer from the new array
+            Datagram newDG = dfi.cons0.newInstance();
+            ByteBuffer newBuf = ByteBuffer.wrap(newArray);
+
+            ((DatagramPatch)newDG).fromByteBuffer(newBuf);
+
+            return newDG;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.getLogger("log").logln(USR.ERROR, "DatagramFactory: Exception: " + e);
+            throw new Error("DatagramFactory: config error in DatagramFactory.  Cannot allocate an instance of: " + (dfi == null ? "null" : dfi.className) + " for protocol " + protocol);
+        }
+
+        
+    }
+
+
     /**
      * Return the Constructor for creating a Datagram with a ByteBuffer,
      * for a given protocol.
