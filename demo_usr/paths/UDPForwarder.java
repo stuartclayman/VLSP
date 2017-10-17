@@ -45,6 +45,7 @@ public class UDPForwarder implements Callable <Object> {
 
     // Latch for end synchronization
     private final CountDownLatch actuallyFinishedLatch;
+    private Thread takeThread = null;
 
 
 
@@ -135,7 +136,7 @@ public class UDPForwarder implements Callable <Object> {
 
 
     @Override
-	public Object call() {
+    public Object call() {
         Datagram inDatagram = null;
         java.net.DatagramPacket outDatagram = null;
 
@@ -144,17 +145,29 @@ public class UDPForwarder implements Callable <Object> {
             InetAddress dstAddr = udpAddr.getAddress();
             int dstPort = udpAddr.getPort();
 
+            takeThread = Thread.currentThread();
+            
             while (running) {
 
+                /*
+                if (takeThread.isInterrupted()) {
+                    Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder isInterrupted ");
+                    running = false;
+                    break;
+                }
+                */
+
+                
                 try {
                     do {
+
                         inDatagram = queue.take();
                         if (inDatagram == null) {
                             Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder IN DatagramPacket is NULL " + count + " volume: " + volume + " at " + System.currentTimeMillis());
                         }
                     } while (inDatagram == null);
                 } catch (InterruptedException ie) {
-                    //Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder interrupted");
+                    Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder interrupted");
                     running = false;
                     break;
                 }
@@ -222,7 +235,9 @@ public class UDPForwarder implements Callable <Object> {
         }
 
 
-        dataRateEvaluator.cancel();
+        if (dataRateEvaluator != null) {
+            dataRateEvaluator.cancel();
+        }
 
         if (outSocket != null) {
             outSocket.close();
@@ -243,6 +258,13 @@ public class UDPForwarder implements Callable <Object> {
      */
     public void await() {
         try {
+            /*
+            if (takeThread != null) {
+                Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder interrupt()");
+                takeThread.interrupt();
+            }
+            */
+            
             actuallyFinishedLatch.await();
         } catch (InterruptedException ie) {
         }
