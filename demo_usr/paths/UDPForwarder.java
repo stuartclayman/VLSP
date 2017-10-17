@@ -45,10 +45,8 @@ public class UDPForwarder implements Callable <Object> {
 
     // Latch for end synchronization
     private final CountDownLatch actuallyFinishedLatch;
-    private Thread takeThread = null;
 
-
-
+    
     public UDPForwarder(InetSocketAddress udpAddr, LinkedBlockingDeque<usr.net.Datagram> queue, int verb) throws Exception {
         // set up outbound socket
         // don't bind() or connect() so we can set src and dst addr and port
@@ -145,19 +143,8 @@ public class UDPForwarder implements Callable <Object> {
             InetAddress dstAddr = udpAddr.getAddress();
             int dstPort = udpAddr.getPort();
 
-            takeThread = Thread.currentThread();
-            
             while (running) {
 
-                /*
-                if (takeThread.isInterrupted()) {
-                    Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder isInterrupted ");
-                    running = false;
-                    break;
-                }
-                */
-
-                
                 try {
                     do {
 
@@ -167,7 +154,7 @@ public class UDPForwarder implements Callable <Object> {
                         }
                     } while (inDatagram == null);
                 } catch (InterruptedException ie) {
-                    Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder interrupted");
+                    //Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder interrupted");
                     running = false;
                     break;
                 }
@@ -258,13 +245,6 @@ public class UDPForwarder implements Callable <Object> {
      */
     public void await() {
         try {
-            /*
-            if (takeThread != null) {
-                Logger.getLogger("log").logln(USR.ERROR, "UDPForwarder interrupt()");
-                takeThread.interrupt();
-            }
-            */
-            
             actuallyFinishedLatch.await();
         } catch (InterruptedException ie) {
         }

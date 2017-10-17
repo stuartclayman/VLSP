@@ -45,7 +45,6 @@ public class USRForwarder implements Callable <Object>{
 
     // Latch for end synchronization
     private final CountDownLatch actuallyFinishedLatch;
-    private Thread takeThread = null;
 
 
     public USRForwarder(SocketAddress usrAddr, LinkedBlockingDeque<usr.net.Datagram> queue, int verb) throws Exception {
@@ -144,20 +143,9 @@ public class USRForwarder implements Callable <Object>{
             Address dstAddr = usrAddr.getAddress();
             int dstPort = usrAddr.getPort();
 
-            takeThread = Thread.currentThread();
-
             while (running) {
                 // read a USR packet
 
-                /*
-                if (takeThread.isInterrupted()) {
-                    Logger.getLogger("log").logln(USR.ERROR, "USRForwarder isInterrupted ");
-                    running = false;
-                    break;
-                }
-                */
-
-                
                 try {
                     do {
 
@@ -167,7 +155,7 @@ public class USRForwarder implements Callable <Object>{
                         }
                     } while (inDatagram == null);
                 } catch (InterruptedException ie) {
-                    Logger.getLogger("log").logln(USR.ERROR, "USRForwarder interrupted ");
+                    //Logger.getLogger("log").logln(USR.ERROR, "USRForwarder interrupted");
                     running = false;
                     break;
                 }
@@ -228,7 +216,7 @@ public class USRForwarder implements Callable <Object>{
 
         actuallyFinishedLatch.countDown();
 
-        //Logger.getLogger("log").logln(USR.ERROR, "USRForwarder: end of call()");
+        // Logger.getLogger("log").logln(USR.ERROR, "USRForwarder: end of call()");
 
         return null;
 
@@ -239,13 +227,6 @@ public class USRForwarder implements Callable <Object>{
      */
     public void await() {
         try {
-            /*
-            if (takeThread != null) {
-                Logger.getLogger("log").logln(USR.ERROR, "USRForwarder interrupt() " + takeThread);
-                takeThread.interrupt();
-            }
-            */
-            
             actuallyFinishedLatch.await();
         } catch (InterruptedException ie) {
         }
