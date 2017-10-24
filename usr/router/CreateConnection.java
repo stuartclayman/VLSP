@@ -265,6 +265,9 @@ public class CreateConnection {
         /*
          * Interact with remote router
          */
+
+        int remotePort = -1;
+        
         try {
             boolean interactionOK = false;
 
@@ -293,6 +296,8 @@ public class CreateConnection {
                     if ("".equals(errMSg)) {  // no error msg
                         // connection setup ok
                         interactionOK = true;
+
+                        remotePort = result.optInt("routerPort");
                     }
                     
                     break;
@@ -349,11 +354,13 @@ public class CreateConnection {
         JSONObject jsobj = new JSONObject();
 
         jsobj.put("weight", netIF.getWeight());
+        jsobj.put("port", port.getPortNo());
+
         jsobj.put("name", netIF.getName());
         jsobj.put("address", netIF.getAddress().asTransmitForm());
+        jsobj.put("remotePort", remotePort);
         jsobj.put("remoteName",  netIF.getRemoteRouterName());
         jsobj.put("remoteAddress ", netIF.getRemoteRouterAddress().asTransmitForm());
-        jsobj.put("port", port.getPortNo());
 
         out.println(jsobj.toString());
         response.close();

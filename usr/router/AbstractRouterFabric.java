@@ -968,6 +968,9 @@ public abstract class AbstractRouterFabric implements RouterFabric, NetIFListene
             int limit = ports.size();
 
             for (int p = 0; p < limit; p++) {
+
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Port  " + p + " = " + ports.get(p));
+
                 if (ports.get(p).equals(RouterPort.EMPTY)) {
                     return p;
                 }

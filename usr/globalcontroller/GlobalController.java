@@ -1366,21 +1366,46 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
 
         JSONArray outArr = new JSONArray();
         JSONArray linkIDArr = new JSONArray();
+        JSONArray linkDetailArr = new JSONArray();
 
         for (LinkInfo li : links) {
-            int otherEnd = li.getEndPoints().getSecond() == routerID ? li.getEndPoints().getFirst() : li.getEndPoints().getSecond();
+            Pair<Integer, Integer> endPoints = li.getEndPoints();
+            
+            int otherEnd = endPoints.getSecond() == routerID ? endPoints.getFirst() : endPoints.getSecond();
             outArr.put(otherEnd);
             linkIDArr.put(li.getLinkID());
+
+            // add detail
+            JSONObject detail = new JSONObject();
+
+            detail.put("id", li.getLinkID());
+            
+            JSONArray ends = new JSONArray();
+
+            if (bri.getId() == endPoints.getFirst()) {
+                ends.put(endPoints.getFirst());
+                ends.put(endPoints.getSecond());
+
+                detail.put("port", li.getPortNumber());
+            } else {
+                ends.put(endPoints.getSecond());
+                ends.put(endPoints.getFirst());
+
+                detail.put("port", li.getRemotePortNumber());
+            }
+            
+            detail.put("ends", ends);
+
+            detail.put("name", li.getLinkName());
+            detail.put("weight", li.getLinkWeight());
+
+
+            linkDetailArr.put(detail);
         }
-
-        //int [] outLinks = getOutLinks(routerID);
-
-        //for (int outLink : outLinks) {
-        //    outArr.put(outLink);
-        //}
 
         jsobj.put("links", outArr);
         jsobj.put("linkIDs", linkIDArr);
+        jsobj.put("linkDetail", linkDetailArr);
 
         return jsobj;
 

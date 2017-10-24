@@ -555,7 +555,7 @@ public class LocalController implements Lifecycle, ComponentController {
                 String address = r2.getName()+":"+r2.getPort();
 
                 // Create a connection
-                // Exampel response {"address":"3","name":"Router-3.Connection-0","port":0,"remoteAddress":"4","remoteName":"Router-4","weight":1}
+                // Exampel response {"address":"3", "name":"Router-3.Connection-0", "port":0, "remoteAddress":"4", "remoteName":"Router-4", "weight":1}
                 JSONObject response = null;
                 String connectionName;
 

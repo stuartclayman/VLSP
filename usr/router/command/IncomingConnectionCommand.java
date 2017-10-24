@@ -17,6 +17,7 @@ import usr.net.Address;
 import usr.net.AddressFactory;
 import usr.protocol.MCRP;
 import usr.router.NetIF;
+import usr.router.RouterPort;
 
 
 /**
@@ -191,7 +192,7 @@ public class IncomingConnectionCommand extends RouterCommand {
                     Logger.getLogger("log").logln(USR.STDOUT, leadin() + "endPointHostStr = " + endPointHostStr + " endPointPortStr = " + endPointPortStr + " endPointHost = " + endPointHost + " endPointPort = " + endPointPort);
 
 
-                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + " NetIF: " + netIF.getLocalAddress() + ":" + netIF.getLocalPort() +  " <-> " + netIF.getInetAddress() + ":" + netIF.getPort() );
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "NetIF: " + netIF.getLocalAddress() + ":" + netIF.getLocalPort() +  " <-> " + netIF.getInetAddress() + ":" + netIF.getPort() );
                 
                     // netif attributes all set
 
@@ -199,7 +200,9 @@ public class IncomingConnectionCommand extends RouterCommand {
 
 
                     // now plug netIF into Router
-                    controller.plugTemporaryNetIFIntoPort(netIF);
+                    RouterPort routerPort = controller.plugTemporaryNetIFIntoPort(netIF);
+
+                    Logger.getLogger("log").logln(USR.STDOUT, leadin() + "plugged netIF into RouterPort " + routerPort.getPortNo());
 
                     JSONObject jsobj = new JSONObject();
 
@@ -208,6 +211,7 @@ public class IncomingConnectionCommand extends RouterCommand {
                     jsobj.put("address", controller.getAddress().asTransmitForm());
                     jsobj.put("remoteAddress", addr.asTransmitForm());
                     jsobj.put("remoteName", remoteRouterName);
+                    jsobj.put("routerPort", routerPort.getPortNo());
 
                     out.println(jsobj.toString());
                     response.close();

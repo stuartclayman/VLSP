@@ -315,6 +315,8 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent implements Sta
         for (i = 0; i < MAX_TRIES; i++) {
             try {
                 Logger.getLogger("log").logln(USR.STDOUT, leadin()+"Asking for lci response to link routers");
+                // Create a connection
+                // Example response {"address":"3", "name":"Router-3.Connection-0", "port":0, "remoteAddress":"4", "remoteName":"Router-4", "weight":1}
                 JSONObject response = lci.connectRouters(br1.getHost(), br1.getManagementPort(),
                                                          br2.getHost(), br2.getManagementPort(),
                                                          weight, name);
@@ -327,12 +329,14 @@ public class StartLinkEvent extends AbstractGlobalControllerEvent implements Sta
 
                 
                 String connectionName = (String)response.get("name");
+                Integer routerFabricPortNumber = (Integer)response.get("port");
+                Integer remoteRouterFabricPortNumber = (Integer)response.get("remotePort");
 
                 // add Pair<router1Id, router2Id> -> connectionName to  linkNames
                 Pair<Integer, Integer> endPoints = gc.makePair(router1Id, router2Id);
                 linkID = endPoints.hashCode();
 
-                gc.setLinkInfo(linkID, new LinkInfo(endPoints, connectionName, weight, linkID, gc.getElapsedTime()));
+                gc.setLinkInfo(linkID, new LinkInfo(endPoints, connectionName, weight, linkID, routerFabricPortNumber, remoteRouterFabricPortNumber, gc.getElapsedTime()));
 
                 Logger.getLogger("log").logln(USR.STDOUT,
                                               leadin() + br1 + " -> " + br2 + " = "
