@@ -40,7 +40,7 @@ public class AppStartCommand extends LocalCommand {
 
             String [] args = value.split(" ");
 
-            if (args.length < 4) {
+            if (args.length < 3) {
                 response.setCode(302);
 
                 JSONObject jsobj = new JSONObject();

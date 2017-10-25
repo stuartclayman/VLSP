@@ -206,9 +206,9 @@ public class InterceptNetIF implements NetIF {
         setName(name);
         setWeight(0);
 
-        // now plug it in to the Router Fabric
-        controller.registerTemporaryNetIF(this);
-        controller.plugTemporaryNetIFIntoPort(this);
+        // DON'T plug it in to the Router Fabric
+        ////controller.registerTemporaryNetIF(this);
+        ////controller.plugTemporaryNetIFIntoPort(this);
 
         return true;
     }

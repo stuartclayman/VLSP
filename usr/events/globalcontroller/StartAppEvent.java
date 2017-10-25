@@ -188,6 +188,12 @@ public class StartAppEvent extends AbstractGlobalControllerEvent implements Star
 
                 JSONObject response = lci.appStart(routerID, className, args);
 
+                if (response.has("error")) {
+                    // there was an error
+                    // try again
+                    continue;
+                }
+
                 // consturct an ID from the routerID and the appID
                 Pair<Integer, Integer> idPair = new Pair<Integer, Integer>(routerID, (Integer)response.get("aid"));
                 appID = idPair.hashCode();
