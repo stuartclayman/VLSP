@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -73,6 +75,16 @@ public class ControlOptions {
     private String remoteStartController_ = null;    // Command used on local controller to start it
     private String remoteLoginUser_ = null;          // User on remote machines to login with.
 
+
+    private File controlFile = null;                 // The control file
+
+    /** Read control options from XML file
+     */
+    public ControlOptions(String fName) {
+        init();
+        readXML(fName);
+    }
+
     /** init function sets up basic information */
     public void init() {
         engines_ = new ArrayList<EventEngine>();
@@ -88,20 +100,14 @@ public class ControlOptions {
         return routerOptions_;
     }
 
-    /** Read control options from XML file
-     */
-    public ControlOptions(String fName) {
-        init();
-        readXML(fName);
-    }
-
     void readXML(String fName) {
         try {
-            DocumentBuilderFactory docBuilderFactory
-                = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder
-                = docBuilderFactory.newDocumentBuilder();
-            Document doc = docBuilder.parse(new File(fName));
+            DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+            File file = new File(fName);
+            Document doc = docBuilder.parse(file);
+
+            controlFile = file;
 
             // normalize text representation
             doc.getDocumentElement().normalize();
@@ -1046,16 +1052,63 @@ public class ControlOptions {
         NodeList textFNList = hElement.getChildNodes();
         String fName = textFNList.item(0).getNodeValue().trim();
 
-        //Logger.getLogger("log").logln(USR.ERROR, "Read router file
-        // "+fName);
-        BufferedReader reader;
+        //Logger.getLogger("log").logln(USR.ERROR, "Read router file  "+fName);
+        BufferedReader reader = null;
+
+        // pwd
+        Path pwd = Paths.get(".").toAbsolutePath().normalize();
+        
+        Logger.getLogger("log").logln(USR.ERROR, "pwd = " + pwd);
+        
+        // First attempt
+        // Try from current directory
+        // File name maybe be absolute or relative to current working dir
         try {
+            Logger.getLogger("log").logln(USR.ERROR, "Try dir  " + pwd);
+        
+
             reader = new BufferedReader(new FileReader(fName));
         } catch (FileNotFoundException e) {
-            Logger.getLogger("log").logln(USR.ERROR,
-                                          "Cannot find router file " + fName);
-            throw new SAXException();
+            Logger.getLogger("log").logln(USR.ERROR, "Cannot find router file " + fName);
         }
+
+        if (reader == null) {
+            // Second attempt
+            // Perhaps the file references is relative to the current ControlOptions file
+
+            try {
+
+                // directory of control options file
+                String controlDir = controlFile.getParentFile().getCanonicalPath();
+
+                Logger.getLogger("log").logln(USR.ERROR, "Try dir  " + controlDir);
+        
+                reader = new BufferedReader(new FileReader(new File(controlDir, fName)));
+            } catch (FileNotFoundException e) {
+                Logger.getLogger("log").logln(USR.ERROR, "Cannot find router file " + fName);
+            }
+        }
+        
+        if (reader == null) {
+            // Third attempt
+            // Perhaps the file references is relative to the parent of the
+            // current ControlOptions file
+
+            try {
+
+                // directory of control options file
+                String controlDirParent = controlFile.getParentFile().getParentFile().getCanonicalPath();
+
+                Logger.getLogger("log").logln(USR.ERROR, "Try dir  " + controlDirParent);
+        
+
+                reader = new BufferedReader(new FileReader(new File(controlDirParent, fName)));
+            } catch (FileNotFoundException e) {
+                Logger.getLogger("log").logln(USR.ERROR, "Cannot find router file " + fName);
+                throw new SAXException();
+            }
+        }
+        
 
         String line = null;
         StringBuilder stringBuilder = new StringBuilder();
