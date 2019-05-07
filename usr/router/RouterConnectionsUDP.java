@@ -14,7 +14,7 @@ import usr.net.UDPEndPointSrc;
 import usr.net.UDPEndPointDst;
 
 /**
- * A RouterConnections accepts new connections from exisiting routers,
+ * A RouterConnectionsUDP accepts new connections from exisiting routers,
  * using UDP as the router to router connection mechanism.
  */
 public class RouterConnectionsUDP implements RouterConnections, Runnable {
@@ -32,7 +32,7 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
     boolean running = false;
 
     /**
-     * Construct a RouterConnections, given a specific port.
+     * Construct a RouterConnectionsUDP, given a specific port.
      */
     public RouterConnectionsUDP(RouterController cont, int port) {
         controller = cont;
@@ -50,7 +50,7 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
      * Start the connections listening.
      */
     public boolean start() {
-        myThread = new TimedThread(controller.getThreadGroup(), this, "/" + controller.getName() + "/RouterConnections/" + hashCode());
+        myThread = new TimedThread(controller.getThreadGroup(), this, "/" + controller.getName() + "/RouterConnectionsUDP/" + hashCode());
         running = true;
         myThread.start();
 
@@ -101,7 +101,7 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
                 // Set up a new end point
                 UDPEndPointDst dst = new UDPEndPointDst(socket);
                 NetIF netIF = new UDPNetIF(dst, controller.getListener());
-                //netIF.setName("RouterConnections");
+                //netIF.setName("RouterConnectionsUDP");
 
                 // We dont do a real connect in RouterConnectionsUDP
                 // This is handled when we do a setRemoteAddress() in INCOMING_CONNECTION
@@ -113,7 +113,7 @@ public class RouterConnectionsUDP implements RouterConnections, Runnable {
                 int netIFHashCode = getLocalHashCode(netIF);
 
 
-                Logger.getLogger("log").logln(USR.STDOUT, "RouterConnections hashCode => " + " # " + netIFHashCode);
+                Logger.getLogger("log").logln(USR.STDOUT, "RouterConnectionsUDP hashCode => " + " # " + netIFHashCode);
 
                 netIF.setID(netIFHashCode);
 

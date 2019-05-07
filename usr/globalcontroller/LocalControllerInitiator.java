@@ -14,7 +14,7 @@ class LocalControllerInitiator {
      */
     static synchronized String [] localControllerStartCommand(LocalControllerInfo lh, ControlOptions options) {
         String remoteLoginCommand_ = "ssh";     // Command used  to login to start local controller
-        String remoteLoginFlags_ = "-n";        //  Flags used for ssh to login to remote machine
+        String remoteLoginFlags_ = "-f";        //  Flags used for ssh to login to remote machine
         Properties prop = System.getProperties();
         String remoteStartController_ = "java -cp " + prop.getProperty("java.class.path", null) + " usr.localcontroller.LocalController";
         

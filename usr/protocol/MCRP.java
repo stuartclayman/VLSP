@@ -278,7 +278,7 @@ public class MCRP implements Protocol {
     }
 
     /*
-     * Local Controller commands - 270 - 289
+     * Local Controller commands - 270 - 299
      */
 
     /**
@@ -438,10 +438,20 @@ public class MCRP implements Protocol {
     }
 
 
+    /** Local controller starts jvm */
 
-    /*
-     * Spare - 290 - 299
-     */
+    public final static class NEW_JVM {
+        public final static String CMD = "NEW_JVM";
+        public final static int CODE = 290;
+    }
+
+    /** Local controller stop jvm */
+
+    public final static class STOP_JVM {
+        public final static String CMD = "STOP_JVM";
+        public final static int CODE = 291;
+    }
+
 
     /**
      * The standard error code.

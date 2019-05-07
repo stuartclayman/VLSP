@@ -25,10 +25,10 @@ public class PipeProcess extends ProcessWrapper {
      * Print out some input.
      */
     @Override
-    public void print(String label, String line){
+    public void print(StreamIdent ident, String label, String line) {
         // could check if label is 'stderr' or 'stdout'
         // and do different things
-        if (label.equals("stderr")) {
+        if (ident.equals(StreamIdent.Stderr)) {
             //System.err.println("PipeProcess: stderr " + line);
         } else {
             // it's stdout
@@ -44,7 +44,7 @@ public class PipeProcess extends ProcessWrapper {
      * Or set null, if error
      */
     @Override
-    public void eof(){
+    public void eof(StreamIdent ident) {
         //System.err.println("PipeProcess: EOF");
         if (error)
             pipeData = null;
@@ -56,8 +56,8 @@ public class PipeProcess extends ProcessWrapper {
      * There has been an IO error
      */
     @Override
-    public void ioerror(String label, IOException ioe){
-        System.err.println("PipeProcess: " + label + " Got IOException " + ioe);
+    public void ioerror(StreamIdent ident, IOException ioe) {
+        System.err.println("PipeProcess: " + ident + " Got IOException " + ioe);
         error = true;
         pipeData = null;
         //stop();
@@ -107,6 +107,7 @@ public class PipeProcess extends ProcessWrapper {
     }
 
     @Override
-    protected void destroy(){
+    protected void terminate(){
+        //System.err.println("PipeProcess: terminate " + getPID());
     }
 }

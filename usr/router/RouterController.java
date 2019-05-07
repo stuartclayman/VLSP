@@ -153,7 +153,7 @@ public class RouterController implements ComponentController, Runnable {
         management = new RouterManagementConsole(this, mPort);
 
         // default connections
-        connections = new RouterConnectionsTCP(this, newConnectionPort);
+        connections = new RouterConnectionsUDP(this, newConnectionPort);
 
         connectionCount = 0;
         // a map of NetIFs
@@ -686,12 +686,16 @@ public class RouterController implements ComponentController, Runnable {
         RouterOptions.LinkType linkType = options_.getLinkType();
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "LinkType = " + linkType);
-        
+
+        // TODO: check if connections is running
+        // and stop old one if necessary
         if (linkType == RouterOptions.LinkType.UDP) {
             connections = new RouterConnectionsUDP(this, newConnectionPort);
         } else {
             connections = new RouterConnectionsTCP(this, newConnectionPort);
         }
+        // start connections - 20190209 sclayman
+        // connections.start();
 
         // Setup AP
         String apClassName = options_.getAPClassName();

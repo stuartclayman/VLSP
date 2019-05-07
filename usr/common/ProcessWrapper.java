@@ -24,33 +24,79 @@ public class ProcessWrapper {
     String name;
 
     // InputStream thread
-    protected ProcessListener iListener;
+    protected ProcessStreamHandler iStreamHandler;
     protected Thread iThread;
 
     // ErrorStream thread
-    protected ProcessListener eListener;
+    protected ProcessStreamHandler eStreamHandler;
     protected Thread eThread;
 
+    // Is the prcoess stopped
+    protected boolean isStopped = true;
+    
+    // Is the prcoess EOF
+    protected boolean isEof = true;
+
+
+    // The process exit value
+    protected int exitValue = -1;
+
+    // ProcessListener
+    protected ProcessListener listener = null;
+
+    // Stream Ident
+    public enum StreamIdent { Stdout, Stderr };
+    
     /**
      * A ProcessWrapper wraps a Process with a name.
      */
     public ProcessWrapper(Process proc, String name) {
+        this(proc, name,  "stdout",  "stderr", null);
+    }
+    
+    /**
+     * A ProcessWrapper wraps a Process with a name.
+     */
+    public ProcessWrapper(Process proc, String name, ProcessListener listener) {
+        this(proc, name,  "stdout",  "stderr", listener);
+    }
+    
+    /**
+     * A ProcessWrapper wraps a Process with a name, plus labels for stdout and stderr
+     */
+    public ProcessWrapper(Process proc, String name, String stdoutLabel, String stderrLabel) {
+        this(proc, name, stdoutLabel, stderrLabel, null);
+    }
+
+    /**
+     * A ProcessWrapper wraps a Process with a name, plus labels for stdout and stderr
+     */
+    public ProcessWrapper(Process proc, String name, String stdoutLabel, String stderrLabel, ProcessListener listener) {
         process = proc;
         this.name = name;
 
-        // allocate a ProcessListener for the InputStream
-        iListener = new ProcessListener(proc.getInputStream(), "stdout", this);
-        // allocate a ProcessListener for the ErrorStream
-        eListener = new ProcessListener(proc.getErrorStream(), "stderr", this);
+        // it's running
+        isStopped = false;
+        isEof = false;
+
+        // ProcessListener
+        this.listener = listener;
+
+        // allocate a ProcessStreamHandler for the OutputStream of the process
+        // which is the InputStream from the Process
+        iStreamHandler = new ProcessStreamHandler(proc.getInputStream(), StreamIdent.Stdout, stdoutLabel, this);
+        // allocate a ProcessStreamHandler for the ErrorStream
+        eStreamHandler = new ProcessStreamHandler(proc.getErrorStream(), StreamIdent.Stderr, stderrLabel, this);
 
         // allocate a Thread for the InputStream Listener
-        iThread = new TimedThread(iListener, name + "-InputStream");
+        iThread = new TimedThread(iStreamHandler, name + "-InputStream");
         // allocate a Thread for the ErrorStream Listener
-        eThread = new TimedThread(eListener, name + "-ErrorStream");
+        eThread = new TimedThread(eStreamHandler, name + "-ErrorStream");
 
         // start both threads
         iThread.start();
         eThread.start();
+
     }
 
     /**
@@ -68,12 +114,33 @@ public class ProcessWrapper {
     }
 
     /**
+     * Is it stopped
+     */
+    public boolean isStopped() {
+        return isStopped;
+    }
+
+    /**
+     * Is it EOF, probably because the process has gone away
+     */
+    public boolean isEof() {
+        return isEof;
+    }
+
+    /**
+     * Terminated successfullt
+     */
+    public boolean terminatedOK() {
+        return (exitValue == 0);
+    }
+
+    /**
      * Print out some input.
      */
-    public void print(String label, String line) {
-        // could check if label is 'stderr' or 'stdout'
+    public void print(StreamIdent ident, String label, String line) {
+        // could check if StreamIdent is 'Stderr' or 'Stdout'
         // and do different things
-        if (label.equals("stderr")) {
+        if (ident == StreamIdent.Stderr) {
             Logger.getLogger("log").logln(USR.ERROR, label + " " + getName() + " " + line);
         } else {
             Logger.getLogger("log").logln(USR.STDOUT, label + " " + getName() + " " + line);
@@ -84,14 +151,22 @@ public class ProcessWrapper {
      * It's EOF
      * By default nothing special happens.
      */
-    public void eof() {
+    public void eof(StreamIdent ident) {
+        //System.err.println("ProcessWrapper: EOF " + ident);
+        isEof = true;
+
+        if (listener != null) {
+            listener.processEnded(process, name);
+        }
+
+        stop();
     }
 
     /**
      * There has been an IO error
      */
-    public void ioerror(String label, IOException ioe) {
-        //System.out.println("ProcessWrapper: " + label + " Got IOException " + ioe);
+    public void ioerror(StreamIdent ident, IOException ioe) {
+        System.err.println("ProcessWrapper: " + ident + " Got IOException " + ioe);
         stop();
     }
 
@@ -99,40 +174,58 @@ public class ProcessWrapper {
      * Stop the process wrapper.
      */
     public void stop() {
-        try {
-            // disconnect the process
-            //System.err.println("ProcessWrapper: STOPPING "+name);
+        synchronized (this) {
+            if (!isStopped()) {
+                try {
+                    isStopped = true;
 
-            //System.err.println("ProcessWrapper: close input");
-            process.getOutputStream().close();
+                    // disconnect the process
+                    //System.err.println("ProcessWrapper: STOPPING "+name);
 
-            // wait a bit to see if it shuts on it's own
-            try {
-                Thread.sleep(1000);
-            } catch (java.lang.InterruptedException e) {
+                    //System.err.println("ProcessWrapper: close input");
+                    // The Process OutputStream is the stdin of the real process
+                    // Closed it.  Like Ctrl D.
+                    process.getOutputStream().close();
+
+                    // wait a bit to see if it shuts on it's own
+                    try {
+                        Thread.sleep(100);
+                    } catch (java.lang.InterruptedException e) {
+                    }
+
+                    // Close the process stdout
+                    process.getInputStream().close();
+
+                    /*
+                     * close of input streams moved into thread for better reliability
+                     */
+
+                    // stop listeners
+                    iStreamHandler.stop();
+                    eStreamHandler.stop();
+
+                    // now splat it
+                    terminate();
+            
+                    //iThread.join();
+                    //eThread.join();
+                //} catch (InterruptedException ie) {
+                } catch (IOException ioe) {
+                    ioe.getMessage();
+                }
             }
-
-            process.getInputStream().close();
-
-            /*
-             * close of input streams moved into thread for better reliability
-             */
-
-            // stop listeners
-            iListener.stop();
-            eListener.stop();
-
-            // now splat it
-            destroy();
-
-        } catch (IOException ioe) {
-            ioe.getMessage();
         }
     }
 
-    protected void destroy() {
+    protected void terminate() {
         try {
-            int exitValue = process.exitValue();
+            exitValue = process.exitValue();
+
+            if (listener != null) {
+                listener.processExitValue(process, exitValue, name);
+            }
+            //System.out.println("ProcessWrapper: Process " + process + " terminate");
+            
         } catch (IllegalThreadStateException e) {
             //the subprocess represented by this Process object has not yet terminated
             process.destroy();
@@ -142,7 +235,7 @@ public class ProcessWrapper {
     /**
      * Listen on an InputStream
      */
-    class ProcessListener implements Runnable {
+    class ProcessStreamHandler implements Runnable {
         // The InputStream
         InputStream input;
 
@@ -152,14 +245,18 @@ public class ProcessWrapper {
         // The ProcessWrapper
         ProcessWrapper wrapper;
 
+        // StreamIdent
+        StreamIdent ident;
+
         // running ?
         boolean running = false;
 
         /**
-         * Construct a ProcessListener
+         * Construct a ProcessStreamHandler
          */
-        public ProcessListener(InputStream is, String label, ProcessWrapper wrapper) {
+        public ProcessStreamHandler(InputStream is, StreamIdent ident, String label, ProcessWrapper wrapper) {
             input = is;
+            this.ident = ident;
             this.label = label;
             this.wrapper = wrapper;
         }
@@ -186,28 +283,28 @@ public class ProcessWrapper {
                 try {
                     if ((line = reader.readLine()) != null) {
                         // callback to the wrapper to get printout
-                        wrapper.print(label, line);
+                        wrapper.print(ident, label, line);
                     } else {
                         // EOF
                         running = false;
                     }
                 } catch (IOException ieo) {
                     // error
-                    wrapper.ioerror(label, ieo);
+                    wrapper.ioerror(ident, ieo);
                     running = false;
                 }
             }
 
 
             try {
-                //System.err.println("ProcessListener: close " + label);
+                //System.err.println("ProcessStreamHandler: close " + label);
                 input.close();
             } catch (IOException ioe) {
-		wrapper.ioerror(label, ioe);
+		wrapper.ioerror(ident, ioe);
             }
 
             //wrapper.print(label, "EOF");
-            wrapper.eof();
+            wrapper.eof(ident);
 
         }
 

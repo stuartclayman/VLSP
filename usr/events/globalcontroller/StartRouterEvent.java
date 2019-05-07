@@ -76,6 +76,8 @@ public class StartRouterEvent extends AbstractGlobalControllerEvent implements S
     @Override
     public JSONObject execute(GlobalController gc) {
         int rNo = startRouter(gc, time, address_, name_, parameters_);
+
+        // convert integer into JSON response
         JSONObject jsobj = new JSONObject();
 
         try {

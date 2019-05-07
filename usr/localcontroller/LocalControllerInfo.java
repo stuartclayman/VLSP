@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 /**
  * LocalHostInfo contains basic info about one host in the system
- * It deals with finding out IP addresses, ports and so on
  */
 public class LocalControllerInfo extends LocalHostInfo {
     private int maxRouters_ = 100;

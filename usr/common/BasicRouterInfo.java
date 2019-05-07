@@ -10,12 +10,9 @@ import usr.localcontroller.LocalControllerInfo;
  * Class provides simple information that the global and local
  * controllers need about a router
  */
-public class BasicRouterInfo {
-    private long time_;
-    private LocalControllerInfo controller_;
+public class BasicRouterInfo extends AbstractElementInfo {
     private int managementPort_;
     private int router2routerPort_;
-    private int routerId_;
     // the address of the router
     private String address;
     // the name of the router
@@ -38,7 +35,7 @@ public class BasicRouterInfo {
      * BasicRouterInfo with router id and time only.
      */
     public BasicRouterInfo(int id, long time) {
-        routerId_ = id;
+        id_ = id;
         time_ = time;
         controller_ = null;
         managementPort_ = 0;
@@ -60,27 +57,13 @@ public class BasicRouterInfo {
      * the managementPort, and the router-to-router port.
      */
     public BasicRouterInfo(int id, long time, LocalControllerInfo lc, int port1, int port2) {
-        routerId_ = id;
+        id_ = id;
         time_ = time;
         controller_ = lc;
         managementPort_ = port1;
         router2routerPort_ = port2;
         appIDs = new HashMap<Integer, String>();
         localApplications = new HashMap<String, Map<String, Object> >();
-    }
-
-    /**
-     * Get the router time
-     */
-    public long getTime() {
-        return time_;
-    }
-
-    /**
-     * Get the router id
-     */
-    public int getId() {
-        return routerId_;
     }
 
     /**
@@ -95,13 +78,6 @@ public class BasicRouterInfo {
      */
     public int getRoutingPort() {
         return router2routerPort_;
-    }
-
-    /**
-     * Get the LocalController managing the router
-     */
-    public LocalControllerInfo getLocalControllerInfo() {
-        return controller_;
     }
 
     /**
@@ -209,7 +185,7 @@ public class BasicRouterInfo {
         if (obj instanceof BasicRouterInfo) {
             BasicRouterInfo other = (BasicRouterInfo)obj;
 
-            if (other.routerId_ == this.routerId_ &&
+            if (other.id_ == this.id_ &&
                 other.managementPort_ == this.managementPort_ &&
                 other.router2routerPort_ == this.router2routerPort_) {
                 return true;

@@ -529,6 +529,8 @@ public class Router implements Lifecycle {
         @SuppressWarnings("unused")
         RouterEnv router = null;
 
+        System.err.println("Router args " + args.length + " = " + java.util.Arrays.asList(args));
+
         if (args.length == 1) {
             int mPort = 0;
             Scanner sc = new Scanner(args[0]);

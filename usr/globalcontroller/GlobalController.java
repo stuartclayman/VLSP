@@ -23,6 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
 
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
@@ -34,6 +38,7 @@ import usr.common.ANSI;
 import usr.common.BasicRouterInfo;
 import usr.common.LinkInfo;
 import usr.common.LocalHostInfo;
+import usr.common.BasicJvmInfo;
 import usr.common.Pair;
 import usr.common.PortPool;
 import usr.common.ProcessWrapper;
@@ -56,9 +61,11 @@ import usr.events.globalcontroller.OutputEvent;
 import usr.events.globalcontroller.SetAggPointEvent;
 import usr.events.globalcontroller.SetLinkWeightEvent;
 import usr.events.globalcontroller.StartAppEvent;
+import usr.events.globalcontroller.StartJvmEvent;
 import usr.events.globalcontroller.StartLinkEvent;
 import usr.events.globalcontroller.StartRouterEvent;
 import usr.events.globalcontroller.StopAppEvent;
+import usr.events.globalcontroller.StopJvmEvent;
 import usr.interactor.LocalControllerInteractor;
 import usr.localcontroller.LocalControllerInfo;
 import usr.logging.BitMask;
@@ -134,6 +141,12 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
     // A Map if appID to routerID
     // i.e the router the app is running on
     private HashMap<Integer, Integer> appInfo = null;
+
+    // Map is from jvm Id to information one which machine jvm application is started on.
+    private ConcurrentHashMap<Integer, BasicJvmInfo> jvmIdMap_ = null;
+
+    // Next JVM id
+    private Integer nextJvmId = 1;
 
     // A list of agg points
     private ArrayList<Integer> apList = null;
@@ -446,7 +459,20 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
 
             
         // StdinHandler
-        stdin = new StdinHandler(this);
+        String osName = System.getProperty("os.name").toLowerCase();
+
+        if (osName.startsWith("mac")) {
+            // Mac OS
+            stdin = new StdinHandler(this);
+
+        } else if (osName.startsWith("linux")) {
+            // Linux
+            stdin = new StdinHandler(this);
+
+        } else {
+            
+        }
+
 
 
         // call postInitHook
@@ -682,6 +708,7 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
         childNames_ = new ArrayList<String>();
         routerIdMap_ = new ConcurrentHashMap<Integer, BasicRouterInfo>();
+        jvmIdMap_ = new ConcurrentHashMap<Integer, BasicJvmInfo>();
         startConsole();
         portPools_ = new HashMap<LocalControllerInfo, PortPool>();
         noControllers_ = options_.noControllers();
@@ -772,7 +799,9 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
 
             stopConsole();
 
-            stdin.stop();
+            if (stdin != null) {
+                stdin.stop();
+            }
 
             //ThreadTools.findAllThreads("GC post stop console:");
         }
@@ -1101,6 +1130,11 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         return interactorMap_.get(br.getLocalControllerInfo());
     }
 
+    /** Return the local controller attached to jvm info*/
+    public LocalControllerInteractor getLocalController(BasicJvmInfo ji) {
+        return interactorMap_.get(ji.getLocalControllerInfo());
+    }
+
     /** Return the local controller attached to router info*/
     public LocalControllerInteractor getLocalController(LocalControllerInfo lcinf) {
         return interactorMap_.get(lcinf);
@@ -1317,6 +1351,7 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
             return true;
         }
     }
+
     /**
      * List all RouterInfo.
      */
@@ -1641,6 +1676,26 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
     }
 
     /**
+     * Called to give a snapshot of all the jvms
+     */
+    protected void informAllJvms() {
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean jvmStartedHook(int id) {
+        return true;
+    }
+
+    /**
+     * A hook for subclasses to call.
+     */
+    public boolean jvmEndedHook(int id) {
+        return true;
+    }
+
+    /**
      * List all RouterInfo as a JSON object
      */
     private JSONObject getAllRouterInfoAsJSON(String detail) throws JSONException {
@@ -1697,6 +1752,43 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         jsobj.put("list", array);
 
         if (detail.equals("all") || detail.equals("thread") || detail.equals("threadgroup") ) {
+            jsobj.put("detail", detailArray);
+        }
+
+        return jsobj;
+    }
+
+    /**
+     * List all JvmInfo as a JSON object
+     */
+    private JSONObject getAllJvmInfoAsJSON(String detail) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+        JSONArray array = new JSONArray();  // ID array
+        JSONArray detailArray = new JSONArray();  // detail array
+
+
+
+        for (BasicJvmInfo info : getAllJvmInfo()) {
+            int jvmID = info.getId();
+
+            String jvmName = info.getName();
+
+            array.put(jvmID);
+
+            if (detail.equals("all")) {
+                // add a detailed record
+                JSONObject record = jvmInfoAsJSON(info);
+
+                if (record != null) {
+                    detailArray.put(record);
+                }
+            }
+        }
+
+        jsobj.put("type", "jvm");
+        jsobj.put("list", array);
+
+        if (detail.equals("all") ) {
             jsobj.put("detail", detailArray);
         }
 
@@ -2313,6 +2405,8 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
     //     scheduleLink(l, eng, time);
     // }
 
+    /* Apps *
+
     /**
      * register an app
      */
@@ -2613,6 +2707,125 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
     }
 
     /**
+     * get no of jvms
+     */
+    public JSONObject getJvmCount() throws JSONException {
+        int count = getNoJvms();
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("value", count);
+
+        return jsobj;
+
+    }
+
+    public int getNoJvms() {
+        return jvmIdMap_.size();
+    }
+
+
+    /** Find some jvminfo
+     */
+    public BasicJvmInfo findJvmInfo(int jvmID) {
+        return jvmIdMap_.get(jvmID);
+    }
+
+    /**
+     * Is a jvm ID valid
+     */
+    public boolean isValidJvmID(int id) {
+        BasicJvmInfo info = findJvmInfo(id);
+
+        if (info == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /** add some jvm info */
+    public void addJvmInfo(int id, BasicJvmInfo ji) {
+        jvmIdMap_.put(id, ji);
+
+        //informJvmStarted(br.getName());
+
+        jvmStartedHook(id);
+
+        
+    }
+
+    /**
+     * List all JvmInfo.
+     */
+    public Collection<BasicJvmInfo> getAllJvmInfo() {
+        return jvmIdMap_.values();
+    }
+
+
+    /**
+     * register a jvm
+     */
+    public void registerJvm(long time, int jvmID) {
+        informAllJvms();
+
+        Logger.getLogger("log").logln(1<<9, elapsedToString(getElapsedTime()) + ANSI.BLUE + " START JVM " + jvmID + ANSI.RESET_COLOUR);
+
+    }
+
+    /**
+     * unregister a jvm
+     */
+    public void unregisterJvm(long time, int jvmID) {
+        informAllJvms();
+
+        Logger.getLogger("log").logln(1<<9, elapsedToString(getElapsedTime()) + ANSI.RED + " STOP JVM " + jvmID + ANSI.RESET_COLOUR);
+
+    }
+
+   /** remove some jvm info*/
+    public void removeJvmInfo(int rId) {
+        BasicJvmInfo rInfo = findJvmInfo(rId);
+
+        // remove jvm from BasicJvmInfo map
+        jvmIdMap_.remove(rId);
+
+        // inform anyone that a Jvm has Ended
+        //informJvmEnded(rInfo.getName());
+
+        jvmEndedHook(rId);
+    }
+
+    /**
+     * Find some jvm info, given a jvm ID
+     * and return a JSONObject
+     */
+    private JSONObject findJvmInfoAsJSON(int jvmID) throws JSONException {
+        BasicJvmInfo ji = findJvmInfo(jvmID);
+
+        return jvmInfoAsJSON(ji);
+    }
+
+
+    /**
+     * Convert BasicJvmInfo into JSON
+     */
+    private JSONObject jvmInfoAsJSON(BasicJvmInfo ji) throws JSONException {
+        int routerID = ji.getId();
+
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("time", ji.getTime());
+        jsobj.put("jvmID", ji.getId());
+        jsobj.put("className", ji.getName());
+
+        jsobj.put("args", ji.getArgs());
+
+        return jsobj;
+
+    }
+
+    /**
      * Start listening for router stats using monitoring framework.
      */
     private synchronized void startMonitoringConsumer(InetSocketAddress addr) {
@@ -2791,7 +3004,99 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         return null;
     }
 
+    /**
+     * From Joao Esper and Filipe Fonseca at UFG, Brazil
+     */
     private void startLocalControllers() {
+        ExecutorService executor = Executors.newCachedThreadPool();
+        // final needed for Java 7
+        final Iterator<LocalControllerInfo> i = options_.getControllersIterator();
+
+        while (i.hasNext()) {
+            /* Java 8
+            executor.submit(() -> {
+                    startLocalController(i.next());
+                });
+            */
+            // Java 7
+            executor.submit(new Runnable(){
+                    public void run() {
+                        startLocalController(i.next());
+                    }
+                });
+        }
+
+        try {
+            Thread.sleep(4000);
+            executor.shutdown();
+            executor.awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Logger.getLogger("log").logln(USR.ERROR, "Initialization of Local Controllers Interrupted");
+        } finally {
+            if (!executor.isTerminated()) {
+                Logger.getLogger("log").logln(USR.ERROR, "Cancelling unfinished initializations");
+            }
+            executor.shutdownNow();
+            Logger.getLogger("log").logln(USR.ERROR, "Shutdown finished");
+        }
+    }   
+
+    /**
+     * From Joao Esper and Filipe Fonseca at UFG, Brazil
+     */
+    private void startLocalController(LocalControllerInfo lh) {
+        Process child = null;
+        preLocalControllerStartHook(lh);
+
+        // try and see if we can talk to an exisiting LocalController
+        boolean connected = false;
+        try {
+            // see if the LocalController already exists
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + " does LocalController " + lh + " already exist");
+            LocalControllerInteractor inter = new LocalControllerInteractor(lh);
+            connected = inter.checkLocalController(myHostInfo_);
+
+        } catch (IOException iex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " cannot connect to exisiting localController " + lh);
+            connected = false;
+        } catch (JSONException jex) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + " cannot connect to exisiting localController " + lh);
+            connected = false;
+        }
+
+
+        // Can't see it, so start a new one
+        if (!connected) {
+
+            String [] cmd = LocalControllerInitiator.localControllerStartCommand(lh, options_);
+            try {
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting process " + Arrays.asList(cmd));
+                child = new ProcessBuilder(cmd).start();
+            } catch (IOException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute remote command " + Arrays.asList(cmd));
+                Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+                System.exit(-1);
+            }
+
+            String procName = lh.getName() + ":" + lh.getPort();
+
+            synchronized(this) {
+                childNames_.add(procName);
+                ProcessWrapper pw = new ProcessWrapper(child, procName, "1> ", "2> ");
+                childProcessWrappers_.put(procName, pw);
+            }
+
+            try {
+                Thread.sleep(100); // Simple wait is to ensure controllers start up
+            } catch (java.lang.InterruptedException e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "startLocalControllers Got interrupt!");
+                System.exit(-1);
+            }
+        }
+    }
+
+
+    private void startLocalControllers_ORIG() {
         Iterator<LocalControllerInfo> i = options_.getControllersIterator();
         Process child = null;
 
@@ -2889,9 +3194,9 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
                                                       + lcInfo.getName() + " " + lcInfo.getPort());
                         inter = new LocalControllerInteractor(lcInfo);
 
+                        boolean connected = inter.checkLocalController(myHostInfo_);
                         localControllers_.add(inter);
                         interactorMap_.put(lcInfo, inter);
-                        boolean connected = inter.checkLocalController(myHostInfo_);
 
                         if (!connected) {
                             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot interact with LocalController " + lcInfo);
@@ -3673,6 +3978,8 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         return findLinkInfoAsJSON(linkID);
     }
 
+    /* App on Router */
+
     public JSONObject createApp(int routerID, String className, String[] args) throws JSONException {
         StartAppEvent ase = new StartAppEvent(getElapsedTime(), null, routerID, className, args);
         return executeEvent(ase);
@@ -3700,6 +4007,39 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
     public JSONObject getAppInfo(int routerID, int appID) throws JSONException {
         return findAppInfoAsJSON(appID);
     }
+
+    /* JVM application */
+
+    public JSONObject createJvm(String className, String rawArgs) throws JSONException {
+        String[] args = null;
+        // now convert raw args to String[]
+        args = rawArgs.split(" ");
+
+        StartJvmEvent ase = new StartJvmEvent(getElapsedTime(), null, className, args);
+        return executeEvent(ase);
+    }
+
+    public JSONObject stopJvm(int jvmID) throws JSONException {
+        StopJvmEvent ase = new StopJvmEvent(getElapsedTime(), null, jvmID);
+        return executeEvent(ase);
+
+    }
+
+    public JSONObject listJvms(String detail) throws JSONException {
+        return getAllJvmInfoAsJSON(detail);
+    }
+
+    public JSONObject getJvmInfo(int jvmID) throws JSONException {
+        return findJvmInfoAsJSON(jvmID);
+    }
+
+    public int getNextJvmId() {
+        synchronized (nextJvmId) {
+            return nextJvmId++;
+        }
+    }
+
+    /* Aggregation Point */
 
     public JSONObject listAggPoints() throws JSONException {
         return listAggPointsAsJSON();

@@ -19,8 +19,10 @@ import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import usr.common.Lifecycle;
 import usr.common.BasicRouterInfo;
+import usr.common.BasicJvmInfo;
 import usr.common.LocalHostInfo;
 import usr.common.ProcessWrapper;
+import usr.common.ProcessListener;
 import usr.console.ComponentController;
 import usr.common.StdinHandler;
 import usr.interactor.GlobalControllerInteractor;
@@ -61,6 +63,9 @@ public class LocalController implements Lifecycle, ComponentController {
     private ArrayList<RouterInteractor> routerInteractors_ = null;
     private HashMap<String, ProcessWrapper> childProcessWrappers_ = null;
     private HashMap<Integer, BasicRouterInfo> routerMap_ = null;
+    private ArrayList<BasicJvmInfo> jvms_ = null;
+    private HashMap<Integer, BasicJvmInfo> jvmMap_ = null;
+    private ProcessListener jvmListener = null;
     private String classPath_ = null;
 
     private RouterOptions routerOptions_ = null;
@@ -140,6 +145,9 @@ public class LocalController implements Lifecycle, ComponentController {
         routers_ = new ArrayList<BasicRouterInfo>();
         childProcessWrappers_ = new HashMap<String, ProcessWrapper>();
         routerMap_ = new HashMap<Integer, BasicRouterInfo>();
+        jvms_ = new ArrayList<BasicJvmInfo>();
+        jvmMap_ = new HashMap<Integer, BasicJvmInfo>();
+        jvmListener = new JvmListener(this);
         routerInteractors_ = new ArrayList<RouterInteractor>();
         console_ = new LocalControllerManagementConsole(this, port);
         Properties prop = System.getProperties();
@@ -177,7 +185,20 @@ public class LocalController implements Lifecycle, ComponentController {
         setupProbes(probeInfoMap);
 
         // StdinHandler
-        stdin = new StdinHandler(this);
+        String osName = System.getProperty("os.name").toLowerCase();
+
+        if (osName.startsWith("mac")) {
+            // Mac OS
+            stdin = new StdinHandler(this);
+
+        } else if (osName.startsWith("linux")) {
+            // Linux
+            stdin = new StdinHandler(this);
+            
+        } else {
+            
+        }
+
 
         return true;
     }
@@ -261,8 +282,9 @@ public class LocalController implements Lifecycle, ComponentController {
         Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping console");
         console_.stop();
 
-
-        stdin.stop();
+        if (stdin != null) {
+            stdin.stop();
+        }
 
 
         Logger.getLogger("log").logln(USR.STDOUT, leadin()+ hostInfo_.getIp() + ":" + hostInfo_.getPort() + " Stopping.");
@@ -335,19 +357,22 @@ public class LocalController implements Lifecycle, ComponentController {
 
         String routerName;
         Address routerAddress = null;
+
+        // TODO: take account of Address type e.g. DomainAddress or IPV4Address
+        if (address == null || address.equals("")) {
+            // convert id to an address
+            address = Integer.toString(routerId);
+
+        } else {
+        }
+
         try {
-            if (address == null || address.equals("")) {
-
-                routerAddress = AddressFactory.newAddress(routerId);
-
-            } else {
-
-                routerAddress = AddressFactory.newAddress(address);
-            }
+            routerAddress = AddressFactory.newAddress(address);
         } catch (UnknownHostException e) {
             Logger.getLogger("log").logln(USR.ERROR, leadin() + "Cannot construct address for router");
             return null;
         }
+
 
         if (name == null || name.equals("")) {
             routerName = "Router-" + routerId;
@@ -369,7 +394,7 @@ public class LocalController implements Lifecycle, ComponentController {
         Process child = null;
         ProcessWrapper pw = null;
         // was 9
-        String [] cmd = new String[10];
+        String [] cmd = new String[11];
         cmd[0] = "java";
         cmd[1] = "-cp";
         cmd[2] = classPath_;
@@ -388,12 +413,13 @@ public class LocalController implements Lifecycle, ComponentController {
         cmd[7] = String.valueOf(port1);
         cmd[8] = String.valueOf(port2);
         cmd[9] = routerName;
+        cmd[10] = routerAddress.asTransmitForm();
 
         try {
-            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting Router on ports "+port1+" "+port2);
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting Router " + routerId + "/" + address + " on ports "+port1+" "+port2);
 
             child = new ProcessBuilder(cmd).start();
-            pw = new ProcessWrapper(child, routerName);
+            pw = new ProcessWrapper(child, routerName, "router:" + routerId + ":stdout",  "router:" + routerId + ":stderr");
 
 
         } catch (IOException e) {
@@ -489,8 +515,11 @@ public class LocalController implements Lifecycle, ComponentController {
 
             interactor.setName(routerName);
             br.setName(routerName);
+            //br.setName(interactor.getName());
+            
             interactor.setAddress(routerAddress);
             br.setAddress(routerAddress.asTransmitForm());
+            //br.setAddress(interactor.getAddress().asTransmitForm());
 
             // tell the router to start some monitoring
             if (latticeMonitoring) {
@@ -533,6 +562,105 @@ public class LocalController implements Lifecycle, ComponentController {
         routerMap_.put(routerId, br);
 
         return routerName;
+
+
+    }
+
+    /**
+     * Run a new JVM
+     */
+    public String newJvm(int jvmID, String className, String[] args) {
+        BasicJvmInfo jvm = jvmMap_.get(jvmID);
+
+        Process child = null;
+        ProcessWrapper pw = null;
+
+        // calculate array size
+        // fixed elemments + classname + args
+        final int arraySize = 6 + 1 + args.length;
+        
+        String [] cmd = new String[arraySize];
+        cmd[0] = "java";
+        cmd[1] = "-cp";
+        cmd[2] = classPath_;
+
+        // TODO: the following 3 might need to be part of the args somehow
+        // to run more apps
+        //cmd[3] = "-Xms32m";
+        //cmd[4] = "-Xmx512m";
+        cmd[3] = "-Xms8m";  // was 32
+        cmd[4] = "-Xmx96m";  // was 128
+
+        // for better scalability (sclayman)
+        cmd[5] = "-Xss256k";
+        
+        cmd[6] = className;
+
+        // now copy args into cmd
+        System.arraycopy(args, 0, cmd, 7, args.length);
+
+
+        BasicJvmInfo jvmInfo = new BasicJvmInfo(jvmID, 0, hostInfo_, className, args);
+        String jvmName = jvmInfo.getName();
+
+        try {
+            Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Starting Jvm " + className + " " + jvmID + " " + Arrays.asList(args));
+
+            child = new ProcessBuilder(cmd).start();
+            pw = new ProcessWrapper(child, jvmName, "jvm:" + jvmID + ":stdout",  "jvm:" + jvmID + ":stderr", jvmListener);
+
+
+        } catch (IOException e) {
+            Logger.getLogger("log").logln(USR.ERROR, leadin() + "Unable to execute command "+ Arrays.asList(cmd));
+            Logger.getLogger("log").logln(USR.ERROR, e.getMessage());
+
+
+            if (child != null) {
+                child = null;
+            }
+
+            if (pw != null) {
+                pw.stop();
+            }
+            //System.exit(-1);
+            return null;
+        }
+
+        int firstMillis = 1000;
+
+        // sleep a bit
+        try {
+            Thread.sleep(firstMillis);
+        } catch (InterruptedException ie) {
+        }
+
+        boolean isStopped = !pw.isStopped();
+
+        if (!isStopped) {
+            // we didnt connect
+
+            boolean terminatedOK = pw.terminatedOK();
+
+            child = null;
+
+            if (terminatedOK) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "App in jvm is completed: " + className + " " + jvmID);
+                return "";
+            } else {
+                Logger.getLogger("log").logln(USR.ERROR, leadin() + "App in jvm is not running: " + className + " " + jvmID);
+                return null;
+            }
+        } else {
+        
+            childProcessWrappers_.put(jvmName, pw);
+
+            jvms_.add(jvmInfo);
+
+            // keep jvm ID -> BasicJvmInfo
+            jvmMap_.put(jvmID, jvmInfo);
+
+            return jvmName;
+        }
 
 
     }
@@ -900,6 +1028,36 @@ public class LocalController implements Lifecycle, ComponentController {
 
     }
 
+    /** Local controller receives request to end a jvm */
+    public boolean endJvm(BasicJvmInfo bji) {
+        Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Got terminate request for jvm " + bji);
+
+        if (bji == null) {
+            return false;
+        } else {
+            try {
+                String name = bji.getName();
+
+                jvmMap_.remove(bji.getId());
+                jvms_.remove(bji);
+
+                ProcessWrapper pw = childProcessWrappers_.get(name);
+                // stop process
+                Logger.getLogger("log").logln(USR.STDOUT, leadin() + "Stopping jvm " + name);
+
+                pw.stop();
+                childProcessWrappers_.remove(name);
+                return true;
+                
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+"Error endJvm " + bji.getClassName() + " " + bji.getId());
+                Logger.getLogger("log").logln(USR.ERROR, leadin()+e.getMessage());
+                return false;
+            }
+
+        }
+    }    
+
     /** Report the Aggregation point for a given router */
     public boolean reportAP(int GID, int AP) {
         try {
@@ -932,6 +1090,13 @@ public class LocalController implements Lifecycle, ComponentController {
         Logger.getLogger("log").logln(USR.ERROR,
                                       leadin()+"Unable to find BasicRouterInfo listening on port "+port);
         return null;
+    }
+
+    /**
+     * Find some JVM info
+     */
+    public BasicJvmInfo findJvmInfo(int jId) {
+        return jvmMap_.get(jId);
     }
 
     /**
@@ -1150,7 +1315,8 @@ public class LocalController implements Lifecycle, ComponentController {
     String leadin() {
         final String LC = "LC: ";
 
-        return getName() + " " + LC;
+        //return getName() + " " + LC;
+        return LC;
     }
 
 }

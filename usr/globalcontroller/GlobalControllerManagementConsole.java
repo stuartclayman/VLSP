@@ -46,6 +46,10 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
         // setup default /ap/ handler
         defineRequestHandler("/ap/", new AggPointRestHandler());
 
+        // sclayman - Sept 2018
+        // setup default /jvm/ handler
+        defineRequestHandler("/jvm/", new JvmRestHandler());
+
         // setup default /removed/ handler
         defineRequestHandler("/removed/", new RemovedRestHandler());
 

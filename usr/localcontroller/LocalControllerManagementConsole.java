@@ -18,6 +18,8 @@ import usr.localcontroller.command.RequestRouterStatsCommand;
 import usr.localcontroller.command.RouterConfigCommand;
 import usr.localcontroller.command.SetAPCommand;
 import usr.localcontroller.command.SetLinkWeightCommand;
+import usr.localcontroller.command.JvmStartCommand;
+import usr.localcontroller.command.JvmStopCommand;
 import usr.localcontroller.command.ShutDownCommand;
 import usr.localcontroller.command.StatusCommand;
 import usr.localcontroller.command.UnknownCommand;
@@ -63,6 +65,8 @@ public class LocalControllerManagementConsole extends USRRestConsole {
         register(new MonitoringStartCommand());
         register(new MonitoringStopCommand());
         register(new SetLinkWeightCommand());
+        register(new JvmStartCommand());
+        register(new JvmStopCommand());
     }
 
 }

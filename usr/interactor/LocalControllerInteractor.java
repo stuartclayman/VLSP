@@ -248,6 +248,49 @@ public class LocalControllerInteractor {
     }
 
     /**
+     * Ask the LocalController to start a jvm.
+     */
+    public JSONObject newJvm(int jvmId, String className, String[] args) throws IOException, JSONException  {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(MCRP.NEW_JVM.CMD);
+        builder.append(" ");
+        builder.append(jvmId);
+        builder.append(" ");
+        builder.append(className);
+
+        for (String arg : args) {
+            builder.append(" ");
+            builder.append(arg);
+        }
+
+        String toSend = java.net.URLEncoder.encode(builder.toString(), "UTF-8");
+
+        JSONObject response = interact(toSend);
+
+        // return the response
+        return response;
+    }
+
+    /**
+     * Ask the LocalController to stop a jvm.
+     */
+    public JSONObject stopJvm(int jvmId) throws IOException, JSONException  {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(MCRP.STOP_JVM.CMD);
+        builder.append(" ");
+        builder.append(jvmId);
+
+        String toSend = builder.toString();
+
+        JSONObject response = interact(toSend);
+
+        // return the response
+        return response;
+    }
+
+    /**
      * Check with a local controller.
      */
     public Boolean checkLocalController(String host, int port) throws IOException, JSONException {

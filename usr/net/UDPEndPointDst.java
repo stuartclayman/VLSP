@@ -35,7 +35,7 @@ public class UDPEndPointDst implements UDPEndPoint {
      */
     @Override
     public boolean connect() throws IOException {
-        //Logger.getLogger("log").logln(USR.STDOUT, ANSI.YELLOW + "UDPEndPointDst " + " connect " + ANSI.RESET_COLOUR);
+        Logger.getLogger("log").logln(USR.STDOUT, ANSI.YELLOW + "UDPEndPointDst " + " connect " + ANSI.RESET_COLOUR);
 
         if (isConnected) {
             throw new IOException("Cannot connect again to: " + socket);
@@ -49,7 +49,7 @@ public class UDPEndPointDst implements UDPEndPoint {
      * Set the remote InetAddress and port
      */
     public void setRemoteAddress(InetAddress addr, int port) throws IOException {
-        //Logger.getLogger("log").logln(USR.STDOUT, ANSI.YELLOW + "UDPEndPointDst " + " setRemoteAddress " + addr + ":" + port + ANSI.RESET_COLOUR);
+        Logger.getLogger("log").logln(USR.STDOUT, ANSI.YELLOW + "UDPEndPointDst " + " setRemoteAddress " + addr + ":" + port + ANSI.RESET_COLOUR);
 
 
         if (socket.isConnected()) { 

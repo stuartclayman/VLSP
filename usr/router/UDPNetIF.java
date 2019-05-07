@@ -214,7 +214,7 @@ public class UDPNetIF implements NetIF, Runnable {
             // so set the latch
             connectLatch = new CountDownLatch(1);
 
-            //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectLatch SET " + endPoint);
+            Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectLatch SET " + endPoint);
 
             // and wait
             try {
@@ -222,7 +222,7 @@ public class UDPNetIF implements NetIF, Runnable {
             } catch (InterruptedException ie) {
             }
 
-            //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectLatch await finished " + endPoint);
+            Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectLatch await finished " + endPoint);
 
         }
 
@@ -394,7 +394,7 @@ public class UDPNetIF implements NetIF, Runnable {
             // reduce latch count by 1
             connectLatch.countDown();
 
-            //Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectLatch DOWN " + endPoint);
+            Logger.getLogger("log").logln(USR.ERROR, "UDPNetIF " + endPoint.getClass().getName() + " connectLatch DOWN " + endPoint);
 
         }
 

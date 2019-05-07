@@ -632,7 +632,7 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
                 */
 
                 // found an interface we are interested in
-                if (netDevs.containsKey(words[0]) && words[10].equals("0")) {
+                if (words.length == 11 && netDevs.containsKey(words[0]) && words[10].equals("0")) {
 
                     // create a row for data
                     TableRow netIFRow = new DefaultTableRow();

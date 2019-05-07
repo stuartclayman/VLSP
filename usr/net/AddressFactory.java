@@ -76,18 +76,30 @@ public class AddressFactory {
             Address address = consS.newInstance(addr);
             return address;
         } catch (java.lang.reflect.InvocationTargetException e) {
+            e.printStackTrace();
+            System.err.println("InvocationTargetException " + e);
+            
             Throwable e2 = e.getTargetException();
 
             if (e2 instanceof java.net.UnknownHostException) {
+
+                System.err.println("UnknownHostException " + e2);
+                
                 throw (java.net.UnknownHostException)e2;
             }
             System.err.println (e2.getClass());
             finalE = new Exception(e.getMessage());
         } catch (Exception e) {
-            finalE = e;
+
+            if (e instanceof java.net.UnknownHostException) {
+                throw (java.net.UnknownHostException)e;
+            }
+            
+            System.err.println (e.getClass());
+            finalE = new Exception(e.getMessage());
         }
 
-        finalE.printStackTrace();
+        //finalE.printStackTrace();
         Logger.getLogger("log").logln(USR.ERROR, "AddressFactory: Exception: " + finalE);
         throw new Error("AddressFactory: config error in AddressFactory.  Cannot allocate an instance of: " + className);
 
