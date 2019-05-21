@@ -90,6 +90,7 @@ import eu.reservoir.monitoring.core.plane.DataPlane;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneForwardingConsumerWithNames;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneConsumerWithNames;
 import eu.reservoir.monitoring.distribution.udp.UDPDataPlaneProducerWithNames;
+import eu.reservoir.monitoring.distribution.Forwarding;
 
 /**
  * The GlobalController is in overall control of the software.  It
@@ -1090,6 +1091,18 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         return jsobj;
     }
 
+    /**
+     * Get the name of this GlobalController.
+     */
+    @Override
+    public String getName() {
+        if (myHostInfo_ == null) {
+            return myName;
+        }
+
+        return myName + ":" + myHostInfo_.getPort();
+    }
+
 
     /**
      * Get the LocalControllers which are online.
@@ -1893,114 +1906,6 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
 
 
     
-    /**
-     * Make LocalController Online, return data as a JSON object
-     */
-    public JSONObject takeLocalControllerOnlineJSON(String value) throws JSONException {
-        JSONObject jsobj = new JSONObject();
-
-        LocalControllerInfo lci = findLocalControllerInfo(value);
-
-        if (lci != null) {
-            String localControllerName = lci.getName() + ":" + lci.getPort();
-            boolean opResult = takeLocalControllerOnline(value);
-
-            jsobj.put("name", localControllerName);
-            jsobj.put("type", "localcontroller");
-            jsobj.put("status", lci.getActiveStatus());
-            jsobj.put("success", opResult);
-
-            if (opResult == false) {
-                jsobj.put("msg", "LocalController " + localControllerName + " already ONLINE");
-            }
-            
-            return jsobj;
-
-        } else {
-            
-            try {
-                jsobj.put("msg", "ERROR: " + "no localcontroller at " + value);
-            } catch (Exception e) {
-                Logger.getLogger("log").logln(USR.ERROR, "JSON creation error in getOneLocalControllerInfoAsJSON");
-            }
-
-            return jsobj;
-
-        }
-    }
-
-
-    /**
-     * Make LocalController Offline, return data as a JSON object
-     */
-    public JSONObject takeLocalControllerOfflineJSON(String value) throws JSONException {
-        JSONObject jsobj = new JSONObject();
-
-        // first we check if this is the last online LocalController
-        // if it is, we cannot take it offline
-        int locCount = getLocalControllers().size();
-
-        if (locCount == 1) {
-            // this is the last one
-            // failed to make offline
-            jsobj.put("name", value);
-            jsobj.put("type", "localcontroller");
-            jsobj.put("status", LocalControllerInfo.LocalControllerActiveStatus.ONLINE);
-            jsobj.put("success", false);
-                
-            jsobj.put("msg", "LocalController cannot be shutdown. Last ONLINE localController");
-
-            return jsobj;
-
-        } else {
-            // try and take the LocalController offline
-            LocalControllerInfo lci = findLocalControllerInfo(value);
-
-            if (lci != null) {
-                String localControllerName = lci.getName() + ":" + lci.getPort();
-                boolean opResult = takeLocalControllerOffline(value);
-
-                if (opResult) { // successfully made offline
-
-                    jsobj.put("name", localControllerName);
-                    jsobj.put("type", "localcontroller");
-                    jsobj.put("status", lci.getActiveStatus());
-                    jsobj.put("success", true);
-
-                    return jsobj;
-                } else {
-                    // failed to make offline
-                    jsobj.put("name", localControllerName);
-                    jsobj.put("type", "localcontroller");
-                    jsobj.put("status", lci.getActiveStatus());
-                    jsobj.put("success", false);
-                
-                    if (lci.getNoRouters() == 0) {
-                        jsobj.put("msg", "LocalController " + localControllerName + " already OFFLINE");
-                    } else {
-                        jsobj.put("noRouters", lci.getNoRouters());
-                        jsobj.put("msg", "LocalController " + localControllerName + " has active routers");
-                    }
-                }
-
-                return jsobj;
-
-            } else {
-            
-                try {
-                    jsobj.put("msg", "ERROR: " + "no localcontroller at " + value);
-                } catch (Exception e) {
-                    Logger.getLogger("log").logln(USR.ERROR, "JSON creation error in getOneLocalControllerInfoAsJSON");
-                }
-
-                return jsobj;
-
-            }
-        }
-    }
-
-
-
 
     /**
      * Is the router ID valid.
@@ -2838,9 +2743,9 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
 
         // set up DataPlane
         // WITH FORWARDING
-        // DataPlane inputDataPlane = new UDPDataPlaneForwardingConsumerWithNames(addr, forwardAddress);
+        DataPlane inputDataPlane = new UDPDataPlaneForwardingConsumerWithNames(addr);
         // WITH NO FORAWRDING
-        DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(addr);
+        //DataPlane inputDataPlane = new UDPDataPlaneConsumerWithNames(addr);
 
         dataConsumer.setDataPlane(inputDataPlane);
 
@@ -2943,6 +2848,85 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         }
 
     }
+
+    /**
+     * Set the forwarding address for the monitoring
+     * Returns true, if different, false if the same.
+     */
+    public boolean setMonitoringForwarderAddress(String address, int port) {
+        // Forwarding address
+        InetSocketAddress addr = new InetSocketAddress(address, port);
+
+        Forwarding forwarder = (Forwarding)dataConsumer.getDataPlane();
+
+        System.err.println("Forwarder address = " + forwarder.getForwarderAddress() + " new forwardAddress = " + addr);
+            
+        if (forwarder.getForwarderAddress().equals(addr)) {
+            // same
+            System.err.println("same");
+            return false;
+        } else {
+            forwardAddress = addr;
+            return true;
+        }
+    }
+
+    /**
+     * Connect the forwarding for the monitoring
+     */
+    public boolean connectMonitoringForwarder() {
+
+        // a bit of hack
+        Forwarding forwarder = (Forwarding)dataConsumer.getDataPlane();
+
+        if (! forwarder.isForwarderConnected()) {
+            forwarder.setForwarderAddress(forwardAddress);
+            return forwarder.connectForwarder();
+        } else {
+            return true;
+
+            /*
+            // it is connected, but might have a different address
+            System.err.println("Forwarder: connected.  Forwarder address = " + forwarder.getForwarderAddress() + " new forwardAddress = " + forwardAddress);
+            
+            if (forwarder.getForwarderAddress().equals(forwardAddress)) {
+                // same
+                System.err.println("same");
+                return true;
+            } else {
+                // different -- so now we swap over
+
+                // stop sending to old address
+                System.err.println("disconnect");
+                forwarder.disconnectForwarder();
+                
+                System.err.println("setForwarderAddress: " + forwardAddress);
+                
+                forwarder.setForwarderAddress(forwardAddress);
+
+                System.err.println("connect");                
+                return forwarder.connectForwarder();
+            }
+            */
+        }
+    }
+
+
+    /**
+     * Disconnect the forwarding for the monitoring
+     */
+    public boolean disconnectMonitoringForwarder() {
+
+        // a bit of hack
+        Forwarding forwarder = (Forwarding)dataConsumer.getDataPlane();
+
+        if (forwarder.isForwarderConnected()) {
+            return forwarder.disconnectForwarder();
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      * Get the Reporter list of the monitoring data
@@ -3650,16 +3634,10 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         return network_;
     }
 
-    /**
-     * Get the name of this GlobalController.
-     */
-    @Override
-    public String getName() {
-        if (myHostInfo_ == null) {
-            return myName;
+    public int getNextJvmId() {
+        synchronized (nextJvmId) {
+            return nextJvmId++;
         }
-
-        return myName + ":" + myHostInfo_.getPort();
     }
 
     /**
@@ -3695,6 +3673,114 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         return jsobj;
 
     }
+
+    /**
+     * Make LocalController Online, return data as a JSON object
+     */
+    public JSONObject takeLocalControllerOnlineJSON(String value) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+
+        LocalControllerInfo lci = findLocalControllerInfo(value);
+
+        if (lci != null) {
+            String localControllerName = lci.getName() + ":" + lci.getPort();
+            boolean opResult = takeLocalControllerOnline(value);
+
+            jsobj.put("name", localControllerName);
+            jsobj.put("type", "localcontroller");
+            jsobj.put("status", lci.getActiveStatus());
+            jsobj.put("success", opResult);
+
+            if (opResult == false) {
+                jsobj.put("msg", "LocalController " + localControllerName + " already ONLINE");
+            }
+            
+            return jsobj;
+
+        } else {
+            
+            try {
+                jsobj.put("msg", "ERROR: " + "no localcontroller at " + value);
+            } catch (Exception e) {
+                Logger.getLogger("log").logln(USR.ERROR, "JSON creation error in getOneLocalControllerInfoAsJSON");
+            }
+
+            return jsobj;
+
+        }
+    }
+
+
+    /**
+     * Make LocalController Offline, return data as a JSON object
+     */
+    public JSONObject takeLocalControllerOfflineJSON(String value) throws JSONException {
+        JSONObject jsobj = new JSONObject();
+
+        // first we check if this is the last online LocalController
+        // if it is, we cannot take it offline
+        int locCount = getLocalControllers().size();
+
+        if (locCount == 1) {
+            // this is the last one
+            // failed to make offline
+            jsobj.put("name", value);
+            jsobj.put("type", "localcontroller");
+            jsobj.put("status", LocalControllerInfo.LocalControllerActiveStatus.ONLINE);
+            jsobj.put("success", false);
+                
+            jsobj.put("msg", "LocalController cannot be shutdown. Last ONLINE localController");
+
+            return jsobj;
+
+        } else {
+            // try and take the LocalController offline
+            LocalControllerInfo lci = findLocalControllerInfo(value);
+
+            if (lci != null) {
+                String localControllerName = lci.getName() + ":" + lci.getPort();
+                boolean opResult = takeLocalControllerOffline(value);
+
+                if (opResult) { // successfully made offline
+
+                    jsobj.put("name", localControllerName);
+                    jsobj.put("type", "localcontroller");
+                    jsobj.put("status", lci.getActiveStatus());
+                    jsobj.put("success", true);
+
+                    return jsobj;
+                } else {
+                    // failed to make offline
+                    jsobj.put("name", localControllerName);
+                    jsobj.put("type", "localcontroller");
+                    jsobj.put("status", lci.getActiveStatus());
+                    jsobj.put("success", false);
+                
+                    if (lci.getNoRouters() == 0) {
+                        jsobj.put("msg", "LocalController " + localControllerName + " already OFFLINE");
+                    } else {
+                        jsobj.put("noRouters", lci.getNoRouters());
+                        jsobj.put("msg", "LocalController " + localControllerName + " has active routers");
+                    }
+                }
+
+                return jsobj;
+
+            } else {
+            
+                try {
+                    jsobj.put("msg", "ERROR: " + "no localcontroller at " + value);
+                } catch (Exception e) {
+                    Logger.getLogger("log").logln(USR.ERROR, "JSON creation error in getOneLocalControllerInfoAsJSON");
+                }
+
+                return jsobj;
+
+            }
+        }
+    }
+
+
 
 
     /*
@@ -4033,12 +4119,6 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
         return findJvmInfoAsJSON(jvmID);
     }
 
-    public int getNextJvmId() {
-        synchronized (nextJvmId) {
-            return nextJvmId++;
-        }
-    }
-
     /* Aggregation Point */
 
     public JSONObject listAggPoints() throws JSONException {
@@ -4071,6 +4151,59 @@ public class GlobalController implements Lifecycle, ComponentController, EventDe
 
     }
 
+    /* Monitoring Info */
+
+    public JSONObject getMonitoringInfo() throws JSONException {
+        JSONObject jsobj = new JSONObject();
+
+        jsobj.put("monitoring", latticeMonitoring);
+
+        // listen address
+        JSONObject address = new JSONObject();
+        address.put("host", monitoringAddress.getHostName());
+        address.put("port", monitoringPort);
+
+        jsobj.put("address", address);
+
+        // DataConsumer
+        JSONObject dataconsumer = new JSONObject();
+        dataconsumer.put("connected", dataConsumer.isConnected());
+        dataconsumer.put("dataPlane", dataConsumer.getDataPlane().getClass());
+        
+        jsobj.put("dataConsumer", dataconsumer);
+
+        // Forwarder
+        JSONObject forwarder = new JSONObject();
+
+        // a bit of hack
+        forwarder.put("connected", ((Forwarding)dataConsumer.getDataPlane()).isForwarderConnected());
+
+        // listen address
+        JSONObject forwarderaddress = new JSONObject();
+        forwarderaddress.put("host", forwardAddress.getHostName());
+        forwarderaddress.put("port", forwardAddress.getPort());
+
+        forwarder.put("address", forwarderaddress);
+        
+        jsobj.put("forwarder", forwarder);
+
+
+        // reporters
+        JSONArray reporters = new JSONArray();
+        for (Map.Entry reporter : reporterMap.entrySet()) {
+            JSONObject reporterInfo = new JSONObject();
+
+            reporterInfo.put("label", reporter.getKey());
+            reporterInfo.put("class", reporter.getValue().getClass());
+
+            reporters.put(reporterInfo);
+        }
+        jsobj.put("reporters", reporters);
+
+        return jsobj;
+
+    }
+
 
 
 }
@@ -4082,7 +4215,7 @@ class GCBasicConsumer extends BasicConsumer {
      * It passes the Measurement on to all of the Reporters.
      */
     public Measurement report(Measurement m) {
-        Logger.getLogger("log").logln(1<<11, "< " +  m.getType() + "." + m.getProbeID() + "." + m.getSequenceNo());
+        //Logger.getLogger("log").logln(1<<11, "< " +  m.getType() + "." + m.getProbeID() + "." + m.getSequenceNo());
         return super.report(m);
     }
 }

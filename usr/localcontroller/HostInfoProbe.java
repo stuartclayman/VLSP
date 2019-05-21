@@ -678,7 +678,8 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
         // cvt to Integer
         Scanner sc = new Scanner(numStr);
-        int i = sc.nextInt();
+        // int i = sc.nextInt(); // This doesnt work for some people
+        int i = Integer.parseInt(sc.next());
 
         return i;
     }
@@ -694,8 +695,9 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
         // cvt to Integer
         Scanner sc = new Scanner(numStr);
-        long l = sc.nextLong();
-
+        //long l = sc.nextLong();
+        long l = Long.parseLong(sc.next());
+        
         return l;
     }
 
@@ -710,7 +712,8 @@ public class HostInfoProbe extends LocalControllerProbe implements Probe {
 
         // cvt to Integer
         Scanner sc = new Scanner(numStr);
-        float f = sc.nextFloat();
+        //float f = sc.nextFloat();
+        float f = Float.parseFloat(sc.next());
 
         return f;
     }

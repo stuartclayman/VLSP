@@ -153,7 +153,8 @@ public class RouterController implements ComponentController, Runnable {
         management = new RouterManagementConsole(this, mPort);
 
         // default connections
-        connections = new RouterConnectionsUDP(this, newConnectionPort);
+        //connections = new RouterConnectionsUDP(this, newConnectionPort);
+        connections = new RouterConnectionsTCP(this, newConnectionPort);
 
         connectionCount = 0;
         // a map of NetIFs

@@ -23,12 +23,12 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
     }
 
     @Override
-	public void registerCommands() {
+    public void registerCommands() {
 
-    	 	// setup default /localcontroller/ handler
+        // setup default /localcontroller/ handler
         defineRequestHandler("/localcontroller/", new LocalControllerRestHandler());
     	
-    		// setup default /router/ handler
+        // setup default /router/ handler
         defineRequestHandler("/router/", new RouterRestHandler());
 
         // setup default /link/ handler
@@ -57,6 +57,12 @@ public class GlobalControllerManagementConsole extends USRRestConsole {
         // virtual network as a graph - e.g. a dot file
         defineRequestHandler("/graph/", new GraphRestHandler());
 
+
+        // setup the /monitoring/ hander
+        defineRequestHandler("/monitoring/", new MonitoringRestHandler());
+
+
+        // others
         register(new UnknownCommand());
         //register(new LocalOKCommand());
         register(new QuitCommand());
