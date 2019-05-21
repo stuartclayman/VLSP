@@ -28,16 +28,22 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
+
+import demo_usr.paths.Reconfigure;
+import demo_usr.paths.ManagementListener;
+import demo_usr.paths.ManagementPort;
 
 /**
  * An application for receiving some data and acting as a Network Function.
  * <p>
  * NetFn
  */
-public class NetFn implements Application {
+public class NetFn implements Application, Reconfigure {
     int count = 0;
     boolean running = false;
     CountDownLatch latch = null;
@@ -48,11 +54,30 @@ public class NetFn implements Application {
     Timer timer = null;
     TimerTask netifObserver = null;
 
-    // Default 6: seconds
-    int checkInterval = 6;
-
     // Thread Pool
     ExecutorService executors;
+
+    // OPTIONS
+    // Check for new NetIFs interval. Default 6: seconds
+    int checkInterval = 6;
+
+    // Management port. Default 0:  no Management port
+    int managementPortNumber = 0;
+
+    int verbose = 0;          // verbose level: 1 = normal 2=extra verboseness
+
+    // RECONFIGURE MANAGEMENT
+    // Management interface
+    LinkedBlockingDeque<Datagram> mgmtQueue;
+
+    // ManagementPort
+    ManagementPort mPort;
+    Future<?> mPortFuture;
+
+    // ManagementListener
+    ManagementListener mListener;
+    Future<?> mListenerFuture;
+
 
     /**
      * Constructor for SimpleNetFn
@@ -82,22 +107,47 @@ public class NetFn implements Application {
                     // get option
                     char option = thisArg.charAt(1);
 
-                    // gwet next arg
-                    String argValue = args[++extra];
-
                     switch (option) {
-                    case 'i': {
+                    case 'i': {   /*  -i number -- the interval, in seconds, to check for new NetIFs */
+
+                        // get next arg
+                        String argValue = args[++extra];
+
+
                         try {
                             checkInterval = Integer.parseInt(argValue);
                         } catch (Exception e) {
-                            return new ApplicationResponse(false, "Bad checkInterval " + argValue);
+                            return applicationError("Bad checkInterval " + argValue);
                         }
 
                         break;
                     }
-            
+
+                    case 'm': {   /* -m port -- the port number to listen for management Reconfigure updates.
+                                             -- By default there is no reconfiguration. */
+                        // get next arg
+                        String portValue = args[++extra];
+
+                        try {
+                            managementPortNumber = Integer.parseInt(portValue);
+                        } catch (Exception e) {
+                            return applicationError("Bad managementPortNumber " + portValue);
+                        }
+                        break;
+                    }
+
+                    case 'v': {  /* -v or -vv for different verbose levels */
+                        verbose = 1;
+                        if (thisArg.length() == 3 && thisArg.charAt(2) == 'v') {
+                            verbose = 2;
+                        }
+                        break;
+                    }
+
+
+                        
                     default:
-                        return new ApplicationResponse(false, "Bad option " + option);
+                        return applicationError("Bad option " + option);
                     }
                 }
 
@@ -120,9 +170,34 @@ public class NetFn implements Application {
             if (timer == null) {
                 timer = new Timer();
                 // run now and every N seconds
-                timer.schedule(netifObserver, 0, checkInterval * 1000);
+                timer.schedule(netifObserver, 0, checkInterval * 1000);                
             }
 
+            // Management interface
+            if (managementPortNumber > 0) {
+                // We need to start the ManagementPort and ManagementListener
+
+                mgmtQueue = new LinkedBlockingDeque<Datagram>();
+
+                try {
+                    // allocate ManagementPort
+                    mPort = new ManagementPort(managementPortNumber, mgmtQueue, verbose);
+                    System.out.println("ManagementPort on " + managementPortNumber);
+                } catch (Exception e) {
+                    return applicationError("Cannot open reader socket " + managementPortNumber + ": " + e.getMessage());
+                }
+
+
+                try {
+                    // allocate ManagementListener
+                    mListener = new ManagementListener(new ReconfigureHandler(this), mgmtQueue, verbose);
+                    System.out.println("ManagementListener to queue " + mgmtQueue);
+                } catch (Exception e) {
+                    return applicationError("ManagementListener error " + ": " + e.getMessage());
+                }
+            }
+
+            
     
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,6 +214,12 @@ public class NetFn implements Application {
     /** Implement graceful shut down */
     public ApplicationResponse stop() {
         running = false;
+
+        // stop ManagementListener and ManagementPort
+        if (managementPortNumber > 0) {
+            mPortFuture.cancel(true);
+            mListenerFuture.cancel(true);
+        }
 
         // stop timer
         if (netifObserver != null) {
@@ -165,8 +246,21 @@ public class NetFn implements Application {
      * Run loop
      */
     public void run() {
-        while (running) {
+        if (managementPortNumber > 0) {
+            try {
+                mPortFuture = executors.submit((Callable <?>)mPort);
+                mListenerFuture = executors.submit((Callable <?>)mListener);
+
+            } catch (Exception e) {
+                Logger.getLogger("log").log(USR.ERROR, e.getMessage());
+                e.printStackTrace();
+            }
+
+        }
         
+            
+        while (running) {
+
             try {
                 latch.await();
             } catch (InterruptedException ie) {
@@ -264,6 +358,23 @@ public class NetFn implements Application {
         return intercepter.send(datagram);
     }
 
+    /**
+     * Process a reconfiguration
+     */
+    @Override
+    public Object process(JSONObject jsobj) {
+        return null;
+    }
+
+    /**
+     * error
+     */
+    private ApplicationResponse applicationError(String msg) {
+        Logger.getLogger("log").logln(USR.ERROR, msg);
+        return new ApplicationResponse(false,  msg);
+    }
+
+    
 
     //------------------------------------------------------------------------//
     

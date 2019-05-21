@@ -5,7 +5,11 @@ import usr.logging.USR;
 import usr.net.Datagram;
 import usr.protocol.Protocol;
 
+import us.monoid.json.JSONObject;
 
+/**
+ * A NetFn that prints out what comes in 
+ */
 public class NetPrint extends NetFn  {
 
 
@@ -53,4 +57,14 @@ public class NetPrint extends NetFn  {
         }
     }
 
+    /**
+     * Process a reconfiguration
+     */
+    @Override
+    public Object process(JSONObject jsobj) {
+        System.out.println("NetPrint: Reconfiguration with: " + jsobj);
+        return null;
+    }
+
+    
 }
