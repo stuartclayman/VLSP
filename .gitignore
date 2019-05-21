@@ -1,0 +1,319 @@
+
+# /
+/docs
+/classes
+
+# /demo_usr/
+/demo_usr/*.class
+
+# /demo_usr/canviz/
+/demo_usr/canviz/*.class
+
+# /demo_usr/canviz/excanvas/
+/demo_usr/canviz/excanvas/*.class
+
+# /demo_usr/canviz/path/
+/demo_usr/canviz/path/*.class
+
+# /demo_usr/canviz/prototype/
+/demo_usr/canviz/prototype/*.class
+
+# /demo_usr/dolfin/
+/demo_usr/dolfin/*.class
+
+# /demo_usr/dolfin/siemens/
+/demo_usr/dolfin/siemens/*.class
+
+# /demo_usr/energy/
+/demo_usr/energy/*.class
+
+# /demo_usr/energy/APcontroller/
+/demo_usr/energy/APcontroller/*.class
+
+# /demo_usr/energy/energymodel/
+/demo_usr/energy/energymodel/*.class
+
+# /demo_usr/energy/router/
+/demo_usr/energy/router/*.class
+
+# /demo_usr/energy/viewer/
+/demo_usr/energy/viewer/*.class
+
+# /demo_usr/httpd/
+/demo_usr/httpd/*.class
+
+# /demo_usr/ikms/
+/demo_usr/ikms/*.class
+
+# /demo_usr/ikms/TFTP/
+/demo_usr/ikms/TFTP/*.class
+
+# /demo_usr/ikms/client/
+/demo_usr/ikms/client/*.class
+
+# /demo_usr/ikms/client/utils/
+/demo_usr/ikms/client/utils/*.class
+
+# /demo_usr/ikms/eventengine/
+/demo_usr/ikms/eventengine/*.class
+
+# /demo_usr/iperf/
+/demo_usr/iperf/*.class
+
+# /demo_usr/necos/
+/demo_usr/necos/*.class
+
+# /demo_usr/necos/probes/
+/demo_usr/necos/probes/*.class
+
+# /demo_usr/necos/reporters/
+/demo_usr/necos/reporters/*.class
+
+# /demo_usr/nfv/
+/demo_usr/nfv/*.class
+
+# /demo_usr/paths/
+/demo_usr/paths/*.class
+
+# /demo_usr/sonata/
+/demo_usr/sonata/*.class
+
+# /demo_usr/stress/
+/demo_usr/stress/*.class
+
+# /demo_usr/viewer/
+/demo_usr/viewer/*.class
+
+# /extras/
+/extras/*.class
+
+# /extras/IKMS/
+/extras/IKMS/*.class
+
+# /extras/IKMS/classes/
+/extras/IKMS/classes/*.class
+
+# /extras/IKMS/classes/ikms/
+/extras/IKMS/classes/ikms/*.class
+
+# /extras/IKMS/classes/ikms/console/
+/extras/IKMS/classes/ikms/console/*.class
+
+# /extras/IKMS/classes/ikms/core/
+/extras/IKMS/classes/ikms/core/*.class
+
+# /extras/IKMS/classes/ikms/data/
+/extras/IKMS/classes/ikms/data/*.class
+
+# /extras/IKMS/classes/ikms/functions/
+/extras/IKMS/classes/ikms/functions/*.class
+
+# /extras/IKMS/classes/ikms/info/
+/extras/IKMS/classes/ikms/info/*.class
+
+# /extras/IKMS/classes/ikms/interfaces/
+/extras/IKMS/classes/ikms/interfaces/*.class
+
+# /extras/IKMS/classes/ikms/operations/
+/extras/IKMS/classes/ikms/operations/*.class
+
+# /extras/IKMS/classes/ikms/processor/
+/extras/IKMS/classes/ikms/processor/*.class
+
+# /extras/IKMS/classes/ikms/ui/
+/extras/IKMS/classes/ikms/ui/*.class
+
+# /extras/IKMS/classes/ikms/util/
+/extras/IKMS/classes/ikms/util/*.class
+
+# /extras/IKMS/classes/resources/
+/extras/IKMS/classes/resources/*.class
+
+# /extras/IKMS/libs/
+/extras/IKMS/libs/*.class
+
+# /extras/IKMS/output/
+/extras/IKMS/output/*.class
+
+# /extras/IKMS/output/Scenario1/
+/extras/IKMS/output/Scenario1/*.class
+
+# /extras/IKMS/resources/
+/extras/IKMS/resources/*.class
+
+# /extras/IKMS/src/
+/extras/IKMS/src/*.class
+
+# /extras/IKMS/src/ikms/
+/extras/IKMS/src/ikms/*.class
+
+# /extras/IKMS/src/ikms/console/
+/extras/IKMS/src/ikms/console/*.class
+
+# /extras/IKMS/src/ikms/core/
+/extras/IKMS/src/ikms/core/*.class
+
+# /extras/IKMS/src/ikms/data/
+/extras/IKMS/src/ikms/data/*.class
+
+# /extras/IKMS/src/ikms/functions/
+/extras/IKMS/src/ikms/functions/*.class
+
+# /extras/IKMS/src/ikms/info/
+/extras/IKMS/src/ikms/info/*.class
+
+# /extras/IKMS/src/ikms/interfaces/
+/extras/IKMS/src/ikms/interfaces/*.class
+
+# /extras/IKMS/src/ikms/operations/
+/extras/IKMS/src/ikms/operations/*.class
+
+# /extras/IKMS/src/ikms/processor/
+/extras/IKMS/src/ikms/processor/*.class
+
+# /extras/IKMS/src/ikms/ui/
+/extras/IKMS/src/ikms/ui/*.class
+
+# /extras/IKMS/src/ikms/util/
+/extras/IKMS/src/ikms/util/*.class
+
+# /extras/IKMS-client/
+/extras/IKMS-client/*.class
+
+# /extras/IKMS-client/src/
+/extras/IKMS-client/src/*.class
+
+# /extras/IKMS-client/src/ikms/
+/extras/IKMS-client/src/ikms/*.class
+
+# /extras/IKMS-client/src/ikms/client/
+/extras/IKMS-client/src/ikms/client/*.class
+
+# /extras/IKMS-client/src/ikms/client/utils/
+/extras/IKMS-client/src/ikms/client/utils/*.class
+
+# /extras/IKMS-client/src/ikms/data/
+/extras/IKMS-client/src/ikms/data/*.class
+
+# /extras/IKMS-client/src/ikms/examples/
+/extras/IKMS-client/src/ikms/examples/*.class
+
+# /extras/RabbitMQ/
+/extras/RabbitMQ/*.class
+
+# /extras/RabbitMQ/libs/
+/extras/RabbitMQ/libs/*.class
+
+# /plugins_usr/aggregator/appl/
+/plugins_usr/aggregator/appl/*.class
+
+# /plugins_usr/aggregator/test/
+/plugins_usr/aggregator/test/*.class
+
+# /plugins_usr/monitoring/appl/
+/plugins_usr/monitoring/appl/*.class
+
+# /plugins_usr/monitoring/distribution/
+/plugins_usr/monitoring/distribution/*.class
+
+# /plugins_usr/monitoring/test/
+/plugins_usr/monitoring/test/*.class
+
+# /plugins_usr/tftp/com/globalros/tftp/
+/plugins_usr/tftp/com/globalros/tftp/*.class
+
+# /plugins_usr/tftp/com/globalros/tftp/client/
+/plugins_usr/tftp/com/globalros/tftp/client/*.class
+
+# /plugins_usr/tftp/com/globalros/tftp/common/
+/plugins_usr/tftp/com/globalros/tftp/common/*.class
+
+# /plugins_usr/tftp/com/globalros/tftp/mbean/
+/plugins_usr/tftp/com/globalros/tftp/mbean/*.class
+
+# /plugins_usr/tftp/com/globalros/tftp/server/
+/plugins_usr/tftp/com/globalros/tftp/server/*.class
+
+# /usr/
+/usr/*class
+
+# /usr/APcontroller/
+/usr/APcontroller/*.class
+
+# /usr/applications/
+/usr/applications/*.class
+
+# /usr/common/
+/usr/common/*class
+
+# /usr/console/
+/usr/console/*class
+
+# /usr/dcap/
+/usr/dcap/*.class
+
+# /usr/engine/
+/usr/engine/*.class
+
+# /usr/engine/linkpicker/
+/usr/engine/linkpicker/*.class
+
+# /usr/events/
+/usr/events/*.class
+
+# /usr/events/globalcontroller/
+/usr/events/globalcontroller/*.class
+
+# /usr/events/vim/
+/usr/events/vim/*.class
+
+# /usr/events/vimfunctions/
+/usr/events/vimfunctions/*.class
+
+# /usr/globalcontroller/
+/usr/globalcontroller/*class
+
+# /usr/globalcontroller/command/
+/usr/globalcontroller/command/*class
+
+# /usr/globalcontroller/visualization/
+/usr/globalcontroller/visualization/*.class
+
+# /usr/interactor/
+/usr/interactor/*class
+
+# /usr/localcontroller/
+/usr/localcontroller/*class
+
+# /usr/localcontroller/command/
+/usr/localcontroller/command/*class
+
+# /usr/logging/
+/usr/logging/*.class
+
+# /usr/model/abstractnetwork/
+/usr/model/abstractnetwork/*.class
+
+# /usr/model/lifeEstimate/
+/usr/model/lifeEstimate/*.class
+
+# /usr/net/
+/usr/net/*class
+
+# /usr/output/
+/usr/output/*.class
+
+# /usr/protocol/
+/usr/protocol/*class
+
+# /usr/router/
+/usr/router/*class
+
+# /usr/router/command/
+/usr/router/command/*class
+
+# /usr/test/
+/usr/test/*class
+
+# /usr/vim/
+/usr/vim/*.class
