@@ -1,3 +1,0 @@
-export USRHOME=$HOME/code/userspacerouter
-export CLASSPATH=$USRHOME:$USRHOME/libs/*:$USRHOME/umf_libs/*
-
