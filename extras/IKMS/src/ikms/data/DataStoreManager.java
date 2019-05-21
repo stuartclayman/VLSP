@@ -28,6 +28,9 @@ public class DataStoreManager {
 	// The KeyValueManager manages access to Redis
 	KeyValueManager kvManager = null;
 
+       // No of times to check for KeyValue Store
+       static final int kvStoreCheckCount = 5;
+
 	/**
 	 * DataStoreManager Constructor.
 	 */
@@ -73,6 +76,10 @@ public class DataStoreManager {
 		DataStoreManager mgr = singleton;
 
 		Jedis result = null;
+
+                int delay=1000;
+                int count = 0;
+                
 		while (result==null) {
 
 			if (mgr != null) {
@@ -82,7 +89,6 @@ public class DataStoreManager {
 
 				}
 				// It breaks some times, in that case, try again
-				int delay=1000;
 
 				if (result == null) {
 					System.out.println ("Problem in getKeyValueStore. Trying again after "+delay+"ms");
@@ -90,6 +96,7 @@ public class DataStoreManager {
 						Thread.sleep(delay);
 						// increase delay for next time
 						delay = 2 * delay;
+                                                count++;
 					} catch (InterruptedException ie) {
 						ie.printStackTrace();
 					}					
@@ -100,6 +107,11 @@ public class DataStoreManager {
 			} else {
 				throw new IllegalStateException("DataStoreManager not configured correctly");
 			}
+
+                        // If we checked enough times - drop out
+                        if (count >= kvStoreCheckCount) {
+                            return null;
+                        }
 		}
 		return result;
 	}
