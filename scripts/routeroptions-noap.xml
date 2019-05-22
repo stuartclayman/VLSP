@@ -1,4 +1,8 @@
 <RouterOptions>
+  <Router>
+    <RouterClass>usr.router.Router</RouterClass>
+  </Router>
+
   <!--
     <Output>
         <FileName>output</FileName>
@@ -18,6 +22,7 @@
         <MaxNetIFUpdateTime>15000</MaxNetIFUpdateTime>
         <AddressType>usr.net.GIDAddress</AddressType>
         <MaxDist>8096</MaxDist>
+        <LinkType>TCP</LinkType> <!-- UDP or TCP -->
     </RoutingParameters>
     <APManager>
         <Name>None</Name>   <!-- Name>Null / None / Pressure / Random / HotSpot </Name> -->
@@ -32,8 +37,16 @@
         <Rate>1000</Rate>
       </Probe>
       <Probe>
-        <Name>usr.router.AppListProbe</Name>
+        <Name>usr.router.ThreadListProbe</Name>
         <Rate>1000</Rate>
+      </Probe>
+      <Probe>
+        <Name>usr.router.ThreadGroupListProbe</Name>
+        <Rate>5000</Rate>
+      </Probe>
+      <Probe>
+        <Name>usr.router.AppListProbe</Name>
+        <Rate>5000</Rate>
       </Probe>
     </Monitoring>
 

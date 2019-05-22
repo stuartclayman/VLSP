@@ -4,13 +4,20 @@
      <StartLocalControllers>true</StartLocalControllers>
      <ConnectedNetwork>false</ConnectedNetwork>
 
-     <PlacementEngineClass>usr.globalcontroller.LeastBusyPlacement</PlacementEngineClass>
+     <PlacementEngineClass>usr.globalcontroller.LeastUsedLoadBalancer</PlacementEngineClass>
+     <!-- <PlacementEngineClass>usr.globalcontroller.LeastBusyPlacement</PlacementEngineClass> -->
 
      <!-- <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass> -->
      <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkAndApplicationVisualization</VisualizationClass>
 
      <Monitoring>
        <LatticeMonitoring>true</LatticeMonitoring>
+       <MonitoringPort>7799</MonitoringPort>
+
+       <Consumer> <!-- data from LocalControllers -->
+         <Name>usr.globalcontroller.HostInfoReporter</Name>
+       </Consumer>
+
        <Consumer>
          <!-- <Name>usr.globalcontroller.NetIFStatsCumulativeReporter</Name> -->
          <Name>usr.globalcontroller.NetIFStatsReporter</Name>
@@ -18,58 +25,38 @@
        <Consumer>
          <Name>usr.globalcontroller.RouterAppsReporter</Name>
        </Consumer>
+       <Consumer>
+         <Name>usr.globalcontroller.ThreadGroupListReporter</Name>
+       </Consumer>
+       <Consumer>
+         <Name>usr.globalcontroller.ThreadListReporter</Name>
+       </Consumer>
      </Monitoring>
   </GlobalController>
-<!--
+
   <LocalController>
      <Name>localhost</Name>
      <Port>10000</Port>
      <LowPort>11001</LowPort>
      <HighPort>12000</HighPort>
-     <MaxRouters>30</MaxRouters>
-  </LocalController>
--->
-
-<LocalController>
-     <Name>claydesk1</Name>
-     <Port>10004</Port>
-     <LowPort>15001</LowPort>
-     <HighPort>16000</HighPort>
      <MaxRouters>100</MaxRouters>
   </LocalController>
 
-<LocalController>
-     <Name>claydesk2</Name>
-     <Port>10005</Port>
-     <LowPort>16001</LowPort>
-     <HighPort>17000</HighPort>
-     <MaxRouters>100</MaxRouters>
-  </LocalController>
-<!--
- <LocalController>
-     <Name>ethane</Name>
-     <Port>10006</Port>
-     <LowPort>17001</LowPort>
-     <HighPort>18000</HighPort>
-     <MaxRouters>150</MaxRouters>
-  </LocalController>
-
- <LocalController>
-     <Name>methane</Name>
-     <Port>10007</Port>
-     <LowPort>18001</LowPort>
-     <HighPort>19000</HighPort>
-     <MaxRouters>150</MaxRouters>
+  <!--
+  <LocalController>
+     <Name>localhost</Name>
+     <Port>10001</Port>
+     <LowPort>12001</LowPort>
+     <HighPort>13000</HighPort>
   </LocalController>
 
   <LocalController>
-     <Name>butane</Name>
-     <Port>10008</Port>
-     <LowPort>19001</LowPort>
-     <HighPort>20000</HighPort>
-     <MaxRouters>150</MaxRouters>
+     <Name>localhost</Name>
+     <Port>10002</Port>
+     <LowPort>13001</LowPort>
+     <HighPort>14000</HighPort>
   </LocalController>
--->
+  -->
 
   <EventEngine>
      <Name>Empty</Name>

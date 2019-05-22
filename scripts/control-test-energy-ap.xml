@@ -5,9 +5,8 @@
      <ConnectedNetwork>true</ConnectedNetwork>
 
      <!-- <PlacementEngineClass>usr.globalcontroller.EnergyEfficientPlacement</PlacementEngineClass> -->
-
-     <PlacementEngineClass>usr.globalcontroller.NupPlacement</PlacementEngineClass>
-     <!-- <PlacementEngineClass>usr.globalcontroller.LeastBusyPlacement</PlacementEngineClass> -->
+     <!-- <PlacementEngineClass>usr.globalcontroller.NupPlacement</PlacementEngineClass> -->
+     <PlacementEngineClass>usr.globalcontroller.LeastBusyPlacement</PlacementEngineClass>
      <!-- <PlacementEngineClass>usr.globalcontroller.LeastUsedLoadBalancer</PlacementEngineClass>-->
 
      <VisualizationClass>usr.globalcontroller.visualization.ColouredNetworkVisualization</VisualizationClass>
@@ -50,7 +49,7 @@
      <BaseLineEnergyConsumption>20</BaseLineEnergyConsumption>
   </LocalController>
 
-
+  
 <!--
 
   <LocalController>
@@ -86,7 +85,7 @@
 
   <EventEngine>
      <Name>Probabilistic</Name>
-     <EndTime>600</EndTime> <!-- seconds -->
+     <EndTime>1800</EndTime> <!-- seconds -->
      <Parameters>scripts/probdists-control-test-ap.xml</Parameters>
   </EventEngine>
 

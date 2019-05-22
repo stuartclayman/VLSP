@@ -37,13 +37,35 @@
      <LowPort>11001</LowPort>
      <HighPort>12000</HighPort>
      <MaxRouters>30</MaxRouters>
+
+     <CPULoadCoefficient>50</CPULoadCoefficient>
+     <CPUIdleCoefficient>0.20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>30</BaseLineEnergyConsumption>
+
+     <!-- for server -->
+     <!--
      <CPULoadCoefficient>50</CPULoadCoefficient>
      <CPUIdleCoefficient>20</CPUIdleCoefficient>
      <MemoryAllocationCoefficient>4</MemoryAllocationCoefficient>
      <FreeMemoryCoefficient>2</FreeMemoryCoefficient>
-     <NetworkOutboundBytesCoefficient>0.001</NetworkOutboundBytesCoefficient>
-     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <NetworkOutboundBytesCoefficient>0.00001</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.000005</NetworkIncomingBytesCoefficient>
      <BaseLineEnergyConsumption>300</BaseLineEnergyConsumption>
+     -->
+     
+     <!--  original
+     <CPULoadCoefficient>50.0</CPULoadCoefficient>
+     <CPUIdleCoefficient>0.20</CPUIdleCoefficient>
+     <MemoryAllocationCoefficient>0.04</MemoryAllocationCoefficient>
+     <FreeMemoryCoefficient>0.02</FreeMemoryCoefficient>
+     <NetworkOutboundBytesCoefficient>0.0005</NetworkOutboundBytesCoefficient>
+     <NetworkIncomingBytesCoefficient>0.0005</NetworkIncomingBytesCoefficient>
+     <BaseLineEnergyConsumption>30</BaseLineEnergyConsumption>
+     -->
   </LocalController>
 <!-- could add application related coefficients here, in case it is needed -->
 

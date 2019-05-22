@@ -14,6 +14,17 @@
        <Consumer>
          <Name>usr.globalcontroller.RouterAppsReporter</Name>
        </Consumer>
+       <Consumer>
+	 <Name>usr.globalcontroller.HostInfoReporter</Name>
+       </Consumer>
+       <!--
+       <Consumer>
+        <Name>usr.globalcontroller.ThreadGroupListReporter</Name>
+       </Consumer>
+       <Consumer>
+        <Name>usr.globalcontroller.ThreadListReporter</Name>
+        </Consumer>
+        -->
      </Monitoring>
   </GlobalController>
 

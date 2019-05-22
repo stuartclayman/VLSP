@@ -5,6 +5,7 @@
         <MaxNetIFUpdateTime>30000</MaxNetIFUpdateTime>
         <AddressType>usr.net.GIDAddress</AddressType>
 	<!-- <DatagramType>usr.net.IPV4Datagram</DatagramType> -->
+        <LinkType>TCP</LinkType>  <!-- UDP or TCP -->
     </RoutingParameters>
 
     <APManager>

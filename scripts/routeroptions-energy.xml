@@ -1,13 +1,20 @@
 <RouterOptions>
     <RoutingParameters>
-        <MaxCheckTime>60000</MaxCheckTime>
+        <MaxCheckTime>30000</MaxCheckTime>  <!-- was 60000 -->
         <MinNetIFUpdateTime>5000</MinNetIFUpdateTime>
-        <MaxNetIFUpdateTime>30000</MaxNetIFUpdateTime>
+        <MaxNetIFUpdateTime>15000</MaxNetIFUpdateTime>
         <AddressType>usr.net.GIDAddress</AddressType>
-	<!-- <DatagramType>usr.net.IPV4Datagram</DatagramType> -->
+        <MaxDist>8096</MaxDist>
     </RoutingParameters>
 
-<!--    <APManager>
+    <APManager>
+        <Name>None</Name>   <!-- Name>Null / None / Pressure / Random / HotSpot </Name> -->
+        <ControllerConsiderTime>0</ControllerConsiderTime>
+    </APManager> 
+
+
+    <!--
+    <APManager>
         <Name>Random</Name>
         <APLifeBias>0.0</APLifeBias>
         <MinAPs>1</MinAPs>
@@ -19,7 +26,8 @@
 
     <AP>
       <APClass>demo_usr.ikms.IKMSForwarderCreator</APClass>
-    </AP>-->
+    </AP>
+    -->
 
      <Monitoring>
      <LatticeMonitoring>true</LatticeMonitoring>
