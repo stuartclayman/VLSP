@@ -60,7 +60,7 @@
 
   <EventEngine>
      <Name>Empty</Name>
-     <EndTime>86400</EndTime> <!-- 86400 seconds == 1 day -->
+     <EndTime>8640000</EndTime> <!-- 86400 seconds == 1 day -->
   </EventEngine>
 
   <RouterOptions>

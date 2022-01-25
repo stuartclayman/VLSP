@@ -99,63 +99,85 @@ public class NetFn implements Application, Reconfigure {
             return new ApplicationResponse(true, "");
 
         } else {
-            for (int extra = 1; extra < args.length; extra++) {
-                String thisArg = args[extra];
+            ApplicationResponse argsResp = processArgs(args);
 
-                // check if its a flag
-                if (thisArg.charAt(0) == '-') {
-                    // get option
-                    char option = thisArg.charAt(1);
+            if (argsResp == null) {
+                // Everything ok
+                return new ApplicationResponse(true, "");
+            } else {
+                // return argsResp
+                return argsResp;
+            }
+        }
+    }
 
-                    switch (option) {
-                    case 'i': {   /*  -i number -- the interval, in seconds, to check for new NetIFs */
+    /**
+     * Process the args:
+     * -i interval --  the interval, in seconds, to check for new NetIFs
+     * -m port_no  -- the port number to listen for management Reconfigure updates.
+     * -v | -vv    -- for different verbose levels
+     * Return null on success
+     * Return ApplicationResponse if there is an error
+     */
+    protected ApplicationResponse processArgs(String[] args) {
+        for (int extra = 0; extra < args.length; extra++) {
+            String thisArg = args[extra];
 
-                        // get next arg
-                        String argValue = args[++extra];
+            // check if its a flag
+            if (thisArg.charAt(0) == '-') {
+                // get option
+                char option = thisArg.charAt(1);
+
+                switch (option) {
+                case 'i': {   /*  -i number -- the interval, in seconds, to check for new NetIFs */
+
+                    // get next arg
+                    String argValue = args[++extra];
 
 
-                        try {
-                            checkInterval = Integer.parseInt(argValue);
-                        } catch (Exception e) {
-                            return applicationError("Bad checkInterval " + argValue);
-                        }
-
-                        break;
+                    try {
+                        setCheckInterval(Integer.parseInt(argValue));
+                    } catch (Exception e) {
+                        return applicationError("Bad checkInterval " + argValue);
                     }
 
-                    case 'm': {   /* -m port -- the port number to listen for management Reconfigure updates.
-                                             -- By default there is no reconfiguration. */
-                        // get next arg
-                        String portValue = args[++extra];
+                    break;
+                }
 
-                        try {
-                            managementPortNumber = Integer.parseInt(portValue);
-                        } catch (Exception e) {
-                            return applicationError("Bad managementPortNumber " + portValue);
-                        }
-                        break;
-                    }
+                case 'm': {   /* -m port -- the port number to listen for management Reconfigure updates.
+                                 -- By default there is no reconfiguration. */
+                    // get next arg
+                    String portValue = args[++extra];
 
-                    case 'v': {  /* -v or -vv for different verbose levels */
-                        verbose = 1;
-                        if (thisArg.length() == 3 && thisArg.charAt(2) == 'v') {
-                            verbose = 2;
-                        }
-                        break;
+                    try {
+                        setManagementPortNumber(Integer.parseInt(portValue));
+                    } catch (Exception e) {
+                        return applicationError("Bad managementPortNumber " + portValue);
                     }
+                    break;
+                }
+
+                case 'v': {  /* -v or -vv for different verbose levels */
+                    setVerbose(1);
+                    if (thisArg.length() == 3 && thisArg.charAt(2) == 'v') {
+                        setVerbose(2);
+                    }
+                    break;
+                }
 
 
                         
-                    default:
-                        return applicationError("Bad option " + option);
-                    }
+                default:
+                    return applicationError("Bad option " + option);
                 }
-
             }
-                
-            return new ApplicationResponse(true, "");
+
         }
+
+        // all ok
+        return null;
     }
+
 
     /** Start application with argument  */
     public ApplicationResponse start() {
@@ -197,6 +219,14 @@ public class NetFn implements Application, Reconfigure {
                 }
             }
 
+            // Try calling extra startup method
+            ApplicationResponse startHookResp = startHook();
+
+            if (startHookResp != null) {
+                // return startHookResp
+                return startHookResp;
+            }
+
             
     
         } catch (Exception e) {
@@ -211,10 +241,24 @@ public class NetFn implements Application, Reconfigure {
         return new ApplicationResponse(true, "");
     }
 
+
+    /**
+     * Extra startup - useful in subclasses
+     * Return null on success
+     * Return ApplicationResponse if there is an error
+     */
+    protected ApplicationResponse startHook() {
+        return null;
+    }
+    
     /** Implement graceful shut down */
     public ApplicationResponse stop() {
         running = false;
 
+        // Try calling extra stop method
+        ApplicationResponse stopHookResp = stopHook();
+
+            
         // stop ManagementListener and ManagementPort
         if (managementPortNumber > 0) {
             mPortFuture.cancel(true);
@@ -243,6 +287,17 @@ public class NetFn implements Application, Reconfigure {
     }
 
     /**
+     * Extra stop - useful in subclasses
+     * Return null on success
+     * Return ApplicationResponse if there is an error
+     */
+    protected ApplicationResponse stopHook() {
+        return null;
+    }
+    
+
+
+    /**
      * Run loop
      */
     public void run() {
@@ -268,7 +323,30 @@ public class NetFn implements Application, Reconfigure {
         }
 
     }
+
+    /**** Support for properties ****/
     
+    /**
+     * Set the checkInterval
+     */
+    protected void setCheckInterval(int i) {
+        checkInterval = i;
+    }
+
+    /**
+     * Set the managementPortNumber
+     */
+    protected void setManagementPortNumber(int no) {
+        managementPortNumber = no;
+    }
+    
+    /**
+     * Set the verbose level
+     */
+    protected void setVerbose(int v) {
+        verbose = v;
+    }
+
     /**
      * The callback from the NetworkInterface observer.
      * Tells us that a NetworkInterface is active
@@ -342,13 +420,13 @@ public class NetFn implements Application, Reconfigure {
 
     /**
      * The callback for when a Datagram is received by an Intercepter.
-     * Return true to forward Datagram, Return false to throw it away.
+     * Return a Datagram to forward Datagram, Return null to throw it away.
      */
-    public boolean datagramProcess(InterceptListener intercepter, Datagram datagram) {
+    public Datagram datagramProcess(InterceptListener intercepter, Datagram datagram) {
             count++;
 
             // send onwards
-            return true;
+            return datagram;
     }
 
     /**
@@ -369,7 +447,7 @@ public class NetFn implements Application, Reconfigure {
     /**
      * error
      */
-    private ApplicationResponse applicationError(String msg) {
+    protected ApplicationResponse applicationError(String msg) {
         Logger.getLogger("log").logln(USR.ERROR, msg);
         return new ApplicationResponse(false,  msg);
     }
@@ -474,10 +552,10 @@ public class NetFn implements Application, Reconfigure {
                 while (running) {
 
                     if ((datagram = intercept.receive()) != null) {
-                        boolean forward = netfn.datagramProcess(this, datagram);
+                        Datagram forward = netfn.datagramProcess(this, datagram);
 
-                        if (forward) {
-                            netfn.datagramSend(this, datagram);
+                        if (forward != null) {
+                            netfn.datagramSend(this, forward);
                         }
                     }
 

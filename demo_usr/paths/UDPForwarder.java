@@ -173,17 +173,19 @@ public class UDPForwarder implements Callable <Object> {
                     }
                 }
 
-                // send data out in 1024 sized chunks
-                // we do this because netcat/nc only uses this size
-
                 int remaining = data.length;
                 int offset = 0;
-                int chunk = (data.length < 1024 ? data.length : 1024);
+
+                // send data out in 1024 sized chunks
+                // we do this because netcat/nc only uses this size
+                int packetSize = data.length;   // 1024;
+                
+                int chunk = (data.length < packetSize ? data.length : packetSize);
 
                 do {
                     // now create a UDP Datagram
-                    byte[] udpBuffer = new byte[1024];
-                    outDatagram = new java.net.DatagramPacket(udpBuffer, 1024);
+                    byte[] udpBuffer = new byte[packetSize];
+                    outDatagram = new java.net.DatagramPacket(udpBuffer, packetSize);
 
                     // copy in data
                     outDatagram.setData(data, offset, chunk);
@@ -209,7 +211,7 @@ public class UDPForwarder implements Callable <Object> {
 
                     remaining -= chunk;
                     offset += chunk;
-                    chunk = (remaining > 1024 ? 1024 : remaining);
+                    chunk = (remaining > packetSize ? packetSize : remaining);
 
                 } while (remaining > 0);
 

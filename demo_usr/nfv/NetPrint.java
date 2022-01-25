@@ -27,10 +27,10 @@ public class NetPrint extends NetFn  {
      * The callback for when a Datagram is received by an Intercepter.
      * Return true to forward Datagram, Return false to throw it away.
      */
-    public boolean datagramProcess(InterceptListener intercepter, Datagram datagram) {
+    public Datagram datagramProcess(InterceptListener intercepter, Datagram datagram) {
         if (datagram.getProtocol() == Protocol.CONTROL) {
             Logger.getLogger("log").log(USR.STDOUT, "INTERCEPT: " + "CONTROL" + ". \n");
-            return false;
+            return null;
             
         } else {
             Logger.getLogger("log").log(USR.STDOUT, "INTERCEPT: " + count + ". ");
@@ -53,7 +53,7 @@ public class NetPrint extends NetFn  {
 
             count++;
 
-            return true;
+            return datagram;
         }
     }
 
