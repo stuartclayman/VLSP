@@ -407,7 +407,8 @@ public class LocalController implements Lifecycle, ComponentController {
         cmd[4] = "-Xmx96m";  // was 128
 
         // for better scalability (sclayman)
-        cmd[5] = "-Xss256k";
+        // JDK 8 needs 384
+        cmd[5] = "-Xss384k";
         
         cmd[6] = routerClassName;
         cmd[7] = String.valueOf(port1);
