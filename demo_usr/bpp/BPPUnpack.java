@@ -20,6 +20,18 @@ public class BPPUnpack {
     int count = 0;
     int chunkCount = 0;
     int totalIn = 0;
+    int totalOut = 0;
+    int countThisSec = 0;  // packet count this second
+    int recvThisSec = 0;   // amount sent this second
+    int sentThisSec = 0;   // amount sent this second
+
+
+    // timing
+    int seconds = 0;       // no of seconds
+    long secondStart = 0;   // when did the second start
+    long now = 0;
+    long timeOffset = 0;
+
 
     // payload
     byte[] payload = null;
@@ -30,6 +42,7 @@ public class BPPUnpack {
     int command = 0;
     int condition = 0;
     int threshold = 0;
+    int sequence = 0;
 
     int [] contentSizes = null;
     int [] contentStartPos = null;
@@ -50,6 +63,10 @@ public class BPPUnpack {
         this.availableBandwidth = availableBandwidthBits >> 3;
         this.packetsPerSecond = packetsPerSecond;
         this.outStream = outStream;
+
+        // set secondStart
+        secondStart = System.currentTimeMillis();
+        
     }
 
     /**
@@ -57,6 +74,104 @@ public class BPPUnpack {
      * @throws UnsupportedOperationException if it can't work out what to do
      */
     public byte[] convert(int count, Datagram packet) throws UnsupportedOperationException {
+        return convertB(count, packet);
+    }
+
+
+    /**
+     * Unpack a Datagram
+     * Based on bandwidth
+     * @throws UnsupportedOperationException if it can't work out what to do
+     */
+    public byte[] convertB(int count, Datagram packet) throws UnsupportedOperationException {
+        this.count = count;
+        countThisSec++;
+        
+        // timing
+        now = System.currentTimeMillis();
+        timeOffset = now - secondStart;
+        float secondPart = (float)timeOffset / 1000;
+        
+        // check bandwidth is enough
+        payload = packet.getPayload();
+        packetLength = payload.length;
+
+        totalIn += packetLength;
+        recvThisSec += packetLength;
+
+        int idealSendThisSec = (int) (availableBandwidth * secondPart);
+        int behind = idealSendThisSec - sentThisSec;
+
+        if (Verbose.level >= 2) {
+            outStream.printf("BPPUnpack: " + count + " secondPart: " + secondPart + " countThisSec " + countThisSec +  " recvThisSec " + recvThisSec + " idealSendThisSec " + idealSendThisSec + " behind " + behind + " sentThisSec " + sentThisSec);
+        }
+
+        
+        if (timeOffset >= 1000) {
+            // we crossed a second boundary
+            seconds++;
+            secondStart = now;
+            countThisSec = 0;
+            recvThisSec = 0;
+            sentThisSec = 0;
+            secondPart = 0;
+        }
+
+
+        // work out packetDropLevel
+        int packetDropLevel = 0;
+
+        if (behind > 0) {
+            // fine
+            packetDropLevel = 0;
+            if (Verbose.level >= 2) {
+                outStream.printf(" NO DROP\n");
+            }
+        } else {
+            packetDropLevel =  behind;
+            if (Verbose.level >= 2) {
+                outStream.printf("  drop " + packetDropLevel + "\n");
+            }
+        }
+
+
+        // Look into the packet headers
+        unpackDatagramHeaders(packet);
+
+        if (packetDropLevel < 0) {
+            // If we need to drop something, we need to look at the content
+            unpackDatagramContent(packet);
+
+            int droppedAmount = dropContent(-packetDropLevel);
+
+            int size = packetLength - droppedAmount;
+            totalOut += size;
+            sentThisSec += size;
+
+            // Now rebuild the packet payload, from the original packet
+            byte[] newPayload = packContent();
+
+            return newPayload;
+
+        } else {
+            // Get the network function to forward the packet
+            int size = packetLength;
+            totalOut += size;
+            sentThisSec += size;
+            return null;
+        }
+
+        
+    }
+
+    
+
+    /**
+     * Unpack a Datagram
+     * Used in recent papers
+     * @throws UnsupportedOperationException if it can't work out what to do
+     */
+    public byte[] convert0(int count, Datagram packet) throws UnsupportedOperationException {
         this.count = count;
 
         // check bandwidth is enough
@@ -76,7 +191,9 @@ public class BPPUnpack {
 
         
 
-        outStream.printf("BPPUnpack: " + count + ": availableBandwidthBits: %-10d availableBandwidth: %-10d len: %-5d, avg: %-5d condition: %-5d packetDropLevel: %d bytes\n", availableBandwidthBits, availableBandwidth, packetLength, averagePacketLen, cond, packetDropLevel);
+        if (Verbose.level >= 2) {
+            outStream.printf("BPPUnpack: " + count + ": availableBandwidthBits: %-10d availableBandwidth: %-10d len: %-5d, avg: %-5d condition: %-5d packetDropLevel: %d bytes\n", availableBandwidthBits, availableBandwidth, packetLength, averagePacketLen, cond, packetDropLevel);
+        }
 
 
         if (availableBandwidth < (cond * averagePacketLen)) {
@@ -100,6 +217,7 @@ public class BPPUnpack {
 
     /**
      * Unpack a Datagram
+     * Similar to algorithm used in early papers
      * @throws UnsupportedOperationException if it can't work out what to do
      */
     public byte[] convert1(int count, Datagram packet) throws UnsupportedOperationException {
@@ -118,12 +236,15 @@ public class BPPUnpack {
         // we need to convert packetDropLevel, which is in Kbps, to a level for each packet
         // need packets / per second to workout the correct trim level
         int packetDropLevel = ((trafficDropLevel * 1024) / 8) / packetsPerSecond;
-        
-        //outStream.printf("BPPUnpack: " + count + ": availableBandwidthBits (Kbps): %-10d condition (Kbps): %-5d trafficDropLevel (Kbps): %d\n", availableBandwidthBits / 1024, condition * 10, trafficDropLevel);
-        //outStream.printf("BPPUnpack: " + count + ": trafficDropLevel (bits): %d trafficDropLevel (bytes): %d\n", trafficDropLevel * 1024, (trafficDropLevel * 1024) / 8);
 
 
-        outStream.printf("BPPUnpack: " + count + ": availableBandwidthBits: %-10d availableBandwidth: %-10d len: %-5d, condition: %-5d packetDropLevel: %d bytes\n", availableBandwidthBits, availableBandwidth, packetLength, condition, packetDropLevel);
+        if (Verbose.level >= 2) {
+
+            //outStream.printf("BPPUnpack: " + count + ": availableBandwidthBits (Kbps): %-10d condition (Kbps): %-5d trafficDropLevel (Kbps): %d\n", availableBandwidthBits / 1024, condition * 10, trafficDropLevel);
+            //outStream.printf("BPPUnpack: " + count + ": trafficDropLevel (bits): %d trafficDropLevel (bytes): %d\n", trafficDropLevel * 1024, (trafficDropLevel * 1024) / 8);
+
+            outStream.printf("BPPUnpack: " + count + ": availableBandwidthBits: %-10d availableBandwidth: %-10d len: %-5d, condition: %-5d packetDropLevel: %d bytes\n", availableBandwidthBits, availableBandwidth, packetLength, condition, packetDropLevel);
+        }
 
 
         if (packetDropLevel < 0) {
@@ -181,6 +302,12 @@ public class BPPUnpack {
         byte b5 = packetBytes[5];
         byte b6 = packetBytes[6];
 
+        // Get the Sequence No bytes
+        byte b7 = packetBytes[7];
+        byte b8 = packetBytes[8];
+        byte b9 = packetBytes[9];
+        byte b10 = packetBytes[10];
+        
         bufPos += BPP.COMMAND_BLOCK_SIZE;
         
 
@@ -192,6 +319,9 @@ public class BPPUnpack {
 
         // threshold is bottom 3 bits of b5 and top 5 bits of b6
         threshold = ((b5 & 0x07) << 5) | (b6 & 0xFC) >> 3;
+        
+        // sequence no
+        sequence = ((b7 & 0xFF) << 24) | ((b8  & 0xFF) << 16) | ((b9  & 0xFF) << 8) | (b10  & 0xFF) ;
         
 
         //System.err.printf("%-6d ver: 0x%04X chunkCount: %d command: 0x%05X condition: %d threshold: %d\n", count, version, chunkCount, command, condition, threshold);
@@ -299,8 +429,10 @@ public class BPPUnpack {
         for (int c=0; c<chunkCount; c++) {
             contentStartPos[c] = bufPos;
 
-            //outStream.printf(" 0x%02X 0x%02X 0x%02X 0x%02X \n",  packetBytes[bufPos+0], packetBytes[bufPos+1], packetBytes[bufPos+2], packetBytes[bufPos+3]);
-            //outStream.printf(" 0x%02X 0x%02X 0x%02X 0x%02X \n",  packetBytes[bufPos+4], packetBytes[bufPos+5], packetBytes[bufPos+6], packetBytes[bufPos+7]);
+            if (Verbose.level >= 2) {
+                //outStream.printf(" 0x%02X 0x%02X 0x%02X 0x%02X \n",  packetBytes[bufPos+0], packetBytes[bufPos+1], packetBytes[bufPos+2], packetBytes[bufPos+3]);
+                //outStream.printf(" 0x%02X 0x%02X 0x%02X 0x%02X \n",  packetBytes[bufPos+4], packetBytes[bufPos+5], packetBytes[bufPos+6], packetBytes[bufPos+7]);
+            }
             
             bufPos += contentSizes[c];
         }        
@@ -312,14 +444,18 @@ public class BPPUnpack {
      * Drop some content chunks
      */
     protected int dropContent(int packetDropLevel) {
-        outStream.println("BPPUnpack: " + count + " Trim needed of " + packetDropLevel);
-
+        if (Verbose.level >= 3) {
+            outStream.println("BPPUnpack: " + count + " Trim needed of " + packetDropLevel);
+        }
+            
         int dropped = 0;
             
         // now we try to drop some chunk content
         // try from the highest to the lowest
         for (int c=chunkCount-1; c>=0; c--) {
-            outStream.println("isDropped[" + c + "] = " + isDropped[c]);
+            if (Verbose.level >= 3) {
+                outStream.println("isDropped[" + c + "] = " + isDropped[c]);
+            }
 
             // can we delete this content
             
@@ -330,7 +466,9 @@ public class BPPUnpack {
                 // update the dropped count
                 dropped += contentSizes[c];
 
-                outStream.println("BPPUnpack: dropped chunk " + c + " significance " + significance[c] + " size: " + contentSizes[c]);
+                if (Verbose.level >= 3) {
+                    outStream.println("BPPUnpack: dropped chunk " + c + " significance " + significance[c] + " size: " + contentSizes[c]);
+                }
             }
 
             if (dropped >= packetDropLevel) {
@@ -340,7 +478,9 @@ public class BPPUnpack {
             }
         }
 
-        outStream.println("BPPUnpack: dropped " + dropped);
+        if (Verbose.level >= 3) {
+            outStream.println("BPPUnpack: dropped " + dropped);
+        }
         
         return dropped;
     }            
@@ -384,7 +524,15 @@ public class BPPUnpack {
         packetBytes[5] = (byte)(((commandBlock & 0x0000FF00) >> 8) & 0xFF);
         packetBytes[6] = (byte)(((commandBlock & 0x000000FF) >> 0) & 0xFF);
 
-        outStream.println("Chunk data: nalNo = " + nalNo + " nalCount = " + nalCount);
+        // Add Sequence no
+        packetBytes[7] = (byte)(((sequence & 0xFF000000) >> 24) & 0xFF);
+        packetBytes[8] = (byte)(((sequence & 0x00FF0000) >> 16) & 0xFF);
+        packetBytes[9] = (byte)(((sequence & 0x0000FF00) >> 8) & 0xFF);
+        packetBytes[10] = (byte)(((sequence & 0x000000FF) >> 0) & 0xFF);
+            
+        if (Verbose.level >= 2) {
+            outStream.println("Chunk data: seq: " + sequence + " nalNo: " + nalNo + " nalCount: " + nalCount);
+        }
 
         // increase bufPos
         bufPos += BPP.COMMAND_BLOCK_SIZE;
@@ -473,18 +621,22 @@ public class BPPUnpack {
                 // source_arr,  sourcePos,  dest_arr,  destPos, len
                 System.arraycopy(payload, contentStartPos[c], packetBytes, bufPos, contentSizes[c]);
 
-                //outStream.printf(" 0x%02X 0x%02X 0x%02X 0x%02X \n",  packetBytes[bufPos+0], packetBytes[bufPos+1], packetBytes[bufPos+2], packetBytes[bufPos+3]);
-                //outStream.printf(" 0x%02X 0x%02X 0x%02X 0x%02X \n",  packetBytes[bufPos+4], packetBytes[bufPos+5], packetBytes[bufPos+6], packetBytes[bufPos+7]);
+                if (Verbose.level >= 3) {
+                    //outStream.printf(" 0x%02X 0x%02X 0x%02X 0x%02X \n",  packetBytes[bufPos+0], packetBytes[bufPos+1], packetBytes[bufPos+2], packetBytes[bufPos+3]);
+                    //outStream.printf(" 0x%02X 0x%02X 0x%02X 0x%02X \n",  packetBytes[bufPos+4], packetBytes[bufPos+5], packetBytes[bufPos+6], packetBytes[bufPos+7]);
+                }
                 
                 bufPos += contentSizes[c];
 
             } else {
-                outStream.println("content " + c + " is dropped");
+                if (Verbose.level >= 3) {
+                    outStream.println("packContent: content " + c + " is dropped");
+                }
             }
 
         }
 
-        outStream.println("BPP: bufPos = " + bufPos);
+        //outStream.println("BPP: bufPos = " + bufPos);
                 
         return packetBytes;
         

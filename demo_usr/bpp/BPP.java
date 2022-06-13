@@ -24,7 +24,9 @@ package demo_usr.bpp;
     +------------------+--------------------+--------------------+-----------------+
     | BPP Block Header (32 bits)                                                   *
     +------------------+--------------------+--------------------+-----------------+
-    | Command (5) |  Condition (8) | Threshold (8)   |  PAD (3)  *   OFFi (8)      |
+    | Command (5) |  Condition (8) | Threshold (8)   |  PAD (3)  *SeqNo (8)        *
+    +------------------+--------------------+--------------------+-----------------+
+    | SeqNo (24)                                                 *   OFFi (8)      |
     +------------------+--------------------+--------------------+-----------------+
     | OFFi (14)                       | CSi (14)                        | SIGi (4) |
     +------------------+--------------------+--------------------+-----------------+
@@ -43,7 +45,7 @@ public class BPP {
 
     public static final int BLOCK_HEADER_SIZE = 4;
 
-    public static final int COMMAND_BLOCK_SIZE = 3;
+    public static final int COMMAND_BLOCK_SIZE = 7;
 
     public static final int METADATA_BLOCK_SIZE = 6;
 }
