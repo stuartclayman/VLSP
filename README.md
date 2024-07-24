@@ -25,14 +25,21 @@ _What is VLSP not yet good for?_
 
 ## Build VLSP
 
-If you do not have VLSP yet, you can find the source on github at `https://github.com/stuartclayman/VLSP`.
-
-You can get the documentation at `https://github.com/stuartclayman/VLSP-Doc`.
+If you do not have VLSP yet, you can find the source on github at https://github.com/stuartclayman/VLSP.
 
 If VLSP is not built yet, you can run `ant build` to compile it.  Then it is ready to run.
 
 As the platform is written in Java, we need to set the JAVA HOME environment variable:
 `$export JAVA HOME=/usr/java/jdk1.8/`
+
+## Documentation
+
+You can get the documentation at  https://github.com/stuartclayman/VLSP-Doc
+
+## Clients
+
+If you do not have VLSP Client yet, you can find the source on
+_gitlab_ at https://gitlab.com/sclayman/vlsp-client
 
 
 
@@ -68,4 +75,16 @@ EVENT: <0> 11 @ 1643992328464 waiting 50065397
 
 VLSP is now ready and waiting for commands.
 
+
+### Distributed deployments
+
+VLSP can be executed across a number of servers.
+
+It uses `ssh` to connect to remote machines, and starts the *Local Controllers*.
+You need to configure ssh logins with a key and not using a password.
+Also the `CLASSPATH` is exported to the remote machines, so it is best
+to use absolute path names, so the setup the CLASSPATH is something
+like:
+
+`$ export CLASSPATH=/home/sclayman/vlsp/:/home/sclayman/vlsp/:libs/*` 
 
